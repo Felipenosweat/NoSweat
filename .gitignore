@@ -1,0 +1,24 @@
+# Dependências
+node_modules/
+
+# Builds
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Testes
+coverage/
+
+# Segredos: só .env.example vai para o Git
+.env
+.env.*
+!.env.example
+
+# Sistema / editores
+.DS_Store
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
