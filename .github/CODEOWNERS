@@ -1,0 +1,19 @@
+# Donos de cada pasta. Troque @FRONT_USER e @BACK_USER pelos usuários reais do GitHub.
+# A última regra que casar com o arquivo vence.
+
+# Padrão: os dois revisam o que não estiver listado abaixo.
+*                               @FRONT_USER @BACK_USER
+
+# Front
+/apps/web/app/(marketing)/      @FRONT_USER
+/apps/web/app/(dashboard)/      @FRONT_USER
+/apps/web/app/sites/            @FRONT_USER
+/packages/templates/            @FRONT_USER
+
+# Back
+/apps/web/app/api/              @BACK_USER
+/apps/web/server/               @BACK_USER
+
+# Contrato e dados de exemplo: os dois
+/packages/schema/               @FRONT_USER @BACK_USER
+/packages/fixtures/             @FRONT_USER @BACK_USER
