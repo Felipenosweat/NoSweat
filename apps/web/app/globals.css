@@ -1,1 +1,12 @@
 @import "tailwindcss";
+@import "@nosweat/templates/styles.css";
+
+/* Fontes da marca No Sweat (as variáveis vêm do next/font em app/layout.tsx). */
+@theme inline {
+  --font-sans: var(--ns-font-modern-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--ns-font-modern-heading), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
