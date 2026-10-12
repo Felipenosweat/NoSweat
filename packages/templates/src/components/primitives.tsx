@@ -9,12 +9,15 @@ export function telHref(phone: string): string {
 export function Container({
   children,
   className = "",
+  size = "default",
 }: {
   children: ReactNode;
   className?: string;
+  size?: "default" | "narrow";
 }) {
+  const maxWidth = size === "narrow" ? "max-w-3xl" : "max-w-6xl";
   return (
-    <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
+    <div className={`mx-auto w-full ${maxWidth} px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
   );
 }
 

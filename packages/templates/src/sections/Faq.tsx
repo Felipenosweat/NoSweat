@@ -18,7 +18,7 @@ export function Faq({ data, id, heading = DEFAULT_HEADING }: FaqProps) {
   if (data.items.length === 0) return null;
   return (
     <section id={id} className="scroll-mt-24 bg-ns-background py-16 sm:py-24">
-      <Container className="max-w-3xl">
+      <Container size="narrow">
         <SectionHeading {...heading} />
         <div className="mt-10 divide-y divide-ns-border rounded-2xl border border-ns-border bg-ns-background">
           {data.items.map((item, index) => (
