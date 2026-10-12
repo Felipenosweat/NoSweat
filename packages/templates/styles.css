@@ -1,0 +1,37 @@
+/*
+ * Estilos dos templates de site. Importe no CSS do app depois do Tailwind:
+ *   @import "tailwindcss";
+ *   @import "@nosweat/templates/styles.css";
+ *
+ * As cores vêm de spec.theme como variáveis --ns-* (definidas no wrapper .ns-site
+ * pelo SiteRenderer). Os componentes usam SÓ estas utilidades: bg-ns-primary,
+ * text-ns-muted, border-ns-border etc. Nunca cores fixas do Tailwind.
+ */
+@source "./src";
+
+@theme inline {
+  --color-ns-primary: var(--ns-primary);
+  --color-ns-on-primary: var(--ns-on-primary);
+  --color-ns-secondary: var(--ns-secondary);
+  --color-ns-on-secondary: var(--ns-on-secondary);
+  --color-ns-background: var(--ns-background);
+  --color-ns-text: var(--ns-text);
+  --color-ns-surface: var(--ns-surface);
+  --color-ns-muted: var(--ns-muted);
+  --color-ns-border: var(--ns-border);
+  --font-ns-heading: var(--ns-font-heading);
+  --font-ns-body: var(--ns-font-body);
+}
+
+@layer base {
+  /* Cores derivadas, sempre calculadas a partir das 4 cores do tema. */
+  .ns-site {
+    --ns-surface: color-mix(in srgb, var(--ns-text) 4%, var(--ns-background));
+    --ns-muted: color-mix(in srgb, var(--ns-text) 72%, var(--ns-background));
+    --ns-border: color-mix(in srgb, var(--ns-text) 12%, var(--ns-background));
+  }
+
+  .ns-site :where(h1, h2, h3, h4) {
+    font-family: var(--ns-font-heading);
+  }
+}
