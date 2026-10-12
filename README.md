@@ -27,8 +27,9 @@ pnpm dev
 Abra http://localhost:3000, clique em **Get started**, descreva o negócio
 (ex.: `plumbing company in Austin`) e clique em **Generate my website**.
 
-> O gerador de IA é um mock (escolhe um site de exemplo por palavra-chave e espera 1,5 s)
-> e os sites ficam em memória: somem quando o servidor reinicia.
+> O gerador de IA é um mock (escolhe um site de exemplo por palavra-chave e espera 1,5 s).
+> Sem as variáveis do Supabase, os sites ficam em memória e somem quando o servidor reinicia.
+> Com elas, ficam salvos no Supabase. Para colocar no ar com o domínio, veja **[DEPLOY.md](DEPLOY.md)**.
 
 ## Scripts (na raiz, rodam em todos os pacotes)
 
@@ -56,6 +57,7 @@ nosweat/
 ├── packages/schema/       # @nosweat/schema: o contrato (Zod)
 ├── packages/fixtures/     # @nosweat/fixtures: sites de exemplo
 ├── packages/templates/    # @nosweat/templates: <SiteRenderer /> e templates em React
+├── supabase/migrations/   # SQL do banco (rodar no Supabase)
 └── .github/               # CI e CODEOWNERS
 ```
 

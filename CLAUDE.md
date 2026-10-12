@@ -14,7 +14,7 @@ apps/web/                       Next.js (App Router): telas + API
   app/sites/                    /sites/preview/[id]                      → front
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
-  server/store/                 persistência (memória hoje, Supabase depois)   → back
+  server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
 packages/schema/                @nosweat/schema: o contrato (Zod) de SiteSpec e da API → os dois
 packages/fixtures/              @nosweat/fixtures: sites de exemplo válidos            → os dois
@@ -49,3 +49,6 @@ Como as peças se ligam:
 - Código, arquivos e variáveis em inglês. Comentários, README e este arquivo em português.
 - Os pacotes internos são consumidos como código-fonte TS (`transpilePackages` no Next).
 - O projeto roda sem chaves e sem banco: `AI_PROVIDER=mock` e store em memória.
+  Com as variáveis do Supabase definidas, o store passa a ser o Supabase (`server/store/supabase.ts`).
+- Mudanças no banco: um arquivo novo em `supabase/migrations/` (nunca editar um que já rodou).
+- Deploy e domínio: ver `DEPLOY.md`.
