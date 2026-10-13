@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { getCurrentUser } from "@/server/auth/session";
 import { getSiteStore } from "@/server/store";
 
 export const metadata: Metadata = { title: "My sites" };
@@ -10,7 +12,9 @@ const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeS
 export default async function DashboardPage() {
   // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
   await connection();
-  const sites = await getSiteStore().list();
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/dashboard");
+  const sites = await getSiteStore().list(user.id);
 
   return (
     <div>

@@ -12,8 +12,8 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             <a href="#how-it-works" className="hidden text-slate-600 hover:text-slate-900 sm:block">
               How it works
             </a>
-            <Link href="/dashboard" className="text-slate-600 hover:text-slate-900">
-              My sites
+            <Link href="/login" className="text-slate-600 hover:text-slate-900">
+              Log in
             </Link>
             <Link
               href="/create"

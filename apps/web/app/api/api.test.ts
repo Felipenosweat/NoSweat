@@ -5,7 +5,9 @@ import {
   GetSiteResponse,
   UpdateSiteResponse,
 } from "@nosweat/schema";
+import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it } from "vitest";
+import { getSiteStore } from "@/server/store";
 import { GET as getCredits } from "./me/credits/route";
 import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
@@ -59,6 +61,19 @@ describe("GET /api/sites/[id]", () => {
     expect(res.status).toBe(404);
     const body = ApiError.parse(await res.json());
     expect(body.error.code).toBe("not_found");
+  });
+
+  it("returns 404 for a site owned by someone else", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    const res = await getSite(new Request(`${BASE}/sites/${other.id}`), ctx(other.id));
+    expect(res.status).toBe(404);
+    expect(ApiError.parse(await res.json()).error.code).toBe("not_found");
+
+    const patch = await patchSite(
+      jsonRequest(`/sites/${other.id}`, "PATCH", { spec: fixtures["glow-salon"] }),
+      ctx(other.id),
+    );
+    expect(patch.status).toBe(404);
   });
 
   it("returns a generated site", async () => {

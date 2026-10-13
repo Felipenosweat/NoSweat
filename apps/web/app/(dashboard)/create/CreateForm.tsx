@@ -15,6 +15,8 @@ function messageFor(code: string, fallback: string): string {
   switch (code) {
     case "invalid_request":
       return fallback || "Please tell us a bit more about your business.";
+    case "unauthorized":
+      return "Your session has expired. Please refresh the page and log in again.";
     case "generation_failed":
       return "Our AI had trouble building your site. Please try again in a moment.";
     case "network_error":
