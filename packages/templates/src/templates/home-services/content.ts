@@ -17,6 +17,7 @@ export const SERVICE_ICONS = [WrenchIcon, HomeIcon, SparkIcon, ShieldIcon, Clock
 /** Âncora e rótulo do menu para cada tipo de seção (o hero não entra no menu). */
 export const NAV: Partial<Record<SectionType, { anchor: string; label: string }>> = {
   services: { anchor: "services", label: "Services" },
+  gallery: { anchor: "work", label: "Our work" },
   testimonials: { anchor: "reviews", label: "Reviews" },
   faq: { anchor: "faq", label: "FAQ" },
   contact: { anchor: "contact", label: "Contact" },

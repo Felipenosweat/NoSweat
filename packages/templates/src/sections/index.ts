@@ -4,3 +4,4 @@ export { Hero, type HeroProps } from "./Hero";
 export { Services, type ServicesProps } from "./Services";
 export { Testimonials, type TestimonialsProps } from "./Testimonials";
 export { ContactForm, type ContactFormProps } from "./ContactForm";
+export { Gallery, type GalleryProps } from "./Gallery";

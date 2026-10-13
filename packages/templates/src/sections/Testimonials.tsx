@@ -20,10 +20,10 @@ const DEFAULT_HEADING: SectionHeadingProps = {
 export function Testimonials({ data, id, heading = DEFAULT_HEADING }: TestimonialsProps) {
   if (data.items.length === 0) return null;
   return (
-    <section id={id} className="scroll-mt-24 bg-ns-surface py-16 sm:py-24">
+    <section id={id} className="scroll-mt-24 bg-ns-surface py-16 @min-[40rem]:py-24">
       <Container>
         <SectionHeading {...heading} />
-        <ul className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-12 grid gap-5 @3xl:grid-cols-2 @5xl:grid-cols-3">
           {data.items.map((item, index) => (
             <li
               key={`${item.author}-${index}`}
@@ -37,7 +37,9 @@ export function Testimonials({ data, id, heading = DEFAULT_HEADING }: Testimonia
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ns-primary text-sm font-semibold text-ns-on-primary">
                     {initials(item.author)}
                   </span>
-                  <span className="font-semibold">{item.author}</span>
+                  <span className="min-w-0 font-semibold [overflow-wrap:anywhere]">
+                    {item.author}
+                  </span>
                 </figcaption>
               </figure>
             </li>

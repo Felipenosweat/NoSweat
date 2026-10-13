@@ -13,15 +13,12 @@ import { SiteRenderer } from "@nosweat/templates";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { MAX_ITEMS, newSection, SECTION_LABELS } from "./defaults";
+import { FontPicker } from "./FontPicker";
+import { GalleryFields } from "./GalleryFields";
+import { HeroPhotoField } from "./HeroPhotoField";
+import { focusRing, inputClass } from "./ui";
 
-type Theme = SiteSpec["theme"];
 type Business = SiteSpec["business"];
-
-const FONTS: { value: Theme["font"]; label: string }[] = [
-  { value: "modern", label: "Modern" },
-  { value: "classic", label: "Classic" },
-  { value: "friendly", label: "Friendly" },
-];
 
 const COLORS: { key: "primary" | "secondary" | "background" | "text"; label: string }[] = [
   { key: "primary", label: "Main color" },
@@ -30,10 +27,10 @@ const COLORS: { key: "primary" | "secondary" | "background" | "text"; label: str
   { key: "text", label: "Text" },
 ];
 
-const inputClass =
-  "mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-100 focus:outline-none";
-
-/** Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido). */
+/**
+ * Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido).
+ * Galeria sem nenhuma foto também sai: no site ela não aparece mesmo.
+ */
 function clean(spec: SiteSpec): SiteSpec {
   const business: Business = { name: spec.business.name.trim() };
   const optional = ["phone", "email", "city", "state", "serviceArea"] as const;
@@ -47,7 +44,8 @@ function clean(spec: SiteSpec): SiteSpec {
   if (hours.length) business.hours = hours;
   const highlights = (spec.business.highlights ?? []).map((h) => h.trim()).filter(Boolean);
   if (highlights.length) business.highlights = highlights;
-  return { ...spec, business };
+  const sections = spec.sections.filter((s) => s.type !== "gallery" || s.images.length > 0);
+  return { ...spec, business, sections };
 }
 
 function describeError(path: PropertyKey[], message: string): string {
@@ -55,6 +53,18 @@ function describeError(path: PropertyKey[], message: string): string {
     .map((part) => (typeof part === "number" ? `#${part + 1}` : String(part)))
     .join(" › ");
   return where ? `${where}: ${message}` : message;
+}
+
+/** A galeria exige descrição (alt) em todas as fotos; o schema aceita vazio, o editor não. */
+function missingGalleryAlt(spec: SiteSpec): string | null {
+  for (const [sectionIndex, section] of spec.sections.entries()) {
+    if (section.type !== "gallery") continue;
+    const photo = section.images.findIndex((image) => !image.alt.trim());
+    if (photo >= 0) {
+      return `Section #${sectionIndex + 1} (gallery): photo ${photo + 1} needs a short description.`;
+    }
+  }
+  return null;
 }
 
 export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpec: SiteSpec }) {
@@ -140,6 +150,11 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
   }
 
   async function save() {
+    const missingAlt = missingGalleryAlt(spec);
+    if (missingAlt) {
+      setMessage({ kind: "error", text: missingAlt });
+      return;
+    }
     const result = SiteSpec.safeParse(clean(spec));
     if (!result.success) {
       const issue = result.error.issues[0];
@@ -181,6 +196,12 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
   }
 
   const sectionCount = spec.sections.length;
+  // Uma galeria por página: com uma já adicionada, a opção some da lista.
+  const hasGallery = spec.sections.some((s) => s.type === "gallery");
+  const addableTypes = (Object.keys(SECTION_LABELS) as SectionType[]).filter(
+    (type) => type !== "gallery" || !hasGallery,
+  );
+  const typeToAdd = addableTypes.includes(newType) ? newType : (addableTypes[0] ?? "faq");
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 lg:h-screen">
@@ -188,7 +209,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
         <div className="flex min-w-0 items-center gap-3">
           <Link
             href={`/sites/${siteId}`}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            className={`rounded text-sm font-medium text-slate-600 hover:text-slate-900 ${focusRing}`}
           >
             &larr; Back
           </Link>
@@ -201,7 +222,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
           type="button"
           onClick={save}
           disabled={saving || !dirty}
-          className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
+          className={`rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50 ${focusRing}`}
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
@@ -221,9 +242,9 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       <div className="grid min-h-0 flex-1 lg:grid-cols-[420px_1fr]">
         {/* Formulário */}
         <div className="space-y-4 overflow-y-auto p-4">
-          <section className="space-y-3 rounded-xl border border-sky-200 bg-sky-50 p-4 shadow-sm">
-            <h2 className="text-sm font-bold tracking-wide text-sky-900 uppercase">✨ Ask AI</h2>
-            <p className="text-xs text-sky-900/80">
+          <section className="space-y-3 rounded-xl border border-brand/30 bg-brand/5 p-4 shadow-sm">
+            <h2 className="text-sm font-bold tracking-wide text-ink uppercase">Ask AI</h2>
+            <p className="text-xs text-slate-600">
               Tell us what to change, in your own words. Example: “Change my hours to Monday through
               Saturday, 8 AM to 6 PM.”
             </p>
@@ -243,7 +264,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
                 type="button"
                 onClick={askAi}
                 disabled={aiPending || dirty || instruction.trim().length < 3}
-                className="rounded-full bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-50"
+                className={`rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50 ${focusRing}`}
               >
                 {aiPending ? "Working on it..." : "Apply with AI"}
               </button>
@@ -251,7 +272,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
                 <button
                   type="button"
                   onClick={undoAi}
-                  className="text-sm font-semibold text-slate-600 hover:underline"
+                  className={`rounded text-sm font-semibold text-slate-600 hover:underline ${focusRing}`}
                 >
                   Undo
                 </button>
@@ -378,39 +399,25 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
           </Panel>
 
           <Panel title="Design">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Template">
-                <select
-                  className={inputClass}
-                  value={spec.template}
-                  onChange={(e) =>
-                    update((d) => void (d.template = TemplateId.parse(e.target.value)))
-                  }
-                >
-                  {TemplateId.options.map((template) => (
-                    <option key={template} value={template}>
-                      {template}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Fonts">
-                <select
-                  className={inputClass}
-                  value={spec.theme.font}
-                  onChange={(e) => {
-                    const font = FONTS.find((f) => f.value === e.target.value)?.value;
-                    if (font) update((d) => void (d.theme.font = font));
-                  }}
-                >
-                  {FONTS.map((font) => (
-                    <option key={font.value} value={font.value}>
-                      {font.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
+            <Field label="Template">
+              <select
+                className={inputClass}
+                value={spec.template}
+                onChange={(e) =>
+                  update((d) => void (d.template = TemplateId.parse(e.target.value)))
+                }
+              >
+                {TemplateId.options.map((template) => (
+                  <option key={template} value={template}>
+                    {template}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <FontPicker
+              value={spec.theme.font}
+              onChange={(font) => update((d) => void (d.theme.font = font))}
+            />
             <div className="grid grid-cols-2 gap-3">
               {COLORS.map(({ key, label }) => (
                 <Field key={key} label={label}>
@@ -461,6 +468,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
               }
             >
               <SectionFields
+                siteId={siteId}
                 section={section}
                 onChange={(change) => updateSection(index, change)}
               />
@@ -471,15 +479,13 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
             <div className="flex gap-2">
               <select
                 className={inputClass}
-                value={newType}
+                value={typeToAdd}
                 onChange={(e) => {
-                  const type = (Object.keys(SECTION_LABELS) as SectionType[]).find(
-                    (t) => t === e.target.value,
-                  );
+                  const type = addableTypes.find((t) => t === e.target.value);
                   if (type) setNewType(type);
                 }}
               >
-                {(Object.keys(SECTION_LABELS) as SectionType[]).map((type) => (
+                {addableTypes.map((type) => (
                   <option key={type} value={type}>
                     {SECTION_LABELS[type]}
                   </option>
@@ -488,8 +494,8 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
               <button
                 type="button"
                 disabled={sectionCount >= 10}
-                onClick={() => update((d) => void d.sections.push(newSection(newType)))}
-                className="mt-1 shrink-0 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-50"
+                onClick={() => update((d) => void d.sections.push(newSection(typeToAdd)))}
+                className={`mt-1 shrink-0 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50 ${focusRing}`}
               >
                 Add
               </button>
@@ -507,9 +513,11 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
 }
 
 function SectionFields({
+  siteId,
   section,
   onChange,
 }: {
+  siteId: string;
   section: Section;
   onChange: (change: (section: Section) => void) => void;
 }) {
@@ -545,6 +553,23 @@ function SectionFields({
               }
             />
           </Field>
+          <HeroPhotoField
+            siteId={siteId}
+            image={section.image}
+            suggestedQuery={section.imageQuery ?? ""}
+            onChange={(image) =>
+              onChange((s) => {
+                if (s.type !== "hero") return;
+                if (image) {
+                  s.image = image;
+                } else {
+                  // Sem a busca, uma edição por IA não traz a foto de volta sozinha.
+                  delete s.image;
+                  delete s.imageQuery;
+                }
+              })
+            }
+          />
         </>
       );
 
@@ -718,6 +743,15 @@ function SectionFields({
         </div>
       );
 
+    case "gallery":
+      return (
+        <GalleryFields
+          siteId={siteId}
+          section={section}
+          onChange={(change) => onChange((s) => void (s.type === "gallery" && change(s)))}
+        />
+      );
+
     default: {
       const unhandled: never = section;
       return unhandled;
@@ -751,7 +785,7 @@ function ItemList<T>({
           <button
             type="button"
             onClick={() => onRemove(index)}
-            className="text-xs font-medium text-red-600 hover:underline"
+            className={`rounded text-xs font-medium text-red-700 hover:underline ${focusRing}`}
           >
             Remove
           </button>
@@ -761,7 +795,7 @@ function ItemList<T>({
         type="button"
         onClick={onAdd}
         disabled={items.length >= max}
-        className="text-sm font-semibold text-sky-700 hover:underline disabled:text-slate-400 disabled:no-underline"
+        className={`rounded text-sm font-semibold text-brand hover:underline disabled:text-slate-400 disabled:no-underline ${focusRing}`}
       >
         + {addLabel} {items.length >= max && `(max ${max})`}
       </button>
@@ -816,7 +850,7 @@ function IconButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex size-7 items-center justify-center rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+      className={`flex size-7 items-center justify-center rounded-md text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-30 ${focusRing}`}
     >
       {children}
     </button>

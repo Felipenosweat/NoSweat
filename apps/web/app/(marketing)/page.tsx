@@ -1,4 +1,5 @@
 import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { BrowserFrame } from "@/components/marketing/BrowserFrame";
@@ -7,15 +8,50 @@ import {
   ChatIcon,
   CheckIcon,
   DeviceMobileIcon,
+  EnvelopeIcon,
   GlobeIcon,
   PencilIcon,
-  PhoneIcon,
+  PhotoIcon,
   PlusIcon,
 } from "@/components/marketing/icons";
+import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { ScaledFrame } from "@/components/marketing/ScaledFrame";
 import { SectionIndex } from "@/components/marketing/SectionIndex";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, secondaryButton, textLink } from "@/components/marketing/styles";
+
+const TITLE = "No Sweat · Your business website, built from one sentence";
+const DESCRIPTION =
+  "Describe your business in plain English and get a website made for your industry: headline, services, FAQ, colors and fonts. Edit it or ask AI for changes, then publish. Plans from $39/month.";
+
+// Sem imagem de divulgação própria ainda: usa a marca (PNG quadrado) e o cartão "summary".
+const SHARE_IMAGE = {
+  url: "/brand/nosweat-mark-256.png",
+  width: 256,
+  height: 256,
+  alt: "No Sweat logo",
+};
+
+export const metadata: Metadata = {
+  title: { absolute: TITLE },
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "No Sweat",
+    title: TITLE,
+    description: DESCRIPTION,
+    locale: "en_US",
+    images: [SHARE_IMAGE],
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [SHARE_IMAGE],
+  },
+};
 
 // Só afirmações que o produto cumpre hoje (lista verificada em .design-shots/saas-context.md).
 // Nada de números, logos ou depoimentos inventados (regra da FTC sobre avaliações falsas).
@@ -33,13 +69,13 @@ const STEPS = [
   },
   {
     title: "We build the first draft",
-    body: "We pick one of five industry templates, write your headline, services and FAQ, and choose colors and fonts. It takes seconds.",
+    body: "We pick one of five industry templates and one of ten font pairings, write your headline, services and FAQ, and choose your colors. It takes seconds.",
     caption: "Private preview. Only you can see it.",
   },
   {
-    title: "Edit, publish, get messages",
-    body: "Edit your headline, services, FAQ, colors and section order with a live preview. Publish to nosweatfd.com/s/your-business or your own domain.",
-    caption: "Contact-form messages land in your dashboard.",
+    title: "Edit, publish, get requests",
+    body: "Change things in the editor with a live preview, or ask in plain English — “add a deep-cleaning service,” “make it warmer.” Publish to nosweatfd.com/s/your-business or your own domain.",
+    caption: "Contact-form requests arrive by email and in your dashboard.",
   },
 ];
 
@@ -49,31 +85,37 @@ type Capability = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
+// No máximo 6 linhas (brief). Fotos e edição por IA são recursos reais desde 2026-10-13.
 const CAPABILITIES: Capability[] = [
   {
-    title: "Tap to call",
-    body: "Visitors on a phone can call you with one tap.",
-    icon: PhoneIcon,
+    title: "Made for phones, with tap to call",
+    body: "Every template is mobile-friendly, and visitors on a phone can call you with one tap.",
+    icon: DeviceMobileIcon,
   },
   {
-    title: "A contact form that works",
-    body: "Requests from your site are saved under “Messages from your website” in your dashboard.",
+    title: "Requests by email and in your dashboard",
+    body: "Get an email when someone sends a request through your contact form. Every request is also saved under “Messages from your website.”",
+    icon: EnvelopeIcon,
+  },
+  {
+    title: "Ask for changes in plain English",
+    body: "Type “add a deep-cleaning service” or “make it warmer” and get a new draft to review. Nothing goes live until you publish.",
     icon: ChatIcon,
   },
   {
-    title: "Your address",
-    body: "Publish on nosweatfd.com/s/your-business, or connect a domain you already own.",
-    icon: GlobeIcon,
+    title: "Photos",
+    body: "A hero photo picked for your industry from a stock library, credited to the photographer. On Pro and Premium, upload your own photos and show them in a gallery.",
+    icon: PhotoIcon,
   },
   {
     title: "Edit without a developer",
-    body: "Text, services, FAQ, colors, fonts and section order, with a live preview before you publish.",
+    body: "Text, services, FAQ, colors, ten font pairings and section order, with a live preview. Changes stay in a draft until you publish.",
     icon: PencilIcon,
   },
   {
-    title: "Looks right on phones",
-    body: "Every template is mobile-friendly, because that’s where most people will find you.",
-    icon: DeviceMobileIcon,
+    title: "Your address",
+    body: "Publish on nosweatfd.com/s/your-business, or connect a domain you already own on Pro and Premium.",
+    icon: GlobeIcon,
   },
 ];
 
@@ -83,26 +125,11 @@ const EXAMPLES: { slug: FixtureSlug; industry: string }[] = [
   { slug: "rosas-kitchen", industry: "Restaurants" },
 ];
 
-// Rótulo curto + legenda embaixo, para caber com a linha pontilhada em 390px.
-const RECEIPT = [
-  { label: "Setup", caption: "One time", amount: "$249", unit: "" },
-  { label: "Monthly", caption: "Hosting and editing", amount: "$49", unit: "/mo" },
-  { label: "Long-term contract", caption: "", amount: "None", unit: "" },
-];
-
-const INCLUDED = [
-  "First draft written for your business",
-  "Editor with live preview",
-  "Your nosweatfd.com/s/ address",
-  "Connect a domain you own",
-  "Contact form with messages in your dashboard",
-  "Mobile-friendly design with tap-to-call",
-];
-
 const STRAIGHT_ANSWERS = [
   "Every example on this page is a fictional business, labeled as one.",
   "You see your full site before you pay anything.",
-  "Month to month. No long-term contract.",
+  "Monthly plans are month to month. No long-term contract.",
+  "Annual plans: no setup fee, and we email you before they renew.",
 ];
 
 const FAQS = [
@@ -119,26 +146,37 @@ const FAQS = [
   {
     question: "Can I customize my site?",
     answer:
-      "Yes. Edit your business details, hero text, services, reviews you provide, and FAQ. Change colors and fonts, switch templates, and add, remove or reorder sections, all with a live preview.",
+      "Yes. Edit your business details, hero text, services, reviews you provide, and FAQ. Change colors, pick from ten font pairings, switch templates, and add, remove or reorder sections, all with a live preview.",
+  },
+  {
+    question: "Can AI change my site for me?",
+    answer:
+      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. Starter includes 30 AI edits a month, Pro 150 and Premium 500. AI edits reset monthly and don’t roll over.",
+  },
+  {
+    question: "Can I add my own photos?",
+    answer:
+      "Yes, on Pro and Premium. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
   },
   {
     question: "What happens after I publish?",
     answer:
-      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. Messages from your contact form appear in your dashboard, and you can keep editing anytime.",
+      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard. Keep editing anytime; changes stay in a draft until you publish again.",
   },
   {
     question: "How much does it cost?",
     answer:
-      "$249 one-time setup and $49 per month. Creating an account and previewing your site are free; pricing applies when you go live.",
+      "Starter is $39 a month, Pro $69 and Premium $129. Monthly Starter and Pro plans have a one-time $249 setup fee. Pay yearly and get 2 months free with no setup fee: $390, $690 or $1,290 a year. Creating an account and previewing your site are free; you pick a plan when you go live.",
   },
   {
     question: "Can I cancel?",
-    answer: "Yes. It’s month to month with no long-term contract.",
+    answer:
+      "Monthly plans are month to month. Annual plans renew yearly and you can turn off renewal anytime.",
   },
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes, if you already own one (from any domain registrar). On your site’s page we show the DNS records to add and verify the connection. You can also publish on a free nosweatfd.com/s/ address.",
+      "Yes, on Pro and Premium, if you already own one (from any domain registrar). On your site’s page we show the DNS records to add and verify the connection. Every plan can publish on a free nosweatfd.com/s/ address.",
   },
 ];
 
@@ -167,8 +205,8 @@ export default function LandingPage() {
             </h1>
             <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
               Tell us what you do and where you work. AI picks a design made for your industry and
-              writes your headline, services and FAQ. You edit it, publish it, and get customer
-              messages in your dashboard.
+              writes your headline, services and FAQ. Change anything by asking in plain English,
+              publish, and get customer requests by email.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/create" className={primaryButton}>
@@ -179,7 +217,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className={`mt-4 ${captionClass}`}>
-              Free account. Create and preview free; pricing applies when you go live.{" "}
+              Free account. Create and preview free; pick a plan when you go live.{" "}
               <a href="#pricing" className={textLink}>
                 See pricing
               </a>
@@ -344,7 +382,8 @@ export default function LandingPage() {
             </h2>
             <p className="max-w-[52ch] text-base leading-[1.65] text-pretty text-slate-300 lg:col-span-5 lg:col-start-8 lg:self-end">
               A cleaning company, a salon and a restaurant need different things. Your site starts
-              from a template built for your industry, and you can switch templates anytime.
+              from a template built for your industry, with one of ten font pairings, and you can
+              switch anytime.
             </p>
           </div>
 
@@ -394,7 +433,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 04 — PREÇO, em formato de recibo */}
+      {/* 04 — PREÇO: três planos num painel só, em formato de recibo. */}
       <section
         id="pricing"
         aria-labelledby="pricing-title"
@@ -402,15 +441,31 @@ export default function LandingPage() {
       >
         <div className={container}>
           <SectionIndex number="04" label="Pricing" />
-          <div className="mt-8 grid gap-y-12 lg:mt-12 lg:grid-cols-12 lg:gap-x-8">
-            <div className="lg:col-span-5">
-              <h2 id="pricing-title" className={`max-w-[20ch] ${h2Class}`}>
-                <TightPunctuation>One setup fee. One monthly price. No contract.</TightPunctuation>
-              </h2>
-              <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
-                Create and preview your site free. Pricing applies when you go live.
-              </p>
-              <p className="mt-10 text-sm font-semibold text-ink">Straight answers</p>
+          <div className="mt-8 grid gap-y-6 lg:mt-12 lg:grid-cols-12 lg:gap-x-8">
+            <h2 id="pricing-title" className={`max-w-[20ch] lg:col-span-6 ${h2Class}`}>
+              <TightPunctuation>Plain prices. Pick a plan when you go live.</TightPunctuation>
+            </h2>
+            <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-span-5 lg:col-start-8 lg:self-end">
+              Create and preview your site free. Every plan includes the editor, a contact form and
+              AI edits; they differ in domains, photos and how much help you get.
+            </p>
+          </div>
+
+          <div className="mt-10 lg:mt-12">
+            <PricingPlans />
+          </div>
+
+          <div className="mt-8 grid gap-y-10 lg:grid-cols-12 lg:gap-x-8">
+            {/* Letra miúda logo abaixo da tabela, legível (não escondida). */}
+            <p className="max-w-[75ch] text-sm leading-relaxed text-pretty text-slate-600 lg:col-span-7">
+              Create and preview your site free. You pick a plan when you go live. Annual plans cost
+              10 times the monthly price (2 months free), are billed once a year and renew
+              automatically; we’ll email you before renewal. Monthly plans are month to month — no
+              contract. Domain registration not included. AI edits reset monthly and don’t roll
+              over.
+            </p>
+            <div className="lg:col-span-5 lg:col-start-8">
+              <p className="text-sm font-semibold text-ink">Straight answers</p>
               <ul className="mt-3 divide-y divide-slate-200 border-y border-slate-200">
                 {STRAIGHT_ANSWERS.map((answer) => (
                   <li
@@ -422,51 +477,6 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-7">
-              <dl className="divide-y divide-slate-200">
-                {RECEIPT.map((line) => (
-                  <div key={line.label} className="flex items-baseline gap-3 py-4 first:pt-0">
-                    <dt className="text-base text-ink">
-                      {line.label}
-                      {line.caption && (
-                        <span className={`block ${captionClass}`}>{line.caption}</span>
-                      )}
-                    </dt>
-                    <span
-                      aria-hidden="true"
-                      className="min-w-4 flex-1 border-b-2 border-dotted border-slate-300"
-                    />
-                    <dd className="shrink-0 font-display text-xl font-semibold tracking-[-0.01em] text-ink tabular-nums lg:text-2xl">
-                      {line.amount}
-                      {line.unit && (
-                        <span className="text-base font-normal text-slate-500">{line.unit}</span>
-                      )}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-
-              <div className="mt-6 border-t border-slate-200 pt-6">
-                <h3 className={h3Class}>Included</h3>
-                <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                  {INCLUDED.map((item) => (
-                    <li key={item} className="flex gap-3 text-base leading-snug text-slate-600">
-                      <CheckIcon className="mt-0.5 size-4 shrink-0 text-slate-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <p className={`mt-4 ${captionClass}`}>Domain registration is not included.</p>
-              </div>
-
-              <div className="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:gap-5">
-                <Link href="/create" className={primaryButton}>
-                  Build my website
-                </Link>
-                <p className={captionClass}>Free account. No long-term contract.</p>
-              </div>
             </div>
           </div>
         </div>
@@ -532,7 +542,7 @@ export default function LandingPage() {
               <Link href="/create" className={primaryButton}>
                 Build my website
               </Link>
-              <p className={captionClass}>Free account. No long-term contract.</p>
+              <p className={captionClass}>Free account. Create and preview free.</p>
             </div>
           </div>
         </div>

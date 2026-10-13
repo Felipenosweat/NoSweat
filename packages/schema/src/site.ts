@@ -4,6 +4,43 @@ import { z } from "zod";
 // Não renomeie nem remova campos sem combinar com o time. Adicionar campo opcional é ok.
 
 const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+const HttpsUrl = z
+  .string()
+  .max(1000)
+  .regex(/^https:\/\/\S+$/);
+
+/**
+ * Foto do site. Quem preenche é a PLATAFORMA (busca em banco de imagens ou upload do dono),
+ * nunca a IA: a IA só escreve `imageQuery`.
+ * - kind "scene": foto genérica de banco de imagens (cozinha limpa, ferramentas, um prato).
+ *   Nunca pode aparecer como "nossa equipe", "nosso trabalho" ou "antes e depois".
+ * - kind "owner": foto enviada pelo dono (a única aceita na galeria).
+ */
+export const SiteImage = z.object({
+  url: HttpsUrl,
+  alt: z.string().max(160),
+  source: z.enum(["pexels", "unsplash", "upload"]),
+  kind: z.enum(["scene", "owner"]),
+  /** Crédito do fotógrafo (bancos de imagens pedem). */
+  credit: z.object({ name: z.string().max(80), url: HttpsUrl }).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+});
+export type SiteImage = z.infer<typeof SiteImage>;
+
+/** Pares de fontes (título + texto). Ver FONT_PAIRS em @nosweat/templates. */
+export const FontId = z.enum([
+  "modern",
+  "classic",
+  "friendly",
+  "fresh",
+  "editorial",
+  "bold",
+  "refined",
+  "luxe",
+  "technical",
+  "gallery",
+]);
 
 export const TemplateId = z.enum([
   "home-services",
@@ -19,10 +56,10 @@ export const Theme = z.object({
   secondary: Hex,
   background: Hex,
   text: Hex,
-  font: z.enum(["modern", "classic", "friendly"]),
+  font: FontId,
 });
 export type Theme = z.infer<typeof Theme>;
-export type FontId = Theme["font"];
+export type FontId = z.infer<typeof FontId>;
 
 export const Section = z.discriminatedUnion("type", [
   z.object({
@@ -30,6 +67,10 @@ export const Section = z.discriminatedUnion("type", [
     title: z.string(),
     subtitle: z.string(),
     ctaLabel: z.string(),
+    /** 2 a 5 palavras em inglês descrevendo uma foto genérica para o topo (escrito pela IA). */
+    imageQuery: z.string().max(80).optional(),
+    /** Foto do topo (preenchida pela plataforma, não pela IA). */
+    image: SiteImage.optional(),
   }),
   z.object({
     type: z.literal("services"),
@@ -44,6 +85,12 @@ export const Section = z.discriminatedUnion("type", [
     items: z.array(z.object({ q: z.string(), a: z.string() })).max(10),
   }),
   z.object({ type: z.literal("contact"), showForm: z.boolean(), showMap: z.boolean() }),
+  /** Galeria de fotos DO DONO (só kind "owner"). A IA nunca cria esta seção. */
+  z.object({
+    type: z.literal("gallery"),
+    title: z.string().max(80).optional(),
+    images: z.array(SiteImage).max(12),
+  }),
 ]);
 export type Section = z.infer<typeof Section>;
 export type SectionType = Section["type"];
