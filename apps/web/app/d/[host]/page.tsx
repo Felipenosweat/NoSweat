@@ -1,7 +1,7 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { siteMetadata } from "@/components/site-metadata";
+import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -10,21 +10,38 @@ import { getSiteStore, type SiteRecord } from "@/server/store";
 
 type DomainSitePageProps = { params: Promise<{ host: string }> };
 
-async function getPublished(host: string): Promise<SiteRecord | null> {
-  const domain = decodeURIComponent(host)
+const normalizeHost = (host: string) =>
+  decodeURIComponent(host)
     .toLowerCase()
     .replace(/^www\./, "");
-  const site = await getSiteStore().getByDomain(domain);
+
+async function getPublished(host: string): Promise<SiteRecord | null> {
+  const site = await getSiteStore().getByDomain(normalizeHost(host));
   return site?.status === "published" ? site : null;
 }
 
+/** Endereço canônico: o domínio do cliente, sempre sem "www". */
+const siteUrl = (site: SiteRecord, host: string) =>
+  customDomainUrl(site.customDomain ?? normalizeHost(host));
+
 export async function generateMetadata({ params }: DomainSitePageProps): Promise<Metadata> {
-  const site = await getPublished((await params).host);
-  return site ? siteMetadata(site) : {};
+  const { host } = await params;
+  const site = await getPublished(host);
+  return site ? siteMetadata(site, siteUrl(site, host)) : {};
 }
 
 export default async function DomainSitePage({ params }: DomainSitePageProps) {
-  const site = await getPublished((await params).host);
+  const { host } = await params;
+  const site = await getPublished(host);
   if (!site) notFound();
-  return <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />;
+  return (
+    <>
+      {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: siteJsonLd(site, siteUrl(site, host)) }}
+      />
+      <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />
+    </>
+  );
 }
