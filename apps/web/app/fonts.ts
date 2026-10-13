@@ -75,11 +75,13 @@ const freshBody = Hanken_Grotesk({
   preload: false,
   variable: "--ns-font-fresh-body",
 });
+// Instrument Serif (itálico) e Bricolage Grotesque também são as fontes de destaque da landing
+// (V5), por isso têm preload e o itálico.
 const editorialHeading = Instrument_Serif({
   subsets: ["latin"],
   display: "swap",
-  preload: false,
   weight: "400",
+  style: ["normal", "italic"],
   variable: "--ns-font-editorial-heading",
 });
 const editorialBody = Instrument_Sans({
@@ -91,7 +93,6 @@ const editorialBody = Instrument_Sans({
 const boldHeading = Bricolage_Grotesque({
   subsets: ["latin"],
   display: "swap",
-  preload: false,
   variable: "--ns-font-bold-heading",
 });
 const refinedHeading = DM_Serif_Display({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useRef, type FormEvent } from "react";
+import { useEffect, useId, useRef, type FormEvent } from "react";
 import { focusRing, primaryButton } from "./styles";
 
 // Campo de descrição REAL da landing. Envia para /create?brief=… (GET nativo, funciona sem JS)
@@ -29,17 +29,61 @@ const EXAMPLES = [
   },
 ];
 
+// Frases que o placeholder "digita" sozinho no tema escuro (só com movimento permitido).
+const TYPED = [
+  "Family-owned plumbing in Austin, TX…",
+  "House cleaning in Worcester, MA. Weekly and move-out…",
+  "Hair salon in Miami. Balayage and bridal styling…",
+  "Mexican restaurant in San Diego. Family recipes…",
+  "Landscaping in Tampa, FL. Mowing, hedges, cleanups…",
+];
+
 export function PromptForm({
   examples = true,
   caption = "Free to create and preview. Pick a plan when you go live.",
+  tone = "light",
 }: {
   /** Mostra os chips de exemplo que preenchem o campo. */
   examples?: boolean;
   caption?: string;
+  /** "dark": versão para fundo escuro (landing V5), com o placeholder se digitando. */
+  tone?: "light" | "dark";
 }) {
   const id = useId();
   const router = useRouter();
   const fieldRef = useRef<HTMLTextAreaElement>(null);
+  const dark = tone === "dark";
+
+  // Placeholder que se digita (efeito "máquina de escrever"). Para quando o campo tem texto ou
+  // foco, e não roda com prefers-reduced-motion. O placeholder fixo é o primeiro exemplo.
+  useEffect(() => {
+    const field = fieldRef.current;
+    if (!dark || !field || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let phrase = 0;
+    let chars = 0;
+    let deleting = false;
+    let timer = 0;
+    const tick = () => {
+      const text = TYPED[phrase] ?? "";
+      const busy = field.value.length > 0 || document.activeElement === field;
+      if (!busy) {
+        chars += deleting ? -1 : 1;
+        field.placeholder = text.slice(0, Math.max(chars, 0)) || " ";
+      }
+      let delay = deleting ? 22 : 48;
+      if (!deleting && chars >= text.length) {
+        deleting = true;
+        delay = 1800;
+      } else if (deleting && chars <= 0) {
+        deleting = false;
+        phrase = (phrase + 1) % TYPED.length;
+        delay = 350;
+      }
+      timer = window.setTimeout(tick, busy ? 600 : delay);
+    };
+    timer = window.setTimeout(tick, 1400);
+    return () => window.clearTimeout(timer);
+  }, [dark]);
 
   // Cresce com o texto (2 linhas no mínimo). JS porque `field-sizing` não existe no Safari.
   const resize = () => {
@@ -84,7 +128,11 @@ export function PromptForm({
         action="/create"
         method="get"
         onSubmit={onSubmit}
-        className="rounded-xl border border-slate-300 bg-white p-2 transition-colors duration-150 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
+        className={`rounded-2xl border p-2 transition-colors duration-150 focus-within:ring-4 ${
+          dark
+            ? "border-white/15 bg-white/[0.07] shadow-[0_20px_60px_-20px_rgb(0_102_255/.55)] backdrop-blur-xl focus-within:border-[#3d8bff] focus-within:ring-[#3d8bff]/25 hover:border-white/25"
+            : "border-slate-300 bg-white focus-within:border-brand focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
+        }`}
       >
         <label htmlFor={`${id}-brief`} className="sr-only">
           Describe your business
@@ -103,7 +151,9 @@ export function PromptForm({
           }}
           aria-describedby={`${id}-caption`}
           placeholder="Family-owned plumbing in Austin, TX…"
-          className="block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] text-ink placeholder:text-slate-500 focus:outline-none"
+          className={`block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] focus:outline-none ${
+            dark ? "text-white placeholder:text-slate-400" : "text-ink placeholder:text-slate-500"
+          }`}
         />
         <div className="flex justify-end px-1 pb-1">
           <button type="submit" className={`w-full sm:w-auto ${primaryButton}`}>
@@ -114,13 +164,19 @@ export function PromptForm({
 
       {examples && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <p className="mr-1 text-[13px] text-slate-500">Try an example:</p>
+          <p className={`mr-1 text-[13px] ${dark ? "text-slate-400" : "text-slate-500"}`}>
+            Try an example:
+          </p>
           {EXAMPLES.map((example) => (
             <button
               key={example.label}
               type="button"
               onClick={() => fill(example.text)}
-              className={`inline-flex h-11 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-ink active:translate-y-px ${focusRing}`}
+              className={`inline-flex h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${focusRing} ${
+                dark
+                  ? "border-white/15 bg-white/[0.04] text-slate-200 hover:border-white/30 hover:bg-white/10 hover:text-white"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-ink"
+              }`}
             >
               <span className="sr-only">Use example: </span>
               {example.label}
@@ -129,7 +185,10 @@ export function PromptForm({
         </div>
       )}
 
-      <p id={`${id}-caption`} className="mt-4 text-[13px] text-slate-500">
+      <p
+        id={`${id}-caption`}
+        className={`mt-4 text-[13px] ${dark ? "text-slate-400" : "text-slate-500"}`}
+      >
         {caption}
       </p>
     </div>
