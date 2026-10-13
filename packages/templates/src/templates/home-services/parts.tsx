@@ -82,7 +82,7 @@ export function Header({
         {business.phone && (
           <a
             href={telHref(business.phone)}
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 @min-[40rem]:px-4"
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 @min-[40rem]:px-4"
           >
             <PhoneIcon className="size-5" />
             <span className="sr-only whitespace-nowrap @min-[40rem]:not-sr-only">
@@ -270,9 +270,13 @@ export function Footer({
           </p>
           {where && <p className="mt-2 text-sm opacity-70">{where}</p>}
         </div>
-        <nav aria-label="Footer" className="flex flex-col gap-2 text-sm">
+        <nav aria-label="Footer" className="-my-3 flex flex-col text-sm">
           {links.map((link) => (
-            <a key={link.anchor} href={`#${link.anchor}`} className="opacity-80 hover:opacity-100">
+            <a
+              key={link.anchor}
+              href={`#${link.anchor}`}
+              className="inline-flex min-h-11 items-center opacity-80 hover:opacity-100"
+            >
               {link.label}
             </a>
           ))}

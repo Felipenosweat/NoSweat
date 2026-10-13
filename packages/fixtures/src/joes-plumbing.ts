@@ -24,6 +24,16 @@ export const joesPlumbing: SiteSpec = {
       subtitle:
         "From leaky faucets to full repipes, Joe's Plumbing has kept Central Texas homes running for over 20 years. Upfront pricing, same-day service, and work we stand behind.",
       ctaLabel: "Get a Free Estimate",
+      imageQuery: "plumber tools water heater",
+      image: {
+        url: "/photos/example-plumbing.webp",
+        alt: "A plumber tightening a fitting on a water heater",
+        source: "unsplash",
+        kind: "scene",
+        credit: { name: "Marian Florinel Condruz", url: "https://unsplash.com/photos/C-oYJoIfgCs" },
+        width: 2400,
+        height: 2160,
+      },
     },
     {
       type: "services",

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontVariables } from "./fonts";
 import "./globals.css";
@@ -13,10 +13,25 @@ export const metadata: Metadata = {
     "Describe your business and get a beautiful, ready-to-publish website in minutes. Built for small businesses.",
 };
 
+// Cor da barra do navegador e conteúdo até as bordas do iPhone (as barras fixas usam safe-area).
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={fontVariables}>
-      <body className="min-h-screen bg-white font-sans text-ink antialiased">{children}</body>
+      <body className="min-h-screen bg-white font-sans text-ink antialiased">
+        {/* Pular para o conteúdo: o alvo é o <main id="main"> de cada layout. */}
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-lg bg-white px-4 py-3 font-semibold text-ink ring-2 ring-brand focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        >
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }

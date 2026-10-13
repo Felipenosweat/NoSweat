@@ -23,11 +23,15 @@ export function Services({
   icons = [CheckIcon],
 }: ServicesProps) {
   if (data.items.length === 0) return null;
+  // Com 1, 2 ou 4 serviços, 3 colunas deixariam uma linha órfã: fica em 2 colunas.
+  const threeColumns = ![1, 2, 4].includes(data.items.length);
   return (
     <section id={id} className="scroll-mt-24 bg-ns-background py-16 @min-[40rem]:py-24">
       <Container>
         <SectionHeading {...heading} />
-        <ul className="mt-12 grid gap-5 @min-[40rem]:grid-cols-2 @5xl:grid-cols-3">
+        <ul
+          className={`mt-12 grid gap-5 @min-[40rem]:grid-cols-2 ${threeColumns ? "@5xl:grid-cols-3" : ""}`}
+        >
           {data.items.map((item, index) => {
             const ItemIcon = icons[index % icons.length] ?? CheckIcon;
             return (
