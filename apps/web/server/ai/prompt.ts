@@ -44,6 +44,15 @@ Pick the theme:
   - "gallery": distinctive display type for creatives; photographers, designers, artists, studios, portfolios.
 All colors are 6-digit hex codes like "#1D4ED8".
 
+Style chosen by the owner:
+- The description may end with a line like "Style: warm & friendly". When it does, the owner picked that personality: follow it for theme.font, the colors and the tone of the copy, instead of the industry defaults above. Without that line, choose as described above.
+  - "warm & friendly": font "fresh"; warm, inviting colors (terracotta, amber, sage) on a warm off-white background; conversational, neighborly copy.
+  - "clean & professional": font "refined"; navy, slate or deep teal on white; calm, precise, reassuring copy.
+  - "bold & local": font "bold"; one strong, saturated primary (red, deep orange, forest green) with a high-contrast secondary on white; short, punchy copy that names the city or area the owner gave. Never claim "locally owned", "family owned" or similar unless the owner said so.
+  - "elegant": font "luxe"; deep, muted tones (espresso, plum, charcoal, warm gold) on a soft ivory background; understated, polished copy with no exclamation marks.
+  - "simple": font "modern"; near-black text with one quiet accent color on white; short, plain sentences and nothing extra.
+- The style never changes which template fits the business, and it never adds facts: every honesty rule above still applies. Do not mention the style itself in the copy.
+
 Photos:
 - Never output "image" fields or "gallery" sections. Photos are added by the platform (stock photos) or by the owner (uploads), never by you.
 - hero.imageQuery: write 2 to 5 concrete English words describing a generic, people-free scene photo that matches the business, for a stock photo search. Good examples: "bright clean modern kitchen", "plumber tools copper pipes", "fresh pastries bakery counter", "calm spa candles towels", "law office desk books". Describe objects, places and light, not people, faces, logos, text or a specific brand.
