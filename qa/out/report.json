@@ -1,0 +1,177 @@
+[
+  {
+    "viewport": "mobile",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": [
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fhours.webp&w=256&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fheader.webp&w=750&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Ftext.webp&w=384&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fphoto.webp&w=384&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "failed: https://www.nosweatfd.com/create?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/examples/sparkle-cleaning?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/examples/sparkle-cleaning?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/login?_rsc=tVJyimtvQYAiffBj net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/signup?_rsc=YnoVchbo54R9mll7 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": [
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Ftext.webp&w=384&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fheader.webp&w=750&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fhours.webp&w=256&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "HTTP 400 https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fbuild%2Fphoto.webp&w=384&q=75",
+      "console: Failed to load resource: the server responded with a status of 400 ()",
+      "failed: https://www.nosweatfd.com/create?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/login?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/create?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "still invisible after scrolling: div.absolute inset-0 hidden lg:block lg:motion-reduce:hidden | div.absolute bottom-[6%] left-[6%] hidden w-[46%] flex-col gap-2"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/signup?_rsc=YnoVchbo54R9mll7 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=WzUDN3am5ctH078F net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=ugXsJSxmACn7GPPL net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/create?_rsc=_4Y0yW1cxT8ue9Y8 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": []
+  }
+]
