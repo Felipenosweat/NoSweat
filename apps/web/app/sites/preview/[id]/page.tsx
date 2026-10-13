@@ -1,23 +1,29 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/server/auth/session";
-import { getOwnedSite } from "@/server/sites";
+import { notFound } from "next/navigation";
+import { getAccessibleSite, getActor, type Actor } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
+
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
 type PreviewPageProps = { params: Promise<{ id: string }> };
 
-/** Só o dono vê o preview; para qualquer outra pessoa o site "não existe". */
-async function getOwnSite(id: string): Promise<SiteRecord | null> {
-  const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/sites/preview/${encodeURIComponent(id)}`);
-  return getOwnedSite(user, id);
+/**
+ * Só quem criou vê o preview (conta, ou visitante sem conta com o próprio cookie); para
+ * qualquer outra pessoa o site "não existe".
+ */
+async function getPreview(id: string): Promise<{ actor: Actor; site: SiteRecord } | null> {
+  const actor = await getActor();
+  if (!actor) return null;
+  const site = await getAccessibleSite(actor, id);
+  return site ? { actor, site } : null;
 }
 
 export async function generateMetadata({ params }: PreviewPageProps): Promise<Metadata> {
   const { id } = await params;
-  const site = await getOwnSite(id);
+  const site = (await getPreview(id))?.site;
   return {
     title: site ? `${site.spec.business.name} (preview)` : "Preview",
     robots: { index: false },
@@ -26,8 +32,12 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
 
 export default async function PreviewPage({ params }: PreviewPageProps) {
   const { id } = await params;
-  const site = await getOwnSite(id);
-  if (!site) notFound();
+  const preview = await getPreview(id);
+  if (!preview) notFound();
+  const { actor, site } = preview;
+  const guest = actor.kind === "guest";
+  // Publicar exige conta: o visitante cria a conta e volta para a página do site.
+  const signupHref = `/signup?next=${encodeURIComponent(`/sites/${site.id}`)}`;
 
   return (
     <>
@@ -38,17 +48,22 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           <span className="text-white">No Sweat</span>
         </p>
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="hover:text-white">
-            &larr; My sites
-          </Link>
-          <Link href={`/sites/${site.id}/edit`} className="hover:text-white">
+          {!guest && (
+            <Link href="/dashboard" className={`rounded-sm hover:text-white ${focusRing}`}>
+              &larr; My sites
+            </Link>
+          )}
+          <Link
+            href={`/sites/${site.id}/edit`}
+            className={`rounded-sm hover:text-white ${focusRing}`}
+          >
             Edit
           </Link>
           <Link
-            href={`/sites/${site.id}`}
-            className="rounded-full bg-emerald-500 px-3 py-1 font-semibold text-white hover:bg-emerald-400"
+            href={guest ? signupHref : `/sites/${site.id}`}
+            className={`rounded-full bg-emerald-500 px-3 py-1 font-semibold whitespace-nowrap text-white hover:bg-emerald-400 ${focusRing}`}
           >
-            {site.status === "published" ? "Manage" : "Publish"} &rarr;
+            {guest ? "Publish" : site.status === "published" ? "Manage" : "Publish"} &rarr;
           </Link>
         </div>
       </div>

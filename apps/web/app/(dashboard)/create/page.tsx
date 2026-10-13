@@ -15,7 +15,17 @@ const OUTPUTS = [
   { label: "Colors and fonts", caption: "Picked to fit your business." },
 ];
 
-export default function CreatePage() {
+type CreatePageProps = { searchParams: Promise<{ brief?: string | string[] }> };
+
+// Descrição vinda da caixa do hero da landing (/create?brief=...). Só texto; o tamanho máximo
+// é o mesmo do formulário e a validação de verdade continua no GenerateSiteRequest.
+function readBrief(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return (raw ?? "").trim().slice(0, 2000);
+}
+
+export default async function CreatePage({ searchParams }: CreatePageProps) {
+  const initialBrief = readBrief((await searchParams).brief);
   return (
     <div className="max-w-2xl lg:grid lg:max-w-none lg:grid-cols-12 lg:gap-x-8">
       <div className="lg:col-span-7">
@@ -28,7 +38,7 @@ export default function CreatePage() {
       </div>
 
       <div className="mt-8 lg:col-span-7 lg:row-start-2">
-        <CreateForm />
+        <CreateForm initialBrief={initialBrief} />
       </div>
 
       <aside

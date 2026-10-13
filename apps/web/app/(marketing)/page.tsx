@@ -2,6 +2,7 @@ import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { BrowserFrame } from "@/components/marketing/BrowserFrame";
+import { HeroPrompt } from "@/components/marketing/HeroPrompt";
 import {
   ArrowRightIcon,
   ChatIcon,
@@ -15,13 +16,14 @@ import {
 import { ScaledFrame } from "@/components/marketing/ScaledFrame";
 import { SectionIndex } from "@/components/marketing/SectionIndex";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
-import { container, primaryButton, secondaryButton, textLink } from "@/components/marketing/styles";
+import { container, primaryButton, textLink } from "@/components/marketing/styles";
+import { formatUsd, PLANS } from "@/lib/plans";
 
 // Só afirmações que o produto cumpre hoje (lista verificada em .design-shots/saas-context.md).
 // Nada de números, logos ou depoimentos inventados (regra da FTC sobre avaliações falsas).
 // Todo exemplo é um negócio fictício e aparece rotulado como tal.
 
-// Texto real de um dos chips de exemplo do /create, para a entrada combinar com a saída (encanador).
+// Frase que gerou o site de exemplo mostrado no hero (encanador fictício).
 const HERO_INPUT =
   "Family-owned plumbing company in Austin, TX. 24/7 emergency repairs and water heaters.";
 
@@ -83,12 +85,29 @@ const EXAMPLES: { slug: FixtureSlug; industry: string }[] = [
   { slug: "rosas-kitchen", industry: "Restaurants" },
 ];
 
+// Preços vêm de lib/plans.ts (mesma fonte da página /pricing): mudar lá muda aqui.
+const PAID_PLAN = PLANS.find((plan) => plan.id === "pro");
+const SETUP_PRICE = PAID_PLAN?.setupPrice ?? null;
+const MONTHLY_PRICE = PAID_PLAN?.monthlyPrice ?? 0;
+
 // Rótulo curto + legenda embaixo, para caber com a linha pontilhada em 390px.
 const RECEIPT = [
-  { label: "Setup", caption: "One time", amount: "$249", unit: "" },
-  { label: "Monthly", caption: "Hosting and editing", amount: "$49", unit: "/mo" },
+  ...(SETUP_PRICE !== null
+    ? [{ label: "Setup", caption: "One time", amount: formatUsd(SETUP_PRICE), unit: "" }]
+    : []),
+  {
+    label: "Monthly",
+    caption: "Hosting and editing",
+    amount: formatUsd(MONTHLY_PRICE),
+    unit: "/mo",
+  },
   { label: "Long-term contract", caption: "", amount: "None", unit: "" },
 ];
+
+const PRICE_SENTENCE =
+  SETUP_PRICE !== null
+    ? `${formatUsd(SETUP_PRICE)} one-time setup and ${formatUsd(MONTHLY_PRICE)} per month.`
+    : `${formatUsd(MONTHLY_PRICE)} per month.`;
 
 const INCLUDED = [
   "First draft written for your business",
@@ -128,8 +147,7 @@ const FAQS = [
   },
   {
     question: "How much does it cost?",
-    answer:
-      "$249 one-time setup and $49 per month. Creating an account and previewing your site are free; pricing applies when you go live.",
+    answer: `${PRICE_SENTENCE} Trying it and previewing your site are free, no account needed; pricing applies when you go live.`,
   },
   {
     question: "Can I cancel?",
@@ -153,74 +171,63 @@ const captionClass = "text-[13px] text-slate-500";
 export default function LandingPage() {
   return (
     <>
-      {/* HERO: entrada real (uma frase) à esquerda do resultado real (site de exemplo). */}
-      <section aria-labelledby="hero-title" className="bg-white">
+      {/* HERO: a caixa de descrição é o próprio produto (escreve aqui e já vai para o /create).
+          Embaixo, o resultado real de um exemplo, com a frase que o gerou. */}
+      <section aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-white">
+        {/* Brilho suave atrás da caixa: um radial da cor da marca em baixa opacidade, com um
+            movimento lento que só roda sem prefers-reduced-motion. Sem imagem, sem biblioteca. */}
         <div
-          className={`${container} grid gap-y-12 pt-12 pb-16 lg:grid-cols-12 lg:gap-x-8 lg:pt-20 lg:pb-24`}
-        >
-          <div className="lg:col-span-5 lg:pt-4">
+          aria-hidden="true"
+          className="ns-hero-glow pointer-events-none absolute inset-x-0 top-0 -z-10 h-[720px] bg-[radial-gradient(55%_45%_at_50%_30%,rgb(0_102_255/0.10),transparent_70%),radial-gradient(35%_30%_at_70%_20%,rgb(0_194_255/0.10),transparent_70%)]"
+        />
+        <style>{`
+          @media (prefers-reduced-motion: no-preference) {
+            .ns-hero-glow { animation: ns-hero-drift 16s ease-in-out infinite alternate; }
+          }
+          @keyframes ns-hero-drift {
+            from { transform: translate3d(-2%, 0, 0) scale(1); opacity: 0.85; }
+            to { transform: translate3d(2%, 2%, 0) scale(1.06); opacity: 1; }
+          }
+        `}</style>
+
+        <div className={`${container} pt-12 pb-16 sm:pt-16 lg:pt-24 lg:pb-24`}>
+          <div className="mx-auto max-w-3xl text-center">
             <h1
               id="hero-title"
-              className="max-w-[14ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
+              className="mx-auto max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink sm:text-5xl lg:text-6xl lg:leading-[1.02]"
             >
               <TightPunctuation>Your business website, built from one sentence.</TightPunctuation>
             </h1>
-            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
-              Tell us what you do and where you work. AI picks a design made for your industry and
-              writes your headline, services and FAQ. You edit it, publish it, and get customer
+            <p className="mx-auto mt-5 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
+              Tell us what you do and where you work. We pick a design made for your industry and
+              write your headline, services and FAQ. You edit it, publish it, and get customer
               messages in your dashboard.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/create" className={primaryButton}>
-                Build my website
-              </Link>
-              <Link href="/examples/joes-plumbing" className={secondaryButton}>
-                See an example
-              </Link>
-            </div>
-            <p className={`mt-4 ${captionClass}`}>
-              Free account. Create and preview free; pricing applies when you go live.{" "}
+          </div>
+
+          <div className="mx-auto mt-8 max-w-3xl lg:mt-10">
+            <HeroPrompt />
+            <p className={`mt-5 text-center ${captionClass}`}>
+              Free to try. No account needed.{" "}
               <a href="#pricing" className={textLink}>
                 See pricing
               </a>
             </p>
-            <p className="mt-8 max-w-[52ch] border-t border-slate-200 pt-6 text-sm leading-relaxed text-pretty text-slate-600">
-              For cleaning services, plumbers, landscapers, contractors, salons, restaurants,
-              consultants and photographers.
-            </p>
           </div>
 
-          <div className="w-full max-w-2xl lg:col-span-7 lg:max-w-none">
-            {/* Recriação estática do campo do /create. O cartão inteiro leva ao /create;
-                o botão de dentro é só ilustração e fica neutro para não competir com o CTA. */}
-            <Link
-              href="/create"
-              aria-label={`Try it with your business. Example description: ${HERO_INPUT}`}
-              className="group block rounded-2xl border border-slate-200 bg-surface p-4 transition-colors hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:p-5"
-            >
-              <span aria-hidden="true" className="block">
-                <span className="block text-sm font-semibold text-ink">Describe your business</span>
-                <span className="mt-3 block rounded-2xl border border-slate-300 bg-white p-5 text-lg leading-relaxed text-ink">
-                  {HERO_INPUT}
-                </span>
-                <span className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-                  <span className="text-sm font-semibold text-brand underline-offset-4 group-hover:underline">
-                    Try it with your business&nbsp;→
-                  </span>
-                  <span className="ml-auto inline-flex h-10 items-center rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-600">
-                    Generate my website
-                  </span>
-                </span>
-              </span>
-            </Link>
-
-            {/* Linha vertical ligando a entrada ao resultado, com o que a IA decidiu. */}
+          <div className="mx-auto mt-16 max-w-5xl lg:mt-24">
+            {/* A frase de exemplo e o que a IA decidiu, ligadas ao site que saiu dela. */}
             <div className="flex gap-4 pl-8">
               <span aria-hidden="true" className="w-px shrink-0 bg-slate-300" />
-              <p className={`py-4 ${captionClass}`}>
-                Template: Home services · Headline, services and FAQ written · Colors and fonts
-                picked
-              </p>
+              <div className="py-4">
+                <p className="max-w-[60ch] text-sm leading-relaxed text-pretty text-ink">
+                  <span className="font-semibold">Example input:</span> &ldquo;{HERO_INPUT}&rdquo;
+                </p>
+                <p className={`mt-1 ${captionClass}`}>
+                  Template: Home services · Headline, services and FAQ written · Colors and fonts
+                  picked
+                </p>
+              </div>
             </div>
 
             <BrowserFrame
@@ -232,12 +239,23 @@ export default function LandingPage() {
                 title="Example website: Joe’s Plumbing, desktop view"
                 viewportWidth={1280}
                 viewportHeight={860}
-                loading="eager"
               />
             </BrowserFrame>
-            <p className={`mt-3 ${captionClass}`}>
-              Example site. Joe’s Plumbing is a fictional business; reviews on real sites come from
-              the owner.
+            <div className="mt-3 flex flex-col gap-x-6 gap-y-2 sm:flex-row sm:items-baseline sm:justify-between">
+              <p className={captionClass}>
+                Example site. Joe’s Plumbing is a fictional business; reviews on real sites come
+                from the owner.
+              </p>
+              <Link
+                href="/examples/joes-plumbing"
+                className={`inline-flex min-h-11 shrink-0 items-center text-sm ${textLink}`}
+              >
+                See the full example&nbsp;<span aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <p className="mt-8 max-w-[60ch] border-t border-slate-200 pt-6 text-sm leading-relaxed text-pretty text-slate-600">
+              For cleaning services, plumbers, landscapers, contractors, salons, restaurants,
+              consultants and photographers.
             </p>
           </div>
         </div>
@@ -465,7 +483,7 @@ export default function LandingPage() {
                 <Link href="/create" className={primaryButton}>
                   Build my website
                 </Link>
-                <p className={captionClass}>Free account. No long-term contract.</p>
+                <p className={captionClass}>Free to try. No long-term contract.</p>
               </div>
             </div>
           </div>
@@ -532,7 +550,7 @@ export default function LandingPage() {
               <Link href="/create" className={primaryButton}>
                 Build my website
               </Link>
-              <p className={captionClass}>Free account. No long-term contract.</p>
+              <p className={captionClass}>Free to try. No long-term contract.</p>
             </div>
           </div>
         </div>

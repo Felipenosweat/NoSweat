@@ -103,6 +103,23 @@ Pronto: https://nosweatfd.com no ar. A cada merge na `main`, a Vercel publica de
 
 ---
 
+## Passo 4 (opcional): entrar com Google
+
+O botão "Continue with Google" em `/login` e `/signup` só aparece quando o Google está ligado no
+Supabase (a página confere sozinha, a cada 5 minutos).
+
+1. Google Cloud Console → APIs & Services → Credentials → Create credentials → OAuth client ID →
+   tipo "Web application".
+   - Authorized redirect URI: `https://<id-do-projeto>.supabase.co/auth/v1/callback`
+   - Tela de consentimento: nome "No Sweat", e-mail de suporte, links
+     `https://nosweatfd.com/terms` e `https://nosweatfd.com/privacy`.
+2. Supabase → Authentication → Sign In / Providers → Google: ligar e colar o Client ID e o
+   Client Secret.
+3. Supabase → Authentication → URL Configuration: Site URL `https://nosweatfd.com` e, em
+   Redirect URLs, `https://nosweatfd.com/auth/callback**`.
+
+Apple funciona igual (provider "Apple"), mas exige conta Apple Developer (US$ 99/ano).
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page.

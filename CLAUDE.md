@@ -61,6 +61,14 @@ Como as peças se ligam:
   `proxy.ts` deixa `/api/*` passar sem reescrever.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
+- Criar sem conta (modo visitante): `/create`, o editor e a prévia funcionam sem login. Quem
+  não está logado ganha o cookie `ns_guest` (`server/guest.ts`); o site fica com `owner_id` nulo
+  e `guest_id` = cookie. Rotas que visitantes usam chamam `requireSiteAccess` / `getActor`
+  (`server/sites.ts`); publicar, domínio e mensagens continuam com `requireOwnedSite` (só conta).
+  Ao entrar/criar conta (`/login`, `/signup`, `/auth/callback`) `claimGuestSites` passa os sites
+  para a conta. Visitantes têm limite de IA por cookie, por IP (hash) e um teto global por dia
+  (`server/quota.ts`, variáveis `GUEST_*`).
+- Planos e preços mostrados no site: só em `lib/plans.ts` (landing e `/pricing` leem dali).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

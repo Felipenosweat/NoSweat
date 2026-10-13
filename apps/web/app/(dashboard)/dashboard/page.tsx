@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { SitesGrid } from "@/components/SitesGrid";
 import { getCurrentUser } from "@/server/auth/session";
+import { claimGuestSites } from "@/server/guest";
 import { getSiteStore } from "@/server/store";
 
 export const metadata: Metadata = { title: "My sites" };
@@ -12,6 +13,10 @@ export default async function DashboardPage() {
   await connection();
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/dashboard");
+  // Garantia: se ainda houver sites criados como visitante neste navegador, passam para a conta.
+  await claimGuestSites(user.id).catch((error: unknown) => {
+    console.error("[dashboard] claiming guest sites failed", error);
+  });
   const sites = await getSiteStore().list(user.id);
 
   return (

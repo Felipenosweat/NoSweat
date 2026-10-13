@@ -3,7 +3,7 @@
 import { ApiError, GenerateSiteRequest, GenerateSiteResponse } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 const MAX_LENGTH = 2000;
 
@@ -36,7 +36,7 @@ const HELP_ITEMS = [
 
 type FormError =
   | { kind: "inline"; message: string }
-  | { kind: "alert"; title: string; body: string; loginLink?: boolean };
+  | { kind: "alert"; title: string; body: string; link?: "login" | "signup" };
 
 /** Mensagens amigáveis para cada `error.code` da API. */
 function errorFor(code: string, fallback: string): FormError {
@@ -47,11 +47,20 @@ function errorFor(code: string, fallback: string): FormError {
         message: fallback || "Please tell us a bit more about your business.",
       };
     case "unauthorized":
+      // Visitantes podem gerar sem conta; 401 só se o cookie de visitante/sessão falhar.
       return {
         kind: "alert",
-        title: "Your session expired.",
-        body: "Log in again to continue.",
-        loginLink: true,
+        title: "We couldn’t start your session.",
+        body: "Log in to continue, or refresh the page and try again.",
+        link: "login",
+      };
+    case "quota_exceeded":
+      // Mensagem da API (limite diário); a conta grátis libera mais gerações.
+      return {
+        kind: "alert",
+        title: "You’ve reached today’s limit.",
+        body: fallback || "You can build more websites tomorrow.",
+        link: "signup",
       };
     case "generation_failed":
       return {
@@ -112,29 +121,24 @@ function AlertIcon({ className }: { className: string }) {
   );
 }
 
-export function CreateForm() {
+export function CreateForm({ initialBrief = "" }: { initialBrief?: string }) {
   const router = useRouter();
-  const [brief, setBrief] = useState("");
-  const [loading, setLoading] = useState(false);
+  // Descrição vinda da landing (?brief=): se for válida, a geração começa sozinha.
+  const autoStart = GenerateSiteRequest.safeParse({ brief: initialBrief }).success;
+  const [brief, setBrief] = useState(initialBrief);
+  const [loading, setLoading] = useState(autoStart);
   const [error, setError] = useState<FormError | null>(null);
   const [ready, setReady] = useState(false);
+  // Evita gerar duas vezes (o StrictMode do React roda os efeitos duas vezes em dev).
+  const autoStarted = useRef(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-
-    const input = GenerateSiteRequest.safeParse({ brief });
-    if (!input.success) {
-      setError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
-      return;
-    }
-
-    setLoading(true);
+  /** Chama a API; todo setState acontece depois do primeiro `await`. */
+  async function requestSite(input: GenerateSiteRequest) {
     try {
       const res = await fetch("/api/sites/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input.data),
+        body: JSON.stringify(input),
       });
       const body: unknown = await res.json().catch(() => null);
 
@@ -156,6 +160,30 @@ export function CreateForm() {
       setError(errorFor("network_error", ""));
       setLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (!autoStart || autoStarted.current) return;
+    autoStarted.current = true;
+    // Tira o ?brief= do endereço: voltar ou recarregar a página não gera outro site.
+    window.history.replaceState(null, "", "/create");
+    void requestSite({ brief: initialBrief.trim() });
+    // Só na montagem: requestSite muda a cada render, mas a geração automática roda uma vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart, initialBrief]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const input = GenerateSiteRequest.safeParse({ brief });
+    if (!input.success) {
+      setError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
+      return;
+    }
+
+    setLoading(true);
+    void requestSite(input.data);
   }
 
   const invalid = error?.kind === "inline";
@@ -243,7 +271,7 @@ export function CreateForm() {
           <AlertIcon className="mt-0.5 size-5 shrink-0 text-red-700" />
           <p>
             <strong className="font-semibold">{error.title}</strong> {error.body}
-            {error.loginLink && (
+            {error.link === "login" && (
               <>
                 {" "}
                 <Link
@@ -251,6 +279,17 @@ export function CreateForm() {
                   className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
                 >
                   Log in
+                </Link>
+              </>
+            )}
+            {error.link === "signup" && (
+              <>
+                {" "}
+                <Link
+                  href="/signup?next=/create"
+                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                >
+                  Create a free account
                 </Link>
               </>
             )}

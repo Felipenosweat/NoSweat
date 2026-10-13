@@ -6,7 +6,7 @@ import { container } from "@/components/marketing/styles";
 const NAV = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#examples", label: "Examples" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
 
@@ -17,7 +17,7 @@ const FOOTER_LINKS = [
       { href: "/#how-it-works", label: "How it works" },
       { href: "/#what-it-does", label: "What your site does" },
       { href: "/#examples", label: "Examples" },
-      { href: "/#pricing", label: "Pricing" },
+      { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
     ],
   },
@@ -27,6 +27,13 @@ const FOOTER_LINKS = [
       { href: "/create", label: "Build my website" },
       { href: "/login", label: "Log in" },
       { href: "/examples/joes-plumbing", label: "See an example" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/terms", label: "Terms" },
+      { href: "/privacy", label: "Privacy" },
     ],
   },
 ];
@@ -42,13 +49,13 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           <Logo />
           <nav aria-label="Main" className="hidden items-center gap-6 text-sm md:flex lg:gap-8">
             {NAV.map((item) => (
-              <a
+              <Link
                 key={item.href}
                 href={item.href}
                 className={`inline-flex min-h-11 items-center rounded-sm font-semibold text-slate-600 transition-colors hover:text-ink ${focusRing}`}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="flex items-center gap-2 text-sm font-semibold sm:gap-3">
@@ -63,7 +70,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               href="/create"
               className={`inline-flex h-11 items-center rounded-lg bg-brand px-3 whitespace-nowrap text-white transition-colors hover:bg-brand-dark active:translate-y-px sm:px-4 ${focusRing}`}
             >
-              Build my website
+              Start building
             </Link>
           </div>
         </div>
@@ -73,13 +80,13 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-slate-200 bg-surface">
         <div className={`${container} grid gap-10 py-14 md:grid-cols-12 md:gap-x-8`}>
-          <div className="md:col-span-6">
+          <div className="md:col-span-5">
             <Logo tagline />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-600">
               Websites for small businesses, built from a sentence and easy to keep up to date.
             </p>
           </div>
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-8 md:col-span-6 md:grid-cols-2">
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7">
             {FOOTER_LINKS.map((group) => (
               <div key={group.title}>
                 <p className="text-sm font-semibold text-ink">{group.title}</p>

@@ -2,11 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAppHost } from "@/server/domains/hosts";
+import { GUEST_COOKIE } from "@/server/guest-cookie";
 
-// Páginas que exigem login. As rotas /api conferem o login sozinhas (respondem 401 em JSON).
-const PROTECTED_PATHS = ["/dashboard", "/create", "/sites", "/admin"];
+// Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
+const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin"];
+
+// Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio
+// site. A página confere se o site é mesmo do visitante (senão, 404).
+const GUEST_PATHS = [/^\/sites\/[^/]+\/edit\/?$/, /^\/sites\/preview\/[^/]+\/?$/];
 
 const isProtected = (path: string) =>
+  !GUEST_PATHS.some((pattern) => pattern.test(path)) &&
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
 /**
@@ -57,7 +63,8 @@ export async function proxy(request: NextRequest) {
 
   if (!data?.claims && isProtected(pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    // Quem já criou um site como visitante ainda não tem conta: vai direto para o cadastro.
+    url.pathname = request.cookies.has(GUEST_COOKIE) ? "/signup" : "/login";
     url.search = "";
     url.searchParams.set("next", pathname);
     const redirect = NextResponse.redirect(url);

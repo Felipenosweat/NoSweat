@@ -6,7 +6,7 @@ import {
 } from "@nosweat/schema";
 import { getVercelConfig, removeDomain } from "@/server/domains";
 import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server/http";
-import { hasUnpublishedChanges, requireOwnedSite } from "@/server/sites";
+import { hasUnpublishedChanges, requireOwnedSite, requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
@@ -15,8 +15,8 @@ type Context = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
-    const { user, site } = await requireOwnedSite(id);
-    if (!user) return unauthorized();
+    const { actor, site } = await requireSiteAccess(id);
+    if (!actor) return unauthorized();
     // Site de outra pessoa responde 404, igual a um que não existe.
     if (!site) return notFound();
     return jsonResponse(GetSiteResponse, {
@@ -33,8 +33,8 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
 export async function PATCH(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
-    const { user, site: current } = await requireOwnedSite(id);
-    if (!user) return unauthorized();
+    const { actor, site: current } = await requireSiteAccess(id);
+    if (!actor) return unauthorized();
     if (!current) return notFound();
 
     const input = await readJson(request, UpdateSiteRequest);

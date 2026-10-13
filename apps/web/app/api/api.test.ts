@@ -300,6 +300,25 @@ describe("/api/sites/[id]/leads", () => {
     expect(res.status).toBe(400);
   });
 
+  it("limits how many messages one visitor can send", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    const send = (ip: string) =>
+      sendLead(
+        new Request(`${BASE}/x`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-real-ip": ip },
+          body: JSON.stringify(lead),
+        }),
+        ctx(site.id),
+      );
+    for (let i = 0; i < 5; i += 1) expect((await send("198.51.100.9")).status).toBe(201);
+    const blocked = await send("198.51.100.9");
+    expect(blocked.status).toBe(429);
+    expect(ApiError.parse(await blocked.json()).error.code).toBe("quota_exceeded");
+    expect((await send("198.51.100.10")).status).toBe(201);
+  });
+
   it("does not show leads of someone else's site", async () => {
     const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
     const res = await listLeads(new Request(`${BASE}/x`), ctx(other.id));

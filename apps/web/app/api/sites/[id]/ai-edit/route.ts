@@ -9,7 +9,7 @@ import {
   unauthorized,
 } from "@/server/http";
 import { quotaExceeded, recordUse } from "@/server/quota";
-import { requireOwnedSite } from "@/server/sites";
+import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 // A IA pode levar alguns segundos para aplicar a mudança.
@@ -20,19 +20,19 @@ type Context = { params: Promise<{ id: string }> };
 /**
  * POST /api/sites/[id]/ai-edit: { instruction } → { siteId, spec, summary }
  * Aplica um pedido em linguagem natural ao RASCUNHO (vira uma versão "ai_edit").
- * O site no ar só muda quando o dono publica. Respeita o limite diário por conta.
+ * O site no ar só muda quando o dono publica. Respeita o limite diário (conta ou visitante).
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
-    const { user, site } = await requireOwnedSite(id);
-    if (!user) return unauthorized();
+    const { actor, site } = await requireSiteAccess(id);
+    if (!actor) return unauthorized();
     if (!site) return notFound();
 
     const input = await readJson(request, AiEditRequest);
     if (!input.ok) return input.response;
 
-    const overLimit = await quotaExceeded(user, "ai_edit");
+    const overLimit = await quotaExceeded(actor, "ai_edit");
     if (overLimit) return overLimit;
 
     let result: AiEditResult;
@@ -46,7 +46,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
         "We couldn't apply that change right now. Please try again or rephrase your request.",
       );
     }
-    await recordUse(user, "ai_edit");
+    await recordUse(actor, "ai_edit");
 
     const updated = await getSiteStore().update(site.id, result.spec, "ai_edit");
     if (!updated) return notFound();

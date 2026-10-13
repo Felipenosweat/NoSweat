@@ -57,11 +57,33 @@ function describeError(path: PropertyKey[], message: string): string {
   return where ? `${where}: ${message}` : message;
 }
 
-export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpec: SiteSpec }) {
+type EditorMessage = {
+  kind: "ok" | "error";
+  text: string;
+  link?: { href: string; label: string };
+};
+
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+
+export function SiteEditor({
+  siteId,
+  initialSpec,
+  isGuest = false,
+}: {
+  siteId: string;
+  initialSpec: SiteSpec;
+  /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
+  isGuest?: boolean;
+}) {
   const [spec, setSpec] = useState<SiteSpec>(initialSpec);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<EditorMessage | null>(null);
+  // Depois do cadastro, o visitante volta para a página do site (publicar, domínio).
+  const signupHref = `/signup?next=${encodeURIComponent(`/sites/${siteId}`)}`;
+  const signupLink = { href: signupHref, label: "Create a free account" };
+  const publishLink = { href: signupHref, label: "Create a free account to publish it." };
   const [newType, setNewType] = useState<SectionType>("faq");
   const [instruction, setInstruction] = useState("");
   const [aiPending, setAiPending] = useState(false);
@@ -81,11 +103,14 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
+        // Limite diário de IA: visitante ganha mais ao criar a conta grátis.
+        const overQuota = apiError.success && apiError.data.error.code === "quota_exceeded";
         setMessage({
           kind: "error",
           text: apiError.success
             ? apiError.data.error.message
             : "The AI couldn't make that change.",
+          ...(overQuota && isGuest ? { link: signupLink } : {}),
         });
         return;
       }
@@ -96,7 +121,10 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       setInstruction("");
       setMessage({
         kind: "ok",
-        text: `${result.summary} Saved as a draft: check the preview, then publish it when you're happy.`,
+        text: isGuest
+          ? `${result.summary} Saved.`
+          : `${result.summary} Saved as a draft: check the preview, then publish it when you're happy.`,
+        ...(isGuest ? { link: publishLink } : {}),
       });
     } catch {
       setMessage({ kind: "error", text: "We couldn't reach our servers. Please try again." });
@@ -169,10 +197,14 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       }
       setSpec(UpdateSiteResponse.parse(body).spec);
       setDirty(false);
-      setMessage({
-        kind: "ok",
-        text: "Saved as a draft. Go back and click “Publish changes” to put it live.",
-      });
+      setMessage(
+        isGuest
+          ? { kind: "ok", text: "Saved.", link: publishLink }
+          : {
+              kind: "ok",
+              text: "Saved as a draft. Go back and click “Publish changes” to put it live.",
+            },
+      );
     } catch {
       setMessage({ kind: "error", text: "We couldn't reach our servers. Please try again." });
     } finally {
@@ -186,37 +218,63 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
     <div className="flex min-h-screen flex-col bg-slate-100 lg:h-screen">
       <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4">
         <div className="flex min-w-0 items-center gap-3">
+          {/* Visitante volta para a prévia (a página do site exige conta). */}
           <Link
-            href={`/sites/${siteId}`}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            href={isGuest ? `/sites/preview/${siteId}` : `/sites/${siteId}`}
+            className={`shrink-0 rounded-sm text-sm font-medium text-slate-600 hover:text-slate-900 ${focusRing}`}
           >
-            &larr; Back
+            &larr; {isGuest ? "Preview" : "Back"}
           </Link>
           <span className="truncate font-display font-bold">
             {spec.business.name || "Your website"}
           </span>
           {dirty && <span className="text-xs font-medium text-amber-700">Unsaved changes</span>}
         </div>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving || !dirty}
-          className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save changes"}
-        </button>
+        <div className="flex shrink-0 items-center gap-3">
+          {isGuest && (
+            <Link
+              href={signupHref}
+              className={`rounded-sm text-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+            >
+              <span className="sm:hidden">Sign up</span>
+              <span className="hidden sm:inline">Create a free account to publish</span>
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving || !dirty}
+            className={`rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold whitespace-nowrap text-white hover:bg-slate-700 disabled:opacity-50 ${focusRing}`}
+          >
+            {saving ? "Saving..." : "Save changes"}
+          </button>
+        </div>
       </header>
 
-      {message && (
-        <p
-          role={message.kind === "error" ? "alert" : "status"}
-          className={`shrink-0 px-4 py-2 text-sm font-medium ${
-            message.kind === "error" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
+      {/* Região sempre presente para leitores de tela anunciarem cada mensagem nova. */}
+      <div aria-live="polite" aria-atomic="true" className="shrink-0">
+        {message && (
+          <p
+            role={message.kind === "error" ? "alert" : undefined}
+            className={`px-4 py-2 text-sm font-medium ${
+              message.kind === "error" ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            {message.text}
+            {message.link && (
+              <>
+                {" "}
+                <Link
+                  href={message.link.href}
+                  className={`rounded-sm font-semibold underline underline-offset-4 ${focusRing}`}
+                >
+                  {message.link.label}
+                </Link>
+              </>
+            )}
+          </p>
+        )}
+      </div>
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-[420px_1fr]">
         {/* Formulário */}

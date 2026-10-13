@@ -7,6 +7,8 @@ import {
   type SiteMeta,
   type SiteRecord,
   type AiUsageKind,
+  type GuestUsage,
+  type GuestUsageFilter,
   type SiteStore,
   type VersionRecord,
 } from "./types";
@@ -18,6 +20,7 @@ import {
 const Row = z.object({
   id: z.string(),
   owner_id: z.string().nullable().optional(),
+  guest_id: z.string().nullable().optional(),
   slug: z.string().nullable().optional(),
   custom_domain: z.string().nullable().optional(),
   published_at: z.string().nullable().optional(),
@@ -87,6 +90,7 @@ function toRecord(row: Row): SiteRecord {
   return {
     id: row.id,
     ownerId: row.owner_id ?? null,
+    guestId: row.guest_id ?? null,
     spec: row.spec,
     status: row.status,
     slug: row.slug ?? null,
@@ -150,12 +154,12 @@ export class SupabaseSiteStore implements SiteStore {
     return this.endpoint.replace(/\/sites$/, "/leads");
   }
 
-  async addLead(siteId: string, lead: NewLead): Promise<LeadRecord> {
+  async addLead(siteId: string, lead: NewLead, ipHash: string | null = null): Promise<LeadRecord> {
     if (!UUID.test(siteId)) throw new Error(`Invalid site id: ${siteId}`);
     const rows = z.array(LeadRow).parse(
       await this.raw(this.leadsEndpoint, "", {
         method: "POST",
-        body: JSON.stringify({ site_id: siteId, ...lead }),
+        body: JSON.stringify({ site_id: siteId, ...lead, ip_hash: ipHash }),
       }),
     );
     const [row] = rows;
@@ -186,6 +190,45 @@ export class SupabaseSiteStore implements SiteStore {
     return Array.isArray(rows) ? rows.length : 0;
   }
 
+  async recordGuestAiUsage(usage: GuestUsage, kind: AiUsageKind): Promise<void> {
+    assertUuid(usage.guestId);
+    await this.raw(this.aiUsageEndpoint, "", {
+      method: "POST",
+      body: JSON.stringify({ user_id: null, guest_id: usage.guestId, ip_hash: usage.ipHash, kind }),
+    });
+  }
+
+  async countGuestAiUsage(
+    filter: GuestUsageFilter,
+    kind: AiUsageKind,
+    sinceIso: string,
+  ): Promise<number> {
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    let query = `?user_id=is.null&kind=eq.${kind}&created_at=gte.${since}`;
+    if (filter.guestId !== undefined) {
+      if (!UUID.test(filter.guestId)) return 0;
+      query += `&guest_id=eq.${filter.guestId}`;
+    }
+    if (filter.ipHash !== undefined) {
+      if (!/^[0-9a-f]{64}$/.test(filter.ipHash)) return 0;
+      query += `&ip_hash=eq.${filter.ipHash}`;
+    }
+    const rows = await this.raw(this.aiUsageEndpoint, `${query}&select=id&limit=10000`, {});
+    return Array.isArray(rows) ? rows.length : 0;
+  }
+
+  async countLeads(siteId: string, sinceIso: string, ipHash?: string): Promise<number> {
+    if (!UUID.test(siteId)) return 0;
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    let query = `?site_id=eq.${siteId}&created_at=gte.${since}`;
+    if (ipHash !== undefined) {
+      if (!/^[0-9a-f]{64}$/.test(ipHash)) return 0;
+      query += `&ip_hash=eq.${ipHash}`;
+    }
+    const rows = await this.raw(this.leadsEndpoint, `${query}&select=id&limit=1000`, {});
+    return Array.isArray(rows) ? rows.length : 0;
+  }
+
   async listLeads(siteId: string): Promise<LeadRecord[]> {
     if (!UUID.test(siteId)) return [];
     const rows = z
@@ -200,15 +243,28 @@ export class SupabaseSiteStore implements SiteStore {
     return rows.map(toLead);
   }
 
-  async create(spec: SiteSpec, ownerId: string): Promise<SiteRecord> {
-    assertUuid(ownerId);
+  async create(spec: SiteSpec, owner: string | { guestId: string }): Promise<SiteRecord> {
+    const who =
+      typeof owner === "string" ? { owner_id: owner } : { owner_id: null, guest_id: owner.guestId };
+    if (typeof owner === "string") assertUuid(owner);
+    else assertUuid(owner.guestId);
     const [row] = await this.request("", {
       method: "POST",
-      body: JSON.stringify({ spec, status: "draft", owner_id: ownerId }),
+      body: JSON.stringify({ spec, status: "draft", ...who }),
     });
     if (!row) throw new Error("Supabase did not return the created site.");
     await this.addVersion(row.id, spec, "generate");
     return toRecord(row);
+  }
+
+  async claimGuestSites(guestId: string, userId: string): Promise<number> {
+    if (!UUID.test(guestId)) return 0;
+    assertUuid(userId);
+    const rows = await this.request(`?guest_id=eq.${guestId}&owner_id=is.null`, {
+      method: "PATCH",
+      body: JSON.stringify({ owner_id: userId, guest_id: null }),
+    });
+    return rows.length;
   }
 
   async get(id: string): Promise<SiteRecord | null> {
