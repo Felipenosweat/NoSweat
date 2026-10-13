@@ -40,7 +40,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
     (s): s is SectionOf<"testimonials"> => s.type === "testimonials",
   )?.items[0];
   const primaryCta =
-    sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Free estimate";
+    sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Contact us";
   const where = areaServed(business);
   const hasHeroCard = Boolean(business.hours?.length || firstTestimonial || business.phone);
 

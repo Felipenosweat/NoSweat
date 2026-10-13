@@ -24,8 +24,16 @@ export type SiteRecord = {
  */
 /** Campos de publicação que podem ser alterados depois de criar o site. */
 export type SiteMeta = Partial<
-  Pick<SiteRecord, "status" | "slug" | "customDomain" | "publishedAt">
+  Pick<SiteRecord, "status" | "slug" | "customDomain" | "publishedAt" | "publishedSpec">
 >;
+
+export type VersionRecord = {
+  id: string;
+  siteId: string;
+  spec: SiteSpec;
+  source: VersionSource;
+  createdAt: string;
+};
 
 export type LeadRecord = {
   id: string;
