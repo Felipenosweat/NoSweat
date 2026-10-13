@@ -120,6 +120,15 @@ Supabase (a página confere sozinha, a cada 5 minutos).
 
 Apple funciona igual (provider "Apple"), mas exige conta Apple Developer (US$ 99/ano).
 
+## Passo 5: limpeza automática (Cron da Vercel)
+
+Sites criados sem conta e abandonados (mais de 30 dias) são apagados todo dia às 07:17 UTC por
+`/api/cron/cleanup-guests` (configurado em `apps/web/vercel.json`). Para funcionar, crie na Vercel
+(Settings → Environment Variables) a variável `CRON_SECRET` com um texto aleatório longo. Sem
+ela, a rota recusa tudo (nada é apagado).
+
+Recomendado também: `IP_HASH_SALT` (texto aleatório) para o hash de IP dos limites anti-abuso.
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page.

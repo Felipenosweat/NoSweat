@@ -66,6 +66,8 @@ export class DomainTakenError extends Error {
 export interface SiteStore {
   /** Cria um site de uma conta (`ownerId`) ou de um visitante (`{ guestId }`). */
   create(spec: SiteSpec, owner: string | { guestId: string }): Promise<SiteRecord>;
+  /** Apaga sites de visitantes que nunca viraram conta, criados antes de `beforeIso`. */
+  deleteAbandonedGuestSites(beforeIso: string): Promise<number>;
   /** Passa os sites do visitante (ainda sem dono) para a conta. Devolve quantos passou. */
   claimGuestSites(guestId: string, userId: string): Promise<number>;
   get(id: string): Promise<SiteRecord | null>;

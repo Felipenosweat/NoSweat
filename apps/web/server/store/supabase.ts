@@ -273,6 +273,16 @@ export class SupabaseSiteStore implements SiteStore {
     return toRecord(row);
   }
 
+  async deleteAbandonedGuestSites(beforeIso: string): Promise<number> {
+    const before = encodeURIComponent(new Date(beforeIso).toISOString());
+    // Versões saem junto (on delete cascade). Sites de visitante nunca são publicados.
+    const rows = await this.request(
+      `?owner_id=is.null&guest_id=not.is.null&created_at=lt.${before}`,
+      { method: "DELETE" },
+    );
+    return rows.length;
+  }
+
   async claimGuestSites(guestId: string, userId: string): Promise<number> {
     if (!UUID.test(guestId)) return 0;
     assertUuid(userId);

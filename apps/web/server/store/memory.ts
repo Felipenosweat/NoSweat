@@ -83,6 +83,17 @@ export class MemorySiteStore implements SiteStore {
     return clone(record);
   }
 
+  async deleteAbandonedGuestSites(beforeIso: string): Promise<number> {
+    let deleted = 0;
+    for (const site of [...sites().values()]) {
+      if (site.ownerId === null && site.guestId !== null && site.createdAt < beforeIso) {
+        await this.delete(site.id);
+        deleted += 1;
+      }
+    }
+    return deleted;
+  }
+
   async claimGuestSites(guestId: string, userId: string): Promise<number> {
     let claimed = 0;
     for (const site of sites().values()) {

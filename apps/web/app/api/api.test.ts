@@ -28,6 +28,7 @@ import { GET as listVersions } from "./sites/[id]/versions/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
 import { DELETE as deleteSite, GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
 import { POST as generate } from "./sites/generate/route";
+import { GET as cleanupGuests } from "./cron/cleanup-guests/route";
 
 const BASE = "http://localhost/api";
 
@@ -136,6 +137,36 @@ describe("PATCH /api/sites/[id]", () => {
     );
     expect(res.status).toBe(400);
     expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+  });
+});
+
+describe("GET /api/cron/cleanup-guests", () => {
+  const call = (auth?: string) =>
+    cleanupGuests(
+      new Request(`${BASE}/cron/cleanup-guests`, {
+        headers: auth ? { authorization: auth } : {},
+      }),
+    );
+
+  it("refuses calls without the cron secret", async () => {
+    expect((await call()).status).toBe(401);
+    process.env.CRON_SECRET = "cron-test-secret";
+    try {
+      expect((await call("Bearer wrong")).status).toBe(401);
+      expect((await call("Bearer cron-test-secret")).status).toBe(200);
+    } finally {
+      delete process.env.CRON_SECRET;
+    }
+  });
+
+  it("deletes only abandoned guest sites, never account sites", async () => {
+    const store = getSiteStore();
+    const guestSite = await store.create(fixtures["glow-salon"], { guestId: crypto.randomUUID() });
+    const owned = await ownSite();
+    const future = new Date(Date.now() + 60_000).toISOString();
+    expect(await store.deleteAbandonedGuestSites(future)).toBeGreaterThanOrEqual(1);
+    expect(await store.get(guestSite.id)).toBeNull();
+    expect(await store.get(owned.id)).not.toBeNull();
   });
 });
 
