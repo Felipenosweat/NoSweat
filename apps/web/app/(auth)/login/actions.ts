@@ -3,12 +3,42 @@
 import { Credentials } from "@nosweat/schema";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { confirmationErrors, profileMetadata, signUpSchema } from "@/lib/signup-rules";
 import { safeNextPath } from "@/server/auth/config";
 import { isOAuthProvider } from "@/server/auth/providers";
 import { createSupabaseServerClient } from "@/server/auth/session";
 import { claimGuestSites } from "@/server/guest";
+import { joinLaunchListLater } from "@/server/marketing";
 
-export type AuthFormState = { error?: string; message?: string };
+/** Valores que voltam para o formulário depois de um erro (nunca as senhas). */
+export type SignUpValues = {
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  email?: string;
+  emailConfirm?: string;
+  marketing?: boolean;
+  terms?: boolean;
+};
+
+export type AuthFormState = {
+  error?: string;
+  message?: string;
+  fieldErrors?: Record<string, string>;
+  values?: SignUpValues;
+  /** Conta os envios: troca o `key` do formulário e pede um captcha novo. */
+  attempt?: number;
+};
+
+const CAPTCHA_ERROR = "Please complete the security check and try again.";
+
+/** Token do captcha (Turnstile), se o formulário mandou. */
+function captchaToken(formData: FormData): string | undefined {
+  const token = String(formData.get("captchaToken") ?? "");
+  return token ? token : undefined;
+}
+
+const nextAttempt = (prev: AuthFormState) => (prev.attempt ?? 0) + 1;
 
 function readCredentials(formData: FormData) {
   return Credentials.safeParse({
@@ -40,47 +70,106 @@ async function claimGuestSitesSafely(userId: string): Promise<void> {
   }
 }
 
-export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+export async function signIn(prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const next = safeNextPath(formData.get("next"));
   const supabase = await createSupabaseServerClient();
   if (!supabase) redirect(next); // login desligado no dev local
 
+  const attempt = nextAttempt(prev);
   const input = readCredentials(formData);
   if (!input.success)
-    return { error: input.error.issues[0]?.message ?? "Invalid email or password." };
+    return { attempt, error: input.error.issues[0]?.message ?? "Invalid email or password." };
 
-  const { data, error } = await supabase.auth.signInWithPassword(input.data);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    ...input.data,
+    options: { captchaToken: captchaToken(formData) },
+  });
   if (error) {
     return {
+      attempt,
       error:
         error.code === "email_not_confirmed"
           ? "Please confirm your email first. Check your inbox for the link we sent."
-          : "Invalid email or password.",
+          : error.code === "captcha_failed"
+            ? CAPTCHA_ERROR
+            : "Invalid email or password.",
     };
   }
   if (data.user) await claimGuestSitesSafely(data.user.id);
   redirect(next);
 }
 
-export async function signUp(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+export async function signUp(prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const next = safeNextPath(formData.get("next"));
   const supabase = await createSupabaseServerClient();
   if (!supabase) redirect(next);
 
-  const input = readCredentials(formData);
-  if (!input.success)
-    return { error: input.error.issues[0]?.message ?? "Please check your details." };
+  const attempt = nextAttempt(prev);
+  const text = (name: string) => String(formData.get(name) ?? "");
+  const values: SignUpValues = {
+    firstName: text("firstName").trim(),
+    lastName: text("lastName").trim(),
+    birthDate: text("birthDate"),
+    email: text("email").trim(),
+    emailConfirm: text("emailConfirm").trim(),
+    marketing: formData.get("marketing") === "on",
+    terms: formData.get("terms") === "on",
+  };
+
+  // Campo-isca preenchido = robô. Responde igual a um cadastro normal, sem criar nada.
+  if (text("website")) {
+    return {
+      attempt,
+      message: "Almost there! Check your email and click the link to confirm your account.",
+    };
+  }
+
+  const input = signUpSchema().safeParse({
+    ...values,
+    password: text("password"),
+    passwordConfirm: text("passwordConfirm"),
+  });
+  if (!input.success) {
+    const fieldErrors: Record<string, string> = confirmationErrors({
+      email: values.email ?? "",
+      emailConfirm: values.emailConfirm ?? "",
+      password: text("password"),
+      passwordConfirm: text("passwordConfirm"),
+    });
+    for (const issue of input.error.issues) {
+      const field = String(issue.path[0] ?? "form");
+      fieldErrors[field] ??= issue.message;
+    }
+    return {
+      attempt,
+      values,
+      fieldErrors,
+      error: "Please fix the highlighted fields.",
+    };
+  }
 
   const { data, error } = await supabase.auth.signUp({
-    ...input.data,
-    options: { emailRedirectTo: callbackUrl(await siteOrigin(), next) },
+    email: input.data.email,
+    password: input.data.password,
+    options: {
+      emailRedirectTo: callbackUrl(await siteOrigin(), next),
+      captchaToken: captchaToken(formData),
+      // Nome, data de nascimento e opt-in de marketing ficam na conta (user_metadata).
+      data: { ...profileMetadata(input.data), terms_accepted_at: new Date().toISOString() },
+    },
   });
   if (error) {
     return {
+      attempt,
+      values,
       error:
         error.code === "user_already_exists"
           ? "An account with this email already exists. Try logging in."
-          : error.message,
+          : error.code === "captcha_failed"
+            ? CAPTCHA_ERROR
+            : error.code === "weak_password"
+              ? "Please choose a stronger password."
+              : error.message,
     };
   }
   // Passa os sites feitos sem conta AGORA, neste navegador: o link de confirmação muitas vezes
@@ -89,9 +178,22 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
   if (data.user && (data.user.identities?.length ?? 0) > 0) {
     await claimGuestSitesSafely(data.user.id);
   }
-  // Com "Confirm email" desligado no Supabase, a sessão já vem pronta.
-  if (data.session) redirect(next);
-  return { message: "Almost there! Check your email and click the link to confirm your account." };
+  // Com "Confirm email" desligado no Supabase, a sessão já vem pronta: entra na lista agora.
+  // Com confirmação ligada, isso acontece no /auth/callback (só depois de provar o e-mail).
+  if (data.session && data.user) {
+    joinLaunchListLater({
+      userId: data.user.id,
+      email: data.user.email ?? input.data.email,
+      firstName: input.data.firstName,
+      optedIn: input.data.marketing,
+      origin: await siteOrigin(),
+    });
+    redirect(next);
+  }
+  return {
+    attempt,
+    message: "Almost there! Check your email and click the link to confirm your account.",
+  };
 }
 
 /**

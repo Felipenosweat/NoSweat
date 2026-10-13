@@ -28,7 +28,7 @@ const FAQS = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Monthly plans have no long-term contract. The details are shown before you pay, and nothing is charged today.",
+      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Nothing is charged today.",
   },
   {
     question: "What happens to my website if I don’t publish?",

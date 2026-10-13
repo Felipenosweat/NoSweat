@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasCompleteProfile } from "@/lib/signup-rules";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAppHost } from "@/server/domains/hosts";
 import { GUEST_COOKIE } from "@/server/guest-cookie";
@@ -79,6 +80,18 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     // Quem já criou um site como visitante ainda não tem conta: vai direto para o cadastro.
     url.pathname = request.cookies.has(GUEST_COOKIE) ? "/signup" : "/login";
+    url.search = "";
+    url.searchParams.set("next", pathname);
+    const redirect = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
+  }
+
+  // Conta sem nome e data de nascimento (login social, ou criada antes dessa regra): completa o
+  // perfil antes de usar o painel. O JWT do Supabase traz o user_metadata.
+  if (data?.claims && isProtected(pathname) && !hasCompleteProfile(data.claims.user_metadata)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/welcome";
     url.search = "";
     url.searchParams.set("next", pathname);
     const redirect = NextResponse.redirect(url);

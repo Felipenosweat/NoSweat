@@ -215,6 +215,38 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "renewal",
+    title: "Automatic renewal",
+    content: (
+      <>
+        <p>When paid plans launch, these renewal rules apply to them:</p>
+        <ul>
+          <li>
+            <strong>Plans renew automatically</strong> at the end of each billing period (every
+            month or every year, whichever you chose) at the price shown when you subscribed, until
+            you cancel.
+          </li>
+          <li>
+            The monthly Starter and Pro plans include a one-time setup fee on the first bill. Annual
+            plans have no setup fee.
+          </li>
+          <li>
+            <strong>For annual plans, we email you a reminder before each renewal</strong>, with the
+            amount and the renewal date.
+          </li>
+          <li>
+            <strong>You can cancel anytime</strong> in your account, online, in a few clicks. You
+            don’t need to call or email us. Canceling stops the next renewal; you keep your plan
+            until the end of the period you already paid for.
+          </li>
+          <li>
+            If a price changes, we’ll tell you by email before it applies to your next renewal.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
     id: "cancellation",
     title: "Cancellation and termination",
     content: (

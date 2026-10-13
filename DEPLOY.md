@@ -132,6 +132,20 @@ Depois clique em **Deployments → ⋯ → Redeploy** para valer.
    e clique em **Run**. Isso cria o bucket público `site-images` (até 8 MB, só JPG/PNG/WebP).
    Confira em **Storage** que o bucket aparece.
 
+5. **Lista de lançamento (e-mail de boas-vindas)**: rode no SQL Editor a
+   [`supabase/migrations/0010_marketing_contacts.sql`](supabase/migrations/0010_marketing_contacts.sql).
+   Na Vercel, adicione `MARKETING_POSTAL_ADDRESS` (endereço postal da empresa, exigido por lei
+   em e-mail de marketing; pode ser uma caixa postal) e, se quiser, `MARKETING_FROM_EMAIL`.
+   Sem o endereço, ninguém recebe o e-mail (os contatos ficam guardados na lista).
+6. **Captcha no cadastro e login (Cloudflare Turnstile, grátis)**:
+   1. https://dash.cloudflare.com → **Turnstile → Add widget**, domínio `nosweatfd.com`, modo
+      _Managed_. Copie a **Site Key** e a **Secret Key**.
+   2. Supabase → **Authentication → Attack Protection → Enable Captcha protection**, provedor
+      **Turnstile**, cole a **Secret Key** e salve.
+   3. Vercel → `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = a **Site Key**, e **Redeploy**.
+      Faça os passos 2 e 3 juntos: com o captcha ligado no Supabase e sem a chave na Vercel,
+      ninguém consegue entrar.
+
 > O aviso vai para o e-mail da conta do dono do site (ou, se não achar, para o e-mail do
 > negócio no site). O link do e-mail abre a página do site no painel. Há um limite de
 > 5 envios do formulário por hora por rede (IP) em cada site.

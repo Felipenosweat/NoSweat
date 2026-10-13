@@ -170,15 +170,42 @@ export function PricingPlans() {
 
             <Link
               href="/create"
+              aria-describedby={`renewal-${plan.id}`}
               className={`mt-8 w-full ${plan.recommended ? primaryButton : secondaryButton}`}
             >
               Build my website<span className="sr-only">, {plan.name} plan</span>
             </Link>
+            {/* Regras de renovação junto do botão (leis de renovação automática dos EUA, como a
+                da Califórnia, e a regra "click to cancel" da FTC): valor, frequência, que
+                renova sozinho e como cancelar, antes de qualquer cobrança. */}
+            <p
+              id={`renewal-${plan.id}`}
+              className="mt-3 text-[13px] leading-relaxed text-pretty text-slate-500"
+            >
+              {renewalTerms(plan, annual)}{" "}
+              <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">
+                Renewal terms
+              </Link>
+            </p>
           </li>
         ))}
       </ul>
     </div>
   );
+}
+
+/** Texto curto das regras de renovação, mostrado embaixo do botão de cada plano. */
+export function renewalTerms(
+  plan: Pick<Plan, "monthly" | "annual" | "setupMonthly">,
+  annual: boolean,
+): string {
+  if (annual) {
+    return `Renews automatically every year at ${plan.annual} until you cancel. We email you a reminder before each renewal. Cancel anytime in your account; you keep your plan until the end of the year you paid for.`;
+  }
+  const setup = plan.setupMonthly
+    ? ` A one-time ${plan.setupMonthly} setup fee is added to the first bill.`
+    : "";
+  return `Renews automatically every month at ${plan.monthly} until you cancel.${setup} Cancel anytime in your account; you keep your plan until the end of the month you paid for.`;
 }
 
 /** Linha do recibo. A linha pontilhada é um ::after do <dt> (dentro do <dl> só cabem dt/dd). */

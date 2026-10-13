@@ -107,7 +107,7 @@ const FAQS = [
   {
     question: "Can I cancel?",
     answer:
-      "Monthly plans are month to month. Annual plans renew yearly and you can turn off renewal anytime.",
+      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Nothing is charged today.",
   },
   {
     question: "Can I use my own domain?",
