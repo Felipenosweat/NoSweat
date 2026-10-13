@@ -114,7 +114,7 @@ export function GalleryFields({
             const missing = !image.alt.trim();
             return (
               <li key={`${image.url}-${index}`} className="flex gap-3 rounded-lg bg-slate-50 p-2">
-                <Thumb src={image.url} alt="" className="size-20 shrink-0 rounded-md" />
+                <Thumb src={image.url} alt="" className="size-20 shrink-0 rounded-lg" />
                 <div className="min-w-0 flex-1 space-y-1">
                   <label htmlFor={altId} className="block text-xs font-medium text-slate-600">
                     Photo {index + 1} description <span className="text-red-700">(required)</span>

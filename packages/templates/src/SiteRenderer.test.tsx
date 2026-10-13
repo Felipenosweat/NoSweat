@@ -164,8 +164,14 @@ describe("photos", () => {
   });
 
   it("hides the gallery (and its menu link) when there are no owner photos", () => {
+    // Sem a foto do topo (o exemplo tem uma), qualquer <img> seria da galeria.
+    const heroWithoutPhoto = withHeroImage(undefined);
     for (const images of [[], [scene]]) {
-      const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);
+      const spec: SiteSpec = {
+        ...heroWithoutPhoto,
+        sections: [...heroWithoutPhoto.sections, { type: "gallery", images }],
+      };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
       expect(html).not.toContain("Our work");
       expect(html).not.toContain("<img");
     }

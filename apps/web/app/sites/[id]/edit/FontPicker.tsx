@@ -70,9 +70,9 @@ function headingFont(id: FontId): CSSProperties {
 export function FontPicker({ value, onChange }: { value: FontId; onChange: (id: FontId) => void }) {
   return (
     <fieldset>
-      <legend className="text-xs font-medium text-slate-600">Fonts</legend>
+      <legend className="sr-only">Fonts</legend>
       {/* Rádios nativos: setas do teclado trocam a opção, Tab entra e sai do grupo. */}
-      <div className="mt-1 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
         {FONT_OPTIONS.map((font) => (
           <label
             key={font.id}
