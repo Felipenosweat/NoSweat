@@ -3,11 +3,12 @@ import { z } from "zod";
 import type { SiteRecord, SiteStore } from "./types";
 
 // SiteStore no Supabase, falando direto com a API REST (PostgREST) via fetch.
-// Tabela: supabase/migrations/0001_create_sites.sql.
+// Tabela: supabase/migrations/ (0001_create_sites.sql, 0002_sites_owner.sql).
 // Usa a chave secreta (service role): este arquivo só pode rodar no servidor.
 
 const Row = z.object({
   id: z.string(),
+  owner_id: z.string().nullable().optional(),
   spec: SiteSpec,
   status: SiteStatus,
   created_at: z.string(),
@@ -17,9 +18,15 @@ type Row = z.infer<typeof Row>;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Ids de usuário vêm do Supabase Auth (UUID); qualquer outra coisa é bug. */
+function assertUuid(ownerId: string): void {
+  if (!UUID.test(ownerId)) throw new Error(`Invalid owner id: ${ownerId}`);
+}
+
 function toRecord(row: Row): SiteRecord {
   return {
     id: row.id,
+    ownerId: row.owner_id ?? null,
     spec: row.spec,
     status: row.status,
     createdAt: row.created_at,
@@ -68,10 +75,11 @@ export class SupabaseSiteStore implements SiteStore {
     return z.array(Row).parse(await res.json());
   }
 
-  async create(spec: SiteSpec): Promise<SiteRecord> {
+  async create(spec: SiteSpec, ownerId: string): Promise<SiteRecord> {
+    assertUuid(ownerId);
     const [row] = await this.request("", {
       method: "POST",
-      body: JSON.stringify({ spec, status: "draft" }),
+      body: JSON.stringify({ spec, status: "draft", owner_id: ownerId }),
     });
     if (!row) throw new Error("Supabase did not return the created site.");
     return toRecord(row);
@@ -93,9 +101,12 @@ export class SupabaseSiteStore implements SiteStore {
     return row ? toRecord(row) : null;
   }
 
-  async list(): Promise<SiteRecord[]> {
-    // TODO: filtrar por usuário quando houver login, e paginar.
-    const rows = await this.request("?select=*&order=created_at.desc&limit=100");
+  async list(ownerId: string): Promise<SiteRecord[]> {
+    assertUuid(ownerId);
+    // TODO: paginar quando alguém tiver mais de 100 sites.
+    const rows = await this.request(
+      `?owner_id=eq.${ownerId}&select=*&order=created_at.desc&limit=100`,
+    );
     return rows.map(toRecord);
   }
 }

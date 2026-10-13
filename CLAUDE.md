@@ -12,8 +12,12 @@ apps/web/                       Next.js (App Router): telas + API
   app/(marketing)/              landing page (/)                         → front
   app/(dashboard)/              /create e /dashboard                     → front
   app/sites/                    /sites/preview/[id]                      → front
+  app/(auth)/login/             tela e Server Actions de login/cadastro  → front
+  app/auth/callback/            confirmação de e-mail (troca code → sessão) → back
+  proxy.ts                      renova a sessão e protege /dashboard, /create, /sites → back
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
+  server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
 packages/schema/                @nosweat/schema: o contrato (Zod) de SiteSpec e da API → os dois
@@ -29,6 +33,9 @@ Como as peças se ligam:
 - `<SiteRenderer spec />` escolhe o template por `spec.template`. As cores do tema viram
   variáveis CSS `--ns-*`; os componentes só usam as utilidades `ns-*` do Tailwind
   (`bg-ns-primary`, `text-ns-muted`...), nunca cores fixas.
+- Login: Supabase Auth (e-mail e senha). Toda rota e página de site chama `getCurrentUser()`
+  e só mostra/altera sites com `ownerId` igual ao do usuário (site de outra pessoa = 404).
+  Sem Supabase configurado (dev local), o login fica desligado e todo mundo é o `DEV_USER`.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
 ## Regras do time

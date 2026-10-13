@@ -8,11 +8,15 @@
 /apps/web/app/(marketing)/      @FRONT_USER
 /apps/web/app/(dashboard)/      @FRONT_USER
 /apps/web/app/sites/            @FRONT_USER
+/apps/web/app/(auth)/           @FRONT_USER
 /packages/templates/            @FRONT_USER
 
 # Back
 /apps/web/app/api/              @BACK_USER
 /apps/web/server/               @BACK_USER
+/apps/web/app/auth/             @BACK_USER
+/apps/web/proxy.ts              @BACK_USER
+/supabase/                      @BACK_USER
 
 # Contrato e dados de exemplo: os dois
 /packages/schema/               @FRONT_USER @BACK_USER

@@ -8,6 +8,7 @@ import { SiteSpec } from "./site";
 /** Códigos conhecidos. `code` continua `string` para permitir novos códigos sem quebrar o front. */
 export const ERROR_CODES = [
   "invalid_request",
+  "unauthorized",
   "not_found",
   "not_implemented",
   "generation_failed",
@@ -101,3 +102,11 @@ export const CreditsResponse = z.object({
   plan: z.enum(["trial"]),
 });
 export type CreditsResponse = z.infer<typeof CreditsResponse>;
+
+// ---------- Login (formulário de /login) ----------
+
+export const Credentials = z.object({
+  email: z.email("Please enter a valid email address."),
+  password: z.string().min(8, "Password must be at least 8 characters.").max(72),
+});
+export type Credentials = z.infer<typeof Credentials>;

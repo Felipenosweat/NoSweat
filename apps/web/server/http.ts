@@ -55,6 +55,10 @@ export function notFound(what = "Site"): Response {
   return errorResponse(404, "not_found", `${what} not found.`);
 }
 
+export function unauthorized(): Response {
+  return errorResponse(401, "unauthorized", "Please log in to continue.");
+}
+
 export function notImplemented(feature: string): Response {
   return errorResponse(501, "not_implemented", `${feature} is not available yet.`);
 }

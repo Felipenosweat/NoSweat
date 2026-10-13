@@ -1,14 +1,23 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getSiteStore } from "@/server/store";
+import { notFound, redirect } from "next/navigation";
+import { getCurrentUser } from "@/server/auth/session";
+import { getSiteStore, type SiteRecord } from "@/server/store";
 
 type PreviewPageProps = { params: Promise<{ id: string }> };
 
+/** Só o dono vê o preview; para qualquer outra pessoa o site "não existe". */
+async function getOwnSite(id: string): Promise<SiteRecord | null> {
+  const user = await getCurrentUser();
+  if (!user) redirect(`/login?next=/sites/preview/${encodeURIComponent(id)}`);
+  const site = await getSiteStore().get(id);
+  return site && site.ownerId === user.id ? site : null;
+}
+
 export async function generateMetadata({ params }: PreviewPageProps): Promise<Metadata> {
   const { id } = await params;
-  const site = await getSiteStore().get(id);
+  const site = await getOwnSite(id);
   return {
     title: site ? `${site.spec.business.name} (preview)` : "Preview",
     robots: { index: false },
@@ -17,7 +26,7 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
 
 export default async function PreviewPage({ params }: PreviewPageProps) {
   const { id } = await params;
-  const site = await getSiteStore().get(id);
+  const site = await getOwnSite(id);
   if (!site) notFound();
 
   return (

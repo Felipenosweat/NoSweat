@@ -34,6 +34,19 @@ crie o Pull Request da branch de trabalho para a `main` e clique em **Merge**.
 > ⚠️ A chave secreta dá acesso total ao banco. Cole **só** na Vercel. Não mande por chat,
 > e-mail ou WhatsApp, e nunca coloque no código. A chave _publishable/anon_ **não** serve aqui.
 
+5. **Login (Authentication → URL Configuration)**:
+   - **Site URL**: `https://www.nosweatfd.com`
+   - **Redirect URLs** → _Add URL_: `https://www.nosweatfd.com/**`
+
+   Sem isso, o link do e-mail de confirmação de cadastro aponta para `localhost`.
+
+> A chave **publishable** (pública) do login já está no arquivo `apps/web/.env.production`.
+> Se trocar de projeto Supabase, atualize esse arquivo.
+>
+> O envio de e-mails padrão do Supabase só entrega para e-mails da própria equipe e tem limite
+> por hora. Para clientes de verdade, configure um SMTP próprio em
+> **Authentication → Emails → SMTP Settings** (ex.: o e-mail da Hostinger).
+
 ---
 
 ## Passo 2: Vercel (onde o site roda)
@@ -96,7 +109,7 @@ Pronto: https://nosweatfd.com no ar. A cada merge na `main`, a Vercel publica de
 
 ## Limitações atuais (conhecidas)
 
-- Ainda **não há login**: qualquer pessoa com o endereço vê a lista em `/dashboard`.
-  Antes de divulgar, precisamos de autenticação (próxima etapa).
+- E-mails de cadastro usam o SMTP padrão do Supabase (só equipe, com limite). Configure um SMTP
+  próprio antes de abrir para clientes.
 - A IA ainda é o **mock** (escolhe um de 3 sites de exemplo). A IA real entra trocando
   `AI_PROVIDER` e adicionando a chave da Anthropic ou da OpenAI.

@@ -16,10 +16,11 @@ function sites(): Map<string, SiteRecord> {
 const clone = <T>(value: T): T => structuredClone(value);
 
 export class MemorySiteStore implements SiteStore {
-  async create(spec: SiteSpec): Promise<SiteRecord> {
+  async create(spec: SiteSpec, ownerId: string): Promise<SiteRecord> {
     const now = new Date().toISOString();
     const record: SiteRecord = {
       id: crypto.randomUUID(),
+      ownerId,
       spec: clone(spec),
       status: "draft",
       createdAt: now,
