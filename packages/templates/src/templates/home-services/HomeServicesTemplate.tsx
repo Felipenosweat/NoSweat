@@ -12,7 +12,7 @@ import {
   MobileCallBar,
   TopBar,
   TrustBadges,
-  location,
+  areaServed,
 } from "./parts";
 
 /**
@@ -41,7 +41,8 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
   )?.items[0];
   const primaryCta =
     sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Free estimate";
-  const where = location(business);
+  const where = areaServed(business);
+  const hasHeroCard = Boolean(business.hours?.length || firstTestimonial || business.phone);
 
   const renderSection = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -55,13 +56,15 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
               where && (
                 <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-ns-border bg-ns-background px-4 py-1.5 text-sm font-medium">
                   <span className="size-2 rounded-full bg-ns-secondary" />
-                  Now booking in {where}
+                  Serving {where}
                 </p>
               )
             }
             actions={business.phone && <CallButton phone={business.phone} />}
-            footer={<TrustBadges />}
-            aside={<HeroCard business={business} quote={firstTestimonial} />}
+            footer={<TrustBadges highlights={business.highlights} />}
+            aside={
+              hasHeroCard ? <HeroCard business={business} quote={firstTestimonial} /> : undefined
+            }
           />
         );
       case "services":
@@ -73,10 +76,8 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             icons={SERVICE_ICONS}
             heading={{
               eyebrow: "Our services",
-              title: "Expert help for every job, big or small",
-              description: where
-                ? `Fast, reliable service for homes and businesses across ${where}.`
-                : "Fast, reliable service for homes and businesses.",
+              title: "What we can do for you",
+              description: where ? `Proudly serving ${where}.` : undefined,
             }}
           />
         );
@@ -86,7 +87,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             key={key}
             id={anchorFor("testimonials")}
             data={section}
-            heading={{ eyebrow: "Reviews", title: "Trusted by your neighbors" }}
+            heading={{ eyebrow: "Reviews", title: "What our customers say" }}
           />
         );
       case "faq":
@@ -99,12 +100,12 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             data={section}
             heading={{
               eyebrow: "Contact",
-              title: "Request your free estimate",
-              description: "Tell us what's going on and we'll get you a fast, honest quote.",
+              title: "Get in touch",
+              description: "Tell us what you need and we'll get back to you.",
               align: "left",
             }}
             details={<ContactDetails business={business} />}
-            submitLabel="Request estimate"
+            submitLabel="Send request"
             endpoint={contactEndpoint}
           />
         );

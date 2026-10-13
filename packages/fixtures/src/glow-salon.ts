@@ -52,26 +52,6 @@ export const glowSalon: SiteSpec = {
       ],
     },
     {
-      type: "testimonials",
-      items: [
-        {
-          quote:
-            "Best balayage I've ever had. Camila understood exactly what I wanted and the color still looks amazing two months later.",
-          author: "Andrea M.",
-        },
-        {
-          quote:
-            "The keratin treatment changed my life. I can finally walk outside in July without my hair exploding.",
-          author: "Jasmine L.",
-        },
-        {
-          quote:
-            "They did hair for my whole bridal party and everyone looked stunning. Calm, on time, and so talented.",
-          author: "Natalie G.",
-        },
-      ],
-    },
-    {
       type: "faq",
       items: [
         {

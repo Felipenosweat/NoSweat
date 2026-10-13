@@ -17,7 +17,7 @@ describe("SiteRenderer", () => {
   it("renders sections in the order of the array", () => {
     const spec = fixtures["joes-plumbing"];
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
-    const positions = ['id="services"', 'id="reviews"', 'id="faq"', 'id="contact"'].map((marker) =>
+    const positions = ['id="services"', 'id="faq"', 'id="contact"'].map((marker) =>
       html.indexOf(marker),
     );
     expect(positions.every((p) => p >= 0)).toBe(true);
@@ -27,6 +27,33 @@ describe("SiteRenderer", () => {
   it.each(TemplateId.options)("supports template %s", (template) => {
     const spec = { ...fixtures["joes-plumbing"], template };
     expect(() => renderToStaticMarkup(<SiteRenderer spec={spec} />)).not.toThrow();
+  });
+});
+
+describe("honest by default", () => {
+  const base = fixtures["joes-plumbing"];
+
+  it("shows no trust badges unless the owner confirmed them", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={base} />);
+    for (const claim of ["Licensed", "Insured", "Guaranteed", "Same-Day", "Free estimate"]) {
+      expect(html).not.toContain(claim);
+    }
+  });
+
+  it("shows the owner's highlights, hours and service area", () => {
+    const spec = {
+      ...base,
+      business: {
+        ...base.business,
+        serviceArea: "Austin and Round Rock",
+        hours: [{ days: "Mon–Sat", time: "8 AM – 6 PM" }],
+        highlights: ["Licensed & insured"],
+      },
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain("Licensed &amp; insured");
+    expect(html).toContain("Mon–Sat");
+    expect(html).toContain("Austin and Round Rock");
   });
 });
 

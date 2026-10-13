@@ -53,21 +53,6 @@ export const rosasKitchen: SiteSpec = {
       ],
     },
     {
-      type: "testimonials",
-      items: [
-        {
-          quote:
-            "The fish tacos are the best in San Diego, no contest. Feels like eating at a friend's house.",
-          author: "Marcus J.",
-        },
-        {
-          quote:
-            "Rosa catered our office party for 60 people. Everything was hot, delicious, and on time.",
-          author: "Elena P.",
-        },
-      ],
-    },
-    {
       type: "faq",
       items: [
         {

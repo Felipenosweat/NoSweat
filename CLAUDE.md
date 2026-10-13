@@ -65,6 +65,9 @@ Como as peças se ligam:
 5. Segredos só em `.env.local`, nunca no Git.
 6. A IA nunca gera código de site, só SiteSpec validado.
 7. Interface em inglês; commits em Conventional Commits.
+8. Nada de afirmação inventada nos sites: depoimentos, notas/estrelas, prêmios, licenças,
+   garantias ou "same-day" só aparecem se vierem do dono (`business.highlights`, seções que ele
+   preencheu). Os templates não podem ter selos fixos.
 
 ## Convenções
 

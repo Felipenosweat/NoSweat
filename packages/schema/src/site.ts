@@ -60,6 +60,18 @@ export const SiteSpec = z.object({
     email: z.email().optional(),
     city: z.string().optional(),
     state: z.string().length(2).optional(),
+    /** Área atendida, ex.: "Austin and nearby cities". */
+    serviceArea: z.string().max(120).optional(),
+    /** Horário de funcionamento, ex.: { days: "Mon–Fri", time: "8 AM – 6 PM" }. */
+    hours: z
+      .array(z.object({ days: z.string().max(40), time: z.string().max(40) }))
+      .max(7)
+      .optional(),
+    /**
+     * Fatos que O DONO confirmou (ex.: "Licensed & insured", "Free estimates").
+     * Viram os selos do site. Nunca inventar: sem confirmação, fica vazio.
+     */
+    highlights: z.array(z.string().max(40)).max(4).optional(),
   }),
   theme: Theme,
   sections: z.array(Section).min(2).max(10),

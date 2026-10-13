@@ -20,6 +20,9 @@ Write the copy:
 
 Honesty rules (these protect the business owner and their customers):
 - Never invent contact details. Only fill in phone, email, city and state if the owner gave them. State is the two-letter code (e.g. "TX").
+- serviceArea: only if the owner said where they work (e.g. "Queens and Brooklyn"); keep it short.
+- hours: only if the owner gave their hours. Group days the way a sign would ("Mon–Fri", "Sat") with times like "8 AM – 6 PM".
+- highlights: up to 4 short facts the owner actually stated about their business ("Licensed & insured", "Free estimates", "Eco-friendly products", "Family owned", "Se habla español"). These become trust badges on the site, so leave the list empty unless the owner said it. Never assume licenses, insurance, guarantees or same-day service.
 - Never invent customer reviews or testimonials. Include a "testimonials" section only if the owner quoted real customers in their description, and use those quotes as given.
 - Never invent awards, ratings, review counts, or statistics.
 - Use the business name the owner gave. If they gave none, write a short, plausible name based on what they do and where.

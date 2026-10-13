@@ -35,11 +35,17 @@ const inputClass =
 /** Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido). */
 function clean(spec: SiteSpec): SiteSpec {
   const business: Business = { name: spec.business.name.trim() };
-  const optional = ["phone", "email", "city", "state"] as const;
+  const optional = ["phone", "email", "city", "state", "serviceArea"] as const;
   for (const key of optional) {
     const value = spec.business[key]?.trim();
     if (value) business[key] = key === "state" ? value.toUpperCase() : value;
   }
+  const hours = (spec.business.hours ?? [])
+    .map((row) => ({ days: row.days.trim(), time: row.time.trim() }))
+    .filter((row) => row.days || row.time);
+  if (hours.length) business.hours = hours;
+  const highlights = (spec.business.highlights ?? []).map((h) => h.trim()).filter(Boolean);
+  if (highlights.length) business.highlights = highlights;
   return { ...spec, business };
 }
 
@@ -202,6 +208,82 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
                 />
               </Field>
             </div>
+            <Field label="Service area">
+              <input
+                className={inputClass}
+                placeholder="e.g. Queens and Brooklyn"
+                value={spec.business.serviceArea ?? ""}
+                onChange={(e) => update((d) => void (d.business.serviceArea = e.target.value))}
+              />
+            </Field>
+          </Panel>
+
+          <Panel title="Hours">
+            <ItemList
+              items={spec.business.hours ?? []}
+              max={7}
+              addLabel="Add hours"
+              onAdd={() =>
+                update((d) => {
+                  d.business.hours = [...(d.business.hours ?? []), { days: "", time: "" }];
+                })
+              }
+              onRemove={(i) => update((d) => void d.business.hours?.splice(i, 1))}
+              render={(row, i) => (
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className={inputClass}
+                    placeholder="Mon–Fri"
+                    value={row.days}
+                    onChange={(e) =>
+                      update((d) => {
+                        const target = d.business.hours?.[i];
+                        if (target) target.days = e.target.value;
+                      })
+                    }
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="8 AM – 6 PM"
+                    value={row.time}
+                    onChange={(e) =>
+                      update((d) => {
+                        const target = d.business.hours?.[i];
+                        if (target) target.time = e.target.value;
+                      })
+                    }
+                  />
+                </div>
+              )}
+            />
+          </Panel>
+
+          <Panel title="Highlights (badges)">
+            <ItemList
+              items={spec.business.highlights ?? []}
+              max={4}
+              addLabel="Add highlight"
+              note="Only list things that are true, like “Licensed & insured” or “Free estimates”."
+              onAdd={() =>
+                update((d) => {
+                  d.business.highlights = [...(d.business.highlights ?? []), ""];
+                })
+              }
+              onRemove={(i) => update((d) => void d.business.highlights?.splice(i, 1))}
+              render={(item, i) => (
+                <input
+                  className={inputClass}
+                  maxLength={40}
+                  placeholder="Licensed & insured"
+                  value={item}
+                  onChange={(e) =>
+                    update((d) => {
+                      if (d.business.highlights) d.business.highlights[i] = e.target.value;
+                    })
+                  }
+                />
+              )}
+            />
           </Panel>
 
           <Panel title="Design">
