@@ -1,0 +1,38 @@
+name: Site audit
+
+# Prints e erros do site no ar. Roda no push da branch de trabalho (quando estes arquivos mudam);
+# (prints + report.json) é commitado na própria branch, em qa/out/.
+on:
+  push:
+    branches: ["claude/dreamy-maxwell-19fv98"]
+    paths: ["qa/*.mjs", ".github/workflows/site-audit.yml", "qa/trigger.txt"]
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          package-manager-cache: false
+      # Fora do monorepo (pnpm): só o Playwright, numa pasta separada.
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/qa && cp qa/*.mjs /tmp/qa/
+          cd /tmp/qa && npm init -y >/dev/null && npm install playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Audit
+        run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node audit.mjs
+      - name: Landing build layers
+        run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node build-layers.mjs
+      - name: Commit results
+        run: |
+          git config user.name "site-audit"
+          git config user.email "site-audit@users.noreply.github.com"
+          git add -f qa/out
+          git commit -m "chore(qa): site audit results [skip ci]" || exit 0
+          git push
