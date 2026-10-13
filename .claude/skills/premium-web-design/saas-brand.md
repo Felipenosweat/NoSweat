@@ -18,8 +18,11 @@ Neutrals: Tailwind `slate` (body text `slate-600`, secondary `slate-500`, border
 Fonts: Plus Jakarta Sans for display (`font-display`), Inter for body (`font-sans`), loaded
 in `apps/web/app/fonts.ts`.
 
-Logo: `apps/web/components/Logo.tsx` (drop mark, brand → accent). Favicon:
-`apps/web/app/icon.svg`.
+Logo (approved, do not redraw): `apps/web/components/Logo.tsx` — the "N" ribbon mark with a
+sparkle (`apps/web/public/brand/nosweat-mark-*.png`) plus the wordmark "No" in ink and "Sweat" in
+brand, bold display font; optional tagline "AI websites for businesses". Favicon:
+`apps/web/app/icon.png` and `apple-icon.png`. Source files: `docs/brand/`. The logo's own
+gradient is the only gradient allowed in the SaaS UI.
 
 ## Voice
 

@@ -74,7 +74,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       <footer className="border-t border-slate-200 bg-surface">
         <div className={`${container} grid gap-10 py-14 md:grid-cols-12 md:gap-x-8`}>
           <div className="md:col-span-6">
-            <Logo />
+            <Logo tagline />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-600">
               Websites for small businesses, built from a sentence and easy to keep up to date.
             </p>
@@ -103,7 +103,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           <div
             className={`${container} flex flex-col gap-2 py-6 text-sm text-slate-500 sm:flex-row sm:justify-between`}
           >
-            <p>&copy; {new Date().getFullYear()} No Sweat. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} NoSweat. All rights reserved.</p>
             <p>nosweatfd.com</p>
           </div>
         </div>
