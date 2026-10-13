@@ -1,7 +1,7 @@
 import { ConnectDomainRequest, DomainResponse } from "@nosweat/schema";
 import {
   addDomain,
-  APP_DOMAINS,
+  isReservedDomain,
   getDomainState,
   getVercelConfig,
   removeDomain,
@@ -43,7 +43,7 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
     if (!input.ok) return input.response;
     const { domain } = input.data;
 
-    if (APP_DOMAINS.includes(domain)) {
+    if (isReservedDomain(domain)) {
       return errorResponse(400, "invalid_request", "Please use your own business domain.");
     }
 

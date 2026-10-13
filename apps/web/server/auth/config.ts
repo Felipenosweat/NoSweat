@@ -14,9 +14,17 @@ export function getSupabaseAuthConfig(): SupabaseAuthConfig | null {
   return { url: normalizeSupabaseUrl(url), publishableKey };
 }
 
-/** Só aceita caminhos internos (evita redirecionar para outro site depois do login). */
+/**
+ * Só aceita caminhos internos (evita redirecionar para outro site depois do login).
+ * Recusa "//x" e "/\\x" (navegadores tratam a barra invertida como "/", virando outro site) e
+ * caracteres de controle (tab/quebra de linha somem na URL e podem montar "//").
+ */
 export function safeNextPath(value: unknown, fallback = "/dashboard"): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//")
-    ? value
-    : fallback;
+  if (typeof value !== "string" || value.length > 2000) return fallback;
+  if (!value.startsWith("/") || /^\/[/\\]/.test(value)) return fallback;
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code < 0x20 || code === 0x7f || char === "\\") return fallback;
+  }
+  return value;
 }
