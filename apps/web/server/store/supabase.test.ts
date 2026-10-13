@@ -1,6 +1,6 @@
 import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it, vi } from "vitest";
-import { SupabaseSiteStore } from "./supabase";
+import { normalizeSupabaseUrl, SupabaseSiteStore } from "./supabase";
 
 const ID = "6f1c2a3b-4d5e-4f60-8a9b-0c1d2e3f4a5b";
 const row = {
@@ -48,5 +48,16 @@ describe("SupabaseSiteStore", () => {
   it("surfaces API errors", async () => {
     const { store } = storeWith({ message: "permission denied" }, 401);
     await expect(store.list()).rejects.toThrow(/401/);
+  });
+});
+
+describe("normalizeSupabaseUrl", () => {
+  it.each([
+    "https://demo.supabase.co",
+    "https://demo.supabase.co/",
+    "https://demo.supabase.co/rest/v1",
+    " https://demo.supabase.co/rest/v1/ ",
+  ])("normalizes %s", (url) => {
+    expect(normalizeSupabaseUrl(url)).toBe("https://demo.supabase.co");
   });
 });
