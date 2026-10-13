@@ -66,7 +66,11 @@ crie o Pull Request da branch de trabalho para a `main` e clique em **Merge**.
 | `NEXT_PUBLIC_SUPABASE_URL`  | a Project URL do Passo 1   |
 | `SUPABASE_SERVICE_ROLE_KEY` | a chave secreta do Passo 1 |
 
-5. Clique em **Deploy**. No fim aparece um endereço tipo `nosweat-xxxx.vercel.app`.
+5. (Para domínios de clientes) crie um token em **vercel.com → Account Settings → Tokens →
+   Create**, com acesso ao time da No Sweat, e adicione a variável `VERCEL_TOKEN` com ele.
+   Sem o token, os domínios dos clientes ficam como "Being set up" e precisam ser adicionados
+   à mão em **Settings → Domains**.
+6. Clique em **Deploy**. No fim aparece um endereço tipo `nosweat-xxxx.vercel.app`.
    Abra, vá em **Get started**, gere um site e confira se o preview abre.
 
 > Se o build der erro, copie o log (aba _Deployments_ → o deploy com erro → _Build Logs_)
@@ -108,6 +112,9 @@ Pronto: https://nosweatfd.com no ar. A cada merge na `main`, a Vercel publica de
 - [ ] Em **My sites**, o site aparece na lista.
 
 ## Limitações atuais (conhecidas)
+
+- **Plano da Vercel:** o plano Hobby (grátis) não permite uso comercial. Antes de cobrar
+  clientes, passe o projeto para o plano **Pro**.
 
 - E-mails de cadastro usam o SMTP padrão do Supabase (só equipe, com limite). Configure um SMTP
   próprio antes de abrir para clientes.

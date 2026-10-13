@@ -2,7 +2,8 @@ import { MemorySiteStore } from "./memory";
 import { SupabaseSiteStore } from "./supabase";
 import type { SiteStore } from "./types";
 
-export type { SiteRecord, SiteStore } from "./types";
+export { DomainTakenError } from "./types";
+export type { SiteMeta, SiteRecord, SiteStore } from "./types";
 
 let store: SiteStore | undefined;
 

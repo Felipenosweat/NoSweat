@@ -1,7 +1,31 @@
-import { notImplemented } from "@/server/http";
+import { PublishSiteResponse } from "@nosweat/schema";
+import { makeSlug } from "@/server/domains";
+import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
+import { freeUrl, requireOwnedSite } from "@/server/sites";
+import { getSiteStore } from "@/server/store";
 
-// TODO(back): publicar o site (status "published", domínio/subdomínio, cobrança de crédito).
-// Resposta: PublishSiteResponse.
-export async function POST(): Promise<Response> {
-  return notImplemented("Publishing");
+type Context = { params: Promise<{ id: string }> };
+
+/** POST /api/sites/[id]/publish → { siteId, status, url } (url = endereço grátis /s/<slug>). */
+export async function POST(request: Request, { params }: Context): Promise<Response> {
+  return handle(async () => {
+    const { id } = await params;
+    const { user, site } = await requireOwnedSite(id);
+    if (!user) return unauthorized();
+    if (!site) return notFound();
+
+    const published = await getSiteStore().updateMeta(site.id, {
+      status: "published",
+      slug: site.slug ?? makeSlug(site.spec.business.name, site.id),
+      publishedAt: site.publishedAt ?? new Date().toISOString(),
+    });
+    if (!published) return notFound();
+
+    const url = freeUrl(published, new URL(request.url).origin);
+    return jsonResponse(PublishSiteResponse, {
+      siteId: published.id,
+      status: published.status,
+      url: url ?? new URL(request.url).origin,
+    });
+  });
 }

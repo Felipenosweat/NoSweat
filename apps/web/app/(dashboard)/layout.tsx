@@ -3,11 +3,13 @@ import type { ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
 import { Logo } from "@/components/Logo";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
+import { isAdminUser } from "@/server/admin";
 import { getCurrentUser } from "@/server/auth/session";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Com login desligado (dev local) não mostra e-mail nem "Log out".
   const user = getSupabaseAuthConfig() ? await getCurrentUser() : null;
+  const admin = await isAdminUser(user ?? (await getCurrentUser()));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -15,6 +17,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo />
           <nav className="flex items-center gap-4 text-sm font-medium">
+            {admin && (
+              <Link href="/admin" className="font-semibold text-amber-700 hover:text-amber-900">
+                Admin
+              </Link>
+            )}
             <Link href="/dashboard" className="text-slate-600 hover:text-slate-900">
               My sites
             </Link>
