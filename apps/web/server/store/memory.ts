@@ -16,7 +16,7 @@ import {
 // Os dados somem quando o servidor reinicia: é só para desenvolvimento.
 const globalForStore = globalThis as typeof globalThis & {
   __nosweatSites?: Map<string, SiteRecord>;
-  __nosweatLeads?: (LeadRecord & { ipHash?: string | null })[];
+  __nosweatLeads?: StoredLead[];
   __nosweatVersions?: VersionRecord[];
   __nosweatAiUsage?: {
     userId: string | null;
@@ -47,7 +47,9 @@ function addVersion(siteId: string, spec: SiteSpec, source: VersionSource): void
   });
 }
 
-function leads(): LeadRecord[] {
+type StoredLead = LeadRecord & { ipHash?: string | null };
+
+function leads(): StoredLead[] {
   globalForStore.__nosweatLeads ??= [];
   return globalForStore.__nosweatLeads;
 }
@@ -183,7 +185,17 @@ export class MemorySiteStore implements SiteStore {
     return leads()
       .filter((lead) => lead.siteId === siteId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map(({ ipHash: _ipHash, ...lead }) => clone(lead));
+      .map((lead) =>
+        clone({
+          id: lead.id,
+          siteId: lead.siteId,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          message: lead.message,
+          createdAt: lead.createdAt,
+        }),
+      );
   }
 
   async countLeads(siteId: string, sinceIso: string, ipHash?: string): Promise<number> {
