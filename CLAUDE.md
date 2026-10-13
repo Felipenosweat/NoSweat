@@ -78,6 +78,11 @@ Como as peças se ligam:
   Ao entrar/criar conta (`/login`, `/signup`, `/auth/callback`) `claimGuestSites` passa os sites
   para a conta. Visitantes têm limite de IA por cookie, por IP (hash) e um teto global por dia
   (`server/quota.ts`, variáveis `GUEST_*`).
+- Cobrança: Stripe Checkout + webhook, sem SDK (`server/billing/`, API REST via fetch). Preços
+  cobrados em `server/billing/plans.ts`; a assinatura de cada conta fica em `subscriptions`
+  (migration 0011, atualizada pelo webhook `/api/billing/webhook`). Sem `STRIPE_SECRET_KEY` a
+  cobrança fica desligada. Com ela: publicar exige plano ativo e domínio próprio exige Pro ou
+  Premium (`publishBlocked` / `customDomainBlocked`, 402 `payment_required` → página `/billing`).
 - Planos e preços mostrados no site: só em `components/marketing/PricingPlans.tsx` (landing e
   `/pricing` usam o mesmo componente).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e

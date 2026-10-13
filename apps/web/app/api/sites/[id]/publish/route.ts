@@ -1,4 +1,5 @@
 import { PublishSiteResponse } from "@nosweat/schema";
+import { publishBlocked } from "@/server/billing";
 import { makeSlug } from "@/server/domains";
 import { placeholdersIn } from "@/lib/placeholders";
 import { errorResponse, handle, jsonResponse, notFound, unauthorized } from "@/server/http";
@@ -17,6 +18,10 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const { user, site } = await requireOwnedSite(id);
     if (!user) return unauthorized();
     if (!site) return notFound();
+
+    // Com a cobrança ligada, publicar exige um plano ativo (402 → tela de planos).
+    const unpaid = await publishBlocked(user);
+    if (unpaid) return unpaid;
 
     // Texto de exemplo do editor (ex.: depoimento de mentira) nunca vai ao ar.
     const leftovers = placeholdersIn(site.spec);

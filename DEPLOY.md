@@ -178,6 +178,26 @@ ela, a rota recusa tudo (nada é apagado).
 
 Recomendado também: `IP_HASH_SALT` (texto aleatório) para o hash de IP dos limites anti-abuso.
 
+## Passo 6: cobrança (Stripe)
+
+Enquanto as chaves abaixo não existirem, publicar e conectar domínio continuam **grátis**.
+Com elas, publicar passa a exigir um plano (Starter, Pro ou Premium) e domínio próprio exige
+Pro ou Premium. Os preços ficam no código (`apps/web/server/billing/plans.ts`): **não** precisa
+criar produtos no Stripe.
+
+1. Crie a conta em https://dashboard.stripe.com/register (use o modo **Test** para testar).
+2. **Developers → API keys**: copie a **Secret key** (`sk_test_...` ou `sk_live_...`).
+3. **Developers → Webhooks → Add endpoint**:
+   - Endpoint URL: `https://nosweatfd.com/api/billing/webhook`
+   - Eventos: `checkout.session.completed`, `customer.subscription.created`,
+     `customer.subscription.updated`, `customer.subscription.deleted`
+   - Depois de criar, copie o **Signing secret** (`whsec_...`).
+4. **Settings → Billing → Customer portal**: clique em **Save** (ativa o botão "Manage billing").
+5. Vercel → Settings → Environment Variables: `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET`.
+   Depois **Deployments → ⋯ → Redeploy**.
+
+Cartão de teste no modo Test: `4242 4242 4242 4242`, qualquer data futura e qualquer CVC.
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page.

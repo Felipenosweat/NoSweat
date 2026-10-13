@@ -39,6 +39,11 @@ export function PublishButton({
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
+        // Sem plano ativo: vai escolher um (e volta para este site depois de pagar).
+        if (apiError.success && apiError.data.error.code === "payment_required") {
+          router.push(`/billing?site=${encodeURIComponent(siteId)}`);
+          return;
+        }
         setError(apiError.success ? apiError.data.error.message : "Something went wrong.");
         return;
       }

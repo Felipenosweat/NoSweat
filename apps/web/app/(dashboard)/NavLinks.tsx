@@ -23,9 +23,18 @@ export function NavLinks({ admin, guest = false }: { admin: boolean; guest?: boo
         </Link>
       )}
       {!guest && (
-        <Link href="/dashboard" aria-current={current("/dashboard")} className={linkClass}>
-          My sites
-        </Link>
+        <>
+          <Link href="/dashboard" aria-current={current("/dashboard")} className={linkClass}>
+            My sites
+          </Link>
+          <Link
+            href="/billing"
+            aria-current={current("/billing")}
+            className={`${linkClass} max-sm:hidden`}
+          >
+            Billing
+          </Link>
+        </>
       )}
     </>
   );

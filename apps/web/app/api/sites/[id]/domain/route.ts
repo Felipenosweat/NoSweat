@@ -1,4 +1,5 @@
 import { ConnectDomainRequest, DomainResponse } from "@nosweat/schema";
+import { customDomainBlocked } from "@/server/billing";
 import {
   addDomain,
   isReservedDomain,
@@ -39,6 +40,10 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
     const { user, site } = await requireOwnedSite(id);
     if (!user) return unauthorized();
     if (!site) return notFound();
+
+    // Domínio próprio faz parte dos planos Pro e Premium (com a cobrança ligada).
+    const unpaid = await customDomainBlocked(user);
+    if (unpaid) return unpaid;
 
     const input = await readJson(request, ConnectDomainRequest);
     if (!input.ok) return input.response;

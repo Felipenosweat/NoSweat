@@ -16,6 +16,7 @@ export const ERROR_CODES = [
   "domain_error",
   "generation_failed",
   "image_error",
+  "payment_required",
   "internal_error",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
@@ -279,3 +280,37 @@ export type ImageSearchResponse = z.infer<typeof ImageSearchResponse>;
 /** POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 8 MB) → foto do dono. */
 export const UploadImageResponse = z.object({ image: SiteImage });
 export type UploadImageResponse = z.infer<typeof UploadImageResponse>;
+
+// ---------- Cobrança (Stripe) ----------
+
+/** Planos pagos. Preços e limites ficam no servidor (apps/web/server/billing/plans.ts). */
+export const PlanId = z.enum(["starter", "pro", "premium"]);
+export type PlanId = z.infer<typeof PlanId>;
+
+export const BillingInterval = z.enum(["monthly", "annual"]);
+export type BillingInterval = z.infer<typeof BillingInterval>;
+
+/** POST /api/billing/checkout: { plan, interval, siteId? } → { url } (página de pagamento do Stripe). */
+export const CheckoutRequest = z.object({
+  plan: PlanId,
+  interval: BillingInterval,
+  /** Site que a pessoa quer publicar (para voltar a ele depois de pagar). */
+  siteId: z.string().optional(),
+});
+export type CheckoutRequest = z.infer<typeof CheckoutRequest>;
+
+export const RedirectResponse = z.object({ url: z.url() });
+export type RedirectResponse = z.infer<typeof RedirectResponse>;
+
+/** GET /api/me/billing → situação da assinatura da conta. */
+export const BillingStatusResponse = z.object({
+  /** `false` enquanto o Stripe não está configurado: tudo liberado, nada é cobrado. */
+  enabled: z.boolean(),
+  plan: PlanId.nullable(),
+  interval: BillingInterval.nullable(),
+  status: z.string().nullable(),
+  active: z.boolean(),
+  currentPeriodEnd: z.string().nullable(),
+  cancelAtPeriodEnd: z.boolean(),
+});
+export type BillingStatusResponse = z.infer<typeof BillingStatusResponse>;
