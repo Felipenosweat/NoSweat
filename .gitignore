@@ -6,6 +6,8 @@ node_modules/
 out/
 dist/
 build/
+# ...menos imagens públicas que por acaso estão numa pasta "build" (animação da landing).
+!apps/web/public/**/build/
 *.tsbuildinfo
 
 # Testes
