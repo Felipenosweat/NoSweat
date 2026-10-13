@@ -90,7 +90,7 @@ export function PricingPlans() {
       {/* Radios nativos: setas do teclado, nome acessível e estado vêm de graça. */}
       <fieldset>
         <legend className="text-sm font-semibold text-ink">Billing</legend>
-        <div className="mt-3 inline-flex rounded-lg border border-slate-300 bg-white p-1">
+        <div className="mt-3 inline-flex max-w-full flex-wrap rounded-lg border border-slate-300 bg-white p-1">
           {BILLING_OPTIONS.map((option) => (
             <label key={option.value} className="relative cursor-pointer">
               <input
@@ -101,7 +101,7 @@ export function PricingPlans() {
                 onChange={() => setBilling(option.value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
+              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
                 {option.label}
                 {option.note && <span className="font-normal tabular-nums">{option.note}</span>}
               </span>
@@ -113,12 +113,12 @@ export function PricingPlans() {
         {annual ? "Showing annual prices." : "Showing monthly prices."}
       </p>
 
-      <ul className="mt-8 grid gap-4 lg:grid-cols-3 lg:gap-6">
+      <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {PLANS.map((plan) => (
           <li
             key={plan.id}
             aria-labelledby={`plan-${plan.id}`}
-            className={`flex flex-col rounded-xl bg-white p-6 sm:p-8 ${
+            className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
               plan.recommended ? "ring-2 ring-brand" : "border border-slate-200"
             }`}
           >
@@ -137,7 +137,7 @@ export function PricingPlans() {
             </div>
             <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
 
-            <p className="mt-6 flex items-baseline gap-1 font-display text-ink">
+            <p className="mt-6 flex flex-wrap items-baseline gap-1 font-display text-ink">
               <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
                 {annual ? plan.annual : plan.monthly}
               </span>
@@ -158,7 +158,7 @@ export function PricingPlans() {
 
             <div className="mt-6 flex-1">
               {plan.intro && <p className="text-sm font-semibold text-ink">{plan.intro}</p>}
-              <ul className={`grid gap-y-3 ${plan.intro ? "mt-3" : ""}`}>
+              <ul className={`grid grid-cols-1 gap-y-3 ${plan.intro ? "mt-3" : ""}`}>
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex gap-3 text-base leading-snug text-slate-600">
                     <CheckIcon className="mt-0.5 size-4 shrink-0 text-slate-500" />

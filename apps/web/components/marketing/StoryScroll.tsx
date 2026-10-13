@@ -73,8 +73,8 @@ export function StoryScroll() {
   }, []);
 
   return (
-    <div className="grid gap-y-16 lg:grid-cols-12 lg:gap-x-8">
-      <ol className="grid gap-y-16 lg:col-span-5 lg:gap-y-0 lg:motion-reduce:col-span-12 lg:motion-reduce:gap-y-24">
+    <div className="grid grid-cols-1 gap-y-16 lg:grid-cols-12 lg:gap-x-8">
+      <ol className="grid min-w-0 grid-cols-1 gap-y-16 lg:col-span-5 lg:gap-y-0 lg:motion-reduce:col-span-12 lg:motion-reduce:gap-y-24">
         {STEPS.map((step, index) => {
           const isActive = index === active;
           return (
@@ -87,11 +87,12 @@ export function StoryScroll() {
               className="group lg:flex lg:min-h-[70svh] lg:flex-col lg:justify-center lg:motion-reduce:grid lg:motion-reduce:min-h-0 lg:motion-reduce:grid-cols-12 lg:motion-reduce:items-center lg:motion-reduce:gap-x-8"
             >
               <div className="border-l-2 border-slate-200 pl-5 transition-colors duration-200 lg:group-data-active:border-brand lg:motion-reduce:col-span-5 lg:motion-reduce:border-slate-200">
+                {/* Número no mesmo pino da "Ordem de serviço" do hero: azul no passo ativo. */}
                 <p
                   aria-hidden="true"
-                  className="font-display text-sm font-semibold text-slate-500 tabular-nums"
+                  className="flex size-6 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-ink tabular-nums transition-colors duration-200 motion-reduce:transition-none lg:group-data-active:bg-brand lg:group-data-active:text-white"
                 >
-                  {String(index + 1).padStart(2, "0")}
+                  {index + 1}
                 </p>
                 {/* Inativo em slate-500 (não slate-400) para manter contraste AA. */}
                 <h3 className="mt-2 font-display text-lg font-semibold tracking-[-0.015em] text-ink transition-colors duration-200 lg:text-xl lg:text-slate-500 lg:group-data-active:text-ink lg:motion-reduce:text-ink">

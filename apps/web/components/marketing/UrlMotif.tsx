@@ -6,22 +6,26 @@
 export function UrlMotif({
   slug,
   caret = false,
+  wrap = false,
   tone = "light",
   className = "",
 }: {
   slug: string;
   caret?: boolean;
+  /** Deixa o endereço quebrar em qualquer ponto (textos grandes ou zoom de 200%). */
+  wrap?: boolean;
   tone?: "light" | "dark";
   className?: string;
 }) {
   const dark = tone === "dark";
+  const nowrap = wrap ? "break-all" : "whitespace-nowrap";
   return (
     <span className={className}>
-      <span className={`whitespace-nowrap ${dark ? "text-slate-300" : "text-slate-500"}`}>
+      <span className={`${nowrap} ${dark ? "text-slate-300" : "text-slate-500"}`}>
         nosweatfd.com/s/
       </span>
       <wbr />
-      <span className={`whitespace-nowrap ${dark ? "text-accent" : "text-brand"}`}>
+      <span className={`${nowrap} ${dark ? "text-accent" : "text-brand"}`}>
         {slug}
         {caret && (
           <span

@@ -24,10 +24,10 @@ function Tile({
 }) {
   return (
     <li
-      className={`ns-reveal flex flex-col rounded-xl border border-slate-200 bg-white p-5 sm:p-6 ${className}`}
+      className={`ns-reveal flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-5 sm:p-6 ${className}`}
       style={{ "--ns-i": Math.min(index, 3) } as CSSProperties}
     >
-      <div aria-hidden="true" className="flex flex-1 flex-col">
+      <div aria-hidden="true" className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {children}
       </div>
       <h3 className={`mt-6 ${panelTitleClass}`}>{title}</h3>
@@ -249,7 +249,7 @@ function StyleMock() {
           Shuffle
         </FakeButton>
       </div>
-      <ul className="grid gap-1 p-2">
+      <ul className="grid grid-cols-1 gap-1 p-2">
         {FONT_SAMPLES.map((sample) => (
           <li
             key={sample.pair}
@@ -276,7 +276,7 @@ function StyleMock() {
 
 export function Bento() {
   return (
-    <ul className="grid gap-4 lg:grid-cols-12 lg:gap-6">
+    <ul className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-6">
       <Tile
         index={0}
         className="lg:col-span-7 lg:row-span-2"

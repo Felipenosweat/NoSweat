@@ -53,9 +53,13 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
       <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
-        <div className={`${container} flex h-16 items-center justify-between gap-4`}>
+        {/* min-h + flex-wrap: com o texto aumentado (zoom 200%), os itens descem de linha em vez
+            de sair da tela. No tamanho normal fica uma linha só de 64px. */}
+        <div
+          className={`${container} flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5`}
+        >
           <Logo />
-          <nav aria-label="Main" className="hidden items-center gap-8 text-sm lg:flex">
+          <nav aria-label="Main" className="hidden flex-wrap items-center gap-x-8 text-sm lg:flex">
             {NAV.map((item) => (
               <a
                 key={item.href}
@@ -66,7 +70,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-2 text-sm font-semibold sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold sm:gap-3">
             <Link
               href="/login"
               className={`inline-flex h-11 items-center rounded-lg px-3 whitespace-nowrap text-slate-700 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
