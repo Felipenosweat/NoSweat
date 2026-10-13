@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { signIn, signUp, type AuthFormState } from "./actions";
 
 const inputClass =
-  "mt-1.5 block h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
+  "mt-1.5 block h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
 
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
@@ -49,7 +49,7 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
         aria-busy={pending}
       >
         <input type="hidden" name="next" value={next} />
-        <label className="block text-sm font-semibold text-ink">
+        <label className="block text-[13px] font-medium text-ink">
           Email
           <input
             name="email"
@@ -60,7 +60,7 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
             className={inputClass}
           />
         </label>
-        <label className="block text-sm font-semibold text-ink">
+        <label className="block text-[13px] font-medium text-ink">
           Password
           <input
             name="password"
@@ -74,18 +74,16 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
         </label>
 
         {state.error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-          >
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {state.error}
           </p>
         )}
         {state.message && (
           <p
             role="status"
-            className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            className="flex gap-2.5 rounded-lg bg-white px-3 py-2 text-sm text-ink ring-1 ring-slate-200"
           >
+            <span aria-hidden="true" className="mt-[7px] size-1.5 shrink-0 rounded-full bg-brand" />
             {state.message}
           </p>
         )}
@@ -93,7 +91,7 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
         <button
           type="submit"
           disabled={pending}
-          className={`inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-base font-semibold text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px disabled:cursor-wait disabled:opacity-50 ${focusRing}`}
+          className={`inline-flex h-12 w-full items-center justify-center rounded-lg bg-brand px-6 text-base font-semibold text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px disabled:cursor-wait disabled:bg-slate-100 disabled:text-slate-400 disabled:active:translate-y-0 ${focusRing}`}
         >
           {pending
             ? isLogin
