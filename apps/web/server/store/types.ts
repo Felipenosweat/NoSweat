@@ -1,10 +1,13 @@
-import type { SiteSpec, SiteStatus } from "@nosweat/schema";
+import type { SiteSpec, SiteStatus, VersionSource } from "@nosweat/schema";
 
 export type SiteRecord = {
   id: string;
   /** Usuário dono do site (id do Supabase Auth). `null` em sites antigos, sem dono. */
   ownerId: string | null;
+  /** Rascunho: o editor e a IA mudam só isto. */
   spec: SiteSpec;
+  /** O que está no ar (copiado do rascunho ao publicar). `null` se nunca foi publicado. */
+  publishedSpec: SiteSpec | null;
   status: SiteStatus;
   /** Endereço grátis: nosweatfd.com/s/<slug>. Definido na primeira publicação. */
   slug: string | null;
@@ -45,8 +48,11 @@ export class DomainTakenError extends Error {
 export interface SiteStore {
   create(spec: SiteSpec, ownerId: string): Promise<SiteRecord>;
   get(id: string): Promise<SiteRecord | null>;
-  /** Devolve `null` se o site não existir. */
-  update(id: string, spec: SiteSpec): Promise<SiteRecord | null>;
+  /** Salva um novo rascunho (e uma versão). Devolve `null` se o site não existir. */
+  update(id: string, spec: SiteSpec, source?: VersionSource): Promise<SiteRecord | null>;
+  /** Versões salvas do site, mais recentes primeiro. */
+  listVersions(siteId: string): Promise<VersionRecord[]>;
+  getVersion(siteId: string, versionId: string): Promise<VersionRecord | null>;
   /** Altera status/slug/domínio. Lança DomainTakenError se o domínio já for de outro site. */
   updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null>;
   /** Sites do usuário, mais recentes primeiro. */

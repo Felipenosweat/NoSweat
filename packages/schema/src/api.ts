@@ -51,12 +51,34 @@ export const GenerateSiteResponse = z.object({
 });
 export type GenerateSiteResponse = z.infer<typeof GenerateSiteResponse>;
 
+// ---------- Versões (rascunho x publicado) ----------
+
+/** De onde veio cada versão salva do site. */
+export const VersionSource = z.enum(["generate", "edit", "ai_edit", "restore", "initial"]);
+export type VersionSource = z.infer<typeof VersionSource>;
+
+export const SiteVersionSummary = z.object({
+  id: z.string(),
+  source: VersionSource,
+  createdAt: z.string(),
+});
+export type SiteVersionSummary = z.infer<typeof SiteVersionSummary>;
+
+/** GET /api/sites/[id]/versions */
+export const VersionsResponse = z.object({ versions: z.array(SiteVersionSummary) });
+export type VersionsResponse = z.infer<typeof VersionsResponse>;
+
 // ---------- GET /api/sites/[id] ----------
 
 export const GetSiteResponse = z.object({
   siteId: SiteId,
+  /** Rascunho (o que o editor mostra). */
   spec: SiteSpec,
   status: SiteStatus,
+  /** O que está no ar (null se nunca foi publicado). */
+  publishedSpec: SiteSpec.nullable().optional(),
+  /** true quando o rascunho tem mudanças que ainda não foram publicadas. */
+  hasUnpublishedChanges: z.boolean().optional(),
 });
 export type GetSiteResponse = z.infer<typeof GetSiteResponse>;
 

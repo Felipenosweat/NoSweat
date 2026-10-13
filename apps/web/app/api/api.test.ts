@@ -3,6 +3,7 @@ import {
   CreditsResponse,
   DomainResponse,
   LeadsResponse,
+  VersionsResponse,
   PublishSiteResponse,
   GenerateSiteResponse,
   GetSiteResponse,
@@ -19,6 +20,8 @@ import {
 } from "./sites/[id]/domain/route";
 import { GET as listLeads, POST as sendLead } from "./sites/[id]/leads/route";
 import { POST as publish } from "./sites/[id]/publish/route";
+import { POST as restoreVersion } from "./sites/[id]/versions/[versionId]/restore/route";
+import { GET as listVersions } from "./sites/[id]/versions/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
 import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
 import { POST as generate } from "./sites/generate/route";
@@ -268,5 +271,60 @@ describe("/api/sites/[id]/leads", () => {
     const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
     const res = await listLeads(new Request(`${BASE}/x`), ctx(other.id));
     expect(res.status).toBe(404);
+  });
+});
+
+describe("drafts, publishing and versions", () => {
+  const rename = (spec: (typeof fixtures)["joes-plumbing"], name: string) => ({
+    ...spec,
+    business: { ...spec.business, name },
+  });
+
+  it("keeps the live site unchanged until the owner publishes again", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+
+    const edited = rename(site.spec, "Joe's Plumbing & Drains");
+    await patchSite(jsonRequest(`/x`, "PATCH", { spec: edited }), ctx(site.id));
+
+    let state = GetSiteResponse.parse(
+      await (await getSite(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(state.spec.business.name).toBe("Joe's Plumbing & Drains");
+    expect(state.publishedSpec?.business.name).toBe("Joe's Plumbing");
+    expect(state.hasUnpublishedChanges).toBe(true);
+
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    state = GetSiteResponse.parse(
+      await (await getSite(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(state.publishedSpec?.business.name).toBe("Joe's Plumbing & Drains");
+    expect(state.hasUnpublishedChanges).toBe(false);
+  });
+
+  it("records every save and restores an older version into the draft", async () => {
+    const site = await ownSite();
+    await patchSite(
+      jsonRequest(`/x`, "PATCH", { spec: rename(site.spec, "Second name") }),
+      ctx(site.id),
+    );
+
+    const { versions } = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(versions.map((v) => v.source)).toEqual(["edit", "generate"]);
+
+    const original = versions[1];
+    if (!original) throw new Error("missing version");
+    const res = await restoreVersion(new Request(`${BASE}/x`, { method: "POST" }), {
+      params: Promise.resolve({ id: site.id, versionId: original.id }),
+    });
+    expect(res.status).toBe(200);
+    expect(UpdateSiteResponse.parse(await res.json()).spec.business.name).toBe("Joe's Plumbing");
+
+    const after = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(after.versions[0]?.source).toBe("restore");
   });
 });

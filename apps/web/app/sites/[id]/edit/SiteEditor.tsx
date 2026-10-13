@@ -119,7 +119,10 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       }
       setSpec(UpdateSiteResponse.parse(body).spec);
       setDirty(false);
-      setMessage({ kind: "ok", text: "Saved! Your changes are live on your website." });
+      setMessage({
+        kind: "ok",
+        text: "Saved as a draft. Go back and click “Publish changes” to put it live.",
+      });
     } catch {
       setMessage({ kind: "error", text: "We couldn't reach our servers. Please try again." });
     } finally {

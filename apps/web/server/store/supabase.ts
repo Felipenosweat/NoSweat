@@ -1,4 +1,4 @@
-import { SiteSpec, SiteStatus } from "@nosweat/schema";
+import { SiteSpec, SiteStatus, VersionSource } from "@nosweat/schema";
 import { z } from "zod";
 import {
   DomainTakenError,
@@ -7,6 +7,7 @@ import {
   type SiteMeta,
   type SiteRecord,
   type SiteStore,
+  type VersionRecord,
 } from "./types";
 
 // SiteStore no Supabase, falando direto com a API REST (PostgREST) via fetch.
@@ -19,6 +20,7 @@ const Row = z.object({
   slug: z.string().nullable().optional(),
   custom_domain: z.string().nullable().optional(),
   published_at: z.string().nullable().optional(),
+  published_spec: SiteSpec.nullable().optional(),
   spec: SiteSpec,
   status: SiteStatus,
   created_at: z.string(),
@@ -32,6 +34,25 @@ const DOMAIN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 class UniqueViolation extends Error {}
+
+const VersionRow = z.object({
+  id: z.string(),
+  site_id: z.string(),
+  spec: SiteSpec,
+  source: VersionSource,
+  created_at: z.string(),
+});
+type VersionRow = z.infer<typeof VersionRow>;
+
+function toVersion(row: VersionRow): VersionRecord {
+  return {
+    id: row.id,
+    siteId: row.site_id,
+    spec: row.spec,
+    source: row.source,
+    createdAt: row.created_at,
+  };
+}
 
 const LeadRow = z.object({
   id: z.string(),
@@ -70,6 +91,7 @@ function toRecord(row: Row): SiteRecord {
     slug: row.slug ?? null,
     customDomain: row.custom_domain ?? null,
     publishedAt: row.published_at ?? null,
+    publishedSpec: row.published_spec ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -161,6 +183,7 @@ export class SupabaseSiteStore implements SiteStore {
       body: JSON.stringify({ spec, status: "draft", owner_id: ownerId }),
     });
     if (!row) throw new Error("Supabase did not return the created site.");
+    await this.addVersion(row.id, spec, "generate");
     return toRecord(row);
   }
 
@@ -171,13 +194,59 @@ export class SupabaseSiteStore implements SiteStore {
     return row ? toRecord(row) : null;
   }
 
-  async update(id: string, spec: SiteSpec): Promise<SiteRecord | null> {
+  async update(
+    id: string,
+    spec: SiteSpec,
+    source: VersionSource = "edit",
+  ): Promise<SiteRecord | null> {
     if (!UUID.test(id)) return null;
     const [row] = await this.request(`?id=eq.${id}`, {
       method: "PATCH",
       body: JSON.stringify({ spec, updated_at: new Date().toISOString() }),
     });
-    return row ? toRecord(row) : null;
+    if (!row) return null;
+    // TODO: fazer as duas escritas numa transação (função no Postgres) se precisar de garantia total.
+    await this.addVersion(row.id, spec, source);
+    return toRecord(row);
+  }
+
+  private get versionsEndpoint(): string {
+    return this.endpoint.replace(/\/sites$/, "/site_versions");
+  }
+
+  private async addVersion(siteId: string, spec: SiteSpec, source: VersionSource): Promise<void> {
+    await this.raw(this.versionsEndpoint, "", {
+      method: "POST",
+      body: JSON.stringify({ site_id: siteId, spec, source }),
+    });
+  }
+
+  async listVersions(siteId: string): Promise<VersionRecord[]> {
+    if (!UUID.test(siteId)) return [];
+    const rows = z
+      .array(VersionRow)
+      .parse(
+        await this.raw(
+          this.versionsEndpoint,
+          `?site_id=eq.${siteId}&select=*&order=created_at.desc&limit=50`,
+          {},
+        ),
+      );
+    return rows.map(toVersion);
+  }
+
+  async getVersion(siteId: string, versionId: string): Promise<VersionRecord | null> {
+    if (!UUID.test(siteId) || !UUID.test(versionId)) return null;
+    const [row] = z
+      .array(VersionRow)
+      .parse(
+        await this.raw(
+          this.versionsEndpoint,
+          `?site_id=eq.${siteId}&id=eq.${versionId}&select=*`,
+          {},
+        ),
+      );
+    return row ? toVersion(row) : null;
   }
 
   async updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null> {
@@ -187,6 +256,7 @@ export class SupabaseSiteStore implements SiteStore {
     if (meta.slug !== undefined) body.slug = meta.slug;
     if (meta.customDomain !== undefined) body.custom_domain = meta.customDomain;
     if (meta.publishedAt !== undefined) body.published_at = meta.publishedAt;
+    if (meta.publishedSpec !== undefined) body.published_spec = meta.publishedSpec;
     try {
       const [row] = await this.request(`?id=eq.${id}`, {
         method: "PATCH",
