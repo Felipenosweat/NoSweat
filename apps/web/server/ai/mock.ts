@@ -10,6 +10,13 @@ const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
 
 const DEFAULT_SLUG: FixtureSlug = "joes-plumbing";
 
+/** Busca de foto do topo de cada fixture (com PEXELS_API_KEY, o dev local já mostra foto). */
+const IMAGE_QUERIES: Partial<Record<FixtureSlug, string>> = {
+  "joes-plumbing": "plumber tools copper pipes",
+  "glow-salon": "bright modern hair salon interior",
+  "rosas-kitchen": "mexican tacos table warm light",
+};
+
 /** Escolhe a fixture por palavra-chave no brief (sem acento e sem diferenciar maiúsculas). */
 export function selectFixture(brief: string): FixtureSlug {
   const text = brief
@@ -26,7 +33,16 @@ export class MockGenerator implements SiteGenerator {
   async generateSite(brief: string): Promise<SiteSpec> {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
-    return structuredClone(fixtures[selectFixture(brief)]);
+    const slug = selectFixture(brief);
+    const spec = structuredClone(fixtures[slug]);
+    // Como a IA de verdade: só o imageQuery (a foto é buscada pelo servidor).
+    const imageQuery = IMAGE_QUERIES[slug];
+    spec.sections = spec.sections.map((section) =>
+      section.type === "hero" && !section.imageQuery && imageQuery
+        ? { ...section, imageQuery }
+        : section,
+    );
+    return spec;
   }
 
   /** O mock não entende pedidos: devolve o site igual, explicando como ligar a IA de verdade. */

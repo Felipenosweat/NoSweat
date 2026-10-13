@@ -1,6 +1,7 @@
 import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@nosweat/schema";
 import { generateSiteSpec } from "@/server/ai";
 import { getCurrentUser } from "@/server/auth/session";
+import { resolveHeroImage } from "@/server/images";
 import { errorResponse, handle, jsonResponse, readJson, unauthorized } from "@/server/http";
 import { quotaExceeded, recordUse } from "@/server/quota";
 import { getSiteStore } from "@/server/store";
@@ -31,6 +32,9 @@ export async function POST(request: Request): Promise<Response> {
         "We couldn't generate your site right now. Please try again.",
       );
     }
+
+    // Foto do topo a partir de hero.imageQuery (sem chave, erro ou demora: segue sem foto).
+    spec = await resolveHeroImage(spec);
 
     await recordUse(user, "generate");
     const site = await getSiteStore().create(spec, user.id);

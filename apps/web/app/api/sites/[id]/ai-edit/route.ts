@@ -8,6 +8,7 @@ import {
   readJson,
   unauthorized,
 } from "@/server/http";
+import { resolveHeroImage } from "@/server/images";
 import { quotaExceeded, recordUse } from "@/server/quota";
 import { requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -48,7 +49,10 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     }
     await recordUse(user, "ai_edit");
 
-    const updated = await getSiteStore().update(site.id, result.spec, "ai_edit");
+    // Se o dono pediu outra foto do topo (imageQuery mudou), busca uma nova. Nunca falha.
+    const spec = await resolveHeroImage(result.spec, { previous: site.spec });
+
+    const updated = await getSiteStore().update(site.id, spec, "ai_edit");
     if (!updated) return notFound();
     return jsonResponse(AiEditResponse, {
       siteId: updated.id,
