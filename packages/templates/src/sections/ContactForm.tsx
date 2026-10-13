@@ -69,10 +69,10 @@ export function ContactForm({ endpoint, submitLabel }: ContactFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-ns-border bg-ns-background p-6 shadow-sm sm:p-8"
+      className="rounded-2xl border border-ns-border bg-ns-background p-6 shadow-sm @min-[40rem]:p-8"
     >
-      <div className="grid gap-5 sm:grid-cols-2">
-        <label className="block text-sm font-medium sm:col-span-2">
+      <div className="grid gap-5 @min-[40rem]:grid-cols-2">
+        <label className="block text-sm font-medium @min-[40rem]:col-span-2">
           Full name
           <input
             name="name"
@@ -102,7 +102,7 @@ export function ContactForm({ endpoint, submitLabel }: ContactFormProps) {
             className={inputClass}
           />
         </label>
-        <label className="block text-sm font-medium sm:col-span-2">
+        <label className="block text-sm font-medium @min-[40rem]:col-span-2">
           How can we help?
           <textarea
             name="message"

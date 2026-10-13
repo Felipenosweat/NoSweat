@@ -458,10 +458,11 @@ export default function LandingPage() {
           <div className="mt-8 grid gap-y-10 lg:grid-cols-12 lg:gap-x-8">
             {/* Letra miúda logo abaixo da tabela, legível (não escondida). */}
             <p className="max-w-[75ch] text-sm leading-relaxed text-pretty text-slate-600 lg:col-span-7">
-              Create and preview your site free. You pick a plan when you go live. Annual plans are
-              billed once a year and renew automatically; we’ll email you before renewal. Monthly
-              plans are month to month — no contract. Domain registration not included. AI edits
-              reset monthly and don’t roll over.
+              Create and preview your site free. You pick a plan when you go live. Annual plans cost
+              10 times the monthly price (2 months free), are billed once a year and renew
+              automatically; we’ll email you before renewal. Monthly plans are month to month — no
+              contract. Domain registration not included. AI edits reset monthly and don’t roll
+              over.
             </p>
             <div className="lg:col-span-5 lg:col-start-8">
               <p className="text-sm font-semibold text-ink">Straight answers</p>

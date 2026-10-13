@@ -27,7 +27,10 @@ const COLORS: { key: "primary" | "secondary" | "background" | "text"; label: str
   { key: "text", label: "Text" },
 ];
 
-/** Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido). */
+/**
+ * Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido).
+ * Galeria sem nenhuma foto também sai: no site ela não aparece mesmo.
+ */
 function clean(spec: SiteSpec): SiteSpec {
   const business: Business = { name: spec.business.name.trim() };
   const optional = ["phone", "email", "city", "state", "serviceArea"] as const;
@@ -41,7 +44,8 @@ function clean(spec: SiteSpec): SiteSpec {
   if (hours.length) business.hours = hours;
   const highlights = (spec.business.highlights ?? []).map((h) => h.trim()).filter(Boolean);
   if (highlights.length) business.highlights = highlights;
-  return { ...spec, business };
+  const sections = spec.sections.filter((s) => s.type !== "gallery" || s.images.length > 0);
+  return { ...spec, business, sections };
 }
 
 function describeError(path: PropertyKey[], message: string): string {
@@ -192,6 +196,12 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
   }
 
   const sectionCount = spec.sections.length;
+  // Uma galeria por página: com uma já adicionada, a opção some da lista.
+  const hasGallery = spec.sections.some((s) => s.type === "gallery");
+  const addableTypes = (Object.keys(SECTION_LABELS) as SectionType[]).filter(
+    (type) => type !== "gallery" || !hasGallery,
+  );
+  const typeToAdd = addableTypes.includes(newType) ? newType : (addableTypes[0] ?? "faq");
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 lg:h-screen">
@@ -469,15 +479,13 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
             <div className="flex gap-2">
               <select
                 className={inputClass}
-                value={newType}
+                value={typeToAdd}
                 onChange={(e) => {
-                  const type = (Object.keys(SECTION_LABELS) as SectionType[]).find(
-                    (t) => t === e.target.value,
-                  );
+                  const type = addableTypes.find((t) => t === e.target.value);
                   if (type) setNewType(type);
                 }}
               >
-                {(Object.keys(SECTION_LABELS) as SectionType[]).map((type) => (
+                {addableTypes.map((type) => (
                   <option key={type} value={type}>
                     {SECTION_LABELS[type]}
                   </option>
@@ -486,7 +494,7 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
               <button
                 type="button"
                 disabled={sectionCount >= 10}
-                onClick={() => update((d) => void d.sections.push(newSection(newType)))}
+                onClick={() => update((d) => void d.sections.push(newSection(typeToAdd)))}
                 className={`mt-1 shrink-0 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50 ${focusRing}`}
               >
                 Add

@@ -42,22 +42,34 @@ const creditLink =
  * Crédito do fotógrafo, como os bancos de imagens pedem:
  * Pexels → "Photo: Nome / Pexels"; Unsplash → "Photo by Nome on Unsplash".
  * Foto enviada pelo dono (ou sem crédito) não mostra nada.
+ * Em espaço apertado só o nome do fotógrafo é cortado (…); o link do banco de imagens sempre
+ * aparece inteiro. O `gap` faz o papel dos espaços entre as partes da linha flex.
  */
 export function PhotoCredit({ image, className = "" }: { image: SiteImage; className?: string }) {
   if (!image.credit || image.source === "upload") return null;
   const provider = PROVIDERS[image.source];
   const author = (
-    <a href={image.credit.url} target="_blank" rel="noopener noreferrer" className={creditLink}>
+    <a
+      href={image.credit.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`min-w-0 truncate ${creditLink}`}
+    >
       {image.credit.name}
     </a>
   );
   const site = (
-    <a href={provider.url} target="_blank" rel="noopener noreferrer" className={creditLink}>
+    <a
+      href={provider.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`shrink-0 ${creditLink}`}
+    >
       {provider.name}
     </a>
   );
   return (
-    <p className={className}>
+    <p className={`flex min-w-0 items-baseline gap-[0.25em] whitespace-nowrap ${className}`}>
       {image.source === "unsplash" ? (
         <>
           Photo by {author} on {site}

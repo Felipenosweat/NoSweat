@@ -15,11 +15,16 @@ export const MAX_ALT = 160;
 export const MAX_GALLERY_IMAGES = 12;
 
 const NETWORK_ERROR = "We couldn't reach our servers. Please try again.";
+/** Texto para o cliente quando o upload ainda não está ligado (501), seja qual for a mensagem do servidor. */
+export const UPLOADS_UNAVAILABLE = "Photo uploads aren’t available yet. Please try again later.";
 
 export type SearchResult =
   { ok: true; results: SiteImage[] } | { ok: false; notConfigured: boolean; message: string };
 
-export type UploadResult = { ok: true; image: SiteImage } | { ok: false; message: string };
+export type UploadResult =
+  | { ok: true; image: SiteImage }
+  /** `unavailable`: o upload não está ligado no servidor (501); não adianta tentar outro arquivo. */
+  | { ok: false; message: string; unavailable?: boolean };
 
 async function readError(
   res: Response,
@@ -72,13 +77,11 @@ export async function uploadImage(siteId: string, file: File, alt?: string): Pro
       method: "POST",
       body: form,
     });
+    if (res.status === 501) {
+      return { ok: false, message: UPLOADS_UNAVAILABLE, unavailable: true };
+    }
     if (!res.ok) {
-      const error = await readError(
-        res,
-        res.status === 501
-          ? "Photo uploads aren't set up yet."
-          : `We couldn't upload “${file.name}”. Please try again.`,
-      );
+      const error = await readError(res, `We couldn't upload “${file.name}”. Please try again.`);
       return { ok: false, message: error.message };
     }
     const parsed = UploadImageResponse.safeParse(await res.json().catch(() => null));

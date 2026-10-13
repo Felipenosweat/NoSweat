@@ -8,7 +8,7 @@ import { inputClass, primaryButton, secondaryButton, textButton, Thumb } from ".
 type SearchState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "done"; results: SiteImage[] }
+  | { status: "done"; query: string; results: SiteImage[] }
   | { status: "not-configured" }
   | { status: "error"; message: string };
 
@@ -41,7 +41,7 @@ export function HeroPhotoField({
     }
     setSearch({ status: "loading" });
     const result = await searchImages(q);
-    if (result.ok) setSearch({ status: "done", results: result.results });
+    if (result.ok) setSearch({ status: "done", query: q, results: result.results });
     else if (result.notConfigured) setSearch({ status: "not-configured" });
     else setSearch({ status: "error", message: result.message });
   }
@@ -199,8 +199,8 @@ export function HeroPhotoField({
             )}
             {search.status === "done" && search.results.length === 0 && (
               <p className="text-xs text-slate-600">
-                No photos found — try different words. If you never see results, photo search
-                isn&rsquo;t set up yet; you can still upload your own photo.
+                No photos for &ldquo;{search.query}&rdquo;. Try simpler words, like
+                &ldquo;kitchen&rdquo; or &ldquo;toolbox&rdquo;.
               </p>
             )}
           </div>

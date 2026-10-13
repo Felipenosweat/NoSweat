@@ -47,6 +47,9 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
     sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Contact us";
   const where = areaServed(business);
   const hasHeroCard = Boolean(business.hours?.length || firstTestimonial || business.phone);
+  // Card só com o telefone: no topo empilhado (celular/tablet) ele seria a terceira ação de
+  // ligar seguida (botão do hero e barra fixa), então só aparece com o topo em duas colunas.
+  const heroCardPhoneOnly = !business.hours?.length && !firstTestimonial;
 
   const renderSection = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -69,6 +72,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             aside={
               hasHeroCard ? <HeroCard business={business} quote={firstTestimonial} /> : undefined
             }
+            asideWideOnly={heroCardPhoneOnly}
           />
         );
       case "services":

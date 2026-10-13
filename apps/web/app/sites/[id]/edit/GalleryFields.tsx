@@ -56,7 +56,13 @@ export function GalleryFields({
       else valid.push(file);
     }
 
-    setErrors(problems);
+    // Mesma mensagem não aparece duas vezes (ex.: vários arquivos com o mesmo erro).
+    const report = (message: string) => {
+      if (!problems.includes(message)) problems.push(message);
+      setErrors([...problems]);
+    };
+
+    setErrors([...problems]);
     setProgress({ done: 0, total: valid.length });
     for (const [i, file] of valid.entries()) {
       const result = await uploadImage(siteId, file);
@@ -66,8 +72,9 @@ export function GalleryFields({
           if (g.images.length < MAX_GALLERY_IMAGES) g.images.push(image);
         });
       } else {
-        problems.push(result.message);
-        setErrors([...problems]);
+        report(result.message);
+        // Upload desligado no servidor (501): os outros arquivos falhariam do mesmo jeito.
+        if (result.unavailable) break;
       }
       setProgress({ done: i + 1, total: valid.length });
     }

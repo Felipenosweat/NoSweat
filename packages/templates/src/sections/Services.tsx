@@ -24,10 +24,10 @@ export function Services({
 }: ServicesProps) {
   if (data.items.length === 0) return null;
   return (
-    <section id={id} className="scroll-mt-24 bg-ns-background py-16 sm:py-24">
+    <section id={id} className="scroll-mt-24 bg-ns-background py-16 @min-[40rem]:py-24">
       <Container>
         <SectionHeading {...heading} />
-        <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-12 grid gap-5 @min-[40rem]:grid-cols-2 @5xl:grid-cols-3">
           {data.items.map((item, index) => {
             const ItemIcon = icons[index % icons.length] ?? CheckIcon;
             return (

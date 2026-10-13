@@ -29,12 +29,20 @@
     --ns-surface: color-mix(in srgb, var(--ns-text) 4%, var(--ns-background));
     --ns-muted: color-mix(in srgb, var(--ns-text) 72%, var(--ns-background));
     --ns-border: color-mix(in srgb, var(--ns-text) 12%, var(--ns-background));
+    /* Fontes com um peso só (Instrument Serif, DM Serif Display) não ganham um negrito falso
+       e borrado em lugar nenhum (títulos, nome da empresa no logo e no rodapé...). */
+    font-synthesis-weight: none;
+    /* Multiplicador do título principal (h1 do topo). Ver os pares de peso único abaixo. */
+    --ns-display-scale: 1;
+  }
+
+  /* Títulos de peso único parecem mais leves que o botão em negrito ao lado: o h1 do topo
+     sobe um degrau da escala para continuar sendo o ponto focal. */
+  .ns-site:is([data-font="editorial"], [data-font="refined"]) {
+    --ns-display-scale: 1.2;
   }
 
   .ns-site :where(h1, h2, h3, h4) {
     font-family: var(--ns-font-heading);
-    /* Fontes de título com um peso só (Instrument Serif, DM Serif Display) não ganham
-       um negrito falso e borrado: ficam no peso de desenho delas. */
-    font-synthesis-weight: none;
   }
 }

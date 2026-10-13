@@ -142,6 +142,27 @@ describe("photos", () => {
     expect(html).not.toContain(">Our work</h2>");
   });
 
+  it("lays out 2 or 4 photos in an even grid and 3 photos in masonry columns", () => {
+    for (const count of [2, 4]) {
+      const images = Array.from({ length: count }, (_, i) => owner(i + 1));
+      const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);
+      expect(html).toContain("@min-[40rem]:grid-cols-2");
+      expect(html).toContain("aspect-[4/3]");
+      expect(html).not.toContain("columns-2");
+    }
+    const html = renderToStaticMarkup(
+      <SiteRenderer spec={withGallery([owner(1), owner(2), owner(3)])} />,
+    );
+    expect(html).toContain("@min-[40rem]:columns-2");
+  });
+
+  it("only shows a phone-only hero card next to a photo when the hero has two columns", () => {
+    const spec = withHeroImage(scene);
+    expect(spec.business.hours).toBeUndefined();
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain("hidden @6xl:block");
+  });
+
   it("hides the gallery (and its menu link) when there are no owner photos", () => {
     for (const images of [[], [scene]]) {
       const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);

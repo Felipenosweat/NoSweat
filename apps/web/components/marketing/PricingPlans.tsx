@@ -43,7 +43,6 @@ const PLANS: Plan[] = [
       "Free nosweatfd.com/s/ address",
       "Editor with live preview",
       "Contact form with messages in your dashboard",
-      "30 AI edits a month",
     ],
   },
   {
@@ -57,11 +56,7 @@ const PLANS: Plan[] = [
     aiEdits: "150",
     recommended: true,
     intro: "Everything in Starter, plus:",
-    features: [
-      "Connect your own domain",
-      "Photo uploads and a photo gallery",
-      "150 AI edits a month",
-    ],
+    features: ["Connect your own domain", "Photo uploads and a photo gallery"],
   },
   {
     id: "premium",
@@ -73,11 +68,7 @@ const PLANS: Plan[] = [
     setupMonthly: null,
     aiEdits: "500",
     intro: "Everything in Pro, plus:",
-    features: [
-      "500 AI edits a month",
-      "Priority support",
-      "A human review of your site before launch",
-    ],
+    features: ["Priority support", "A human review of your site before launch"],
   },
 ];
 
@@ -150,9 +141,7 @@ export function PricingPlans() {
               <span className="text-base font-normal text-slate-500">{annual ? "/yr" : "/mo"}</span>
             </p>
             <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
-              {annual
-                ? `${plan.annualPerMonth}/mo, billed yearly · 2 months free`
-                : "Billed monthly · no contract"}
+              {annual ? `${plan.annualPerMonth}/mo, billed yearly` : "Billed monthly · no contract"}
             </p>
 
             {/* Linhas do recibo, com a linha pontilhada até o valor. */}
@@ -189,14 +178,13 @@ export function PricingPlans() {
   );
 }
 
+/** Linha do recibo. A linha pontilhada é um ::after do <dt> (dentro do <dl> só cabem dt/dd). */
 function ReceiptLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-3 py-3">
-      <dt className="text-sm text-slate-600">{label}</dt>
-      <span
-        aria-hidden="true"
-        className="min-w-4 flex-1 border-b-2 border-dotted border-slate-300"
-      />
+      <dt className="flex min-w-0 flex-1 items-baseline gap-3 text-sm text-slate-600 after:min-w-4 after:flex-1 after:border-b-2 after:border-dotted after:border-slate-300 after:content-['']">
+        {label}
+      </dt>
       <dd className="shrink-0 font-display text-base font-semibold text-ink tabular-nums">
         {value}
       </dd>

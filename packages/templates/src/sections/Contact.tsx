@@ -30,8 +30,8 @@ export function Contact({
   endpoint,
 }: ContactProps) {
   return (
-    <section id={id} className="scroll-mt-24 bg-ns-surface py-16 sm:py-24">
-      <Container className={`grid gap-10 ${data.showForm ? "lg:grid-cols-2" : ""}`}>
+    <section id={id} className="scroll-mt-24 bg-ns-surface py-16 @min-[40rem]:py-24">
+      <Container className={`grid gap-10 ${data.showForm ? "@5xl:grid-cols-2" : ""}`}>
         <div className="flex flex-col gap-8">
           <SectionHeading {...heading} />
           {details}
