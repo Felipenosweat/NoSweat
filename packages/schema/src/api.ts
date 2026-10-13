@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SiteSpec } from "./site";
+import { SiteImage, SiteSpec } from "./site";
 
 // Contrato das rotas em apps/web/app/api. Front e back importam daqui.
 
@@ -15,6 +15,7 @@ export const ERROR_CODES = [
   "quota_exceeded",
   "domain_error",
   "generation_failed",
+  "image_error",
   "internal_error",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
@@ -250,3 +251,19 @@ export const Credentials = z.object({
   password: z.string().min(8, "Password must be at least 8 characters.").max(72),
 });
 export type Credentials = z.infer<typeof Credentials>;
+
+// ---------- Fotos ----------
+
+/** GET /api/images/search?q=<busca>&orientation=landscape|portrait|square → fotos de banco (kind "scene"). */
+export const ImageSearchQuery = z.object({
+  q: z.string().trim().min(2).max(80),
+  orientation: z.enum(["landscape", "portrait", "square"]).default("landscape"),
+});
+export type ImageSearchQuery = z.infer<typeof ImageSearchQuery>;
+
+export const ImageSearchResponse = z.object({ results: z.array(SiteImage) });
+export type ImageSearchResponse = z.infer<typeof ImageSearchResponse>;
+
+/** POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 8 MB) → foto do dono. */
+export const UploadImageResponse = z.object({ image: SiteImage });
+export type UploadImageResponse = z.infer<typeof UploadImageResponse>;

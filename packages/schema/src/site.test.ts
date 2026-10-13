@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ApiError, DomainName, GenerateSiteRequest, LeadRequest, SiteSpec } from "./index";
+import {
+  ApiError,
+  DomainName,
+  GenerateSiteRequest,
+  LeadRequest,
+  SiteImage,
+  SiteSpec,
+} from "./index";
 
 const minimal: SiteSpec = {
   version: 1,
@@ -46,10 +53,32 @@ describe("SiteSpec", () => {
     expect(result.success).toBe(false);
   });
 
+  it("accepts a hero image, an owner gallery and the new font pairs", () => {
+    const image = {
+      url: "https://images.pexels.com/photos/1/photo.jpeg",
+      alt: "Bright, clean kitchen",
+      source: "pexels",
+      kind: "scene",
+      credit: { name: "Jane Doe", url: "https://www.pexels.com/@jane" },
+    };
+    const result = SiteSpec.safeParse({
+      ...minimal,
+      theme: { ...minimal.theme, font: "fresh" },
+      sections: [
+        ...minimal.sections,
+        { type: "gallery", images: [{ ...image, source: "upload", kind: "owner" }] },
+      ],
+    });
+    expect(result.success).toBe(true);
+    expect(
+      SiteImage.safeParse({ ...image, url: "http://insecure.example.com/a.jpg" }).success,
+    ).toBe(false);
+  });
+
   it("rejects an unknown section type", () => {
     const result = SiteSpec.safeParse({
       ...minimal,
-      sections: [...minimal.sections, { type: "gallery", images: [] }],
+      sections: [...minimal.sections, { type: "video", url: "https://example.com" }],
     });
     expect(result.success).toBe(false);
   });
