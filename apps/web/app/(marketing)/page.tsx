@@ -131,9 +131,9 @@ function BrowserFrame({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-xl bg-white shadow-2xl ring-1 shadow-slate-900/15 ring-slate-900/10 ${className}`}
+      className={`overflow-hidden rounded-xl bg-white shadow-2xl ring-1 shadow-ink/15 ring-ink/10 ${className}`}
     >
-      <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50 px-3 py-2.5">
+      <div className="flex items-center gap-3 border-b border-slate-200 bg-surface px-3 py-2.5">
         <div className="flex gap-1.5" aria-hidden="true">
           <span className="size-2.5 rounded-full bg-slate-300" />
           <span className="size-2.5 rounded-full bg-slate-300" />
@@ -160,21 +160,21 @@ export default function LandingPage() {
         />
         <div
           aria-hidden="true"
-          className="absolute -top-48 left-1/2 -z-10 h-[40rem] w-[64rem] -translate-x-1/2 rounded-full bg-linear-to-tr from-sky-200/70 via-emerald-100/60 to-amber-100/60 blur-3xl"
+          className="absolute -top-48 left-1/2 -z-10 h-[40rem] w-[64rem] -translate-x-1/2 rounded-full bg-linear-to-tr from-brand/20 via-accent/20 to-surface blur-3xl"
         />
 
         <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-16 pb-20 sm:px-6 sm:pt-24 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:pb-28">
           <div className="text-center lg:text-left">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3.5 py-1.5 text-sm font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75 motion-reduce:hidden" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-75 motion-reduce:hidden" />
+                <span className="relative inline-flex size-2 rounded-full bg-brand" />
               </span>
               Website builder for small businesses
             </p>
-            <h1 className="mt-6 font-display text-[2.75rem] leading-[1.04] font-extrabold tracking-tight text-balance text-slate-950 sm:text-6xl lg:text-[3.6rem] xl:text-[3.9rem]">
+            <h1 className="mt-6 font-display text-[2.75rem] leading-[1.04] font-extrabold tracking-tight text-balance text-ink sm:text-6xl lg:text-[3.6rem] xl:text-[3.9rem]">
               Get your business online.{" "}
-              <span className="bg-linear-to-r from-sky-600 to-emerald-500 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-brand to-accent bg-clip-text text-transparent">
                 No sweat.
               </span>
             </h1>
@@ -185,14 +185,14 @@ export default function LandingPage() {
             <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 href="/create"
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-4 text-base font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:bg-slate-800 sm:w-auto"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-7 py-4 text-base font-semibold text-white shadow-lg shadow-brand/25 transition hover:bg-brand-dark sm:w-auto"
               >
                 Build my free website
                 <ArrowRightIcon className="size-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link
                 href="/examples/joes-plumbing"
-                className="inline-flex w-full items-center justify-center rounded-full bg-white px-7 py-4 text-base font-semibold text-slate-800 ring-1 ring-slate-300 transition hover:ring-slate-400 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full bg-white px-7 py-4 text-base font-semibold text-ink ring-1 ring-slate-300 transition hover:text-brand hover:ring-brand sm:w-auto"
               >
                 See an example
               </Link>
@@ -200,7 +200,7 @@ export default function LandingPage() {
             <ul className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600 lg:justify-start">
               {HIGHLIGHTS.map((item) => (
                 <li key={item} className="flex items-center gap-1.5">
-                  <CheckIcon className="size-4 text-emerald-500" />
+                  <CheckIcon className="size-4 text-brand" />
                   {item}
                 </li>
               ))}
@@ -218,7 +218,7 @@ export default function LandingPage() {
                 loading="eager"
               />
             </BrowserFrame>
-            <div className="absolute -bottom-8 -left-4 hidden w-[30%] overflow-hidden rounded-[1.75rem] border-[6px] border-slate-950 bg-slate-950 shadow-2xl shadow-slate-900/30 sm:block lg:-left-10">
+            <div className="absolute -bottom-8 -left-4 hidden w-[30%] overflow-hidden rounded-[1.75rem] border-[6px] border-ink bg-ink shadow-2xl shadow-ink/30 sm:block lg:-left-10">
               <ScaledFrame
                 src={exampleUrl("joes-plumbing")}
                 title="Example website: Joe's Plumbing, phone view"
@@ -237,31 +237,29 @@ export default function LandingPage() {
       {/* COMO FUNCIONA */}
       <section
         id="how-it-works"
-        className="scroll-mt-16 border-y border-slate-200 bg-slate-50 py-20 sm:py-28"
+        className="scroll-mt-16 border-y border-slate-200 bg-surface py-20 sm:py-28"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold tracking-widest text-emerald-600 uppercase">
+            <p className="text-sm font-semibold tracking-widest text-brand uppercase">
               How it works
             </p>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-slate-950 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-ink sm:text-4xl">
               From &ldquo;I need a website&rdquo; to live in three steps
             </h2>
           </div>
           <div className="relative mt-16">
             <div
               aria-hidden="true"
-              className="absolute top-6 right-[16%] left-[16%] hidden h-px bg-linear-to-r from-sky-300 via-emerald-300 to-sky-300 md:block"
+              className="absolute top-6 right-[16%] left-[16%] hidden h-px bg-linear-to-r from-brand/20 via-accent/60 to-brand/20 md:block"
             />
             <ol className="relative grid gap-10 md:grid-cols-3 md:gap-8">
               {STEPS.map((step, index) => (
                 <li key={step.title} className="relative text-center">
-                  <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-white font-display text-lg font-bold text-slate-950 shadow-sm ring-1 ring-slate-200">
+                  <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-white font-display text-lg font-bold text-ink shadow-sm ring-1 ring-slate-200">
                     {index + 1}
                   </span>
-                  <h3 className="mt-6 font-display text-xl font-bold text-slate-950">
-                    {step.title}
-                  </h3>
+                  <h3 className="mt-6 font-display text-xl font-bold text-ink">{step.title}</h3>
                   <p className="mx-auto mt-2 max-w-xs leading-relaxed text-slate-600">
                     {step.body}
                   </p>
@@ -276,10 +274,10 @@ export default function LandingPage() {
       <section id="features" className="scroll-mt-16 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold tracking-widest text-emerald-600 uppercase">
+            <p className="text-sm font-semibold tracking-widest text-brand uppercase">
               Everything included
             </p>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-slate-950 sm:text-4xl">
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-ink sm:text-4xl">
               A website that works as hard as you do
             </h2>
             <p className="mt-4 text-lg text-slate-600">
@@ -289,11 +287,11 @@ export default function LandingPage() {
           </div>
           <div className="mt-14 grid gap-px overflow-hidden rounded-3xl bg-slate-200 ring-1 ring-slate-200 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ title, body, icon: FeatureIcon }) => (
-              <div key={title} className="bg-white p-8 transition hover:bg-slate-50/70">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-linear-to-br from-sky-500 to-emerald-500 text-white shadow-md shadow-emerald-500/20">
+              <div key={title} className="bg-white p-8 transition hover:bg-surface">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-linear-to-br from-brand to-accent text-white shadow-md shadow-brand/20">
                   <FeatureIcon className="size-5" />
                 </span>
-                <h3 className="mt-5 font-display text-lg font-bold text-slate-950">{title}</h3>
+                <h3 className="mt-5 font-display text-lg font-bold text-ink">{title}</h3>
                 <p className="mt-2 leading-relaxed text-slate-600">{body}</p>
               </div>
             ))}
@@ -302,11 +300,11 @@ export default function LandingPage() {
       </section>
 
       {/* EXEMPLOS */}
-      <section id="examples" className="scroll-mt-16 bg-slate-950 py-20 text-white sm:py-28">
+      <section id="examples" className="scroll-mt-16 bg-ink py-20 text-white sm:py-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold tracking-widest text-emerald-400 uppercase">
+              <p className="text-sm font-semibold tracking-widest text-accent uppercase">
                 Examples
               </p>
               <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-balance sm:text-4xl">
@@ -341,7 +339,7 @@ export default function LandingPage() {
                           {business.city ? ` · ${business.city}` : ""}
                         </p>
                       </div>
-                      <span className="flex items-center gap-1 text-sm font-semibold text-emerald-400">
+                      <span className="flex items-center gap-1 text-sm font-semibold text-accent">
                         View
                         <ArrowRightIcon className="size-4 transition group-hover:translate-x-0.5" />
                       </span>
@@ -375,16 +373,13 @@ export default function LandingPage() {
       <section id="faq" className="scroll-mt-16 py-20 sm:py-28">
         <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr]">
           <div>
-            <p className="text-sm font-semibold tracking-widest text-emerald-600 uppercase">FAQ</p>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            <p className="text-sm font-semibold tracking-widest text-brand uppercase">FAQ</p>
+            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">
               Questions? We&apos;ve got answers.
             </h2>
             <p className="mt-4 text-slate-600">
               Still not sure?{" "}
-              <Link
-                href="/create"
-                className="font-semibold text-slate-950 underline underline-offset-4"
-              >
+              <Link href="/create" className="font-semibold text-ink underline underline-offset-4">
                 Try it free
               </Link>{" "}
               and see your site before you decide.
@@ -393,7 +388,7 @@ export default function LandingPage() {
           <div className="divide-y divide-slate-200 border-y border-slate-200">
             {FAQS.map((faq) => (
               <details key={faq.question} className="group py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-lg font-semibold text-slate-950 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-lg font-semibold text-ink [&::-webkit-details-marker]:hidden">
                   {faq.question}
                   <PlusIcon className="size-5 shrink-0 text-slate-400 transition group-open:rotate-45" />
                 </summary>
@@ -406,10 +401,10 @@ export default function LandingPage() {
 
       {/* CTA FINAL */}
       <section className="px-4 pb-20 sm:px-6 sm:pb-28">
-        <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-16 text-center text-white sm:px-12 sm:py-20">
+        <div className="relative isolate mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-ink px-6 py-16 text-center text-white sm:px-12 sm:py-20">
           <div
             aria-hidden="true"
-            className="absolute -top-24 left-1/2 -z-10 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-linear-to-r from-sky-500/40 to-emerald-500/40 blur-3xl"
+            className="absolute -top-24 left-1/2 -z-10 h-80 w-[48rem] -translate-x-1/2 rounded-full bg-linear-to-r from-brand/60 to-accent/40 blur-3xl"
           />
           <h2 className="mx-auto max-w-2xl font-display text-3xl font-bold tracking-tight text-balance sm:text-5xl">
             Your customers are searching. Be there when they look.
@@ -420,7 +415,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/create"
-            className="group mt-9 inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 font-semibold text-slate-950 transition hover:bg-slate-100"
+            className="group mt-9 inline-flex items-center gap-2 rounded-full bg-brand px-8 py-4 font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-brand-dark"
           >
             Build my free website
             <ArrowRightIcon className="size-4 transition group-hover:translate-x-0.5" />

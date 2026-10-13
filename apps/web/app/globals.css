@@ -7,6 +7,20 @@
   --font-display: var(--ns-font-modern-heading), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Paleta da marca No Sweat ("Tech Blue"). Só para as telas da plataforma; os sites dos
+   clientes usam as variáveis --ns-* do tema de cada SiteSpec. */
+@theme {
+  --color-brand: #0066ff;
+  --color-brand-dark: #0052cc;
+  --color-ink: #071b33;
+  --color-surface: #f8fafc;
+  --color-accent: #00c2ff;
+}
+
+::selection {
+  background-color: rgb(0 102 255 / 0.18);
+}
+
 html {
   scroll-behavior: smooth;
 }
