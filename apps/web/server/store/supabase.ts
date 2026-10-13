@@ -27,6 +27,14 @@ function toRecord(row: Row): SiteRecord {
   };
 }
 
+/** Aceita a URL com ou sem barra final e com ou sem `/rest/v1` (erro comum ao copiar do painel). */
+export function normalizeSupabaseUrl(url: string): string {
+  return url
+    .trim()
+    .replace(/\/+$/, "")
+    .replace(/\/rest\/v1$/, "");
+}
+
 export type SupabaseConfig = {
   url: string;
   /** Chave "service_role" (legada) ou "secret" (sb_secret_...). Nunca expor no navegador. */
@@ -39,7 +47,7 @@ export class SupabaseSiteStore implements SiteStore {
   private readonly fetchImpl: typeof fetch;
 
   constructor(private readonly config: SupabaseConfig) {
-    this.endpoint = `${config.url.replace(/\/+$/, "")}/rest/v1/sites`;
+    this.endpoint = `${normalizeSupabaseUrl(config.url)}/rest/v1/sites`;
     this.fetchImpl = config.fetch ?? fetch;
   }
 
