@@ -5,7 +5,7 @@ name: Site audit
 on:
   push:
     branches: ["claude/dreamy-maxwell-19fv98"]
-    paths: ["qa/audit.mjs", ".github/workflows/site-audit.yml", "qa/trigger.txt"]
+    paths: ["qa/*.mjs", ".github/workflows/site-audit.yml", "qa/trigger.txt"]
 
 permissions:
   contents: write
@@ -22,11 +22,13 @@ jobs:
       # Fora do monorepo (pnpm): só o Playwright, numa pasta separada.
       - name: Install Playwright
         run: |
-          mkdir -p /tmp/qa && cp qa/audit.mjs /tmp/qa/
+          mkdir -p /tmp/qa && cp qa/*.mjs /tmp/qa/
           cd /tmp/qa && npm init -y >/dev/null && npm install playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Audit
         run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node audit.mjs
+      - name: Landing build layers
+        run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node build-layers.mjs
       - name: Commit results
         run: |
           git config user.name "site-audit"
