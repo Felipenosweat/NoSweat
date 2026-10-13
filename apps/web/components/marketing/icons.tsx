@@ -1,6 +1,7 @@
 import type { SVGProps } from "react";
 
 // Ícones de traço (estilo Heroicons outline), desenhados inline para não adicionar dependência.
+// Traço padrão 1.5; só os glifos pequenos de UI (seta, check) usam 2 para não sumirem em 16px.
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -10,7 +11,7 @@ function Icon({ children, ...props }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.75}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -21,13 +22,15 @@ function Icon({ children, ...props }: IconProps) {
   );
 }
 
-export const SparklesIcon = (props: IconProps) => (
+// Telefone (fone): ligação com um toque.
+export const PhoneIcon = (props: IconProps) => (
   <Icon {...props}>
-    <path d="M9.8 15.9 9 18.75l-.8-2.85a4.5 4.5 0 0 0-3.1-3.1L2.25 12l2.85-.8a4.5 4.5 0 0 0 3.1-3.1L9 5.25l.8 2.85a4.5 4.5 0 0 0 3.1 3.1l2.85.8-2.85.8a4.5 4.5 0 0 0-3.1 3.1ZM18.26 8.72 18 9.75l-.26-1.03a3.38 3.38 0 0 0-2.46-2.46L14.25 6l1.03-.26a3.38 3.38 0 0 0 2.46-2.46L18 2.25l.26 1.03a3.38 3.38 0 0 0 2.46 2.46l1.03.26-1.03.26a3.38 3.38 0 0 0-2.46 2.46Z" />
+    <path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
   </Icon>
 );
 
-export const PhoneIcon = (props: IconProps) => (
+// Aparelho celular: sites que funcionam no telefone.
+export const DeviceMobileIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
   </Icon>
@@ -51,14 +54,8 @@ export const PencilIcon = (props: IconProps) => (
   </Icon>
 );
 
-export const BoltIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-  </Icon>
-);
-
 export const CheckIcon = (props: IconProps) => (
-  <Icon strokeWidth={2.5} {...props}>
+  <Icon strokeWidth={2} {...props}>
     <path d="m4.5 12.75 6 6 9-13.5" />
   </Icon>
 );
@@ -70,7 +67,7 @@ export const ArrowRightIcon = (props: IconProps) => (
 );
 
 export const PlusIcon = (props: IconProps) => (
-  <Icon strokeWidth={2} {...props}>
+  <Icon {...props}>
     <path d="M12 4.5v15m7.5-7.5h-15" />
   </Icon>
 );

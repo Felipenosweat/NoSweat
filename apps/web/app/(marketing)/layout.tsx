@@ -1,58 +1,69 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
+import { container } from "@/components/marketing/styles";
 
 const NAV = [
   { href: "/#how-it-works", label: "How it works" },
-  { href: "/#features", label: "Features" },
   { href: "/#examples", label: "Examples" },
+  { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
 
 const FOOTER_LINKS = [
   {
     title: "Product",
-    links: NAV,
+    links: [
+      { href: "/#how-it-works", label: "How it works" },
+      { href: "/#what-it-does", label: "What your site does" },
+      { href: "/#examples", label: "Examples" },
+      { href: "/#pricing", label: "Pricing" },
+      { href: "/#faq", label: "FAQ" },
+    ],
   },
   {
     title: "Get started",
     links: [
-      { href: "/create", label: "Build your website" },
+      { href: "/create", label: "Build my website" },
       { href: "/login", label: "Log in" },
       { href: "/examples/joes-plumbing", label: "See an example" },
     ],
   },
 ];
 
+const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+        <div className={`${container} flex h-16 items-center justify-between gap-4`}>
           <Logo />
-          <nav aria-label="Main" className="hidden items-center gap-8 text-sm font-medium md:flex">
+          <nav aria-label="Main" className="hidden items-center gap-6 text-sm md:flex lg:gap-8">
             {NAV.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="text-slate-600 transition hover:text-ink"
+                className={`inline-flex min-h-11 items-center rounded-sm font-semibold text-slate-600 transition-colors hover:text-ink ${focusRing}`}
               >
                 {item.label}
               </a>
             ))}
           </nav>
           <div className="flex items-center gap-2 text-sm font-semibold sm:gap-3">
+            {/* Abaixo de 360px só cabem a logo e o CTA. */}
             <Link
               href="/login"
-              className="rounded-full px-3 py-2 text-slate-700 transition hover:text-ink"
+              className={`inline-flex h-11 items-center rounded-lg px-2 whitespace-nowrap text-slate-700 transition-colors hover:text-ink max-[359px]:hidden ${focusRing}`}
             >
               Log in
             </Link>
             <Link
               href="/create"
-              className="rounded-full bg-brand px-4 py-2 text-white shadow-sm transition hover:bg-brand-dark"
+              className={`inline-flex h-11 items-center rounded-lg bg-brand px-3 whitespace-nowrap text-white transition-colors hover:bg-brand-dark active:translate-y-px sm:px-4 ${focusRing}`}
             >
-              Get started<span className="hidden sm:inline"> free</span>
+              Build my website
             </Link>
           </div>
         </div>
@@ -61,32 +72,38 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-slate-200 bg-surface">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
-          <div>
-            <Logo />
+        <div className={`${container} grid gap-10 py-14 md:grid-cols-12 md:gap-x-8`}>
+          <div className="md:col-span-6">
+            <Logo tagline />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-600">
-              Professional websites for small businesses, ready in minutes. Built for the folks who
-              keep our neighborhoods running.
+              Websites for small businesses, built from a sentence and easy to keep up to date.
             </p>
           </div>
-          {FOOTER_LINKS.map((group) => (
-            <div key={group.title}>
-              <p className="text-sm font-semibold text-ink">{group.title}</p>
-              <ul className="mt-4 space-y-3 text-sm">
-                {group.links.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="text-slate-600 transition hover:text-ink">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <nav aria-label="Footer" className="grid grid-cols-2 gap-8 md:col-span-6 md:grid-cols-2">
+            {FOOTER_LINKS.map((group) => (
+              <div key={group.title}>
+                <p className="text-sm font-semibold text-ink">{group.title}</p>
+                <ul className="mt-2 text-sm">
+                  {group.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className={`inline-flex min-h-11 items-center rounded-sm text-slate-600 transition-colors hover:text-ink ${focusRing}`}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
         <div className="border-t border-slate-200">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-500 sm:flex-row sm:justify-between sm:px-6">
-            <p>&copy; {new Date().getFullYear()} No Sweat. All rights reserved.</p>
+          <div
+            className={`${container} flex flex-col gap-2 py-6 text-sm text-slate-500 sm:flex-row sm:justify-between`}
+          >
+            <p>&copy; {new Date().getFullYear()} NoSweat. All rights reserved.</p>
             <p>nosweatfd.com</p>
           </div>
         </div>

@@ -1,18 +1,38 @@
+import Image from "next/image";
 import Link from "next/link";
 
-export function Logo() {
+type LogoProps = {
+  /** Mostra a linha "AI websites for businesses" embaixo do nome (ex.: rodapé). */
+  tagline?: boolean;
+};
+
+/** Logo oficial da NoSweat: símbolo "N" com brilho + nome "No" (navy) "Sweat" (azul). */
+export function Logo({ tagline = false }: LogoProps) {
   return (
     <Link
       href="/"
-      className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight text-ink"
+      aria-label="NoSweat home"
+      className="inline-flex items-center gap-2.5 whitespace-nowrap"
     >
-      <span className="flex size-8 items-center justify-center rounded-[0.6rem] bg-linear-to-br from-brand to-accent text-white shadow-sm shadow-brand/30">
-        {/* Gota de suor estilizada: "no sweat". */}
-        <svg viewBox="0 0 24 24" className="size-4.5" fill="currentColor" aria-hidden="true">
-          <path d="M12 2.5c-.4 0-.8.2-1 .6C9.3 6 6 10.6 6 14.5a6 6 0 0 0 12 0c0-3.9-3.3-8.5-5-11.4-.2-.4-.6-.6-1-.6Zm-2.2 12.1c.4 0 .7.3.7.7 0 1.1.9 2 2 2 .4 0 .7.3.7.7s-.3.7-.7.7a3.4 3.4 0 0 1-3.4-3.4c0-.4.3-.7.7-.7Z" />
-        </svg>
+      <Image
+        src="/brand/nosweat-mark-128.png"
+        alt=""
+        width={34}
+        height={34}
+        priority
+        className="size-[34px] shrink-0"
+      />
+      <span className="flex flex-col">
+        <span className="font-display text-xl leading-none font-bold tracking-[-0.03em]">
+          <span className="text-ink">No</span>
+          <span className="text-brand">Sweat</span>
+        </span>
+        {tagline && (
+          <span className="mt-1.5 text-[10px] leading-none font-semibold tracking-[0.18em] text-slate-500 uppercase">
+            AI websites for businesses
+          </span>
+        )}
       </span>
-      No Sweat
     </Link>
   );
 }
