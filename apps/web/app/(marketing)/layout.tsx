@@ -35,7 +35,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               <a
                 key={item.href}
                 href={item.href}
-                className="text-slate-600 transition hover:text-slate-950"
+                className="text-slate-600 transition hover:text-ink"
               >
                 {item.label}
               </a>
@@ -44,13 +44,13 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2 text-sm font-semibold sm:gap-3">
             <Link
               href="/login"
-              className="rounded-full px-3 py-2 text-slate-700 transition hover:text-slate-950"
+              className="rounded-full px-3 py-2 text-slate-700 transition hover:text-ink"
             >
               Log in
             </Link>
             <Link
               href="/create"
-              className="rounded-full bg-slate-950 px-4 py-2 text-white shadow-sm transition hover:bg-slate-800"
+              className="rounded-full bg-brand px-4 py-2 text-white shadow-sm transition hover:bg-brand-dark"
             >
               Get started<span className="hidden sm:inline"> free</span>
             </Link>
@@ -60,7 +60,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-slate-200 bg-slate-50">
+      <footer className="border-t border-slate-200 bg-surface">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <Logo />
@@ -71,14 +71,11 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           </div>
           {FOOTER_LINKS.map((group) => (
             <div key={group.title}>
-              <p className="text-sm font-semibold text-slate-950">{group.title}</p>
+              <p className="text-sm font-semibold text-ink">{group.title}</p>
               <ul className="mt-4 space-y-3 text-sm">
                 {group.links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-slate-600 transition hover:text-slate-950"
-                    >
+                    <Link href={link.href} className="text-slate-600 transition hover:text-ink">
                       {link.label}
                     </Link>
                   </li>
