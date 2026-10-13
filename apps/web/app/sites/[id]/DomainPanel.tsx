@@ -43,6 +43,8 @@ export function DomainPanel({
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** O plano atual não inclui domínio próprio: mostra o link para os planos. */
+  const [needsPlan, setNeedsPlan] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
   async function call(method: "GET" | "PUT" | "DELETE", body?: unknown) {
@@ -57,6 +59,7 @@ export function DomainPanel({
       const json: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(json);
+        setNeedsPlan(apiError.success && apiError.data.error.code === "payment_required");
         setError(apiError.success ? apiError.data.error.message : "Something went wrong.");
         return;
       }
@@ -122,6 +125,17 @@ export function DomainPanel({
             className="mt-3 inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
           >
             {error}
+            {needsPlan && (
+              <>
+                {" "}
+                <a
+                  href={`/billing?site=${encodeURIComponent(siteId)}`}
+                  className="ml-1 font-semibold underline underline-offset-4"
+                >
+                  See plans
+                </a>
+              </>
+            )}
           </p>
         )}
       </form>

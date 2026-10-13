@@ -469,6 +469,11 @@ export function SiteEditor({
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
+        // Sem plano ativo: vai escolher um (o rascunho já foi salvo acima).
+        if (apiError.success && apiError.data.error.code === "payment_required") {
+          window.location.assign(`/billing?site=${encodeURIComponent(siteId)}`);
+          return;
+        }
         setSaveError(
           apiError.success ? apiError.data.error.message : "We couldn't publish your site.",
         );
