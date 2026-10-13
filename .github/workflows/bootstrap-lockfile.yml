@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          # Sem lockfile ainda, o cache automático do pnpm falharia.
+          package-manager-cache: false
 
       - name: Install (generates pnpm-lock.yaml)
         run: pnpm install --no-frozen-lockfile
