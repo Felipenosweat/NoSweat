@@ -103,7 +103,7 @@ export function Hero() {
 
         <h1
           id="hero-title"
-          className="l-display mt-6 max-w-[11ch] text-[clamp(3.25rem,8.4vw,8.25rem)] text-white"
+          className="l-display mt-6 max-w-[13ch] text-[clamp(3.75rem,9.6vw,9.5rem)] text-white"
         >
           <span className="l-line">
             <span style={line(0)}>Your business,</span>

@@ -60,7 +60,7 @@ export function People() {
                   className="object-cover"
                   style={{ objectPosition: photo.focus }}
                 />
-                <p className="l-serif absolute bottom-4 left-5 z-10 text-3xl text-white drop-shadow-lg">
+                <p className="l-display absolute bottom-4 left-5 z-10 text-4xl text-white uppercase drop-shadow-lg">
                   {label}
                 </p>
               </div>

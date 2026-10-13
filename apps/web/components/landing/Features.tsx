@@ -53,7 +53,7 @@ function CallVisual() {
           </span>
         </div>
       </div>
-      <p className="l-serif hidden max-w-[10ch] text-3xl leading-tight text-slate-300 sm:block">
+      <p className="l-display hidden max-w-[10ch] text-4xl text-slate-200 sm:block">
         One tap and <span className="l-gradient-text">they’re calling you.</span>
       </p>
     </div>

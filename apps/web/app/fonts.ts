@@ -1,4 +1,5 @@
 import {
+  Big_Shoulders,
   Bricolage_Grotesque,
   Cormorant_Garamond,
   DM_Sans,
@@ -17,6 +18,7 @@ import {
   Nunito,
   Playfair_Display,
   Plus_Jakarta_Sans,
+  Public_Sans,
   Space_Grotesk,
 } from "next/font/google";
 
@@ -75,13 +77,11 @@ const freshBody = Hanken_Grotesk({
   preload: false,
   variable: "--ns-font-fresh-body",
 });
-// Instrument Serif (itálico) e Bricolage Grotesque também são as fontes de destaque da landing
-// (V5), por isso têm preload e o itálico.
 const editorialHeading = Instrument_Serif({
   subsets: ["latin"],
   display: "swap",
+  preload: false,
   weight: "400",
-  style: ["normal", "italic"],
   variable: "--ns-font-editorial-heading",
 });
 const editorialBody = Instrument_Sans({
@@ -93,6 +93,7 @@ const editorialBody = Instrument_Sans({
 const boldHeading = Bricolage_Grotesque({
   subsets: ["latin"],
   display: "swap",
+  preload: false,
   variable: "--ns-font-bold-heading",
 });
 const refinedHeading = DM_Serif_Display({
@@ -145,6 +146,20 @@ const galleryBody = Funnel_Sans({
   variable: "--ns-font-gallery-body",
 });
 
+// Fontes da landing (V5): títulos em Big Shoulders (letreiro americano, condensada) e
+// texto em Public Sans (a fonte do governo dos EUA). Só a landing usa; por isso sem preload.
+const landingDisplay = Big_Shoulders({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["700", "800", "900"],
+  variable: "--ns-font-landing-display",
+});
+const landingBody = Public_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--ns-font-landing-body",
+});
+
 export const fontVariables = [
   modernHeading,
   modernBody,
@@ -165,6 +180,8 @@ export const fontVariables = [
   technicalBody,
   galleryHeading,
   galleryBody,
+  landingDisplay,
+  landingBody,
 ]
   .map((font) => font.variable)
   .join(" ");

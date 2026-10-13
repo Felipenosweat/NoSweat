@@ -16,26 +16,26 @@
   color: var(--l-text);
 }
 
+.l-root {
+  font-family: var(--ns-font-landing-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Títulos: Big Shoulders (condensada, de letreiro). */
 .l-display {
-  font-family: var(--ns-font-bold-heading), var(--font-display);
+  font-family: var(--ns-font-landing-display), var(--font-display);
   font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 0.92;
+  letter-spacing: -0.01em;
+  line-height: 0.9;
 }
 
+/* Palavra de destaque dentro do título: mesma fonte, cor sólida (sem itálico nem degradê). */
 .l-serif {
-  font-family: var(--ns-font-editorial-heading), Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-family: inherit;
+  font-style: normal;
 }
 
-/* Texto com o degradê da marca (azul → ciano), igual ao símbolo do logo. */
 .l-gradient-text {
-  background: linear-gradient(100deg, #3d8bff 10%, #00c2ff 60%, #8fe3ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #4da3ff;
 }
 
 /* ---------- Grão (textura de papel/filme) ---------- */
