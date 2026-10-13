@@ -2,6 +2,7 @@ import {
   ApiError,
   CreditsResponse,
   DomainResponse,
+  LeadsResponse,
   PublishSiteResponse,
   GenerateSiteResponse,
   GetSiteResponse,
@@ -16,6 +17,7 @@ import {
   GET as getDomain,
   PUT as putDomain,
 } from "./sites/[id]/domain/route";
+import { GET as listLeads, POST as sendLead } from "./sites/[id]/leads/route";
 import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
 import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
@@ -226,5 +228,45 @@ describe("platform admins", () => {
     } finally {
       delete process.env.DEV_ADMIN;
     }
+  });
+});
+
+describe("/api/sites/[id]/leads", () => {
+  const lead = { name: "Maria", phone: "(512) 555-0199", message: "Water heater is leaking." };
+
+  it("accepts a lead on a published site and lists it for the owner", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+
+    const res = await sendLead(jsonRequest(`/x`, "POST", lead), ctx(site.id));
+    expect(res.status).toBe(201);
+
+    const list = LeadsResponse.parse(
+      await (await listLeads(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(list.leads).toHaveLength(1);
+    expect(list.leads[0]).toMatchObject({ name: "Maria", phone: "(512) 555-0199", email: null });
+  });
+
+  it("does not accept leads on a draft site", async () => {
+    const site = await ownSite();
+    const res = await sendLead(jsonRequest(`/x`, "POST", lead), ctx(site.id));
+    expect(res.status).toBe(404);
+  });
+
+  it("rejects bots that fill the honeypot", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    const res = await sendLead(
+      jsonRequest(`/x`, "POST", { ...lead, company: "Spam Inc" }),
+      ctx(site.id),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("does not show leads of someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    const res = await listLeads(new Request(`${BASE}/x`), ctx(other.id));
+    expect(res.status).toBe(404);
   });
 });

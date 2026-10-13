@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ApiError, DomainName, GenerateSiteRequest, SiteSpec } from "./index";
+import { ApiError, DomainName, GenerateSiteRequest, LeadRequest, SiteSpec } from "./index";
 
 const minimal: SiteSpec = {
   version: 1,
@@ -87,4 +87,23 @@ describe("DomainName", () => {
       expect(DomainName.safeParse(input).success).toBe(false);
     },
   );
+});
+
+describe("LeadRequest", () => {
+  it("accepts a lead with a phone or an email", () => {
+    expect(LeadRequest.safeParse({ name: "Ann", phone: "555-0100", message: "Leak" }).success).toBe(
+      true,
+    );
+    expect(LeadRequest.safeParse({ name: "Ann", email: "a@b.co", message: "Leak" }).success).toBe(
+      true,
+    );
+  });
+
+  it("rejects a lead without a way to reply, or with the honeypot filled", () => {
+    expect(LeadRequest.safeParse({ name: "Ann", email: "", message: "Leak" }).success).toBe(false);
+    expect(
+      LeadRequest.safeParse({ name: "Bot", email: "b@b.co", message: "x", company: "spam" })
+        .success,
+    ).toBe(false);
+  });
 });
