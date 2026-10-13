@@ -18,9 +18,9 @@ export const frameShadow = "shadow-[0_1px_2px_rgb(7_27_51/.06),0_8px_24px_-8px_r
 
 // Escala tipográfica do brief.
 export const h1Class =
-  "max-w-[13ch] font-display text-[2.625rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance text-ink lg:text-[clamp(3rem,5.2vw,4.5rem)]";
+  "max-w-[13ch] break-words font-display text-[2.625rem] leading-[1.02] font-bold tracking-[-0.035em] text-balance text-ink lg:text-[clamp(3rem,5.2vw,4.5rem)]";
 export const h2Class =
-  "max-w-[18ch] font-display text-[1.875rem] leading-[1.08] font-semibold tracking-[-0.03em] text-balance text-ink lg:text-[2.75rem]";
+  "max-w-[18ch] break-words font-display text-[1.875rem] leading-[1.08] font-semibold tracking-[-0.03em] text-balance text-ink lg:text-[2.75rem]";
 export const h3Class = "font-display text-lg font-semibold tracking-[-0.015em] text-ink lg:text-xl";
 export const leadClass =
   "max-w-[52ch] text-lg leading-[1.55] text-pretty text-slate-600 lg:text-xl";

@@ -4,9 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Bento } from "@/components/marketing/Bento";
-import { HeroPoster } from "@/components/marketing/HeroPoster";
 import { ArrowRightIcon, CheckIcon, PlusIcon } from "@/components/marketing/icons";
-import { Marquee } from "@/components/marketing/Marquee";
 import { PhotoFigure } from "@/components/marketing/PhotoFigure";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { PromptForm } from "@/components/marketing/PromptForm";
@@ -24,6 +22,7 @@ import {
 } from "@/components/marketing/styles";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { UrlMotif } from "@/components/marketing/UrlMotif";
+import { WorkOrder } from "@/components/marketing/WorkOrder";
 import { getPhoto, type PhotoKey } from "@/components/photos";
 
 const TITLE = "No Sweat · Describe your business. Get a website by lunch.";
@@ -134,38 +133,35 @@ export default function LandingPage() {
 
   return (
     <>
-      {/* 1. HERO — campo real à esquerda, resultado real (captura estática) à direita.
+      {/* 1. HERO — título e campo real em cima; embaixo, a "Ordem de serviço" (assinatura da V4,
+          docs/design/v4-direction.md): a frase do dono ligada por números ao site gerado.
           Nada aqui anima a partir de opacidade 0. */}
       <section
         aria-labelledby="hero-title"
         data-hide-mobile-cta
         className="overflow-x-clip bg-white"
       >
-        <div
-          className={`${container} grid gap-y-10 pt-10 pb-16 lg:grid-cols-12 lg:gap-x-8 lg:pt-20 lg:pb-28`}
-        >
-          <div className="lg:col-span-5 lg:pt-8">
-            <h1 id="hero-title" className={h1Class}>
-              <TightPunctuation>Describe your business. Get a website by lunch.</TightPunctuation>
-            </h1>
-            <p className={`mt-5 lg:mt-6 ${leadClass}`}>
-              One sentence about your work becomes a site with your services, FAQ and a contact
-              form.
-            </p>
-            <div className="mt-8">
+        <div className={`${container} pt-10 pb-16 lg:pt-20 lg:pb-24`}>
+          <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8">
+            <div className="lg:col-span-7">
+              <h1 id="hero-title" className={h1Class}>
+                <TightPunctuation>Describe your business. Get a website by lunch.</TightPunctuation>
+              </h1>
+              <p className={`mt-5 lg:mt-6 ${leadClass}`}>
+                Write one sentence the way you’d tell a customer. We put every detail where people
+                look for it, then you publish.
+              </p>
+            </div>
+            <div className="lg:col-span-5">
               <PromptForm />
             </div>
           </div>
-          <div className="lg:col-span-7">
-            <HeroPoster />
+
+          <div className="mt-14 border-t border-slate-200 pt-8 lg:mt-20 lg:pt-10">
+            <WorkOrder />
           </div>
         </div>
       </section>
-
-      {/* 2. BUILT WITH NO SWEAT — faixa de capturas dos exemplos (decorativa). */}
-      <div className={belowFold}>
-        <Marquee />
-      </div>
 
       {/* 3. STORYTELLING FIXO — de uma frase a um site no ar. Sem content-visibility (sticky). */}
       <section
@@ -177,7 +173,7 @@ export default function LandingPage() {
           <div className="ns-reveal max-w-[40rem]">
             <p className={eyebrowClass}>How it works</p>
             <h2 id="how-it-works-title" className={`mt-3 ${h2Class}`}>
-              <TightPunctuation>From a sentence to a live site.</TightPunctuation>
+              <TightPunctuation>What happens after you hit Build.</TightPunctuation>
             </h2>
           </div>
           <div className="mt-12 lg:mt-8">
@@ -453,14 +449,16 @@ export default function LandingPage() {
         data-hide-mobile-cta
         className="bg-white py-20 lg:py-32"
       >
-        <div className={`${container} grid gap-y-10 lg:grid-cols-12 lg:items-end lg:gap-x-8`}>
+        <div
+          className={`${container} grid grid-cols-1 gap-y-10 lg:grid-cols-12 lg:items-end lg:gap-x-8`}
+        >
           <div className="lg:col-span-7">
             <h2 id="final-cta-title" className={h2Class}>
               <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
             <p className="mt-8 font-display text-3xl leading-tight font-semibold tracking-[-0.03em] lg:text-5xl">
               <span className="sr-only">Your address could be </span>
-              <UrlMotif slug="your-business" caret />
+              <UrlMotif slug="your-business" caret wrap />
             </p>
           </div>
           <div className="lg:col-span-5">

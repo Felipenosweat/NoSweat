@@ -1,35 +1,6 @@
 /* Estilos só da landing que não cabem em utilitários do Tailwind:
-   faixa "Built with No Sweat" (marquee), FAQ com altura animada e cursor do URL motif.
+   FAQ com altura animada e cursor do URL motif.
    Easing do brief: cubic-bezier(.2, .8, .2, 1). Tudo respeita movimento reduzido. */
-
-/* ---------- Marquee ---------- */
-
-/* Celular e movimento reduzido: só a primeira cópia, rolagem manual com snap. */
-.ns-marquee-dup {
-  display: none;
-}
-
-@keyframes ns-marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .ns-marquee {
-    overflow: hidden;
-    padding-inline: 0;
-  }
-  .ns-marquee-dup {
-    display: block;
-  }
-  .ns-marquee-track {
-    animation: ns-marquee 40s linear infinite;
-  }
-  .ns-marquee:hover .ns-marquee-track {
-    animation-play-state: paused;
-  }
-}
 
 /* ---------- FAQ: abre/fecha com altura animada ----------
    O conteúdo de um <details> fechado fica no pseudo-elemento ::details-content; animamos a

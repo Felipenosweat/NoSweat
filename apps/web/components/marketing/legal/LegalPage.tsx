@@ -61,7 +61,7 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
                     href={`#${section.id}`}
                     className="-ml-px flex gap-2 border-l border-transparent py-1.5 pl-4 leading-snug text-slate-600 transition-colors hover:border-slate-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
-                    <span className="w-5 shrink-0 text-slate-400 tabular-nums">{index + 1}.</span>
+                    <span className="w-5 shrink-0 text-slate-500 tabular-nums">{index + 1}.</span>
                     {section.title}
                   </a>
                 </li>
@@ -81,7 +81,7 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
                 id={section.id}
                 className="flex scroll-mt-24 gap-3 font-display text-2xl leading-tight font-bold tracking-[-0.02em] text-balance text-ink"
               >
-                <span className="text-slate-400 tabular-nums">{index + 1}.</span>
+                <span className="text-slate-500 tabular-nums">{index + 1}.</span>
                 {section.title}
               </h2>
               <div className={proseClass}>{section.content}</div>

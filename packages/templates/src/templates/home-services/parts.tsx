@@ -320,7 +320,10 @@ export function MobileCallBar({
   ctaHref?: string;
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden">
+    <nav
+      aria-label="Quick contact"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden"
+    >
       {phone ? (
         <a
           href={telHref(phone)}
@@ -338,6 +341,6 @@ export function MobileCallBar({
       >
         {ctaLabel}
       </a>
-    </div>
+    </nav>
   );
 }

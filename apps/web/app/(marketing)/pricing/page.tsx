@@ -62,6 +62,8 @@ export default function PricingPage() {
           </div>
 
           <div className="mt-12 lg:mt-16">
+            {/* Título invisível: os nomes dos planos são h3 (mesmo componente da landing). */}
+            <h2 className="sr-only">Plans</h2>
             <PricingPlans />
           </div>
 

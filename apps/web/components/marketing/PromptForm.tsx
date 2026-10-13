@@ -84,7 +84,7 @@ export function PromptForm({
         action="/create"
         method="get"
         onSubmit={onSubmit}
-        className="rounded-xl border border-slate-300 bg-white p-2 transition-colors duration-150 focus-within:border-brand hover:border-slate-400 focus-within:hover:border-brand"
+        className="rounded-xl border border-slate-300 bg-white p-2 transition-colors duration-150 focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
       >
         <label htmlFor={`${id}-brief`} className="sr-only">
           Describe your business
