@@ -3,6 +3,7 @@
 import {
   AiEditResponse,
   ApiError,
+  PublishSiteResponse,
   SiteSpec,
   UpdateSiteResponse,
   type Section,
@@ -12,6 +13,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { z } from "zod";
+import { PublishDialog } from "../PublishDialog";
 import { AskAiPanel } from "./AskAiPanel";
 import { CanvasFrame, DESKTOP_QUERY, useMediaQuery, type Device } from "./CanvasFrame";
 import { ContentPanel } from "./ContentPanel";
@@ -390,17 +392,18 @@ export function SiteEditor({
 
   // ---------- Salvar ----------
 
-  async function save() {
+  /** Salva o rascunho. Devolve true se deu certo (o Publish usa para publicar só o que foi salvo). */
+  async function save(): Promise<boolean> {
     const missingAlt = missingGalleryAlt(spec);
     if (missingAlt) {
       setSaveError(missingAlt);
-      return;
+      return false;
     }
     const result = SiteSpec.safeParse(clean(spec));
     if (!result.success) {
       const issue = result.error.issues[0];
       setSaveError(issue ? describeError(issue.path, issue.message) : "Please check your changes.");
-      return;
+      return false;
     }
 
     setSaving(true);
@@ -417,7 +420,7 @@ export function SiteEditor({
         setSaveError(
           apiError.success ? apiError.data.error.message : "We couldn't save your changes.",
         );
-        return;
+        return false;
       }
       const saved = UpdateSiteResponse.parse(body).spec;
       setSpec(saved);
@@ -426,12 +429,43 @@ export function SiteEditor({
       if (saved.sections.length !== spec.sections.length) setOpenSection(null);
       showToast({
         kind: "ok",
-        text: "Saved as a draft. Go back to your site page and publish to put it live.",
+        text: "Saved as a draft. Publish when you're ready to put it live.",
       });
+      return true;
+    } catch {
+      setSaveError(OFFLINE);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Publicar direto do editor: salva o que estiver pendente e publica o rascunho salvo.
+  const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState(false);
+  const [liveUrl, setLiveUrl] = useState<string | null>(null);
+  const publishRef = useRef<HTMLButtonElement>(null);
+
+  async function publish() {
+    if (dirty && !(await save())) return;
+    setPublishing(true);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/sites/${siteId}/publish`, { method: "POST" });
+      const body: unknown = await res.json().catch(() => null);
+      if (!res.ok) {
+        const apiError = ApiError.safeParse(body);
+        setSaveError(
+          apiError.success ? apiError.data.error.message : "We couldn't publish your site.",
+        );
+        return;
+      }
+      setLiveUrl(PublishSiteResponse.parse(body).url);
+      setPublished(true);
     } catch {
       setSaveError(OFFLINE);
     } finally {
-      setSaving(false);
+      setPublishing(false);
     }
   }
 
@@ -524,7 +558,7 @@ export function SiteEditor({
           <h1 className="min-w-0 truncate font-display text-[15px] font-semibold tracking-[-0.01em]">
             {spec.business.name || "Your website"}
           </h1>
-          <StatusBadge status={status} />
+          <StatusBadge status={published ? "live" : status} />
         </div>
 
         <div role="group" aria-label="Preview size" className="hidden lg:flex">
@@ -569,12 +603,33 @@ export function SiteEditor({
             onClick={() => void save()}
             disabled={!canSave}
             aria-keyshortcuts="Control+S Meta+S"
-            className={`${primaryButton} min-w-[4.5rem]`}
+            className={`${secondaryButton} max-sm:px-3 sm:min-w-[4.5rem]`}
           >
             {saving ? "Saving…" : "Save"}
           </button>
+          <button
+            ref={publishRef}
+            type="button"
+            onClick={() => void publish()}
+            disabled={publishing || saving}
+            aria-busy={publishing}
+            className={`${primaryButton} disabled:cursor-wait`}
+          >
+            {publishing ? "Publishing…" : "Publish"}
+          </button>
         </div>
       </header>
+
+      {liveUrl && (
+        <PublishDialog
+          open
+          url={liveUrl}
+          siteId={siteId}
+          siteName={spec.business.name || "Your website"}
+          onClose={() => setLiveUrl(null)}
+          returnFocusTo={() => publishRef.current}
+        />
+      )}
 
       {saveError && (
         <div

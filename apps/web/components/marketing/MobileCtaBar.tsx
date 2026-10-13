@@ -31,7 +31,7 @@ export function MobileCtaBar() {
     <div
       inert={!visible}
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none lg:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none sm:hidden ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >

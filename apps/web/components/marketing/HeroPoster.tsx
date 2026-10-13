@@ -73,7 +73,7 @@ export function HeroPoster() {
       <div className="relative hidden pt-12 pb-14 md:block">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-x-16 -inset-y-8 bg-[radial-gradient(60%_50%_at_70%_40%,rgb(0_194_255/.10),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 -inset-y-8 xl:-inset-x-16 bg-[radial-gradient(60%_50%_at_70%_40%,rgb(0_194_255/.10),transparent_70%)]"
         />
         <BrowserFrame address={<UrlMotif slug="joes-plumbing" />} className="relative">
           <div className="relative">

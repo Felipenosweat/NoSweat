@@ -75,7 +75,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
                 aparece a barra fixa embaixo (um botão azul por tela). */}
             <Link
               href="/create"
-              className={`hidden h-10 items-center rounded-lg bg-brand px-4 whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px sm:inline-flex ${focusRing}`}
+              className={`hidden h-11 items-center rounded-lg bg-brand px-4 whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px sm:inline-flex ${focusRing}`}
             >
               Build my website
             </Link>
@@ -87,7 +87,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="border-t border-slate-200 bg-surface pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <footer className="border-t border-slate-200 bg-surface pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0">
         <div className={`${container} grid gap-10 py-14 lg:grid-cols-12 lg:gap-x-8`}>
           <div className="lg:col-span-4">
             <Logo tagline />

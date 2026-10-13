@@ -220,6 +220,16 @@ export function ReadyPanel({ siteId, spec, headingRef }: ReadyPanelProps) {
         </p>
       </div>
 
+      {/* Ações antes da prévia: ficam visíveis sem rolar, no celular e no computador. */}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+        <Link href={`/sites/${siteId}/edit`} className={primaryButton}>
+          Open editor
+        </Link>
+        <Link href={`/sites/preview/${siteId}`} className={secondaryButton}>
+          See the preview
+        </Link>
+      </div>
+
       <div
         className={`mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgb(7_27_51/.06),0_8px_24px_-8px_rgb(7_27_51/.12),0_24px_48px_-12px_rgb(7_27_51/.25)] ${styles.reveal}`}
       >
@@ -239,15 +249,6 @@ export function ReadyPanel({ siteId, spec, headingRef }: ReadyPanelProps) {
       <p className="mt-3 text-center text-[13px] text-slate-500">
         Your free address once you publish. You can connect your own domain later.
       </p>
-
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
-        <Link href={`/sites/preview/${siteId}`} className={secondaryButton}>
-          See the preview
-        </Link>
-        <Link href={`/sites/${siteId}/edit`} className={primaryButton}>
-          Open editor
-        </Link>
-      </div>
     </section>
   );
 }

@@ -136,7 +136,11 @@ export default function LandingPage() {
     <>
       {/* 1. HERO — campo real à esquerda, resultado real (captura estática) à direita.
           Nada aqui anima a partir de opacidade 0. */}
-      <section aria-labelledby="hero-title" data-hide-mobile-cta className="bg-white">
+      <section
+        aria-labelledby="hero-title"
+        data-hide-mobile-cta
+        className="overflow-x-clip bg-white"
+      >
         <div
           className={`${container} grid gap-y-10 pt-10 pb-16 lg:grid-cols-12 lg:gap-x-8 lg:pt-20 lg:pb-28`}
         >

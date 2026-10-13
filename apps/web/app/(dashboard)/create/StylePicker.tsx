@@ -78,8 +78,8 @@ function AutoSwatch() {
       aria-hidden="true"
       className="relative flex aspect-[4/3] flex-col justify-between overflow-hidden rounded-lg bg-surface p-3 text-ink ring-1 ring-slate-200 ring-inset sm:p-4"
     >
-      <span className="flex flex-wrap items-baseline gap-x-2 text-[1.375rem] leading-none sm:text-[1.5rem]">
-        {STYLE_OPTIONS.map((option) => (
+      <span className="flex items-baseline gap-x-2 overflow-hidden text-[1.375rem] leading-none whitespace-nowrap sm:text-[1.5rem]">
+        {STYLE_OPTIONS.slice(0, 3).map((option) => (
           <span key={option.id} style={font(option.headingFont.variable, "serif")}>
             Aa
           </span>

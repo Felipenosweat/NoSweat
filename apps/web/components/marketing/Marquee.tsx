@@ -38,9 +38,14 @@ function MarqueeTile({ tile, duplicate = false }: { tile: Tile; duplicate?: bool
           className="h-full w-full object-cover object-top"
         />
       </div>
-      <p className="mt-2 max-w-[240px] truncate text-xs text-slate-500">
-        {desktop ? `${business.name} · Example · fictional business` : "Phone view"}
-      </p>
+      {desktop ? (
+        <p className="mt-2 max-w-[240px] text-xs leading-snug text-slate-500">
+          <span className="block truncate font-medium text-slate-700">{business.name}</span>
+          Example · fictional business
+        </p>
+      ) : (
+        <p className="mt-2 text-xs leading-snug text-slate-500">Phone</p>
+      )}
     </li>
   );
 }
