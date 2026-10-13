@@ -65,6 +65,8 @@ export interface SiteStore {
   getVersion(siteId: string, versionId: string): Promise<VersionRecord | null>;
   /** Altera status/slug/domínio. Lança DomainTakenError se o domínio já for de outro site. */
   updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null>;
+  /** Apaga o site (e, junto, versões e mensagens). Devolve `false` se ele não existir. */
+  delete(id: string): Promise<boolean>;
   /** Sites do usuário, mais recentes primeiro. */
   list(ownerId: string): Promise<SiteRecord[]>;
   /** Todos os sites de todos os clientes (só para o painel do admin). */

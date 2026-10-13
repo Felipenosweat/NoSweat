@@ -234,6 +234,13 @@ export class SupabaseSiteStore implements SiteStore {
     return toRecord(row);
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (!UUID.test(id)) return false;
+    // Versões e mensagens saem junto (on delete cascade nas migrations 0005 e 0006).
+    const rows = await this.request(`?id=eq.${id}`, { method: "DELETE" });
+    return rows.length > 0;
+  }
+
   private get versionsEndpoint(): string {
     return this.endpoint.replace(/\/sites$/, "/site_versions");
   }

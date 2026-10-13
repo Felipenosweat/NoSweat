@@ -61,6 +61,19 @@ Como as peças se ligam:
   `proxy.ts` deixa `/api/*` passar sem reescrever.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
+- Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
+  apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
+
+## Princípio do produto: o cliente fala pouco, nós entregamos muito
+
+- Todo site sai completo mesmo que o cliente não peça: telefone clicável, botão de ligar no
+  celular, formulário de contato, área atendida, horário (se ele informou), SEO básico (título e
+  descrição), favicon, rodapé, página rápida e boa no celular.
+- Cada passo pede o mínimo possível; o que der para deduzir, a plataforma deduz (sem inventar
+  fatos, ver regra 8).
+- Referência de experiência: lovable.dev (entrada imersiva, criar antes de pedir cadastro,
+  cadastro em página própria com termos e privacidade).
+
 ## Regras do time
 
 1. Nunca commitar direto na `main`. Uma branch por tarefa: `front/...` ou `back/...`.

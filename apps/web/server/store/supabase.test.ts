@@ -54,6 +54,15 @@ describe("SupabaseSiteStore", () => {
     await expect(store.get(ID)).rejects.toThrow();
   });
 
+  it("deletes a site and reports whether it existed", async () => {
+    const { store, fetchMock } = storeWith([row]);
+    expect(await store.delete(ID)).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(`https://demo.supabase.co/rest/v1/sites?id=eq.${ID}`);
+    expect(init.method).toBe("DELETE");
+    expect(await store.delete("not-a-uuid")).toBe(false);
+  });
+
   it("surfaces API errors", async () => {
     const { store } = storeWith({ message: "permission denied" }, 401);
     await expect(store.list(OWNER)).rejects.toThrow(/401/);

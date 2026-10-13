@@ -145,6 +145,14 @@ export const PublishSiteResponse = z.object({
 });
 export type PublishSiteResponse = z.infer<typeof PublishSiteResponse>;
 
+// ---------- DELETE /api/sites/[id] ----------
+
+export const DeleteSiteResponse = z.object({
+  siteId: SiteId,
+  deleted: z.literal(true),
+});
+export type DeleteSiteResponse = z.infer<typeof DeleteSiteResponse>;
+
 // ---------- PUT/GET/DELETE /api/sites/[id]/domain ----------
 
 /**

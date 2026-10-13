@@ -1,6 +1,7 @@
 import {
   ApiError,
   CreditsResponse,
+  DeleteSiteResponse,
   DomainResponse,
   AiEditResponse,
   LeadsResponse,
@@ -25,7 +26,7 @@ import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as restoreVersion } from "./sites/[id]/versions/[versionId]/restore/route";
 import { GET as listVersions } from "./sites/[id]/versions/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
-import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
+import { DELETE as deleteSite, GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
 import { POST as generate } from "./sites/generate/route";
 
 const BASE = "http://localhost/api";
@@ -233,6 +234,36 @@ describe("platform admins", () => {
     } finally {
       delete process.env.DEV_ADMIN;
     }
+  });
+});
+
+describe("DELETE /api/sites/[id]", () => {
+  const del = (id: string) =>
+    deleteSite(new Request(`${BASE}/sites/${id}`, { method: "DELETE" }), ctx(id));
+
+  it("deletes the owner's site, taking it offline with its versions and messages", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    await sendLead(
+      jsonRequest(`/x`, "POST", { name: "Ana", phone: "(512) 555-0100", message: "Hi" }),
+      ctx(site.id),
+    );
+
+    const res = await del(site.id);
+    expect(res.status).toBe(200);
+    expect(DeleteSiteResponse.parse(await res.json())).toEqual({ siteId: site.id, deleted: true });
+
+    const store = getSiteStore();
+    expect(await store.get(site.id)).toBeNull();
+    expect(await store.listVersions(site.id)).toHaveLength(0);
+    expect(await store.listLeads(site.id)).toHaveLength(0);
+    expect((await del(site.id)).status).toBe(404);
+  });
+
+  it("does not delete someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    expect((await del(other.id)).status).toBe(404);
+    expect(await getSiteStore().get(other.id)).not.toBeNull();
   });
 });
 

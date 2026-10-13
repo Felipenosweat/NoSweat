@@ -1,4 +1,10 @@
-import { GetSiteResponse, UpdateSiteRequest, UpdateSiteResponse } from "@nosweat/schema";
+import {
+  DeleteSiteResponse,
+  GetSiteResponse,
+  UpdateSiteRequest,
+  UpdateSiteResponse,
+} from "@nosweat/schema";
+import { getVercelConfig, removeDomain } from "@/server/domains";
 import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server/http";
 import { hasUnpublishedChanges, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -37,5 +43,26 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     const site = await getSiteStore().update(id, input.data.spec, "edit");
     if (!site) return notFound();
     return jsonResponse(UpdateSiteResponse, { siteId: site.id, spec: site.spec });
+  });
+}
+
+/**
+ * DELETE /api/sites/[id] → { siteId, deleted: true }. Apaga o site para sempre (sai do ar,
+ * libera o domínio próprio e some com versões e mensagens). Não usa a IA: não gasta créditos.
+ */
+export async function DELETE(_request: Request, { params }: Context): Promise<Response> {
+  return handle(async () => {
+    const { id } = await params;
+    const { user, site } = await requireOwnedSite(id);
+    if (!user) return unauthorized();
+    if (!site) return notFound();
+
+    const vercel = getVercelConfig();
+    if (vercel && site.customDomain) {
+      // Se a Vercel falhar, o site é apagado mesmo assim; o domínio sobra no projeto (inofensivo).
+      await removeDomain(vercel, site.customDomain).catch(() => undefined);
+    }
+    if (!(await getSiteStore().delete(site.id))) return notFound();
+    return jsonResponse(DeleteSiteResponse, { siteId: site.id, deleted: true });
   });
 }

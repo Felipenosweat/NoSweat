@@ -119,6 +119,14 @@ export class MemorySiteStore implements SiteStore {
     return clone(updated);
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (!sites().delete(id)) return false;
+    // Igual ao "on delete cascade" do banco.
+    globalForStore.__nosweatVersions = versions().filter((v) => v.siteId !== id);
+    globalForStore.__nosweatLeads = leads().filter((lead) => lead.siteId !== id);
+    return true;
+  }
+
   async list(ownerId: string): Promise<SiteRecord[]> {
     return [...sites().values()]
       .filter((site) => site.ownerId === ownerId)

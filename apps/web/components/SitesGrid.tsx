@@ -2,6 +2,7 @@ import type { TemplateId } from "@nosweat/schema";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { SiteRecord } from "@/server/store";
+import { DeleteSiteButton } from "./DeleteSiteButton";
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 
@@ -86,11 +87,11 @@ export function SitesGrid({ sites, emptyState }: { sites: SiteRecord[]; emptySta
         const live = site.status === "published";
         const address = siteAddress(site);
         return (
-          <li key={site.id}>
-            <Link
-              href={`/sites/${site.id}`}
-              className={`flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 ${focusRing}`}
-            >
+          <li
+            key={site.id}
+            className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300"
+          >
+            <Link href={`/sites/${site.id}`} className={`flex flex-1 flex-col ${focusRing}`}>
               <div className="flex h-1.5" aria-hidden="true">
                 {[theme.primary, theme.secondary, theme.background].map((color, index) => (
                   <span key={index} className="flex-1" style={{ backgroundColor: color }} />
@@ -123,15 +124,21 @@ export function SitesGrid({ sites, emptyState }: { sites: SiteRecord[]; emptySta
                   {address.text}
                 </p>
               </div>
-              <div className="flex items-center justify-between gap-3 border-t border-slate-200 px-5 py-3 text-[13px]">
-                <span className="text-slate-500">
-                  Updated {dateFormat.format(new Date(site.updatedAt))}
-                </span>
-                <span className="font-semibold whitespace-nowrap text-brand">
-                  {live ? "Manage site" : "Finish and publish"} <span aria-hidden="true">→</span>
-                </span>
-              </div>
             </Link>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-5 py-3 text-[13px]">
+              <span className="text-slate-500">
+                Updated {dateFormat.format(new Date(site.updatedAt))}
+              </span>
+              <span className="flex items-center gap-4">
+                <DeleteSiteButton siteId={site.id} siteName={business.name} compact />
+                <Link
+                  href={`/sites/${site.id}`}
+                  className={`font-semibold whitespace-nowrap text-brand ${focusRing}`}
+                >
+                  {live ? "Manage site" : "Finish and publish"} <span aria-hidden="true">→</span>
+                </Link>
+              </span>
+            </div>
           </li>
         );
       })}

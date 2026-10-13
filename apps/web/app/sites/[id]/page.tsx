@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { Logo } from "@/components/Logo";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState } from "@/server/domains";
@@ -192,6 +193,18 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               ))}
             </ul>
           )}
+        </section>
+
+        <section className="rounded-3xl border border-red-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="font-display text-xl font-bold">Delete website</h2>
+          <p className="mt-1 mb-4 text-slate-600">
+            Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
+          </p>
+          <DeleteSiteButton
+            siteId={site.id}
+            siteName={site.spec.business.name}
+            redirectTo="/dashboard"
+          />
         </section>
       </main>
     </div>
