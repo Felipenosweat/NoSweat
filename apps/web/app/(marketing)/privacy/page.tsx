@@ -39,8 +39,9 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Account information.</strong> Your email address and the password you choose (we
-            store passwords only in hashed form through our login provider).
+            <strong>Account information.</strong> Your first and last name, date of birth, email
+            address and the password you choose (we store passwords only in hashed form through our
+            login provider). We ask for your date of birth only to confirm you’re 18 or older.
           </li>
           <li>
             <strong>Business information you enter.</strong> Your business name, description,
@@ -55,6 +56,10 @@ const SECTIONS: LegalSection[] = [
             <strong>Contact-form submissions.</strong> When visitors to your published website send
             you a message, we store what they submit (for example their name, email or phone number,
             and message) so you can read it in your dashboard.
+          </li>
+          <li>
+            <strong>Email preferences.</strong> Whether you asked to get launch and product news
+            from us, and if you unsubscribed.
           </li>
           <li>
             <strong>Cookies and basic usage.</strong> Cookies that keep you logged in, and a guest
@@ -88,6 +93,10 @@ const SECTIONS: LegalSection[] = [
         <li>To deliver contact-form messages from your visitors to your dashboard.</li>
         <li>To apply usage limits and prevent spam, fraud and abuse.</li>
         <li>To answer your questions and send important notices about your account.</li>
+        <li>
+          If you opted in, to email you launch and product news. Every one of these emails has an
+          unsubscribe link, and unsubscribing doesn’t affect emails about your account.
+        </li>
         <li>To fix problems and improve how the service works.</li>
         <li>To comply with the law and enforce our Terms of Service.</li>
       </ul>
@@ -128,6 +137,14 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Anthropic</strong>: the AI that writes and edits website content.
+          </li>
+          <li>
+            <strong>Resend</strong>: sending emails (contact-form notices and, if you opted in,
+            launch and product news).
+          </li>
+          <li>
+            <strong>Cloudflare Turnstile</strong>: a security check on sign-up and log-in that tells
+            people apart from bots.
           </li>
           <li>
             <strong>Stripe</strong>: payment processing, once paid plans launch. We won’t see or

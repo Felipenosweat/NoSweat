@@ -43,6 +43,14 @@ Como as peças se ligam:
 - Login: Supabase Auth (e-mail e senha). Toda rota e página de site chama `getCurrentUser()`
   e só mostra/altera sites com `ownerId` igual ao do usuário (site de outra pessoa = 404).
   Sem Supabase configurado (dev local), o login fica desligado e todo mundo é o `DEV_USER`.
+- Cadastro (`app/(auth)/login/actions.ts`, regras em `lib/signup-rules.ts`): nome, sobrenome,
+  data de nascimento (18+), e-mail e senha forte digitados duas vezes, aceite dos Termos e captcha
+  Turnstile (se `NEXT_PUBLIC_TURNSTILE_SITE_KEY`). Tudo vai no `user_metadata` do Supabase. Conta
+  sem perfil completo (login Google/Apple ou antiga) é mandada pelo `proxy.ts` para `/welcome`.
+- Lista de lançamento (`server/marketing/`, tabela `marketing_contacts`): quem marcou a caixa
+  recebe UM e-mail de boas-vindas depois de confirmar o e-mail. Todo e-mail de marketing tem link
+  de saída (`/unsubscribe`, assinado com HMAC), `List-Unsubscribe` de um clique
+  (`POST /api/unsubscribe`) e endereço postal (`MARKETING_POSTAL_ADDRESS`; sem ele não envia).
 - Admins (tabela `platform_admins`) veem `/admin` e acessam qualquer site (`getOwnedSite`).
   TODO: separar dados privados do cliente quando houver clientes de verdade.
 - Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
