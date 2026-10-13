@@ -293,7 +293,15 @@ export function Footer({
 }
 
 /** Barra fixa no rodapé do celular: ligar é a ação nº 1 de quem procura prestador de serviço. */
-export function MobileCallBar({ phone, ctaLabel }: { phone?: string; ctaLabel: string }) {
+export function MobileCallBar({
+  phone,
+  ctaLabel,
+  ctaHref = "#contact",
+}: {
+  phone?: string;
+  ctaLabel: string;
+  ctaHref?: string;
+}) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur md:hidden">
       {phone ? (
@@ -308,7 +316,7 @@ export function MobileCallBar({ phone, ctaLabel }: { phone?: string; ctaLabel: s
         <span />
       )}
       <a
-        href="#contact"
+        href={ctaHref}
         className="flex items-center justify-center rounded-xl bg-ns-primary py-3 text-center font-semibold text-ns-on-primary"
       >
         {ctaLabel}

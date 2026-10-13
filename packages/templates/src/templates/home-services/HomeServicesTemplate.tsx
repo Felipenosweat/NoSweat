@@ -1,5 +1,6 @@
 import type { Section, SectionOf, SectionType } from "@nosweat/schema";
 import type { ReactNode } from "react";
+import { telHref } from "../../components/primitives";
 import { Contact, Faq, Hero, Services, Testimonials } from "../../sections";
 import type { TemplateProps } from "../../types";
 import { NAV, SERVICE_ICONS } from "./content";
@@ -43,6 +44,15 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
     sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Contact us";
   const where = areaServed(business);
   const hasHeroCard = Boolean(business.hours?.length || firstTestimonial || business.phone);
+  // Sem seção de contato (o dono removeu), o botão principal liga ou manda e-mail direto,
+  // em vez de apontar para um #contact que não existe.
+  const ctaHref = sections.some((s) => s.type === "contact")
+    ? "#contact"
+    : business.phone
+      ? telHref(business.phone)
+      : business.email
+        ? `mailto:${business.email}`
+        : "#top";
 
   const renderSection = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -52,6 +62,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
           <Hero
             key={key}
             data={section}
+            ctaHref={ctaHref}
             eyebrow={
               where && (
                 <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-ns-border bg-ns-background px-4 py-1.5 text-sm font-medium">
@@ -123,7 +134,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
       <Header business={business} links={links} />
       <main className="flex-1">{sections.map(renderSection)}</main>
       <Footer business={business} links={links} />
-      <MobileCallBar phone={business.phone} ctaLabel={primaryCta} />
+      <MobileCallBar phone={business.phone} ctaLabel={primaryCta} ctaHref={ctaHref} />
     </div>
   );
 }

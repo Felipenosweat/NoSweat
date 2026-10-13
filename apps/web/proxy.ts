@@ -20,9 +20,23 @@ const isProtected = (path: string) =>
  * 2. Domínio da plataforma: renova a sessão do Supabase e manda para /login quem não está logado.
  */
 export async function proxy(request: NextRequest) {
-  const host = (request.headers.get("host") ?? "").toLowerCase().replace(/:\d+$/, "");
+  const host = (request.headers.get("host") ?? "")
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, ""); // "joes.com." (ponto final) é o mesmo domínio
   // No domínio do cliente, só a API pública (ex.: formulário de contato) passa direto.
   if (host && !isAppHost(host) && !request.nextUrl.pathname.startsWith("/api/")) {
+    // O site do cliente é uma página só: robots.txt e sitemap.xml simples para o Google.
+    const safeHost = /^[a-z0-9.-]+$/.test(host);
+    if (safeHost && request.nextUrl.pathname === "/robots.txt") {
+      return new NextResponse(`User-agent: *\nAllow: /\nSitemap: https://${host}/sitemap.xml\n`, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
+    if (safeHost && request.nextUrl.pathname === "/sitemap.xml") {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${host}/</loc></url></urlset>\n`;
+      return new NextResponse(xml, { headers: { "Content-Type": "application/xml" } });
+    }
     const url = request.nextUrl.clone();
     url.pathname = `/d/${host}`;
     url.search = "";

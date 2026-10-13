@@ -5,7 +5,7 @@ export const APP_DOMAINS = ["nosweatfd.com"];
 export function isAppHost(host: string): boolean {
   const bare = host.replace(/^www\./, "");
   return (
-    APP_DOMAINS.includes(bare) ||
+    APP_DOMAINS.some((app) => bare === app || bare.endsWith(`.${app}`)) ||
     host === "localhost" ||
     host.endsWith(".vercel.app") ||
     /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)

@@ -19,6 +19,7 @@ describe("isAppHost", () => {
     "localhost",
     "no-sweat-abc.vercel.app",
     "127.0.0.1",
+    "app.nosweatfd.com",
   ])("%s is the platform", (host) => expect(isAppHost(host)).toBe(true));
   it.each(["joesplumbing.com", "www.joesplumbing.com"])("%s is a customer domain", (host) =>
     expect(isAppHost(host)).toBe(false),
