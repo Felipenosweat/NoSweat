@@ -38,7 +38,9 @@ export function Services({
                 <div className="flex size-12 items-center justify-center rounded-xl bg-ns-primary/10 text-ns-primary transition group-hover:bg-ns-primary group-hover:text-ns-on-primary">
                   <ItemIcon className="size-6" />
                 </div>
-                <h3 className="mt-5 text-lg font-semibold">{item.name}</h3>
+                <h3 className="mt-5 text-lg font-semibold text-balance [overflow-wrap:anywhere]">
+                  {item.name}
+                </h3>
                 <p className="mt-2 leading-relaxed text-ns-muted">{item.description}</p>
               </li>
             );

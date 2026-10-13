@@ -37,7 +37,9 @@ export function Testimonials({ data, id, heading = DEFAULT_HEADING }: Testimonia
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ns-primary text-sm font-semibold text-ns-on-primary">
                     {initials(item.author)}
                   </span>
-                  <span className="font-semibold">{item.author}</span>
+                  <span className="min-w-0 font-semibold [overflow-wrap:anywhere]">
+                    {item.author}
+                  </span>
                 </figcaption>
               </figure>
             </li>

@@ -20,11 +20,13 @@ export function areaServed(business: Business): string | undefined {
 
 export function Logo({ name }: { name: string }) {
   return (
-    <a href="#top" className="flex items-center gap-2.5">
-      <span className="flex size-10 items-center justify-center rounded-xl bg-ns-primary text-sm font-bold text-ns-on-primary">
+    <a href="#top" className="flex min-w-0 items-center gap-2.5">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ns-primary text-sm font-bold text-ns-on-primary">
         {initials(name)}
       </span>
-      <span className="font-ns-heading text-lg font-bold tracking-tight">{name}</span>
+      <span className="line-clamp-2 font-ns-heading text-base leading-tight font-bold tracking-tight [overflow-wrap:anywhere] sm:text-lg">
+        {name}
+      </span>
     </a>
   );
 }
@@ -36,18 +38,18 @@ export function TopBar({ business }: { business: Business }) {
     <div className="bg-ns-text text-sm text-ns-background">
       <Container className="flex h-10 items-center justify-center gap-6 sm:justify-between">
         {where && (
-          <p className="flex items-center gap-1.5">
-            <MapPinIcon className="size-4" />
-            Serving {where}
+          <p className="flex min-w-0 items-center gap-1.5">
+            <MapPinIcon className="size-4 shrink-0" />
+            <span className="truncate">Serving {where}</span>
           </p>
         )}
         {business.email && (
           <a
             href={`mailto:${business.email}`}
-            className="hidden items-center gap-1.5 hover:underline sm:flex"
+            className="hidden min-w-0 items-center gap-1.5 hover:underline sm:flex"
           >
-            <MailIcon className="size-4" />
-            {business.email}
+            <MailIcon className="size-4 shrink-0" />
+            <span className="truncate">{business.email}</span>
           </a>
         )}
       </Container>
@@ -80,7 +82,7 @@ export function Header({
         {business.phone && (
           <a
             href={telHref(business.phone)}
-            className="inline-flex items-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 sm:px-4"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 sm:px-4"
           >
             <PhoneIcon className="size-5" />
             <span className="sr-only sm:not-sr-only">{business.phone}</span>
@@ -109,8 +111,8 @@ export function TrustBadges({ highlights }: { highlights?: string[] }) {
   return (
     <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap">
       {highlights.map((label, index) => (
-        <li key={index} className="flex items-center gap-2 text-sm font-medium">
-          <span className="flex size-7 items-center justify-center rounded-full bg-ns-primary/10 text-ns-primary">
+        <li key={index} className="flex min-w-0 items-center gap-2 text-sm font-medium">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ns-primary/10 text-ns-primary">
             <CheckIcon className="size-4" />
           </span>
           {label}
@@ -126,7 +128,7 @@ export function Hours({ hours }: { hours: NonNullable<Business["hours"]> }) {
       {hours.map((row, index) => (
         <div key={index} className="flex justify-between gap-6">
           <dt className="text-ns-muted">{row.days}</dt>
-          <dd className="font-medium">{row.time}</dd>
+          <dd className="text-right font-medium">{row.time}</dd>
         </div>
       ))}
     </dl>
@@ -217,14 +219,17 @@ export function ContactDetails({ business }: { business: Business }) {
           <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-ns-primary/10 text-ns-primary">
             <Icon className="size-6" />
           </span>
-          <span>
+          <span className="min-w-0 flex-1">
             <span className="block text-sm text-ns-muted">{label}</span>
             {href ? (
-              <a href={href} className="text-lg font-semibold hover:text-ns-primary">
+              <a
+                href={href}
+                className="text-lg font-semibold [overflow-wrap:anywhere] hover:text-ns-primary"
+              >
                 {value}
               </a>
             ) : (
-              <span className="text-lg font-semibold">{value}</span>
+              <span className="text-lg font-semibold [overflow-wrap:anywhere]">{value}</span>
             )}
           </span>
         </li>
@@ -257,7 +262,9 @@ export function Footer({
     <footer className="bg-ns-text pb-24 text-ns-background md:pb-0">
       <Container className="grid gap-8 py-12 sm:grid-cols-3">
         <div>
-          <p className="font-ns-heading text-lg font-bold">{business.name}</p>
+          <p className="font-ns-heading text-lg font-bold [overflow-wrap:anywhere]">
+            {business.name}
+          </p>
           {where && <p className="mt-2 text-sm opacity-70">{where}</p>}
         </div>
         <nav aria-label="Footer" className="flex flex-col gap-2 text-sm">
@@ -274,7 +281,10 @@ export function Footer({
             </a>
           )}
           {business.email && (
-            <a href={`mailto:${business.email}`} className="opacity-80 hover:opacity-100">
+            <a
+              href={`mailto:${business.email}`}
+              className="opacity-80 [overflow-wrap:anywhere] hover:opacity-100"
+            >
               {business.email}
             </a>
           )}
@@ -282,7 +292,7 @@ export function Footer({
       </Container>
       <div className="border-t border-ns-background/15">
         <Container className="flex flex-col gap-2 py-6 text-xs opacity-70 sm:flex-row sm:justify-between">
-          <p>
+          <p className="[overflow-wrap:anywhere]">
             &copy; {year} {business.name}. All rights reserved.
           </p>
           <p>Website by No Sweat</p>
