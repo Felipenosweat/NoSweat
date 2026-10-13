@@ -552,8 +552,13 @@ function SectionFields({
             onChange={(image) =>
               onChange((s) => {
                 if (s.type !== "hero") return;
-                if (image) s.image = image;
-                else delete s.image;
+                if (image) {
+                  s.image = image;
+                } else {
+                  // Sem a busca, uma edição por IA não traz a foto de volta sozinha.
+                  delete s.image;
+                  delete s.imageQuery;
+                }
               })
             }
           />
