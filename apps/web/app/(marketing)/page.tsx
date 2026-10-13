@@ -14,6 +14,7 @@ import {
 } from "@/components/marketing/icons";
 import { ScaledFrame } from "@/components/marketing/ScaledFrame";
 import { SectionIndex } from "@/components/marketing/SectionIndex";
+import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, secondaryButton, textLink } from "@/components/marketing/styles";
 
 // Só afirmações que o produto cumpre hoje (lista verificada em .design-shots/saas-context.md).
@@ -37,7 +38,7 @@ const STEPS = [
   },
   {
     title: "Edit, publish, get messages",
-    body: "Change any text, service, color or section with a live preview. Publish to nosweatfd.com/s/your-business or your own domain.",
+    body: "Edit your headline, services, FAQ, colors and section order with a live preview. Publish to nosweatfd.com/s/your-business or your own domain.",
     caption: "Contact-form messages land in your dashboard.",
   },
 ];
@@ -82,10 +83,11 @@ const EXAMPLES: { slug: FixtureSlug; industry: string }[] = [
   { slug: "rosas-kitchen", industry: "Restaurants" },
 ];
 
+// Rótulo curto + legenda embaixo, para caber com a linha pontilhada em 390px.
 const RECEIPT = [
-  { label: "Setup, one time", amount: "$249", unit: "" },
-  { label: "Hosting and editing, monthly", amount: "$49", unit: "/mo" },
-  { label: "Long-term contract", amount: "None", unit: "" },
+  { label: "Setup", caption: "One time", amount: "$249", unit: "" },
+  { label: "Monthly", caption: "Hosting and editing", amount: "$49", unit: "/mo" },
+  { label: "Long-term contract", caption: "", amount: "None", unit: "" },
 ];
 
 const INCLUDED = [
@@ -161,9 +163,9 @@ export default function LandingPage() {
               id="hero-title"
               className="max-w-[14ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
             >
-              Your business website, built from one sentence.
+              <TightPunctuation>Your business website, built from one sentence.</TightPunctuation>
             </h1>
-            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-slate-600 lg:text-xl">
+            <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
               Tell us what you do and where you work. AI picks a design made for your industry and
               writes your headline, services and FAQ. You edit it, publish it, and get customer
               messages in your dashboard.
@@ -182,31 +184,35 @@ export default function LandingPage() {
                 See pricing
               </a>
             </p>
-            <p className="mt-8 max-w-[52ch] border-t border-slate-200 pt-6 text-sm leading-relaxed text-slate-600">
+            <p className="mt-8 max-w-[52ch] border-t border-slate-200 pt-6 text-sm leading-relaxed text-pretty text-slate-600">
               For cleaning services, plumbers, landscapers, contractors, salons, restaurants,
               consultants and photographers.
             </p>
           </div>
 
-          <div className="mx-auto w-full max-w-2xl lg:col-span-7 lg:max-w-none">
-            {/* Recriação estática do campo do /create: não é interativa. */}
-            <div
-              role="img"
-              aria-label={`Example of what you type: ${HERO_INPUT}`}
-              className="rounded-2xl border border-slate-200 bg-surface p-4 sm:p-5"
+          <div className="w-full max-w-2xl lg:col-span-7 lg:max-w-none">
+            {/* Recriação estática do campo do /create. O cartão inteiro leva ao /create;
+                o botão de dentro é só ilustração e fica neutro para não competir com o CTA. */}
+            <Link
+              href="/create"
+              aria-label={`Try it with your business. Example description: ${HERO_INPUT}`}
+              className="group block rounded-2xl border border-slate-200 bg-surface p-4 transition-colors hover:border-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:p-5"
             >
-              <div aria-hidden="true">
-                <p className="text-sm font-semibold text-ink">Describe your business</p>
-                <p className="mt-3 rounded-2xl border border-slate-300 bg-white p-5 text-lg leading-relaxed text-ink">
+              <span aria-hidden="true" className="block">
+                <span className="block text-sm font-semibold text-ink">Describe your business</span>
+                <span className="mt-3 block rounded-2xl border border-slate-300 bg-white p-5 text-lg leading-relaxed text-ink">
                   {HERO_INPUT}
-                </p>
-                <div className="mt-4 flex justify-end">
-                  <span className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-semibold text-white">
+                </span>
+                <span className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+                  <span className="text-sm font-semibold text-brand underline-offset-4 group-hover:underline">
+                    Try it with your business&nbsp;→
+                  </span>
+                  <span className="ml-auto inline-flex h-10 items-center rounded-lg bg-slate-200 px-4 text-sm font-semibold text-slate-600">
                     Generate my website
                   </span>
-                </div>
-              </div>
-            </div>
+                </span>
+              </span>
+            </Link>
 
             {/* Linha vertical ligando a entrada ao resultado, com o que a IA decidiu. */}
             <div className="flex gap-4 pl-8">
@@ -230,7 +236,8 @@ export default function LandingPage() {
               />
             </BrowserFrame>
             <p className={`mt-3 ${captionClass}`}>
-              Example output. Joe’s Plumbing is a fictional business.
+              Example site. Joe’s Plumbing is a fictional business; reviews on real sites come from
+              the owner.
             </p>
           </div>
         </div>
@@ -246,7 +253,7 @@ export default function LandingPage() {
           <SectionIndex number="01" label="How it works" />
           <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
             <h2 id="how-it-works-title" className={`max-w-[20ch] ${h2Class}`}>
-              Three steps from a sentence to a live site.
+              <TightPunctuation>Three steps from a sentence to a live site.</TightPunctuation>
             </h2>
             <Link href="/create" className={`inline-flex min-h-11 items-center ${textLink}`}>
               Start with step 1&nbsp;<span aria-hidden="true">→</span>
@@ -262,7 +269,9 @@ export default function LandingPage() {
                   {String(index + 1).padStart(2, "0")}
                 </p>
                 <h3 className={`mt-4 ${h3Class}`}>{step.title}</h3>
-                <p className="mt-2 text-base leading-[1.65] text-slate-600">{step.body}</p>
+                <p className="mt-2 text-base leading-[1.65] text-pretty text-slate-600">
+                  {step.body}
+                </p>
                 <p className={`mt-4 ${captionClass}`}>{step.caption}</p>
               </li>
             ))}
@@ -283,7 +292,7 @@ export default function LandingPage() {
               id="what-it-does-title"
               className={`max-w-[20ch] lg:col-span-7 lg:col-start-6 lg:row-start-1 ${h2Class}`}
             >
-              Built for the way customers reach you.
+              <TightPunctuation>Built for the way customers reach you.</TightPunctuation>
             </h2>
 
             {/* Celular "grudado" no desktop enquanto a lista rola; estático no mobile. */}
@@ -307,7 +316,7 @@ export default function LandingPage() {
                   <CapabilityIcon className="mt-0.5 size-5 shrink-0 text-slate-500 lg:mt-1" />
                   <div>
                     <h3 className={h3Class}>{title}</h3>
-                    <p className="mt-1 max-w-[65ch] text-base leading-[1.65] text-slate-600">
+                    <p className="mt-1 max-w-[65ch] text-base leading-[1.65] text-pretty text-slate-600">
                       {body}
                     </p>
                   </div>
@@ -331,9 +340,9 @@ export default function LandingPage() {
               id="examples-title"
               className="max-w-[20ch] font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-balance lg:col-span-6 lg:text-[2.5rem]"
             >
-              Designs made for your line of work.
+              <TightPunctuation>Designs made for your line of work.</TightPunctuation>
             </h2>
-            <p className="max-w-[52ch] text-base leading-[1.65] text-slate-300 lg:col-span-5 lg:col-start-8 lg:self-end">
+            <p className="max-w-[52ch] text-base leading-[1.65] text-pretty text-slate-300 lg:col-span-5 lg:col-start-8 lg:self-end">
               A cleaning company, a salon and a restaurant need different things. Your site starts
               from a template built for your industry, and you can switch templates anytime.
             </p>
@@ -379,7 +388,7 @@ export default function LandingPage() {
           <p className="mt-10 text-[13px] text-slate-400">
             Example sites for fictional businesses, built with No Sweat templates.
           </p>
-          <p className="mt-10 border-t border-white/15 pt-6 text-sm leading-relaxed text-slate-300">
+          <p className="mt-10 border-t border-white/15 pt-6 text-sm leading-relaxed text-pretty text-slate-300">
             Templates for home services, beauty, restaurants, professional services and portfolios.
           </p>
         </div>
@@ -396,9 +405,9 @@ export default function LandingPage() {
           <div className="mt-8 grid gap-y-12 lg:mt-12 lg:grid-cols-12 lg:gap-x-8">
             <div className="lg:col-span-5">
               <h2 id="pricing-title" className={`max-w-[20ch] ${h2Class}`}>
-                One setup fee. One monthly price. No contract.
+                <TightPunctuation>One setup fee. One monthly price. No contract.</TightPunctuation>
               </h2>
-              <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-slate-600 lg:text-xl">
+              <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:text-xl">
                 Create and preview your site free. Pricing applies when you go live.
               </p>
               <p className="mt-10 text-sm font-semibold text-ink">Straight answers</p>
@@ -419,7 +428,12 @@ export default function LandingPage() {
               <dl className="divide-y divide-slate-200">
                 {RECEIPT.map((line) => (
                   <div key={line.label} className="flex items-baseline gap-3 py-4 first:pt-0">
-                    <dt className="text-base text-ink">{line.label}</dt>
+                    <dt className="text-base text-ink">
+                      {line.label}
+                      {line.caption && (
+                        <span className={`block ${captionClass}`}>{line.caption}</span>
+                      )}
+                    </dt>
                     <span
                       aria-hidden="true"
                       className="min-w-4 flex-1 border-b-2 border-dotted border-slate-300"
@@ -469,9 +483,9 @@ export default function LandingPage() {
           <div className="mt-8 grid gap-y-10 lg:mt-12 lg:grid-cols-12 lg:gap-x-8">
             <div className="lg:col-span-4">
               <h2 id="faq-title" className={`max-w-[20ch] ${h2Class}`}>
-                Questions, answered.
+                <TightPunctuation>Questions, answered.</TightPunctuation>
               </h2>
-              <p className="mt-4 max-w-[40ch] text-base leading-[1.65] text-slate-600">
+              <p className="mt-4 max-w-[40ch] text-base leading-[1.65] text-pretty text-slate-600">
                 Still unsure?{" "}
                 <Link href="/create" className={textLink}>
                   Build your site
@@ -486,7 +500,7 @@ export default function LandingPage() {
                     {faq.question}
                     <PlusIcon className="size-5 shrink-0 text-slate-500 motion-safe:transition-transform group-open:rotate-45" />
                   </summary>
-                  <p className="max-w-[65ch] pr-10 pb-6 text-base leading-[1.65] text-slate-600">
+                  <p className="max-w-[65ch] pr-10 pb-6 text-base leading-[1.65] text-pretty text-slate-600">
                     {faq.answer}
                   </p>
                 </details>
@@ -499,19 +513,20 @@ export default function LandingPage() {
       {/* CTA FINAL: o endereço de publicação como motivo. */}
       <section aria-labelledby="final-cta-title" className="bg-white py-16 lg:py-20">
         <div className={`${container} grid gap-y-8 lg:grid-cols-12 lg:items-center lg:gap-x-8`}>
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-6">
             <h2 id="final-cta-title" className={`max-w-[20ch] ${h2Class}`}>
-              See your website before you spend a dollar.
+              <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
-            <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-slate-600">
+            <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
               Describe your business and get a private preview in seconds.
             </p>
           </div>
-          <div className="lg:col-span-5">
-            <p className="rounded-2xl border border-slate-200 bg-surface px-5 py-4 font-display text-xl leading-tight font-semibold tracking-[-0.02em] text-ink sm:text-2xl lg:text-4xl">
-              nosweatfd.com/s/
+          <div className="lg:col-span-6">
+            {/* Só quebra depois da barra (390px); cada metade fica inteira. */}
+            <p className="rounded-2xl border border-slate-200 bg-white px-5 py-4 font-display text-xl leading-tight font-semibold tracking-[-0.02em] text-ink sm:text-2xl lg:text-3xl">
+              <span className="whitespace-nowrap">nosweatfd.com/s/</span>
               <wbr />
-              <span className="text-brand">your-business</span>
+              <span className="whitespace-nowrap text-brand">your-business</span>
             </p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
               <Link href="/create" className={primaryButton}>

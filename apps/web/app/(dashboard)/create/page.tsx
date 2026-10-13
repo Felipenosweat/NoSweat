@@ -17,12 +17,12 @@ const OUTPUTS = [
 
 export default function CreatePage() {
   return (
-    <div className="mx-auto max-w-2xl lg:grid lg:max-w-none lg:grid-cols-12 lg:gap-x-8">
+    <div className="max-w-2xl lg:grid lg:max-w-none lg:grid-cols-12 lg:gap-x-8">
       <div className="lg:col-span-7">
         <h1 className="font-display text-3xl font-bold tracking-[-0.025em] text-balance text-ink lg:text-[2.5rem] lg:leading-tight">
           Tell us about your business
         </h1>
-        <p className="mt-3 max-w-[52ch] text-lg leading-relaxed text-slate-600">
+        <p className="mt-3 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
           Write it like you&rsquo;d explain it to a new customer. A few sentences is plenty.
         </p>
       </div>
@@ -49,8 +49,9 @@ export default function CreatePage() {
             </div>
           ))}
         </dl>
-        <p className="mt-3 border-t border-slate-200 pt-4 text-sm leading-relaxed text-slate-600">
-          Next: a private preview only you can see. You can edit everything before publishing.
+        <p className="mt-3 border-t border-slate-200 pt-4 text-sm leading-relaxed text-pretty text-slate-600">
+          Next: a private preview only you can see. You can edit your text, colors and sections
+          before publishing.
         </p>
       </aside>
     </div>

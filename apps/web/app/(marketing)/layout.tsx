@@ -55,13 +55,13 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             {/* Abaixo de 360px só cabem a logo e o CTA. */}
             <Link
               href="/login"
-              className={`inline-flex h-11 items-center rounded-lg px-2 text-slate-700 transition-colors hover:text-ink max-[359px]:hidden ${focusRing}`}
+              className={`inline-flex h-11 items-center rounded-lg px-2 whitespace-nowrap text-slate-700 transition-colors hover:text-ink max-[359px]:hidden ${focusRing}`}
             >
               Log in
             </Link>
             <Link
               href="/create"
-              className={`inline-flex h-11 items-center rounded-lg bg-brand px-4 text-white transition-colors hover:bg-brand-dark active:translate-y-px ${focusRing}`}
+              className={`inline-flex h-11 items-center rounded-lg bg-brand px-3 whitespace-nowrap text-white transition-colors hover:bg-brand-dark active:translate-y-px sm:px-4 ${focusRing}`}
             >
               Build my website
             </Link>

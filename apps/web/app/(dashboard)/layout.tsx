@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             <NavLinks admin={admin} />
             <Link
               href="/create"
-              className="inline-flex h-10 items-center rounded-lg bg-brand px-3 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
+              className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold whitespace-nowrap text-ink transition-colors duration-150 hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
             >
               New site
             </Link>

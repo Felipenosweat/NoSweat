@@ -32,16 +32,20 @@ export default async function ExamplePage({ params, searchParams }: ExamplePageP
   return (
     <>
       {!embed && (
-        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-ink px-4 py-0.5 text-center text-sm text-slate-300">
-          <span className="pt-2 sm:pt-0">
-            Example site made with No Sweat. {spec.business.name} is a fictional business.
-          </span>
-          <Link
-            href="/create"
-            className="inline-flex min-h-11 items-center rounded-sm font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            Build my website&nbsp;<span aria-hidden="true">&rarr;</span>
-          </Link>
+        // Uma linha só; fixa no topo apenas do sm para cima (no celular rola junto).
+        <div className="top-0 z-50 flex min-h-11 items-center justify-center bg-ink px-3 text-center text-[13px] whitespace-nowrap text-slate-300 sm:sticky sm:px-4 sm:text-sm">
+          <p>
+            Fictional example made with No Sweat
+            <span aria-hidden="true" className="px-1.5 text-slate-400">
+              &middot;
+            </span>
+            <Link
+              href="/create"
+              className="inline-flex min-h-11 items-center rounded-sm font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Build my website&nbsp;<span aria-hidden="true">&rarr;</span>
+            </Link>
+          </p>
         </div>
       )}
       {/* Sem contactEndpoint: o formulário de exemplo fica desligado. */}

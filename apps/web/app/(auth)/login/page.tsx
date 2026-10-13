@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           Welcome
         </h1>
         <p className="mt-2 leading-relaxed text-slate-600">
-          Log in or create a free account to build your website.
+          Log in or create an account to build your website.
           <br />
           Accounts are free.
         </p>
