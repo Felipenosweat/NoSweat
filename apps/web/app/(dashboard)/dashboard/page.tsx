@@ -16,16 +16,14 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">My sites</h1>
-          <p className="mt-1 text-slate-600">
-            {sites.length === 0
-              ? "No sites yet."
-              : `${sites.length} site${sites.length === 1 ? "" : "s"}`}
-          </p>
-        </div>
-      </div>
+      <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-ink lg:text-[2.5rem]">
+        My sites
+      </h1>
+      {sites.length > 0 && (
+        <p className="mt-1 text-slate-500 tabular-nums">
+          {sites.length} site{sites.length === 1 ? "" : "s"}
+        </p>
+      )}
 
       <SitesGrid sites={sites} />
     </div>

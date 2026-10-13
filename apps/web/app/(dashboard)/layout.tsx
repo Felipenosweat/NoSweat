@@ -5,6 +5,7 @@ import { Logo } from "@/components/Logo";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAdminUser } from "@/server/admin";
 import { getCurrentUser } from "@/server/auth/session";
+import { NavLinks } from "./NavLinks";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Com login desligado (dev local) não mostra e-mail nem "Log out".
@@ -12,32 +13,27 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const admin = await isAdminUser(user ?? (await getCurrentUser()));
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-surface">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-5 sm:px-8">
           <Logo />
-          <nav className="flex items-center gap-4 text-sm font-medium">
-            {admin && (
-              <Link href="/admin" className="font-semibold text-amber-700 hover:text-amber-900">
-                Admin
-              </Link>
-            )}
-            <Link href="/dashboard" className="text-slate-600 hover:text-slate-900">
-              My sites
-            </Link>
+          <nav aria-label="Main" className="flex items-center gap-3 sm:gap-6">
+            <NavLinks admin={admin} />
             <Link
               href="/create"
-              className="rounded-full bg-slate-900 px-4 py-2 text-white transition hover:bg-slate-700"
+              className="inline-flex h-10 items-center rounded-lg bg-brand px-3 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
             >
               New site
             </Link>
             {user && (
-              <form
-                action={signOut}
-                className="flex items-center gap-3 border-l border-slate-200 pl-4"
-              >
-                <span className="hidden text-slate-500 sm:inline">{user.email}</span>
-                <button type="submit" className="text-slate-600 hover:text-slate-900">
+              <form action={signOut} className="flex items-center gap-3">
+                <span className="hidden max-w-[22ch] truncate text-sm text-slate-500 md:inline">
+                  {user.email}
+                </span>
+                <button
+                  type="submit"
+                  className="min-h-11 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                >
                   Log out
                 </button>
               </form>
@@ -45,7 +41,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">{children}</main>
+      <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">{children}</main>
     </div>
   );
 }

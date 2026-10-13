@@ -35,7 +35,10 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
             ? "No sites yet."
             : `${sites.length} site${sites.length === 1 ? "" : "s"}`}
         </p>
-        <SitesGrid sites={sites} />
+        <SitesGrid
+          sites={sites}
+          emptyState={<p className="mt-6 text-slate-600">This client has no sites.</p>}
+        />
       </div>
     </div>
   );
