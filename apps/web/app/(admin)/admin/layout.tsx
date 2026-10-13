@@ -1,16 +1,12 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
 import { Logo } from "@/components/Logo";
-import { isAdminUser } from "@/server/admin";
-import { getCurrentUser } from "@/server/auth/session";
+import { requireAdmin } from "@/server/admin";
 
 /** Painel principal da No Sweat. Só admins (public.platform_admins); para os outros, 404. */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/admin");
-  if (!(await isAdminUser(user))) notFound();
+  await requireAdmin();
 
   return (
     <div className="min-h-screen bg-slate-100">

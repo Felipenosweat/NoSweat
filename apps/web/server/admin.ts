@@ -1,6 +1,7 @@
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { z } from "zod";
-import { DEV_USER, type CurrentUser } from "./auth/session";
+import { DEV_USER, getCurrentUser, type CurrentUser } from "./auth/session";
 import { normalizeSupabaseUrl } from "./store/supabase";
 
 // Administradores da plataforma (tabela public.platform_admins) e lista de clientes.
@@ -78,4 +79,16 @@ export async function listClients(): Promise<ClientAccount[]> {
     createdAt: u.created_at ?? null,
     lastSignInAt: u.last_sign_in_at ?? null,
   }));
+}
+
+/**
+ * Garante que quem está vendo é admin; senão manda para o login ou responde 404.
+ * Cada página do /admin chama isto: o layout sozinho não basta, porque o Next pode buscar
+ * só a página (navegação no cliente) sem rodar o layout de novo.
+ */
+export async function requireAdmin(): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/admin");
+  if (!(await isAdminUser(user))) notFound();
+  return user;
 }

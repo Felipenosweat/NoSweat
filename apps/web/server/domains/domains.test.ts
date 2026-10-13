@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isAppHost, makeSlug } from "./index";
+import { isAppHost, isReservedDomain, makeSlug } from "./index";
 import { addDomain, isDomainConfigured, VercelDomainError } from "./vercel";
 
 const config = { token: "t", projectId: "prj_1", teamId: "team_1" };
@@ -19,10 +19,24 @@ describe("isAppHost", () => {
     "localhost",
     "no-sweat-abc.vercel.app",
     "127.0.0.1",
+    "app.nosweatfd.com",
   ])("%s is the platform", (host) => expect(isAppHost(host)).toBe(true));
   it.each(["joesplumbing.com", "www.joesplumbing.com"])("%s is a customer domain", (host) =>
     expect(isAppHost(host)).toBe(false),
   );
+});
+
+describe("isReservedDomain", () => {
+  it.each(["nosweatfd.com", "login.nosweatfd.com", "a.b.nosweatfd.com", "evil.vercel.app"])(
+    "blocks %s",
+    (domain) => {
+      expect(isReservedDomain(domain)).toBe(true);
+    },
+  );
+
+  it.each(["joesplumbing.com", "nosweatfd.com.br", "mynosweatfd.com"])("allows %s", (domain) => {
+    expect(isReservedDomain(domain)).toBe(false);
+  });
 });
 
 describe("Vercel domains", () => {

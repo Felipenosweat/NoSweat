@@ -7,18 +7,21 @@ import {
   readJson,
   unauthorized,
 } from "@/server/http";
-import { RateLimiter, appOrigin, clientIp, notifyOwnerOfLead } from "@/server/notify";
+import { requestIpHash } from "@/server/ip";
+import { appOrigin, notifyOwnerOfLead } from "@/server/notify";
 import { liveSpec, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
 
-/** Até 5 envios a cada 10 minutos por IP + site (em memória, melhor esforço: ver rate-limit.ts). */
-const leadLimiter = new RateLimiter(5, 10 * 60 * 1000);
+// Anti-spam: no máximo 5 mensagens por hora da mesma rede (IP ou prefixo IPv6) em cada site,
+// contadas no banco (vale entre servidores). Sem teto por site: um atacante poderia esgotá-lo
+// e calar o formulário do negócio por um dia.
+const PER_IP_PER_HOUR = 5;
 
 /**
  * POST /api/sites/[id]/leads: formulário de contato de um site PUBLICADO (público, sem login).
- * Limita envios por IP e avisa o dono por e-mail depois da resposta (server/notify).
+ * Limita envios por rede e avisa o dono por e-mail depois da resposta (server/notify).
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
@@ -27,24 +30,29 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const site = await store.get(id);
     if (!site || site.status !== "published") return notFound();
 
-    if (!leadLimiter.take(`${clientIp(request)}:${site.id}`)) {
-      return errorResponse(
-        429,
-        "quota_exceeded",
-        "Too many messages in a short time. Please wait a few minutes and try again.",
-      );
-    }
-
     const input = await readJson(request, LeadRequest);
     if (!input.ok) return input.response;
 
+    // Robô (campo-isca preenchido): finge que deu certo e não guarda nada.
+    if (input.data.company) return jsonResponse(LeadCreatedResponse, { ok: true }, 201);
+
+    const ipHash = await requestIpHash(request.headers);
+    const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const fromThisIp = ipHash ? await store.countLeads(site.id, hourAgo, ipHash) : 0;
+    if (fromThisIp >= PER_IP_PER_HOUR) {
+      return errorResponse(
+        429,
+        "quota_exceeded",
+        "Too many messages were sent. Please try again later or call us instead.",
+      );
+    }
+
     const { name, email, phone, message } = input.data;
-    await store.addLead(site.id, {
-      name,
-      email: email || null,
-      phone: phone || null,
-      message,
-    });
+    await store.addLead(
+      site.id,
+      { name, email: email || null, phone: phone || null, message },
+      ipHash,
+    );
 
     // O pedido já está salvo: o e-mail é extra e nunca derruba a resposta.
     const spec = liveSpec(site);

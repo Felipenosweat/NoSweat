@@ -10,19 +10,27 @@ import { getSiteStore, type SiteRecord } from "@/server/store";
 
 type DomainSitePageProps = { params: Promise<{ host: string }> };
 
-const normalizeHost = (host: string) =>
-  decodeURIComponent(host)
-    .toLowerCase()
-    .replace(/^www\./, "");
+/** `null` se o endereço vier com "%" solto (não é um domínio válido). */
+function normalizeHost(host: string): string | null {
+  try {
+    return decodeURIComponent(host)
+      .toLowerCase()
+      .replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
 
 async function getPublished(host: string): Promise<SiteRecord | null> {
-  const site = await getSiteStore().getByDomain(normalizeHost(host));
+  const domain = normalizeHost(host);
+  if (!domain) return null;
+  const site = await getSiteStore().getByDomain(domain);
   return site?.status === "published" ? site : null;
 }
 
 /** Endereço canônico: o domínio do cliente, sempre sem "www". */
 const siteUrl = (site: SiteRecord, host: string) =>
-  customDomainUrl(site.customDomain ?? normalizeHost(host));
+  customDomainUrl(site.customDomain ?? normalizeHost(host) ?? host);
 
 export async function generateMetadata({ params }: DomainSitePageProps): Promise<Metadata> {
   const { host } = await params;

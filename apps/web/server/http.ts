@@ -14,14 +14,42 @@ export function jsonResponse<T>(schema: z.ZodType<T>, data: T, status = 200): Re
   return Response.json(schema.parse(data), { status });
 }
 
-/** Lê e valida o corpo JSON. Em caso de erro, devolve a resposta 400 pronta. */
+/**
+ * Tamanho máximo do corpo dos pedidos. Um site inteiro (SiteSpec) tem ~10 KB; o limite evita que
+ * alguém grave megabytes por salvamento (cada salvamento vira uma versão no banco).
+ */
+export const MAX_BODY_BYTES = 100_000;
+
+function tooLarge(): { ok: false; response: Response } {
+  return {
+    ok: false,
+    response: errorResponse(413, "invalid_request", "Request body is too large."),
+  };
+}
+
+/** Lê e valida o corpo JSON. Em caso de erro, devolve a resposta 400 (ou 413) pronta. */
 export async function readJson<T>(
   request: Request,
   schema: z.ZodType<T>,
 ): Promise<{ ok: true; data: T } | { ok: false; response: Response }> {
+  // Só JSON de verdade: um <form> de outro site não consegue mandar este Content-Type sem
+  // passar pelo CORS do navegador (proteção extra contra CSRF, além do cookie SameSite=Lax).
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!/^application\/json\b/i.test(contentType.trim())) {
+    return {
+      ok: false,
+      response: errorResponse(415, "invalid_request", "Content-Type must be application/json."),
+    };
+  }
+
+  const declared = Number(request.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return tooLarge();
+
   let body: unknown;
   try {
-    body = await request.json();
+    const text = await request.text();
+    if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return tooLarge();
+    body = JSON.parse(text);
   } catch {
     return {
       ok: false,

@@ -15,15 +15,14 @@ const NAV = [
 
 type FooterLink = { href: string; label: string; external?: boolean };
 
-// Rodapé em 4 colunas (brief). Ainda não existem páginas de privacidade/termos: a coluna
-// "Legal" só traz o que é verdade hoje, sem links quebrados.
+// Rodapé em 4 colunas (brief). Termos e privacidade são rascunhos (ver as próprias páginas).
 const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   {
     title: "Product",
     links: [
       { href: "/#how-it-works", label: "How it works" },
       { href: "/#examples", label: "Examples" },
-      { href: "/#pricing", label: "Pricing" },
+      { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
     ],
   },
@@ -37,7 +36,10 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   },
   {
     title: "Legal",
-    links: [{ href: "mailto:hello@nosweatfd.com", label: "Privacy questions", external: true }],
+    links: [
+      { href: "/terms", label: "Terms of Service" },
+      { href: "/privacy", label: "Privacy Policy" },
+    ],
     note: "Example businesses on this site are fictional.",
   },
   {

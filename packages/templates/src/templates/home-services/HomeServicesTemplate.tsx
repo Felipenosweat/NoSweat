@@ -1,5 +1,6 @@
 import type { Section, SectionOf, SectionType } from "@nosweat/schema";
 import type { ReactNode } from "react";
+import { telHref } from "../../components/primitives";
 import { Contact, Faq, Gallery, Hero, Services, Testimonials } from "../../sections";
 import { EditableSection } from "../../EditableSection";
 import type { TemplateProps } from "../../types";
@@ -53,6 +54,15 @@ export function HomeServicesTemplate({
     sections.find((s): s is SectionOf<"hero"> => s.type === "hero")?.ctaLabel ?? "Contact us";
   const where = areaServed(business);
   const hasHeroCard = Boolean(business.hours?.length || firstTestimonial || business.phone);
+  // Sem seção de contato (o dono removeu), o botão principal liga ou manda e-mail direto,
+  // em vez de apontar para um #contact que não existe.
+  const ctaHref = sections.some((s) => s.type === "contact")
+    ? "#contact"
+    : business.phone
+      ? telHref(business.phone)
+      : business.email
+        ? `mailto:${business.email}`
+        : "#top";
   // Card só com o telefone: no topo empilhado (celular/tablet) ele seria a terceira ação de
   // ligar seguida (botão do hero e barra fixa), então só aparece com o topo em duas colunas.
   const heroCardPhoneOnly = !business.hours?.length && !firstTestimonial;
@@ -65,6 +75,7 @@ export function HomeServicesTemplate({
           <Hero
             key={key}
             data={section}
+            ctaHref={ctaHref}
             eyebrow={
               where && (
                 <p className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-ns-border bg-ns-background px-4 py-1.5 text-sm font-medium [overflow-wrap:anywhere]">
@@ -158,7 +169,7 @@ export function HomeServicesTemplate({
           : sections.map(renderSection)}
       </main>
       <Footer business={business} links={links} />
-      <MobileCallBar phone={business.phone} ctaLabel={primaryCta} />
+      <MobileCallBar phone={business.phone} ctaLabel={primaryCta} ctaHref={ctaHref} />
     </div>
   );
 }

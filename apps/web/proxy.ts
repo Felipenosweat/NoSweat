@@ -2,11 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAppHost } from "@/server/domains/hosts";
+import { GUEST_COOKIE } from "@/server/guest-cookie";
 
-// Páginas que exigem login. As rotas /api conferem o login sozinhas (respondem 401 em JSON).
-const PROTECTED_PATHS = ["/dashboard", "/create", "/sites", "/admin"];
+// Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
+const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin"];
+
+// Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio
+// site. A página confere se o site é mesmo do visitante (senão, 404).
+const GUEST_PATHS = [/^\/sites\/[^/]+\/edit(\/canvas)?\/?$/, /^\/sites\/preview\/[^/]+\/?$/];
 
 const isProtected = (path: string) =>
+  !GUEST_PATHS.some((pattern) => pattern.test(path)) &&
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
 /**
@@ -14,9 +20,23 @@ const isProtected = (path: string) =>
  * 2. Domínio da plataforma: renova a sessão do Supabase e manda para /login quem não está logado.
  */
 export async function proxy(request: NextRequest) {
-  const host = (request.headers.get("host") ?? "").toLowerCase().replace(/:\d+$/, "");
+  const host = (request.headers.get("host") ?? "")
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, ""); // "joes.com." (ponto final) é o mesmo domínio
   // No domínio do cliente, só a API pública (ex.: formulário de contato) passa direto.
   if (host && !isAppHost(host) && !request.nextUrl.pathname.startsWith("/api/")) {
+    // O site do cliente é uma página só: robots.txt e sitemap.xml simples para o Google.
+    const safeHost = /^[a-z0-9.-]+$/.test(host);
+    if (safeHost && request.nextUrl.pathname === "/robots.txt") {
+      return new NextResponse(`User-agent: *\nAllow: /\nSitemap: https://${host}/sitemap.xml\n`, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
+    }
+    if (safeHost && request.nextUrl.pathname === "/sitemap.xml") {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${host}/</loc></url></urlset>\n`;
+      return new NextResponse(xml, { headers: { "Content-Type": "application/xml" } });
+    }
     const url = request.nextUrl.clone();
     url.pathname = `/d/${host}`;
     url.search = "";
@@ -57,7 +77,8 @@ export async function proxy(request: NextRequest) {
 
   if (!data?.claims && isProtected(pathname)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    // Quem já criou um site como visitante ainda não tem conta: vai direto para o cadastro.
+    url.pathname = request.cookies.has(GUEST_COOKIE) ? "/signup" : "/login";
     url.search = "";
     url.searchParams.set("next", pathname);
     const redirect = NextResponse.redirect(url);

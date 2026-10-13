@@ -72,7 +72,7 @@ const DETAIL_EXAMPLES = [
 // Tempo de cada etapa da construção enquanto a resposta não chega (a última espera a API).
 const BUILD_STEP_DELAYS = [1400, 1800, 2200];
 
-type FormError = { title: string; body: string; loginLink?: boolean };
+type FormError = { title: string; body: string; loginLink?: boolean; signupLink?: boolean };
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
 type Generated = { siteId: string; spec: SiteSpec };
@@ -90,6 +90,13 @@ function errorFor(code: string, fallback: string): FormError {
         title: "Your session expired.",
         body: "Log in again to continue. Your answers are saved in this tab.",
         loginLink: true,
+      };
+    case "quota_exceeded":
+      // Limite de uso da IA (visitante sem conta ou limite diário da conta).
+      return {
+        title: "You’ve reached today’s limit.",
+        body: fallback || "Please try again tomorrow.",
+        signupLink: true,
       };
     case "generation_failed":
       return {
@@ -437,6 +444,17 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                     <AlertIcon />
                     <p>
                       <strong className="font-semibold">{formError.title}</strong> {formError.body}
+                      {formError.signupLink && (
+                        <>
+                          {" "}
+                          <Link
+                            href="/signup?next=/create"
+                            className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                          >
+                            Create a free account
+                          </Link>
+                        </>
+                      )}
                       {formError.loginLink && (
                         <>
                           {" "}

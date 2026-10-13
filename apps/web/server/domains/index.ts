@@ -10,7 +10,7 @@ export const DNS_RECORDS: DnsRecord[] = [
   { type: "CNAME", name: "www", value: "cname.vercel-dns.com" },
 ];
 
-export { APP_DOMAINS, isAppHost } from "./hosts";
+export { APP_DOMAINS, isAppHost, isReservedDomain } from "./hosts";
 
 /** Estado do domínio de um site, já com os registros de DNS para mostrar ao cliente. */
 export async function getDomainState(site: SiteRecord): Promise<DomainResponse> {

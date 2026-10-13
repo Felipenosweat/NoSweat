@@ -54,6 +54,51 @@ describe("SupabaseSiteStore", () => {
     await expect(store.get(ID)).rejects.toThrow();
   });
 
+  it("deletes a site and reports whether it existed", async () => {
+    const { store, fetchMock } = storeWith([row]);
+    expect(await store.delete(ID)).toBe(true);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(`https://demo.supabase.co/rest/v1/sites?id=eq.${ID}`);
+    expect(init.method).toBe("DELETE");
+    expect(await store.delete("not-a-uuid")).toBe(false);
+  });
+
+  it("creates a guest site and later moves it into an account", async () => {
+    const guestId = "7a1c0b52-3f4e-4d7a-9b1e-2c3d4e5f6a7b";
+    const { store, fetchMock } = storeWith([{ ...row, owner_id: null, guest_id: guestId }], 201);
+    const site = await store.create(fixtures["joes-plumbing"], { guestId });
+    expect(site).toMatchObject({ ownerId: null, guestId });
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({ owner_id: null, guest_id: guestId });
+
+    const claim = storeWith([{ ...row, owner_id: OWNER, guest_id: null }]);
+    expect(await claim.store.claimGuestSites(guestId, OWNER)).toBe(1);
+    const [url, patch] = claim.fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain(`guest_id=eq.${guestId}&owner_id=is.null`);
+    expect(patch.method).toBe("PATCH");
+    expect(await claim.store.claimGuestSites("not-a-uuid", OWNER)).toBe(0);
+  });
+
+  it("counts guest AI usage by visitor, by IP or for everyone", async () => {
+    // Contagem exata pelo cabeçalho Content-Range (sem baixar as linhas).
+    const fetchMock = vi.fn(
+      async () => new Response(null, { status: 200, headers: { "Content-Range": "0-1/2" } }),
+    );
+    const store = new SupabaseSiteStore({
+      url: "https://demo.supabase.co/",
+      serviceKey: "secret",
+      fetch: fetchMock as unknown as typeof fetch,
+    });
+    const since = "2026-10-13T00:00:00.000Z";
+    expect(await store.countGuestAiUsage({}, "generate", since)).toBe(2);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("user_id=is.null&kind=eq.generate");
+    expect(init.method).toBe("HEAD");
+    expect(init.headers).toMatchObject({ Prefer: "count=exact" });
+    expect(url).not.toContain("guest_id=");
+    expect(await store.countGuestAiUsage({ ipHash: "bad" }, "generate", since)).toBe(0);
+  });
+
   it("surfaces API errors", async () => {
     const { store } = storeWith({ message: "permission denied" }, 401);
     await expect(store.list(OWNER)).rejects.toThrow(/401/);

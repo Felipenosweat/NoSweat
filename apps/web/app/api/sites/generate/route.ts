@@ -1,29 +1,35 @@
 import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@nosweat/schema";
-import { generateSiteSpec } from "@/server/ai";
-import { getCurrentUser } from "@/server/auth/session";
+import { generateSiteSpec, getSiteGenerator } from "@/server/ai";
+import { ensureGuestId } from "@/server/guest";
+import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { resolveHeroImage } from "@/server/images";
-import { errorResponse, handle, jsonResponse, readJson, unauthorized } from "@/server/http";
-import { quotaExceeded, recordUse } from "@/server/quota";
+import { reserveUse } from "@/server/quota";
+import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 // A IA de verdade leva alguns segundos (às vezes dezenas) para montar o site.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
-/** POST /api/sites/generate: { brief } → { siteId, spec } */
+/**
+ * POST /api/sites/generate: { brief } → { siteId, spec }
+ * Funciona sem login: quem não tem conta vira visitante (cookie) e o site fica guardado
+ * para ele até criar a conta (ver server/guest.ts). Visitantes têm limites menores.
+ */
 export async function POST(request: Request): Promise<Response> {
   return handle(async () => {
-    const user = await getCurrentUser();
-    if (!user) return unauthorized();
-
     const input = await readJson(request, GenerateSiteRequest);
     if (!input.ok) return input.response;
 
-    const overLimit = await quotaExceeded(user, "generate");
+    const actor: Actor = (await getActor()) ?? { kind: "guest", guestId: await ensureGuestId() };
+    // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
+    // IA) vira 500 sem descontar nada do cliente.
+    const generator = getSiteGenerator();
+    const overLimit = await reserveUse(actor, "generate");
     if (overLimit) return overLimit;
 
     let spec: SiteSpec;
     try {
-      spec = await generateSiteSpec(input.data.brief);
+      spec = await generateSiteSpec(input.data.brief, generator);
     } catch (error) {
       console.error("[api] site generation failed", error);
       return errorResponse(
@@ -36,8 +42,10 @@ export async function POST(request: Request): Promise<Response> {
     // Foto do topo a partir de hero.imageQuery (sem chave, erro ou demora: segue sem foto).
     spec = await resolveHeroImage(spec);
 
-    await recordUse(user, "generate");
-    const site = await getSiteStore().create(spec, user.id);
+    const site = await getSiteStore().create(
+      spec,
+      actor.kind === "user" ? actor.user.id : { guestId: actor.guestId },
+    );
     return jsonResponse(GenerateSiteResponse, { siteId: site.id, spec: site.spec }, 201);
   });
 }

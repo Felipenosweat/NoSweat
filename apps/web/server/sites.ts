@@ -1,5 +1,6 @@
 import { isAdmin } from "./admin";
 import { getCurrentUser, type CurrentUser } from "./auth/session";
+import { getGuestId } from "./guest";
 import { getSiteStore, type SiteRecord } from "./store";
 
 /**
@@ -13,7 +14,37 @@ export async function getOwnedSite(user: CurrentUser, id: string): Promise<SiteR
   return (await isAdmin(user.id)) ? site : null;
 }
 
-/** Usuário logado + site dele, para as rotas da API. */
+/** Quem está usando: uma conta, ou um visitante sem conta (ver server/guest.ts). */
+export type Actor = { kind: "user"; user: CurrentUser } | { kind: "guest"; guestId: string };
+
+/** Conta logada; senão o visitante (se já tiver cookie); senão `null`. */
+export async function getActor(): Promise<Actor | null> {
+  const user = await getCurrentUser();
+  if (user) return { kind: "user", user };
+  const guestId = await getGuestId();
+  return guestId ? { kind: "guest", guestId } : null;
+}
+
+/**
+ * Site que `actor` pode ver e editar (rascunho, prévia, versões, IA), ou `null` (= 404).
+ * Visitante só acessa os sites que ele mesmo criou e que ainda não foram para uma conta.
+ */
+export async function getAccessibleSite(actor: Actor, id: string): Promise<SiteRecord | null> {
+  if (actor.kind === "user") return getOwnedSite(actor.user, id);
+  const site = await getSiteStore().get(id);
+  return site && site.ownerId === null && site.guestId === actor.guestId ? site : null;
+}
+
+/** Conta ou visitante + site acessível, para as rotas que visitantes também usam. */
+export async function requireSiteAccess(
+  id: string,
+): Promise<{ actor: Actor | null; site: SiteRecord | null }> {
+  const actor = await getActor();
+  if (!actor) return { actor: null, site: null };
+  return { actor, site: await getAccessibleSite(actor, id) };
+}
+
+/** Usuário logado + site dele, para as rotas só de conta (publicar, domínio, mensagens). */
 export async function requireOwnedSite(
   id: string,
 ): Promise<{ user: CurrentUser | null; site: SiteRecord | null }> {

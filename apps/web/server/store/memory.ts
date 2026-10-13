@@ -6,6 +6,8 @@ import {
   type SiteMeta,
   type SiteRecord,
   type AiUsageKind,
+  type GuestUsage,
+  type GuestUsageFilter,
   type SiteStore,
   type VersionRecord,
 } from "./types";
@@ -14,9 +16,15 @@ import {
 // Os dados somem quando o servidor reinicia: é só para desenvolvimento.
 const globalForStore = globalThis as typeof globalThis & {
   __nosweatSites?: Map<string, SiteRecord>;
-  __nosweatLeads?: LeadRecord[];
+  __nosweatLeads?: StoredLead[];
   __nosweatVersions?: VersionRecord[];
-  __nosweatAiUsage?: { userId: string; kind: AiUsageKind; at: string }[];
+  __nosweatAiUsage?: {
+    userId: string | null;
+    guestId?: string;
+    ipHash?: string | null;
+    kind: AiUsageKind;
+    at: string;
+  }[];
 };
 
 function aiUsage() {
@@ -39,7 +47,9 @@ function addVersion(siteId: string, spec: SiteSpec, source: VersionSource): void
   });
 }
 
-function leads(): LeadRecord[] {
+type StoredLead = LeadRecord & { ipHash?: string | null };
+
+function leads(): StoredLead[] {
   globalForStore.__nosweatLeads ??= [];
   return globalForStore.__nosweatLeads;
 }
@@ -53,11 +63,12 @@ function sites(): Map<string, SiteRecord> {
 const clone = <T>(value: T): T => structuredClone(value);
 
 export class MemorySiteStore implements SiteStore {
-  async create(spec: SiteSpec, ownerId: string): Promise<SiteRecord> {
+  async create(spec: SiteSpec, owner: string | { guestId: string }): Promise<SiteRecord> {
     const now = new Date().toISOString();
     const record: SiteRecord = {
       id: crypto.randomUUID(),
-      ownerId,
+      ownerId: typeof owner === "string" ? owner : null,
+      guestId: typeof owner === "string" ? null : owner.guestId,
       spec: clone(spec),
       publishedSpec: null,
       status: "draft",
@@ -70,6 +81,28 @@ export class MemorySiteStore implements SiteStore {
     sites().set(record.id, record);
     addVersion(record.id, spec, "generate");
     return clone(record);
+  }
+
+  async deleteAbandonedGuestSites(beforeIso: string): Promise<number> {
+    let deleted = 0;
+    for (const site of [...sites().values()]) {
+      if (site.ownerId === null && site.guestId !== null && site.createdAt < beforeIso) {
+        await this.delete(site.id);
+        deleted += 1;
+      }
+    }
+    return deleted;
+  }
+
+  async claimGuestSites(guestId: string, userId: string): Promise<number> {
+    let claimed = 0;
+    for (const site of sites().values()) {
+      if (site.ownerId === null && site.guestId === guestId) {
+        sites().set(site.id, { ...site, ownerId: userId, guestId: null });
+        claimed += 1;
+      }
+    }
+    return claimed;
   }
 
   async get(id: string): Promise<SiteRecord | null> {
@@ -92,6 +125,10 @@ export class MemorySiteStore implements SiteStore {
     sites().set(id, updated);
     addVersion(id, spec, source);
     return clone(updated);
+  }
+
+  async countVersions(siteId: string, sinceIso: string): Promise<number> {
+    return versions().filter((v) => v.siteId === siteId && v.createdAt >= sinceIso).length;
   }
 
   async listVersions(siteId: string): Promise<VersionRecord[]> {
@@ -119,6 +156,14 @@ export class MemorySiteStore implements SiteStore {
     return clone(updated);
   }
 
+  async delete(id: string): Promise<boolean> {
+    if (!sites().delete(id)) return false;
+    // Igual ao "on delete cascade" do banco.
+    globalForStore.__nosweatVersions = versions().filter((v) => v.siteId !== id);
+    globalForStore.__nosweatLeads = leads().filter((lead) => lead.siteId !== id);
+    return true;
+  }
+
   async list(ownerId: string): Promise<SiteRecord[]> {
     return [...sites().values()]
       .filter((site) => site.ownerId === ownerId)
@@ -140,14 +185,14 @@ export class MemorySiteStore implements SiteStore {
     return record ? clone(record) : null;
   }
 
-  async addLead(siteId: string, lead: NewLead): Promise<LeadRecord> {
+  async addLead(siteId: string, lead: NewLead, ipHash: string | null = null): Promise<LeadRecord> {
     const record: LeadRecord = {
       id: crypto.randomUUID(),
       siteId,
       ...lead,
       createdAt: new Date().toISOString(),
     };
-    leads().push(record);
+    leads().push({ ...record, ipHash });
     return clone(record);
   }
 
@@ -155,7 +200,26 @@ export class MemorySiteStore implements SiteStore {
     return leads()
       .filter((lead) => lead.siteId === siteId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map(clone);
+      .map((lead) =>
+        clone({
+          id: lead.id,
+          siteId: lead.siteId,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone,
+          message: lead.message,
+          createdAt: lead.createdAt,
+        }),
+      );
+  }
+
+  async countLeads(siteId: string, sinceIso: string, ipHash?: string): Promise<number> {
+    return leads().filter(
+      (lead) =>
+        lead.siteId === siteId &&
+        lead.createdAt >= sinceIso &&
+        (ipHash === undefined || lead.ipHash === ipHash),
+    ).length;
   }
 
   async recordAiUsage(userId: string, kind: AiUsageKind): Promise<void> {
@@ -165,5 +229,24 @@ export class MemorySiteStore implements SiteStore {
   async countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number> {
     return aiUsage().filter((u) => u.userId === userId && u.kind === kind && u.at >= sinceIso)
       .length;
+  }
+
+  async recordGuestAiUsage(usage: GuestUsage, kind: AiUsageKind): Promise<void> {
+    aiUsage().push({ userId: null, ...usage, kind, at: new Date().toISOString() });
+  }
+
+  async countGuestAiUsage(
+    filter: GuestUsageFilter,
+    kind: AiUsageKind,
+    sinceIso: string,
+  ): Promise<number> {
+    return aiUsage().filter(
+      (u) =>
+        u.userId === null &&
+        u.kind === kind &&
+        u.at >= sinceIso &&
+        (filter.guestId === undefined || u.guestId === filter.guestId) &&
+        (filter.ipHash === undefined || u.ipHash === filter.ipHash),
+    ).length;
   }
 }

@@ -3,7 +3,14 @@
 // Cada foto tem licença permissiva e crédito (ver /credits). Arquivos em public/photos/.
 
 export type PhotoKey =
-  "cleaner" | "crew" | "plumber" | "stylist" | "cook" | "shopOwner" | "landscaper" | "storefront";
+  | "cleaner"
+  | "crew"
+  | "plumber"
+  | "stylist"
+  | "cook"
+  | "shopOwner"
+  | "landscaper"
+  | "storefront";
 
 export type Photo = {
   src: string;

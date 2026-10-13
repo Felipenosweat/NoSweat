@@ -1,6 +1,6 @@
 import { VersionsResponse } from "@nosweat/schema";
 import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
-import { requireOwnedSite } from "@/server/sites";
+import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
@@ -9,8 +9,8 @@ type Context = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
-    const { user, site } = await requireOwnedSite(id);
-    if (!user) return unauthorized();
+    const { actor, site } = await requireSiteAccess(id);
+    if (!actor) return unauthorized();
     if (!site) return notFound();
     const versions = await getSiteStore().listVersions(site.id);
     return jsonResponse(VersionsResponse, {

@@ -1,6 +1,7 @@
 import {
   ApiError,
   CreditsResponse,
+  DeleteSiteResponse,
   DomainResponse,
   AiEditResponse,
   LeadsResponse,
@@ -11,8 +12,16 @@ import {
   UpdateSiteResponse,
 } from "@nosweat/schema";
 import { fixtures } from "@nosweat/fixtures";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type * as VerifyModule from "@/server/domains/verify";
 import { getSiteStore } from "@/server/store";
+
+// O DNS de verdade não existe nos testes: o "registro TXT" de prova de dono é simulado.
+const dns = vi.hoisted(() => ({ verified: true }));
+vi.mock("@/server/domains/verify", async (importOriginal) => {
+  const actual = await importOriginal<typeof VerifyModule>();
+  return { ...actual, isDomainVerified: async () => dns.verified };
+});
 import { GET as getCredits } from "./me/credits/route";
 import {
   DELETE as deleteDomain,
@@ -25,8 +34,9 @@ import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as restoreVersion } from "./sites/[id]/versions/[versionId]/restore/route";
 import { GET as listVersions } from "./sites/[id]/versions/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
-import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
+import { DELETE as deleteSite, GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
 import { POST as generate } from "./sites/generate/route";
+import { GET as cleanupGuests } from "./cron/cleanup-guests/route";
 
 const BASE = "http://localhost/api";
 
@@ -62,10 +72,25 @@ describe("POST /api/sites/generate", () => {
 
   it("rejects a body that is not JSON", async () => {
     const res = await generate(
-      new Request(`${BASE}/sites/generate`, { method: "POST", body: "{nope" }),
+      new Request(`${BASE}/sites/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{nope",
+      }),
     );
     expect(res.status).toBe(400);
     expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+  });
+
+  it("rejects requests that are not sent as JSON (CSRF protection)", async () => {
+    const res = await generate(
+      new Request(`${BASE}/sites/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ brief: "plumbing company in Austin" }),
+      }),
+    );
+    expect(res.status).toBe(415);
   });
 });
 
@@ -123,6 +148,51 @@ describe("PATCH /api/sites/[id]", () => {
   });
 });
 
+describe("GET /api/cron/cleanup-guests", () => {
+  const call = (auth?: string) =>
+    cleanupGuests(
+      new Request(`${BASE}/cron/cleanup-guests`, {
+        headers: auth ? { authorization: auth } : {},
+      }),
+    );
+
+  it("refuses calls without the cron secret", async () => {
+    expect((await call()).status).toBe(401);
+    process.env.CRON_SECRET = "cron-test-secret";
+    try {
+      expect((await call("Bearer wrong")).status).toBe(401);
+      expect((await call("Bearer cron-test-secret")).status).toBe(200);
+    } finally {
+      delete process.env.CRON_SECRET;
+    }
+  });
+
+  it("deletes only abandoned guest sites, never account sites", async () => {
+    const store = getSiteStore();
+    const guestSite = await store.create(fixtures["glow-salon"], { guestId: crypto.randomUUID() });
+    const owned = await ownSite();
+    const future = new Date(Date.now() + 60_000).toISOString();
+    expect(await store.deleteAbandonedGuestSites(future)).toBeGreaterThanOrEqual(1);
+    expect(await store.get(guestSite.id)).toBeNull();
+    expect(await store.get(owned.id)).not.toBeNull();
+  });
+});
+
+describe("request size limit", () => {
+  it("rejects huge request bodies", async () => {
+    const site = await ownSite();
+    const huge = {
+      spec: {
+        ...site.spec,
+        business: { ...site.spec.business, name: "x".repeat(200_000) },
+      },
+    };
+    const res = await patchSite(jsonRequest(`/sites/${site.id}`, "PATCH", huge), ctx(site.id));
+    expect(res.status).toBe(413);
+    expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+  });
+});
+
 describe("not implemented yet", () => {
   it("regenerate-section returns 501", async () => {
     const res = await regenerateSection();
@@ -167,6 +237,21 @@ describe("POST /api/sites/[id]/publish", () => {
   });
 });
 
+describe("publishing with example text", () => {
+  it("refuses to publish the editor's placeholder review", async () => {
+    const site = await ownSite();
+    const spec = structuredClone(site.spec);
+    spec.sections.push({
+      type: "testimonials",
+      items: [{ quote: "Paste a real customer review here.", author: "Customer name" }],
+    });
+    await patchSite(jsonRequest(`/x`, "PATCH", { spec }), ctx(site.id));
+    const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    expect(res.status).toBe(400);
+    expect(ApiError.parse(await res.json()).error.message).toMatch(/example text/);
+  });
+});
+
 describe("/api/sites/[id]/domain", () => {
   it("connects a domain (manual mode without VERCEL_TOKEN) and returns the DNS records", async () => {
     const site = await ownSite();
@@ -208,6 +293,26 @@ describe("/api/sites/[id]/domain", () => {
     expect(ApiError.parse(await res.json()).error.code).toBe("domain_taken");
   });
 
+  it("asks for the TXT ownership record before connecting a domain", async () => {
+    const site = await ownSite();
+    dns.verified = false;
+    try {
+      const res = await putDomain(
+        jsonRequest(`/x`, "PUT", { domain: "not-mine-yet.com" }),
+        ctx(site.id),
+      );
+      expect(res.status).toBe(200);
+      const body = DomainResponse.parse(await res.json());
+      expect(body).toMatchObject({ domain: "not-mine-yet.com", status: "unverified" });
+      expect(body.records).toEqual([expect.objectContaining({ type: "TXT", name: "_nosweat" })]);
+      expect(body.records[0]?.value).toMatch(/^nosweat-verify=[0-9a-f]{32}$/);
+      // Nada foi salvo: o domínio continua livre e o site sem domínio.
+      expect((await getSiteStore().get(site.id))?.customDomain).toBeNull();
+    } finally {
+      dns.verified = true;
+    }
+  });
+
   it("disconnects the domain", async () => {
     const site = await ownSite();
     await putDomain(jsonRequest(`/x`, "PUT", { domain: "remove-me.com" }), ctx(site.id));
@@ -236,6 +341,36 @@ describe("platform admins", () => {
   });
 });
 
+describe("DELETE /api/sites/[id]", () => {
+  const del = (id: string) =>
+    deleteSite(new Request(`${BASE}/sites/${id}`, { method: "DELETE" }), ctx(id));
+
+  it("deletes the owner's site, taking it offline with its versions and messages", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    await sendLead(
+      jsonRequest(`/x`, "POST", { name: "Ana", phone: "(512) 555-0100", message: "Hi" }),
+      ctx(site.id),
+    );
+
+    const res = await del(site.id);
+    expect(res.status).toBe(200);
+    expect(DeleteSiteResponse.parse(await res.json())).toEqual({ siteId: site.id, deleted: true });
+
+    const store = getSiteStore();
+    expect(await store.get(site.id)).toBeNull();
+    expect(await store.listVersions(site.id)).toHaveLength(0);
+    expect(await store.listLeads(site.id)).toHaveLength(0);
+    expect((await del(site.id)).status).toBe(404);
+  });
+
+  it("does not delete someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    expect((await del(other.id)).status).toBe(404);
+    expect(await getSiteStore().get(other.id)).not.toBeNull();
+  });
+});
+
 describe("/api/sites/[id]/leads", () => {
   const lead = { name: "Maria", phone: "(512) 555-0199", message: "Water heater is leaking." };
 
@@ -259,14 +394,34 @@ describe("/api/sites/[id]/leads", () => {
     expect(res.status).toBe(404);
   });
 
-  it("rejects bots that fill the honeypot", async () => {
+  it("silently drops messages from bots that fill the honeypot", async () => {
     const site = await ownSite();
     await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
     const res = await sendLead(
       jsonRequest(`/x`, "POST", { ...lead, company: "Spam Inc" }),
       ctx(site.id),
     );
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(201);
+    expect(await getSiteStore().listLeads(site.id)).toHaveLength(0);
+  });
+
+  it("limits how many messages one visitor can send", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    const send = (ip: string) =>
+      sendLead(
+        new Request(`${BASE}/x`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-real-ip": ip },
+          body: JSON.stringify(lead),
+        }),
+        ctx(site.id),
+      );
+    for (let i = 0; i < 5; i += 1) expect((await send("198.51.100.9")).status).toBe(201);
+    const blocked = await send("198.51.100.9");
+    expect(blocked.status).toBe(429);
+    expect(ApiError.parse(await blocked.json()).error.code).toBe("quota_exceeded");
+    expect((await send("198.51.100.10")).status).toBe(201);
   });
 
   it("does not show leads of someone else's site", async () => {

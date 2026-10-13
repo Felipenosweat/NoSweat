@@ -1,4 +1,5 @@
 import type { Section, SectionType } from "@nosweat/schema";
+import { PLACEHOLDERS as P } from "@/lib/placeholders";
 
 /** Conteúdo inicial de cada tipo de seção quando o cliente adiciona uma nova. */
 export function newSection(type: SectionType): Section {
@@ -6,19 +7,19 @@ export function newSection(type: SectionType): Section {
     case "hero":
       return {
         type,
-        title: "Your headline here",
-        subtitle: "Tell visitors what you do and why they should choose you.",
+        title: P.heroTitle,
+        subtitle: P.heroSubtitle,
         ctaLabel: "Get in Touch",
       };
     case "services":
-      return { type, items: [{ name: "New service", description: "Describe this service." }] };
+      return { type, items: [{ name: P.serviceName, description: P.serviceDescription }] };
     case "testimonials":
       return {
         type,
-        items: [{ quote: "Paste a real customer review here.", author: "Customer name" }],
+        items: [{ quote: P.reviewQuote, author: P.reviewAuthor }],
       };
     case "faq":
-      return { type, items: [{ q: "A question customers ask", a: "Your answer." }] };
+      return { type, items: [{ q: P.faqQuestion, a: P.faqAnswer }] };
     case "contact":
       return { type, showForm: true, showMap: true };
     case "gallery":

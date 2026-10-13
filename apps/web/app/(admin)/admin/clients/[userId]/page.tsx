@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { SitesGrid } from "@/components/SitesGrid";
-import { listClients } from "@/server/admin";
+import { listClients, requireAdmin } from "@/server/admin";
 import { getSiteStore } from "@/server/store";
 
 export const metadata: Metadata = { title: "Client" };
@@ -13,6 +13,7 @@ type ClientPageProps = { params: Promise<{ userId: string }> };
 /** "Ver como o cliente": o mesmo painel que o cliente vê em /dashboard. */
 export default async function AdminClientPage({ params }: ClientPageProps) {
   await connection();
+  await requireAdmin();
   const { userId } = await params;
   const client = (await listClients()).find((c) => c.id === userId);
   if (!client) notFound();

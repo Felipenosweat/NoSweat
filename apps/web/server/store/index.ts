@@ -5,6 +5,8 @@ import type { SiteStore } from "./types";
 export { DomainTakenError } from "./types";
 export type {
   AiUsageKind,
+  GuestUsage,
+  GuestUsageFilter,
   LeadRecord,
   NewLead,
   SiteMeta,

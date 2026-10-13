@@ -133,10 +133,36 @@ Depois clique em **Deployments → ⋯ → Redeploy** para valer.
    Confira em **Storage** que o bucket aparece.
 
 > O aviso vai para o e-mail da conta do dono do site (ou, se não achar, para o e-mail do
-> negócio no site). O link do e-mail abre a página do site no painel. Há um limite simples de
-> 5 envios do formulário a cada 10 minutos por visitante.
+> negócio no site). O link do e-mail abre a página do site no painel. Há um limite de
+> 5 envios do formulário por hora por rede (IP) em cada site.
 
 ---
+
+## Passo 4 (opcional): entrar com Google
+
+O botão "Continue with Google" em `/login` e `/signup` só aparece quando o Google está ligado no
+Supabase (a página confere sozinha, a cada 5 minutos).
+
+1. Google Cloud Console → APIs & Services → Credentials → Create credentials → OAuth client ID →
+   tipo "Web application".
+   - Authorized redirect URI: `https://<id-do-projeto>.supabase.co/auth/v1/callback`
+   - Tela de consentimento: nome "No Sweat", e-mail de suporte, links
+     `https://nosweatfd.com/terms` e `https://nosweatfd.com/privacy`.
+2. Supabase → Authentication → Sign In / Providers → Google: ligar e colar o Client ID e o
+   Client Secret.
+3. Supabase → Authentication → URL Configuration: Site URL `https://nosweatfd.com` e, em
+   Redirect URLs, `https://nosweatfd.com/auth/callback**`.
+
+Apple funciona igual (provider "Apple"), mas exige conta Apple Developer (US$ 99/ano).
+
+## Passo 5: limpeza automática (Cron da Vercel)
+
+Sites criados sem conta e abandonados (mais de 30 dias) são apagados todo dia às 07:17 UTC por
+`/api/cron/cleanup-guests` (configurado em `apps/web/vercel.json`). Para funcionar, crie na Vercel
+(Settings → Environment Variables) a variável `CRON_SECRET` com um texto aleatório longo. Sem
+ela, a rota recusa tudo (nada é apagado).
+
+Recomendado também: `IP_HASH_SALT` (texto aleatório) para o hash de IP dos limites anti-abuso.
 
 ## Conferência final
 

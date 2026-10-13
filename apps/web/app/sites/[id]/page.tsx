@@ -13,6 +13,8 @@ import {
   secondaryButton,
   textButton,
 } from "@/components/DashboardUi";
+import { DeleteSiteButton } from "@/components/DeleteSiteButton";
+import { LocalTime } from "@/components/LocalTime";
 import { Logo } from "@/components/Logo";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
@@ -24,8 +26,6 @@ import { PublishButton } from "./PublishButton";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
-
-const leadDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
 type ManageSitePageProps = { params: Promise<{ id: string }> };
 
@@ -206,7 +206,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <p className="text-[15px] font-semibold text-ink">{lead.name}</p>
                         <p className="text-[13px] text-slate-500 tabular-nums">
-                          {leadDate.format(new Date(lead.createdAt))}
+                          <LocalTime iso={lead.createdAt} />
                         </p>
                       </div>
                       {(lead.phone || lead.email) && (
@@ -268,6 +268,20 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   source,
                   createdAt,
                 }))}
+              />
+            </section>
+
+            <section aria-labelledby="delete-title" className={`${panelClass} border-red-100`}>
+              <h2 id="delete-title" className={panelTitle}>
+                Delete website
+              </h2>
+              <p className={`mt-1 mb-4 max-w-[60ch] ${panelText}`}>
+                Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
+              </p>
+              <DeleteSiteButton
+                siteId={site.id}
+                siteName={site.spec.business.name}
+                redirectTo="/dashboard"
               />
             </section>
           </div>

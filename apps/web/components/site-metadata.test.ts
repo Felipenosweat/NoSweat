@@ -10,6 +10,7 @@ function record(spec: SiteSpec): SiteRecord {
   return {
     id: "site_1",
     ownerId: "user_1",
+    guestId: null,
     spec,
     publishedSpec: spec,
     status: "published",

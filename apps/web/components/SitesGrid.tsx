@@ -5,6 +5,7 @@ import { getPhoto } from "@/components/photos";
 import { liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
 import { StatusBadge, focusRing, primaryButton, secondaryButton, textButton } from "./DashboardUi";
+import { DeleteSiteButton } from "./DeleteSiteButton";
 import { SiteThumb } from "./SiteThumb";
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
@@ -167,6 +168,9 @@ export function SitesGrid({
                     Preview
                   </Link>
                 )}
+                <span className="ml-auto">
+                  <DeleteSiteButton siteId={site.id} siteName={site.spec.business.name} compact />
+                </span>
               </div>
             </article>
           </li>

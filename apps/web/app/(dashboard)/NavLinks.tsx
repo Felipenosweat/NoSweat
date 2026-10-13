@@ -7,7 +7,8 @@ import { usePathname } from "next/navigation";
 const linkClass =
   "relative inline-flex h-16 items-center text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand aria-[current=page]:text-ink aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-0 aria-[current=page]:after:-bottom-px aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-brand";
 
-export function NavLinks({ admin }: { admin: boolean }) {
+// Visitante sem conta (`guest`) não tem "My sites": os sites dele só aparecem depois do cadastro.
+export function NavLinks({ admin, guest = false }: { admin: boolean; guest?: boolean }) {
   const pathname = usePathname();
   const current = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined;
@@ -21,9 +22,11 @@ export function NavLinks({ admin }: { admin: boolean }) {
           </span>
         </Link>
       )}
-      <Link href="/dashboard" aria-current={current("/dashboard")} className={linkClass}>
-        My sites
-      </Link>
+      {!guest && (
+        <Link href="/dashboard" aria-current={current("/dashboard")} className={linkClass}>
+          My sites
+        </Link>
+      )}
     </>
   );
 }

@@ -1,0 +1,133 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PlusIcon } from "@/components/marketing/icons";
+import { PricingPlans } from "@/components/marketing/PricingPlans";
+import { TightPunctuation } from "@/components/marketing/TightPunctuation";
+import { container, primaryButton, textLink } from "@/components/marketing/styles";
+
+// Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
+// A cobrança ainda não existe, então as respostas do FAQ dizem só o que é verdade hoje.
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.",
+};
+
+const FAQS = [
+  {
+    question: "Do I need a credit card to start?",
+    answer:
+      "No. Describe your business and get a full website draft without a credit card. You don’t even need an account to start.",
+  },
+  {
+    question: "Can I use my own domain?",
+    answer:
+      "Yes, on Pro and Premium. You connect a domain you already own and we show you the DNS records to add at your registrar. Domain registration is not included.",
+  },
+  {
+    question: "Can I cancel?",
+    answer:
+      "Yes. Monthly plans have no long-term contract. The details are shown before you pay, and nothing is charged today.",
+  },
+  {
+    question: "What happens to my website if I don’t publish?",
+    answer:
+      "It stays as a private draft in your account. Only you can see it, and you can keep editing it anytime.",
+  },
+];
+
+const h2Class =
+  "font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-balance text-ink lg:text-[2.5rem]";
+
+export default function PricingPage() {
+  return (
+    <>
+      <section aria-labelledby="pricing-title" className="bg-surface">
+        <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
+          <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
+            <div className="lg:col-span-7">
+              <p className="font-display text-sm font-semibold text-brand">Pricing</p>
+              <h1
+                id="pricing-title"
+                className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
+              >
+                <TightPunctuation>Build it free. Pay when it goes live.</TightPunctuation>
+              </h1>
+            </div>
+            <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-span-5 lg:self-end">
+              Describe your business, get a full website draft and edit it as much as you like. Pick
+              a plan when you’re ready to publish and get messages from customers.
+            </p>
+          </div>
+
+          <div className="mt-12 lg:mt-16">
+            <PricingPlans />
+          </div>
+
+          <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
+            Prices in US dollars. Paid plans aren’t live yet, so nothing is charged today. Domain
+            registration is not included. See our{" "}
+            <Link href="/terms" className={textLink}>
+              Terms of Service
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ: respostas honestas, só o que vale hoje. */}
+      <section aria-labelledby="pricing-faq-title" className="bg-white py-16 lg:py-24">
+        <div className={`${container} grid gap-y-10 lg:grid-cols-12 lg:gap-x-8`}>
+          <div className="lg:col-span-4">
+            <h2 id="pricing-faq-title" className={`max-w-[20ch] ${h2Class}`}>
+              <TightPunctuation>Questions about pricing.</TightPunctuation>
+            </h2>
+            <p className="mt-4 max-w-[40ch] text-base leading-[1.65] text-pretty text-slate-600">
+              More about how it works on the{" "}
+              <Link href="/#faq" className={textLink}>
+                main FAQ
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-8">
+            {FAQS.map((faq) => (
+              <details key={faq.question} className="group">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                  {faq.question}
+                  <PlusIcon className="size-5 shrink-0 text-slate-500 motion-safe:transition-transform group-open:rotate-45" />
+                </summary>
+                <p className="max-w-[65ch] pr-10 pb-6 text-base leading-[1.65] text-pretty text-slate-600">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section
+        aria-labelledby="pricing-cta-title"
+        className="border-t border-slate-200 bg-surface py-16 lg:py-20"
+      >
+        <div className={`${container} grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8`}>
+          <div className="lg:col-span-7">
+            <h2 id="pricing-cta-title" className={`max-w-[20ch] ${h2Class}`}>
+              <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
+            </h2>
+            <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
+              Start with a sentence about your business. No account or credit card needed.
+            </p>
+          </div>
+          <div className="lg:col-span-5 lg:justify-self-end">
+            <Link href="/create" className={`w-full sm:w-auto ${primaryButton}`}>
+              Start building
+            </Link>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

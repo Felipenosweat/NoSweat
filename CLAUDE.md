@@ -49,6 +49,8 @@ Como as peças se ligam:
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
   registro A e um CNAME. O `proxy.ts` reconhece o domínio e mostra o site certo.
+  Antes disso o cliente prova que é dono: registro TXT `_nosweat` com o código de
+  `server/domains/verify.ts` (sem ele a resposta vem com status `unverified` e nada é salvo).
 - Rascunho x publicado: `sites.spec` é o RASCUNHO (editor e IA mudam só isto, e cada
   salvamento vira uma linha em `site_versions`); `sites.published_spec` é o que está no ar e só
   muda ao publicar. Páginas públicas usam `liveSpec(site)`. Restaurar versão = novo rascunho.
@@ -60,6 +62,28 @@ Como as peças se ligam:
   campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
   `proxy.ts` deixa `/api/*` passar sem reescrever.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
+
+- Criar sem conta (modo visitante): `/create`, o editor e a prévia funcionam sem login. Quem
+  não está logado ganha o cookie `ns_guest` (`server/guest.ts`); o site fica com `owner_id` nulo
+  e `guest_id` = cookie. Rotas que visitantes usam chamam `requireSiteAccess` / `getActor`
+  (`server/sites.ts`); publicar, domínio e mensagens continuam com `requireOwnedSite` (só conta).
+  Ao entrar/criar conta (`/login`, `/signup`, `/auth/callback`) `claimGuestSites` passa os sites
+  para a conta. Visitantes têm limite de IA por cookie, por IP (hash) e um teto global por dia
+  (`server/quota.ts`, variáveis `GUEST_*`).
+- Planos e preços mostrados no site: só em `components/marketing/PricingPlans.tsx` (landing e
+  `/pricing` usam o mesmo componente).
+- Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
+  apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
+
+## Princípio do produto: o cliente fala pouco, nós entregamos muito
+
+- Todo site sai completo mesmo que o cliente não peça: telefone clicável, botão de ligar no
+  celular, formulário de contato, área atendida, horário (se ele informou), SEO básico (título e
+  descrição), favicon, rodapé, página rápida e boa no celular.
+- Cada passo pede o mínimo possível; o que der para deduzir, a plataforma deduz (sem inventar
+  fatos, ver regra 8).
+- Referência de experiência: lovable.dev (entrada imersiva, criar antes de pedir cadastro,
+  cadastro em página própria com termos e privacidade).
 
 ## Regras do time
 

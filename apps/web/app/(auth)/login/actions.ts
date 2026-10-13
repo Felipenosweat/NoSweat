@@ -4,7 +4,9 @@ import { Credentials } from "@nosweat/schema";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeNextPath } from "@/server/auth/config";
+import { isOAuthProvider } from "@/server/auth/providers";
 import { createSupabaseServerClient } from "@/server/auth/session";
+import { claimGuestSites } from "@/server/guest";
 
 export type AuthFormState = { error?: string; message?: string };
 
@@ -16,10 +18,26 @@ function readCredentials(formData: FormData) {
 }
 
 async function siteOrigin(): Promise<string> {
+  // Em produção, o endereço oficial (não confia em cabeçalhos que vêm do cliente).
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
+  if (configured) return configured;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${proto}://${host}`;
+}
+
+function callbackUrl(origin: string, next: string): string {
+  return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+}
+
+/** Passa os sites feitos sem conta para a conta. Uma falha aqui nunca impede o login. */
+async function claimGuestSitesSafely(userId: string): Promise<void> {
+  try {
+    await claimGuestSites(userId);
+  } catch (error) {
+    console.error("Could not move guest sites to the account", error);
+  }
 }
 
 export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -31,7 +49,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
   if (!input.success)
     return { error: input.error.issues[0]?.message ?? "Invalid email or password." };
 
-  const { error } = await supabase.auth.signInWithPassword(input.data);
+  const { data, error } = await supabase.auth.signInWithPassword(input.data);
   if (error) {
     return {
       error:
@@ -40,6 +58,7 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
           : "Invalid email or password.",
     };
   }
+  if (data.user) await claimGuestSitesSafely(data.user.id);
   redirect(next);
 }
 
@@ -54,9 +73,7 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
 
   const { data, error } = await supabase.auth.signUp({
     ...input.data,
-    options: {
-      emailRedirectTo: `${await siteOrigin()}/auth/callback?next=${encodeURIComponent(next)}`,
-    },
+    options: { emailRedirectTo: callbackUrl(await siteOrigin(), next) },
   });
   if (error) {
     return {
@@ -66,9 +83,38 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
           : error.message,
     };
   }
+  // Passa os sites feitos sem conta AGORA, neste navegador: o link de confirmação muitas vezes
+  // abre em outro (ex.: navegador do app de e-mail no celular), sem o cookie do visitante.
+  // `identities` vazio = e-mail que já tinha conta (o Supabase devolve um usuário falso): aí não.
+  if (data.user && (data.user.identities?.length ?? 0) > 0) {
+    await claimGuestSitesSafely(data.user.id);
+  }
   // Com "Confirm email" desligado no Supabase, a sessão já vem pronta.
   if (data.session) redirect(next);
   return { message: "Almost there! Check your email and click the link to confirm your account." };
+}
+
+/**
+ * Login social (Google/Apple) pelo Supabase OAuth. O formulário manda `provider`, `next` e
+ * `from` (a página de origem, para voltar com `?error=oauth` se algo der errado).
+ */
+export async function signInWithProvider(formData: FormData): Promise<void> {
+  const next = safeNextPath(formData.get("next"));
+  const from = formData.get("from") === "signup" ? "/signup" : "/login";
+  const provider = formData.get("provider");
+
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) redirect(next);
+
+  const failure = `${from}?error=oauth&next=${encodeURIComponent(next)}`;
+  if (!isOAuthProvider(provider)) redirect(failure);
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: callbackUrl(await siteOrigin(), next) },
+  });
+  if (error || !data.url) redirect(failure);
+  redirect(data.url);
 }
 
 export async function signOut(): Promise<void> {

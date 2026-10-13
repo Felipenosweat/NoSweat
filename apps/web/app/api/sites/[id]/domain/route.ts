@@ -1,12 +1,13 @@
 import { ConnectDomainRequest, DomainResponse } from "@nosweat/schema";
 import {
   addDomain,
-  APP_DOMAINS,
+  isReservedDomain,
   getDomainState,
   getVercelConfig,
   removeDomain,
   VercelDomainError,
 } from "@/server/domains";
+import { isDomainVerified, verificationRecord } from "@/server/domains/verify";
 import {
   errorResponse,
   handle,
@@ -43,7 +44,7 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
     if (!input.ok) return input.response;
     const { domain } = input.data;
 
-    if (APP_DOMAINS.includes(domain)) {
+    if (isReservedDomain(domain)) {
       return errorResponse(400, "invalid_request", "Please use your own business domain.");
     }
 
@@ -51,15 +52,29 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
     const other = await store.getByDomain(domain);
     if (other && other.id !== site.id) return domainTaken(domain);
 
+    // Prova de dono (registro TXT). Até lá nada é salvo nem registrado na Vercel.
+    const ownerId = site.ownerId ?? user.id;
+    if (site.customDomain !== domain && !(await isDomainVerified(ownerId, domain))) {
+      return jsonResponse(DomainResponse, {
+        siteId: site.id,
+        domain,
+        status: "unverified",
+        records: [verificationRecord(ownerId, domain)],
+      });
+    }
+
     const vercel = getVercelConfig();
+    const previous = site.customDomain;
     try {
-      // Troca de domínio: solta o anterior antes de ligar o novo.
-      if (vercel && site.customDomain && site.customDomain !== domain) {
-        await removeDomain(vercel, site.customDomain);
-      }
+      // Liga o novo primeiro; só depois solta o anterior (se algo falhar, o site segue no ar).
       if (vercel) await addDomain(vercel, domain);
       const updated = await store.updateMeta(site.id, { customDomain: domain });
       if (!updated) return notFound();
+      if (vercel && previous && previous !== domain) {
+        await removeDomain(vercel, previous).catch((error: unknown) => {
+          console.error("[domains] could not release previous domain", previous, error);
+        });
+      }
       return jsonResponse(DomainResponse, await getDomainState(updated));
     } catch (error) {
       if (error instanceof DomainTakenError) return domainTaken(domain);
@@ -85,7 +100,13 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     if (!site) return notFound();
 
     const vercel = getVercelConfig();
-    if (vercel && site.customDomain) await removeDomain(vercel, site.customDomain);
+    if (vercel && site.customDomain) {
+      // Se a Vercel falhar, desliga do site mesmo assim (o domínio solto no projeto é inofensivo:
+      // nenhum site responde por ele) e registra para o time limpar.
+      await removeDomain(vercel, site.customDomain).catch((error: unknown) => {
+        console.error("[domains] could not remove domain from Vercel", site.customDomain, error);
+      });
+    }
     const updated = await getSiteStore().updateMeta(site.id, { customDomain: null });
     if (!updated) return notFound();
     return jsonResponse(DomainResponse, await getDomainState(updated));

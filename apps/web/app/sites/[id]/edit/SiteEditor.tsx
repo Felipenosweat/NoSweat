@@ -129,12 +129,15 @@ export function SiteEditor({
   initialSpec,
   status,
   aiEditsLeft: initialAiEditsLeft,
+  isGuest = false,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
   status: "live" | "draft";
   /** Pedidos à IA que ainda cabem hoje; `null` = sem limite. */
   aiEditsLeft: number | null;
+  /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
+  isGuest?: boolean;
 }) {
   const [spec, setSpec] = useState<SiteSpec>(initialSpec);
   const [dirty, setDirty] = useState(false);
@@ -272,8 +275,19 @@ export function SiteEditor({
 
   // ---------- Edição ----------
 
+  // Avisa antes de sair da página com mudanças não salvas.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
   /** Atualiza uma cópia do SiteSpec (nunca muta o estado atual). */
   function update(change: (draft: SiteSpec) => void) {
+    // Enquanto salva ou a IA trabalha, ignora edições: a resposta do servidor substitui o
+    // SiteSpec inteiro e apagaria o que fosse digitado nesse meio-tempo.
+    if (saving || aiPending) return;
     setSpec((current) => {
       const draft = structuredClone(current);
       change(draft);
@@ -547,7 +561,8 @@ export function SiteEditor({
       <header className="relative z-30 flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-2 sm:px-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
           <Link
-            href={`/sites/${siteId}`}
+            // Visitante volta para a prévia (a página do site exige conta).
+            href={isGuest ? `/sites/preview/${siteId}` : `/sites/${siteId}`}
             className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-2.5 font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-ink motion-reduce:transition-none ${focusRing}`}
           >
             <ArrowLeftIcon className="size-4" />
@@ -607,16 +622,32 @@ export function SiteEditor({
           >
             {saving ? "Saving…" : "Save"}
           </button>
-          <button
-            ref={publishRef}
-            type="button"
-            onClick={() => void publish()}
-            disabled={publishing || saving}
-            aria-busy={publishing}
-            className={`${primaryButton} disabled:cursor-wait`}
-          >
-            {publishing ? "Publishing…" : "Publish"}
-          </button>
+          {isGuest ? (
+            // Publicar exige conta: depois do cadastro o site passa para a conta e volta aqui.
+            <Link
+              href={`/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`}
+              onClick={(event) => {
+                if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
+                  event.preventDefault();
+                }
+              }}
+              className={primaryButton}
+            >
+              <span className="sm:hidden">Sign up</span>
+              <span className="hidden sm:inline">Sign up to publish</span>
+            </Link>
+          ) : (
+            <button
+              ref={publishRef}
+              type="button"
+              onClick={() => void publish()}
+              disabled={publishing || saving}
+              aria-busy={publishing}
+              className={`${primaryButton} disabled:cursor-wait`}
+            >
+              {publishing ? "Publishing…" : "Publish"}
+            </button>
+          )}
         </div>
       </header>
 

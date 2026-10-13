@@ -4,6 +4,7 @@ import { ApiError, type SiteVersionSummary, type VersionSource } from "@nosweat/
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatusBadge, focusRing } from "@/components/DashboardUi";
+import { LocalTime } from "@/components/LocalTime";
 
 const SOURCE_LABELS: Record<VersionSource, string> = {
   generate: "Created by AI",
@@ -12,8 +13,6 @@ const SOURCE_LABELS: Record<VersionSource, string> = {
   restore: "Restored",
   initial: "Original",
 };
-
-const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
 export function VersionHistory({
   siteId,
@@ -61,7 +60,7 @@ export function VersionHistory({
                 {SOURCE_LABELS[version.source]}
               </span>
               <span className="block text-[13px] text-slate-500 tabular-nums sm:ml-2 sm:inline">
-                {dateFormat.format(new Date(version.createdAt))}
+                <LocalTime iso={version.createdAt} />
               </span>
             </span>
             {index === 0 ? (

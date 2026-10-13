@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { listClients } from "@/server/admin";
+import { listClients, requireAdmin } from "@/server/admin";
 import { getSiteStore } from "@/server/store";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -11,6 +11,7 @@ const formatDate = (value: string | null) => (value ? dateFormat.format(new Date
 
 export default async function AdminOverviewPage() {
   await connection();
+  await requireAdmin();
   const [clients, sites] = await Promise.all([listClients(), getSiteStore().listAll()]);
 
   const emailById = new Map(clients.map((c) => [c.id, c.email]));
