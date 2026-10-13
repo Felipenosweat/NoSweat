@@ -43,7 +43,8 @@ crie o Pull Request da branch de trabalho para a `main` e clique em **Merge**.
 3. Na tela de configuração:
    - **Root Directory**: clique em _Edit_ e escolha **`apps/web`**.
    - **Framework Preset**: _Next.js_ (aparece sozinho).
-   - Não mexa nos comandos de build e de install: a Vercel detecta o pnpm.
+   - Não mexa nos comandos de build e de install: eles vêm do arquivo `apps/web/vercel.json`
+     (que força o pnpm; sem ele a Vercel tenta usar o npm e falha com `workspace:`).
 4. Abra **Environment Variables** e adicione as três:
 
 | Name                        | Value                      |
