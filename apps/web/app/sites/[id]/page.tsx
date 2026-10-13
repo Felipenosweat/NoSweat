@@ -118,7 +118,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               href={`/sites/${site.id}/edit`}
               className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
             >
-              Edit website
+              Edit website or ask AI
             </Link>
             <Link
               href={`/sites/preview/${site.id}`}

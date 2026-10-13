@@ -52,6 +52,10 @@ Como as peças se ligam:
 - Rascunho x publicado: `sites.spec` é o RASCUNHO (editor e IA mudam só isto, e cada
   salvamento vira uma linha em `site_versions`); `sites.published_spec` é o que está no ar e só
   muda ao publicar. Páginas públicas usam `liveSpec(site)`. Restaurar versão = novo rascunho.
+- IA editando o site: `POST /api/sites/[id]/ai-edit` recebe um pedido em linguagem natural,
+  a IA devolve o SiteSpec inteiro alterado + um resumo (`AiEditResult`), e isso vira um novo
+  RASCUNHO (versão `ai_edit`). Limite diário por conta em `server/quota.ts`
+  (`AI_DAILY_GENERATIONS`, `AI_DAILY_EDITS`; admins sem limite), registrado em `ai_usage`.
 - Formulário de contato: sites publicados enviam para `POST /api/sites/[id]/leads` (público, com
   campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
   `proxy.ts` deixa `/api/*` passar sem reescrever.

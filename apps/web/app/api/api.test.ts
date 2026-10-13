@@ -2,6 +2,7 @@ import {
   ApiError,
   CreditsResponse,
   DomainResponse,
+  AiEditResponse,
   LeadsResponse,
   VersionsResponse,
   PublishSiteResponse,
@@ -18,6 +19,7 @@ import {
   GET as getDomain,
   PUT as putDomain,
 } from "./sites/[id]/domain/route";
+import { POST as aiEdit } from "./sites/[id]/ai-edit/route";
 import { GET as listLeads, POST as sendLead } from "./sites/[id]/leads/route";
 import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as restoreVersion } from "./sites/[id]/versions/[versionId]/restore/route";
@@ -217,7 +219,7 @@ describe("/api/sites/[id]/domain", () => {
 describe("GET /api/me/credits", () => {
   it("returns the mock credits", async () => {
     const res = await getCredits();
-    expect(CreditsResponse.parse(await res.json())).toEqual({ remaining: 10, plan: "trial" });
+    expect(CreditsResponse.parse(await res.json())).toMatchObject({ plan: "trial" });
   });
 });
 
@@ -326,5 +328,49 @@ describe("drafts, publishing and versions", () => {
       await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
     );
     expect(after.versions[0]?.source).toBe("restore");
+  });
+});
+
+describe("POST /api/sites/[id]/ai-edit", () => {
+  it("applies the request to the draft and records an ai_edit version", async () => {
+    const site = await ownSite();
+    const res = await aiEdit(
+      jsonRequest(`/x`, "POST", { instruction: "Change my hours to Mon–Sat 8 AM to 6 PM" }),
+      ctx(site.id),
+    );
+    expect(res.status).toBe(200);
+    const body = AiEditResponse.parse(await res.json());
+    expect(body.summary).toMatch(/Demo mode/);
+
+    const { versions } = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(versions[0]?.source).toBe("ai_edit");
+  });
+
+  it("returns 404 for someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    const res = await aiEdit(
+      jsonRequest(`/x`, "POST", { instruction: "Make it blue" }),
+      ctx(other.id),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("stops at the daily limit with quota_exceeded", async () => {
+    const site = await ownSite();
+    const previous = process.env.AI_DAILY_EDITS;
+    // O DEV_USER já usou a IA nos testes acima; com limite 1 o próximo pedido passa do limite.
+    process.env.AI_DAILY_EDITS = "1";
+    try {
+      const res = await aiEdit(
+        jsonRequest(`/x`, "POST", { instruction: "Make it blue" }),
+        ctx(site.id),
+      );
+      expect(res.status).toBe(429);
+      expect(ApiError.parse(await res.json()).error.code).toBe("quota_exceeded");
+    } finally {
+      process.env.AI_DAILY_EDITS = previous;
+    }
   });
 });

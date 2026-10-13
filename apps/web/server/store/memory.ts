@@ -5,6 +5,7 @@ import {
   type NewLead,
   type SiteMeta,
   type SiteRecord,
+  type AiUsageKind,
   type SiteStore,
   type VersionRecord,
 } from "./types";
@@ -15,7 +16,13 @@ const globalForStore = globalThis as typeof globalThis & {
   __nosweatSites?: Map<string, SiteRecord>;
   __nosweatLeads?: LeadRecord[];
   __nosweatVersions?: VersionRecord[];
+  __nosweatAiUsage?: { userId: string; kind: AiUsageKind; at: string }[];
 };
+
+function aiUsage() {
+  globalForStore.__nosweatAiUsage ??= [];
+  return globalForStore.__nosweatAiUsage;
+}
 
 function versions(): VersionRecord[] {
   globalForStore.__nosweatVersions ??= [];
@@ -149,5 +156,14 @@ export class MemorySiteStore implements SiteStore {
       .filter((lead) => lead.siteId === siteId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map(clone);
+  }
+
+  async recordAiUsage(userId: string, kind: AiUsageKind): Promise<void> {
+    aiUsage().push({ userId, kind, at: new Date().toISOString() });
+  }
+
+  async countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number> {
+    return aiUsage().filter((u) => u.userId === userId && u.kind === kind && u.at >= sinceIso)
+      .length;
   }
 }

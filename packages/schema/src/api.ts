@@ -12,6 +12,7 @@ export const ERROR_CODES = [
   "not_found",
   "not_implemented",
   "domain_taken",
+  "quota_exceeded",
   "domain_error",
   "generation_failed",
   "internal_error",
@@ -108,6 +109,32 @@ export const RegenerateSectionResponse = z.object({
   spec: SiteSpec,
 });
 export type RegenerateSectionResponse = z.infer<typeof RegenerateSectionResponse>;
+
+// ---------- POST /api/sites/[id]/ai-edit ----------
+
+/** Pedido de mudança em linguagem natural, ex.: "Change my hours to Mon–Sat, 8 AM to 6 PM". */
+export const AiEditRequest = z.object({
+  instruction: z
+    .string()
+    .trim()
+    .min(3, "Tell us what you would like to change.")
+    .max(1000, "Please keep your request under 1,000 characters."),
+});
+export type AiEditRequest = z.infer<typeof AiEditRequest>;
+
+/** O que a IA devolve: o novo rascunho e um resumo curto do que mudou. */
+export const AiEditResult = z.object({
+  summary: z.string().max(400),
+  spec: SiteSpec,
+});
+export type AiEditResult = z.infer<typeof AiEditResult>;
+
+export const AiEditResponse = z.object({
+  siteId: SiteId,
+  spec: SiteSpec,
+  summary: z.string(),
+});
+export type AiEditResponse = z.infer<typeof AiEditResponse>;
 
 // ---------- POST /api/sites/[id]/publish ----------
 

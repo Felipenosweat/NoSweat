@@ -11,5 +11,7 @@ export default defineConfig({
     environment: "node",
     // O MockGenerator espera 1,5 s de propósito.
     testTimeout: 10_000,
+    // Limites diários altos nos testes; o teste de limite baixa o valor quando precisa.
+    env: { AI_DAILY_GENERATIONS: "1000", AI_DAILY_EDITS: "1000" },
   },
 });

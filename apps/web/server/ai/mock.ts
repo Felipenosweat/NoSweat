@@ -1,5 +1,5 @@
 import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
-import type { SiteSpec } from "@nosweat/schema";
+import type { AiEditResult, SiteSpec } from "@nosweat/schema";
 import type { SiteGenerator } from "./types";
 
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
@@ -27,5 +27,15 @@ export class MockGenerator implements SiteGenerator {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
     return structuredClone(fixtures[selectFixture(brief)]);
+  }
+
+  /** O mock não entende pedidos: devolve o site igual, explicando como ligar a IA de verdade. */
+  async editSite(spec: SiteSpec, instruction: string): Promise<AiEditResult> {
+    const delayMs = this.options.delayMs ?? 1500;
+    if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
+    return {
+      spec: structuredClone(spec),
+      summary: `Demo mode: nothing was changed for "${instruction.slice(0, 80)}". Set AI_PROVIDER=anthropic to let the AI edit your site.`,
+    };
   }
 }

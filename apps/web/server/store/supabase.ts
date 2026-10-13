@@ -6,6 +6,7 @@ import {
   type NewLead,
   type SiteMeta,
   type SiteRecord,
+  type AiUsageKind,
   type SiteStore,
   type VersionRecord,
 } from "./types";
@@ -160,6 +161,29 @@ export class SupabaseSiteStore implements SiteStore {
     const [row] = rows;
     if (!row) throw new Error("Supabase did not return the created lead.");
     return toLead(row);
+  }
+
+  private get aiUsageEndpoint(): string {
+    return this.endpoint.replace(/\/sites$/, "/ai_usage");
+  }
+
+  async recordAiUsage(userId: string, kind: AiUsageKind): Promise<void> {
+    assertUuid(userId);
+    await this.raw(this.aiUsageEndpoint, "", {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId, kind }),
+    });
+  }
+
+  async countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number> {
+    assertUuid(userId);
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    const rows = await this.raw(
+      this.aiUsageEndpoint,
+      `?user_id=eq.${userId}&kind=eq.${kind}&created_at=gte.${since}&select=id&limit=1000`,
+      {},
+    );
+    return Array.isArray(rows) ? rows.length : 0;
   }
 
   async listLeads(siteId: string): Promise<LeadRecord[]> {

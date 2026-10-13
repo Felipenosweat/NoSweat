@@ -27,6 +27,8 @@ export type SiteMeta = Partial<
   Pick<SiteRecord, "status" | "slug" | "customDomain" | "publishedAt" | "publishedSpec">
 >;
 
+export type AiUsageKind = "generate" | "ai_edit";
+
 export type VersionRecord = {
   id: string;
   siteId: string;
@@ -71,5 +73,9 @@ export interface SiteStore {
   getByDomain(domain: string): Promise<SiteRecord | null>;
   /** Pedidos de contato do formulário do site (mais recentes primeiro). */
   addLead(siteId: string, lead: NewLead): Promise<LeadRecord>;
+  /** Registra um uso da IA (para o limite diário por conta). */
+  recordAiUsage(userId: string, kind: AiUsageKind): Promise<void>;
+  /** Quantas vezes a conta usou a IA desde `sinceIso`. */
+  countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number>;
   listLeads(siteId: string): Promise<LeadRecord[]>;
 }
