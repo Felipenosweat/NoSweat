@@ -1,10 +1,10 @@
 name: Site audit
 
-# Prints e erros do site no ar. Roda quando alguém dá push numa branch qa/*; o resultado
+# Prints e erros do site no ar. Roda no push da branch de trabalho (quando estes arquivos mudam);
 # (prints + report.json) é commitado na própria branch, em qa/out/.
 on:
   push:
-    branches: ["qa/**"]
+    branches: ["claude/dreamy-maxwell-19fv98"]
     paths: ["qa/audit.mjs", ".github/workflows/site-audit.yml", "qa/trigger.txt"]
 
 permissions:
