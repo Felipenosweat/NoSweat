@@ -25,18 +25,35 @@ export type PlanCard = {
   customDomain: boolean;
 };
 
+/** Como falar com a No Sweat para pagar à mão (Pix/WhatsApp) quando não há checkout. */
+export type SalesContact = { whatsapp: string | null; email: string; accountEmail: string | null };
+
+/** Link do WhatsApp (ou e-mail) com a mensagem já escrita: plano, período e a conta. */
+function contactHref(contact: SalesContact, text: string): string {
+  const message = contact.accountEmail ? `${text} My account: ${contact.accountEmail}` : text;
+  return contact.whatsapp
+    ? `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`
+    : `mailto:${contact.email}?subject=${encodeURIComponent("No Sweat plan")}&body=${encodeURIComponent(message)}`;
+}
+
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" });
 
-/** Planos com mensal/anual e botão de assinar (Stripe Checkout), ou "Manage billing". */
+/**
+ * Planos com mensal/anual e botão de assinar (Stripe Checkout), ou "Manage billing".
+ * Sem Stripe, os botões abrem o WhatsApp/e-mail da No Sweat e o admin libera o acesso à mão.
+ */
 export function BillingPlans({
   plans,
   current,
   siteId,
+  contact,
 }: {
   plans: PlanCard[];
   current: BillingStatusResponse;
   siteId: string | null;
+  contact: SalesContact;
 }) {
+  const checkout = current.checkoutEnabled !== false;
   const [interval, setBillingInterval] = useState<BillingInterval>("annual");
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +79,28 @@ export function BillingPlans({
       setError("We couldn't reach our servers. Please try again.");
       setPending(null);
     }
+  }
+
+  if (current.active && current.plan && current.source === "manual") {
+    const plan = plans.find((p) => p.id === current.plan);
+    return (
+      <section className={`${panelClass} mt-8`}>
+        <h2 className={panelTitle}>Your plan: {plan?.name ?? current.plan}</h2>
+        <p className={`mt-1 ${panelText}`}>
+          {current.currentPeriodEnd
+            ? `Active until ${dateFormat.format(new Date(current.currentPeriodEnd))}.`
+            : "Your plan is active."}
+        </p>
+        <a
+          href={contactHref(contact, `Hi! I'd like to renew my ${plan?.name ?? ""} plan.`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`${secondaryButton} mt-4`}
+        >
+          {contact.whatsapp ? "Renew on WhatsApp" : "Renew by email"}
+        </a>
+      </section>
+    );
   }
 
   if (current.active && current.plan) {
@@ -136,20 +175,34 @@ export function BillingPlans({
               {plan.customDomain ? "Your own domain included." : "Free nosweatfd.com address."}
             </p>
             <div className="mt-auto pt-5">
-              <button
-                type="button"
-                onClick={() =>
-                  void go(
-                    "/api/billing/checkout",
-                    { plan: plan.id, interval, siteId: siteId ?? undefined },
-                    plan.id,
-                  )
-                }
-                disabled={pending !== null}
-                className={`${primaryButton} w-full`}
-              >
-                {pending === plan.id ? "Opening checkout…" : `Choose ${plan.name}`}
-              </button>
+              {checkout ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    void go(
+                      "/api/billing/checkout",
+                      { plan: plan.id, interval, siteId: siteId ?? undefined },
+                      plan.id,
+                    )
+                  }
+                  disabled={pending !== null}
+                  className={`${primaryButton} w-full`}
+                >
+                  {pending === plan.id ? "Opening checkout…" : `Choose ${plan.name}`}
+                </button>
+              ) : (
+                <a
+                  href={contactHref(
+                    contact,
+                    `Hi! I'd like the ${plan.name} plan (${interval}) for my website.`,
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${primaryButton} w-full`}
+                >
+                  {`Choose ${plan.name}`}
+                </a>
+              )}
             </div>
           </li>
         ))}
@@ -160,7 +213,9 @@ export function BillingPlans({
         </p>
       )}
       <p className="mt-6 text-[13px] text-slate-500">
-        Payments are handled by Stripe. You can change plans or cancel anytime from this page.
+        {checkout
+          ? "Payments are handled by Stripe. You can change plans or cancel anytime from this page."
+          : `Pick a plan and we'll finish with you ${contact.whatsapp ? "on WhatsApp" : "by email"}. Your website goes live as soon as your payment is confirmed.`}
       </p>
     </div>
   );

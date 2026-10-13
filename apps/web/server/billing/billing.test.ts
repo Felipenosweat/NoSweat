@@ -4,7 +4,10 @@ import {
   createCheckoutUrl,
   customDomainBlocked,
   getBillingStatus,
+  extendExpiry,
+  getGrantStore,
   handleStripeEvent,
+  ownerHasLiveAccess,
   publishBlocked,
   verifyWebhookSignature,
 } from "./index";
@@ -40,10 +43,12 @@ async function subscribe(plan: "starter" | "pro" | "premium", status = "active")
 
 beforeEach(() => {
   (globalThis as { __nosweatSubscriptions?: unknown }).__nosweatSubscriptions = undefined;
+  (globalThis as { __nosweatGrants?: unknown }).__nosweatGrants = undefined;
 });
 
 afterEach(() => {
   delete process.env.STRIPE_SECRET_KEY;
+  delete process.env.REQUIRE_PLAN;
   vi.unstubAllGlobals();
 });
 
@@ -104,6 +109,58 @@ describe("plan rules", () => {
 
     await subscribe("pro", "canceled");
     expect((await publishBlocked(user))?.status).toBe(402);
+  });
+});
+
+describe("manual access (Pix/WhatsApp)", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  async function grant(plan: "starter" | "pro" | "premium", expiresAt: Date) {
+    await getGrantStore().upsert({
+      userId: user.id,
+      plan,
+      expiresAt: expiresAt.toISOString(),
+      note: null,
+      grantedBy: null,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  it("lets REQUIRE_PLAN turn plans on without Stripe and unlocks with a grant until it expires", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    expect((await publishBlocked(user))?.status).toBe(402);
+    expect(await ownerHasLiveAccess(user.id)).toBe(false);
+    expect(await getBillingStatus(user)).toMatchObject({ enabled: true, checkoutEnabled: false });
+
+    const until = new Date(Date.now() + 30 * DAY);
+    await grant("pro", until);
+    expect(await publishBlocked(user)).toBeNull();
+    expect(await customDomainBlocked(user)).toBeNull();
+    expect(await ownerHasLiveAccess(user.id)).toBe(true);
+    expect(await getBillingStatus(user)).toMatchObject({
+      source: "manual",
+      plan: "pro",
+      active: true,
+      currentPeriodEnd: until.toISOString(),
+    });
+
+    await grant("pro", new Date(Date.now() - DAY));
+    expect((await publishBlocked(user))?.status).toBe(402);
+    expect(await ownerHasLiveAccess(user.id)).toBe(false);
+  });
+
+  it("keeps every site live while plans are off", async () => {
+    expect(await ownerHasLiveAccess(user.id)).toBe(true);
+  });
+
+  it("adds days on top of the time left, or from today once expired", () => {
+    const now = new Date("2026-01-01T00:00:00Z");
+    const base = { userId: user.id, plan: "pro" as const, note: null, grantedBy: null };
+    const active = { ...base, expiresAt: "2026-01-11T00:00:00Z", updatedAt: "" };
+    const expired = { ...base, expiresAt: "2025-12-01T00:00:00Z", updatedAt: "" };
+    expect(extendExpiry(active, 30, now)).toBe("2026-02-10T00:00:00.000Z");
+    expect(extendExpiry(expired, 30, now)).toBe("2026-01-31T00:00:00.000Z");
+    expect(extendExpiry(null, 1, now)).toBe("2026-01-02T00:00:00.000Z");
   });
 });
 

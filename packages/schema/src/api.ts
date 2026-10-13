@@ -306,6 +306,10 @@ export type RedirectResponse = z.infer<typeof RedirectResponse>;
 export const BillingStatusResponse = z.object({
   /** `false` enquanto o Stripe não está configurado: tudo liberado, nada é cobrado. */
   enabled: z.boolean(),
+  /** `true` se dá para pagar com cartão aqui (Stripe ligado); senão o pagamento é combinado à mão. */
+  checkoutEnabled: z.boolean().optional(),
+  /** De onde vem o plano: assinatura do Stripe ou acesso liberado pelo admin (Pix/WhatsApp). */
+  source: z.enum(["stripe", "manual"]).nullable().optional(),
   plan: PlanId.nullable(),
   interval: BillingInterval.nullable(),
   status: z.string().nullable(),

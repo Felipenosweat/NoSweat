@@ -198,6 +198,26 @@ criar produtos no Stripe.
 
 Cartão de teste no modo Test: `4242 4242 4242 4242`, qualquer data futura e qualquer CVC.
 
+## Passo 6b: cobrança à mão (Pix / WhatsApp), sem Stripe
+
+Para fechar com o cliente pelo WhatsApp e receber por Pix:
+
+1. Vercel → Settings → Environment Variables:
+   - `REQUIRE_PLAN` = `true` (publicar passa a exigir plano);
+   - `SALES_WHATSAPP` = seu número só com dígitos e código do país (ex.: `14075551234`);
+   - opcional: `SALES_EMAIL` (padrão `hello@nosweatfd.com`).
+     Depois **Deployments → ⋯ → Redeploy**.
+2. O cliente escolhe o plano em `/billing` e cai no seu WhatsApp com a mensagem pronta
+   (plano, mensal/anual e o e-mail da conta dele).
+3. Recebeu o Pix? Abra `/admin`, clique em **Manage** no cliente, escolha o plano e os dias
+   (ex.: 30) e clique em **Grant access**. Para renovar, **Add days** soma ao que falta.
+4. Quando os dias acabam, o site dele sai do ar ("temporarily unavailable") e volta sozinho
+   quando você liberar de novo. Sites de admins nunca saem do ar.
+
+Pode usar junto com o Stripe: vale o maior plano ativo entre os dois.
+**Atenção:** ao ligar `REQUIRE_PLAN`, sites já publicados de quem não tem plano saem do ar.
+Libere o acesso desses clientes antes.
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page.

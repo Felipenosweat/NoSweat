@@ -83,6 +83,10 @@ Como as peças se ligam:
   (migration 0011, atualizada pelo webhook `/api/billing/webhook`). Sem `STRIPE_SECRET_KEY` a
   cobrança fica desligada. Com ela: publicar exige plano ativo e domínio próprio exige Pro ou
   Premium (`publishBlocked` / `customDomainBlocked`, 402 `payment_required` → página `/billing`).
+- Acesso manual (Pix/WhatsApp): `REQUIRE_PLAN=true` liga os planos sem Stripe; o admin libera
+  plano por X dias em `/admin/clients/[id]` (tabela `access_grants`, migration 0012,
+  `server/billing/grants.ts`). Com planos valendo, site publicado de dono sem plano ativo mostra
+  "temporarily unavailable" (`ownerHasLiveAccess`).
 - Planos e preços mostrados no site: só em `components/marketing/PricingPlans.tsx` (landing e
   `/pricing` usam o mesmo componente).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e

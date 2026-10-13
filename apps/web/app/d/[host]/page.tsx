@@ -2,6 +2,8 @@ import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
+import { SiteUnavailable } from "@/components/SiteUnavailable";
+import { ownerHasLiveAccess } from "@/server/billing";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -35,13 +37,18 @@ const siteUrl = (site: SiteRecord, host: string) =>
 export async function generateMetadata({ params }: DomainSitePageProps): Promise<Metadata> {
   const { host } = await params;
   const site = await getPublished(host);
-  return site ? siteMetadata(site, siteUrl(site, host)) : {};
+  if (!site) return {};
+  if (!(await ownerHasLiveAccess(site.ownerId))) return { robots: { index: false } };
+  return siteMetadata(site, siteUrl(site, host));
 }
 
 export default async function DomainSitePage({ params }: DomainSitePageProps) {
   const { host } = await params;
   const site = await getPublished(host);
   if (!site) notFound();
+  if (!(await ownerHasLiveAccess(site.ownerId))) {
+    return <SiteUnavailable name={liveSpec(site).business.name} />;
+  }
   return (
     <>
       {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}

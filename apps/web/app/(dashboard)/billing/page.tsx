@@ -5,7 +5,7 @@ import { connection } from "next/server";
 import { panelClass, panelText, panelTitle, textButton } from "@/components/DashboardUi";
 import { getCurrentUser } from "@/server/auth/session";
 import { getBillingStatus, PLANS } from "@/server/billing";
-import { BillingPlans, type PlanCard } from "./BillingPlans";
+import { BillingPlans, type PlanCard, type SalesContact } from "./BillingPlans";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
@@ -22,6 +22,14 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   const billing = await getBillingStatus(user);
   // Só ids no formato esperado voltam para a página do site (nada de texto solto na URL).
   const siteId = site && /^[\w-]{1,64}$/.test(site) ? site : null;
+
+  // Número do WhatsApp de vendas só com dígitos (ex.: 14075551234), como o wa.me pede.
+  const whatsapp = process.env.SALES_WHATSAPP?.replace(/\D/g, "") || null;
+  const contact: SalesContact = {
+    whatsapp,
+    email: process.env.SALES_EMAIL || "hello@nosweatfd.com",
+    accountEmail: user.email,
+  };
 
   const plans: PlanCard[] = Object.values(PLANS).map((plan) => ({
     id: plan.id,
@@ -72,7 +80,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           </Link>
         </section>
       ) : (
-        <BillingPlans plans={plans} current={billing} siteId={siteId} />
+        <BillingPlans plans={plans} current={billing} siteId={siteId} contact={contact} />
       )}
     </div>
   );
