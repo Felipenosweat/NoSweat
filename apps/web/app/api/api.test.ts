@@ -1,6 +1,8 @@
 import {
   ApiError,
   CreditsResponse,
+  DomainResponse,
+  PublishSiteResponse,
   GenerateSiteResponse,
   GetSiteResponse,
   UpdateSiteResponse,
@@ -9,6 +11,11 @@ import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it } from "vitest";
 import { getSiteStore } from "@/server/store";
 import { GET as getCredits } from "./me/credits/route";
+import {
+  DELETE as deleteDomain,
+  GET as getDomain,
+  PUT as putDomain,
+} from "./sites/[id]/domain/route";
 import { POST as publish } from "./sites/[id]/publish/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
 import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
@@ -110,13 +117,95 @@ describe("PATCH /api/sites/[id]", () => {
 });
 
 describe("not implemented yet", () => {
-  it.each([
-    ["regenerate-section", regenerateSection],
-    ["publish", publish],
-  ])("%s returns 501", async (_name, handler) => {
-    const res = await handler();
+  it("regenerate-section returns 501", async () => {
+    const res = await regenerateSection();
     expect(res.status).toBe(501);
     expect(ApiError.parse(await res.json()).error.code).toBe("not_implemented");
+  });
+});
+
+/** Cria um site direto no store (sem os 1,5 s do mock) para o DEV_USER. */
+async function ownSite() {
+  return getSiteStore().create(fixtures["joes-plumbing"], "local-dev");
+}
+
+describe("POST /api/sites/[id]/publish", () => {
+  it("publishes the site at a free /s/<slug> address", async () => {
+    const site = await ownSite();
+    const res = await publish(jsonRequest(`/sites/${site.id}/publish`, "POST", {}), ctx(site.id));
+    expect(res.status).toBe(200);
+    const body = PublishSiteResponse.parse(await res.json());
+    expect(body.status).toBe("published");
+    expect(body.url).toMatch(/^http:\/\/localhost\/s\/joes-plumbing-[a-f0-9]{6}$/);
+
+    const slug = body.url.split("/s/")[1] ?? "";
+    expect((await getSiteStore().getBySlug(slug))?.id).toBe(site.id);
+  });
+
+  it("keeps the same slug when publishing again", async () => {
+    const site = await ownSite();
+    const first = PublishSiteResponse.parse(
+      await (await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id))).json(),
+    );
+    const second = PublishSiteResponse.parse(
+      await (await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id))).json(),
+    );
+    expect(second.url).toBe(first.url);
+  });
+
+  it("returns 404 for someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(other.id));
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("/api/sites/[id]/domain", () => {
+  it("connects a domain (manual mode without VERCEL_TOKEN) and returns the DNS records", async () => {
+    const site = await ownSite();
+    const res = await putDomain(
+      jsonRequest(`/sites/${site.id}/domain`, "PUT", {
+        domain: "https://www.JoesPlumbingATX.com/",
+      }),
+      ctx(site.id),
+    );
+    expect(res.status).toBe(200);
+    const body = DomainResponse.parse(await res.json());
+    expect(body).toMatchObject({ domain: "joesplumbingatx.com", status: "manual" });
+    expect(body.records.map((r) => r.type)).toEqual(["A", "CNAME"]);
+
+    const state = DomainResponse.parse(
+      await (await getDomain(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(state.domain).toBe("joesplumbingatx.com");
+  });
+
+  it("rejects an invalid domain and the platform's own domain", async () => {
+    const site = await ownSite();
+    for (const domain of ["not a domain", "nosweatfd.com"]) {
+      const res = await putDomain(jsonRequest(`/x`, "PUT", { domain }), ctx(site.id));
+      expect(res.status).toBe(400);
+      expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+    }
+  });
+
+  it("does not let two sites use the same domain", async () => {
+    const a = await ownSite();
+    const b = await ownSite();
+    await putDomain(jsonRequest(`/x`, "PUT", { domain: "shared-domain.com" }), ctx(a.id));
+    const res = await putDomain(
+      jsonRequest(`/x`, "PUT", { domain: "shared-domain.com" }),
+      ctx(b.id),
+    );
+    expect(res.status).toBe(409);
+    expect(ApiError.parse(await res.json()).error.code).toBe("domain_taken");
+  });
+
+  it("disconnects the domain", async () => {
+    const site = await ownSite();
+    await putDomain(jsonRequest(`/x`, "PUT", { domain: "remove-me.com" }), ctx(site.id));
+    const res = await deleteDomain(new Request(`${BASE}/x`, { method: "DELETE" }), ctx(site.id));
+    expect(DomainResponse.parse(await res.json())).toMatchObject({ domain: null, status: null });
   });
 });
 

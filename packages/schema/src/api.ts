@@ -11,6 +11,8 @@ export const ERROR_CODES = [
   "unauthorized",
   "not_found",
   "not_implemented",
+  "domain_taken",
+  "domain_error",
   "generation_failed",
   "internal_error",
 ] as const;
@@ -85,7 +87,7 @@ export const RegenerateSectionResponse = z.object({
 });
 export type RegenerateSectionResponse = z.infer<typeof RegenerateSectionResponse>;
 
-// ---------- POST /api/sites/[id]/publish (501 por enquanto) ----------
+// ---------- POST /api/sites/[id]/publish ----------
 
 export const PublishSiteResponse = z.object({
   siteId: SiteId,
@@ -93,6 +95,60 @@ export const PublishSiteResponse = z.object({
   url: z.url(),
 });
 export type PublishSiteResponse = z.infer<typeof PublishSiteResponse>;
+
+// ---------- PUT/GET/DELETE /api/sites/[id]/domain ----------
+
+/**
+ * Domínio próprio do cliente. Aceita o que a pessoa costuma colar ("https://www.Joes.com/")
+ * e normaliza para o domínio raiz ("joes.com"). O "www" é ligado automaticamente.
+ */
+export const DomainName = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .transform((value) =>
+    value
+      .replace(/^[a-z]+:\/\//, "")
+      .replace(/[/?#].*$/, "")
+      .replace(/:\d+$/, "")
+      .replace(/\.$/, "")
+      .replace(/^www\./, ""),
+  )
+  .pipe(
+    z
+      .string()
+      .regex(
+        /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/,
+        "Please enter a valid domain, like yourbusiness.com.",
+      ),
+  );
+
+export const ConnectDomainRequest = z.object({ domain: DomainName });
+export type ConnectDomainRequest = z.infer<typeof ConnectDomainRequest>;
+
+/** Registro de DNS que o cliente cria onde comprou o domínio. */
+export const DnsRecord = z.object({
+  type: z.enum(["A", "CNAME"]),
+  name: z.string(),
+  value: z.string(),
+});
+export type DnsRecord = z.infer<typeof DnsRecord>;
+
+/**
+ * - pending: esperando o cliente apontar o DNS;
+ * - active: DNS certo, site no ar no domínio (HTTPS automático);
+ * - manual: a plataforma ainda não está ligada à Vercel (falta VERCEL_TOKEN); o time liga à mão.
+ */
+export const DomainStatus = z.enum(["pending", "active", "manual"]);
+export type DomainStatus = z.infer<typeof DomainStatus>;
+
+export const DomainResponse = z.object({
+  siteId: SiteId,
+  domain: z.string().nullable(),
+  status: DomainStatus.nullable(),
+  records: z.array(DnsRecord),
+});
+export type DomainResponse = z.infer<typeof DomainResponse>;
 
 // ---------- GET /api/me/credits ----------
 

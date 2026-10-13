@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
+import { isAppHost } from "@/server/domains/hosts";
 
 // Páginas que exigem login. As rotas /api conferem o login sozinhas (respondem 401 em JSON).
 const PROTECTED_PATHS = ["/dashboard", "/create", "/sites"];
@@ -8,8 +9,19 @@ const PROTECTED_PATHS = ["/dashboard", "/create", "/sites"];
 const isProtected = (path: string) =>
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
-/** Renova a sessão do Supabase a cada request e manda para /login quem não está logado. */
+/**
+ * 1. Domínio de cliente (joesplumbing.com): mostra o site publicado dele (rewrite para /d/<host>).
+ * 2. Domínio da plataforma: renova a sessão do Supabase e manda para /login quem não está logado.
+ */
 export async function proxy(request: NextRequest) {
+  const host = (request.headers.get("host") ?? "").toLowerCase().replace(/:\d+$/, "");
+  if (host && !isAppHost(host)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/d/${host}`;
+    url.search = "";
+    return NextResponse.rewrite(url);
+  }
+
   const auth = getSupabaseAuthConfig();
   if (!auth) return NextResponse.next(); // dev local sem Supabase: login desligado
 

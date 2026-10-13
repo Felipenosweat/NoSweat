@@ -11,13 +11,17 @@ A IA nunca escreve código de site: só SiteSpec validado pelo Zod.
 apps/web/                       Next.js (App Router): telas + API
   app/(marketing)/              landing page (/)                         → front
   app/(dashboard)/              /create e /dashboard                     → front
-  app/sites/                    /sites/preview/[id]                      → front
+  app/sites/                    /sites/[id] (publicar + domínio) e /sites/preview/[id] → front
+  app/s/[slug]/                 site publicado no endereço grátis (público) → front
+  app/d/[host]/                 site publicado no domínio do cliente (via proxy.ts) → front
   app/(auth)/login/             tela e Server Actions de login/cadastro  → front
   app/auth/callback/            confirmação de e-mail (troca code → sessão) → back
-  proxy.ts                      renova a sessão e protege /dashboard, /create, /sites → back
+  proxy.ts                      domínio de cliente → /d/<host>; senão renova a sessão e protege
+                                /dashboard, /create, /sites → back
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
+  server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
 packages/schema/                @nosweat/schema: o contrato (Zod) de SiteSpec e da API → os dois
@@ -36,6 +40,10 @@ Como as peças se ligam:
 - Login: Supabase Auth (e-mail e senha). Toda rota e página de site chama `getCurrentUser()`
   e só mostra/altera sites com `ownerId` igual ao do usuário (site de outra pessoa = 404).
   Sem Supabase configurado (dev local), o login fica desligado e todo mundo é o `DEV_USER`.
+- Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
+  Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
+  Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
+  registro A e um CNAME. O `proxy.ts` reconhece o domínio e mostra o site certo.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
 ## Regras do time

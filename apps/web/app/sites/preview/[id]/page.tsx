@@ -37,9 +37,17 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           Preview <span className="text-slate-500">·</span>{" "}
           <span className="text-white">No Sweat</span>
         </p>
-        <Link href="/dashboard" className="hover:text-white">
-          &larr; My sites
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="hover:text-white">
+            &larr; My sites
+          </Link>
+          <Link
+            href={`/sites/${site.id}`}
+            className="rounded-full bg-emerald-500 px-3 py-1 font-semibold text-white hover:bg-emerald-400"
+          >
+            {site.status === "published" ? "Manage" : "Publish"} &rarr;
+          </Link>
+        </div>
       </div>
       <SiteRenderer spec={site.spec} />
     </>

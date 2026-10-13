@@ -1,5 +1,5 @@
 import type { SiteSpec } from "@nosweat/schema";
-import type { SiteRecord, SiteStore } from "./types";
+import { DomainTakenError, type SiteMeta, type SiteRecord, type SiteStore } from "./types";
 
 // O Map fica em globalThis para sobreviver ao hot reload do `next dev`.
 // Os dados somem quando o servidor reinicia: é só para desenvolvimento.
@@ -23,6 +23,9 @@ export class MemorySiteStore implements SiteStore {
       ownerId,
       spec: clone(spec),
       status: "draft",
+      slug: null,
+      customDomain: null,
+      publishedAt: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -47,7 +50,32 @@ export class MemorySiteStore implements SiteStore {
     return clone(updated);
   }
 
-  async list(): Promise<SiteRecord[]> {
-    return [...sites().values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(clone);
+  async updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null> {
+    const current = sites().get(id);
+    if (!current) return null;
+    if (meta.customDomain) {
+      const owner = [...sites().values()].find((s) => s.customDomain === meta.customDomain);
+      if (owner && owner.id !== id) throw new DomainTakenError(meta.customDomain);
+    }
+    const updated: SiteRecord = { ...current, ...meta, updatedAt: new Date().toISOString() };
+    sites().set(id, updated);
+    return clone(updated);
+  }
+
+  async list(ownerId: string): Promise<SiteRecord[]> {
+    return [...sites().values()]
+      .filter((site) => site.ownerId === ownerId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map(clone);
+  }
+
+  async getBySlug(slug: string): Promise<SiteRecord | null> {
+    const record = [...sites().values()].find((s) => s.slug === slug);
+    return record ? clone(record) : null;
+  }
+
+  async getByDomain(domain: string): Promise<SiteRecord | null> {
+    const record = [...sites().values()].find((s) => s.customDomain === domain);
+    return record ? clone(record) : null;
   }
 }

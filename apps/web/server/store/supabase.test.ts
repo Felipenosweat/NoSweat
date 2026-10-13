@@ -1,6 +1,7 @@
 import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it, vi } from "vitest";
 import { normalizeSupabaseUrl, SupabaseSiteStore } from "./supabase";
+import { DomainTakenError } from "./types";
 
 const ID = "6f1c2a3b-4d5e-4f60-8a9b-0c1d2e3f4a5b";
 const OWNER = "0b6a1f5e-2c3d-4e5f-8a9b-1c2d3e4f5a6b";
@@ -70,6 +71,33 @@ describe("SupabaseSiteStore", () => {
     const { store, fetchMock } = storeWith([]);
     await expect(store.list("1 or 1=1")).rejects.toThrow(/Invalid owner id/);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("updates publishing fields with snake_case columns", async () => {
+    const { store, fetchMock } = storeWith([
+      { ...row, slug: "joes-plumbing-6f1c2a", status: "published" },
+    ]);
+    const site = await store.updateMeta(ID, { status: "published", slug: "joes-plumbing-6f1c2a" });
+    expect(site).toMatchObject({ status: "published", slug: "joes-plumbing-6f1c2a" });
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      status: "published",
+      slug: "joes-plumbing-6f1c2a",
+    });
+  });
+
+  it("maps a unique violation on the domain to DomainTakenError", async () => {
+    const { store } = storeWith({ code: "23505", message: "duplicate key" }, 409);
+    await expect(store.updateMeta(ID, { customDomain: "joes.com" })).rejects.toBeInstanceOf(
+      DomainTakenError,
+    );
+  });
+
+  it("looks up sites by domain and ignores invalid input", async () => {
+    const { store, fetchMock } = storeWith([{ ...row, custom_domain: "joes.com" }]);
+    expect((await store.getByDomain("joes.com"))?.customDomain).toBe("joes.com");
+    expect(await store.getByDomain("joes.com&select=*")).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("reads legacy rows without an owner", async () => {

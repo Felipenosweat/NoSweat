@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ApiError, GenerateSiteRequest, SiteSpec } from "./index";
+import { ApiError, DomainName, GenerateSiteRequest, SiteSpec } from "./index";
 
 const minimal: SiteSpec = {
   version: 1,
@@ -69,4 +69,22 @@ describe("API schemas", () => {
     );
     expect(GenerateSiteRequest.safeParse({ brief: "hi" }).success).toBe(false);
   });
+});
+
+describe("DomainName", () => {
+  it.each([
+    ["joesplumbing.com", "joesplumbing.com"],
+    ["  https://www.JoesPlumbing.com/contact?x=1 ", "joesplumbing.com"],
+    ["http://shop.joes.co.uk:8080/", "shop.joes.co.uk"],
+    ["joes.com.", "joes.com"],
+  ])("normalizes %s", (input, expected) => {
+    expect(DomainName.parse(input)).toBe(expected);
+  });
+
+  it.each(["", "joes", "joes..com", "-joes.com", "joes plumbing.com", "localhost"])(
+    "rejects %s",
+    (input) => {
+      expect(DomainName.safeParse(input).success).toBe(false);
+    },
+  );
 });

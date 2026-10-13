@@ -1,6 +1,6 @@
 import { SiteSpec, SiteStatus } from "@nosweat/schema";
 import { z } from "zod";
-import type { SiteRecord, SiteStore } from "./types";
+import { DomainTakenError, type SiteMeta, type SiteRecord, type SiteStore } from "./types";
 
 // SiteStore no Supabase, falando direto com a API REST (PostgREST) via fetch.
 // Tabela: supabase/migrations/ (0001_create_sites.sql, 0002_sites_owner.sql).
@@ -9,6 +9,9 @@ import type { SiteRecord, SiteStore } from "./types";
 const Row = z.object({
   id: z.string(),
   owner_id: z.string().nullable().optional(),
+  slug: z.string().nullable().optional(),
+  custom_domain: z.string().nullable().optional(),
+  published_at: z.string().nullable().optional(),
   spec: SiteSpec,
   status: SiteStatus,
   created_at: z.string(),
@@ -16,7 +19,12 @@ const Row = z.object({
 });
 type Row = z.infer<typeof Row>;
 
+const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/;
+const DOMAIN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+class UniqueViolation extends Error {}
 
 /** Ids de usuário vêm do Supabase Auth (UUID); qualquer outra coisa é bug. */
 function assertUuid(ownerId: string): void {
@@ -29,6 +37,9 @@ function toRecord(row: Row): SiteRecord {
     ownerId: row.owner_id ?? null,
     spec: row.spec,
     status: row.status,
+    slug: row.slug ?? null,
+    customDomain: row.custom_domain ?? null,
+    publishedAt: row.published_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -70,7 +81,10 @@ export class SupabaseSiteStore implements SiteStore {
       },
     });
     if (!res.ok) {
-      throw new Error(`Supabase request failed (${res.status}): ${await res.text()}`);
+      const body = await res.text();
+      // 23505 = unique_violation (ex.: domínio já usado por outro site).
+      if (res.status === 409 && body.includes("23505")) throw new UniqueViolation(body);
+      throw new Error(`Supabase request failed (${res.status}): ${body}`);
     }
     return z.array(Row).parse(await res.json());
   }
@@ -98,6 +112,39 @@ export class SupabaseSiteStore implements SiteStore {
       method: "PATCH",
       body: JSON.stringify({ spec, updated_at: new Date().toISOString() }),
     });
+    return row ? toRecord(row) : null;
+  }
+
+  async updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null> {
+    if (!UUID.test(id)) return null;
+    const body: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (meta.status !== undefined) body.status = meta.status;
+    if (meta.slug !== undefined) body.slug = meta.slug;
+    if (meta.customDomain !== undefined) body.custom_domain = meta.customDomain;
+    if (meta.publishedAt !== undefined) body.published_at = meta.publishedAt;
+    try {
+      const [row] = await this.request(`?id=eq.${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      });
+      return row ? toRecord(row) : null;
+    } catch (error) {
+      if (error instanceof UniqueViolation && meta.customDomain) {
+        throw new DomainTakenError(meta.customDomain);
+      }
+      throw error;
+    }
+  }
+
+  async getBySlug(slug: string): Promise<SiteRecord | null> {
+    if (!SLUG.test(slug)) return null;
+    const [row] = await this.request(`?slug=eq.${slug}&select=*`);
+    return row ? toRecord(row) : null;
+  }
+
+  async getByDomain(domain: string): Promise<SiteRecord | null> {
+    if (!DOMAIN.test(domain)) return null;
+    const [row] = await this.request(`?custom_domain=eq.${domain}&select=*`);
     return row ? toRecord(row) : null;
   }
 

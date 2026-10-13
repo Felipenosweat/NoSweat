@@ -50,7 +50,7 @@ export default async function DashboardPage() {
             return (
               <li key={site.id}>
                 <Link
-                  href={`/sites/preview/${site.id}`}
+                  href={`/sites/${site.id}`}
                   className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -63,13 +63,19 @@ export default async function DashboardPage() {
                         />
                       ))}
                     </div>
-                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 capitalize">
-                      {site.status}
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        site.status === "published"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {site.status === "published" ? "Live" : "Draft"}
                     </span>
                   </div>
                   <h2 className="mt-4 font-display text-lg font-bold">{business.name}</h2>
                   <p className="text-sm text-slate-600">
-                    {[template, where].filter(Boolean).join(" · ")}
+                    {[site.customDomain ?? template, where].filter(Boolean).join(" · ")}
                   </p>
                   <p className="mt-4 text-xs text-slate-400">
                     Created {dateFormat.format(new Date(site.createdAt))}
