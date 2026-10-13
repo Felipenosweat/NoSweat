@@ -18,7 +18,7 @@ const DESKTOP_SIZES = "(min-width: 1024px) 680px, 100vw";
 // O ponto fica na BORDA do botão (não em cima do texto): topo do botão de ligar, base do
 // botão de orçamento.
 const CALL_TARGET = { x: 89, y: 6.8 };
-const ESTIMATE_TARGET = { x: 12, y: 78 };
+const ESTIMATE_TARGET = { x: 12, y: 76.2 };
 
 // Distância da borda da imagem até fora da moldura: barra de endereço (2.5rem) + borda + 1rem.
 const OUTSIDE = "(2.5rem + 1px + 1rem)";
