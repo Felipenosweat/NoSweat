@@ -3,7 +3,15 @@ import { SupabaseSiteStore } from "./supabase";
 import type { SiteStore } from "./types";
 
 export { DomainTakenError } from "./types";
-export type { LeadRecord, NewLead, SiteMeta, SiteRecord, SiteStore, VersionRecord } from "./types";
+export type {
+  AiUsageKind,
+  LeadRecord,
+  NewLead,
+  SiteMeta,
+  SiteRecord,
+  SiteStore,
+  VersionRecord,
+} from "./types";
 
 let store: SiteStore | undefined;
 
