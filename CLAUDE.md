@@ -10,7 +10,8 @@ A IA nunca escreve código de site: só SiteSpec validado pelo Zod.
 ```
 apps/web/                       Next.js (App Router): telas + API
   app/(marketing)/              landing page (/)                         → front
-  app/(dashboard)/              /create e /dashboard                     → front
+  app/(dashboard)/              /create e /dashboard (painel do cliente) → front
+  app/(admin)/admin/            painel principal da No Sweat (só admins)  → front
   app/sites/                    /sites/[id] (publicar + domínio) e /sites/preview/[id] → front
   app/s/[slug]/                 site publicado no endereço grátis (público) → front
   app/d/[host]/                 site publicado no domínio do cliente (via proxy.ts) → front
@@ -20,6 +21,7 @@ apps/web/                       Next.js (App Router): telas + API
                                 /dashboard, /create, /sites → back
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
+  server/admin.ts               quem é admin (tabela platform_admins) e lista de clientes → back
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
@@ -40,6 +42,8 @@ Como as peças se ligam:
 - Login: Supabase Auth (e-mail e senha). Toda rota e página de site chama `getCurrentUser()`
   e só mostra/altera sites com `ownerId` igual ao do usuário (site de outra pessoa = 404).
   Sem Supabase configurado (dev local), o login fica desligado e todo mundo é o `DEV_USER`.
+- Admins (tabela `platform_admins`) veem `/admin` e acessam qualquer site (`getOwnedSite`).
+  TODO: separar dados privados do cliente quando houver clientes de verdade.
 - Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um

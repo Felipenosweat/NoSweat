@@ -39,6 +39,8 @@ export interface SiteStore {
   updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null>;
   /** Sites do usuário, mais recentes primeiro. */
   list(ownerId: string): Promise<SiteRecord[]>;
+  /** Todos os sites de todos os clientes (só para o painel do admin). */
+  listAll(): Promise<SiteRecord[]>;
   getBySlug(slug: string): Promise<SiteRecord | null>;
   getByDomain(domain: string): Promise<SiteRecord | null>;
 }

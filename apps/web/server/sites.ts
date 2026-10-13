@@ -1,10 +1,16 @@
+import { isAdmin } from "./admin";
 import { getCurrentUser, type CurrentUser } from "./auth/session";
 import { getSiteStore, type SiteRecord } from "./store";
 
-/** Site do usuário logado, ou `null` se não existir ou for de outra pessoa (tratamos igual: 404). */
+/**
+ * Site do usuário logado, ou `null` se não existir ou for de outra pessoa (tratamos igual: 404).
+ * Admins da plataforma acessam qualquer site.
+ */
 export async function getOwnedSite(user: CurrentUser, id: string): Promise<SiteRecord | null> {
   const site = await getSiteStore().get(id);
-  return site && site.ownerId === user.id ? site : null;
+  if (!site) return null;
+  if (site.ownerId === user.id) return site;
+  return (await isAdmin(user.id)) ? site : null;
 }
 
 /** Usuário logado + site dele, para as rotas da API. */

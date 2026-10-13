@@ -136,6 +136,12 @@ export class SupabaseSiteStore implements SiteStore {
     }
   }
 
+  async listAll(): Promise<SiteRecord[]> {
+    // TODO: paginar quando houver mais de 1000 sites.
+    const rows = await this.request("?select=*&order=created_at.desc&limit=1000");
+    return rows.map(toRecord);
+  }
+
   async getBySlug(slug: string): Promise<SiteRecord | null> {
     if (!SLUG.test(slug)) return null;
     const [row] = await this.request(`?slug=eq.${slug}&select=*`);

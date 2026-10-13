@@ -4,7 +4,7 @@ import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAppHost } from "@/server/domains/hosts";
 
 // Páginas que exigem login. As rotas /api conferem o login sozinhas (respondem 401 em JSON).
-const PROTECTED_PATHS = ["/dashboard", "/create", "/sites"];
+const PROTECTED_PATHS = ["/dashboard", "/create", "/sites", "/admin"];
 
 const isProtected = (path: string) =>
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));

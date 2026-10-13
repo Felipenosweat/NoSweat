@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/session";
-import { getSiteStore, type SiteRecord } from "@/server/store";
+import { getOwnedSite } from "@/server/sites";
+import type { SiteRecord } from "@/server/store";
 
 type PreviewPageProps = { params: Promise<{ id: string }> };
 
@@ -11,8 +12,7 @@ type PreviewPageProps = { params: Promise<{ id: string }> };
 async function getOwnSite(id: string): Promise<SiteRecord | null> {
   const user = await getCurrentUser();
   if (!user) redirect(`/login?next=/sites/preview/${encodeURIComponent(id)}`);
-  const site = await getSiteStore().get(id);
-  return site && site.ownerId === user.id ? site : null;
+  return getOwnedSite(user, id);
 }
 
 export async function generateMetadata({ params }: PreviewPageProps): Promise<Metadata> {

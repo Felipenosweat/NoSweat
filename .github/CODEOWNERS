@@ -9,6 +9,7 @@
 /apps/web/app/(dashboard)/      @FRONT_USER
 /apps/web/app/sites/            @FRONT_USER
 /apps/web/app/(auth)/           @FRONT_USER
+/apps/web/app/(admin)/          @FRONT_USER
 /apps/web/app/s/                @FRONT_USER
 /apps/web/app/d/                @FRONT_USER
 /packages/templates/            @FRONT_USER

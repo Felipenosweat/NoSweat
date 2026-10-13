@@ -69,6 +69,10 @@ export class MemorySiteStore implements SiteStore {
       .map(clone);
   }
 
+  async listAll(): Promise<SiteRecord[]> {
+    return [...sites().values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(clone);
+  }
+
   async getBySlug(slug: string): Promise<SiteRecord | null> {
     const record = [...sites().values()].find((s) => s.slug === slug);
     return record ? clone(record) : null;

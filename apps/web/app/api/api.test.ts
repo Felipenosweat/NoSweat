@@ -215,3 +215,16 @@ describe("GET /api/me/credits", () => {
     expect(CreditsResponse.parse(await res.json())).toEqual({ remaining: 10, plan: "trial" });
   });
 });
+
+describe("platform admins", () => {
+  it("can open any client's site (DEV_ADMIN=true without Supabase)", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    process.env.DEV_ADMIN = "true";
+    try {
+      const res = await getSite(new Request(`${BASE}/sites/${other.id}`), ctx(other.id));
+      expect(res.status).toBe(200);
+    } finally {
+      delete process.env.DEV_ADMIN;
+    }
+  });
+});
