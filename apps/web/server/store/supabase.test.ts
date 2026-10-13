@@ -80,11 +80,21 @@ describe("SupabaseSiteStore", () => {
   });
 
   it("counts guest AI usage by visitor, by IP or for everyone", async () => {
-    const { store, fetchMock } = storeWith([{ id: "a" }, { id: "b" }]);
+    // Contagem exata pelo cabeçalho Content-Range (sem baixar as linhas).
+    const fetchMock = vi.fn(
+      async () => new Response(null, { status: 200, headers: { "Content-Range": "0-1/2" } }),
+    );
+    const store = new SupabaseSiteStore({
+      url: "https://demo.supabase.co/",
+      serviceKey: "secret",
+      fetch: fetchMock as unknown as typeof fetch,
+    });
     const since = "2026-10-13T00:00:00.000Z";
     expect(await store.countGuestAiUsage({}, "generate", since)).toBe(2);
-    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toContain("user_id=is.null&kind=eq.generate");
+    expect(init.method).toBe("HEAD");
+    expect(init.headers).toMatchObject({ Prefer: "count=exact" });
     expect(url).not.toContain("guest_id=");
     expect(await store.countGuestAiUsage({ ipHash: "bad" }, "generate", since)).toBe(0);
   });

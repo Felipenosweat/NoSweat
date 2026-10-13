@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowRightIcon } from "./icons";
 
+/** Chave do sessionStorage que liga a caixa da landing ao /create (ver CreateForm). */
+export const HERO_BRIEF_KEY = "ns:hero-brief";
+
 // Caixa de descrição do hero (estilo "prompt"): o visitante escreve ali mesmo e vai para
 // /create?brief=..., onde a geração começa sozinha. Sem JS, o <form> GET faz o mesmo caminho.
 
@@ -50,6 +53,13 @@ export function HeroPrompt() {
     }
     setError(null);
     setPending(true);
+    // "Recibo" de que o pedido saiu daqui (mesma origem): só assim o /create começa a gerar
+    // sozinho. Um link de outro site para /create?brief=... apenas preenche o texto.
+    try {
+      sessionStorage.setItem(HERO_BRIEF_KEY, text);
+    } catch {
+      // Navegação privada sem storage: o /create mostra o texto e a pessoa clica em gerar.
+    }
     router.push(`/create?brief=${encodeURIComponent(text)}`);
   }
 

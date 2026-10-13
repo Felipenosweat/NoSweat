@@ -32,6 +32,16 @@ export async function readJson<T>(
   request: Request,
   schema: z.ZodType<T>,
 ): Promise<{ ok: true; data: T } | { ok: false; response: Response }> {
+  // Só JSON de verdade: um <form> de outro site não consegue mandar este Content-Type sem
+  // passar pelo CORS do navegador (proteção extra contra CSRF, além do cookie SameSite=Lax).
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!/^application\/json\b/i.test(contentType.trim())) {
+    return {
+      ok: false,
+      response: errorResponse(415, "invalid_request", "Content-Type must be application/json."),
+    };
+  }
+
   const declared = Number(request.headers.get("content-length"));
   if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return tooLarge();
 

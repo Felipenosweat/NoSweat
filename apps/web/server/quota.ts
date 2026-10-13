@@ -61,49 +61,67 @@ export function guestLimits(kind: AiUsageKind): GuestLimits {
 
 const since24h = () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-/** Quantos usos ainda restam nas últimas 24h (`null` = sem limite). */
-export async function remainingUses(actor: Actor, kind: AiUsageKind): Promise<number | null> {
-  const store = getSiteStore();
-  if (actor.kind === "guest") {
-    const used = await store.countGuestAiUsage({ guestId: actor.guestId }, kind, since24h());
-    return Math.max(0, guestLimits(kind).perGuest - used);
-  }
-  if (await isAdmin(actor.user.id)) return null;
-  const used = await store.countAiUsage(actor.user.id, kind, since24h());
-  return Math.max(0, dailyLimit(kind) - used);
-}
+type Counts = { byGuest: number; byIp: number; total: number };
 
-const SIGN_UP_HINT = "Create a free account to keep going.";
-
-/** Resposta 429 pronta se já passou do limite do dia; senão `null`. */
-export async function quotaExceeded(actor: Actor, kind: AiUsageKind): Promise<Response | null> {
-  if (actor.kind === "user") {
-    const remaining = await remainingUses(actor, kind);
-    if (remaining === null || remaining > 0) return null;
-    return errorResponse(
-      429,
-      "quota_exceeded",
-      `You've reached today's limit of ${dailyLimit(kind)} ${LABELS[kind]}. Please try again tomorrow.`,
-    );
-  }
-
+async function guestCounts(
+  actor: Extract<Actor, { kind: "guest" }>,
+  kind: AiUsageKind,
+  ipHash: string | null,
+): Promise<Counts> {
   const store = getSiteStore();
   const since = since24h();
-  const limits = guestLimits(kind);
-  const ipHash = await requestIpHash();
   const [byGuest, byIp, total] = await Promise.all([
     store.countGuestAiUsage({ guestId: actor.guestId }, kind, since),
     ipHash ? store.countGuestAiUsage({ ipHash }, kind, since) : Promise.resolve(0),
     store.countGuestAiUsage({}, kind, since),
   ]);
-  if (total >= limits.global) {
+  return { byGuest, byIp, total };
+}
+
+/** Quantos usos ainda restam nas últimas 24h (`null` = sem limite). */
+export async function remainingUses(actor: Actor, kind: AiUsageKind): Promise<number | null> {
+  if (actor.kind === "guest") {
+    const limits = guestLimits(kind);
+    const used = await guestCounts(actor, kind, await requestIpHash());
+    return Math.max(
+      0,
+      Math.min(
+        limits.perGuest - used.byGuest,
+        limits.perIp - used.byIp,
+        limits.global - used.total,
+      ),
+    );
+  }
+  if (await isAdmin(actor.user.id)) return null;
+  const used = await getSiteStore().countAiUsage(actor.user.id, kind, since24h());
+  return Math.max(0, dailyLimit(kind) - used);
+}
+
+const SIGN_UP_HINT = "Create a free account to keep going.";
+
+function userLimitResponse(kind: AiUsageKind): Response {
+  return errorResponse(
+    429,
+    "quota_exceeded",
+    `You've reached today's limit of ${dailyLimit(kind)} ${LABELS[kind]}. Please try again tomorrow.`,
+  );
+}
+
+/** 429 do visitante se `used` passou de algum limite (`over` diz o que é "passou"). */
+function guestLimitResponse(
+  kind: AiUsageKind,
+  used: Counts,
+  over: (n: number, limit: number) => boolean,
+): Response | null {
+  const limits = guestLimits(kind);
+  if (over(used.total, limits.global)) {
     return errorResponse(
       429,
       "quota_exceeded",
       `Lots of people are building right now. ${SIGN_UP_HINT}`,
     );
   }
-  if (byGuest >= limits.perGuest || byIp >= limits.perIp) {
+  if (over(used.byGuest, limits.perGuest) || over(used.byIp, limits.perIp)) {
     return errorResponse(
       429,
       "quota_exceeded",
@@ -113,11 +131,51 @@ export async function quotaExceeded(actor: Actor, kind: AiUsageKind): Promise<Re
   return null;
 }
 
-export async function recordUse(actor: Actor, kind: AiUsageKind): Promise<void> {
+/**
+ * Reserva um uso da IA ANTES de chamá-la. Devolve a resposta 429 pronta se passou do limite,
+ * senão `null` (o uso já ficou registrado).
+ *
+ * Ordem: confere → registra → confere de novo. Registrar antes de chamar a IA (que demora
+ * segundos) impede que vários pedidos ao mesmo tempo passem todos pelo limite; a primeira
+ * conferência evita registrar pedidos de quem já estava no limite.
+ * Se a IA falhar, o uso continua contado (custo: no máximo um crédito perdido por falha).
+ */
+export async function reserveUse(actor: Actor, kind: AiUsageKind): Promise<Response | null> {
   const store = getSiteStore();
+
   if (actor.kind === "user") {
+    if (await isAdmin(actor.user.id)) {
+      await store.recordAiUsage(actor.user.id, kind);
+      return null;
+    }
+    const limit = dailyLimit(kind);
+    const before = await store.countAiUsage(actor.user.id, kind, since24h());
+    if (before >= limit) return userLimitResponse(kind);
     await store.recordAiUsage(actor.user.id, kind);
-    return;
+    const after = await store.countAiUsage(actor.user.id, kind, since24h());
+    return after > limit ? userLimitResponse(kind) : null;
   }
-  await store.recordGuestAiUsage({ guestId: actor.guestId, ipHash: await requestIpHash() }, kind);
+
+  const ipHash = await requestIpHash();
+  const before = guestLimitResponse(kind, await guestCounts(actor, kind, ipHash), (n, l) => n >= l);
+  if (before) return before;
+  await store.recordGuestAiUsage({ guestId: actor.guestId, ipHash }, kind);
+  return guestLimitResponse(kind, await guestCounts(actor, kind, ipHash), (n, l) => n > l);
+}
+
+/**
+ * Limite de salvamentos (cada um vira uma versão no banco): 120 por hora por site. Sem isso,
+ * qualquer um com um site (inclusive visitante sem conta) poderia encher o banco em loop.
+ */
+export const SAVES_PER_SITE_PER_HOUR = 120;
+
+export async function savesExceeded(siteId: string): Promise<Response | null> {
+  const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const saves = await getSiteStore().countVersions(siteId, hourAgo);
+  if (saves < SAVES_PER_SITE_PER_HOUR) return null;
+  return errorResponse(
+    429,
+    "quota_exceeded",
+    "You're saving very fast. Please wait a few minutes and try again.",
+  );
 }

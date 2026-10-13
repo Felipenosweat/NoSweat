@@ -150,6 +150,26 @@ export class SupabaseSiteStore implements SiteStore {
     return res.json();
   }
 
+  /**
+   * Conta linhas sem baixá-las (HEAD + `Prefer: count=exact`; o total vem em Content-Range).
+   * Baixar e contar não serve: o Supabase devolve no máximo 1000 linhas por pedido.
+   */
+  private async count(endpoint: string, query: string): Promise<number> {
+    const res = await this.fetchImpl(`${endpoint}${query}`, {
+      method: "HEAD",
+      cache: "no-store",
+      headers: {
+        apikey: this.config.serviceKey,
+        Authorization: `Bearer ${this.config.serviceKey}`,
+        Prefer: "count=exact",
+      },
+    });
+    if (!res.ok) throw new Error(`Supabase count failed (${res.status})`);
+    const total = Number(res.headers.get("content-range")?.split("/")[1]);
+    if (!Number.isFinite(total)) throw new Error("Supabase did not return a row count.");
+    return total;
+  }
+
   private get leadsEndpoint(): string {
     return this.endpoint.replace(/\/sites$/, "/leads");
   }
@@ -182,12 +202,10 @@ export class SupabaseSiteStore implements SiteStore {
   async countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number> {
     assertUuid(userId);
     const since = encodeURIComponent(new Date(sinceIso).toISOString());
-    const rows = await this.raw(
+    return this.count(
       this.aiUsageEndpoint,
-      `?user_id=eq.${userId}&kind=eq.${kind}&created_at=gte.${since}&select=id&limit=1000`,
-      {},
+      `?user_id=eq.${userId}&kind=eq.${kind}&created_at=gte.${since}&select=id`,
     );
-    return Array.isArray(rows) ? rows.length : 0;
   }
 
   async recordGuestAiUsage(usage: GuestUsage, kind: AiUsageKind): Promise<void> {
@@ -213,8 +231,7 @@ export class SupabaseSiteStore implements SiteStore {
       if (!/^[0-9a-f]{64}$/.test(filter.ipHash)) return 0;
       query += `&ip_hash=eq.${filter.ipHash}`;
     }
-    const rows = await this.raw(this.aiUsageEndpoint, `${query}&select=id&limit=10000`, {});
-    return Array.isArray(rows) ? rows.length : 0;
+    return this.count(this.aiUsageEndpoint, `${query}&select=id`);
   }
 
   async countLeads(siteId: string, sinceIso: string, ipHash?: string): Promise<number> {
@@ -225,8 +242,7 @@ export class SupabaseSiteStore implements SiteStore {
       if (!/^[0-9a-f]{64}$/.test(ipHash)) return 0;
       query += `&ip_hash=eq.${ipHash}`;
     }
-    const rows = await this.raw(this.leadsEndpoint, `${query}&select=id&limit=1000`, {});
-    return Array.isArray(rows) ? rows.length : 0;
+    return this.count(this.leadsEndpoint, `${query}&select=id`);
   }
 
   async listLeads(siteId: string): Promise<LeadRecord[]> {
@@ -306,6 +322,15 @@ export class SupabaseSiteStore implements SiteStore {
       method: "POST",
       body: JSON.stringify({ site_id: siteId, spec, source }),
     });
+  }
+
+  async countVersions(siteId: string, sinceIso: string): Promise<number> {
+    if (!UUID.test(siteId)) return 0;
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    return this.count(
+      this.versionsEndpoint,
+      `?site_id=eq.${siteId}&created_at=gte.${since}&select=id`,
+    );
   }
 
   async listVersions(siteId: string): Promise<VersionRecord[]> {

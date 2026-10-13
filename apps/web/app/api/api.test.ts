@@ -63,10 +63,25 @@ describe("POST /api/sites/generate", () => {
 
   it("rejects a body that is not JSON", async () => {
     const res = await generate(
-      new Request(`${BASE}/sites/generate`, { method: "POST", body: "{nope" }),
+      new Request(`${BASE}/sites/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{nope",
+      }),
     );
     expect(res.status).toBe(400);
     expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+  });
+
+  it("rejects requests that are not sent as JSON (CSRF protection)", async () => {
+    const res = await generate(
+      new Request(`${BASE}/sites/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ brief: "plumbing company in Austin" }),
+      }),
+    );
+    expect(res.status).toBe(415);
   });
 });
 

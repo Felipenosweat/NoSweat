@@ -116,6 +116,10 @@ export class MemorySiteStore implements SiteStore {
     return clone(updated);
   }
 
+  async countVersions(siteId: string, sinceIso: string): Promise<number> {
+    return versions().filter((v) => v.siteId === siteId && v.createdAt >= sinceIso).length;
+  }
+
   async listVersions(siteId: string): Promise<VersionRecord[]> {
     return versions()
       .filter((v) => v.siteId === siteId)

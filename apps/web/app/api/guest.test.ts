@@ -89,6 +89,7 @@ describe("guest mode (build before creating an account)", () => {
     const patch = await patchSite(
       new Request("http://localhost/x", {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ spec: fixtures["glow-salon"] }),
       }),
       ctx(siteId),
@@ -112,6 +113,16 @@ describe("guest mode (build before creating an account)", () => {
     expect((await generate(generateRequest())).status).toBe(201);
     state.cookies.clear();
     expect((await generate(generateRequest())).status).toBe(429);
+  });
+
+  it("does not let a burst of parallel requests slip past the limit", async () => {
+    newVisitor("198.51.100.6");
+    state.cookies.set(GUEST_COOKIE, crypto.randomUUID());
+    const responses = await Promise.all(
+      Array.from({ length: 6 }, () => generate(generateRequest())),
+    );
+    const created = responses.filter((res) => res.status === 201).length;
+    expect(created).toBeLessThanOrEqual(2);
   });
 
   it("moves the visitor's sites into the account on sign-in", async () => {

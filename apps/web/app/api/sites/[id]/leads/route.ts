@@ -13,9 +13,9 @@ import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
 
-// Anti-spam: no máximo 5 mensagens por hora do mesmo IP e 100 por dia para cada site.
+// Anti-spam: no máximo 5 mensagens por hora da mesma rede (IP ou prefixo IPv6) em cada site.
+// Sem teto por site: um atacante poderia esgotá-lo e calar o formulário do negócio por um dia.
 const PER_IP_PER_HOUR = 5;
-const PER_SITE_PER_DAY = 100;
 
 /**
  * POST /api/sites/[id]/leads: formulário de contato de um site PUBLICADO (público, sem login).
@@ -33,12 +33,8 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 
     const ipHash = await requestIpHash(request.headers);
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const [fromThisIp, today] = await Promise.all([
-      ipHash ? store.countLeads(site.id, hourAgo, ipHash) : Promise.resolve(0),
-      store.countLeads(site.id, dayAgo),
-    ]);
-    if (fromThisIp >= PER_IP_PER_HOUR || today >= PER_SITE_PER_DAY) {
+    const fromThisIp = ipHash ? await store.countLeads(site.id, hourAgo, ipHash) : 0;
+    if (fromThisIp >= PER_IP_PER_HOUR) {
       return errorResponse(
         429,
         "quota_exceeded",

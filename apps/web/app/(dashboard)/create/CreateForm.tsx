@@ -4,6 +4,7 @@ import { ApiError, GenerateSiteRequest, GenerateSiteResponse } from "@nosweat/sc
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { HERO_BRIEF_KEY } from "@/components/marketing/HeroPrompt";
 
 const MAX_LENGTH = 2000;
 
@@ -123,10 +124,12 @@ function AlertIcon({ className }: { className: string }) {
 
 export function CreateForm({ initialBrief = "" }: { initialBrief?: string }) {
   const router = useRouter();
-  // Descrição vinda da landing (?brief=): se for válida, a geração começa sozinha.
+  // Descrição vinda da landing (?brief=): se for válida E tiver saído da nossa caixa da landing
+  // (recibo no sessionStorage), a geração começa sozinha. Link de outro site só preenche o texto,
+  // para ninguém gastar os créditos de outra pessoa com um link.
   const autoStart = GenerateSiteRequest.safeParse({ brief: initialBrief }).success;
   const [brief, setBrief] = useState(initialBrief);
-  const [loading, setLoading] = useState(autoStart);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<FormError | null>(null);
   const [ready, setReady] = useState(false);
   // Evita gerar duas vezes (o StrictMode do React roda os efeitos duas vezes em dev).
@@ -167,7 +170,20 @@ export function CreateForm({ initialBrief = "" }: { initialBrief?: string }) {
     autoStarted.current = true;
     // Tira o ?brief= do endereço: voltar ou recarregar a página não gera outro site.
     window.history.replaceState(null, "", "/create");
-    void requestSite({ brief: initialBrief.trim() });
+    let fromOurLanding = false;
+    try {
+      fromOurLanding = sessionStorage.getItem(HERO_BRIEF_KEY) === initialBrief.trim();
+      sessionStorage.removeItem(HERO_BRIEF_KEY);
+    } catch {
+      // Sem storage: não começa sozinho; a pessoa clica em gerar.
+    }
+    if (!fromOurLanding) return;
+    void (async () => {
+      // setState só depois de um await (regra do React para efeitos).
+      await Promise.resolve();
+      setLoading(true);
+      await requestSite({ brief: initialBrief.trim() });
+    })();
     // Só na montagem: requestSite muda a cada render, mas a geração automática roda uma vez.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart, initialBrief]);

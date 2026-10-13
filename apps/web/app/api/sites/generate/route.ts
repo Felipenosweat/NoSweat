@@ -2,7 +2,7 @@ import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@noswe
 import { generateSiteSpec } from "@/server/ai";
 import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
-import { quotaExceeded, recordUse } from "@/server/quota";
+import { reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!input.ok) return input.response;
 
     const actor: Actor = (await getActor()) ?? { kind: "guest", guestId: await ensureGuestId() };
-    const overLimit = await quotaExceeded(actor, "generate");
+    const overLimit = await reserveUse(actor, "generate");
     if (overLimit) return overLimit;
 
     let spec: SiteSpec;
@@ -35,7 +35,6 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    await recordUse(actor, "generate");
     const site = await getSiteStore().create(
       spec,
       actor.kind === "user" ? actor.user.id : { guestId: actor.guestId },

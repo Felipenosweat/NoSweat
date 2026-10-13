@@ -71,6 +71,8 @@ export interface SiteStore {
   get(id: string): Promise<SiteRecord | null>;
   /** Salva um novo rascunho (e uma versão). Devolve `null` se o site não existir. */
   update(id: string, spec: SiteSpec, source?: VersionSource): Promise<SiteRecord | null>;
+  /** Quantas versões o site ganhou desde `sinceIso` (limite de salvamentos). */
+  countVersions(siteId: string, sinceIso: string): Promise<number>;
   /** Versões salvas do site, mais recentes primeiro. */
   listVersions(siteId: string): Promise<VersionRecord[]>;
   getVersion(siteId: string, versionId: string): Promise<VersionRecord | null>;

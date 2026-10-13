@@ -8,7 +8,7 @@ import {
   readJson,
   unauthorized,
 } from "@/server/http";
-import { quotaExceeded, recordUse } from "@/server/quota";
+import { reserveUse } from "@/server/quota";
 import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
@@ -32,7 +32,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const input = await readJson(request, AiEditRequest);
     if (!input.ok) return input.response;
 
-    const overLimit = await quotaExceeded(actor, "ai_edit");
+    const overLimit = await reserveUse(actor, "ai_edit");
     if (overLimit) return overLimit;
 
     let result: AiEditResult;
@@ -46,7 +46,6 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
         "We couldn't apply that change right now. Please try again or rephrase your request.",
       );
     }
-    await recordUse(actor, "ai_edit");
 
     const updated = await getSiteStore().update(site.id, result.spec, "ai_edit");
     if (!updated) return notFound();

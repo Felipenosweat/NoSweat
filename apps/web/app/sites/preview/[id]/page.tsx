@@ -1,7 +1,7 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getAccessibleSite, getActor, type Actor } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
 
@@ -33,7 +33,14 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
 export default async function PreviewPage({ params }: PreviewPageProps) {
   const { id } = await params;
   const preview = await getPreview(id);
-  if (!preview) notFound();
+  if (!preview) {
+    // Sem conta logada pode ser o dono com a sessão vencida: pede login (não revela se existe).
+    const actor = await getActor();
+    if (actor?.kind !== "user") {
+      redirect(`/login?next=${encodeURIComponent(`/sites/preview/${id}`)}`);
+    }
+    notFound();
+  }
   const { actor, site } = preview;
   const guest = actor.kind === "guest";
   // Publicar exige conta: o visitante cria a conta e volta para a página do site.

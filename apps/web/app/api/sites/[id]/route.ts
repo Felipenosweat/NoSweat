@@ -5,6 +5,7 @@ import {
   UpdateSiteResponse,
 } from "@nosweat/schema";
 import { getVercelConfig, removeDomain } from "@/server/domains";
+import { savesExceeded } from "@/server/quota";
 import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server/http";
 import { hasUnpublishedChanges, requireOwnedSite, requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -39,6 +40,9 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
 
     const input = await readJson(request, UpdateSiteRequest);
     if (!input.ok) return input.response;
+
+    const tooFast = await savesExceeded(current.id);
+    if (tooFast) return tooFast;
 
     const site = await getSiteStore().update(id, input.data.spec, "edit");
     if (!site) return notFound();

@@ -66,7 +66,9 @@ export async function AuthPage({
   const providers = await getEnabledProviders();
   const hasProviders = providers.google || providers.apple;
   const copy = COPY[mode];
-  const initialError = params.error ? ERRORS[params.error] : undefined;
+  // Object.hasOwn: "?error=constructor" não pode pegar coisas do protótipo do objeto.
+  const initialError =
+    params.error && Object.hasOwn(ERRORS, params.error) ? ERRORS[params.error] : undefined;
 
   return (
     <div className="min-h-dvh bg-white lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">

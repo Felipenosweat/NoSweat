@@ -1,5 +1,6 @@
 import { UpdateSiteResponse } from "@nosweat/schema";
 import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
+import { savesExceeded } from "@/server/quota";
 import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
@@ -16,6 +17,9 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
     const { actor, site } = await requireSiteAccess(id);
     if (!actor) return unauthorized();
     if (!site) return notFound();
+
+    const tooFast = await savesExceeded(site.id);
+    if (tooFast) return tooFast;
 
     const store = getSiteStore();
     const version = await store.getVersion(site.id, versionId);
