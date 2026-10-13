@@ -2,6 +2,7 @@ import type { Section, SectionOf, SectionType } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import { telHref } from "../../components/primitives";
 import { Contact, Faq, Gallery, Hero, Services, Testimonials } from "../../sections";
+import { EditableSection } from "../../EditableSection";
 import type { TemplateProps } from "../../types";
 import { NAV, SERVICE_ICONS } from "./content";
 import {
@@ -20,7 +21,12 @@ import {
  * Template de prestador de serviço (encanador, eletricista, jardinagem...).
  * Telefone sempre à vista: barra do topo, cabeçalho fixo, hero e barra fixa no celular.
  */
-export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
+export function HomeServicesTemplate({
+  spec,
+  contactEndpoint,
+  editable = false,
+  selectedSection = null,
+}: TemplateProps) {
   const { business, sections } = spec;
 
   // Só a primeira seção de cada tipo recebe âncora (#services, #reviews...), para não duplicar ids.
@@ -148,7 +154,20 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
     <div id="top" className="flex min-h-full flex-col">
       <TopBar business={business} />
       <Header business={business} links={links} />
-      <main className="flex-1">{sections.map(renderSection)}</main>
+      <main className="flex-1">
+        {editable
+          ? sections.map((section, index) => (
+              <EditableSection
+                key={`${section.type}-${index}`}
+                index={index}
+                type={section.type}
+                selected={selectedSection === index}
+              >
+                {renderSection(section, index)}
+              </EditableSection>
+            ))
+          : sections.map(renderSection)}
+      </main>
       <Footer business={business} links={links} />
       <MobileCallBar phone={business.phone} ctaLabel={primaryCta} ctaHref={ctaHref} />
     </div>

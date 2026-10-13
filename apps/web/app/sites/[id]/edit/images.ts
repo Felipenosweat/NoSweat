@@ -19,7 +19,8 @@ const NETWORK_ERROR = "We couldn't reach our servers. Please try again.";
 export const UPLOADS_UNAVAILABLE = "Photo uploads aren’t available yet. Please try again later.";
 
 export type SearchResult =
-  { ok: true; results: SiteImage[] } | { ok: false; notConfigured: boolean; message: string };
+  | { ok: true; results: SiteImage[] }
+  | { ok: false; notConfigured: boolean; message: string };
 
 export type UploadResult =
   | { ok: true; image: SiteImage }

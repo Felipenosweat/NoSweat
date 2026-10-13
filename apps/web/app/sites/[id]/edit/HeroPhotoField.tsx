@@ -3,7 +3,7 @@
 import type { SiteImage } from "@nosweat/schema";
 import { useId, useRef, useState, type FormEvent } from "react";
 import { ACCEPT_ATTR, MAX_ALT, searchImages, uploadImage } from "./images";
-import { inputClass, primaryButton, secondaryButton, textButton, Thumb } from "./ui";
+import { inputClass, secondaryButton, textButton, Thumb } from "./ui";
 
 type SearchState =
   | { status: "idle" }
@@ -178,7 +178,11 @@ export function HeroPhotoField({
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <button type="submit" disabled={search.status === "loading"} className={primaryButton}>
+            <button
+              type="submit"
+              disabled={search.status === "loading"}
+              className={secondaryButton}
+            >
               Search
             </button>
           </form>

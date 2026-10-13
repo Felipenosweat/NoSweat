@@ -9,7 +9,7 @@ const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin"];
 
 // Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio
 // site. A página confere se o site é mesmo do visitante (senão, 404).
-const GUEST_PATHS = [/^\/sites\/[^/]+\/edit\/?$/, /^\/sites\/preview\/[^/]+\/?$/];
+const GUEST_PATHS = [/^\/sites\/[^/]+\/edit(\/canvas)?\/?$/, /^\/sites\/preview\/[^/]+\/?$/];
 
 const isProtected = (path: string) =>
   !GUEST_PATHS.some((pattern) => pattern.test(path)) &&

@@ -24,6 +24,16 @@ export const rosasKitchen: SiteSpec = {
       subtitle:
         "Family recipes, handmade tortillas, and the best carne asada in Barrio Logan. Come hungry, leave happy.",
       ctaLabel: "Reserve a Table",
+      imageQuery: "cozy restaurant booths",
+      image: {
+        url: "/photos/example-restaurant.webp",
+        alt: "Warm restaurant booths set for dinner",
+        source: "unsplash",
+        kind: "scene",
+        credit: { name: "Carlos Aranda", url: "https://unsplash.com/photos/IYMceGutrbQ" },
+        width: 2400,
+        height: 1602,
+      },
     },
     {
       type: "services",

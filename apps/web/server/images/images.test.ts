@@ -61,7 +61,11 @@ function specWith(hero: Partial<Extract<Section, { type: "hero" }>>, extra?: Sec
   const base = structuredClone(fixtures["joes-plumbing"]);
   const [first, ...rest] = base.sections;
   if (first?.type !== "hero") throw new Error("fixture must start with a hero");
-  return { ...base, sections: [{ ...first, ...hero }, ...(extra ?? rest)] };
+  // O exemplo já vem com foto e busca; os testes partem de um topo sem nenhuma das duas.
+  const plainHero = { ...first };
+  delete plainHero.image;
+  delete plainHero.imageQuery;
+  return { ...base, sections: [{ ...plainHero, ...hero }, ...(extra ?? rest)] };
 }
 
 function heroOf(spec: SiteSpec) {

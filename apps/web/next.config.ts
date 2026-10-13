@@ -45,6 +45,8 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
   images: {
+    // AVIF primeiro (menor), WebP como alternativa.
+    formats: ["image/avif", "image/webp"],
     // Fotos dos sites: bancos de imagens (hotlink, como pedem as regras deles) e uploads do dono.
     remotePatterns: [
       { protocol: "https", hostname: "images.pexels.com" },

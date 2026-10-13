@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
-import { getAccessibleSite, getActor } from "@/server/sites";
+import { remainingUses } from "@/server/quota";
+import { requireEditableSite } from "./guard";
 import { SiteEditor } from "./SiteEditor";
 
-export const metadata: Metadata = { title: "Edit website" };
+export const metadata: Metadata = { title: "Edit website", robots: { index: false } };
 
 type EditPageProps = { params: Promise<{ id: string }> };
 
-// Conta ou visitante sem conta (o site que ele mesmo criou). Qualquer outro caso = 404.
 export default async function EditSitePage({ params }: EditPageProps) {
   const { id } = await params;
-  const actor = await getActor();
-  const site = actor ? await getAccessibleSite(actor, id) : null;
-  if (!actor || !site) {
-    // Sem conta logada pode ser o dono com a sessão vencida (ou em outro aparelho): pede login.
-    // O redirecionamento não revela se o site existe.
-    if (actor?.kind !== "user") redirect(`/login?next=${encodeURIComponent(`/sites/${id}/edit`)}`);
-    notFound();
-  }
-  return <SiteEditor siteId={site.id} initialSpec={site.spec} isGuest={actor.kind === "guest"} />;
+  const { actor, site } = await requireEditableSite(id);
+  // Quantas mudanças por IA ainda cabem hoje (`null` = sem limite, ex.: admins).
+  const aiEditsLeft = await remainingUses(actor, "ai_edit");
+  return (
+    <SiteEditor
+      siteId={site.id}
+      initialSpec={site.spec}
+      status={site.status === "published" ? "live" : "draft"}
+      aiEditsLeft={aiEditsLeft}
+      isGuest={actor.kind === "guest"}
+    />
+  );
 }

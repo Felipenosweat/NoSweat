@@ -2,12 +2,24 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import {
+  SiteUrlLine,
+  StatusBadge,
+  focusRing,
+  panelClass,
+  panelText,
+  panelTitle,
+  primaryButton,
+  secondaryButton,
+  textButton,
+} from "@/components/DashboardUi";
 import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
 import { Logo } from "@/components/Logo";
+import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState } from "@/server/domains";
-import { freeUrl, getOwnedSite, hasUnpublishedChanges, publicUrl } from "@/server/sites";
+import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec, publicUrl } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
@@ -23,6 +35,8 @@ async function requestOrigin(): Promise<string> {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${proto}://${host}`;
 }
+
+const linkClass = `rounded-sm font-medium text-brand underline-offset-4 hover:underline ${focusRing}`;
 
 export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const { id } = await params;
@@ -41,170 +55,237 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
+  // Publicar é a única ação azul da tela; sem nada para publicar, "Edit site" vira a principal.
+  const publishLabel = !isPublished
+    ? "Publish my website"
+    : pendingChanges
+      ? "Publish changes"
+      : null;
+  const { business } = site.spec;
+  const where = [business.city, business.state].filter(Boolean).join(", ");
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
+    <div className="min-h-svh bg-surface">
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
           <Logo />
           <Link
             href="/dashboard"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            className={`inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
           >
-            &larr; My sites
+            <span aria-hidden="true">&larr;&nbsp;</span>My sites
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl space-y-6 px-4 py-10 sm:px-6">
-        <div>
-          <p className="text-sm font-semibold tracking-widest text-sky-600 uppercase">
-            Your website
-          </p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight">
-            {site.spec.business.name}
+      <main className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.03em] break-words text-ink lg:text-[2.5rem]">
+            {business.name}
           </h1>
+          <StatusBadge tone={isPublished ? "live" : "draft"}>
+            {isPublished ? "Live" : "Draft"}
+          </StatusBadge>
         </div>
+        {where && <p className="mt-1 text-[15px] text-slate-500">{where}</p>}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="font-display text-xl font-bold">1. Publish</h2>
-              <p className="mt-1 text-slate-600">
+        <div className="mt-8 grid gap-6 lg:grid-cols-12 lg:gap-x-8">
+          {/* Coluna da direita (miniatura): vem primeiro no HTML para aparecer no topo no celular. */}
+          <aside
+            aria-label="Your site"
+            className="lg:sticky lg:top-24 lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:self-start"
+          >
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="border-b border-slate-200">
+                <SiteThumb spec={liveSpec(site)} />
+              </div>
+              <div className="p-5">
+                {live ? (
+                  <a
+                    href={live}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`block rounded-sm text-[15px] leading-6 hover:underline hover:decoration-slate-300 hover:underline-offset-4 ${focusRing}`}
+                  >
+                    <SiteUrlLine url={live} />
+                    <span className="sr-only"> (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <p className="text-[15px] leading-6 text-slate-500">
+                    Not online yet. Publish to get your free address.
+                  </p>
+                )}
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link
+                    href={`/sites/${site.id}/edit`}
+                    className={publishLabel ? secondaryButton : primaryButton}
+                  >
+                    Edit site
+                  </Link>
+                  <Link href={`/sites/preview/${site.id}`} className={textButton}>
+                    {pendingChanges ? "Preview draft" : "Preview"}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <div className="space-y-6 lg:col-span-8 lg:col-start-1 lg:row-start-1">
+            <section
+              id="publish"
+              aria-labelledby="publish-title"
+              className={`${panelClass} scroll-mt-24`}
+            >
+              <h2 id="publish-title" className={panelTitle}>
+                Publish
+              </h2>
+              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
                 {pendingChanges
-                  ? "You have saved changes that are not live yet. Publish them when you're ready."
+                  ? "You have saved changes that aren’t live yet. Publish them when you’re ready."
                   : isPublished
                     ? "Your website is live. Anyone with the link can see it."
                     : "Happy with the preview? Put your website online in one click."}
               </p>
-            </div>
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                isPublished ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-              }`}
+              {live && free && live !== free && (
+                <p className="mt-3 text-[13px] text-slate-500">
+                  Also available at{" "}
+                  <a href={free} target="_blank" rel="noreferrer" className={linkClass}>
+                    {free.replace(/^https?:\/\//, "")}
+                  </a>
+                </p>
+              )}
+              <div className="mt-5">
+                <PublishButton
+                  siteId={site.id}
+                  siteName={business.name}
+                  label={publishLabel}
+                  liveUrl={isPublished ? free : null}
+                  hasDomain={Boolean(domain.domain)}
+                />
+              </div>
+            </section>
+
+            <section
+              id="messages"
+              aria-labelledby="messages-title"
+              className={`${panelClass} scroll-mt-24`}
             >
-              {isPublished ? "Live" : "Draft"}
-            </span>
-          </div>
-
-          {live && (
-            <a
-              href={live}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 block truncate rounded-xl bg-slate-50 px-4 py-3 font-mono text-sm text-sky-700 hover:underline"
-            >
-              {live}
-            </a>
-          )}
-          {live && free && live !== free && (
-            <p className="mt-2 text-sm text-slate-500">
-              Also available at{" "}
-              <a
-                href={free}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sky-700 hover:underline"
-              >
-                {free}
-              </a>
-            </p>
-          )}
-
-          <div className="mt-5 flex flex-wrap gap-3">
-            {!isPublished && <PublishButton siteId={site.id} />}
-            {pendingChanges && <PublishButton siteId={site.id} label="Publish changes" />}
-            <Link
-              href={`/sites/${site.id}/edit`}
-              className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
-            >
-              Edit website or ask AI
-            </Link>
-            <Link
-              href={`/sites/preview/${site.id}`}
-              className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-400"
-            >
-              Open preview
-            </Link>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="font-display text-xl font-bold">2. Use your own domain</h2>
-          <p className="mt-1 text-slate-600">
-            Already own a domain like <span className="font-medium">yourbusiness.com</span>? Connect
-            it here. Don&rsquo;t have one yet? Buy it at any registrar (GoDaddy, Namecheap,
-            Hostinger…) and come back.
-          </p>
-          <DomainPanel siteId={site.id} initial={domain} isPublished={isPublished} />
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="font-display text-xl font-bold">Version history</h2>
-          <p className="mt-1 text-slate-600">
-            Every time you save, we keep a copy. Restore an older one if you change your mind.
-          </p>
-          <VersionHistory
-            siteId={site.id}
-            versions={versions.map(({ id: versionId, source, createdAt }) => ({
-              id: versionId,
-              source,
-              createdAt,
-            }))}
-          />
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="font-display text-xl font-bold">3. Messages from your website</h2>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-              {leads.length}
-            </span>
-          </div>
-          {leads.length === 0 ? (
-            <p className="mt-2 text-slate-600">
-              When visitors fill out the contact form on your website, their messages show up here.
-            </p>
-          ) : (
-            <ul className="mt-5 divide-y divide-slate-100">
-              {leads.map((lead) => (
-                <li key={lead.id} className="py-4">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-semibold">{lead.name}</p>
-                    <p className="text-xs text-slate-400">
-                      <LocalTime iso={lead.createdAt} />
-                    </p>
-                  </div>
-                  <p className="mt-1 flex flex-wrap gap-x-4 text-sm">
-                    {lead.phone && (
-                      <a href={`tel:${lead.phone}`} className="text-sky-700 hover:underline">
-                        {lead.phone}
+              <div className="flex items-center justify-between gap-4">
+                <h2 id="messages-title" className={panelTitle}>
+                  Messages from your website
+                </h2>
+                <StatusBadge tone="neutral">
+                  <span className="tabular-nums">{leads.length}</span>
+                  <span className="sr-only"> messages</span>
+                </StatusBadge>
+              </div>
+              {leads.length === 0 ? (
+                <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+                  When visitors fill out the contact form on your website, their messages show up
+                  here.
+                  {free && isPublished && (
+                    <>
+                      {" "}
+                      <a
+                        href={`${free}#contact`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={linkClass}
+                      >
+                        Send yourself a test request
+                        <span className="sr-only"> (opens in a new tab)</span>
                       </a>
-                    )}
-                    {lead.email && (
-                      <a href={`mailto:${lead.email}`} className="text-sky-700 hover:underline">
-                        {lead.email}
-                      </a>
-                    )}
-                  </p>
-                  <p className="mt-2 text-sm whitespace-pre-line text-slate-700">{lead.message}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                      .
+                    </>
+                  )}
+                </p>
+              ) : (
+                <ul className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+                  {leads.map((lead) => (
+                    <li key={lead.id} className="py-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                        <p className="text-[15px] font-semibold text-ink">{lead.name}</p>
+                        <p className="text-[13px] text-slate-500 tabular-nums">
+                          <LocalTime iso={lead.createdAt} />
+                        </p>
+                      </div>
+                      {(lead.phone || lead.email) && (
+                        <p className="mt-1 flex flex-wrap gap-x-4 text-sm">
+                          {lead.phone && (
+                            <a href={`tel:${lead.phone}`} className={linkClass}>
+                              {lead.phone}
+                            </a>
+                          )}
+                          {lead.email && (
+                            <a href={`mailto:${lead.email}`} className={`${linkClass} break-all`}>
+                              {lead.email}
+                            </a>
+                          )}
+                        </p>
+                      )}
+                      <p className="mt-2 max-w-[65ch] text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
+                        {lead.message}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
-        <section className="rounded-3xl border border-red-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="font-display text-xl font-bold">Delete website</h2>
-          <p className="mt-1 mb-4 text-slate-600">
-            Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
-          </p>
-          <DeleteSiteButton
-            siteId={site.id}
-            siteName={site.spec.business.name}
-            redirectTo="/dashboard"
-          />
-        </section>
+            <section
+              id="domain"
+              tabIndex={-1}
+              aria-labelledby="domain-title"
+              className={`${panelClass} scroll-mt-24 focus:outline-none`}
+            >
+              <h2 id="domain-title" className={panelTitle}>
+                Your own domain
+              </h2>
+              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+                Already own a domain like{" "}
+                <span className="font-medium text-ink">yourbusiness.com</span>? Connect it here.
+                Don&rsquo;t have one yet? Buy it at any registrar (GoDaddy, Namecheap,
+                Hostinger&hellip;) and come back.
+              </p>
+              <DomainPanel siteId={site.id} initial={domain} isPublished={isPublished} />
+            </section>
+
+            <section
+              id="versions"
+              aria-labelledby="versions-title"
+              className={`${panelClass} scroll-mt-24`}
+            >
+              <h2 id="versions-title" className={panelTitle}>
+                Version history
+              </h2>
+              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+                Every time you save, we keep a copy. Restore an older one if you change your mind.
+              </p>
+              <VersionHistory
+                siteId={site.id}
+                versions={versions.map(({ id: versionId, source, createdAt }) => ({
+                  id: versionId,
+                  source,
+                  createdAt,
+                }))}
+              />
+            </section>
+
+            <section aria-labelledby="delete-title" className={`${panelClass} border-red-100`}>
+              <h2 id="delete-title" className={panelTitle}>
+                Delete website
+              </h2>
+              <p className={`mt-1 mb-4 max-w-[60ch] ${panelText}`}>
+                Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
+              </p>
+              <DeleteSiteButton
+                siteId={site.id}
+                siteName={site.spec.business.name}
+                redirectTo="/dashboard"
+              />
+            </section>
+          </div>
+        </div>
       </main>
     </div>
   );

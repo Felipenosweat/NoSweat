@@ -24,6 +24,16 @@ export const glowSalon: SiteSpec = {
       subtitle:
         "Color, cuts, and treatments by stylists who listen. Step into our Wynwood studio and leave glowing.",
       ctaLabel: "Book Your Appointment",
+      imageQuery: "modern hair salon interior",
+      image: {
+        url: "/photos/example-salon.webp",
+        alt: "A bright, modern hair salon",
+        source: "unsplash",
+        kind: "scene",
+        credit: { name: "Benyamin Bohlouli", url: "https://unsplash.com/photos/LZLdLR7vuHg" },
+        width: 2400,
+        height: 1601,
+      },
     },
     {
       type: "services",

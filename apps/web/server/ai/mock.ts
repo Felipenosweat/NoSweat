@@ -6,6 +6,7 @@ const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
   { slug: "joes-plumbing", keywords: ["plumb"] },
   { slug: "glow-salon", keywords: ["salon", "beauty", "hair"] },
   { slug: "rosas-kitchen", keywords: ["restaurant", "food", "cafe"] },
+  { slug: "sparkle-cleaning", keywords: ["clean", "maid", "janitor"] },
 ];
 
 const DEFAULT_SLUG: FixtureSlug = "joes-plumbing";
@@ -15,6 +16,7 @@ const IMAGE_QUERIES: Partial<Record<FixtureSlug, string>> = {
   "joes-plumbing": "plumber tools copper pipes",
   "glow-salon": "bright modern hair salon interior",
   "rosas-kitchen": "mexican tacos table warm light",
+  "sparkle-cleaning": "cleaning crew bright kitchen",
 };
 
 /** Escolhe a fixture por palavra-chave no brief (sem acento e sem diferenciar maiúsculas). */

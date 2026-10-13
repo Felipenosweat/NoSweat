@@ -2,29 +2,30 @@
 
 import { ApiError, DomainResponse, type DomainResponse as DomainState } from "@nosweat/schema";
 import { useState, type FormEvent } from "react";
+import { StatusBadge, focusRing, secondaryButton, textButton } from "@/components/DashboardUi";
 
 const STATUS: Record<
   NonNullable<DomainState["status"]>,
-  { label: string; className: string; help: string }
+  { label: string; tone: "live" | "pending" | "draft"; help: string }
 > = {
   active: {
     label: "Connected",
-    className: "bg-emerald-100 text-emerald-800",
+    tone: "live",
     help: "Your domain is live with a free secure certificate (HTTPS).",
   },
   pending: {
     label: "Waiting for DNS",
-    className: "bg-amber-100 text-amber-800",
+    tone: "pending",
     help: "Add the two records below where you bought your domain. Changes usually take a few minutes, sometimes up to a few hours.",
   },
   unverified: {
     label: "Confirm it's yours",
-    className: "bg-violet-100 text-violet-800",
+    tone: "pending",
     help: "First, prove you own this domain: add the TXT record below where you bought it, then click Check again. Next we'll show the two records that point it to your website.",
   },
   manual: {
     label: "Being set up",
-    className: "bg-sky-100 text-sky-800",
+    tone: "draft",
     help: "Add the two records below where you bought your domain. Our team will finish the connection for you.",
   },
 };
@@ -77,7 +78,7 @@ export function DomainPanel({
     try {
       await navigator.clipboard.writeText(value);
       setCopied(value);
-      setTimeout(() => setCopied(null), 1500);
+      setTimeout(() => setCopied(null), 2000);
     } catch {
       // Sem permissão de área de transferência: a pessoa copia na mão.
     }
@@ -86,31 +87,40 @@ export function DomainPanel({
   if (!state.domain) {
     return (
       <form onSubmit={connect} className="mt-5">
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <label htmlFor="domain-input" className="block text-[13px] font-medium text-ink">
+          Your domain
+        </label>
+        <div className="mt-1.5 flex flex-col gap-3 sm:flex-row">
           <input
+            id="domain-input"
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="yourbusiness.com"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
-            className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 text-base shadow-sm focus:border-sky-500 focus:ring-4 focus:ring-sky-100 focus:outline-none"
+            inputMode="url"
+            aria-describedby={!isPublished ? "domain-tip" : undefined}
+            className="h-12 w-full min-w-0 rounded-xl sm:flex-1 border border-slate-300 bg-white px-4 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none sm:h-11"
           />
           <button
             type="submit"
             disabled={pending || input.trim().length === 0}
-            className="rounded-full bg-slate-900 px-6 py-3 font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
+            className={`${secondaryButton} min-h-12 sm:min-h-11`}
           >
-            {pending ? "Connecting..." : "Connect domain"}
+            {pending ? "Connecting…" : "Connect domain"}
           </button>
         </div>
         {!isPublished && (
-          <p className="mt-2 text-sm text-slate-500">
+          <p id="domain-tip" className="mt-2 text-[13px] text-slate-500">
             Tip: publish your website first so it shows up as soon as the domain is ready.
           </p>
         )}
         {error && (
-          <p role="alert" className="mt-3 text-sm text-red-700">
+          <p
+            role="alert"
+            className="mt-3 inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
             {error}
           </p>
         )}
@@ -122,63 +132,72 @@ export function DomainPanel({
 
   return (
     <div className="mt-5 space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
-        <span className="font-mono text-sm font-semibold">{state.domain}</span>
-        {status && (
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.className}`}>
-            {status.label}
-          </span>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-3">
+        <span className="font-display text-[15px] font-semibold break-all text-ink">
+          {state.domain}
+        </span>
+        {status && <StatusBadge tone={status.tone}>{status.label}</StatusBadge>}
       </div>
-      {status && <p className="text-sm text-slate-600">{status.help}</p>}
+      {status && <p className="text-[15px] leading-[1.6] text-slate-600">{status.help}</p>}
 
       {state.status !== "active" && (
-        <div className="overflow-x-auto rounded-xl border border-slate-200">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-4 py-2 font-medium">Name / Host</th>
-                <th className="px-4 py-2 font-medium">Value / Points to</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.records.map((record) => (
-                <tr key={`${record.type}-${record.name}`} className="border-t border-slate-200">
-                  <td className="px-4 py-3 font-semibold">{record.type}</td>
-                  <td className="px-4 py-3 font-mono">{record.name}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => copy(record.value)}
-                      className="font-mono text-sky-700 hover:underline"
-                      title="Copy"
-                    >
-                      {record.value}
-                    </button>
-                    {copied === record.value && (
-                      <span className="ml-2 text-xs text-emerald-700">Copied!</span>
-                    )}
-                  </td>
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface text-[13px] text-slate-500">
+                <tr>
+                  <th scope="col" className="px-4 py-2 font-medium">
+                    Type
+                  </th>
+                  <th scope="col" className="px-4 py-2 font-medium">
+                    Name / Host
+                  </th>
+                  <th scope="col" className="px-4 py-2 font-medium">
+                    Value / Points to
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
+              </thead>
+              <tbody>
+                {state.records.map((record) => (
+                  <tr key={`${record.type}-${record.name}`} className="border-t border-slate-200">
+                    <td className="px-4 py-3 font-semibold text-ink">{record.type}</td>
+                    <td className="px-4 py-3 font-mono text-ink">{record.name}</td>
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono break-all text-ink">{record.value}</span>
+                        <button
+                          type="button"
+                          onClick={() => copy(record.value)}
+                          className={`inline-flex min-h-9 shrink-0 items-center rounded-lg border border-slate-300 bg-white px-2.5 text-[13px] font-semibold text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 ${focusRing}`}
+                        >
+                          {copied === record.value ? "Copied" : "Copy"}
+                          <span className="sr-only"> {record.type} value</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="border-t border-slate-200 px-4 py-3 text-[13px] leading-normal text-slate-500">
             {state.status === "unverified"
-              ? "Adding a TXT record doesn't change your website or email. It can take a few minutes to show up."
+              ? "Adding a TXT record doesn’t change your website or email. It can take a few minutes to show up."
               : "Delete any other A record for “@” and CNAME record for “www” first. Keep your email (MX) records as they are."}
           </p>
         </div>
       )}
+      <p aria-live="polite" className="sr-only">
+        {copied ? "Copied" : ""}
+      </p>
 
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {state.status !== "active" && (
           <button
             type="button"
@@ -187,9 +206,9 @@ export function DomainPanel({
               state.status === "unverified" ? call("PUT", { domain: state.domain }) : call("GET")
             }
             disabled={pending}
-            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
+            className={secondaryButton}
           >
-            {pending ? "Checking..." : "Check again"}
+            {pending ? "Checking…" : "Check again"}
           </button>
         )}
         <button
@@ -200,7 +219,7 @@ export function DomainPanel({
               : call("DELETE")
           }
           disabled={pending}
-          className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-60"
+          className={`${textButton} hover:text-red-700`}
         >
           {state.status === "unverified" ? "Use a different domain" : "Remove domain"}
         </button>

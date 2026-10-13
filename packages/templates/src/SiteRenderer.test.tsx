@@ -11,8 +11,8 @@ describe("SiteRenderer", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).toContain("ns-site");
     expect(html).toContain(`--ns-primary:${spec.theme.primary}`);
-    // Nomes com apóstrofo saem escapados no HTML.
-    expect(html).toContain(spec.business.name.replace("'", "&#x27;"));
+    // Nomes com "&" ou apóstrofo saem escapados no HTML.
+    expect(html).toContain(spec.business.name.replace("&", "&amp;").replace("'", "&#x27;"));
   });
 
   it("renders sections in the order of the array", () => {
@@ -164,8 +164,14 @@ describe("photos", () => {
   });
 
   it("hides the gallery (and its menu link) when there are no owner photos", () => {
+    // Sem a foto do topo (o exemplo tem uma), qualquer <img> seria da galeria.
+    const heroWithoutPhoto = withHeroImage(undefined);
     for (const images of [[], [scene]]) {
-      const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);
+      const spec: SiteSpec = {
+        ...heroWithoutPhoto,
+        sections: [...heroWithoutPhoto.sections, { type: "gallery", images }],
+      };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
       expect(html).not.toContain("Our work");
       expect(html).not.toContain("<img");
     }

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { CheckIcon } from "./icons";
 import { primaryButton, secondaryButton } from "./styles";
 
-// Tabela de planos da landing, em formato de recibo (mesmo sistema visual do resto da página).
+// Tabela de planos da landing: três cartões rounded-xl com linhas de recibo; o recomendado tem
+// o anel azul (ring-2 ring-brand), o único destaque de cor da seção.
 // Único componente de cliente da seção: só guarda a escolha mensal/anual.
 // Preços combinados com o fundador (2026-10-13). Anual = 10× o mensal ("2 months free" é exato).
 // Nada de preço riscado, "mais popular" ou desconto inventado.
@@ -100,7 +101,7 @@ export function PricingPlans() {
                 onChange={() => setBilling(option.value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
+              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
                 {option.label}
                 {option.note && <span className="font-normal tabular-nums">{option.note}</span>}
               </span>
@@ -112,22 +113,24 @@ export function PricingPlans() {
         {annual ? "Showing annual prices." : "Showing monthly prices."}
       </p>
 
-      {/* Um só painel dividido em três colunas (não três cartões soltos). */}
-      <ul className="mt-8 grid divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 bg-white lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+      <ul className="mt-8 grid gap-4 lg:grid-cols-3 lg:gap-6">
         {PLANS.map((plan) => (
           <li
             key={plan.id}
-            className={`flex flex-col p-6 sm:p-8 ${plan.recommended ? "bg-surface" : ""}`}
+            aria-labelledby={`plan-${plan.id}`}
+            className={`flex flex-col rounded-xl bg-white p-6 sm:p-8 ${
+              plan.recommended ? "ring-2 ring-brand" : "border border-slate-200"
+            }`}
           >
             <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-2">
               <h3
                 id={`plan-${plan.id}`}
-                className="font-display text-lg font-semibold tracking-[-0.01em] text-ink lg:text-xl"
+                className="font-display text-lg font-semibold tracking-[-0.015em] text-ink lg:text-xl"
               >
                 {plan.name}
               </h3>
               {plan.recommended && (
-                <span className="inline-flex h-7 items-center rounded-lg bg-ink px-2.5 text-[13px] font-semibold text-white">
+                <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
                   Recommended
                 </span>
               )}
@@ -135,7 +138,7 @@ export function PricingPlans() {
             <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
 
             <p className="mt-6 flex items-baseline gap-1 font-display text-ink">
-              <span className="text-[2.5rem] leading-none font-bold tracking-[-0.03em] tabular-nums">
+              <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
                 {annual ? plan.annual : plan.monthly}
               </span>
               <span className="text-base font-normal text-slate-500">{annual ? "/yr" : "/mo"}</span>

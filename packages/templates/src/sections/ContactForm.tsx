@@ -131,10 +131,12 @@ export function ContactForm({ endpoint, submitLabel }: ContactFormProps) {
         </p>
       )}
 
+      {/* Na prévia (sem endpoint) o botão fica com a cor cheia: desbotado parecia quebrado. */}
       <button
         type="submit"
         disabled={!endpoint || status.state === "sending"}
-        className="mt-6 w-full rounded-xl bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary shadow-lg shadow-ns-primary/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+        className="mt-6 w-full rounded-xl bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary shadow-lg shadow-ns-primary/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:hover:brightness-100 aria-busy:opacity-70"
+        aria-busy={status.state === "sending"}
       >
         {status.state === "sending" ? "Sending..." : submitLabel}
       </button>

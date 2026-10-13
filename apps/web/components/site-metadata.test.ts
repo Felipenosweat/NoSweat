@@ -91,7 +91,13 @@ describe("siteMetadata", () => {
   });
 
   it("sem foto, não define og:image", () => {
-    const metadata = siteMetadata(record(joesPlumbing), URL);
+    const spec: SiteSpec = {
+      ...joesPlumbing,
+      sections: joesPlumbing.sections.map((section) =>
+        section.type === "hero" ? { ...section, image: undefined } : section,
+      ),
+    };
+    const metadata = siteMetadata(record(spec), URL);
     expect(metadata.openGraph?.images).toBeUndefined();
   });
 });
