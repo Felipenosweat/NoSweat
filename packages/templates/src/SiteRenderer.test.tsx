@@ -11,8 +11,8 @@ describe("SiteRenderer", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).toContain("ns-site");
     expect(html).toContain(`--ns-primary:${spec.theme.primary}`);
-    // Nomes com apóstrofo saem escapados no HTML.
-    expect(html).toContain(spec.business.name.replace("'", "&#x27;"));
+    // Nomes com "&" ou apóstrofo saem escapados no HTML.
+    expect(html).toContain(spec.business.name.replace("&", "&amp;").replace("'", "&#x27;"));
   });
 
   it("renders sections in the order of the array", () => {
