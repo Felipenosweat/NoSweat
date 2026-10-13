@@ -2,7 +2,9 @@ import {
   ApiError,
   CreditsResponse,
   DomainResponse,
+  AiEditResponse,
   LeadsResponse,
+  VersionsResponse,
   PublishSiteResponse,
   GenerateSiteResponse,
   GetSiteResponse,
@@ -17,8 +19,11 @@ import {
   GET as getDomain,
   PUT as putDomain,
 } from "./sites/[id]/domain/route";
+import { POST as aiEdit } from "./sites/[id]/ai-edit/route";
 import { GET as listLeads, POST as sendLead } from "./sites/[id]/leads/route";
 import { POST as publish } from "./sites/[id]/publish/route";
+import { POST as restoreVersion } from "./sites/[id]/versions/[versionId]/restore/route";
+import { GET as listVersions } from "./sites/[id]/versions/route";
 import { POST as regenerateSection } from "./sites/[id]/regenerate-section/route";
 import { GET as getSite, PATCH as patchSite } from "./sites/[id]/route";
 import { POST as generate } from "./sites/generate/route";
@@ -214,7 +219,7 @@ describe("/api/sites/[id]/domain", () => {
 describe("GET /api/me/credits", () => {
   it("returns the mock credits", async () => {
     const res = await getCredits();
-    expect(CreditsResponse.parse(await res.json())).toEqual({ remaining: 10, plan: "trial" });
+    expect(CreditsResponse.parse(await res.json())).toMatchObject({ plan: "trial" });
   });
 });
 
@@ -268,5 +273,104 @@ describe("/api/sites/[id]/leads", () => {
     const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
     const res = await listLeads(new Request(`${BASE}/x`), ctx(other.id));
     expect(res.status).toBe(404);
+  });
+});
+
+describe("drafts, publishing and versions", () => {
+  const rename = (spec: (typeof fixtures)["joes-plumbing"], name: string) => ({
+    ...spec,
+    business: { ...spec.business, name },
+  });
+
+  it("keeps the live site unchanged until the owner publishes again", async () => {
+    const site = await ownSite();
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+
+    const edited = rename(site.spec, "Joe's Plumbing & Drains");
+    await patchSite(jsonRequest(`/x`, "PATCH", { spec: edited }), ctx(site.id));
+
+    let state = GetSiteResponse.parse(
+      await (await getSite(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(state.spec.business.name).toBe("Joe's Plumbing & Drains");
+    expect(state.publishedSpec?.business.name).toBe("Joe's Plumbing");
+    expect(state.hasUnpublishedChanges).toBe(true);
+
+    await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    state = GetSiteResponse.parse(
+      await (await getSite(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(state.publishedSpec?.business.name).toBe("Joe's Plumbing & Drains");
+    expect(state.hasUnpublishedChanges).toBe(false);
+  });
+
+  it("records every save and restores an older version into the draft", async () => {
+    const site = await ownSite();
+    await patchSite(
+      jsonRequest(`/x`, "PATCH", { spec: rename(site.spec, "Second name") }),
+      ctx(site.id),
+    );
+
+    const { versions } = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(versions.map((v) => v.source)).toEqual(["edit", "generate"]);
+
+    const original = versions[1];
+    if (!original) throw new Error("missing version");
+    const res = await restoreVersion(new Request(`${BASE}/x`, { method: "POST" }), {
+      params: Promise.resolve({ id: site.id, versionId: original.id }),
+    });
+    expect(res.status).toBe(200);
+    expect(UpdateSiteResponse.parse(await res.json()).spec.business.name).toBe("Joe's Plumbing");
+
+    const after = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(after.versions[0]?.source).toBe("restore");
+  });
+});
+
+describe("POST /api/sites/[id]/ai-edit", () => {
+  it("applies the request to the draft and records an ai_edit version", async () => {
+    const site = await ownSite();
+    const res = await aiEdit(
+      jsonRequest(`/x`, "POST", { instruction: "Change my hours to Mon–Sat 8 AM to 6 PM" }),
+      ctx(site.id),
+    );
+    expect(res.status).toBe(200);
+    const body = AiEditResponse.parse(await res.json());
+    expect(body.summary).toMatch(/Demo mode/);
+
+    const { versions } = VersionsResponse.parse(
+      await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
+    );
+    expect(versions[0]?.source).toBe("ai_edit");
+  });
+
+  it("returns 404 for someone else's site", async () => {
+    const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
+    const res = await aiEdit(
+      jsonRequest(`/x`, "POST", { instruction: "Make it blue" }),
+      ctx(other.id),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("stops at the daily limit with quota_exceeded", async () => {
+    const site = await ownSite();
+    const previous = process.env.AI_DAILY_EDITS;
+    // O DEV_USER já usou a IA nos testes acima; com limite 1 o próximo pedido passa do limite.
+    process.env.AI_DAILY_EDITS = "1";
+    try {
+      const res = await aiEdit(
+        jsonRequest(`/x`, "POST", { instruction: "Make it blue" }),
+        ctx(site.id),
+      );
+      expect(res.status).toBe(429);
+      expect(ApiError.parse(await res.json()).error.code).toBe("quota_exceeded");
+    } finally {
+      process.env.AI_DAILY_EDITS = previous;
+    }
   });
 });

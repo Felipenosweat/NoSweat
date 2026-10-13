@@ -1,7 +1,20 @@
 import { CreditsResponse } from "@nosweat/schema";
-import { handle, jsonResponse } from "@/server/http";
+import { getCurrentUser } from "@/server/auth/session";
+import { handle, jsonResponse, unauthorized } from "@/server/http";
+import { dailyLimit, remainingUses } from "@/server/quota";
 
-// TODO(back): ler créditos e plano do usuário logado (Supabase). Por enquanto é fixo.
+/**
+ * GET /api/me/credits → quantos pedidos à IA a conta ainda pode fazer hoje.
+ * TODO: trocar "trial" pelo plano da assinatura quando o Stripe entrar.
+ */
 export async function GET(): Promise<Response> {
-  return handle(async () => jsonResponse(CreditsResponse, { remaining: 10, plan: "trial" }));
+  return handle(async () => {
+    const user = await getCurrentUser();
+    if (!user) return unauthorized();
+    const remaining = await remainingUses(user, "ai_edit");
+    return jsonResponse(CreditsResponse, {
+      remaining: remaining ?? dailyLimit("ai_edit"),
+      plan: "trial",
+    });
+  });
 }

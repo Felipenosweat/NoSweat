@@ -2,7 +2,6 @@ import type { SectionOf } from "@nosweat/schema";
 import {
   Container,
   SectionHeading,
-  Stars,
   initials,
   type SectionHeadingProps,
 } from "../components/primitives";
@@ -31,7 +30,6 @@ export function Testimonials({ data, id, heading = DEFAULT_HEADING }: Testimonia
               className="rounded-2xl border border-ns-border bg-ns-background p-6 shadow-sm"
             >
               <figure className="flex h-full flex-col">
-                <Stars />
                 <blockquote className="mt-4 flex-1 leading-relaxed text-pretty">
                   &ldquo;{item.quote}&rdquo;
                 </blockquote>

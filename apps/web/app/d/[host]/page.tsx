@@ -2,6 +2,7 @@ import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteMetadata } from "@/components/site-metadata";
+import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
 // Site publicado no domínio próprio do cliente. O proxy.ts reescreve
@@ -25,5 +26,5 @@ export async function generateMetadata({ params }: DomainSitePageProps): Promise
 export default async function DomainSitePage({ params }: DomainSitePageProps) {
   const site = await getPublished((await params).host);
   if (!site) notFound();
-  return <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />;
+  return <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />;
 }

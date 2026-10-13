@@ -33,3 +33,14 @@ export function publicUrl(site: SiteRecord, origin: string): string | null {
 export function freeUrl(site: SiteRecord, origin: string): string | null {
   return site.slug ? `${origin}/s/${site.slug}` : null;
 }
+
+/** O rascunho tem mudanças que ainda não estão no ar? */
+export function hasUnpublishedChanges(site: SiteRecord): boolean {
+  if (site.status !== "published") return false;
+  return JSON.stringify(site.spec) !== JSON.stringify(site.publishedSpec ?? site.spec);
+}
+
+/** O que os visitantes veem: a versão publicada (sites antigos, sem cópia, usam o rascunho). */
+export function liveSpec(site: SiteRecord) {
+  return site.publishedSpec ?? site.spec;
+}

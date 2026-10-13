@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { SiteSpec } from "@nosweat/schema";
-import { SITE_GENERATION_SYSTEM_PROMPT } from "./prompt";
+import { AiEditResult, SiteSpec } from "@nosweat/schema";
+import { SITE_EDIT_SYSTEM_PROMPT, SITE_GENERATION_SYSTEM_PROMPT } from "./prompt";
 import type { SiteGenerator } from "./types";
 
 /** Modelo padrão; dá para trocar com ANTHROPIC_MODEL sem mexer no código. */
@@ -45,6 +45,37 @@ export class AnthropicGenerator implements SiteGenerator {
     }
     if (!response.parsed_output) {
       throw new Error("Claude did not return a valid SiteSpec.");
+    }
+    return response.parsed_output;
+  }
+
+  async editSite(spec: SiteSpec, instruction: string): Promise<AiEditResult> {
+    const response = await this.client.messages.parse({
+      model: this.model,
+      max_tokens: 16000,
+      output_config: {
+        effort: "medium",
+        format: zodOutputFormat(AiEditResult),
+      },
+      system: SITE_EDIT_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `<current_site>\n${JSON.stringify(spec)}\n</current_site>\n\nThe owner's request:\n<request>\n${instruction}\n</request>`,
+        },
+      ],
+    });
+
+    if (response.stop_reason === "refusal") {
+      throw new Error(
+        `Claude declined this change (${response.stop_details?.category ?? "unknown"}).`,
+      );
+    }
+    if (response.stop_reason === "max_tokens") {
+      throw new Error("Claude's response was cut off before the change was complete.");
+    }
+    if (!response.parsed_output) {
+      throw new Error("Claude did not return a valid site.");
     }
     return response.parsed_output;
   }
