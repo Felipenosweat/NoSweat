@@ -99,12 +99,13 @@ describe("LeadRequest", () => {
     );
   });
 
-  it("rejects a lead without a way to reply, or with the honeypot filled", () => {
+  it("rejects a lead without a way to reply", () => {
     expect(LeadRequest.safeParse({ name: "Ann", email: "", message: "Leak" }).success).toBe(false);
-    expect(
-      LeadRequest.safeParse({ name: "Bot", email: "b@b.co", message: "x", company: "spam" })
-        .success,
-    ).toBe(false);
+  });
+
+  it("accepts the honeypot field so the API can silently drop bots", () => {
+    const lead = LeadRequest.parse({ name: "Bot", email: "b@b.co", message: "x", company: "spam" });
+    expect(lead.company).toBe("spam");
   });
 });
 

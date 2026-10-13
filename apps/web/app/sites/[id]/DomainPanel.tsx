@@ -17,6 +17,11 @@ const STATUS: Record<
     className: "bg-amber-100 text-amber-800",
     help: "Add the two records below where you bought your domain. Changes usually take a few minutes, sometimes up to a few hours.",
   },
+  unverified: {
+    label: "Confirm it's yours",
+    className: "bg-violet-100 text-violet-800",
+    help: "First, prove you own this domain: add the TXT record below where you bought it, then click Check again. Next we'll show the two records that point it to your website.",
+  },
   manual: {
     label: "Being set up",
     className: "bg-sky-100 text-sky-800",
@@ -160,8 +165,9 @@ export function DomainPanel({
             </tbody>
           </table>
           <p className="border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
-            Delete any other A record for &ldquo;@&rdquo; and CNAME record for &ldquo;www&rdquo;
-            first. Keep your email (MX) records as they are.
+            {state.status === "unverified"
+              ? "Adding a TXT record doesn't change your website or email. It can take a few minutes to show up."
+              : "Delete any other A record for “@” and CNAME record for “www” first. Keep your email (MX) records as they are."}
           </p>
         </div>
       )}
@@ -176,7 +182,10 @@ export function DomainPanel({
         {state.status !== "active" && (
           <button
             type="button"
-            onClick={() => call("GET")}
+            // Sem verificação ainda, o domínio não foi salvo: "Check again" tenta ligar de novo.
+            onClick={() =>
+              state.status === "unverified" ? call("PUT", { domain: state.domain }) : call("GET")
+            }
             disabled={pending}
             className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-60"
           >
@@ -185,11 +194,15 @@ export function DomainPanel({
         )}
         <button
           type="button"
-          onClick={() => call("DELETE")}
+          onClick={() =>
+            state.status === "unverified"
+              ? setState({ ...state, domain: null, status: null, records: [] })
+              : call("DELETE")
+          }
           disabled={pending}
           className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-400 disabled:opacity-60"
         >
-          Remove domain
+          {state.status === "unverified" ? "Use a different domain" : "Remove domain"}
         </button>
       </div>
     </div>

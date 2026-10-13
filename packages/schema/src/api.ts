@@ -185,18 +185,19 @@ export type ConnectDomainRequest = z.infer<typeof ConnectDomainRequest>;
 
 /** Registro de DNS que o cliente cria onde comprou o domínio. */
 export const DnsRecord = z.object({
-  type: z.enum(["A", "CNAME"]),
+  type: z.enum(["A", "CNAME", "TXT"]),
   name: z.string(),
   value: z.string(),
 });
 export type DnsRecord = z.infer<typeof DnsRecord>;
 
 /**
+ * - unverified: o cliente ainda não provou que é dono (registro TXT); o domínio NÃO foi salvo;
  * - pending: esperando o cliente apontar o DNS;
  * - active: DNS certo, site no ar no domínio (HTTPS automático);
  * - manual: a plataforma ainda não está ligada à Vercel (falta VERCEL_TOKEN); o time liga à mão.
  */
-export const DomainStatus = z.enum(["pending", "active", "manual"]);
+export const DomainStatus = z.enum(["pending", "active", "manual", "unverified"]);
 export type DomainStatus = z.infer<typeof DomainStatus>;
 
 export const DomainResponse = z.object({
@@ -216,8 +217,11 @@ export const LeadRequest = z
     email: z.union([z.literal(""), z.email("Please enter a valid email.")]).optional(),
     phone: z.string().trim().max(40).optional(),
     message: z.string().trim().min(1, "Please tell us how we can help.").max(2000),
-    /** Campo-isca contra robôs: fica escondido e precisa vir vazio. */
-    company: z.string().max(0).optional(),
+    /**
+     * Campo-isca contra robôs: fica escondido e deve vir vazio. Se vier preenchido, a API responde
+     * "ok" mas não guarda nada (o robô não descobre que foi barrado).
+     */
+    company: z.string().max(500).optional(),
   })
   .refine((lead) => Boolean(lead.email) || Boolean(lead.phone), {
     message: "Please leave an email or a phone number so we can reach you.",

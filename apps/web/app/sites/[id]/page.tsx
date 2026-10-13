@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DeleteSiteButton } from "@/components/DeleteSiteButton";
+import { LocalTime } from "@/components/LocalTime";
 import { Logo } from "@/components/Logo";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState } from "@/server/domains";
@@ -13,8 +14,6 @@ import { PublishButton } from "./PublishButton";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
-
-const leadDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
 type ManageSitePageProps = { params: Promise<{ id: string }> };
 
@@ -173,7 +172,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-semibold">{lead.name}</p>
                     <p className="text-xs text-slate-400">
-                      {leadDate.format(new Date(lead.createdAt))}
+                      <LocalTime iso={lead.createdAt} />
                     </p>
                   </div>
                   <p className="mt-1 flex flex-wrap gap-x-4 text-sm">

@@ -13,7 +13,9 @@ const DEFAULT_MODEL = "claude-opus-5-5";
  */
 export class AnthropicGenerator implements SiteGenerator {
   constructor(
-    private readonly client: Anthropic = new Anthropic(),
+    // Tempo máximo de cada chamada abaixo do limite da função (maxDuration = 300 s nas rotas) e
+    // no máximo 1 nova tentativa: sem isso o SDK espera até 10 min e tenta 3 vezes.
+    private readonly client: Anthropic = new Anthropic({ timeout: 240_000, maxRetries: 1 }),
     private readonly model: string = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
   ) {}
 

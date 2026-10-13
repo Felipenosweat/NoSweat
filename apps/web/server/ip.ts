@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
 import { isIP } from "node:net";
+import { serverSecret } from "./secret";
 
 /**
  * Parte do IP que identifica "uma pessoa/rede" para os limites anti-abuso:
@@ -27,12 +28,6 @@ export function ipBucket(ip: string): string | null {
     .join(":")}::/64`;
 }
 
-// Segredo do hash: IP_HASH_SALT, ou a chave secreta do Supabase (já existe em produção e nunca
-// está no código). Sem segredo, o hash poderia ser revertido testando todos os IPv4.
-function secret(): string {
-  return process.env.IP_HASH_SALT ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "dev-only-ip-salt";
-}
-
 /**
  * Hash do IP de quem fez o pedido (HMAC-SHA256 com segredo). Nunca guardamos o IP puro.
  * Route Handlers podem passar `request.headers`; sem isso, lê os headers do request atual.
@@ -43,5 +38,5 @@ export async function requestIpHash(source?: Headers): Promise<string | null> {
   const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim();
   const bucket = ip ? ipBucket(ip) : null;
   if (!bucket) return null;
-  return createHmac("sha256", secret()).update(bucket).digest("hex");
+  return createHmac("sha256", serverSecret()).update(bucket).digest("hex");
 }

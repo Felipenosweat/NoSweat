@@ -83,12 +83,14 @@ export async function signUp(_prev: AuthFormState, formData: FormData): Promise<
           : error.message,
     };
   }
-  // Com "Confirm email" desligado no Supabase, a sessão já vem pronta.
-  // Com a confirmação ligada, os sites são passados no /auth/callback (mesmo navegador).
-  if (data.session) {
-    if (data.user) await claimGuestSitesSafely(data.user.id);
-    redirect(next);
+  // Passa os sites feitos sem conta AGORA, neste navegador: o link de confirmação muitas vezes
+  // abre em outro (ex.: navegador do app de e-mail no celular), sem o cookie do visitante.
+  // `identities` vazio = e-mail que já tinha conta (o Supabase devolve um usuário falso): aí não.
+  if (data.user && (data.user.identities?.length ?? 0) > 0) {
+    await claimGuestSitesSafely(data.user.id);
   }
+  // Com "Confirm email" desligado no Supabase, a sessão já vem pronta.
+  if (data.session) redirect(next);
   return { message: "Almost there! Check your email and click the link to confirm your account." };
 }
 

@@ -49,6 +49,8 @@ Como as peças se ligam:
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
   registro A e um CNAME. O `proxy.ts` reconhece o domínio e mostra o site certo.
+  Antes disso o cliente prova que é dono: registro TXT `_nosweat` com o código de
+  `server/domains/verify.ts` (sem ele a resposta vem com status `unverified` e nada é salvo).
 - Rascunho x publicado: `sites.spec` é o RASCUNHO (editor e IA mudam só isto, e cada
   salvamento vira uma linha em `site_versions`); `sites.published_spec` é o que está no ar e só
   muda ao publicar. Páginas públicas usam `liveSpec(site)`. Restaurar versão = novo rascunho.

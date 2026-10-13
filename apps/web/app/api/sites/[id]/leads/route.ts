@@ -31,6 +31,9 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const input = await readJson(request, LeadRequest);
     if (!input.ok) return input.response;
 
+    // Robô (campo-isca preenchido): finge que deu certo e não guarda nada.
+    if (input.data.company) return jsonResponse(LeadCreatedResponse, { ok: true }, 201);
+
     const ipHash = await requestIpHash(request.headers);
     const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     const fromThisIp = ipHash ? await store.countLeads(site.id, hourAgo, ipHash) : 0;

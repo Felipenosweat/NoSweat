@@ -12,8 +12,15 @@ import {
   UpdateSiteResponse,
 } from "@nosweat/schema";
 import { fixtures } from "@nosweat/fixtures";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { getSiteStore } from "@/server/store";
+
+// O DNS de verdade não existe nos testes: o "registro TXT" de prova de dono é simulado.
+const dns = vi.hoisted(() => ({ verified: true }));
+vi.mock("@/server/domains/verify", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/server/domains/verify")>();
+  return { ...actual, isDomainVerified: async () => dns.verified };
+});
 import { GET as getCredits } from "./me/credits/route";
 import {
   DELETE as deleteDomain,
@@ -270,6 +277,26 @@ describe("/api/sites/[id]/domain", () => {
     expect(ApiError.parse(await res.json()).error.code).toBe("domain_taken");
   });
 
+  it("asks for the TXT ownership record before connecting a domain", async () => {
+    const site = await ownSite();
+    dns.verified = false;
+    try {
+      const res = await putDomain(
+        jsonRequest(`/x`, "PUT", { domain: "not-mine-yet.com" }),
+        ctx(site.id),
+      );
+      expect(res.status).toBe(200);
+      const body = DomainResponse.parse(await res.json());
+      expect(body).toMatchObject({ domain: "not-mine-yet.com", status: "unverified" });
+      expect(body.records).toEqual([expect.objectContaining({ type: "TXT", name: "_nosweat" })]);
+      expect(body.records[0]?.value).toMatch(/^nosweat-verify=[0-9a-f]{32}$/);
+      // Nada foi salvo: o domínio continua livre e o site sem domínio.
+      expect((await getSiteStore().get(site.id))?.customDomain).toBeNull();
+    } finally {
+      dns.verified = true;
+    }
+  });
+
   it("disconnects the domain", async () => {
     const site = await ownSite();
     await putDomain(jsonRequest(`/x`, "PUT", { domain: "remove-me.com" }), ctx(site.id));
@@ -351,14 +378,15 @@ describe("/api/sites/[id]/leads", () => {
     expect(res.status).toBe(404);
   });
 
-  it("rejects bots that fill the honeypot", async () => {
+  it("silently drops messages from bots that fill the honeypot", async () => {
     const site = await ownSite();
     await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
     const res = await sendLead(
       jsonRequest(`/x`, "POST", { ...lead, company: "Spam Inc" }),
       ctx(site.id),
     );
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(201);
+    expect(await getSiteStore().listLeads(site.id)).toHaveLength(0);
   });
 
   it("limits how many messages one visitor can send", async () => {

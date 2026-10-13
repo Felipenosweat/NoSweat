@@ -25,7 +25,10 @@ export function ContactForm({ endpoint, submitLabel }: ContactFormProps) {
     event.preventDefault();
     if (!endpoint) return;
     const form = event.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
+    // O campo-isca tem um nome que o preenchimento automático do navegador não reconhece
+    // ("company" era preenchido pelo autofill); para a API ele continua sendo `company`.
+    const { ns_hp: honeypot, ...fields } = Object.fromEntries(new FormData(form).entries());
+    const data = { ...fields, company: typeof honeypot === "string" ? honeypot : "" };
 
     setStatus({ state: "sending" });
     try {
@@ -114,7 +117,7 @@ export function ContactForm({ endpoint, submitLabel }: ContactFormProps) {
         </label>
         {/* Isca para robôs: invisível para pessoas, precisa ficar vazia. */}
         <input
-          name="company"
+          name="ns_hp"
           tabIndex={-1}
           autoComplete="off"
           aria-hidden="true"

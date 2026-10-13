@@ -1,5 +1,5 @@
 import { AiEditRequest, AiEditResponse, type AiEditResult } from "@nosweat/schema";
-import { editSiteSpec } from "@/server/ai";
+import { editSiteSpec, getSiteGenerator } from "@/server/ai";
 import {
   errorResponse,
   handle,
@@ -13,7 +13,7 @@ import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 // A IA pode levar alguns segundos para aplicar a mudança.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -32,12 +32,15 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const input = await readJson(request, AiEditRequest);
     if (!input.ok) return input.response;
 
+    // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
+    // IA) vira 500 sem descontar nada do cliente.
+    const generator = getSiteGenerator();
     const overLimit = await reserveUse(actor, "ai_edit");
     if (overLimit) return overLimit;
 
     let result: AiEditResult;
     try {
-      result = await editSiteSpec(site.spec, input.data.instruction);
+      result = await editSiteSpec(site.spec, input.data.instruction, generator);
     } catch (error) {
       console.error("[api] ai edit failed", error);
       return errorResponse(

@@ -11,7 +11,7 @@ import {
 } from "@nosweat/schema";
 import { SiteRenderer } from "@nosweat/templates";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { MAX_ITEMS, newSection, SECTION_LABELS } from "./defaults";
 
 type Theme = SiteSpec["theme"];
@@ -141,8 +141,21 @@ export function SiteEditor({
     setMessage({ kind: "ok", text: "Change undone. Click “Save changes” to keep it this way." });
   }
 
+  // Enquanto salva ou a IA trabalha, o formulário fica congelado: a resposta do servidor
+  // substitui o SiteSpec inteiro e apagaria o que fosse digitado nesse meio-tempo.
+  const busy = saving || aiPending;
+
+  // Avisa antes de sair da página com mudanças não salvas.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
   /** Atualiza uma cópia do SiteSpec (nunca muta o estado atual). */
   function update(change: (draft: SiteSpec) => void) {
+    if (busy) return;
     setSpec((current) => {
       const draft = structuredClone(current);
       change(draft);
@@ -317,242 +330,245 @@ export function SiteEditor({
             </div>
           </section>
 
-          <Panel title="Business">
-            <Field label="Business name">
-              <input
-                className={inputClass}
-                value={spec.business.name}
-                onChange={(e) => update((d) => void (d.business.name = e.target.value))}
-              />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Phone">
+          {/* Congelado enquanto salva ou a IA trabalha (ver `busy`). */}
+          <fieldset disabled={busy} className="min-w-0 space-y-4 disabled:opacity-60">
+            <Panel title="Business">
+              <Field label="Business name">
                 <input
                   className={inputClass}
-                  value={spec.business.phone ?? ""}
-                  onChange={(e) => update((d) => void (d.business.phone = e.target.value))}
+                  value={spec.business.name}
+                  onChange={(e) => update((d) => void (d.business.name = e.target.value))}
                 />
               </Field>
-              <Field label="Email">
-                <input
-                  className={inputClass}
-                  type="email"
-                  value={spec.business.email ?? ""}
-                  onChange={(e) => update((d) => void (d.business.email = e.target.value))}
-                />
-              </Field>
-              <Field label="City">
-                <input
-                  className={inputClass}
-                  value={spec.business.city ?? ""}
-                  onChange={(e) => update((d) => void (d.business.city = e.target.value))}
-                />
-              </Field>
-              <Field label="State (2 letters)">
-                <input
-                  className={inputClass}
-                  maxLength={2}
-                  value={spec.business.state ?? ""}
-                  onChange={(e) => update((d) => void (d.business.state = e.target.value))}
-                />
-              </Field>
-            </div>
-            <Field label="Service area">
-              <input
-                className={inputClass}
-                placeholder="e.g. Queens and Brooklyn"
-                value={spec.business.serviceArea ?? ""}
-                onChange={(e) => update((d) => void (d.business.serviceArea = e.target.value))}
-              />
-            </Field>
-          </Panel>
-
-          <Panel title="Hours">
-            <ItemList
-              items={spec.business.hours ?? []}
-              max={7}
-              addLabel="Add hours"
-              onAdd={() =>
-                update((d) => {
-                  d.business.hours = [...(d.business.hours ?? []), { days: "", time: "" }];
-                })
-              }
-              onRemove={(i) => update((d) => void d.business.hours?.splice(i, 1))}
-              render={(row, i) => (
-                <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Phone">
                   <input
                     className={inputClass}
-                    placeholder="Mon–Fri"
-                    value={row.days}
-                    onChange={(e) =>
-                      update((d) => {
-                        const target = d.business.hours?.[i];
-                        if (target) target.days = e.target.value;
-                      })
-                    }
+                    value={spec.business.phone ?? ""}
+                    onChange={(e) => update((d) => void (d.business.phone = e.target.value))}
                   />
-                  <input
-                    className={inputClass}
-                    placeholder="8 AM – 6 PM"
-                    value={row.time}
-                    onChange={(e) =>
-                      update((d) => {
-                        const target = d.business.hours?.[i];
-                        if (target) target.time = e.target.value;
-                      })
-                    }
-                  />
-                </div>
-              )}
-            />
-          </Panel>
-
-          <Panel title="Highlights (badges)">
-            <ItemList
-              items={spec.business.highlights ?? []}
-              max={4}
-              addLabel="Add highlight"
-              note="Only list things that are true, like “Licensed & insured” or “Free estimates”."
-              onAdd={() =>
-                update((d) => {
-                  d.business.highlights = [...(d.business.highlights ?? []), ""];
-                })
-              }
-              onRemove={(i) => update((d) => void d.business.highlights?.splice(i, 1))}
-              render={(item, i) => (
-                <input
-                  className={inputClass}
-                  maxLength={40}
-                  placeholder="Licensed & insured"
-                  value={item}
-                  onChange={(e) =>
-                    update((d) => {
-                      if (d.business.highlights) d.business.highlights[i] = e.target.value;
-                    })
-                  }
-                />
-              )}
-            />
-          </Panel>
-
-          <Panel title="Design">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Template">
-                <select
-                  className={inputClass}
-                  value={spec.template}
-                  onChange={(e) =>
-                    update((d) => void (d.template = TemplateId.parse(e.target.value)))
-                  }
-                >
-                  {TemplateId.options.map((template) => (
-                    <option key={template} value={template}>
-                      {template}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Fonts">
-                <select
-                  className={inputClass}
-                  value={spec.theme.font}
-                  onChange={(e) => {
-                    const font = FONTS.find((f) => f.value === e.target.value)?.value;
-                    if (font) update((d) => void (d.theme.font = font));
-                  }}
-                >
-                  {FONTS.map((font) => (
-                    <option key={font.value} value={font.value}>
-                      {font.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {COLORS.map(({ key, label }) => (
-                <Field key={key} label={label}>
-                  <div className="mt-1 flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={spec.theme[key]}
-                      onChange={(e) =>
-                        update((d) => void (d.theme[key] = e.target.value.toUpperCase()))
-                      }
-                      className="h-9 w-12 cursor-pointer rounded border border-slate-300 bg-white"
-                    />
-                    <span className="font-mono text-xs text-slate-500">{spec.theme[key]}</span>
-                  </div>
                 </Field>
-              ))}
-            </div>
-          </Panel>
+                <Field label="Email">
+                  <input
+                    className={inputClass}
+                    type="email"
+                    value={spec.business.email ?? ""}
+                    onChange={(e) => update((d) => void (d.business.email = e.target.value))}
+                  />
+                </Field>
+                <Field label="City">
+                  <input
+                    className={inputClass}
+                    value={spec.business.city ?? ""}
+                    onChange={(e) => update((d) => void (d.business.city = e.target.value))}
+                  />
+                </Field>
+                <Field label="State (2 letters)">
+                  <input
+                    className={inputClass}
+                    maxLength={2}
+                    value={spec.business.state ?? ""}
+                    onChange={(e) => update((d) => void (d.business.state = e.target.value))}
+                  />
+                </Field>
+              </div>
+              <Field label="Service area">
+                <input
+                  className={inputClass}
+                  placeholder="e.g. Queens and Brooklyn"
+                  value={spec.business.serviceArea ?? ""}
+                  onChange={(e) => update((d) => void (d.business.serviceArea = e.target.value))}
+                />
+              </Field>
+            </Panel>
 
-          {spec.sections.map((section, index) => (
-            <Panel
-              key={index}
-              title={SECTION_LABELS[section.type]}
-              actions={
-                <div className="flex gap-1">
-                  <IconButton
-                    label="Move up"
-                    disabled={index === 0}
-                    onClick={() => moveSection(index, -1)}
-                  >
-                    ↑
-                  </IconButton>
-                  <IconButton
-                    label="Move down"
-                    disabled={index === sectionCount - 1}
-                    onClick={() => moveSection(index, 1)}
-                  >
-                    ↓
-                  </IconButton>
-                  <IconButton
-                    label="Remove section"
-                    disabled={sectionCount <= 2}
-                    onClick={() => update((d) => void d.sections.splice(index, 1))}
-                  >
-                    ✕
-                  </IconButton>
-                </div>
-              }
-            >
-              <SectionFields
-                section={section}
-                onChange={(change) => updateSection(index, change)}
+            <Panel title="Hours">
+              <ItemList
+                items={spec.business.hours ?? []}
+                max={7}
+                addLabel="Add hours"
+                onAdd={() =>
+                  update((d) => {
+                    d.business.hours = [...(d.business.hours ?? []), { days: "", time: "" }];
+                  })
+                }
+                onRemove={(i) => update((d) => void d.business.hours?.splice(i, 1))}
+                render={(row, i) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      className={inputClass}
+                      placeholder="Mon–Fri"
+                      value={row.days}
+                      onChange={(e) =>
+                        update((d) => {
+                          const target = d.business.hours?.[i];
+                          if (target) target.days = e.target.value;
+                        })
+                      }
+                    />
+                    <input
+                      className={inputClass}
+                      placeholder="8 AM – 6 PM"
+                      value={row.time}
+                      onChange={(e) =>
+                        update((d) => {
+                          const target = d.business.hours?.[i];
+                          if (target) target.time = e.target.value;
+                        })
+                      }
+                    />
+                  </div>
+                )}
               />
             </Panel>
-          ))}
 
-          <Panel title="Add a section">
-            <div className="flex gap-2">
-              <select
-                className={inputClass}
-                value={newType}
-                onChange={(e) => {
-                  const type = (Object.keys(SECTION_LABELS) as SectionType[]).find(
-                    (t) => t === e.target.value,
-                  );
-                  if (type) setNewType(type);
-                }}
-              >
-                {(Object.keys(SECTION_LABELS) as SectionType[]).map((type) => (
-                  <option key={type} value={type}>
-                    {SECTION_LABELS[type]}
-                  </option>
+            <Panel title="Highlights (badges)">
+              <ItemList
+                items={spec.business.highlights ?? []}
+                max={4}
+                addLabel="Add highlight"
+                note="Only list things that are true, like “Licensed & insured” or “Free estimates”."
+                onAdd={() =>
+                  update((d) => {
+                    d.business.highlights = [...(d.business.highlights ?? []), ""];
+                  })
+                }
+                onRemove={(i) => update((d) => void d.business.highlights?.splice(i, 1))}
+                render={(item, i) => (
+                  <input
+                    className={inputClass}
+                    maxLength={40}
+                    placeholder="Licensed & insured"
+                    value={item}
+                    onChange={(e) =>
+                      update((d) => {
+                        if (d.business.highlights) d.business.highlights[i] = e.target.value;
+                      })
+                    }
+                  />
+                )}
+              />
+            </Panel>
+
+            <Panel title="Design">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Template">
+                  <select
+                    className={inputClass}
+                    value={spec.template}
+                    onChange={(e) =>
+                      update((d) => void (d.template = TemplateId.parse(e.target.value)))
+                    }
+                  >
+                    {TemplateId.options.map((template) => (
+                      <option key={template} value={template}>
+                        {template}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Fonts">
+                  <select
+                    className={inputClass}
+                    value={spec.theme.font}
+                    onChange={(e) => {
+                      const font = FONTS.find((f) => f.value === e.target.value)?.value;
+                      if (font) update((d) => void (d.theme.font = font));
+                    }}
+                  >
+                    {FONTS.map((font) => (
+                      <option key={font.value} value={font.value}>
+                        {font.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {COLORS.map(({ key, label }) => (
+                  <Field key={key} label={label}>
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={spec.theme[key]}
+                        onChange={(e) =>
+                          update((d) => void (d.theme[key] = e.target.value.toUpperCase()))
+                        }
+                        className="h-9 w-12 cursor-pointer rounded border border-slate-300 bg-white"
+                      />
+                      <span className="font-mono text-xs text-slate-500">{spec.theme[key]}</span>
+                    </div>
+                  </Field>
                 ))}
-              </select>
-              <button
-                type="button"
-                disabled={sectionCount >= 10}
-                onClick={() => update((d) => void d.sections.push(newSection(newType)))}
-                className="mt-1 shrink-0 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-50"
+              </div>
+            </Panel>
+
+            {spec.sections.map((section, index) => (
+              <Panel
+                key={index}
+                title={SECTION_LABELS[section.type]}
+                actions={
+                  <div className="flex gap-1">
+                    <IconButton
+                      label="Move up"
+                      disabled={index === 0}
+                      onClick={() => moveSection(index, -1)}
+                    >
+                      ↑
+                    </IconButton>
+                    <IconButton
+                      label="Move down"
+                      disabled={index === sectionCount - 1}
+                      onClick={() => moveSection(index, 1)}
+                    >
+                      ↓
+                    </IconButton>
+                    <IconButton
+                      label="Remove section"
+                      disabled={sectionCount <= 2}
+                      onClick={() => update((d) => void d.sections.splice(index, 1))}
+                    >
+                      ✕
+                    </IconButton>
+                  </div>
+                }
               >
-                Add
-              </button>
-            </div>
-          </Panel>
+                <SectionFields
+                  section={section}
+                  onChange={(change) => updateSection(index, change)}
+                />
+              </Panel>
+            ))}
+
+            <Panel title="Add a section">
+              <div className="flex gap-2">
+                <select
+                  className={inputClass}
+                  value={newType}
+                  onChange={(e) => {
+                    const type = (Object.keys(SECTION_LABELS) as SectionType[]).find(
+                      (t) => t === e.target.value,
+                    );
+                    if (type) setNewType(type);
+                  }}
+                >
+                  {(Object.keys(SECTION_LABELS) as SectionType[]).map((type) => (
+                    <option key={type} value={type}>
+                      {SECTION_LABELS[type]}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={sectionCount >= 10}
+                  onClick={() => update((d) => void d.sections.push(newSection(newType)))}
+                  className="mt-1 shrink-0 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </div>
+            </Panel>
+          </fieldset>
         </div>
 
         {/* Prévia ao vivo. O transform faz os elementos "fixed" do site ficarem dentro da caixa. */}
