@@ -4,6 +4,9 @@ import { getCurrentUser } from "@/server/auth/session";
 import { errorResponse, handle, jsonResponse, readJson, unauthorized } from "@/server/http";
 import { getSiteStore } from "@/server/store";
 
+// A IA de verdade leva alguns segundos (às vezes dezenas) para montar o site.
+export const maxDuration = 60;
+
 /** POST /api/sites/generate: { brief } → { siteId, spec } */
 export async function POST(request: Request): Promise<Response> {
   return handle(async () => {
