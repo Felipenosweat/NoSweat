@@ -23,4 +23,57 @@
 
 html {
   scroll-behavior: smooth;
+  /* Âncoras não ficam escondidas atrás do header fixo (h-16). */
+  scroll-padding-top: 5rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Transição suave entre páginas (navegação entre documentos, onde houver suporte). */
+@view-transition {
+  navigation: auto;
+}
+
+/* ---------- Revelação ao rolar (.ns-reveal) ----------
+   500ms, sobe 12px + opacidade, escalonamento de 60ms por item (--ns-i, máx. 3).
+   Com `animation-timeline: view()` é puro CSS; sem ele, o RevealObserver liga `html.ns-io`
+   e marca `data-in`. Nunca usar em h1, campo do hero ou captura do hero. */
+
+@keyframes ns-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .ns-reveal {
+      animation: ns-reveal auto cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--ns-i, 0) * 5%) entry calc(30% + var(--ns-i, 0) * 5%);
+    }
+  }
+
+  html.ns-io .ns-reveal {
+    transition:
+      opacity 500ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--ns-i, 0) * 60ms);
+  }
+
+  html.ns-io .ns-reveal:not([data-in]) {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Movimento reduzido: sem rolagem suave nem transição entre páginas; revelações instantâneas. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
 }
