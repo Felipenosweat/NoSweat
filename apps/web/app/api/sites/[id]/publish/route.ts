@@ -1,6 +1,7 @@
 import { PublishSiteResponse } from "@nosweat/schema";
 import { makeSlug } from "@/server/domains";
-import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
+import { placeholdersIn } from "@/lib/placeholders";
+import { errorResponse, handle, jsonResponse, notFound, unauthorized } from "@/server/http";
 import { freeUrl, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
@@ -16,6 +17,16 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const { user, site } = await requireOwnedSite(id);
     if (!user) return unauthorized();
     if (!site) return notFound();
+
+    // Texto de exemplo do editor (ex.: depoimento de mentira) nunca vai ao ar.
+    const leftovers = placeholdersIn(site.spec);
+    if (leftovers.length > 0) {
+      return errorResponse(
+        400,
+        "invalid_request",
+        `Replace the example text before publishing: “${leftovers.join("”, “")}”.`,
+      );
+    }
 
     const published = await getSiteStore().updateMeta(site.id, {
       status: "published",

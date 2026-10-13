@@ -237,6 +237,21 @@ describe("POST /api/sites/[id]/publish", () => {
   });
 });
 
+describe("publishing with example text", () => {
+  it("refuses to publish the editor's placeholder review", async () => {
+    const site = await ownSite();
+    const spec = structuredClone(site.spec);
+    spec.sections.push({
+      type: "testimonials",
+      items: [{ quote: "Paste a real customer review here.", author: "Customer name" }],
+    });
+    await patchSite(jsonRequest(`/x`, "PATCH", { spec }), ctx(site.id));
+    const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    expect(res.status).toBe(400);
+    expect(ApiError.parse(await res.json()).error.message).toMatch(/example text/);
+  });
+});
+
 describe("/api/sites/[id]/domain", () => {
   it("connects a domain (manual mode without VERCEL_TOKEN) and returns the DNS records", async () => {
     const site = await ownSite();
