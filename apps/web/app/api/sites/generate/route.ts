@@ -2,6 +2,7 @@ import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@noswe
 import { generateSiteSpec, getSiteGenerator } from "@/server/ai";
 import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
+import { resolveHeroImage } from "@/server/images";
 import { reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -37,6 +38,9 @@ export async function POST(request: Request): Promise<Response> {
         "We couldn't generate your site right now. Please try again.",
       );
     }
+
+    // Foto do topo a partir de hero.imageQuery (sem chave, erro ou demora: segue sem foto).
+    spec = await resolveHeroImage(spec);
 
     const site = await getSiteStore().create(
       spec,

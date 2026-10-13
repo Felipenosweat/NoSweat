@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "@/components/marketing/icons";
-import { PlanCard } from "@/components/marketing/pricing/PlanCard";
+import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, textLink } from "@/components/marketing/styles";
-import { PLANS } from "@/lib/plans";
 
-// Página de preços. Os planos vêm só de `PLANS` (lib/plans.ts). A cobrança ainda não existe,
-// então as respostas do FAQ dizem só o que é verdade hoje.
+// Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
+// A cobrança ainda não existe, então as respostas do FAQ dizem só o que é verdade hoje.
 
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Build and preview your website free. Go live on Pro with your own domain and contact-form messages in your dashboard.",
+    "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.",
 };
 
 const FAQS = [
@@ -24,12 +23,12 @@ const FAQS = [
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes. On Pro you connect a domain you already own. We show you the DNS records to add at your registrar. Domain registration is not included.",
+      "Yes, on Pro and Premium. You connect a domain you already own and we show you the DNS records to add at your registrar. Domain registration is not included.",
   },
   {
     question: "Can I cancel?",
     answer:
-      "Paid plans will be month-to-month. The details are shown before you pay, and nothing is charged today.",
+      "Yes. Monthly plans have no long-term contract. The details are shown before you pay, and nothing is charged today.",
   },
   {
     question: "What happens to my website if I don’t publish?",
@@ -44,45 +43,32 @@ const h2Class =
 export default function PricingPage() {
   return (
     <>
-      {/* TOPO escuro com os planos. O único degradê da página é a luz azul atrás dos cartões. */}
-      <section
-        aria-labelledby="pricing-title"
-        className="relative isolate overflow-hidden bg-ink text-white"
-      >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 top-0 -z-10 h-[36rem] bg-linear-to-b from-brand/25 to-transparent"
-        />
+      <section aria-labelledby="pricing-title" className="bg-surface">
         <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
           <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
             <div className="lg:col-span-7">
-              <p className="font-display text-sm font-semibold text-accent">Pricing</p>
+              <p className="font-display text-sm font-semibold text-brand">Pricing</p>
               <h1
                 id="pricing-title"
-                className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance lg:text-6xl lg:leading-[1.02]"
+                className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
               >
                 <TightPunctuation>Build it free. Pay when it goes live.</TightPunctuation>
               </h1>
             </div>
-            <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-300 lg:col-span-5 lg:self-end">
-              Describe your business, get a full website draft and edit it as much as you like.
-              Upgrade to Pro when you’re ready to publish and get messages from customers.
+            <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-span-5 lg:self-end">
+              Describe your business, get a full website draft and edit it as much as you like. Pick
+              a plan when you’re ready to publish and get messages from customers.
             </p>
           </div>
 
-          <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:mt-16">
-            {PLANS.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
-          </ul>
+          <div className="mt-12 lg:mt-16">
+            <PricingPlans />
+          </div>
 
-          <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-400">
+          <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
             Prices in US dollars. Paid plans aren’t live yet, so nothing is charged today. Domain
             registration is not included. See our{" "}
-            <Link
-              href="/terms"
-              className="rounded-sm font-semibold text-slate-200 underline underline-offset-4 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
+            <Link href="/terms" className={textLink}>
               Terms of Service
             </Link>
             .

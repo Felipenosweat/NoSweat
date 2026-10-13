@@ -1,7 +1,7 @@
 import type { Section, SectionOf, SectionType } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import { telHref } from "../../components/primitives";
-import { Contact, Faq, Hero, Services, Testimonials } from "../../sections";
+import { Contact, Faq, Gallery, Hero, Services, Testimonials } from "../../sections";
 import type { TemplateProps } from "../../types";
 import { NAV, SERVICE_ICONS } from "./content";
 import {
@@ -32,7 +32,11 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
     return nav.anchor;
   };
 
-  const links = [...new Set(sections.map((s) => s.type))].flatMap((type) => {
+  // Seção que não aparece (ex.: galeria sem fotos do dono) não entra no menu.
+  const visible = sections.filter(
+    (s) => s.type !== "gallery" || s.images.some((image) => image.kind === "owner"),
+  );
+  const links = [...new Set(visible.map((s) => s.type))].flatMap((type) => {
     const nav = NAV[type];
     return nav ? [nav] : [];
   });
@@ -53,6 +57,9 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
       : business.email
         ? `mailto:${business.email}`
         : "#top";
+  // Card só com o telefone: no topo empilhado (celular/tablet) ele seria a terceira ação de
+  // ligar seguida (botão do hero e barra fixa), então só aparece com o topo em duas colunas.
+  const heroCardPhoneOnly = !business.hours?.length && !firstTestimonial;
 
   const renderSection = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -65,8 +72,8 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             ctaHref={ctaHref}
             eyebrow={
               where && (
-                <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-ns-border bg-ns-background px-4 py-1.5 text-sm font-medium">
-                  <span className="size-2 rounded-full bg-ns-secondary" />
+                <p className="mb-5 inline-flex max-w-full items-center gap-2 rounded-full border border-ns-border bg-ns-background px-4 py-1.5 text-sm font-medium [overflow-wrap:anywhere]">
+                  <span className="size-2 shrink-0 rounded-full bg-ns-secondary" />
                   Serving {where}
                 </p>
               )
@@ -76,6 +83,7 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             aside={
               hasHeroCard ? <HeroCard business={business} quote={firstTestimonial} /> : undefined
             }
+            asideWideOnly={heroCardPhoneOnly}
           />
         );
       case "services":
@@ -99,6 +107,14 @@ export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
             id={anchorFor("testimonials")}
             data={section}
             heading={{ eyebrow: "Reviews", title: "What our customers say" }}
+          />
+        );
+      case "gallery":
+        return (
+          <Gallery
+            key={key}
+            id={visible.includes(section) ? anchorFor("gallery") : undefined}
+            data={section}
           />
         );
       case "faq":

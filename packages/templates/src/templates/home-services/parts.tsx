@@ -20,11 +20,13 @@ export function areaServed(business: Business): string | undefined {
 
 export function Logo({ name }: { name: string }) {
   return (
-    <a href="#top" className="flex items-center gap-2.5">
-      <span className="flex size-10 items-center justify-center rounded-xl bg-ns-primary text-sm font-bold text-ns-on-primary">
+    <a href="#top" className="flex min-w-0 items-center gap-2.5">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ns-primary text-sm font-bold text-ns-on-primary">
         {initials(name)}
       </span>
-      <span className="font-ns-heading text-lg font-bold tracking-tight">{name}</span>
+      <span className="line-clamp-2 font-ns-heading text-base leading-tight font-bold tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-lg">
+        {name}
+      </span>
     </a>
   );
 }
@@ -34,20 +36,20 @@ export function TopBar({ business }: { business: Business }) {
   if (!where && !business.email) return null;
   return (
     <div className="bg-ns-text text-sm text-ns-background">
-      <Container className="flex h-10 items-center justify-center gap-6 sm:justify-between">
+      <Container className="flex h-10 items-center justify-center gap-6 @min-[40rem]:justify-between">
         {where && (
-          <p className="flex items-center gap-1.5">
-            <MapPinIcon className="size-4" />
-            Serving {where}
+          <p className="flex min-w-0 items-center gap-1.5">
+            <MapPinIcon className="size-4 shrink-0" />
+            <span className="truncate">Serving {where}</span>
           </p>
         )}
         {business.email && (
           <a
             href={`mailto:${business.email}`}
-            className="hidden items-center gap-1.5 hover:underline sm:flex"
+            className="hidden min-w-0 items-center gap-1.5 hover:underline @min-[40rem]:flex"
           >
-            <MailIcon className="size-4" />
-            {business.email}
+            <MailIcon className="size-4 shrink-0" />
+            <span className="truncate">{business.email}</span>
           </a>
         )}
       </Container>
@@ -64,9 +66,9 @@ export function Header({
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/90 backdrop-blur">
-      <Container className="flex h-16 items-center justify-between gap-4 sm:h-20">
+      <Container className="flex h-16 items-center justify-between gap-4 @min-[40rem]:h-20">
         <Logo name={business.name} />
-        <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-8 @3xl:flex">
           {links.map((link) => (
             <a
               key={link.anchor}
@@ -80,10 +82,12 @@ export function Header({
         {business.phone && (
           <a
             href={telHref(business.phone)}
-            className="inline-flex items-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 sm:px-4"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-ns-secondary px-3 py-2.5 font-semibold text-ns-on-secondary shadow-sm transition hover:brightness-105 @min-[40rem]:px-4"
           >
             <PhoneIcon className="size-5" />
-            <span className="sr-only sm:not-sr-only">{business.phone}</span>
+            <span className="sr-only whitespace-nowrap @min-[40rem]:not-sr-only">
+              {business.phone}
+            </span>
           </a>
         )}
       </Container>
@@ -97,8 +101,9 @@ export function CallButton({ phone }: { phone: string }) {
       href={telHref(phone)}
       className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-ns-text/15 bg-ns-background px-6 py-4 text-base font-semibold transition hover:border-ns-primary hover:text-ns-primary"
     >
-      <PhoneIcon className="size-5" />
-      Call {phone}
+      <PhoneIcon className="size-5 shrink-0" />
+      {/* O número nunca quebra no meio. */}
+      <span className="whitespace-nowrap">Call {phone}</span>
     </a>
   );
 }
@@ -107,10 +112,10 @@ export function CallButton({ phone }: { phone: string }) {
 export function TrustBadges({ highlights }: { highlights?: string[] }) {
   if (!highlights?.length) return null;
   return (
-    <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap">
+    <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 @min-[40rem]:flex @min-[40rem]:flex-wrap">
       {highlights.map((label, index) => (
-        <li key={index} className="flex items-center gap-2 text-sm font-medium">
-          <span className="flex size-7 items-center justify-center rounded-full bg-ns-primary/10 text-ns-primary">
+        <li key={index} className="flex min-w-0 items-center gap-2 text-sm font-medium">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ns-primary/10 text-ns-primary">
             <CheckIcon className="size-4" />
           </span>
           {label}
@@ -126,7 +131,7 @@ export function Hours({ hours }: { hours: NonNullable<Business["hours"]> }) {
       {hours.map((row, index) => (
         <div key={index} className="flex justify-between gap-6">
           <dt className="text-ns-muted">{row.days}</dt>
-          <dd className="font-medium">{row.time}</dd>
+          <dd className="text-right font-medium">{row.time}</dd>
         </div>
       ))}
     </dl>
@@ -147,7 +152,7 @@ export function HeroCard({
   const hours = business.hours?.length ? business.hours : null;
   if (!hours && !quote && !business.phone) return null;
   return (
-    <div className="rounded-3xl border border-ns-border bg-ns-background p-6 shadow-2xl shadow-ns-text/10 sm:p-8">
+    <div className="rounded-3xl border border-ns-border bg-ns-background p-6 shadow-2xl shadow-ns-text/10 @min-[40rem]:p-8">
       {hours && (
         <>
           <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-ns-primary">
@@ -174,13 +179,13 @@ export function HeroCard({
             hours || quote ? "mt-6" : ""
           }`}
         >
-          <span>
+          <span className="min-w-0">
             <span className="block text-xs font-medium uppercase tracking-wider opacity-80">
               Call us
             </span>
-            <span className="block text-xl font-bold">{business.phone}</span>
+            <span className="block text-xl font-bold whitespace-nowrap">{business.phone}</span>
           </span>
-          <ArrowRightIcon className="size-6" />
+          <ArrowRightIcon className="size-6 shrink-0" />
         </a>
       )}
     </div>
@@ -217,14 +222,17 @@ export function ContactDetails({ business }: { business: Business }) {
           <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-ns-primary/10 text-ns-primary">
             <Icon className="size-6" />
           </span>
-          <span>
+          <span className="min-w-0 flex-1">
             <span className="block text-sm text-ns-muted">{label}</span>
             {href ? (
-              <a href={href} className="text-lg font-semibold hover:text-ns-primary">
+              <a
+                href={href}
+                className="text-lg font-semibold [overflow-wrap:anywhere] hover:text-ns-primary"
+              >
                 {value}
               </a>
             ) : (
-              <span className="text-lg font-semibold">{value}</span>
+              <span className="text-lg font-semibold [overflow-wrap:anywhere]">{value}</span>
             )}
           </span>
         </li>
@@ -254,10 +262,12 @@ export function Footer({
   const where = location(business);
   const year = new Date().getFullYear();
   return (
-    <footer className="bg-ns-text pb-24 text-ns-background md:pb-0">
-      <Container className="grid gap-8 py-12 sm:grid-cols-3">
+    <footer className="bg-ns-text pb-24 text-ns-background @3xl:pb-0">
+      <Container className="grid gap-8 py-12 @min-[40rem]:grid-cols-3">
         <div>
-          <p className="font-ns-heading text-lg font-bold">{business.name}</p>
+          <p className="font-ns-heading text-lg font-bold [overflow-wrap:anywhere]">
+            {business.name}
+          </p>
           {where && <p className="mt-2 text-sm opacity-70">{where}</p>}
         </div>
         <nav aria-label="Footer" className="flex flex-col gap-2 text-sm">
@@ -269,20 +279,23 @@ export function Footer({
         </nav>
         <div className="flex flex-col gap-2 text-sm">
           {business.phone && (
-            <a href={telHref(business.phone)} className="text-lg font-semibold">
+            <a href={telHref(business.phone)} className="text-lg font-semibold whitespace-nowrap">
               {business.phone}
             </a>
           )}
           {business.email && (
-            <a href={`mailto:${business.email}`} className="opacity-80 hover:opacity-100">
+            <a
+              href={`mailto:${business.email}`}
+              className="opacity-80 [overflow-wrap:anywhere] hover:opacity-100"
+            >
               {business.email}
             </a>
           )}
         </div>
       </Container>
       <div className="border-t border-ns-background/15">
-        <Container className="flex flex-col gap-2 py-6 text-xs opacity-70 sm:flex-row sm:justify-between">
-          <p>
+        <Container className="flex flex-col gap-2 py-6 text-xs opacity-70 @min-[40rem]:flex-row @min-[40rem]:justify-between">
+          <p className="[overflow-wrap:anywhere]">
             &copy; {year} {business.name}. All rights reserved.
           </p>
           <p>Website by No Sweat</p>
@@ -303,7 +316,7 @@ export function MobileCallBar({
   ctaHref?: string;
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur md:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden">
       {phone ? (
         <a
           href={telHref(phone)}

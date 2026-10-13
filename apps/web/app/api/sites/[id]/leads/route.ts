@@ -8,18 +8,20 @@ import {
   unauthorized,
 } from "@/server/http";
 import { requestIpHash } from "@/server/ip";
-import { requireOwnedSite } from "@/server/sites";
+import { appOrigin, notifyOwnerOfLead } from "@/server/notify";
+import { liveSpec, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
 
-// Anti-spam: no máximo 5 mensagens por hora da mesma rede (IP ou prefixo IPv6) em cada site.
-// Sem teto por site: um atacante poderia esgotá-lo e calar o formulário do negócio por um dia.
+// Anti-spam: no máximo 5 mensagens por hora da mesma rede (IP ou prefixo IPv6) em cada site,
+// contadas no banco (vale entre servidores). Sem teto por site: um atacante poderia esgotá-lo
+// e calar o formulário do negócio por um dia.
 const PER_IP_PER_HOUR = 5;
 
 /**
  * POST /api/sites/[id]/leads: formulário de contato de um site PUBLICADO (público, sem login).
- * TODO: avisar o dono por e-mail.
+ * Limita envios por rede e avisa o dono por e-mail depois da resposta (server/notify).
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
@@ -51,6 +53,17 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       { name, email: email || null, phone: phone || null, message },
       ipHash,
     );
+
+    // O pedido já está salvo: o e-mail é extra e nunca derruba a resposta.
+    const spec = liveSpec(site);
+    notifyOwnerOfLead({
+      siteId: site.id,
+      siteName: spec.business.name,
+      ownerId: site.ownerId,
+      fallbackEmail: spec.business.email ?? null,
+      lead: { name, email: email || null, phone: phone || null, message },
+      appOrigin: appOrigin(request.url),
+    });
     return jsonResponse(LeadCreatedResponse, { ok: true }, 201);
   });
 }

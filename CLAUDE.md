@@ -70,7 +70,8 @@ Como as peças se ligam:
   Ao entrar/criar conta (`/login`, `/signup`, `/auth/callback`) `claimGuestSites` passa os sites
   para a conta. Visitantes têm limite de IA por cookie, por IP (hash) e um teto global por dia
   (`server/quota.ts`, variáveis `GUEST_*`).
-- Planos e preços mostrados no site: só em `lib/plans.ts` (landing e `/pricing` leem dali).
+- Planos e preços mostrados no site: só em `components/marketing/PricingPlans.tsx` (landing e
+  `/pricing` usam o mesmo componente).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

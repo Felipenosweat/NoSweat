@@ -22,6 +22,9 @@ export function newSection(type: SectionType): Section {
       return { type, items: [{ q: P.faqQuestion, a: P.faqAnswer }] };
     case "contact":
       return { type, showForm: true, showMap: true };
+    case "gallery":
+      // Só fotos do dono: começa vazia e o cliente envia as fotos.
+      return { type, images: [] };
   }
 }
 
@@ -31,6 +34,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   testimonials: "Reviews",
   faq: "FAQ",
   contact: "Contact",
+  gallery: "Photo gallery (your photos)",
 };
 
 /** Limite de itens de cada lista (o mesmo do schema). */

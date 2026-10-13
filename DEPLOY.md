@@ -103,6 +103,41 @@ Pronto: https://nosweatfd.com no ar. A cada merge na `main`, a Vercel publica de
 
 ---
 
+## Fotos e avisos de pedidos
+
+Tudo aqui é opcional: sem estas chaves o site funciona, só fica sem foto de banco de imagens e
+sem e-mail de aviso (os pedidos continuam aparecendo no painel do site).
+
+1. **Fotos de banco de imagens (Pexels, grátis)**: crie uma conta em https://www.pexels.com/api/,
+   clique em **Your API Key** e copie a chave. (Opcional, reserva: crie um app em
+   https://unsplash.com/developers e copie a **Access Key**.)
+2. **E-mail de aviso de pedidos (Resend)**:
+   1. Crie uma conta em https://resend.com.
+   2. **Domains → Add Domain** → `nosweatfd.com`. A Resend mostra alguns registros de DNS
+      (`TXT`/`MX`); adicione no painel do domínio, como no Passo 3, e espere ficar **Verified**.
+   3. **API Keys → Create API Key** (permissão _Sending access_) e copie a chave (`re_...`).
+3. **Vercel → Settings → Environment Variables**, adicione:
+
+| Name                  | Value                                                |
+| --------------------- | ---------------------------------------------------- |
+| `PEXELS_API_KEY`      | a chave do Pexels                                    |
+| `UNSPLASH_ACCESS_KEY` | (opcional) a Access Key do Unsplash                  |
+| `RESEND_API_KEY`      | a chave da Resend                                    |
+| `LEADS_FROM_EMAIL`    | `NoSweat <leads@nosweatfd.com>` (domínio verificado) |
+
+Depois clique em **Deployments → ⋯ → Redeploy** para valer.
+
+4. **Fotos enviadas pelo dono (Supabase Storage)**: no Supabase, **SQL Editor → New query**,
+   cole o conteúdo de [`supabase/migrations/0008_site_images_bucket.sql`](supabase/migrations/0008_site_images_bucket.sql)
+   e clique em **Run**. Isso cria o bucket público `site-images` (até 8 MB, só JPG/PNG/WebP).
+   Confira em **Storage** que o bucket aparece.
+
+> O aviso vai para o e-mail da conta do dono do site (ou, se não achar, para o e-mail do
+> negócio no site). O link do e-mail abre a página do site no painel. Há um limite de
+> 5 envios do formulário por hora por rede (IP) em cada site.
+
+---
+
 ## Passo 4 (opcional): entrar com Google
 
 O botão "Continue with Google" em `/login` e `/signup` só aparece quando o Google está ligado no

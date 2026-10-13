@@ -1,7 +1,7 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { siteMetadata } from "@/components/site-metadata";
+import { freeSiteUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -15,13 +15,24 @@ async function getPublished(slug: string): Promise<SiteRecord | null> {
 }
 
 export async function generateMetadata({ params }: PublicSitePageProps): Promise<Metadata> {
-  const site = await getPublished((await params).slug);
+  const { slug } = await params;
+  const site = await getPublished(slug);
   if (!site) return {};
-  return siteMetadata(site);
+  return siteMetadata(site, freeSiteUrl(slug));
 }
 
 export default async function PublicSitePage({ params }: PublicSitePageProps) {
-  const site = await getPublished((await params).slug);
+  const { slug } = await params;
+  const site = await getPublished(slug);
   if (!site) notFound();
-  return <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />;
+  return (
+    <>
+      {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: siteJsonLd(site, freeSiteUrl(slug)) }}
+      />
+      <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />
+    </>
+  );
 }
