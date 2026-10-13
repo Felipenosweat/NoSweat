@@ -30,8 +30,32 @@ for (const vp of VIEWPORTS) {
       await page.waitForTimeout(1500);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 1) issues.push(`horizontal overflow: ${overflow}px`);
-      const file = `${OUT}/${vp.name}${path === "/" ? "-home" : path.replaceAll("/", "-")}.png`;
-      await page.screenshot({ path: file, fullPage: true });
+      const slug = path === "/" ? "-home" : path.replaceAll("/", "-");
+      if (path === "/") {
+        // Rola como uma pessoa (as animações aparecem com a rolagem) e tira um print por tela.
+        const total = await page.evaluate(() => document.documentElement.scrollHeight);
+        let shot = 0;
+        for (let y = 0; y < total && shot < 30; y += vp.height) {
+          await page.evaluate((top) => window.scrollTo(0, top), y);
+          await page.waitForTimeout(900);
+          await page.screenshot({ path: `${OUT}/${vp.name}-home-scroll-${String(shot).padStart(2, "0")}.png` });
+          shot += 1;
+        }
+        // Depois de rolar tudo: algo de tamanho razoável ainda invisível?
+        const hidden = await page.evaluate(() =>
+          [...document.querySelectorAll("main *")]
+            .filter((el) => {
+              const r = el.getBoundingClientRect();
+              const st = getComputedStyle(el);
+              return r.width > 120 && r.height > 40 && (st.opacity === "0" || st.visibility === "hidden");
+            })
+            .slice(0, 15)
+            .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)}`),
+        );
+        if (hidden.length) issues.push(`still invisible after scrolling: ${hidden.join(" | ")}`);
+      } else {
+        await page.screenshot({ path: `${OUT}/${vp.name}${slug}.png`, fullPage: true });
+      }
     } catch (e) {
       issues.push(`navigation: ${e.message}`);
     }
