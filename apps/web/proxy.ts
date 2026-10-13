@@ -15,7 +15,8 @@ const isProtected = (path: string) =>
  */
 export async function proxy(request: NextRequest) {
   const host = (request.headers.get("host") ?? "").toLowerCase().replace(/:\d+$/, "");
-  if (host && !isAppHost(host)) {
+  // No domínio do cliente, só a API pública (ex.: formulário de contato) passa direto.
+  if (host && !isAppHost(host) && !request.nextUrl.pathname.startsWith("/api/")) {
     const url = request.nextUrl.clone();
     url.pathname = `/d/${host}`;
     url.search = "";

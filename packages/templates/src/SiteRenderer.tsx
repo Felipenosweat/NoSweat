@@ -2,13 +2,13 @@ import type { SiteSpec } from "@nosweat/schema";
 import { TEMPLATES } from "./templates";
 import { themeToCssVars } from "./theme";
 
-export type SiteRendererProps = { spec: SiteSpec };
+export type SiteRendererProps = { spec: SiteSpec; contactEndpoint?: string };
 
 /**
  * Desenha um site completo a partir de um SiteSpec já validado.
  * As cores do tema viram variáveis CSS (--ns-*) neste wrapper; os componentes só usam essas variáveis.
  */
-export function SiteRenderer({ spec }: SiteRendererProps) {
+export function SiteRenderer({ spec, contactEndpoint }: SiteRendererProps) {
   const Template = TEMPLATES[spec.template];
   return (
     <div
@@ -16,7 +16,7 @@ export function SiteRenderer({ spec }: SiteRendererProps) {
       style={themeToCssVars(spec.theme)}
       data-template={spec.template}
     >
-      <Template spec={spec} />
+      <Template spec={spec} contactEndpoint={contactEndpoint} />
     </div>
   );
 }

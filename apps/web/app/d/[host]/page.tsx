@@ -25,5 +25,5 @@ export async function generateMetadata({ params }: DomainSitePageProps): Promise
 export default async function DomainSitePage({ params }: DomainSitePageProps) {
   const site = await getPublished((await params).host);
   if (!site) notFound();
-  return <SiteRenderer spec={site.spec} />;
+  return <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />;
 }

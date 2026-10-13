@@ -19,7 +19,7 @@ import {
  * Template de prestador de serviço (encanador, eletricista, jardinagem...).
  * Telefone sempre à vista: barra do topo, cabeçalho fixo, hero e barra fixa no celular.
  */
-export function HomeServicesTemplate({ spec }: TemplateProps) {
+export function HomeServicesTemplate({ spec, contactEndpoint }: TemplateProps) {
   const { business, sections } = spec;
 
   // Só a primeira seção de cada tipo recebe âncora (#services, #reviews...), para não duplicar ids.
@@ -105,6 +105,7 @@ export function HomeServicesTemplate({ spec }: TemplateProps) {
             }}
             details={<ContactDetails business={business} />}
             submitLabel="Request estimate"
+            endpoint={contactEndpoint}
           />
         );
       default: {

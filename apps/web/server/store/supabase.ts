@@ -1,6 +1,13 @@
 import { SiteSpec, SiteStatus } from "@nosweat/schema";
 import { z } from "zod";
-import { DomainTakenError, type SiteMeta, type SiteRecord, type SiteStore } from "./types";
+import {
+  DomainTakenError,
+  type LeadRecord,
+  type NewLead,
+  type SiteMeta,
+  type SiteRecord,
+  type SiteStore,
+} from "./types";
 
 // SiteStore no Supabase, falando direto com a API REST (PostgREST) via fetch.
 // Tabela: supabase/migrations/ (0001_create_sites.sql, 0002_sites_owner.sql).
@@ -25,6 +32,29 @@ const DOMAIN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 class UniqueViolation extends Error {}
+
+const LeadRow = z.object({
+  id: z.string(),
+  site_id: z.string(),
+  name: z.string(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  message: z.string(),
+  created_at: z.string(),
+});
+type LeadRow = z.infer<typeof LeadRow>;
+
+function toLead(row: LeadRow): LeadRecord {
+  return {
+    id: row.id,
+    siteId: row.site_id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    message: row.message,
+    createdAt: row.created_at,
+  };
+}
 
 /** Ids de usuário vêm do Supabase Auth (UUID); qualquer outra coisa é bug. */
 function assertUuid(ownerId: string): void {
@@ -70,7 +100,11 @@ export class SupabaseSiteStore implements SiteStore {
   }
 
   private async request(query: string, init: RequestInit = {}): Promise<Row[]> {
-    const res = await this.fetchImpl(`${this.endpoint}${query}`, {
+    return z.array(Row).parse(await this.raw(this.endpoint, query, init));
+  }
+
+  private async raw(endpoint: string, query: string, init: RequestInit): Promise<unknown> {
+    const res = await this.fetchImpl(`${endpoint}${query}`, {
       ...init,
       cache: "no-store",
       headers: {
@@ -86,7 +120,38 @@ export class SupabaseSiteStore implements SiteStore {
       if (res.status === 409 && body.includes("23505")) throw new UniqueViolation(body);
       throw new Error(`Supabase request failed (${res.status}): ${body}`);
     }
-    return z.array(Row).parse(await res.json());
+    return res.json();
+  }
+
+  private get leadsEndpoint(): string {
+    return this.endpoint.replace(/\/sites$/, "/leads");
+  }
+
+  async addLead(siteId: string, lead: NewLead): Promise<LeadRecord> {
+    if (!UUID.test(siteId)) throw new Error(`Invalid site id: ${siteId}`);
+    const rows = z.array(LeadRow).parse(
+      await this.raw(this.leadsEndpoint, "", {
+        method: "POST",
+        body: JSON.stringify({ site_id: siteId, ...lead }),
+      }),
+    );
+    const [row] = rows;
+    if (!row) throw new Error("Supabase did not return the created lead.");
+    return toLead(row);
+  }
+
+  async listLeads(siteId: string): Promise<LeadRecord[]> {
+    if (!UUID.test(siteId)) return [];
+    const rows = z
+      .array(LeadRow)
+      .parse(
+        await this.raw(
+          this.leadsEndpoint,
+          `?site_id=eq.${siteId}&select=*&order=created_at.desc&limit=500`,
+          {},
+        ),
+      );
+    return rows.map(toLead);
   }
 
   async create(spec: SiteSpec, ownerId: string): Promise<SiteRecord> {

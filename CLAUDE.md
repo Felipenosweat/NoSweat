@@ -48,6 +48,9 @@ Como as peças se ligam:
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
   registro A e um CNAME. O `proxy.ts` reconhece o domínio e mostra o site certo.
+- Formulário de contato: sites publicados enviam para `POST /api/sites/[id]/leads` (público, com
+  campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
+  `proxy.ts` deixa `/api/*` passar sem reescrever.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
 ## Regras do time

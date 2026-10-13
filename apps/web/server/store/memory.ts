@@ -1,11 +1,24 @@
 import type { SiteSpec } from "@nosweat/schema";
-import { DomainTakenError, type SiteMeta, type SiteRecord, type SiteStore } from "./types";
+import {
+  DomainTakenError,
+  type LeadRecord,
+  type NewLead,
+  type SiteMeta,
+  type SiteRecord,
+  type SiteStore,
+} from "./types";
 
 // O Map fica em globalThis para sobreviver ao hot reload do `next dev`.
 // Os dados somem quando o servidor reinicia: é só para desenvolvimento.
 const globalForStore = globalThis as typeof globalThis & {
   __nosweatSites?: Map<string, SiteRecord>;
+  __nosweatLeads?: LeadRecord[];
 };
+
+function leads(): LeadRecord[] {
+  globalForStore.__nosweatLeads ??= [];
+  return globalForStore.__nosweatLeads;
+}
 
 function sites(): Map<string, SiteRecord> {
   globalForStore.__nosweatSites ??= new Map();
@@ -81,5 +94,23 @@ export class MemorySiteStore implements SiteStore {
   async getByDomain(domain: string): Promise<SiteRecord | null> {
     const record = [...sites().values()].find((s) => s.customDomain === domain);
     return record ? clone(record) : null;
+  }
+
+  async addLead(siteId: string, lead: NewLead): Promise<LeadRecord> {
+    const record: LeadRecord = {
+      id: crypto.randomUUID(),
+      siteId,
+      ...lead,
+      createdAt: new Date().toISOString(),
+    };
+    leads().push(record);
+    return clone(record);
+  }
+
+  async listLeads(siteId: string): Promise<LeadRecord[]> {
+    return leads()
+      .filter((lead) => lead.siteId === siteId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map(clone);
   }
 }

@@ -24,6 +24,18 @@ export type SiteMeta = Partial<
   Pick<SiteRecord, "status" | "slug" | "customDomain" | "publishedAt">
 >;
 
+export type LeadRecord = {
+  id: string;
+  siteId: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  createdAt: string;
+};
+
+export type NewLead = Pick<LeadRecord, "name" | "email" | "phone" | "message">;
+
 export class DomainTakenError extends Error {
   constructor(domain: string) {
     super(`Domain ${domain} is already connected to another site.`);
@@ -43,4 +55,7 @@ export interface SiteStore {
   listAll(): Promise<SiteRecord[]>;
   getBySlug(slug: string): Promise<SiteRecord | null>;
   getByDomain(domain: string): Promise<SiteRecord | null>;
+  /** Pedidos de contato do formulário do site (mais recentes primeiro). */
+  addLead(siteId: string, lead: NewLead): Promise<LeadRecord>;
+  listLeads(siteId: string): Promise<LeadRecord[]>;
 }

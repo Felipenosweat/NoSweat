@@ -150,6 +150,41 @@ export const DomainResponse = z.object({
 });
 export type DomainResponse = z.infer<typeof DomainResponse>;
 
+// ---------- POST /api/sites/[id]/leads (público) e GET (dono) ----------
+
+/** Pedido de contato enviado pelo formulário do site publicado. Precisa de e-mail ou telefone. */
+export const LeadRequest = z
+  .object({
+    name: z.string().trim().min(1, "Please enter your name.").max(120),
+    email: z.union([z.literal(""), z.email("Please enter a valid email.")]).optional(),
+    phone: z.string().trim().max(40).optional(),
+    message: z.string().trim().min(1, "Please tell us how we can help.").max(2000),
+    /** Campo-isca contra robôs: fica escondido e precisa vir vazio. */
+    company: z.string().max(0).optional(),
+  })
+  .refine((lead) => Boolean(lead.email) || Boolean(lead.phone), {
+    message: "Please leave an email or a phone number so we can reach you.",
+    path: ["email"],
+  });
+export type LeadRequest = z.infer<typeof LeadRequest>;
+
+export const Lead = z.object({
+  id: z.string(),
+  siteId: SiteId,
+  name: z.string(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  message: z.string(),
+  createdAt: z.string(),
+});
+export type Lead = z.infer<typeof Lead>;
+
+export const LeadCreatedResponse = z.object({ ok: z.literal(true) });
+export type LeadCreatedResponse = z.infer<typeof LeadCreatedResponse>;
+
+export const LeadsResponse = z.object({ leads: z.array(Lead) });
+export type LeadsResponse = z.infer<typeof LeadsResponse>;
+
 // ---------- GET /api/me/credits ----------
 
 export const CreditsResponse = z.object({

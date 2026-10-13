@@ -6,10 +6,13 @@ import { Logo } from "@/components/Logo";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState } from "@/server/domains";
 import { freeUrl, getOwnedSite, publicUrl } from "@/server/sites";
+import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
 
 export const metadata: Metadata = { title: "Manage site" };
+
+const leadDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
 type ManageSitePageProps = { params: Promise<{ id: string }> };
 
@@ -30,7 +33,10 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const origin = await requestOrigin();
   const live = publicUrl(site, origin);
   const free = freeUrl(site, origin);
-  const domain = await getDomainState(site);
+  const [domain, leads] = await Promise.all([
+    getDomainState(site),
+    getSiteStore().listLeads(site.id),
+  ]);
   const isPublished = site.status === "published";
 
   return (
@@ -119,6 +125,46 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             Hostinger…) and come back.
           </p>
           <DomainPanel siteId={site.id} initial={domain} isPublished={isPublished} />
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="font-display text-xl font-bold">3. Messages from your website</h2>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              {leads.length}
+            </span>
+          </div>
+          {leads.length === 0 ? (
+            <p className="mt-2 text-slate-600">
+              When visitors fill out the contact form on your website, their messages show up here.
+            </p>
+          ) : (
+            <ul className="mt-5 divide-y divide-slate-100">
+              {leads.map((lead) => (
+                <li key={lead.id} className="py-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <p className="font-semibold">{lead.name}</p>
+                    <p className="text-xs text-slate-400">
+                      {leadDate.format(new Date(lead.createdAt))}
+                    </p>
+                  </div>
+                  <p className="mt-1 flex flex-wrap gap-x-4 text-sm">
+                    {lead.phone && (
+                      <a href={`tel:${lead.phone}`} className="text-sky-700 hover:underline">
+                        {lead.phone}
+                      </a>
+                    )}
+                    {lead.email && (
+                      <a href={`mailto:${lead.email}`} className="text-sky-700 hover:underline">
+                        {lead.email}
+                      </a>
+                    )}
+                  </p>
+                  <p className="mt-2 text-sm whitespace-pre-line text-slate-700">{lead.message}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </main>
     </div>

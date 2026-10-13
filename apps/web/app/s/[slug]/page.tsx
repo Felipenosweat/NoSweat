@@ -22,5 +22,5 @@ export async function generateMetadata({ params }: PublicSitePageProps): Promise
 export default async function PublicSitePage({ params }: PublicSitePageProps) {
   const site = await getPublished((await params).slug);
   if (!site) notFound();
-  return <SiteRenderer spec={site.spec} />;
+  return <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />;
 }
