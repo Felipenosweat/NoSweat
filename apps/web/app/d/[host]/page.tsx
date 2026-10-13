@@ -11,9 +11,13 @@ import { getSiteStore, type SiteRecord } from "@/server/store";
 type DomainSitePageProps = { params: Promise<{ host: string }> };
 
 async function getPublished(host: string): Promise<SiteRecord | null> {
-  const domain = decodeURIComponent(host)
-    .toLowerCase()
-    .replace(/^www\./, "");
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(host);
+  } catch {
+    return null; // "%" solto no endereço: não é um domínio válido
+  }
+  const domain = decoded.toLowerCase().replace(/^www\./, "");
   const site = await getSiteStore().getByDomain(domain);
   return site?.status === "published" ? site : null;
 }

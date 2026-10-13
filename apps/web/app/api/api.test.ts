@@ -124,6 +124,21 @@ describe("PATCH /api/sites/[id]", () => {
   });
 });
 
+describe("request size limit", () => {
+  it("rejects huge request bodies", async () => {
+    const site = await ownSite();
+    const huge = {
+      spec: {
+        ...site.spec,
+        business: { ...site.spec.business, name: "x".repeat(200_000) },
+      },
+    };
+    const res = await patchSite(jsonRequest(`/sites/${site.id}`, "PATCH", huge), ctx(site.id));
+    expect(res.status).toBe(413);
+    expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
+  });
+});
+
 describe("not implemented yet", () => {
   it("regenerate-section returns 501", async () => {
     const res = await regenerateSection();
