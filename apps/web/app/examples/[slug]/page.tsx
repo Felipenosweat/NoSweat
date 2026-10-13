@@ -32,15 +32,15 @@ export default async function ExamplePage({ params, searchParams }: ExamplePageP
   return (
     <>
       {!embed && (
-        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-ink px-4 py-2.5 text-center text-sm text-slate-300">
-          <span>
+        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-ink px-4 py-0.5 text-center text-sm text-slate-300">
+          <span className="pt-2 sm:pt-0">
             Example site made with No Sweat. {spec.business.name} is a fictional business.
           </span>
           <Link
             href="/create"
-            className="font-semibold text-white underline-offset-4 hover:underline"
+            className="inline-flex min-h-11 items-center rounded-sm font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Build yours free &rarr;
+            Build my website&nbsp;<span aria-hidden="true">&rarr;</span>
           </Link>
         </div>
       )}

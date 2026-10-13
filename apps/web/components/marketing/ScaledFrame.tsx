@@ -48,7 +48,7 @@ export function ScaledFrame({
         title={title}
         loading={loading}
         tabIndex={-1}
-        className="pointer-events-none absolute top-0 left-0 origin-top-left border-0 transition-opacity duration-500"
+        className="pointer-events-none absolute top-0 left-0 origin-top-left border-0 motion-safe:transition-opacity motion-safe:duration-200"
         style={{
           width: viewportWidth,
           height: viewportHeight,
