@@ -2,6 +2,7 @@ import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteMetadata } from "@/components/site-metadata";
+import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
 // Site publicado, no endereço grátis: nosweatfd.com/s/<slug>. Público, sem login.
@@ -22,5 +23,5 @@ export async function generateMetadata({ params }: PublicSitePageProps): Promise
 export default async function PublicSitePage({ params }: PublicSitePageProps) {
   const site = await getPublished((await params).slug);
   if (!site) notFound();
-  return <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />;
+  return <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />;
 }

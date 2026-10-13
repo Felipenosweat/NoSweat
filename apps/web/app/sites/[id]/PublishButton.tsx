@@ -4,7 +4,13 @@ import { ApiError, PublishSiteResponse } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function PublishButton({ siteId }: { siteId: string }) {
+export function PublishButton({
+  siteId,
+  label = "Publish my website",
+}: {
+  siteId: string;
+  label?: string;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +43,7 @@ export function PublishButton({ siteId }: { siteId: string }) {
         disabled={pending}
         className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 disabled:opacity-70"
       >
-        {pending ? "Publishing..." : "Publish my website"}
+        {pending ? "Publishing..." : label}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-red-700">

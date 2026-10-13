@@ -1,4 +1,4 @@
-import { SiteSpec } from "@nosweat/schema";
+import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { AnthropicGenerator } from "./anthropic";
 import { MockGenerator } from "./mock";
 import { OpenAIGenerator } from "./openai";
@@ -27,4 +27,14 @@ export async function generateSiteSpec(
 ): Promise<SiteSpec> {
   const raw: unknown = await generator.generateSite(brief);
   return SiteSpec.parse(raw);
+}
+
+/** Pede uma mudança à IA e VALIDA o resultado (o site inteiro precisa continuar válido). */
+export async function editSiteSpec(
+  spec: SiteSpec,
+  instruction: string,
+  generator: SiteGenerator = getSiteGenerator(),
+): Promise<AiEditResult> {
+  const raw: unknown = await generator.editSite(spec, instruction);
+  return AiEditResult.parse(raw);
 }

@@ -1,11 +1,13 @@
-import type { SiteSpec } from "@nosweat/schema";
+import type { SiteSpec, VersionSource } from "@nosweat/schema";
 import {
   DomainTakenError,
   type LeadRecord,
   type NewLead,
   type SiteMeta,
   type SiteRecord,
+  type AiUsageKind,
   type SiteStore,
+  type VersionRecord,
 } from "./types";
 
 // O Map fica em globalThis para sobreviver ao hot reload do `next dev`.
@@ -13,7 +15,29 @@ import {
 const globalForStore = globalThis as typeof globalThis & {
   __nosweatSites?: Map<string, SiteRecord>;
   __nosweatLeads?: LeadRecord[];
+  __nosweatVersions?: VersionRecord[];
+  __nosweatAiUsage?: { userId: string; kind: AiUsageKind; at: string }[];
 };
+
+function aiUsage() {
+  globalForStore.__nosweatAiUsage ??= [];
+  return globalForStore.__nosweatAiUsage;
+}
+
+function versions(): VersionRecord[] {
+  globalForStore.__nosweatVersions ??= [];
+  return globalForStore.__nosweatVersions;
+}
+
+function addVersion(siteId: string, spec: SiteSpec, source: VersionSource): void {
+  versions().push({
+    id: crypto.randomUUID(),
+    siteId,
+    spec: clone(spec),
+    source,
+    createdAt: new Date().toISOString(),
+  });
+}
 
 function leads(): LeadRecord[] {
   globalForStore.__nosweatLeads ??= [];
@@ -35,6 +59,7 @@ export class MemorySiteStore implements SiteStore {
       id: crypto.randomUUID(),
       ownerId,
       spec: clone(spec),
+      publishedSpec: null,
       status: "draft",
       slug: null,
       customDomain: null,
@@ -43,6 +68,7 @@ export class MemorySiteStore implements SiteStore {
       updatedAt: now,
     };
     sites().set(record.id, record);
+    addVersion(record.id, spec, "generate");
     return clone(record);
   }
 
@@ -51,7 +77,11 @@ export class MemorySiteStore implements SiteStore {
     return record ? clone(record) : null;
   }
 
-  async update(id: string, spec: SiteSpec): Promise<SiteRecord | null> {
+  async update(
+    id: string,
+    spec: SiteSpec,
+    source: VersionSource = "edit",
+  ): Promise<SiteRecord | null> {
     const current = sites().get(id);
     if (!current) return null;
     const updated: SiteRecord = {
@@ -60,7 +90,21 @@ export class MemorySiteStore implements SiteStore {
       updatedAt: new Date().toISOString(),
     };
     sites().set(id, updated);
+    addVersion(id, spec, source);
     return clone(updated);
+  }
+
+  async listVersions(siteId: string): Promise<VersionRecord[]> {
+    return versions()
+      .filter((v) => v.siteId === siteId)
+      .reverse()
+      .slice(0, 50)
+      .map(clone);
+  }
+
+  async getVersion(siteId: string, versionId: string): Promise<VersionRecord | null> {
+    const version = versions().find((v) => v.siteId === siteId && v.id === versionId);
+    return version ? clone(version) : null;
   }
 
   async updateMeta(id: string, meta: SiteMeta): Promise<SiteRecord | null> {
@@ -112,5 +156,14 @@ export class MemorySiteStore implements SiteStore {
       .filter((lead) => lead.siteId === siteId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map(clone);
+  }
+
+  async recordAiUsage(userId: string, kind: AiUsageKind): Promise<void> {
+    aiUsage().push({ userId, kind, at: new Date().toISOString() });
+  }
+
+  async countAiUsage(userId: string, kind: AiUsageKind, sinceIso: string): Promise<number> {
+    return aiUsage().filter((u) => u.userId === userId && u.kind === kind && u.at >= sinceIso)
+      .length;
   }
 }

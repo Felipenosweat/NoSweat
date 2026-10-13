@@ -1,4 +1,4 @@
-import type { SiteSpec } from "@nosweat/schema";
+import type { AiEditResult, SiteSpec } from "@nosweat/schema";
 import type { SiteGenerator } from "./types";
 
 /**
@@ -10,5 +10,9 @@ import type { SiteGenerator } from "./types";
 export class OpenAIGenerator implements SiteGenerator {
   async generateSite(_brief: string): Promise<SiteSpec> {
     throw new Error("OpenAIGenerator is not implemented yet. Use AI_PROVIDER=mock.");
+  }
+
+  async editSite(_spec: SiteSpec, _instruction: string): Promise<AiEditResult> {
+    throw new Error("OpenAIGenerator is not implemented yet. Use AI_PROVIDER=anthropic or mock.");
   }
 }

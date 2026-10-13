@@ -61,26 +61,6 @@ export const joesPlumbing: SiteSpec = {
       ],
     },
     {
-      type: "testimonials",
-      items: [
-        {
-          quote:
-            "Our water heater died on a Sunday morning. Joe's had a tech at our door in under two hours and hot water back by lunch. Fair price, no surprises.",
-          author: "Melissa R., South Congress",
-        },
-        {
-          quote:
-            "They found a slab leak two other companies missed. Professional, clean, and they explained everything before starting.",
-          author: "David T., Round Rock",
-        },
-        {
-          quote:
-            "We've used Joe's for every plumbing job in our rental properties for five years. Reliable every single time.",
-          author: "Priya S., Cedar Park",
-        },
-      ],
-    },
-    {
       type: "faq",
       items: [
         {

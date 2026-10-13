@@ -6,7 +6,10 @@ import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
 
-/** POST /api/sites/[id]/publish → { siteId, status, url } (url = endereço grátis /s/<slug>). */
+/**
+ * POST /api/sites/[id]/publish → { siteId, status, url } (url = endereço grátis /s/<slug>).
+ * Também serve para "publicar as mudanças" do rascunho de um site que já está no ar.
+ */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
@@ -16,6 +19,8 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 
     const published = await getSiteStore().updateMeta(site.id, {
       status: "published",
+      // Publicar = copiar o rascunho atual para o que está no ar.
+      publishedSpec: site.spec,
       slug: site.slug ?? makeSlug(site.spec.business.name, site.id),
       publishedAt: site.publishedAt ?? new Date().toISOString(),
     });

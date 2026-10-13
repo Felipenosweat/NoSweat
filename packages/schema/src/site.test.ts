@@ -107,3 +107,25 @@ describe("LeadRequest", () => {
     ).toBe(false);
   });
 });
+
+describe("business details", () => {
+  it("accepts hours, service area and owner-confirmed highlights", () => {
+    const result = SiteSpec.safeParse({
+      ...minimal,
+      business: {
+        ...minimal.business,
+        serviceArea: "Queens and Brooklyn",
+        hours: [{ days: "Mon–Sat", time: "8 AM – 6 PM" }],
+        highlights: ["Licensed & insured", "Free estimates"],
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("limits highlights to four short facts", () => {
+    const highlights = ["a", "b", "c", "d", "e"];
+    expect(
+      SiteSpec.safeParse({ ...minimal, business: { ...minimal.business, highlights } }).success,
+    ).toBe(false);
+  });
+});

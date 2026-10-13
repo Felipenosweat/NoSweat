@@ -1,10 +1,21 @@
 import type { Business } from "@nosweat/schema";
-import { ArrowRightIcon, CheckIcon, MailIcon, MapPinIcon, PhoneIcon } from "../../components/icons";
-import { Container, Stars, initials, telHref } from "../../components/primitives";
-import { HERO_CARD_POINTS, TRUST_BADGES } from "./content";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ClockIcon,
+  MailIcon,
+  MapPinIcon,
+  PhoneIcon,
+} from "../../components/icons";
+import { Container, initials, telHref } from "../../components/primitives";
 
 export function location(business: Business): string | undefined {
   return [business.city, business.state].filter(Boolean).join(", ") || undefined;
+}
+
+/** Área atendida informada pelo dono; sem ela, a cidade/estado do negócio. */
+export function areaServed(business: Business): string | undefined {
+  return business.serviceArea?.trim() || location(business);
 }
 
 export function Logo({ name }: { name: string }) {
@@ -19,7 +30,7 @@ export function Logo({ name }: { name: string }) {
 }
 
 export function TopBar({ business }: { business: Business }) {
-  const where = location(business);
+  const where = areaServed(business);
   if (!where && !business.email) return null;
   return (
     <div className="bg-ns-text text-sm text-ns-background">
@@ -27,7 +38,7 @@ export function TopBar({ business }: { business: Business }) {
         {where && (
           <p className="flex items-center gap-1.5">
             <MapPinIcon className="size-4" />
-            Proudly serving {where} and surrounding areas
+            Serving {where}
           </p>
         )}
         {business.email && (
@@ -92,13 +103,15 @@ export function CallButton({ phone }: { phone: string }) {
   );
 }
 
-export function TrustBadges() {
+/** Selos com os fatos que o dono confirmou (business.highlights). Sem fatos, nada aparece. */
+export function TrustBadges({ highlights }: { highlights?: string[] }) {
+  if (!highlights?.length) return null;
   return (
     <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap">
-      {TRUST_BADGES.map(({ label, Icon }) => (
-        <li key={label} className="flex items-center gap-2 text-sm font-medium">
+      {highlights.map((label, index) => (
+        <li key={index} className="flex items-center gap-2 text-sm font-medium">
           <span className="flex size-7 items-center justify-center rounded-full bg-ns-primary/10 text-ns-primary">
-            <Icon className="size-4" />
+            <CheckIcon className="size-4" />
           </span>
           {label}
         </li>
@@ -107,6 +120,23 @@ export function TrustBadges() {
   );
 }
 
+export function Hours({ hours }: { hours: NonNullable<Business["hours"]> }) {
+  return (
+    <dl className="space-y-1 text-sm">
+      {hours.map((row, index) => (
+        <div key={index} className="flex justify-between gap-6">
+          <dt className="text-ns-muted">{row.days}</dt>
+          <dd className="font-medium">{row.time}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * Card ao lado do título: horário, uma avaliação real (se o dono colocou) e o telefone.
+ * Sem nenhuma dessas informações, o card não aparece.
+ */
 export function HeroCard({
   business,
   quote,
@@ -114,28 +144,24 @@ export function HeroCard({
   business: Business;
   quote?: { quote: string; author: string };
 }) {
-  const where = location(business);
+  const hours = business.hours?.length ? business.hours : null;
+  if (!hours && !quote && !business.phone) return null;
   return (
     <div className="rounded-3xl border border-ns-border bg-ns-background p-6 shadow-2xl shadow-ns-text/10 sm:p-8">
-      <p className="text-sm font-semibold uppercase tracking-widest text-ns-primary">
-        Why neighbors call us
-      </p>
-      <ul className="mt-5 space-y-3">
-        {HERO_CARD_POINTS.map((item) => (
-          <li key={item} className="flex items-start gap-3">
-            <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-ns-primary text-ns-on-primary">
-              <CheckIcon className="size-3.5" />
-            </span>
-            {item}
-          </li>
-        ))}
-      </ul>
+      {hours && (
+        <>
+          <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-ns-primary">
+            <ClockIcon className="size-4" />
+            Hours
+          </p>
+          <div className="mt-4">
+            <Hours hours={hours} />
+          </div>
+        </>
+      )}
       {quote && (
-        <figure className="mt-6 rounded-2xl bg-ns-surface p-5">
-          <Stars />
-          <blockquote className="mt-3 text-sm leading-relaxed">
-            &ldquo;{quote.quote}&rdquo;
-          </blockquote>
+        <figure className={`rounded-2xl bg-ns-surface p-5 ${hours ? "mt-6" : ""}`}>
+          <blockquote className="text-sm leading-relaxed">&ldquo;{quote.quote}&rdquo;</blockquote>
           <figcaption className="mt-3 text-sm font-semibold text-ns-muted">
             {quote.author}
           </figcaption>
@@ -144,11 +170,13 @@ export function HeroCard({
       {business.phone && (
         <a
           href={telHref(business.phone)}
-          className="mt-6 flex items-center justify-between gap-3 rounded-2xl bg-ns-primary px-5 py-4 text-ns-on-primary transition hover:brightness-110"
+          className={`flex items-center justify-between gap-3 rounded-2xl bg-ns-primary px-5 py-4 text-ns-on-primary transition hover:brightness-110 ${
+            hours || quote ? "mt-6" : ""
+          }`}
         >
           <span>
             <span className="block text-xs font-medium uppercase tracking-wider opacity-80">
-              {where ? `Call ${where}'s pros` : "Call us today"}
+              Call us
             </span>
             <span className="block text-xl font-bold">{business.phone}</span>
           </span>
@@ -160,7 +188,7 @@ export function HeroCard({
 }
 
 export function ContactDetails({ business }: { business: Business }) {
-  const where = location(business);
+  const where = areaServed(business);
   const rows: { Icon: typeof PhoneIcon; label: string; value: string; href?: string }[] = [];
   if (business.phone) {
     rows.push({
@@ -178,9 +206,10 @@ export function ContactDetails({ business }: { business: Business }) {
       href: `mailto:${business.email}`,
     });
   }
-  if (where) rows.push({ Icon: MapPinIcon, label: "Service area", value: `${where} and nearby` });
+  if (where) rows.push({ Icon: MapPinIcon, label: "Service area", value: where });
 
-  if (rows.length === 0) return null;
+  const hours = business.hours?.length ? business.hours : null;
+  if (rows.length === 0 && !hours) return null;
   return (
     <ul className="space-y-4">
       {rows.map(({ Icon, label, value, href }) => (
@@ -200,6 +229,17 @@ export function ContactDetails({ business }: { business: Business }) {
           </span>
         </li>
       ))}
+      {hours && (
+        <li className="flex items-start gap-4">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-ns-primary/10 text-ns-primary">
+            <ClockIcon className="size-6" />
+          </span>
+          <span className="min-w-0 flex-1 pt-1">
+            <span className="mb-1 block text-sm text-ns-muted">Hours</span>
+            <Hours hours={hours} />
+          </span>
+        </li>
+      )}
     </ul>
   );
 }

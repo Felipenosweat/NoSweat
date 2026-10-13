@@ -1,6 +1,7 @@
-import { SiteSpec } from "@nosweat/schema";
+import { fixtures } from "@nosweat/fixtures";
+import { SiteSpec, type AiEditResult } from "@nosweat/schema";
 import { describe, expect, it, vi } from "vitest";
-import { generateSiteSpec, getSiteGenerator } from "./index";
+import { editSiteSpec, generateSiteSpec, getSiteGenerator } from "./index";
 import { MockGenerator, selectFixture } from "./mock";
 
 describe("selectFixture", () => {
@@ -28,8 +29,12 @@ describe("generateSiteSpec", () => {
   });
 
   it("rejects an invalid result from a generator", async () => {
-    const broken = { generateSite: async () => ({ version: 1 }) as unknown as SiteSpec };
+    const broken = {
+      generateSite: async () => ({ version: 1 }) as unknown as SiteSpec,
+      editSite: async () => ({ summary: "x", spec: { version: 1 } }) as unknown as AiEditResult,
+    };
     await expect(generateSiteSpec("anything", broken)).rejects.toThrow();
+    await expect(editSiteSpec(fixtures["joes-plumbing"], "anything", broken)).rejects.toThrow();
   });
 
   it("uses the mock by default and rejects unknown providers", () => {
@@ -69,5 +74,29 @@ describe("AnthropicGenerator", () => {
     await expect(new AnthropicGenerator(client).generateSite("anything")).rejects.toThrow(
       /declined/,
     );
+  });
+});
+
+describe("AnthropicGenerator.editSite", () => {
+  it("returns the edited spec and summary from Claude", async () => {
+    const { AnthropicGenerator } = await import("./anthropic");
+    const spec = fixtures["joes-plumbing"];
+    const edited = {
+      ...spec,
+      business: { ...spec.business, hours: [{ days: "Mon–Sat", time: "8 AM – 6 PM" }] },
+    };
+    const parse = vi.fn(async () => ({
+      stop_reason: "end_turn",
+      parsed_output: { summary: "Updated your hours.", spec: edited },
+    }));
+    const client = { messages: { parse } } as unknown as ConstructorParameters<
+      typeof AnthropicGenerator
+    >[0];
+
+    const result = await new AnthropicGenerator(client).editSite(spec, "Mon–Sat 8 to 6");
+    expect(result.summary).toBe("Updated your hours.");
+    expect(result.spec.business.hours).toEqual([{ days: "Mon–Sat", time: "8 AM – 6 PM" }]);
+    const [request] = parse.mock.calls[0] as unknown as [{ messages: { content: string }[] }];
+    expect(request.messages[0]?.content).toContain("<request>");
   });
 });

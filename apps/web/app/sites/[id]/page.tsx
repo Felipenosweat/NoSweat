@@ -5,10 +5,11 @@ import { notFound, redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState } from "@/server/domains";
-import { freeUrl, getOwnedSite, publicUrl } from "@/server/sites";
+import { freeUrl, getOwnedSite, hasUnpublishedChanges, publicUrl } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
+import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
 
@@ -37,6 +38,8 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
     getDomainState(site),
     getSiteStore().listLeads(site.id),
   ]);
+  const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
+  const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
 
   return (
@@ -68,9 +71,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             <div>
               <h2 className="font-display text-xl font-bold">1. Publish</h2>
               <p className="mt-1 text-slate-600">
-                {isPublished
-                  ? "Your website is live. Anyone with the link can see it."
-                  : "Happy with the preview? Put your website online in one click."}
+                {pendingChanges
+                  ? "You have saved changes that are not live yet. Publish them when you're ready."
+                  : isPublished
+                    ? "Your website is live. Anyone with the link can see it."
+                    : "Happy with the preview? Put your website online in one click."}
               </p>
             </div>
             <span
@@ -108,11 +113,12 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
 
           <div className="mt-5 flex flex-wrap gap-3">
             {!isPublished && <PublishButton siteId={site.id} />}
+            {pendingChanges && <PublishButton siteId={site.id} label="Publish changes" />}
             <Link
               href={`/sites/${site.id}/edit`}
               className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
             >
-              Edit website
+              Edit website or ask AI
             </Link>
             <Link
               href={`/sites/preview/${site.id}`}
@@ -131,6 +137,21 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             Hostinger…) and come back.
           </p>
           <DomainPanel siteId={site.id} initial={domain} isPublished={isPublished} />
+        </section>
+
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="font-display text-xl font-bold">Version history</h2>
+          <p className="mt-1 text-slate-600">
+            Every time you save, we keep a copy. Restore an older one if you change your mind.
+          </p>
+          <VersionHistory
+            siteId={site.id}
+            versions={versions.map(({ id: versionId, source, createdAt }) => ({
+              id: versionId,
+              source,
+              createdAt,
+            }))}
+          />
         </section>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

@@ -5,6 +5,7 @@ import {
   SiteSpec,
   TemplateId,
   UpdateSiteResponse,
+  AiEditResponse,
   type Section,
   type SectionType,
 } from "@nosweat/schema";
@@ -35,11 +36,17 @@ const inputClass =
 /** Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido). */
 function clean(spec: SiteSpec): SiteSpec {
   const business: Business = { name: spec.business.name.trim() };
-  const optional = ["phone", "email", "city", "state"] as const;
+  const optional = ["phone", "email", "city", "state", "serviceArea"] as const;
   for (const key of optional) {
     const value = spec.business[key]?.trim();
     if (value) business[key] = key === "state" ? value.toUpperCase() : value;
   }
+  const hours = (spec.business.hours ?? [])
+    .map((row) => ({ days: row.days.trim(), time: row.time.trim() }))
+    .filter((row) => row.days || row.time);
+  if (hours.length) business.hours = hours;
+  const highlights = (spec.business.highlights ?? []).map((h) => h.trim()).filter(Boolean);
+  if (highlights.length) business.highlights = highlights;
   return { ...spec, business };
 }
 
@@ -56,6 +63,55 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [newType, setNewType] = useState<SectionType>("faq");
+  const [instruction, setInstruction] = useState("");
+  const [aiPending, setAiPending] = useState(false);
+  /** Versão anterior ao último pedido à IA, para o botão "Undo". */
+  const [beforeAi, setBeforeAi] = useState<SiteSpec | null>(null);
+
+  async function askAi() {
+    setAiPending(true);
+    setMessage(null);
+    const previous = spec;
+    try {
+      const res = await fetch(`/api/sites/${siteId}/ai-edit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instruction }),
+      });
+      const body: unknown = await res.json().catch(() => null);
+      if (!res.ok) {
+        const apiError = ApiError.safeParse(body);
+        setMessage({
+          kind: "error",
+          text: apiError.success
+            ? apiError.data.error.message
+            : "The AI couldn't make that change.",
+        });
+        return;
+      }
+      const result = AiEditResponse.parse(body);
+      setSpec(result.spec);
+      setDirty(false);
+      setBeforeAi(previous);
+      setInstruction("");
+      setMessage({
+        kind: "ok",
+        text: `${result.summary} Saved as a draft: check the preview, then publish it when you're happy.`,
+      });
+    } catch {
+      setMessage({ kind: "error", text: "We couldn't reach our servers. Please try again." });
+    } finally {
+      setAiPending(false);
+    }
+  }
+
+  function undoAi() {
+    if (!beforeAi) return;
+    setSpec(beforeAi);
+    setBeforeAi(null);
+    setDirty(true);
+    setMessage({ kind: "ok", text: "Change undone. Click “Save changes” to keep it this way." });
+  }
 
   /** Atualiza uma cópia do SiteSpec (nunca muta o estado atual). */
   function update(change: (draft: SiteSpec) => void) {
@@ -113,7 +169,10 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       }
       setSpec(UpdateSiteResponse.parse(body).spec);
       setDirty(false);
-      setMessage({ kind: "ok", text: "Saved! Your changes are live on your website." });
+      setMessage({
+        kind: "ok",
+        text: "Saved as a draft. Go back and click “Publish changes” to put it live.",
+      });
     } catch {
       setMessage({ kind: "error", text: "We couldn't reach our servers. Please try again." });
     } finally {
@@ -162,6 +221,44 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
       <div className="grid min-h-0 flex-1 lg:grid-cols-[420px_1fr]">
         {/* Formulário */}
         <div className="space-y-4 overflow-y-auto p-4">
+          <section className="space-y-3 rounded-xl border border-sky-200 bg-sky-50 p-4 shadow-sm">
+            <h2 className="text-sm font-bold tracking-wide text-sky-900 uppercase">✨ Ask AI</h2>
+            <p className="text-xs text-sky-900/80">
+              Tell us what to change, in your own words. Example: “Change my hours to Monday through
+              Saturday, 8 AM to 6 PM.”
+            </p>
+            <textarea
+              rows={3}
+              value={instruction}
+              onChange={(e) => setInstruction(e.target.value)}
+              disabled={aiPending || dirty}
+              placeholder="What would you like to change?"
+              className={inputClass}
+            />
+            {dirty && (
+              <p className="text-xs text-amber-700">Save your changes first, then ask the AI.</p>
+            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={askAi}
+                disabled={aiPending || dirty || instruction.trim().length < 3}
+                className="rounded-full bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600 disabled:opacity-50"
+              >
+                {aiPending ? "Working on it..." : "Apply with AI"}
+              </button>
+              {beforeAi && !aiPending && (
+                <button
+                  type="button"
+                  onClick={undoAi}
+                  className="text-sm font-semibold text-slate-600 hover:underline"
+                >
+                  Undo
+                </button>
+              )}
+            </div>
+          </section>
+
           <Panel title="Business">
             <Field label="Business name">
               <input
@@ -202,6 +299,82 @@ export function SiteEditor({ siteId, initialSpec }: { siteId: string; initialSpe
                 />
               </Field>
             </div>
+            <Field label="Service area">
+              <input
+                className={inputClass}
+                placeholder="e.g. Queens and Brooklyn"
+                value={spec.business.serviceArea ?? ""}
+                onChange={(e) => update((d) => void (d.business.serviceArea = e.target.value))}
+              />
+            </Field>
+          </Panel>
+
+          <Panel title="Hours">
+            <ItemList
+              items={spec.business.hours ?? []}
+              max={7}
+              addLabel="Add hours"
+              onAdd={() =>
+                update((d) => {
+                  d.business.hours = [...(d.business.hours ?? []), { days: "", time: "" }];
+                })
+              }
+              onRemove={(i) => update((d) => void d.business.hours?.splice(i, 1))}
+              render={(row, i) => (
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    className={inputClass}
+                    placeholder="Mon–Fri"
+                    value={row.days}
+                    onChange={(e) =>
+                      update((d) => {
+                        const target = d.business.hours?.[i];
+                        if (target) target.days = e.target.value;
+                      })
+                    }
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="8 AM – 6 PM"
+                    value={row.time}
+                    onChange={(e) =>
+                      update((d) => {
+                        const target = d.business.hours?.[i];
+                        if (target) target.time = e.target.value;
+                      })
+                    }
+                  />
+                </div>
+              )}
+            />
+          </Panel>
+
+          <Panel title="Highlights (badges)">
+            <ItemList
+              items={spec.business.highlights ?? []}
+              max={4}
+              addLabel="Add highlight"
+              note="Only list things that are true, like “Licensed & insured” or “Free estimates”."
+              onAdd={() =>
+                update((d) => {
+                  d.business.highlights = [...(d.business.highlights ?? []), ""];
+                })
+              }
+              onRemove={(i) => update((d) => void d.business.highlights?.splice(i, 1))}
+              render={(item, i) => (
+                <input
+                  className={inputClass}
+                  maxLength={40}
+                  placeholder="Licensed & insured"
+                  value={item}
+                  onChange={(e) =>
+                    update((d) => {
+                      if (d.business.highlights) d.business.highlights[i] = e.target.value;
+                    })
+                  }
+                />
+              )}
+            />
           </Panel>
 
           <Panel title="Design">
