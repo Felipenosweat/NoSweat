@@ -27,3 +27,6 @@ coverage/
 
 # Prints da revisão visual (Skill premium-web-design)
 .design-shots/
+
+# Resultados da auditoria do site (gerados pelo workflow site-audit)
+qa/out/
