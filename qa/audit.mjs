@@ -10,7 +10,8 @@ const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900 },
 ];
 
-mkdirSync("qa/out", { recursive: true });
+const OUT = process.env.OUT_DIR ?? "qa/out";
+mkdirSync(OUT, { recursive: true });
 const report = [];
 const browser = await chromium.launch();
 for (const vp of VIEWPORTS) {
@@ -29,7 +30,7 @@ for (const vp of VIEWPORTS) {
       await page.waitForTimeout(1500);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 1) issues.push(`horizontal overflow: ${overflow}px`);
-      const file = `qa/out/${vp.name}${path === "/" ? "-home" : path.replaceAll("/", "-")}.png`;
+      const file = `${OUT}/${vp.name}${path === "/" ? "-home" : path.replaceAll("/", "-")}.png`;
       await page.screenshot({ path: file, fullPage: true });
     } catch (e) {
       issues.push(`navigation: ${e.message}`);
@@ -40,5 +41,5 @@ for (const vp of VIEWPORTS) {
   await context.close();
 }
 await browser.close();
-writeFileSync("qa/out/report.json", JSON.stringify(report, null, 2));
+writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

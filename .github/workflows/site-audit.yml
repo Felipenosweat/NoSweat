@@ -18,9 +18,15 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
-      - run: npm init -y >/dev/null && npm install --no-save playwright@1.56.1
-      - run: npx playwright install --with-deps chromium
-      - run: node qa/audit.mjs
+          package-manager-cache: false
+      # Fora do monorepo (pnpm): só o Playwright, numa pasta separada.
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/qa && cp qa/audit.mjs /tmp/qa/
+          cd /tmp/qa && npm init -y >/dev/null && npm install playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Audit
+        run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node audit.mjs
       - name: Commit results
         run: |
           git config user.name "site-audit"
