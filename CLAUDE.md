@@ -12,7 +12,8 @@ apps/web/                       Next.js (App Router): telas + API
   app/(marketing)/              landing page (/)                         → front
   app/(dashboard)/              /create e /dashboard (painel do cliente) → front
   app/(admin)/admin/            painel principal da No Sweat (só admins)  → front
-  app/sites/                    /sites/[id] (publicar + domínio) e /sites/preview/[id] → front
+  app/sites/                    /sites/[id] (publicar, domínio, mensagens), /sites/[id]/edit
+                                (editor com prévia ao vivo) e /sites/preview/[id] → front
   app/s/[slug]/                 site publicado no endereço grátis (público) → front
   app/d/[host]/                 site publicado no domínio do cliente (via proxy.ts) → front
   app/(auth)/login/             tela e Server Actions de login/cadastro  → front

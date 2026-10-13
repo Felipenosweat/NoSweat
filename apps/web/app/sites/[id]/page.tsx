@@ -109,6 +109,12 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
           <div className="mt-5 flex flex-wrap gap-3">
             {!isPublished && <PublishButton siteId={site.id} />}
             <Link
+              href={`/sites/${site.id}/edit`}
+              className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+            >
+              Edit website
+            </Link>
+            <Link
               href={`/sites/preview/${site.id}`}
               className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-400"
             >

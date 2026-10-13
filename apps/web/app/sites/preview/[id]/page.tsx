@@ -41,6 +41,9 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           <Link href="/dashboard" className="hover:text-white">
             &larr; My sites
           </Link>
+          <Link href={`/sites/${site.id}/edit`} className="hover:text-white">
+            Edit
+          </Link>
           <Link
             href={`/sites/${site.id}`}
             className="rounded-full bg-emerald-500 px-3 py-1 font-semibold text-white hover:bg-emerald-400"
