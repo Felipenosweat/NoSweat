@@ -13,12 +13,13 @@ import {
 } from "@nosweat/schema";
 import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it, vi } from "vitest";
+import type * as VerifyModule from "@/server/domains/verify";
 import { getSiteStore } from "@/server/store";
 
 // O DNS de verdade não existe nos testes: o "registro TXT" de prova de dono é simulado.
 const dns = vi.hoisted(() => ({ verified: true }));
 vi.mock("@/server/domains/verify", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/server/domains/verify")>();
+  const actual = await importOriginal<typeof VerifyModule>();
   return { ...actual, isDomainVerified: async () => dns.verified };
 });
 import { GET as getCredits } from "./me/credits/route";
