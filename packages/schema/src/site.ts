@@ -4,10 +4,11 @@ import { z } from "zod";
 // Não renomeie nem remova campos sem combinar com o time. Adicionar campo opcional é ok.
 
 const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+// https:// ou uma foto hospedada pela própria No Sweat (/photos/..., usada nos exemplos).
 const HttpsUrl = z
   .string()
   .max(1000)
-  .regex(/^https:\/\/\S+$/);
+  .regex(/^(https:\/\/\S+|\/photos\/[\w./-]+)$/);
 
 /**
  * Foto do site. Quem preenche é a PLATAFORMA (busca em banco de imagens ou upload do dono),
