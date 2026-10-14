@@ -40,7 +40,7 @@ const FAQS = [
   {
     question: "How does it work?",
     answer:
-      "You describe your business in a sentence or two. We choose one of five industry templates and write your headline, services and FAQ. You review it in a private preview, edit anything, then publish.",
+      "You describe your business in a sentence or two. We pick a page layout that fits your business, from photo-first to type-first, and write your headline, services and FAQ. You review it in a private preview, edit anything, then publish.",
   },
   {
     question: "Do I need technical experience?",
@@ -50,7 +50,7 @@ const FAQS = [
   {
     question: "Can I customize my site?",
     answer:
-      "Yes. Edit your business details, hero text, services, reviews you provide, and FAQ. Change colors, pick from ten font pairings, switch templates, and add, remove or reorder sections, all with a live preview.",
+      "Yes. Edit your business details, hero text, services, reviews you provide, and FAQ. Change colors, pick from ten font pairings, switch between five page layouts, and add, remove or reorder sections, all with a live preview.",
   },
   {
     question: "Can AI change my site for me?",

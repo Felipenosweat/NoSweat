@@ -3,6 +3,12 @@ import type { SiteSpec } from "@nosweat/schema";
 export const sparkleCleaning: SiteSpec = {
   version: 1,
   template: "home-services",
+  design: {
+    composition: "modular",
+    primaryAction: "quote",
+    density: "balanced",
+    imageTreatment: "natural",
+  },
   business: {
     name: "Sparkle & Co. Cleaning",
     phone: "(508) 555-0142",

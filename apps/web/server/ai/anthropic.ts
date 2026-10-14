@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
+import { designBriefForPrompt, type DesignPlan } from "../design";
 import { SITE_EDIT_SYSTEM_PROMPT, SITE_GENERATION_SYSTEM_PROMPT } from "./prompt";
 import type { SiteGenerator } from "./types";
 
@@ -26,7 +27,7 @@ export class AnthropicGenerator implements SiteGenerator {
     private readonly editModel: string = process.env.ANTHROPIC_EDIT_MODEL || DEFAULT_EDIT_MODEL,
   ) {}
 
-  async generateSite(brief: string): Promise<SiteSpec> {
+  async generateSite(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
     const response = await this.client.messages.parse({
       model: this.model,
       max_tokens: 16000,
@@ -39,7 +40,7 @@ export class AnthropicGenerator implements SiteGenerator {
       messages: [
         {
           role: "user",
-          content: `Here is how the business owner describes their business:\n\n<brief>\n${brief}\n</brief>`,
+          content: generationRequest(brief, plan),
         },
       ],
     });
@@ -88,4 +89,17 @@ export class AnthropicGenerator implements SiteGenerator {
     }
     return response.parsed_output;
   }
+}
+
+/** Pedido de criação: a descrição do dono e, quando houver, a direção de arte já escolhida. */
+export function generationRequest(brief: string, plan?: DesignPlan): string {
+  const parts = [
+    `Here is how the business owner describes their business:\n\n<brief>\n${brief}\n</brief>`,
+  ];
+  if (plan) {
+    parts.push(
+      `Art direction chosen for this site (fill "design" and write the copy for it):\n\n<design_plan>\n${designBriefForPrompt(plan)}\n</design_plan>`,
+    );
+  }
+  return parts.join("\n\n");
 }

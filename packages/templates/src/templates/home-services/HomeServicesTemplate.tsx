@@ -169,7 +169,14 @@ export function HomeServicesTemplate({
           : sections.map(renderSection)}
       </main>
       <Footer business={business} links={links} />
-      <MobileCallBar phone={business.phone} ctaLabel={primaryCta} ctaHref={ctaHref} />
+      <MobileCallBar
+        phone={business.phone}
+        ctaLabel={primaryCta}
+        ctaHref={ctaHref}
+        emphasis={
+          spec.design?.primaryAction && spec.design.primaryAction !== "call" ? "cta" : "call"
+        }
+      />
     </div>
   );
 }

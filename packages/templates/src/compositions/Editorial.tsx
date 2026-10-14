@@ -1,0 +1,212 @@
+import type { Section, SectionOf } from "@nosweat/schema";
+import type { ReactNode } from "react";
+import { Gallery } from "../sections/Gallery";
+import type { TemplateProps } from "../types";
+import { MobileCallBar } from "../templates/home-services/parts";
+import { buildModel, renderSections, type SiteModel } from "./model";
+import {
+  ContactFormBlock,
+  ContactLines,
+  FaqList,
+  HeaderCall,
+  HeroActions,
+  HighlightList,
+  NavLinks,
+  PhotoFrame,
+  SimpleFooter,
+  Wrap,
+  sectionY,
+} from "./shared";
+
+/**
+ * Composição EDITORIAL (revista): título enorme em largura total, texto e botões numa linha
+ * abaixo, foto larga com legenda, serviços como sumário numerado, perguntas com o título
+ * fixo ao lado e o nome do negócio grande no rodapé. Linhas finas no lugar de cards.
+ */
+export function EditorialComposition({
+  spec,
+  contactEndpoint,
+  editable = false,
+  selectedSection = null,
+}: TemplateProps) {
+  const model = buildModel(spec);
+
+  const render = (section: Section, index: number): ReactNode => {
+    const key = `${section.type}-${index}`;
+    const id = model.anchorFor(section);
+    switch (section.type) {
+      case "hero":
+        return <EditorialHero key={key} model={model} data={section} />;
+      case "services":
+        return <EditorialServices key={key} id={id} model={model} data={section} />;
+      case "testimonials":
+        return <EditorialQuotes key={key} id={id} data={section} />;
+      case "gallery":
+        return <Gallery key={key} id={id} data={section} />;
+      case "faq":
+        return (
+          <section key={key} id={id} className={`scroll-mt-24 ${sectionY}`}>
+            <Wrap className="grid gap-10 @5xl:grid-cols-12">
+              <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @5xl:sticky @5xl:top-28 @5xl:col-span-4 @5xl:self-start @min-[40rem]:text-5xl">
+                {model.words.faqTitle}
+              </h2>
+              <FaqList data={section} className="@5xl:col-span-7 @5xl:col-start-6" />
+            </Wrap>
+          </section>
+        );
+      case "contact":
+        return (
+          <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
+            <Wrap className="grid gap-12 @5xl:grid-cols-12">
+              <div className="@5xl:col-span-5">
+                <h2 className="font-ns-heading text-4xl leading-[1.05] font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
+                  {model.words.contactTitle}
+                </h2>
+                <ContactLines model={model} className="mt-10" />
+              </div>
+              <ContactFormBlock
+                data={section}
+                endpoint={contactEndpoint}
+                className="@5xl:col-span-6 @5xl:col-start-7"
+              />
+            </Wrap>
+          </section>
+        );
+      default: {
+        const unhandled: never = section;
+        return unhandled;
+      }
+    }
+  };
+
+  return (
+    <div id="top" className="flex min-h-full flex-col">
+      <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
+        <Wrap className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
+          <a
+            href="#top"
+            className="min-w-0 font-ns-heading text-xl leading-tight font-bold tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
+          >
+            {model.business.name}
+          </a>
+          <div className="flex items-center gap-8">
+            <NavLinks
+              model={model}
+              className="hidden @3xl:block"
+              linkClassName="text-ns-muted hover:text-ns-text"
+            />
+            <HeaderCall model={model} className="text-ns-primary" />
+          </div>
+        </Wrap>
+      </header>
+      <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
+      <SimpleFooter model={model} bigName className="border-t border-ns-border" />
+      <MobileCallBar
+        phone={model.business.phone}
+        ctaLabel={model.ctaLabel}
+        ctaHref={model.ctaHref}
+        emphasis={model.primaryAction === "call" ? "call" : "cta"}
+      />
+    </div>
+  );
+}
+
+function EditorialHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> }) {
+  return (
+    <section className="pt-12 pb-(--ns-section-y) @min-[40rem]:pt-16 @5xl:pt-20">
+      <Wrap>
+        {model.where && (
+          <p className="text-sm font-semibold tracking-[0.18em] text-ns-primary uppercase">
+            {model.where}
+          </p>
+        )}
+        <h1 className="mt-5 max-w-[15ch] font-ns-heading text-[length:clamp(2.75rem,9cqw,7.5rem)] leading-[0.95] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
+          {data.title}
+        </h1>
+        <div className="mt-10 grid gap-8 border-t border-ns-border pt-8 @5xl:grid-cols-12 @5xl:items-end">
+          <p className="max-w-xl text-lg leading-relaxed text-pretty text-ns-muted @min-[40rem]:text-xl @5xl:col-span-6">
+            {data.subtitle}
+          </p>
+          <div className="@5xl:col-span-6 @5xl:justify-self-end">
+            <HeroActions model={model} radius="rounded-none" />
+          </div>
+        </div>
+        <HighlightList highlights={model.business.highlights} className="mt-8 text-ns-muted" />
+      </Wrap>
+      {data.image && (
+        <Wrap wide className="mt-14 @5xl:mt-20">
+          <PhotoFrame
+            image={data.image}
+            eager
+            credit="below"
+            sizes="(min-width: 1280px) 1216px, 100vw"
+            className=""
+            imgClassName="aspect-[4/3] w-full object-cover @min-[40rem]:aspect-[16/9] @5xl:aspect-[21/9]"
+          />
+        </Wrap>
+      )}
+    </section>
+  );
+}
+
+function EditorialServices({
+  id,
+  model,
+  data,
+}: {
+  id?: string;
+  model: SiteModel;
+  data: SectionOf<"services">;
+}) {
+  if (data.items.length === 0) return null;
+  return (
+    <section id={id} className={`scroll-mt-24 ${sectionY}`}>
+      <Wrap>
+        <div className="flex flex-col gap-3 @5xl:flex-row @5xl:items-end @5xl:justify-between">
+          <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
+            {model.words.servicesTitle}
+          </h2>
+          {model.where && <p className="text-ns-muted">Serving {model.where}</p>}
+        </div>
+        <ol className="mt-12 border-b border-ns-border">
+          {data.items.map((item, index) => (
+            <li
+              key={`${item.name}-${index}`}
+              className="grid gap-3 border-t border-ns-border py-8 @3xl:grid-cols-12 @3xl:gap-8"
+            >
+              <span className="font-ns-heading text-sm font-semibold text-ns-primary tabular-nums @3xl:col-span-1 @3xl:pt-2">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="font-ns-heading text-2xl leading-snug font-bold text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl @3xl:col-span-5">
+                {item.name}
+              </h3>
+              <p className="max-w-[52ch] leading-relaxed text-ns-muted @3xl:col-span-6 @3xl:pt-1.5">
+                {item.description}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </Wrap>
+    </section>
+  );
+}
+
+function EditorialQuotes({ id, data }: { id?: string; data: SectionOf<"testimonials"> }) {
+  if (data.items.length === 0) return null;
+  return (
+    <section id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
+      <Wrap className="space-y-16">
+        {data.items.map((item, index) => (
+          <figure key={`${item.author}-${index}`} className="max-w-4xl">
+            <blockquote className="font-ns-heading text-3xl leading-snug text-pretty @min-[40rem]:text-4xl">
+              &ldquo;{item.quote}&rdquo;
+            </blockquote>
+            <figcaption className="mt-6 text-sm font-semibold tracking-wider text-ns-muted uppercase">
+              {item.author}
+            </figcaption>
+          </figure>
+        ))}
+      </Wrap>
+    </section>
+  );
+}

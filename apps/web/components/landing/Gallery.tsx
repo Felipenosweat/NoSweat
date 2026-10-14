@@ -21,6 +21,7 @@ const EXAMPLES = [
   },
   { slug: "glow-salon", name: "Glow Salon", trade: "Hair salon", city: "Miami, FL" },
   { slug: "rosas-kitchen", name: "Rosa’s Kitchen", trade: "Restaurant", city: "San Diego, CA" },
+  { slug: "hale-ortiz", name: "Hale & Ortiz", trade: "Bookkeeping & tax", city: "Denver, CO" },
 ];
 
 export function Gallery() {

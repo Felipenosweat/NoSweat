@@ -35,10 +35,12 @@ const STEPS = [
 
 // Caixas em % do quadro 1280×860 (medidas no site de exemplo).
 const LAYERS = {
-  header: { x: 0, y: 0, w: 100, h: 14.07 },
-  text: { x: 7.5, y: 31.22, w: 45.63, h: 51.05 },
-  photo: { x: 57.5, y: 14.07, w: 42.5, h: 63.26 },
-  hours: { x: 53.75, y: 64.3, w: 30, h: 28.6 },
+  // Posições (em % do quadro 1280×860) dos blocos do site de exemplo Sparkle & Co. na
+  // composição "modular", medidas no site renderizado (ver docs/design/README.md).
+  header: { x: 5, y: 2.79, w: 90, h: 7.44 },
+  text: { x: 7.5, y: 13.49, w: 56.35, h: 62.06 },
+  photo: { x: 64.79, y: 13.49, w: 27.71, h: 62.06 },
+  hours: { x: 7.5, y: 76.95, w: 42.03, h: 18.37 },
 } as const;
 
 const box = (b: { x: number; y: number; w: number; h: number }) => ({
@@ -226,16 +228,16 @@ export function BuildSequence() {
               </div>
 
               {/* Quadro 1280×860 com as camadas */}
-              <div className="relative aspect-[1280/860] overflow-hidden bg-[#f5f6f6]">
+              <div className="relative aspect-[1280/860] overflow-hidden bg-white">
                 {/* Esqueleto (só na montagem) */}
                 <div
                   data-skeleton
                   aria-hidden="true"
                   className="absolute inset-0 hidden lg:block lg:motion-reduce:hidden"
                 >
-                  <div className="l-skeleton absolute rounded-sm" style={box(LAYERS.header)} />
-                  <div className="l-skeleton absolute rounded-lg" style={box(LAYERS.text)} />
-                  <div className="l-skeleton absolute rounded-lg" style={box(LAYERS.photo)} />
+                  <div className="l-skeleton absolute rounded-full" style={box(LAYERS.header)} />
+                  <div className="l-skeleton absolute rounded-3xl" style={box(LAYERS.text)} />
+                  <div className="l-skeleton absolute rounded-3xl" style={box(LAYERS.photo)} />
                 </div>
                 <div data-layer="header" className="absolute" style={box(LAYERS.header)}>
                   <Image
@@ -287,7 +289,7 @@ export function BuildSequence() {
                 {/* Pedido de mudança (passo 3) */}
                 <div
                   data-chat
-                  className="absolute bottom-[6%] left-[6%] hidden w-[46%] flex-col gap-2 lg:flex lg:motion-reduce:hidden"
+                  className="absolute right-[7%] bottom-[6%] hidden w-[40%] flex-col gap-2 lg:flex lg:motion-reduce:hidden"
                 >
                   <p className="self-start rounded-2xl rounded-bl-md bg-[#071b33] px-4 py-2.5 text-[13px] leading-snug text-white shadow-xl">
                     Add our Saturday hours, 9 to 2.

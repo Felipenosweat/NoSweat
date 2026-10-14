@@ -214,6 +214,27 @@
   mix-blend-mode: color;
 }
 
+/* ---------- Toque demonstrado no botão de ligar (Features) ---------- */
+@keyframes l-tap {
+  0% {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+/* Sem movimento: o anel fica parado, só marcando o lugar. */
+.l-tap {
+  opacity: 0.8;
+}
+
 /* ---------- Movimento permitido ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .l-mesh {
@@ -241,6 +262,9 @@
   }
   .l-skeleton {
     animation: l-shimmer 1.4s linear infinite;
+  }
+  .l-tap {
+    animation: l-tap 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
   }
 }
 

@@ -6,6 +6,7 @@ import { resolveHeroImage } from "@/server/images";
 import { reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
+import type { Composition } from "@nosweat/schema";
 
 // A IA de verdade leva alguns segundos (às vezes dezenas) para montar o site.
 export const maxDuration = 300;
@@ -29,7 +30,9 @@ export async function POST(request: Request): Promise<Response> {
 
     let spec: SiteSpec;
     try {
-      spec = await generateSiteSpec(input.data.brief, generator);
+      spec = await generateSiteSpec(input.data.brief, generator, {
+        recent: await recentCompositions(actor),
+      });
     } catch (error) {
       console.error("[api] site generation failed", error);
       return errorResponse(
@@ -48,4 +51,20 @@ export async function POST(request: Request): Promise<Response> {
     );
     return jsonResponse(GenerateSiteResponse, { siteId: site.id, spec: site.spec }, 201);
   });
+}
+
+/**
+ * Composições dos 3 sites mais recentes da conta: o plano de design evita repetir o mesmo
+ * layout para a mesma pessoa. Visitantes (sem conta) e falhas de leitura = lista vazia.
+ */
+async function recentCompositions(actor: Actor): Promise<Composition[]> {
+  if (actor.kind !== "user") return [];
+  try {
+    const sites = await getSiteStore().list(actor.user.id);
+    return sites
+      .slice(0, 3)
+      .flatMap((site) => (site.spec.design ? [site.spec.design.composition] : []));
+  } catch {
+    return [];
+  }
 }

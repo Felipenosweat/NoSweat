@@ -4,10 +4,16 @@ import { PromptForm } from "@/components/marketing/PromptForm";
 import { container } from "@/components/marketing/styles";
 
 // Hero da V5: título gigante entrando linha a linha (CSS puro, aparece antes do JS), campo real
-// e, atrás/ao lado, uma parede 3D de sites de verdade gerados pela No Sweat (as 4 fixtures,
+// e, atrás/ao lado, uma parede 3D de sites de verdade gerados pela No Sweat (as 5 fixtures,
 // negócios fictícios) rolando em colunas. A parede é decorativa (aria-hidden).
 
-const SLUGS = ["joes-plumbing", "sparkle-cleaning", "glow-salon", "rosas-kitchen"] as const;
+const SLUGS = [
+  "joes-plumbing",
+  "sparkle-cleaning",
+  "glow-salon",
+  "rosas-kitchen",
+  "hale-ortiz",
+] as const;
 const PARTS = ["top", "services", "contact", "faq"] as const;
 
 type Tile = { src: string; phone: boolean };
@@ -16,7 +22,7 @@ type Tile = { src: string; phone: boolean };
 function columns(): Tile[][] {
   const desktop: Tile[] = SLUGS.flatMap((_slug, s) =>
     PARTS.map((part, p) => ({
-      src: `/landing/wall/${SLUGS[(s + p) % 4]}-${part}.webp`,
+      src: `/landing/wall/${SLUGS[(s + p) % SLUGS.length]}-${part}.webp`,
       phone: false,
     })),
   );

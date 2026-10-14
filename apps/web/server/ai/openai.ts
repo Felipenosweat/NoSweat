@@ -1,4 +1,5 @@
 import type { AiEditResult, SiteSpec } from "@nosweat/schema";
+import type { DesignPlan } from "../design";
 import type { SiteGenerator } from "./types";
 
 /**
@@ -8,7 +9,7 @@ import type { SiteGenerator } from "./types";
  * - Não chamar a API aqui ainda: o projeto precisa rodar sem chaves.
  */
 export class OpenAIGenerator implements SiteGenerator {
-  async generateSite(_brief: string): Promise<SiteSpec> {
+  async generateSite(_brief: string, _plan?: DesignPlan): Promise<SiteSpec> {
     throw new Error("OpenAIGenerator is not implemented yet. Use AI_PROVIDER=mock.");
   }
 

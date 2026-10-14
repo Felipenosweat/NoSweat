@@ -309,35 +309,52 @@ export function Footer({
   );
 }
 
-/** Barra fixa no rodapé do celular: ligar é a ação nº 1 de quem procura prestador de serviço. */
+/**
+ * Barra fixa no rodapé do celular. `emphasis` segue a ação principal do plano de design:
+ * "call" (padrão, prestador de serviço) divide a barra entre ligar e o botão do texto;
+ * "cta" deixa o botão do texto (ex.: "Book Your Appointment") largo e o telefone num botão
+ * quadrado com nome acessível, para o texto nunca ser cortado.
+ */
 export function MobileCallBar({
   phone,
   ctaLabel,
   ctaHref = "#contact",
+  emphasis = "call",
 }: {
   phone?: string;
   ctaLabel: string;
   ctaHref?: string;
+  emphasis?: "call" | "cta";
 }) {
+  const ctaWide = emphasis === "cta" || !phone;
   return (
     <nav
       aria-label="Quick contact"
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden"
+      className={`fixed inset-x-0 bottom-0 z-40 grid gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden ${
+        ctaWide ? (phone ? "grid-cols-[3rem_1fr]" : "grid-cols-1") : "grid-cols-2"
+      }`}
     >
-      {phone ? (
-        <a
-          href={telHref(phone)}
-          className="flex items-center justify-center gap-2 rounded-xl bg-ns-secondary py-3 font-semibold text-ns-on-secondary"
-        >
-          <PhoneIcon className="size-5" />
-          Call now
-        </a>
-      ) : (
-        <span />
-      )}
+      {phone &&
+        (ctaWide ? (
+          <a
+            href={telHref(phone)}
+            aria-label={`Call ${phone}`}
+            className="flex min-h-12 items-center justify-center rounded-xl bg-ns-secondary text-ns-on-secondary"
+          >
+            <PhoneIcon className="size-5" />
+          </a>
+        ) : (
+          <a
+            href={telHref(phone)}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ns-secondary px-2 font-semibold text-ns-on-secondary"
+          >
+            <PhoneIcon className="size-5 shrink-0" />
+            Call now
+          </a>
+        ))}
       <a
         href={ctaHref}
-        className="flex items-center justify-center rounded-xl bg-ns-primary py-3 text-center font-semibold text-ns-on-primary"
+        className="flex min-h-12 items-center justify-center rounded-xl bg-ns-primary px-3 text-center leading-tight font-semibold text-balance text-ns-on-primary"
       >
         {ctaLabel}
       </a>
