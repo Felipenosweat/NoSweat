@@ -1,7 +1,9 @@
 import type { DnsRecord, DomainResponse } from "@nosweat/schema";
 import type { SiteRecord } from "../store";
+import { detectDnsProvider } from "./provider";
 import { getVercelConfig, isDomainConfigured } from "./vercel";
 
+export { detectDnsProvider } from "./provider";
 export { addDomain, getVercelConfig, removeDomain, VercelDomainError } from "./vercel";
 
 /** Registros que o cliente cria no painel onde comprou o domínio (Hostinger, GoDaddy, etc.). */
@@ -18,7 +20,10 @@ export async function getDomainState(site: SiteRecord): Promise<DomainResponse> 
   if (!domain) return { siteId: site.id, domain: null, status: null, records: DNS_RECORDS };
 
   const vercel = getVercelConfig();
-  if (!vercel) return { siteId: site.id, domain, status: "manual", records: DNS_RECORDS };
+  if (!vercel) {
+    const dnsProvider = await detectDnsProvider(domain);
+    return { siteId: site.id, domain, status: "manual", records: DNS_RECORDS, dnsProvider };
+  }
 
   const configured = await isDomainConfigured(vercel, domain).catch(() => false);
   return {
@@ -26,6 +31,8 @@ export async function getDomainState(site: SiteRecord): Promise<DomainResponse> 
     domain,
     status: configured ? "active" : "pending",
     records: DNS_RECORDS,
+    // Só quem ainda vai mexer no DNS precisa do passo a passo.
+    dnsProvider: configured ? null : await detectDnsProvider(domain),
   };
 }
 

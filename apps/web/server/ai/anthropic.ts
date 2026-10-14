@@ -4,8 +4,14 @@ import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { SITE_EDIT_SYSTEM_PROMPT, SITE_GENERATION_SYSTEM_PROMPT } from "./prompt";
 import type { SiteGenerator } from "./types";
 
-/** Modelo padrão; dá para trocar com ANTHROPIC_MODEL sem mexer no código. */
-const DEFAULT_MODEL = "claude-opus-5-5";
+/**
+ * Modelos padrão (trocáveis por variável, sem mexer no código):
+ * - criar o site (primeira impressão do cliente, textos de marketing): Sonnet, ANTHROPIC_MODEL;
+ * - editar com IA (quase toda chamada, mudança pequena no mesmo JSON): Haiku, ~20× mais barato,
+ *   ANTHROPIC_EDIT_MODEL.
+ */
+const DEFAULT_MODEL = "claude-sonnet-5-5";
+const DEFAULT_EDIT_MODEL = "claude-haiku-5-5";
 
 /**
  * Gera o SiteSpec com o Claude (Anthropic), usando saída estruturada: a resposta já vem no
@@ -17,6 +23,7 @@ export class AnthropicGenerator implements SiteGenerator {
     // no máximo 1 nova tentativa: sem isso o SDK espera até 10 min e tenta 3 vezes.
     private readonly client: Anthropic = new Anthropic({ timeout: 240_000, maxRetries: 1 }),
     private readonly model: string = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL,
+    private readonly editModel: string = process.env.ANTHROPIC_EDIT_MODEL || DEFAULT_EDIT_MODEL,
   ) {}
 
   async generateSite(brief: string): Promise<SiteSpec> {
@@ -53,7 +60,7 @@ export class AnthropicGenerator implements SiteGenerator {
 
   async editSite(spec: SiteSpec, instruction: string): Promise<AiEditResult> {
     const response = await this.client.messages.parse({
-      model: this.model,
+      model: this.editModel,
       max_tokens: 16000,
       output_config: {
         effort: "medium",

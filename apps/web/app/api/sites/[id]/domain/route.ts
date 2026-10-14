@@ -2,6 +2,7 @@ import { ConnectDomainRequest, DomainResponse } from "@nosweat/schema";
 import { customDomainBlocked } from "@/server/billing";
 import {
   addDomain,
+  detectDnsProvider,
   isReservedDomain,
   getDomainState,
   getVercelConfig,
@@ -65,6 +66,7 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
         domain,
         status: "unverified",
         records: [verificationRecord(ownerId, domain)],
+        dnsProvider: await detectDnsProvider(domain),
       });
     }
 

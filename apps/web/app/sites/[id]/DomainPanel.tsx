@@ -3,6 +3,7 @@
 import { ApiError, DomainResponse, type DomainResponse as DomainState } from "@nosweat/schema";
 import { useState, type FormEvent } from "react";
 import { StatusBadge, focusRing, secondaryButton, textButton } from "@/components/DashboardUi";
+import { DnsGuidePanel } from "./DnsGuidePanel";
 
 const STATUS: Record<
   NonNullable<DomainState["status"]>,
@@ -200,6 +201,15 @@ export function DomainPanel({
               : "Delete any other A record for “@” and CNAME record for “www” first. Keep your email (MX) records as they are."}
           </p>
         </div>
+      )}
+      {state.status !== "active" && (
+        // `key`: domínio novo = começa de novo com a empresa descoberta para ele.
+        <DnsGuidePanel
+          key={state.domain}
+          domain={state.domain}
+          records={state.records}
+          detected={state.dnsProvider ?? null}
+        />
       )}
       <p aria-live="polite" className="sr-only">
         {copied ? "Copied" : ""}

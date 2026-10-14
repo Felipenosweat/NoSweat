@@ -93,10 +93,16 @@ describe("AnthropicGenerator.editSite", () => {
       typeof AnthropicGenerator
     >[0];
 
-    const result = await new AnthropicGenerator(client).editSite(spec, "Mon–Sat 8 to 6");
+    const result = await new AnthropicGenerator(client, "gen-model", "edit-model").editSite(
+      spec,
+      "Mon–Sat 8 to 6",
+    );
     expect(result.summary).toBe("Updated your hours.");
     expect(result.spec.business.hours).toEqual([{ days: "Mon–Sat", time: "8 AM – 6 PM" }]);
-    const [request] = parse.mock.calls[0] as unknown as [{ messages: { content: string }[] }];
+    const [request] = parse.mock.calls[0] as unknown as [
+      { model: string; messages: { content: string }[] },
+    ];
+    expect(request.model).toBe("edit-model");
     expect(request.messages[0]?.content).toContain("<request>");
   });
 });
