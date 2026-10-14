@@ -3,6 +3,7 @@ export { COMPOSITION_GUIDE, DESIGN_LIBRARY, type DesignReference } from "./libra
 export {
   applyDesignPlan,
   designBriefForPrompt,
+  fitDesignToPhoto,
   planDesign,
   referenceScore,
   type DesignPlan,

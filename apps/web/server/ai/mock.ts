@@ -6,8 +6,21 @@ import type { SiteGenerator } from "./types";
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
   { slug: "joes-plumbing", keywords: ["plumb"] },
   { slug: "glow-salon", keywords: ["salon", "beauty", "hair"] },
-  { slug: "rosas-kitchen", keywords: ["restaurant", "food", "cafe"] },
   { slug: "sparkle-cleaning", keywords: ["clean", "maid", "janitor"] },
+  {
+    slug: "rosas-kitchen",
+    keywords: [
+      "restaurant",
+      "food",
+      "cafe",
+      "taqueria",
+      "taco",
+      "bakery",
+      "pizza",
+      "kitchen",
+      "diner",
+    ],
+  },
   { slug: "hale-ortiz", keywords: ["bookkeep", "tax", "accountant", "cpa"] },
 ];
 

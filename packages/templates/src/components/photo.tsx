@@ -22,6 +22,7 @@ export function Photo({ image, loading = "lazy", className = "", sizes }: PhotoP
       decoding="async"
       sizes={sizes}
       className={className}
+      style={image.focus ? { objectPosition: image.focus } : undefined}
     />
   );
 }

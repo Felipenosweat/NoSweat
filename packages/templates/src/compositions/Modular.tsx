@@ -170,7 +170,7 @@ function BentoHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> 
   if (hours || where) {
     bottom.push(
       <div className={`${tile} h-full bg-ns-primary text-ns-on-primary`}>
-        <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
+        <p className="text-xs font-semibold tracking-[0.18em] uppercase">
           {hours ? "Hours" : business.serviceArea ? "Serving" : "Based in"}
         </p>
         {hours ? (
@@ -187,9 +187,7 @@ function BentoHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> 
         href={phoneHref}
         className={`${tile} group flex h-full flex-col justify-between gap-6 bg-ns-text text-ns-background transition hover:brightness-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary motion-reduce:transition-none`}
       >
-        <span className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
-          Call us
-        </span>
+        <span className="text-xs font-semibold tracking-[0.18em] uppercase">Call us</span>
         <span className="flex items-center justify-between gap-4">
           <span className="text-2xl font-semibold whitespace-nowrap">{business.phone}</span>
           <PhoneIcon className="size-6 shrink-0 transition-transform duration-200 group-hover:rotate-12 motion-reduce:transition-none" />

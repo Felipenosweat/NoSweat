@@ -35,7 +35,7 @@ export function ImmersiveComposition({
   const model = buildModel(spec);
   const first = spec.sections[0];
   // O cabeçalho só fica transparente por cima da foto quando o site começa por ela.
-  const overlay = first?.type === "hero" && Boolean(first.image);
+  const overlay = first?.type === "hero";
 
   const render = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -172,14 +172,17 @@ function ImmersiveHero({
   padTop: boolean;
 }) {
   if (!data.image) {
+    // Sem foto: palco escuro, texto centralizado e uma linha na cor da marca. Diferente de
+    // propósito do bloco colorido da composição tipográfica.
     return (
-      <section className="bg-ns-primary text-ns-on-primary">
-        <Wrap wide className="py-20 @5xl:py-32">
-          <h1 className={heroTitle}>{data.title}</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed opacity-90 @min-[40rem]:text-xl">
+      <section className="bg-ns-text text-ns-background">
+        <Wrap wide className={`text-center ${padTop ? "pt-36 pb-24" : "py-24"} @5xl:py-36`}>
+          <span aria-hidden="true" className="mx-auto mb-10 block h-1 w-16 bg-ns-primary" />
+          <h1 className={`${heroTitle} mx-auto`}>{data.title}</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed opacity-85 @min-[40rem]:text-xl">
             {data.subtitle}
           </p>
-          <HeroActions model={model} surface="primary" className="mt-10" />
+          <HeroActions model={model} surface="dark" className="mt-10 @min-[40rem]:justify-center" />
         </Wrap>
       </section>
     );

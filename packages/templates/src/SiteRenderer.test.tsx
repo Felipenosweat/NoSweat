@@ -205,7 +205,7 @@ describe("compositions", () => {
   const plumbing = fixtures["joes-plumbing"];
 
   it("keeps the old layout for sites without a design plan", () => {
-    const { design: _design, ...old } = plumbing;
+    const old: SiteSpec = { ...plumbing, design: undefined };
     const html = renderToStaticMarkup(<SiteRenderer spec={old} />);
     expect(html).toContain('data-composition="service-led"');
   });

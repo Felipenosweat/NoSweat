@@ -1,4 +1,4 @@
-import type { Composition, PrimaryAction, SiteDesign } from "@nosweat/schema";
+import type { Composition, PrimaryAction, SiteDesign, SiteSpec } from "@nosweat/schema";
 import { COMPOSITION_GUIDE, DESIGN_LIBRARY, type DesignReference } from "./library";
 import { readBrief, type BriefSignals, type Industry, type Tone } from "./signals";
 
@@ -60,6 +60,9 @@ const BY_ACTION: Record<PrimaryAction, Partial<Record<Composition, number>>> = {
   browse: { editorial: 1, immersive: 1 },
 };
 
+/** Peso do voto de cada ponto de combinação de uma referência (máx. 4 pontos = 0,4). */
+const REFERENCE_WEIGHT = 0.1;
+
 /** Tom do estilo escolhido pelo dono vale o dobro das palavras da descrição: é a vontade dele. */
 const STYLE_WEIGHT = 2;
 
@@ -93,6 +96,11 @@ export type PlanOptions = {
   library?: DesignReference[];
   /** Composições dos últimos sites desta conta: a mesma pessoa não recebe o mesmo layout de novo. */
   recent?: Composition[];
+  /**
+   * Há banco de fotos configurado? Sem ele o topo não terá foto, e a composição imersiva (que
+   * vive da foto) sai da disputa. Padrão: true.
+   */
+  photos?: boolean;
 };
 
 export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan {
@@ -106,20 +114,29 @@ export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan
   }
   add(scores, BY_ACTION[signals.primaryAction]);
 
-  // Referências: as que combinam com o pedido votam nas composições onde funcionam.
+  // Referências: as que combinam com o pedido votam nas composições onde funcionam, com peso
+  // pequeno (desempatam; não passam por cima do estilo que o dono escolheu). O papel principal
+  // delas é ensinar a IA COMO executar a composição (princípios no pedido).
   const ranked = library
     .map((ref) => ({ ref, score: referenceScore(ref, signals) }))
     .filter((r) => r.score >= 2)
     .sort((a, b) => b.score - a.score || a.ref.id.localeCompare(b.ref.id));
   for (const { ref, score } of ranked.slice(0, 4)) {
     for (const composition of ref.compositions) {
-      scores.set(composition, (scores.get(composition) ?? 0) + Math.min(score, 4) * 0.25);
+      scores.set(
+        composition,
+        (scores.get(composition) ?? 0) + Math.min(score, 4) * REFERENCE_WEIGHT,
+      );
     }
   }
 
   // Variedade sem sorteio: o que esta pessoa recebeu nos últimos sites perde um pouco.
   for (const composition of options.recent ?? []) {
     scores.set(composition, (scores.get(composition) ?? 0) - 1.25);
+  }
+
+  if (options.photos === false) {
+    scores.set("immersive", (scores.get("immersive") ?? 0) - 5);
   }
 
   const tiebreak = stableHash(brief);
@@ -163,6 +180,7 @@ export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan
       ? `references: ${references.map((r) => r.id).join(", ")}`
       : "no matching reference, used the general rules",
     options.recent?.length ? `avoided repeating: ${options.recent.join(", ")}` : null,
+    options.photos === false ? "no photo source, photo-first layouts left out" : null,
   ]
     .filter(Boolean)
     .join("; ")
@@ -226,5 +244,25 @@ export function applyDesignPlan(design: SiteDesign | undefined, plan: DesignPlan
       composition === plan.composition
         ? plan.rationale
         : `${plan.rationale}; the AI picked the alternative`.slice(0, 400),
+  };
+}
+
+/**
+ * Depois da busca da foto do topo: se a composição imersiva ficou sem foto (busca falhou ou
+ * nada encontrado), troca pela alternativa do plano (ou "editorial"), que funciona sem foto.
+ */
+export function fitDesignToPhoto(spec: SiteSpec): SiteSpec {
+  if (spec.design?.composition !== "immersive") return spec;
+  const hero = spec.sections.find((s) => s.type === "hero");
+  if (hero?.type === "hero" && hero.image) return spec;
+  return {
+    ...spec,
+    design: {
+      ...spec.design,
+      composition: "editorial",
+      rationale: `${spec.design.rationale ?? ""}; no hero photo found, switched to editorial`
+        .replace(/^; /, "")
+        .slice(0, 400),
+    },
   };
 }

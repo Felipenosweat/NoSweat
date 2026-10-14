@@ -158,7 +158,7 @@ function TypographicHero({ model, data }: { model: SiteModel; data: SectionOf<"h
             <h1 className="font-ns-heading text-[length:clamp(3rem,9.5cqw,8.25rem)] leading-[0.92] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
               {data.title}
             </h1>
-            <p className="mt-8 max-w-2xl text-lg leading-relaxed opacity-90 @min-[40rem]:text-xl">
+            <p className="mt-8 max-w-2xl text-lg leading-relaxed @min-[40rem]:text-xl">
               {data.subtitle}
             </p>
             <HeroActions model={model} surface="primary" radius="rounded-md" className="mt-10" />
@@ -167,7 +167,7 @@ function TypographicHero({ model, data }: { model: SiteModel; data: SectionOf<"h
             <dl className="grid content-start gap-6 border-t border-ns-on-primary/30 pt-8 @min-[40rem]:grid-cols-2 @5xl:col-span-3 @5xl:grid-cols-1 @5xl:border-t-0 @5xl:border-l @5xl:pt-2 @5xl:pl-8">
               {glance.map((item) => (
                 <div key={item.label}>
-                  <dt className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">
+                  <dt className="text-xs font-semibold tracking-[0.18em] uppercase">
                     {item.label}
                   </dt>
                   <dd className="mt-2 font-medium">{item.content}</dd>

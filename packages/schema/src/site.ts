@@ -26,6 +26,14 @@ export const SiteImage = z.object({
   credit: z.object({ name: z.string().max(80), url: HttpsUrl }).optional(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  /**
+   * Ponto de interesse da foto ("x% y%", como o object-position do CSS), para os cortes de
+   * cada composição não cortarem o que importa. Sem ele, o centro.
+   */
+  focus: z
+    .string()
+    .regex(/^\d{1,3}% \d{1,3}%$/)
+    .optional(),
 });
 export type SiteImage = z.infer<typeof SiteImage>;
 

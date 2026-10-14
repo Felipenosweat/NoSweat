@@ -149,7 +149,7 @@ export function HoursTable({
     <dl className={`space-y-1.5 ${className}`}>
       {hours.map((row, index) => (
         <div key={index} className="flex justify-between gap-6">
-          <dt className="opacity-75">{row.days}</dt>
+          <dt>{row.days}</dt>
           <dd className="text-right font-medium tabular-nums">{row.time}</dd>
         </div>
       ))}
@@ -184,7 +184,7 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
     <dl className={`grid gap-6 ${className}`}>
       {business.phone && phoneHref && (
         <div>
-          <dt className="text-sm opacity-70">Phone</dt>
+          <dt className="text-sm font-medium">Phone</dt>
           <dd>
             <a href={phoneHref} className={`text-2xl font-semibold whitespace-nowrap ${focus}`}>
               {business.phone}
@@ -194,7 +194,7 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
       )}
       {business.email && (
         <div>
-          <dt className="text-sm opacity-70">Email</dt>
+          <dt className="text-sm font-medium">Email</dt>
           <dd>
             <a
               href={`mailto:${business.email}`}
@@ -207,7 +207,7 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
       )}
       {where && (
         <div>
-          <dt className="text-sm opacity-70">
+          <dt className="text-sm font-medium">
             {business.serviceArea ? "Service area" : "Location"}
           </dt>
           <dd className="text-lg font-medium">{where}</dd>
@@ -215,7 +215,7 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
       )}
       {hours && (
         <div>
-          <dt className="text-sm opacity-70">Hours</dt>
+          <dt className="text-sm font-medium">Hours</dt>
           <dd className="mt-1">
             <HoursTable hours={hours} />
           </dd>

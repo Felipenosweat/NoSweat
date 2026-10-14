@@ -51,4 +51,73 @@ export const COMPOSITION_GUIDE: Record<Composition, { summary: string; copy: str
  * Resumos aprovados das referências (preenchidos a partir de docs/design/references.json).
  * Lista vazia ou sem combinação = o plano usa só as regras gerais (fallback).
  */
-export const DESIGN_LIBRARY: DesignReference[] = [];
+export const DESIGN_LIBRARY: DesignReference[] = [
+  {
+    // docs/design/studies/haven-constructions.md
+    id: "haven-constructions",
+    name: "Type-led builder site",
+    approved: true,
+    compositions: ["typographic", "service-led"],
+    fits: {
+      businesses: ["trades", "professional", "creative"],
+      tones: ["bold", "premium", "calm", "minimal"],
+      goals: ["quote", "call", "browse"],
+    },
+    principles: [
+      "When there is no strong photo, let the headline fill the width in one type family and build hierarchy with size alone.",
+      "Put quiet, real facts (city, hours, owner-stated details) at the edges of the hero instead of badges.",
+      "Never trade away a real headline or a visible phone number for the sake of the type.",
+    ],
+  },
+  {
+    // docs/design/studies/tandjung-sari.md
+    id: "tandjung-sari",
+    name: "Photo-led hospitality site",
+    approved: true,
+    compositions: ["immersive", "editorial"],
+    fits: {
+      businesses: ["food", "wellness"],
+      tones: ["warm", "refined", "calm", "premium"],
+      goals: ["book", "visit"],
+    },
+    principles: [
+      "Keep one or two main actions visible at all times: top right on a computer, a fixed bar on a phone.",
+      "Let the photo set the mood; keep backgrounds warm and muted, with a refined display face and a quiet body face.",
+      "Tell the story only with facts the owner gave (place, dates, dishes); atmosphere never hides the actions.",
+    ],
+  },
+  {
+    // docs/design/studies/kummerlein.md
+    id: "kummerlein",
+    name: "Plain-language professional practice",
+    approved: true,
+    compositions: ["editorial", "modular", "service-led"],
+    fits: {
+      businesses: ["professional", "wellness"],
+      tones: ["refined", "warm", "calm"],
+      goals: ["book", "call", "quote"],
+    },
+    principles: [
+      "The headline is a plain-language promise to the client, not a list of services.",
+      "Use one strong accent color sparingly: the main action and a few labels.",
+      "On a phone, stack the photo and the text; never run long text over a photo.",
+    ],
+  },
+  {
+    // docs/design/studies/lpas.md
+    id: "lpas",
+    name: "Service blocks in color fields",
+    approved: true,
+    compositions: ["modular", "editorial"],
+    fits: {
+      businesses: ["cleaning", "trades", "creative", "professional"],
+      tones: ["calm", "refined", "premium", "warm"],
+      goals: ["quote", "browse", "call"],
+    },
+    principles: [
+      "Give each service its own calm block with its name and one honest line; no icons or borders needed.",
+      "Blocks sit side by side on a computer and stack cleanly on a phone.",
+      "Show proof with plain facts the owner gave (where, since when) instead of adjectives.",
+    ],
+  },
+];

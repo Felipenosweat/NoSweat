@@ -7,7 +7,7 @@ import { AnthropicGenerator, generationRequest } from "../ai/anthropic";
 import { generateSiteSpec } from "../ai/index";
 import { MockGenerator } from "../ai/mock";
 import { DESIGN_LIBRARY, type DesignReference } from "./library";
-import { applyDesignPlan, designBriefForPrompt, planDesign } from "./plan";
+import { applyDesignPlan, designBriefForPrompt, fitDesignToPhoto, planDesign } from "./plan";
 import { readBrief } from "./signals";
 
 const mock = () => new MockGenerator({ delayMs: 0 });
@@ -49,6 +49,23 @@ describe("planDesign", () => {
     const brief = exampleBriefs["joes-plumbing"];
     const first = planDesign(brief).composition;
     expect(planDesign(brief, { recent: [first, first] }).composition).not.toBe(first);
+  });
+
+  it("leaves the photo-first layout out when there is no photo source", () => {
+    const brief = exampleBriefs["rosas-kitchen"];
+    expect(planDesign(brief).composition).toBe("immersive");
+    const plan = planDesign(brief, { photos: false });
+    expect(plan.composition).not.toBe("immersive");
+    expect(plan.allowed).not.toContain("immersive");
+  });
+
+  it("switches an immersive site without a hero photo to editorial", () => {
+    const spec = structuredClone(fixtures["rosas-kitchen"]) as SiteSpec;
+    expect(fitDesignToPhoto(spec).design?.composition).toBe("immersive");
+    spec.sections = spec.sections.map((s) => (s.type === "hero" ? { ...s, image: undefined } : s));
+    const fitted = fitDesignToPhoto(spec);
+    expect(fitted.design?.composition).toBe("editorial");
+    expect(fitted.design?.rationale).toContain("no hero photo");
   });
 
   it("is deterministic (same brief, same plan)", () => {

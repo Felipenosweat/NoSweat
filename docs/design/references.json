@@ -1,0 +1,374 @@
+[
+  {
+    "id": "haven-constructions",
+    "name": "Haven Constructions",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Search snippets of Awwwards category listings: 'Haven Constructions — Dobre Agency — Honorable Mention, Jun 10, 2026'. No /sites/ page found; Awwwards unreachable. Live footer credits 'jtb', not Dobre Agency, so the live site <-> award match is unconfirmed.",
+    "siteUrl": "https://www.havenconstructions.com.au/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["typographic", "service-led"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": ["builder", "renovation", "trades", "architect", "interior-designer"],
+      "tones": ["bold", "premium", "calm"],
+      "goals": ["quote", "portfolio", "call"]
+    },
+    "observed": {
+      "layout": "Full-width wordmark hero (no photo, no h1); fixed centered 'Menu' pill; scroll-pinned image that grows between the words 'Bespoke' and 'Luxury'; 'label | paragraph' two-column value rows with square bullets; featured projects with name + year; full brand-blue footer repeating the wordmark.",
+      "typography": "Single family 'fontSuisse' at weight 400 only (verified via computed style + document.fonts). Body 14.7/22px; h2 47.5px with -1.9px tracking desktop, 28.7px mobile. Hierarchy by size only.",
+      "imagery": "Close-up material textures (stone, timber light), finished interiors, one candid photo of builder with clients.",
+      "interaction": "Lenis smooth scroll detected; scroll-pinned image scale sequence observed across sequential screenshots; unchanged under prefers-reduced-motion emulation. Hover not tested.",
+      "responsive": "Mobile first screen is mostly empty with the wordmark low; ~7 swipes before content. Phone/email links exist only inside the menu."
+    },
+    "whyItWorks": "Extreme scale contrast in one typeface gives a premium, confident identity with almost no assets; factual captions (project, year, EST., city) act as quiet proof.",
+    "principles": [
+      "When photos are weak, set the business name as a full-width typographic hero.",
+      "One family, hierarchy by size and spacing only.",
+      "Place quiet facts (established year, city) at hero corners.",
+      "Use 'label | paragraph' rows for values or process.",
+      "Caption work with name + year/location, no adjectives.",
+      "End with a full brand-colour footer block."
+    ],
+    "doNotCarryOver": [
+      "Missing h1 and hidden phone (conversion/SEO loss).",
+      "Multi-viewport pinned intros, especially on mobile.",
+      "Ignoring reduced motion.",
+      "Their wordmark, blue, logo, photos."
+    ],
+    "study": "studies/haven-constructions.md"
+  },
+  {
+    "id": "tandjung-sari",
+    "name": "Tandjung Sari",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Search snippets of Awwwards Hotel/Restaurant, Hotel booking and Indonesia listings: 'Tandjung Sari — Fleava — Honorable Mention, Aug 05, 2026'. Live footer says 'Website by Fleava.' (consistent). Award page itself not loaded.",
+    "siteUrl": "https://www.tandjungsarihotel.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["immersive-photography", "warm-hospitality", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["restaurant", "cafe", "hotel", "bed-and-breakfast", "spa", "event-venue"],
+      "tones": ["warm", "refined", "calm", "premium"],
+      "goals": ["book", "visit", "browse-menu"]
+    },
+    "observed": {
+      "layout": "Desktop: horizontal track driven by the wheel (document height = viewport). Story told as full-bleed photo -> huge year '1960's,' -> archival photos on a thin timeline with diamond markers -> long-form serif text. Left rail with seal, menu, vertical WHATSAPP link; BOOK ROOM / BOOK TABLE fixed top-right.",
+      "typography": "Verified via computed style: headings 'Adobe Caslon Pro' 400 (h2 up to 176px), body/UI Helvetica 15/24px, Optima also loaded; small uppercase letter-spaced labels.",
+      "imagery": "Own archival sepia photos plus warm colour photos of the property and dining; no stock look.",
+      "interaction": "Full-screen cookie modal must be accepted; horizontal wheel-driven scroll observed; on mobile, scrolling past a chapter's end continued into the next page (title changed to Bungalows). Reduced-motion emulation did not change the horizontal scroll. Hover not tested.",
+      "responsive": "Mobile switches to vertical stacking and moves the two actions into a fixed bottom bar (BOOK ROOM | BOOK TABLE). Full-screen terracotta serif menu with grouped sub-items. No tel: link anywhere checked."
+    },
+    "whyItWorks": "Calm, atmospheric content paired with permanently visible booking actions; the business's own history and photos are the proof, with no invented claims.",
+    "principles": [
+      "Keep 1-2 primary actions always visible: top-right on desktop, fixed bottom bar on mobile.",
+      "Derive a warm palette from the photography (cream ground, brown-grey text, one earthy accent).",
+      "Serif display + neutral sans body for hospitality.",
+      "Turn owner-supplied dates into a short timeline 'story' section.",
+      "Group menu/offers by occasion with a 'View menu' link."
+    ],
+    "doNotCarryOver": [
+      "Horizontal scroll-jacking.",
+      "Full-screen cookie wall.",
+      "No click-to-call.",
+      "Low-contrast small captions on cream.",
+      "Their seal, photos, Balinese motifs."
+    ],
+    "study": "studies/tandjung-sari.md"
+  },
+  {
+    "id": "kummerlein",
+    "name": "Kümmerlein Lawyers & Notaries",
+    "awwwardsUrl": "https://www.awwwards.com/sites/kummerlein-lawyers-notaries",
+    "awwwardsEvidence": "WebSearch result title 'Kümmerlein Lawyers & Notaries - Awwwards Honorable Mention' at that URL; snippet date Jun 18, 2025. Page not loaded (Awwwards unreachable). No agency credit on live site.",
+    "siteUrl": "https://www.kuemmerlein.de/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["editorial", "service-led", "modular"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": [
+        "lawyer",
+        "accountant",
+        "financial-advisor",
+        "consultant",
+        "clinic",
+        "insurance-agent"
+      ],
+      "tones": ["refined", "warm", "calm"],
+      "goals": ["book", "call", "quote"]
+    },
+    "observed": {
+      "layout": "Rounded inset photo-card hero with serif headline overlay and a lime circle in a corner notch; floating pill nav; pinned 'why us' sequence with large circles; two pill entry points (practice areas / industries); one soft CTA 'Unverbindlich kennenlernen'; partner chips; insights carousel; full-lime footer.",
+      "typography": "Verified via computed style + document.fonts: 'Rhymes Display Light' (h1 74px / mobile 30px), 'ABC Monument Grotesk Regular' text 18/21px, 'ABC Monument Grotesk Semi-Mono' 12px uppercase labels, Monument Bold for some h3.",
+      "imagery": "Candid, shallow-depth photos of lawyers with clients in warm light.",
+      "interaction": "Cookie banner accepted; pinned scroll sequence (circle labels change per step) observed across screenshots, unchanged under reduced-motion emulation; fixed nav overlapped headline text in one frame. Hover not tested.",
+      "responsive": "Mobile splits hero into photo card + separate lime text card; footer link groups become accordions. No tel: link or form on homepage."
+    },
+    "whyItWorks": "A traditionally cold category made approachable with real people, plain-language promise, one cheerful accent and a small repeatable system of rounded cards and pills.",
+    "principles": [
+      "Professional services: candid photo of people + plain-language promise as h1.",
+      "One saturated accent for CTAs, highlights and footer; everything else neutral.",
+      "On mobile, put the hero image and the hero text in separate stacked cards.",
+      "Team as compact chips (photo, name, role) only with owner-supplied people.",
+      "One soft CTA wording repeated consistently.",
+      "Collapse footer link groups into accordions on mobile."
+    ],
+    "doNotCarryOver": [
+      "Floating nav overlapping content.",
+      "No phone/address on homepage.",
+      "Text hidden behind pinned scroll steps.",
+      "Their logo, lime/sage palette as-is, commercial fonts."
+    ],
+    "study": "studies/kummerlein.md"
+  },
+  {
+    "id": "lpas",
+    "name": "LPAS Architecture + Interiors",
+    "awwwardsUrl": "https://www.awwwards.com/sites/lpas",
+    "awwwardsEvidence": "Conflicting search snippets: architecture/portfolio listings say 'LPAS — Site of the Day, Oct 10, 2026'; a summary of /sites/lpas says 'Nominee, Aug 30, 2026'. Not resolved (page unreachable). Live footer: 'Website by Naam'.",
+    "siteUrl": "https://lpas.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["modular", "editorial", "service-led"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": [
+        "architect",
+        "contractor",
+        "cleaning-company",
+        "landscaper",
+        "agency",
+        "multi-service-trades"
+      ],
+      "tones": ["calm", "refined", "premium"],
+      "goals": ["quote", "portfolio", "call"]
+    },
+    "observed": {
+      "layout": "Preloader, full-bleed photo hero with h1 revealed on scroll; five focus areas as horizontal panels (photo + flat muted colour block + title + tagline + 'n / 5' + '+' + sub-links); manifesto; work grid with category tabs showing counts; Instagram updates; dark footer with one block per office (address, tel, email).",
+      "typography": "Verified: single family Aeonik, weights 400 and 600 loaded; h1 75px / line-height 1.0 (46px mobile); body 14px.",
+      "imagery": "Professional architectural photography, daylight, people small in frame.",
+      "interaction": "Horizontal panel scroll on desktop observed; still active under reduced-motion emulation. Mobile menu: full-screen dark grouped menu whose items appear with a staggered blur/fade (caught mid-transition in a still). Hover not tested.",
+      "responsive": "Panels become vertically stacked colour cards with thumbnails on mobile; footer office blocks stack; tel: links present."
+    },
+    "whyItWorks": "Colour fields separate services without icons or borders; each service card carries photo, promise and sub-services, and the system degrades cleanly to stacked cards on phones.",
+    "principles": [
+      "Render services as colour-field cards: photo + name + one-liner + 2-4 sub-items.",
+      "Derive a set of muted tints from the theme to colour each service.",
+      "Desktop row of tall cards; mobile vertical stack — no horizontal scroll.",
+      "Footer location block per address: city, street, tel, email.",
+      "Show filter tabs with counts only when data has categories."
+    ],
+    "doNotCarryOver": [
+      "Horizontal scroll-jacking and preloader.",
+      "Hero message only on a darkened full-bleed photo on small screens.",
+      "Their colours, photos, logo, Aeonik."
+    ],
+    "study": "studies/lpas.md"
+  },
+  {
+    "id": "attio",
+    "name": "Attio",
+    "awwwardsUrl": "https://www.awwwards.com/sites/attio",
+    "awwwardsEvidence": "WebSearch result title 'Attio - Awwwards Honorable Mention', snippet date Apr 6, 2021. The live site inspected is the 2026 redesign, NOT the awarded version.",
+    "siteUrl": "https://attio.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "partial",
+    "approved": true,
+    "directions": ["modular", "product-demo"],
+    "useFor": ["marketing-site"],
+    "fits": {
+      "businesses": ["saas"],
+      "tones": ["calm", "refined"],
+      "goals": ["signup", "demo"]
+    },
+    "observed": {
+      "layout": "Centered h1 + 2 CTAs + large framed app window; bordered logo grid; long chapters with a sticky left index (active item dark) and per-chapter demos built from real UI pieces (record table, email draft, workflow graph, kanban); serif testimonial; changelog cards; dark mega-footer.",
+      "typography": "Verified: interDisplay (h1 64px/600, -1.28px), inter (UI/body), tiemposText (quotes), JetBrains Mono.",
+      "imagery": "No photos in the demo areas; rendered product UI at readable size.",
+      "interaction": "Sticky header (116px); sticky chapter index updates with scroll (seen across frames). Cookie card not dismissed and covers part of frames. Hover not tested.",
+      "responsive": "Side index becomes a horizontal tab strip that advances with scroll; hero CTA becomes email field + 'Send me a demo'."
+    },
+    "whyItWorks": "Every benefit sentence is paired with the actual product object it refers to, and the sticky index makes a long page navigable.",
+    "principles": [
+      "Demonstrate the product with real UI components, one per benefit sentence.",
+      "One chapter per step of the user flow.",
+      "Sticky step index on desktop becomes horizontal step tabs on mobile.",
+      "Two-tone headings: dark claim + grey explanation in one sentence."
+    ],
+    "doNotCarryOver": [
+      "Enterprise density (logo walls, mega-footer).",
+      "Overlays that cover the demo on mobile.",
+      "Their UI, fonts or copy."
+    ],
+    "study": "studies/attio.md"
+  },
+  {
+    "id": "animejs",
+    "name": "Anime.js",
+    "awwwardsUrl": "https://www.awwwards.com/sites/anime-js",
+    "awwwardsEvidence": "WebSearch result title 'Anime.js - Awwwards SOTD' (score 7.62 in snippet); date not established; current live version may differ from the awarded one.",
+    "siteUrl": "https://animejs.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": false,
+    "directions": ["product-demo", "typographic"],
+    "useFor": ["marketing-site"],
+    "fits": {
+      "businesses": ["saas", "developer-tool"],
+      "tones": ["bold", "playful"],
+      "goals": ["signup", "docs"]
+    },
+    "observed": {
+      "layout": "Dark page; hero headline left with a scroll-scrubbed animated dial demo; each feature (Intuitive API, Scroll Observer, Staggering, SVG toolset…) is a pinned full-screen live demo with a short title, one line of text, a code snippet panel and a timeline scrubber; link grid to docs; footer with sponsor and newsletter.",
+      "typography": "Verified: DIN (headings/body) and a monospace 'Mono' for code/buttons.",
+      "imagery": "No photos; all visuals are live canvas/DOM demos (6 canvas elements).",
+      "interaction": "Demo state changes with scroll position (seen across sequential frames). Not tested for hover/reduced motion beyond a first-frame screenshot.",
+      "responsive": "Mobile keeps pinned demos with title above and a scrubber below."
+    },
+    "whyItWorks": "The feature section is the product running: each claim is immediately proved by a live demo plus the exact snippet that produced it.",
+    "principles": [
+      "Pair each feature claim with the artifact that proves it (live demo + the input that produced it).",
+      "Keep feature copy to a title and one line beside the demo."
+    ],
+    "doNotCarryOver": [
+      "Dark techy aesthetic and heavy pinned sections — wrong for busy small-business owners.",
+      "Scroll-scrubbed demos as the only way to see content."
+    ],
+    "study": null
+  },
+  {
+    "id": "cafe-binocle",
+    "name": "Café Binocle",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Only a WebSearch summary of the Awwwards Cafe listing: 'Café Binocle received [an Honorable Mention] on Apr 21, 2026'. No /sites/ page found; not verified.",
+    "siteUrl": "https://www.cafebinocle.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "partial",
+    "approved": false,
+    "directions": ["playful", "warm-hospitality", "typographic"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["cafe", "bakery", "coffee-roaster", "ice-cream-shop", "food-truck"],
+      "tones": ["playful", "warm", "bold"],
+      "goals": ["visit", "shop"]
+    },
+    "observed": {
+      "layout": "Shopify site; warm yellow ground; condensed display wordmark with a rotating circular badge; bordered rows/cards with round arrow buttons; big uppercase manifesto paragraph; 'Où nous trouver?' (where to find us) pill with map pin; contact card with newsletter + 'Écrivez-nous'.",
+      "typography": "Verified: 'caprasimo' (display h2 76px), 'FoundersGroteskRegular/Medium' (text), 'Cimo', Assistant (theme UI). No h1 on homepage.",
+      "imagery": "Flat retro illustrations (globe, flowers, smiling face), product shots of coffee bags and merch.",
+      "interaction": "GSAP present; only light inspection (screenshots while scrolling).",
+      "responsive": "Stacks cleanly; persistent header with Abonnement pill, cart, Menu circle."
+    },
+    "whyItWorks": "A strong, cheerful personality from a tiny kit: one ground colour, one display face, outlined cards and simple illustrations.",
+    "principles": [
+      "For playful food businesses: one bold ground colour + one chunky display face + outlined cards.",
+      "Make 'where to find us' a prominent, distinct element."
+    ],
+    "doNotCarryOver": [
+      "Missing h1, no phone.",
+      "All-caps long paragraph (hard to read).",
+      "Their illustrations and brand."
+    ],
+    "study": null
+  },
+  {
+    "id": "campos-coffee",
+    "name": "Campos Coffee",
+    "awwwardsUrl": "https://www.awwwards.com/sites/campos-coffee",
+    "awwwardsEvidence": "WebSearch result title 'Campos Coffee - Awwwards Honorable Mention', snippet date Oct 11, 2016. The current live site is certainly a later version.",
+    "siteUrl": "https://www.camposcoffee.com/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "partial",
+    "approved": false,
+    "directions": ["warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["cafe", "coffee-roaster"],
+      "tones": ["warm"],
+      "goals": ["shop", "visit"]
+    },
+    "observed": {
+      "layout": "Promo hero (competition), 'Meet the Campos Locals', cafe finder; most frames obscured by a cookie panel plus a '10% off' newsletter modal that stayed open while scrolling.",
+      "typography": "Verified: 'Adieu' (uppercase h1 28px), Archivo (text/UI), Radio Canada Big loaded.",
+      "imagery": "Cafe and barista photography, kraft/cream tones.",
+      "interaction": "Two overlapping overlays on load; page content largely hidden in screenshots.",
+      "responsive": "Not meaningfully assessed because of overlays."
+    },
+    "whyItWorks": "Not assessable from this inspection; kept as a cautionary example.",
+    "principles": ["Never stack a cookie banner and a marketing modal on first load."],
+    "doNotCarryOver": ["Interstitial newsletter modal on first visit."],
+    "study": null
+  },
+  {
+    "id": "quay-restaurant",
+    "name": "Quay Restaurant",
+    "awwwardsUrl": "https://www.awwwards.com/sites/quay-restaurant",
+    "awwwardsEvidence": "WebSearch result title 'Quay Restaurant - Awwwards SOTD' (snippet score 6.97/10; date not shown, likely older).",
+    "siteUrl": "https://www.quay.com.au/",
+    "inspectedOn": "2026-10-14",
+    "inspection": ["text-only"],
+    "evidenceStatus": "unavailable",
+    "approved": false,
+    "directions": ["warm-hospitality", "immersive-photography"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["restaurant"],
+      "tones": ["premium", "refined"],
+      "goals": ["book"]
+    },
+    "observed": {
+      "layout": "Not observed — live site returned HTTP 403 to the proxied browser twice.",
+      "typography": "not verified",
+      "imagery": "not observed",
+      "interaction": "not observed",
+      "responsive": "not observed"
+    },
+    "whyItWorks": "Unknown; not inspected.",
+    "principles": [],
+    "doNotCarryOver": [],
+    "study": null
+  },
+  {
+    "id": "crav-burgers",
+    "name": "Crav Burgers (concept)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/crav-burgers",
+    "awwwardsEvidence": "Search snippets: 'Crav Burgers — Anyflow — Site of the Day, Jun 13, 2026' (also HM May 20, 2026); described as 'a playful burger ordering concept'. Live URL not established.",
+    "siteUrl": null,
+    "inspectedOn": "2026-10-14",
+    "inspection": ["text-only"],
+    "evidenceStatus": "text-only",
+    "approved": false,
+    "directions": ["playful", "warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["restaurant", "fast-casual"],
+      "tones": ["playful", "bold"],
+      "goals": ["order", "browse-menu"]
+    },
+    "observed": {
+      "layout": "not observed",
+      "typography": "not verified",
+      "imagery": "not observed",
+      "interaction": "not observed (Awwwards lists loader, page transition, footer animation, 404 as highlighted elements)",
+      "responsive": "not observed"
+    },
+    "whyItWorks": "Unknown; concept site, not a real business.",
+    "principles": [],
+    "doNotCarryOver": ["Concept-only: no real menu/hours/location constraints."],
+    "study": null
+  }
+]

@@ -194,16 +194,16 @@ function AskDemo() {
       >
         <p className="flex items-center gap-2 text-xs font-semibold">
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900">Draft</span>
-          <span className="text-slate-500">Preview · Sparkle &amp; Co. Cleaning</span>
+          <span className="text-slate-600">Preview · Sparkle &amp; Co. Cleaning</span>
         </p>
-        <p className="mt-5 text-sm text-slate-500 line-through decoration-slate-400">{before}</p>
+        <p className="mt-5 text-sm text-slate-600 line-through decoration-slate-400">{before}</p>
         <p
           className="mt-2 text-[clamp(1.6rem,3vw,2.3rem)] leading-[1.08] font-bold"
           style={{ fontFamily: "var(--ns-font-fresh-heading)" }}
         >
           <span className="bg-[linear-gradient(transparent_62%,#fde68a_62%)]">{after}</span>
         </p>
-        <p className="mt-4 text-sm leading-relaxed text-slate-600">
+        <p className="mt-4 text-sm leading-relaxed text-slate-700">
           Weekly, biweekly and one-time house cleaning across Worcester County.
         </p>
         <p
@@ -256,7 +256,7 @@ function DomainDemo() {
           </p>
         </div>
         <table className="mt-3 w-full text-left font-mono text-[13px] text-slate-300">
-          <thead className="text-slate-500">
+          <thead className="text-slate-400">
             <tr>
               <th className="pb-1 font-normal">Type</th>
               <th className="pb-1 font-normal">Name</th>
@@ -301,11 +301,11 @@ function SearchDemo() {
       </div>
       <dl className="grid gap-2 rounded-2xl border border-white/10 bg-[#0b1a33] p-4 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-xs text-slate-500">Page title</dt>
+          <dt className="text-xs text-slate-400">Page title</dt>
           <dd className="mt-0.5 text-slate-200">Business name and city</dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Description</dt>
+          <dt className="text-xs text-slate-400">Description</dt>
           <dd className="mt-0.5 text-slate-200">The summary from the top of the site</dd>
         </div>
       </dl>

@@ -37,13 +37,16 @@ export const sparkleCleaning: SiteSpec = {
       ctaLabel: "Get a Cleaning Quote",
       imageQuery: "cleaning crew bright kitchen",
       image: {
-        url: "/photos/crew.webp",
-        alt: "A cleaning crew mopping and wiping a bright kitchen",
-        source: "pexels",
+        url: "/photos/cleaner.webp",
+        alt: "A person organizing a kitchen cabinet",
+        source: "unsplash",
         kind: "scene",
-        credit: { name: "Tima Miroshnichenko", url: "https://www.pexels.com/photo/6197108/" },
+        credit: {
+          name: "American Cleaning Institute",
+          url: "https://unsplash.com/photos/j4rDt1pF6ug",
+        },
         width: 2400,
-        height: 1600,
+        height: 1601,
       },
     },
     {
