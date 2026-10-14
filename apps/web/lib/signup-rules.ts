@@ -200,3 +200,54 @@ export function latestBirthDate(today: Date = new Date()): string {
   );
   return d.toISOString().slice(0, 10);
 }
+
+/** Campos do formulário de cadastro, na ordem da tela (o foco vai para o primeiro com erro). */
+export const SIGN_UP_FIELDS = [
+  "firstName",
+  "lastName",
+  "birthDate",
+  "email",
+  "emailConfirm",
+  "password",
+  "passwordConfirm",
+  "terms",
+] as const;
+export type SignUpField = (typeof SIGN_UP_FIELDS)[number];
+
+export type SignUpDraft = {
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  email: string;
+  emailConfirm: string;
+  password: string;
+  passwordConfirm: string;
+  marketing: boolean;
+  terms: boolean;
+};
+
+/**
+ * Erros de cada campo para a tela, com as MESMAS regras do servidor (signUpSchema +
+ * confirmationErrors). Campo vazio ganha uma mensagem própria, mais clara que a da regra.
+ */
+export function signUpFieldErrors(
+  draft: SignUpDraft,
+  today?: () => Date,
+): Partial<Record<SignUpField, string>> {
+  const errors: Partial<Record<SignUpField, string>> = confirmationErrors(draft);
+  const parsed = signUpSchema(today).safeParse(draft);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0];
+      if (typeof field === "string" && (SIGN_UP_FIELDS as readonly string[]).includes(field)) {
+        errors[field as SignUpField] ??= issue.message;
+      }
+    }
+  }
+  if (!draft.birthDate) errors.birthDate = "Please enter your date of birth.";
+  if (!draft.email.trim()) errors.email = "Please enter your email address.";
+  if (!draft.emailConfirm.trim()) errors.emailConfirm = "Please type your email again.";
+  if (!draft.password) errors.password = "Please create a password.";
+  if (!draft.passwordConfirm) errors.passwordConfirm = "Please type your password again.";
+  return errors;
+}

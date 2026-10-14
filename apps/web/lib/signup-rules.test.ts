@@ -6,6 +6,7 @@ import {
   latestBirthDate,
   passwordProblems,
   profileMetadata,
+  signUpFieldErrors,
   signUpSchema,
 } from "./signup-rules";
 
@@ -116,5 +117,55 @@ describe("perfil", () => {
 
   it("data máxima do campo = 18 anos atrás", () => {
     expect(latestBirthDate(TODAY)).toBe("2008-10-13");
+  });
+});
+
+describe("signUpFieldErrors (validação na tela)", () => {
+  it("cadastro válido não tem erro", () => {
+    expect(signUpFieldErrors(valid, today)).toEqual({});
+  });
+
+  it("campos vazios ganham mensagens claras, uma por campo", () => {
+    const errors = signUpFieldErrors(
+      {
+        firstName: "",
+        lastName: "",
+        birthDate: "",
+        email: "",
+        emailConfirm: "",
+        password: "",
+        passwordConfirm: "",
+        marketing: false,
+        terms: false,
+      },
+      today,
+    );
+    expect(errors).toEqual({
+      firstName: "Please enter your first name.",
+      lastName: "Please enter your last name.",
+      birthDate: "Please enter your date of birth.",
+      email: "Please enter your email address.",
+      emailConfirm: "Please type your email again.",
+      password: "Please create a password.",
+      passwordConfirm: "Please type your password again.",
+      terms: "Please agree to the Terms of Service and Privacy Policy.",
+    });
+  });
+
+  it("usa as mesmas regras do servidor (idade, senha, confirmações)", () => {
+    const errors = signUpFieldErrors(
+      {
+        ...valid,
+        birthDate: "2010-01-01",
+        password: "weak",
+        passwordConfirm: "other",
+        emailConfirm: "x@example.com",
+      },
+      today,
+    );
+    expect(errors.birthDate).toMatch(/at least 18/);
+    expect(errors.password).toMatch(/^Your password needs:/);
+    expect(errors.passwordConfirm).toBe("The passwords don’t match.");
+    expect(errors.emailConfirm).toBe("The emails don’t match.");
   });
 });

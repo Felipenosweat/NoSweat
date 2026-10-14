@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthForm } from "@/app/(auth)/login/AuthForm";
+import { SignUpForm } from "@/app/(auth)/login/SignUpForm";
 import { Logo } from "@/components/Logo";
 import { CheckIcon } from "@/components/marketing/icons";
 import { safeNextPath } from "@/server/auth/config";
@@ -70,88 +72,115 @@ export async function AuthPage({
   const initialError =
     params.error && Object.hasOwn(ERRORS, params.error) ? ERRORS[params.error] : undefined;
 
+  const heading = (
+    <>
+      <h1 className="font-display text-[2rem] leading-tight font-bold tracking-[-0.03em] text-ink sm:text-[2.5rem]">
+        {copy.heading}
+      </h1>
+      <p className="mt-3 text-base leading-relaxed text-slate-600">{copy.intro}</p>
+      <ProviderButtons providers={providers} next={next} from={mode} />
+    </>
+  );
+
   return (
-    <div className="min-h-dvh bg-white lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
-      <main className="flex min-h-dvh flex-col px-5 py-6 sm:px-10 sm:py-8">
-        <header>
+    <div className="min-h-dvh bg-white lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+      <main id="main" className="flex min-h-dvh flex-col px-5 pt-5 pb-12 sm:px-10 sm:pt-8">
+        <header className="flex items-center justify-between gap-4">
           <Logo />
+          {/* Quem já tem conta acha o login logo no topo, sem rolar o formulário. */}
+          <p className="text-sm text-slate-600">
+            <span className="hidden sm:inline">{copy.switchPrompt} </span>
+            <Link
+              href={withNext(copy.switchPath, next)}
+              className={`inline-flex min-h-11 items-center px-1 ${textLink}`}
+            >
+              {copy.switchLabel}
+            </Link>
+          </p>
         </header>
 
-        <div className="flex flex-1 items-center justify-center py-12 sm:py-16">
-          <div className="w-full max-w-[400px]">
-            <h1 className="font-display text-[2rem] leading-tight font-bold tracking-[-0.03em] text-ink sm:text-[2.5rem]">
-              {copy.heading}
-            </h1>
-            <p className="mt-3 text-base leading-relaxed text-slate-600">{copy.intro}</p>
-
-            <ProviderButtons providers={providers} next={next} from={mode} />
-
-            <div className={hasProviders ? "mt-6" : "mt-8"}>
-              <AuthForm mode={mode} next={next} initialError={initialError} />
-            </div>
-
-            {/* O formulário de e-mail tem a própria caixa de aceite; este aviso é para o login social. */}
-            {mode === "signup" && hasProviders && (
-              <p className="mt-4 text-sm leading-relaxed text-slate-500">
-                Signing up with Google or Apple? You’ll add your name and date of birth next. By
-                continuing, you agree to our{" "}
-                <Link href="/terms" className={textLink}>
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className={textLink}>
-                  Privacy Policy
-                </Link>
-                .
-              </p>
+        <div className="flex flex-1 justify-center pt-10 sm:pt-14 lg:items-center lg:py-14">
+          <div className="ns-enter w-full max-w-[440px]">
+            {mode === "signup" ? (
+              <SignUpForm
+                next={next}
+                initialError={initialError}
+                intro={heading}
+                after={
+                  // O formulário de e-mail tem a própria caixa de aceite; este aviso é do login social.
+                  hasProviders && (
+                    <p className="mt-6 text-sm leading-relaxed text-slate-500">
+                      Signing up with Google or Apple? You’ll add your name and date of birth next.
+                      By continuing, you agree to our{" "}
+                      <Link href="/terms" className={textLink}>
+                        Terms of Service
+                      </Link>{" "}
+                      and{" "}
+                      <Link href="/privacy" className={textLink}>
+                        Privacy Policy
+                      </Link>
+                      .
+                    </p>
+                  )
+                }
+              />
+            ) : (
+              <>
+                {heading}
+                <div className={hasProviders ? "mt-6" : "mt-8"}>
+                  <AuthForm next={next} initialError={initialError} />
+                </div>
+              </>
             )}
-
-            <p className="mt-8 border-t border-slate-200 pt-6 text-center text-[0.9375rem] text-slate-600">
-              {copy.switchPrompt}{" "}
-              <Link
-                href={withNext(copy.switchPath, next)}
-                className={`inline-flex min-h-11 items-center ${textLink}`}
-              >
-                {copy.switchLabel}
-              </Link>
-            </p>
           </div>
         </div>
       </main>
 
-      <aside
-        aria-label="How NoSweat works"
-        className="sticky top-0 hidden h-dvh flex-col justify-between overflow-hidden bg-ink px-12 py-12 text-white lg:flex xl:px-16"
-      >
-        <p className="text-xs font-semibold tracking-[0.18em] text-accent uppercase">
-          How it works
-        </p>
-
-        <div className="max-w-[30rem]">
-          <p className="font-display text-[2rem] leading-[1.15] font-bold tracking-[-0.03em] xl:text-[2.5rem]">
-            A website for your business, without the sweat.
+      {/* O fundo escuro ocupa a coluna inteira; o conteúdo fica parado enquanto o formulário rola. */}
+      <div className="hidden bg-[#040d1c] lg:block">
+        <aside
+          aria-label="How No Sweat works"
+          className="ns-enter-slow sticky top-0 flex h-dvh flex-col gap-8 overflow-hidden px-12 py-12 text-white xl:px-16"
+        >
+          <p className="max-w-[12ch] font-[family-name:var(--ns-font-landing-display)] text-[clamp(3rem,4.6vw,4.5rem)] leading-[0.9] font-extrabold tracking-[-0.01em]">
+            Your business, online by <span className="text-[#4da3ff]">lunch.</span>
           </p>
-          <ol className="mt-10 space-y-5">
+
+          {/* Um site de exemplo de verdade (negócio fictício), sem moldura de enfeite. */}
+          <figure className="flex min-h-0 max-w-[34rem] flex-1 flex-col">
+            <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
+              <Image
+                src="/landing/wall/joes-plumbing-top.webp"
+                alt="Example website for Joe’s Plumbing, showing a headline, a call button and services."
+                fill
+                sizes="(min-width: 1280px) 34rem, 40vw"
+                className="object-cover object-top"
+                priority
+              />
+            </div>
+            <figcaption className="mt-3 text-[13px] text-slate-400">
+              Example site for a fictional business, built with No Sweat.
+            </figcaption>
+          </figure>
+
+          <ol className="max-w-[34rem] space-y-3 border-t border-white/10 pt-6">
             {STEPS.map((step, index) => (
-              <li key={step} className="flex gap-4">
-                <span
-                  aria-hidden="true"
-                  className="font-display text-sm font-bold text-slate-400 tabular-nums"
-                >
-                  {String(index + 1).padStart(2, "0")}
+              <li key={step} className="flex gap-4 text-[15px] leading-relaxed">
+                <span aria-hidden="true" className="w-5 font-semibold text-[#4da3ff] tabular-nums">
+                  {index + 1}
                 </span>
-                <span className="leading-relaxed text-slate-200">{step}</span>
+                <span className="text-slate-300">{step}</span>
               </li>
             ))}
           </ol>
-        </div>
 
-        <p className="flex max-w-[30rem] items-start gap-3 border-t border-white/10 pt-6 text-sm leading-relaxed text-slate-300">
-          <CheckIcon className="mt-0.5 size-4 shrink-0 text-accent" />
-          Started a site before making an account? It moves into your account when you sign in on
-          this device.
-        </p>
-      </aside>
+          <p className="flex max-w-[34rem] items-start gap-3 text-sm leading-relaxed text-slate-400">
+            <CheckIcon className="mt-0.5 size-4 shrink-0 text-[#4da3ff]" />
+            Started a site before making an account? It moves into your account when you sign in on
+            this device.
+          </p>
+        </aside>
+      </div>
     </div>
   );
 }
