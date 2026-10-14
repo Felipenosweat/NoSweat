@@ -1,12 +1,27 @@
 import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import type { AiEditResult, SiteSpec } from "@nosweat/schema";
+import type { DesignPlan } from "../design";
 import type { SiteGenerator } from "./types";
 
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
   { slug: "joes-plumbing", keywords: ["plumb"] },
   { slug: "glow-salon", keywords: ["salon", "beauty", "hair"] },
-  { slug: "rosas-kitchen", keywords: ["restaurant", "food", "cafe"] },
   { slug: "sparkle-cleaning", keywords: ["clean", "maid", "janitor"] },
+  {
+    slug: "rosas-kitchen",
+    keywords: [
+      "restaurant",
+      "food",
+      "cafe",
+      "taqueria",
+      "taco",
+      "bakery",
+      "pizza",
+      "kitchen",
+      "diner",
+    ],
+  },
+  { slug: "hale-ortiz", keywords: ["bookkeep", "tax", "accountant", "cpa"] },
 ];
 
 const DEFAULT_SLUG: FixtureSlug = "joes-plumbing";
@@ -17,6 +32,7 @@ const IMAGE_QUERIES: Partial<Record<FixtureSlug, string>> = {
   "glow-salon": "bright modern hair salon interior",
   "rosas-kitchen": "mexican tacos table warm light",
   "sparkle-cleaning": "cleaning crew bright kitchen",
+  "hale-ortiz": "tidy desk ledger notebook",
 };
 
 /** Escolhe a fixture por palavra-chave no brief (sem acento e sem diferenciar maiúsculas). */
@@ -32,7 +48,7 @@ export function selectFixture(brief: string): FixtureSlug {
 export class MockGenerator implements SiteGenerator {
   constructor(private readonly options: { delayMs?: number } = {}) {}
 
-  async generateSite(brief: string): Promise<SiteSpec> {
+  async generateSite(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
     const slug = selectFixture(brief);
@@ -44,6 +60,8 @@ export class MockGenerator implements SiteGenerator {
         ? { ...section, imageQuery }
         : section,
     );
+    // Como a IA de verdade: segue a composição do plano (o texto é o da fixture).
+    if (plan) spec.design = { composition: plan.composition };
     return spec;
   }
 

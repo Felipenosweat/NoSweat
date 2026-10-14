@@ -26,6 +26,14 @@ export const SiteImage = z.object({
   credit: z.object({ name: z.string().max(80), url: HttpsUrl }).optional(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  /**
+   * Ponto de interesse da foto ("x% y%", como o object-position do CSS), para os cortes de
+   * cada composição não cortarem o que importa. Sem ele, o centro.
+   */
+  focus: z
+    .string()
+    .regex(/^\d{1,3}% \d{1,3}%$/)
+    .optional(),
 });
 export type SiteImage = z.infer<typeof SiteImage>;
 
@@ -98,9 +106,51 @@ export type SectionType = Section["type"];
 /** Dados de uma seção específica, ex.: `SectionOf<"hero">`. */
 export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
 
+/**
+ * Composição da página: a ARQUITETURA do site (topo, ritmo das seções, navegação), separada do
+ * ramo do negócio (`template`). Dois negócios do mesmo ramo podem ter composições diferentes.
+ * - "service-led": telefone sempre à vista, topo em duas colunas com foto, cards de serviço.
+ * - "editorial": título enorme de revista, foto larga com legenda, serviços numerados em lista.
+ * - "immersive": foto de ponta a ponta no topo, texto sobre a foto, faixa de informações.
+ * - "typographic": tipografia como imagem principal, bloco de cor, índice de serviços.
+ * - "modular": grade de blocos (bento) com título, foto, horário e contato lado a lado.
+ */
+export const Composition = z.enum([
+  "service-led",
+  "editorial",
+  "immersive",
+  "typographic",
+  "modular",
+]);
+export type Composition = z.infer<typeof Composition>;
+
+/** Ação principal que o site quer do visitante. */
+export const PrimaryAction = z.enum(["call", "quote", "book", "visit", "browse"]);
+export type PrimaryAction = z.infer<typeof PrimaryAction>;
+
+/**
+ * Direção de arte do site, escolhida ANTES de escrever o texto (ver apps/web/server/design).
+ * Sem `design` (sites antigos), o site usa a composição "service-led", como sempre foi.
+ */
+export const SiteDesign = z.object({
+  composition: Composition,
+  primaryAction: PrimaryAction.optional(),
+  /** Respiro entre as seções. */
+  density: z.enum(["airy", "balanced", "compact"]).optional(),
+  /** Tratamento das fotos: natural, com um véu da cor da marca ou em preto e branco. */
+  imageTreatment: z.enum(["natural", "tinted", "monochrome"]).optional(),
+  /** Ids das referências de design usadas no plano (docs/design/references.json), para depuração. */
+  references: z.array(z.string().max(60)).max(4).optional(),
+  /** Por que esta direção foi escolhida (curto, para depuração). */
+  rationale: z.string().max(400).optional(),
+});
+export type SiteDesign = z.infer<typeof SiteDesign>;
+
 export const SiteSpec = z.object({
   version: z.literal(1),
   template: TemplateId,
+  /** Direção de arte (opcional). Ver SiteDesign. */
+  design: SiteDesign.optional(),
   business: z.object({
     name: z.string(),
     phone: z.string().optional(),

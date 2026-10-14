@@ -46,3 +46,31 @@
     font-family: var(--ns-font-heading);
   }
 }
+
+@layer base {
+  /* Respiro vertical das seções (plano de design: design.density). cqw = largura do site. */
+  .ns-site {
+    --ns-section-y: clamp(4rem, 9cqw, 6.5rem);
+  }
+  .ns-site[data-density="airy"] {
+    --ns-section-y: clamp(4.5rem, 11cqw, 8.5rem);
+  }
+  .ns-site[data-density="compact"] {
+    --ns-section-y: clamp(3rem, 6cqw, 4.5rem);
+  }
+}
+
+/* Tratamento das fotos (design.imageTreatment). Só nas molduras .ns-photo das composições. */
+.ns-site[data-image="monochrome"] .ns-photo img {
+  filter: grayscale(1) contrast(1.08);
+}
+
+.ns-site[data-image="tinted"] .ns-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--ns-primary);
+  mix-blend-mode: multiply;
+  opacity: 0.22;
+}

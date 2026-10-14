@@ -1,5 +1,5 @@
 import type { SiteSpec } from "@nosweat/schema";
-import { TEMPLATES } from "./templates";
+import { COMPOSITIONS, compositionOf } from "./compositions";
 import { themeToCssVars } from "./theme";
 
 export type SiteRendererProps = {
@@ -20,7 +20,8 @@ export type SiteRendererProps = {
  * O wrapper também é um "size container" (@container): o layout responde à largura que o site
  * realmente tem (ex.: a prévia do editor), não à largura da janela. Na página publicada o
  * wrapper ocupa a tela toda, então o resultado é o mesmo das variantes sm:/md:/lg:.
- * `data-font` deixa o CSS ajustar detalhes por par de fontes (ver styles.css).
+ * `data-font` deixa o CSS ajustar detalhes por par de fontes; `data-density` e `data-image` aplicam
+ * o respiro entre seções e o tratamento das fotos do plano de design (ver styles.css).
  */
 export function SiteRenderer({
   spec,
@@ -28,13 +29,19 @@ export function SiteRenderer({
   editable = false,
   selectedSection = null,
 }: SiteRendererProps) {
-  const Template = TEMPLATES[spec.template];
+  // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
+  // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
+  const composition = compositionOf(spec);
+  const Template = COMPOSITIONS[composition];
   return (
     <div
       className="ns-site @container min-h-screen bg-ns-background font-ns-body text-ns-text antialiased"
       style={themeToCssVars(spec.theme)}
       data-template={spec.template}
       data-font={spec.theme.font}
+      data-composition={composition}
+      data-density={spec.design?.density ?? "balanced"}
+      data-image={spec.design?.imageTreatment ?? "natural"}
       data-editable={editable ? "" : undefined}
     >
       {editable ? (

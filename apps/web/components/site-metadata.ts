@@ -1,3 +1,4 @@
+import type { SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
 import { liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
@@ -9,15 +10,28 @@ export const freeSiteUrl = (slug: string) => `https://nosweatfd.com/s/${slug}`;
 export const customDomainUrl = (domain: string) => `https://${domain}`;
 
 /**
+ * Título e descrição que o Google e outros buscadores leem (as tags <title> e description).
+ * A mesma regra aparece na demonstração da landing (components/landing/Features.tsx).
+ */
+export function searchSnippet(spec: SiteSpec): { title: string; description?: string } {
+  const { business, sections } = spec;
+  const hero = sections.find((s) => s.type === "hero");
+  const where = [business.city, business.state].filter(Boolean).join(", ");
+  return {
+    title: where ? `${business.name} | ${where}` : business.name,
+    description: hero?.type === "hero" ? hero.subtitle : undefined,
+  };
+}
+
+/**
  * Título, descrição e cartões de compartilhamento de um site publicado
  * (usado em /s/<slug> e no domínio do cliente). `url` = endereço onde a página está sendo vista.
  */
 export function siteMetadata(site: SiteRecord, url: string): Metadata {
-  const { business, sections } = liveSpec(site);
-  const hero = sections.find((s) => s.type === "hero");
-  const where = [business.city, business.state].filter(Boolean).join(", ");
-  const title = where ? `${business.name} | ${where}` : business.name;
-  const description = hero?.type === "hero" ? hero.subtitle : undefined;
+  const spec = liveSpec(site);
+  const { business } = spec;
+  const { title, description } = searchSnippet(spec);
+  const hero = spec.sections.find((s) => s.type === "hero");
   const image = hero?.type === "hero" ? hero.image : undefined;
   const images = image
     ? [{ url: image.url, alt: image.alt, width: image.width, height: image.height }]

@@ -3,12 +3,20 @@ import type { SiteSpec } from "@nosweat/schema";
 export const joesPlumbing: SiteSpec = {
   version: 1,
   template: "home-services",
+  design: {
+    composition: "service-led",
+    primaryAction: "call",
+    density: "compact",
+    imageTreatment: "natural",
+  },
   business: {
     name: "Joe's Plumbing",
     phone: "(512) 555-0142",
     email: "service@joesplumbing.example.com",
     city: "Austin",
     state: "TX",
+    serviceArea: "Austin, Round Rock, Cedar Park and nearby",
+    highlights: ["Licensed & insured", "Free estimates", "24/7 emergency service"],
   },
   theme: {
     primary: "#1D4ED8",
@@ -22,7 +30,7 @@ export const joesPlumbing: SiteSpec = {
       type: "hero",
       title: "Austin's Trusted Plumbers, On Time Every Time",
       subtitle:
-        "From leaky faucets to full repipes, Joe's Plumbing has kept Central Texas homes running for over 20 years. Upfront pricing, same-day service, and work we stand behind.",
+        "From leaky faucets to full repipes, licensed plumbers with a flat price up front. Emergencies answered 24/7 across the Austin metro.",
       ctaLabel: "Get a Free Estimate",
       imageQuery: "plumber tools water heater",
       image: {
@@ -83,7 +91,7 @@ export const joesPlumbing: SiteSpec = {
         },
         {
           q: "Are you licensed and insured?",
-          a: "Yes. Every Joe's Plumbing technician is licensed by the Texas State Board of Plumbing Examiners, and we're fully insured.",
+          a: "Yes. Joe's Plumbing is licensed and insured.",
         },
         {
           q: "Do you offer emergency service?",

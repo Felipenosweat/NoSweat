@@ -22,6 +22,7 @@ apps/web/                       Next.js (App Router): telas + API
                                 /dashboard, /create, /sites → back
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
+  server/design/                direção de arte antes da IA (plano + biblioteca de referências) → back
   server/admin.ts               quem é admin (tabela platform_admins) e lista de clientes → back
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
@@ -34,10 +35,12 @@ packages/templates/             @nosweat/templates: <SiteRenderer />, seções e
 
 Como as peças se ligam:
 
-- `POST /api/sites/generate` → `server/ai` gera o SiteSpec → `SiteSpec.parse` → `server/store`.
+- `POST /api/sites/generate` → `server/design` escolhe a direção de arte → `server/ai` gera o
+  SiteSpec para ela → `SiteSpec.parse` → `server/store`.
 - Páginas (server components) leem dados direto de `@/server/store`; componentes de cliente
   chamam a API com `fetch` e validam a resposta com os schemas de `@nosweat/schema`.
-- `<SiteRenderer spec />` escolhe o template por `spec.template`. As cores do tema viram
+- `<SiteRenderer spec />` escolhe a composição por `spec.design.composition` (sem `design`:
+  "service-led", o layout antigo); `spec.template` só muda o vocabulário das seções. As cores do tema viram
   variáveis CSS `--ns-*`; os componentes só usam as utilidades `ns-*` do Tailwind
   (`bg-ns-primary`, `text-ns-muted`...), nunca cores fixas.
 - Login: Supabase Auth (e-mail e senha). Toda rota e página de site chama `getCurrentUser()`
@@ -101,6 +104,16 @@ Como as peças se ligam:
   fatos, ver regra 8).
 - Referência de experiência: lovable.dev (entrada imersiva, criar antes de pedir cadastro,
   cadastro em página própria com termos e privacidade).
+
+## Design
+
+- Antes de qualquer trabalho visual, leia `docs/design/README.md` (índice da pesquisa, princípios,
+  anti-padrões e regras de geração) e os estudos em `docs/design/studies/` que se aplicam.
+- Preferência do dono: composição própria para cada site (não só cor, fonte e foto trocadas) e
+  demonstrações de produto com interface de verdade, bem acabadas. Nada de wireframe ou "cara de IA".
+- Sites gerados: `SiteSpec.design` (composição, ação principal...) é escolhido por
+  `apps/web/server/design` antes do texto; o renderer tem 5 composições em
+  `packages/templates/src/compositions`. A IA só conhece o que está em `server/design/library.ts`.
 
 ## Regras do time
 

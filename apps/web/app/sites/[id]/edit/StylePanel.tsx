@@ -1,6 +1,6 @@
 "use client";
 
-import { TemplateId, type SiteSpec, type Theme } from "@nosweat/schema";
+import { Composition, TemplateId, type SiteSpec, type Theme } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import { FONT_OPTIONS, FontPicker } from "./FontPicker";
 import { ChevronDownIcon, ShuffleIcon, UndoIcon } from "./icons";
@@ -23,6 +23,15 @@ const TEMPLATE_LABELS: Record<TemplateId, string> = {
   restaurant: "Restaurant",
   professional: "Professional",
   portfolio: "Portfolio",
+};
+
+// Composições (arquitetura da página). Ver SiteDesign em packages/schema.
+const COMPOSITION_LABELS: Record<Composition, string> = {
+  "service-led": "Call-first (phone always in view)",
+  editorial: "Editorial (big headline, numbered list)",
+  immersive: "Photo-first (full-width photo)",
+  typographic: "Type-first (bold headline, no big photo)",
+  modular: "Tiles (grid of blocks)",
 };
 
 function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -138,7 +147,25 @@ export function StylePanel({
       </Group>
 
       <Group title="Layout">
-        <Field label="Template">
+        <Field label="Page layout">
+          <select
+            className={inputClass}
+            value={spec.design?.composition ?? "service-led"}
+            onChange={(e) =>
+              update((d) => {
+                // Só a composição muda: o resto do plano (referências, motivo) fica para depuração.
+                d.design = { ...d.design, composition: Composition.parse(e.target.value) };
+              })
+            }
+          >
+            {Composition.options.map((composition) => (
+              <option key={composition} value={composition}>
+                {COMPOSITION_LABELS[composition]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Business type">
           <select
             className={inputClass}
             value={spec.template}

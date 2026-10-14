@@ -33,6 +33,7 @@ describe("siteJsonLd", () => {
       telephone: "(512) 555-0142",
       email: "service@joesplumbing.example.com",
       address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX" },
+      areaServed: "Austin, Round Rock, Cedar Park and nearby",
     });
   });
 

@@ -3,26 +3,33 @@ import type { SiteSpec } from "@nosweat/schema";
 export const glowSalon: SiteSpec = {
   version: 1,
   template: "beauty",
+  design: {
+    composition: "editorial",
+    primaryAction: "book",
+    density: "airy",
+    imageTreatment: "monochrome",
+  },
   business: {
     name: "Glow Salon",
     phone: "(305) 555-0187",
     email: "hello@glowsalon.example.com",
     city: "Miami",
     state: "FL",
+    serviceArea: "Wynwood, Miami",
   },
   theme: {
     primary: "#BE185D",
     secondary: "#D4A373",
     background: "#FFF8F6",
     text: "#2B1B22",
-    font: "classic",
+    font: "luxe",
   },
   sections: [
     {
       type: "hero",
-      title: "Hair That Turns Heads in Miami",
+      title: "Color, cut and care, done slowly",
       subtitle:
-        "Color, cuts, and treatments by stylists who listen. Step into our Wynwood studio and leave glowing.",
+        "A Wynwood hair studio for balayage, precision cuts and keratin smoothing. Book ahead; we take walk-ins when a chair is open.",
       ctaLabel: "Book Your Appointment",
       imageQuery: "modern hair salon interior",
       image: {
@@ -44,7 +51,7 @@ export const glowSalon: SiteSpec = {
         },
         {
           name: "Balayage & Color",
-          description: "Hand-painted highlights and rich, lasting color made for the Florida sun.",
+          description: "Hand-painted highlights and rich color, planned with you before we start.",
         },
         {
           name: "Keratin Smoothing",
@@ -56,8 +63,7 @@ export const glowSalon: SiteSpec = {
         },
         {
           name: "Scalp Treatments",
-          description:
-            "Relaxing deep-cleanse and hydration rituals for healthy hair from the root.",
+          description: "A deep cleanse and hydration treatment for the scalp and roots.",
         },
       ],
     },

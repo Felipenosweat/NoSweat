@@ -3,12 +3,20 @@ import type { SiteSpec } from "@nosweat/schema";
 export const rosasKitchen: SiteSpec = {
   version: 1,
   template: "restaurant",
+  design: {
+    composition: "immersive",
+    primaryAction: "book",
+    density: "balanced",
+    imageTreatment: "natural",
+  },
   business: {
     name: "Rosa's Kitchen",
     phone: "(619) 555-0163",
     email: "eat@rosaskitchen.example.com",
     city: "San Diego",
     state: "CA",
+    serviceArea: "Barrio Logan, San Diego",
+    hours: [{ days: "Tue–Sun", time: "11 AM – 9 PM" }],
   },
   theme: {
     primary: "#C2410C",
@@ -20,9 +28,9 @@ export const rosasKitchen: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Homestyle Mexican Cooking in the Heart of San Diego",
+      title: "Handmade tortillas, family recipes",
       subtitle:
-        "Family recipes, handmade tortillas, and the best carne asada in Barrio Logan. Come hungry, leave happy.",
+        "A family Mexican kitchen in Barrio Logan. Walk in for carne asada and fish tacos, or call ahead to reserve a table.",
       ctaLabel: "Reserve a Table",
       imageQuery: "cozy restaurant booths",
       image: {
@@ -44,17 +52,15 @@ export const rosasKitchen: SiteSpec = {
         },
         {
           name: "Fish Tacos",
-          description: "Beer-battered local catch, cabbage slaw, and Rosa's secret chipotle crema.",
+          description: "Beer-battered fish, cabbage slaw and our chipotle crema.",
         },
         {
           name: "Mole Poblano",
-          description:
-            "Grandma's 30-ingredient mole served over tender chicken. A Sunday favorite.",
+          description: "Grandma's mole poblano over tender chicken, served on Sundays.",
         },
         {
           name: "Weekend Brunch",
-          description:
-            "Chilaquiles, huevos rancheros, and bottomless café de olla, Saturday and Sunday.",
+          description: "Chilaquiles, huevos rancheros and café de olla, Saturday and Sunday.",
         },
         {
           name: "Catering",
@@ -71,11 +77,11 @@ export const rosasKitchen: SiteSpec = {
         },
         {
           q: "Do you have vegetarian options?",
-          a: "Plenty. Try our roasted poblano tacos, veggie enchiladas, or the black bean sopes.",
+          a: "Ask your server: several dishes can be made without meat, and we're happy to adjust when we can.",
         },
         {
           q: "Is there parking?",
-          a: "Free street parking is available on Logan Avenue, plus a public lot one block away.",
+          a: "Street parking is available nearby. Call us if you need directions.",
         },
       ],
     },

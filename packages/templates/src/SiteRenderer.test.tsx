@@ -1,5 +1,5 @@
 import { fixtures } from "@nosweat/fixtures";
-import { FontId, TemplateId, type SiteImage, type SiteSpec } from "@nosweat/schema";
+import { Composition, FontId, TemplateId, type SiteImage, type SiteSpec } from "@nosweat/schema";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SiteRenderer } from "./SiteRenderer";
@@ -34,12 +34,20 @@ describe("SiteRenderer", () => {
 describe("honest by default", () => {
   const base = fixtures["joes-plumbing"];
 
-  it("shows no trust badges unless the owner confirmed them", () => {
-    const html = renderToStaticMarkup(<SiteRenderer spec={base} />);
-    for (const claim of ["Licensed", "Insured", "Guaranteed", "Same-Day", "Free estimate"]) {
-      expect(html).not.toContain(claim);
-    }
-  });
+  it.each(Composition.options)(
+    "shows no trust badges unless the owner confirmed them (%s)",
+    (composition) => {
+      const spec = {
+        ...base,
+        design: { composition },
+        business: { ...base.business, highlights: undefined },
+      };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      for (const claim of ["Licensed", "Insured", "Guaranteed", "Same-Day", "Free estimate"]) {
+        expect(html).not.toContain(claim);
+      }
+    },
+  );
 
   it("shows the owner's highlights, hours and service area", () => {
     const spec = {
@@ -190,5 +198,82 @@ describe("fonts", () => {
     }
     const vars = themeToCssVars({ ...fixtures["joes-plumbing"].theme, font });
     expect(vars["--ns-font-heading"]).toBe(pair.heading);
+  });
+});
+
+describe("compositions", () => {
+  const plumbing = fixtures["joes-plumbing"];
+
+  it("keeps the old layout for sites without a design plan", () => {
+    const old: SiteSpec = { ...plumbing, design: undefined };
+    const html = renderToStaticMarkup(<SiteRenderer spec={old} />);
+    expect(html).toContain('data-composition="service-led"');
+  });
+
+  it.each(Composition.options)(
+    "%s renders every section, one h1 and a working call link",
+    (composition) => {
+      const spec = { ...plumbing, design: { composition } };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      expect(html).toContain(`data-composition="${composition}"`);
+      expect(html.match(/<h1/g)).toHaveLength(1);
+      expect(html).toContain('href="tel:5125550142"');
+      expect(html).toContain('id="services"');
+      expect(html).toContain('id="faq"');
+      expect(html).toContain('id="contact"');
+      // Nenhuma composição repete âncoras.
+      const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+      expect(new Set(ids).size).toBe(ids.length);
+    },
+  );
+
+  it.each(Composition.options)(
+    "%s works without a photo, phone or contact section",
+    (composition) => {
+      const spec = {
+        ...plumbing,
+        design: { composition },
+        business: { name: "Quiet Studio" },
+        sections: plumbing.sections
+          .filter((s) => s.type !== "contact")
+          .map((s) => (s.type === "hero" ? { ...s, image: undefined } : s)),
+      };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      expect(html).toContain("Quiet Studio");
+      expect(html).not.toContain("tel:");
+      expect(html).not.toContain("<img");
+    },
+  );
+
+  it("applies density and photo treatment from the plan", () => {
+    const spec = {
+      ...plumbing,
+      design: {
+        composition: "editorial" as const,
+        density: "airy" as const,
+        imageTreatment: "monochrome" as const,
+      },
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain('data-density="airy"');
+    expect(html).toContain('data-image="monochrome"');
+    expect(html).toContain("ns-photo");
+  });
+
+  it("puts the phone first only when calling is the main action", () => {
+    const callFirst = renderToStaticMarkup(
+      <SiteRenderer
+        spec={{ ...plumbing, design: { composition: "editorial", primaryAction: "call" } }}
+      />,
+    );
+    const ctaFirst = renderToStaticMarkup(
+      <SiteRenderer
+        spec={{ ...plumbing, design: { composition: "editorial", primaryAction: "quote" } }}
+      />,
+    );
+    const hero = (html: string) =>
+      html.slice(html.indexOf("<h1"), html.indexOf("</section>", html.indexOf("<h1")));
+    expect(hero(callFirst).indexOf("tel:")).toBeLessThan(hero(callFirst).indexOf("#contact"));
+    expect(hero(ctaFirst).indexOf("#contact")).toBeLessThan(hero(ctaFirst).indexOf("tel:"));
   });
 });
