@@ -2,6 +2,8 @@ import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { freeSiteUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
+import { SiteUnavailable } from "@/components/SiteUnavailable";
+import { ownerHasLiveAccess } from "@/server/billing";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -18,6 +20,7 @@ export async function generateMetadata({ params }: PublicSitePageProps): Promise
   const { slug } = await params;
   const site = await getPublished(slug);
   if (!site) return {};
+  if (!(await ownerHasLiveAccess(site.ownerId))) return { robots: { index: false } };
   return siteMetadata(site, freeSiteUrl(slug));
 }
 
@@ -25,6 +28,9 @@ export default async function PublicSitePage({ params }: PublicSitePageProps) {
   const { slug } = await params;
   const site = await getPublished(slug);
   if (!site) notFound();
+  if (!(await ownerHasLiveAccess(site.ownerId))) {
+    return <SiteUnavailable name={liveSpec(site).business.name} />;
+  }
   return (
     <>
       {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}

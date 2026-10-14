@@ -7,15 +7,23 @@ import type {
 import { isAdmin } from "../admin";
 import type { CurrentUser } from "../auth/session";
 import { errorResponse } from "../http";
+import { getGrantStore, isGrantActive } from "./grants";
 import { PLANS, priceCents, setupCentsFor } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
 import { getStripeConfig, stripeRequest, type StripeConfig } from "./stripe";
 
+export { extendExpiry, getGrantStore, isGrantActive, type AccessGrant } from "./grants";
 export { PLANS } from "./plans";
 export { getStripeConfig, StripeError, verifyWebhookSignature } from "./stripe";
 
-// Cobrança com Stripe Checkout + webhook. Enquanto STRIPE_SECRET_KEY não existir, a cobrança
-// fica desligada: publicar e conectar domínio continuam liberados (como antes).
+// Cobrança com Stripe Checkout + webhook, ou acesso liberado à mão pelo admin (Pix/WhatsApp,
+// ver grants.ts). Os planos valem quando há STRIPE_SECRET_KEY ou REQUIRE_PLAN=true; sem nenhum
+// dos dois, publicar e conectar domínio continuam liberados (como antes).
+
+/** `true` se publicar exige plano (Stripe ligado ou REQUIRE_PLAN=true). */
+export function billingEnforced(): boolean {
+  return getStripeConfig() !== null || process.env.REQUIRE_PLAN === "true";
+}
 
 /** Status do Stripe que mantêm o site no ar (past_due: o Stripe ainda está tentando cobrar). */
 const ACTIVE = new Set(["active", "trialing", "past_due"]);
@@ -25,10 +33,30 @@ export function isActiveStatus(status: string | null): boolean {
 }
 
 export async function getBillingStatus(user: CurrentUser): Promise<BillingStatusResponse> {
-  const enabled = getStripeConfig() !== null;
-  const sub = await getBillingStore().get(user.id);
+  const enabled = billingEnforced();
+  const checkoutEnabled = getStripeConfig() !== null;
+  const [sub, grant] = await Promise.all([
+    getBillingStore().get(user.id),
+    getGrantStore().get(user.id),
+  ]);
+  // Assinatura do Stripe ativa tem prioridade (tem renovação e portal); senão, o acesso manual.
+  if (!isActiveStatus(sub?.status ?? null) && isGrantActive(grant)) {
+    return {
+      enabled,
+      checkoutEnabled,
+      source: "manual",
+      plan: grant.plan,
+      interval: null,
+      status: "active",
+      active: true,
+      currentPeriodEnd: grant.expiresAt,
+      cancelAtPeriodEnd: true,
+    };
+  }
   return {
     enabled,
+    checkoutEnabled,
+    source: sub ? "stripe" : null,
     plan: sub?.plan ?? null,
     interval: sub?.interval ?? null,
     status: sub?.status ?? null,
@@ -38,23 +66,47 @@ export async function getBillingStatus(user: CurrentUser): Promise<BillingStatus
   };
 }
 
-/** Plano ativo da conta (`null` sem assinatura ativa). */
-async function activePlan(user: CurrentUser): Promise<PlanId | null> {
-  const sub = await getBillingStore().get(user.id);
-  return sub && isActiveStatus(sub.status) ? sub.plan : null;
+const RANK: Record<PlanId, number> = { starter: 1, pro: 2, premium: 3 };
+
+/** Plano ativo da conta: o maior entre Stripe e acesso manual (`null` sem nenhum ativo). */
+async function activePlan(userId: string): Promise<PlanId | null> {
+  const [sub, grant] = await Promise.all([
+    getBillingStore().get(userId),
+    getGrantStore().get(userId),
+  ]);
+  const plans: PlanId[] = [];
+  if (sub?.plan && isActiveStatus(sub.status)) plans.push(sub.plan);
+  if (isGrantActive(grant)) plans.push(grant.plan);
+  return plans.sort((a, b) => RANK[b] - RANK[a])[0] ?? null;
+}
+
+/**
+ * `true` se o site publicado do dono pode ficar no ar. Com planos valendo, o site sai do ar
+ * quando o plano (Stripe ou acesso manual) acaba; volta sozinho quando renovar.
+ */
+export async function ownerHasLiveAccess(ownerId: string | null): Promise<boolean> {
+  if (!billingEnforced() || !ownerId) return true;
+  try {
+    if (await isAdmin(ownerId)) return true;
+    return (await activePlan(ownerId)) !== null;
+  } catch (error) {
+    // Falha no banco não derruba o site do cliente.
+    console.error("[billing] could not check the owner's plan", error);
+    return true;
+  }
 }
 
 /** 402 pronto se a conta precisa de um plano para publicar; senão `null`. */
 export async function publishBlocked(user: CurrentUser): Promise<Response | null> {
-  if (!getStripeConfig() || (await isAdmin(user.id))) return null;
-  if (await activePlan(user)) return null;
+  if (!billingEnforced() || (await isAdmin(user.id))) return null;
+  if (await activePlan(user.id)) return null;
   return errorResponse(402, "payment_required", "Choose a plan to put your website live.");
 }
 
 /** 402 pronto se o plano da conta não inclui domínio próprio; senão `null`. */
 export async function customDomainBlocked(user: CurrentUser): Promise<Response | null> {
-  if (!getStripeConfig() || (await isAdmin(user.id))) return null;
-  const plan = await activePlan(user);
+  if (!billingEnforced() || (await isAdmin(user.id))) return null;
+  const plan = await activePlan(user.id);
   if (plan && PLANS[plan].customDomain) return null;
   return errorResponse(
     402,

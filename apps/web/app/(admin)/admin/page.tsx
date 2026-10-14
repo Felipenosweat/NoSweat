@@ -2,17 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { listClients, requireAdmin } from "@/server/admin";
+import { getGrantStore, isGrantActive, PLANS } from "@/server/billing";
 import { getSiteStore } from "@/server/store";
 
 export const metadata: Metadata = { title: "Admin" };
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+const dateOnly = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 const formatDate = (value: string | null) => (value ? dateFormat.format(new Date(value)) : "—");
 
 export default async function AdminOverviewPage() {
   await connection();
   await requireAdmin();
-  const [clients, sites] = await Promise.all([listClients(), getSiteStore().listAll()]);
+  const [clients, sites, grants] = await Promise.all([
+    listClients(),
+    getSiteStore().listAll(),
+    getGrantStore().listAll(),
+  ]);
+  const grantByUser = new Map(grants.map((g) => [g.userId, g]));
+  const accessLabel = (userId: string) => {
+    const grant = grantByUser.get(userId) ?? null;
+    if (!grant) return "—";
+    const date = dateOnly.format(new Date(grant.expiresAt));
+    return isGrantActive(grant) ? `${PLANS[grant.plan].name} until ${date}` : `Expired ${date}`;
+  };
 
   const emailById = new Map(clients.map((c) => [c.id, c.email]));
   const sitesByOwner = new Map<string, typeof sites>();
@@ -57,6 +70,7 @@ export default async function AdminOverviewPage() {
                 <th className="px-5 py-3 font-medium">Last login</th>
                 <th className="px-5 py-3 font-medium">Websites</th>
                 <th className="px-5 py-3 font-medium">Live</th>
+                <th className="px-5 py-3 font-medium">Manual access</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -72,12 +86,15 @@ export default async function AdminOverviewPage() {
                     <td className="px-5 py-3">
                       {own.filter((s) => s.status === "published").length}
                     </td>
+                    <td className="px-5 py-3 whitespace-nowrap text-slate-600">
+                      {accessLabel(client.id)}
+                    </td>
                     <td className="px-5 py-3 text-right">
                       <Link
                         href={`/admin/clients/${client.id}`}
                         className="font-semibold whitespace-nowrap text-sky-700 hover:underline"
                       >
-                        View as client &rarr;
+                        Manage &rarr;
                       </Link>
                     </td>
                   </tr>

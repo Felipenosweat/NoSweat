@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { SitesGrid } from "@/components/SitesGrid";
 import { listClients, requireAdmin } from "@/server/admin";
+import { billingEnforced, getGrantStore } from "@/server/billing";
+import { getBillingStore } from "@/server/billing/store";
 import { getSiteStore } from "@/server/store";
+import { AccessPanel } from "./AccessPanel";
 
 export const metadata: Metadata = { title: "Client" };
 
@@ -17,7 +20,11 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const { userId } = await params;
   const client = (await listClients()).find((c) => c.id === userId);
   if (!client) notFound();
-  const sites = await getSiteStore().list(client.id);
+  const [sites, grant, subscription] = await Promise.all([
+    getSiteStore().list(client.id),
+    getGrantStore().get(client.id),
+    getBillingStore().get(client.id),
+  ]);
 
   return (
     <div>
@@ -28,6 +35,13 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         You&rsquo;re viewing <strong>{client.email ?? client.id}</strong>&rsquo;s dashboard as an
         admin. Changes you make here affect their websites.
       </div>
+
+      <AccessPanel
+        userId={client.id}
+        grant={grant}
+        subscription={subscription}
+        enforced={billingEnforced()}
+      />
 
       <div className="mt-6 rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-200 sm:p-8">
         <h1 className="font-display text-3xl font-extrabold tracking-tight">My sites</h1>
