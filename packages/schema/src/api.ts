@@ -202,11 +202,26 @@ export type DnsRecord = z.infer<typeof DnsRecord>;
 export const DomainStatus = z.enum(["pending", "active", "manual", "unverified"]);
 export type DomainStatus = z.infer<typeof DomainStatus>;
 
+/** Onde o DNS do domínio é gerenciado (descoberto pelos nameservers), para o passo a passo certo. */
+export const DnsProvider = z.enum([
+  "godaddy",
+  "namecheap",
+  "squarespace",
+  "cloudflare",
+  "hostinger",
+  "porkbun",
+  "ionos",
+  "wix",
+]);
+export type DnsProvider = z.infer<typeof DnsProvider>;
+
 export const DomainResponse = z.object({
   siteId: SiteId,
   domain: z.string().nullable(),
   status: DomainStatus.nullable(),
   records: z.array(DnsRecord),
+  /** Empresa onde o cliente mexe no DNS, se deu para descobrir (`null` = não sabemos). */
+  dnsProvider: DnsProvider.nullable().optional(),
 });
 export type DomainResponse = z.infer<typeof DomainResponse>;
 

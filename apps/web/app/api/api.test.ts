@@ -22,6 +22,11 @@ vi.mock("@/server/domains/verify", async (importOriginal) => {
   const actual = await importOriginal<typeof VerifyModule>();
   return { ...actual, isDomainVerified: async () => dns.verified };
 });
+// Nem a busca de nameservers (descobrir a empresa do domínio): sem rede nos testes.
+vi.mock("@/server/domains/provider", () => ({
+  detectDnsProvider: async () => null,
+  providerFromNameserver: () => null,
+}));
 import { GET as getCredits } from "./me/credits/route";
 import {
   DELETE as deleteDomain,
