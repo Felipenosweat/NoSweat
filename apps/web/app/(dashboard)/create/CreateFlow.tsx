@@ -29,8 +29,9 @@ import {
 } from "./brief";
 import { BUILD_STEPS, BuildingPanel, ReadyPanel } from "./Building";
 import styles from "./create.module.css";
+import { LocationFields } from "./LocationFields";
 import { StylePicker } from "./StylePicker";
-import { focusRing, primaryButton, secondaryButton } from "./ui";
+import { focusRing, inputClass, primaryButton, secondaryButton } from "./ui";
 
 const STEPS = [
   {
@@ -395,43 +396,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
             )}
 
             {step === 1 && (
-              <>
-                <div className="grid grid-cols-[1fr_6rem] gap-3 sm:grid-cols-[1fr_7rem]">
-                  <TextField
-                    id="create-city"
-                    label="City"
-                    value={fields.city}
-                    maxLength={LIMITS.city}
-                    autoComplete="address-level2"
-                    placeholder="Worcester"
-                    onChange={(value) => update("city", value)}
-                  />
-                  <TextField
-                    id="create-state"
-                    label="State"
-                    value={fields.state}
-                    maxLength={2}
-                    autoComplete="address-level1"
-                    autoCapitalize="characters"
-                    spellCheck={false}
-                    placeholder="MA"
-                    error={fieldErrors.state}
-                    onChange={(value) =>
-                      update("state", value.replace(/[^a-z]/gi, "").toUpperCase())
-                    }
-                  />
-                </div>
-                <TextField
-                  id="create-serviceArea"
-                  label="Service area"
-                  optional
-                  hint="Towns or neighborhoods you cover."
-                  value={fields.serviceArea}
-                  maxLength={LIMITS.serviceArea}
-                  placeholder="Shrewsbury, Auburn and Holden"
-                  onChange={(value) => update("serviceArea", value)}
-                />
-              </>
+              <LocationFields fields={fields} update={update} stateError={fieldErrors.state} />
             )}
 
             {step === 2 && (
@@ -542,14 +507,6 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
       </form>
     </div>
   );
-}
-
-function inputClass(invalid: boolean): string {
-  return `mt-2 block w-full rounded-xl border bg-white px-4 text-base text-ink placeholder:text-slate-500 transition-[border-color,box-shadow] duration-150 focus:ring-4 focus:outline-none ${
-    invalid
-      ? "border-red-500 ring-4 ring-red-100 focus:border-red-500 focus:ring-red-100"
-      : "border-slate-300 hover:border-slate-400 focus:border-brand focus:ring-brand/15"
-  }`;
 }
 
 type FieldProps = {

@@ -126,6 +126,83 @@ export const US_STATES = new Set([
   "VA", "WA", "WV", "WI", "WY", "DC", "PR", "VI", "GU", "AS", "MP",
 ]); // prettier-ignore
 
+/** Nome de cada sigla, para a lista do campo de estado. */
+export const US_STATE_NAMES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", DC: "District of Columbia",
+  FL: "Florida", GA: "Georgia", HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana",
+  IA: "Iowa", KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri",
+  MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey",
+  NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio",
+  OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island",
+  SC: "South Carolina", SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah",
+  VT: "Vermont", VA: "Virginia", WA: "Washington", WV: "West Virginia", WI: "Wisconsin",
+  WY: "Wyoming", PR: "Puerto Rico", VI: "U.S. Virgin Islands", GU: "Guam",
+  AS: "American Samoa", MP: "Northern Mariana Islands",
+}; // prettier-ignore
+
+/**
+ * Sigla para o que a pessoa digitou no campo de estado: a sigla ("ma") ou o nome inteiro
+ * ("massachusetts"). `null` se não der para saber.
+ */
+export function stateCodeFor(text: string): string | null {
+  const clean = text.trim().toLowerCase();
+  if (!clean) return null;
+  const upper = clean.toUpperCase();
+  if (US_STATES.has(upper)) return upper;
+  const byName = Object.entries(US_STATE_NAMES).find(([, name]) => name.toLowerCase() === clean);
+  return byName?.[0] ?? null;
+}
+
+/** Estados que combinam com o que foi digitado (sigla ou começo de uma palavra do nome). */
+export function matchStates(text: string): string[] {
+  const clean = text.trim().toLowerCase();
+  const codes = Object.keys(US_STATE_NAMES);
+  if (!clean) return codes.sort((a, b) => US_STATE_NAMES[a]!.localeCompare(US_STATE_NAMES[b]!));
+  return codes
+    .filter((code) => {
+      const name = US_STATE_NAMES[code]!.toLowerCase();
+      return (
+        code.toLowerCase().startsWith(clean) ||
+        name.split(" ").some((w) => w.startsWith(clean)) ||
+        name.startsWith(clean)
+      );
+    })
+    .sort((a, b) => {
+      // Sigla exata primeiro ("ma" → MA), depois em ordem alfabética do nome.
+      const exact = Number(b.toLowerCase() === clean) - Number(a.toLowerCase() === clean);
+      return exact || US_STATE_NAMES[a]!.localeCompare(US_STATE_NAMES[b]!);
+    });
+}
+
+/** "Shrewsbury, Auburn and Holden" → ["Shrewsbury", "Auburn", "Holden"]. */
+export function splitArea(text: string): string[] {
+  return text
+    .split(/,|\band\b|&/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+/** ["A"] → "A"; ["A", "B"] → "A and B"; ["A", "B", "C"] → "A, B and C". */
+export function joinArea(names: string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/**
+ * Liga/desliga uma cidade na área atendida (botões de cidades vizinhas). Respeita o limite do
+ * campo: se não couber, devolve o texto como estava.
+ */
+export function toggleArea(text: string, name: string, max: number = LIMITS.serviceArea): string {
+  const names = splitArea(text);
+  const index = names.findIndex((n) => n.toLowerCase() === name.toLowerCase());
+  if (index >= 0) names.splice(index, 1);
+  else names.push(name);
+  const next = joinArea(names);
+  return next.length <= max ? next : text;
+}
+
 /** Normaliza espaços e garante pontuação final, para o brief ler como frases. */
 function sentence(text: string): string {
   const clean = text.trim().replace(/\s+/g, " ");

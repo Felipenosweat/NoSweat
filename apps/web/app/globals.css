@@ -102,3 +102,23 @@ html {
     animation: ns-fade 300ms ease-out 60ms both;
   }
 }
+
+/* ---------- Leque de opções do /create (cidade, estado, cidades vizinhas) ----------
+   A lista abre em 140ms (desce 4px e aparece); as cidades vizinhas entram uma a uma (30ms). */
+@keyframes ns-fan-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ns-fan-list:not(.hidden) {
+    animation: ns-fan-in 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .ns-fan li {
+    animation: ns-fan-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 30ms);
+  }
+}

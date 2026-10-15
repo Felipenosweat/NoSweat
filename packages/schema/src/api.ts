@@ -335,3 +335,41 @@ export const BillingStatusResponse = z.object({
   cancelAtPeriodEnd: z.boolean(),
 });
 export type BillingStatusResponse = z.infer<typeof BillingStatusResponse>;
+
+// ---------- GET /api/places e /api/places/nearby (cidades dos EUA no /create) ----------
+
+const StateCode = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(/^[A-Z]{2}$/);
+
+export const PlaceSearchQuery = z.object({
+  /** O que a pessoa digitou (pode ser vazio: aí vêm as maiores cidades do estado). */
+  q: z.string().trim().max(80).default(""),
+  state: StateCode.optional(),
+});
+
+export const PlaceSuggestion = z.object({
+  name: z.string(),
+  state: z.string().length(2),
+  population: z.number().int().nonnegative(),
+});
+export type PlaceSuggestion = z.infer<typeof PlaceSuggestion>;
+
+export const PlaceSearchResponse = z.object({ places: z.array(PlaceSuggestion).max(20) });
+export type PlaceSearchResponse = z.infer<typeof PlaceSearchResponse>;
+
+export const NearbyPlacesQuery = z.object({
+  city: z.string().trim().min(1).max(80),
+  state: StateCode,
+});
+
+export const NearbyPlace = PlaceSuggestion.extend({
+  /** Distância em milhas da cidade escolhida (arredondada). */
+  miles: z.number().int().nonnegative(),
+});
+export type NearbyPlace = z.infer<typeof NearbyPlace>;
+
+export const NearbyPlacesResponse = z.object({ places: z.array(NearbyPlace).max(20) });
+export type NearbyPlacesResponse = z.infer<typeof NearbyPlacesResponse>;

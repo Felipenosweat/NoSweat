@@ -123,6 +123,31 @@ export default function CreditsPage() {
           <CreditList rows={examplePhotos} />
         </section>
       )}
+
+      {/* Sugestões de cidade do /create (server/places). O GeoNames (CC BY 4.0) pede crédito. */}
+      <section aria-labelledby="place-data" className="mt-20">
+        <h2 id="place-data" className={h2Class}>
+          Place data
+        </h2>
+        <p className={`mt-4 ${leadClass}`}>
+          City suggestions use the U.S. Census Bureau Gazetteer and population estimates (public
+          domain) and population figures from{" "}
+          <a
+            href="https://www.geonames.org/"
+            className="font-semibold text-brand underline-offset-4 hover:underline"
+          >
+            GeoNames
+          </a>
+          , used under the{" "}
+          <a
+            href="https://creativecommons.org/licenses/by/4.0/"
+            className="font-semibold text-brand underline-offset-4 hover:underline"
+          >
+            Creative Commons Attribution 4.0 license
+          </a>
+          .
+        </p>
+      </section>
     </div>
   );
 }
