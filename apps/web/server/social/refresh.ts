@@ -63,10 +63,12 @@ export async function markAccountNeedsReconnect(
   );
 }
 
+/** Token salvo que não abre mais (chave removida, linha corrompida): vira erro de auth. */
+class UnreadableTokenError extends Error {}
+
 function isAuthProblem(error: unknown): boolean {
-  // Erro de auth do Instagram, ou token que não abre mais (chave removida, linha corrompida).
-  if (error instanceof InstagramError) return error.kind === "auth";
-  return true;
+  if (error instanceof UnreadableTokenError) return true;
+  return error instanceof InstagramError && error.kind === "auth";
 }
 
 export async function refreshExpiringTokens(
@@ -83,7 +85,14 @@ export async function refreshExpiringTokens(
   const client = deps.client === undefined ? getInstagramClient() : deps.client;
   if (!client) return summary;
   const store = deps.store ?? getSocialStore();
-  const getToken = deps.getToken ?? getDecryptedToken;
+  const readToken = deps.getToken ?? getDecryptedToken;
+  const getToken = (account: SocialAccountRecord): string => {
+    try {
+      return readToken(account);
+    } catch (error) {
+      throw new UnreadableTokenError(error instanceof Error ? error.message : "Unreadable token.");
+    }
+  };
   const now = options.now ?? new Date();
   const keyVersion = currentKeyVersion();
   const done = new Set<string>();
