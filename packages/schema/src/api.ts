@@ -17,6 +17,8 @@ export const ERROR_CODES = [
   "generation_failed",
   "image_error",
   "payment_required",
+  "reconnect_required",
+  "social_error",
   "internal_error",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
