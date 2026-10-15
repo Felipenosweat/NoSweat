@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InstagramError, type ContainerStatus, type InstagramClient } from "./client";
-import { MISSED_MESSAGE, PLAN_MESSAGE, publishDuePosts, publishOne } from "./publisher";
+import {
+  MISSED_MESSAGE,
+  PLAN_MESSAGE,
+  publishDuePosts,
+  publishOne,
+  type PublisherDeps,
+} from "./publisher";
 import { MemorySocialStore, resetMemorySocialStore } from "./store";
 import type { SocialAccountRecord } from "./types";
 
@@ -30,11 +36,17 @@ function fakeClient(statuses: ContainerStatus[] = ["FINISHED"]) {
     exchangeCode: vi.fn(),
     refresh: vi.fn(),
     getProfile: vi.fn(),
-    createImageContainer: vi.fn(async () => `c${++containers}`),
-    createCarouselContainer: vi.fn(async () => "carousel"),
-    getContainerStatus: vi.fn(async (): Promise<ContainerStatus> => queue.shift() ?? "FINISHED"),
-    publish: vi.fn(async () => "media-1"),
-    getMedia: vi.fn(async (_t: string, id: string) => ({
+    createImageContainer: vi.fn<InstagramClient["createImageContainer"]>(
+      async () => `c${++containers}`,
+    ),
+    createCarouselContainer: vi.fn<InstagramClient["createCarouselContainer"]>(
+      async () => "carousel",
+    ),
+    getContainerStatus: vi.fn<InstagramClient["getContainerStatus"]>(
+      async () => queue.shift() ?? "FINISHED",
+    ),
+    publish: vi.fn<InstagramClient["publish"]>(async () => "media-1"),
+    getMedia: vi.fn<InstagramClient["getMedia"]>(async (_token, id) => ({
       id,
       permalink: "https://instagram.com/p/x",
     })),
@@ -83,7 +95,7 @@ async function duePost(options: { photos?: number; minutesAgo?: number } = {}) {
   });
 }
 
-function deps(client: InstagramClient, extra: Record<string, unknown> = {}) {
+function deps(client: InstagramClient | null, extra: Partial<PublisherDeps> = {}) {
   return {
     client,
     store,
@@ -95,8 +107,8 @@ function deps(client: InstagramClient, extra: Record<string, unknown> = {}) {
         status: "paused",
         lastError: reason,
       }, accountId)).length,
-    sendPostFailedEmail: vi.fn(async () => {}),
-    sendReconnectEmail: vi.fn(async () => {}),
+    sendPostFailedEmail: vi.fn<NonNullable<PublisherDeps["sendPostFailedEmail"]>>(async () => {}),
+    sendReconnectEmail: vi.fn<NonNullable<PublisherDeps["sendReconnectEmail"]>>(async () => {}),
     ...extra,
   };
 }
@@ -294,7 +306,7 @@ describe("publishDuePosts", () => {
 
   it("does nothing without an Instagram client", async () => {
     const post = await duePost();
-    const summary = await publishDuePosts({}, deps(fakeClient(), { client: null }));
+    const summary = await publishDuePosts({}, deps(null));
     expect(summary.claimed).toBe(0);
     expect((await store.getPostById(post.id))?.status).toBe("scheduled");
   });

@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { getInstagramConfig } from "./config";
 
 // `signed_request` que a Meta manda nos avisos de desautorização e de exclusão de dados:
 // "<assinatura base64url>.<payload base64url>", assinatura = HMAC-SHA256(payload, segredo do app).
@@ -45,4 +46,17 @@ export function parseSignedRequest(
   if (typeof userId !== "string" && typeof userId !== "number") return null;
   if (String(userId).length === 0) return null;
   return { ...data, algorithm: data.algorithm, user_id: String(userId) };
+}
+
+/** Lê o `signed_request` do formulário que a Meta manda. `null` sem app configurado ou se não bater. */
+export async function readSignedRequest(request: Request): Promise<SignedRequestPayload | null> {
+  const config = getInstagramConfig();
+  if (!config) return null;
+  let raw: FormDataEntryValue | null = null;
+  try {
+    raw = (await request.formData()).get("signed_request");
+  } catch {
+    return null;
+  }
+  return typeof raw === "string" ? parseSignedRequest(raw, config.appSecret) : null;
 }

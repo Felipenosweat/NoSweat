@@ -329,7 +329,7 @@ export class AnthropicPostPlanner implements PostPlanner {
     const dates = planDates(req.month, req.postDays, req.postsPerWeek, req.maxPosts);
     if (!dates.length) return [];
     const slots = dates.map((date) => ({ date, time: req.postTime }));
-    const plan = await parseWithRetry("the month plan", () =>
+    const plan = await parseWithRetry<SocialPlan>("the month plan", () =>
       this.client.messages.parse({
         model: this.model,
         max_tokens: 8000,
@@ -350,7 +350,7 @@ export class AnthropicPostPlanner implements PostPlanner {
   }
 
   async writeCaption(ctx: BusinessContext, req: CaptionRequest): Promise<CaptionResponse> {
-    const result = await parseWithRetry("the caption", () =>
+    const result = await parseWithRetry<CaptionResponse>("the caption", () =>
       this.client.messages.parse({
         model: this.captionModel,
         max_tokens: 1500,
