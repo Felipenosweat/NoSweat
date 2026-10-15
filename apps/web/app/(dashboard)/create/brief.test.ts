@@ -7,6 +7,12 @@ import {
   fieldsFromBrief,
   parseDraft,
   publishedSlug,
+  joinArea,
+  matchStates,
+  splitArea,
+  stateCodeFor,
+  toggleArea,
+  US_STATE_NAMES,
 } from "./brief";
 
 describe("composeBrief", () => {
@@ -80,5 +86,40 @@ describe("parseDraft", () => {
     expect(draft).toEqual({ source: "", step: 2, fields: { ...EMPTY_FIELDS, name: "Rosa" } });
     expect(parseDraft("{")).toBeNull();
     expect(parseDraft(null)).toBeNull();
+  });
+});
+
+describe("campo de estado", () => {
+  it("aceita a sigla ou o nome inteiro", () => {
+    expect(stateCodeFor("ma")).toBe("MA");
+    expect(stateCodeFor("Massachusetts")).toBe("MA");
+    expect(stateCodeFor("new york")).toBe("NY");
+    expect(stateCodeFor("Mass")).toBeNull();
+  });
+
+  it("filtra a lista pela sigla ou pelo começo do nome, sigla exata primeiro", () => {
+    expect(matchStates("ma")[0]).toBe("MA");
+    expect(matchStates("new")).toEqual(["NH", "NJ", "NM", "NY"]);
+    expect(matchStates("carolina")).toEqual(["NC", "SC"]);
+    expect(matchStates("")).toHaveLength(Object.keys(US_STATE_NAMES).length);
+  });
+});
+
+describe("área atendida", () => {
+  it("separa e junta como uma frase", () => {
+    expect(splitArea("Shrewsbury, Auburn and Holden")).toEqual(["Shrewsbury", "Auburn", "Holden"]);
+    expect(joinArea(["A"])).toBe("A");
+    expect(joinArea(["A", "B"])).toBe("A and B");
+    expect(joinArea(["A", "B", "C"])).toBe("A, B and C");
+  });
+
+  it("liga e desliga uma cidade sem perder o resto", () => {
+    expect(toggleArea("", "Holden")).toBe("Holden");
+    expect(toggleArea("Holden", "Auburn")).toBe("Holden and Auburn");
+    expect(toggleArea("Shrewsbury, Auburn and Holden", "auburn")).toBe("Shrewsbury and Holden");
+  });
+
+  it("não passa do limite do campo", () => {
+    expect(toggleArea("x".repeat(20), "Holden", 25)).toBe("x".repeat(20));
   });
 });
