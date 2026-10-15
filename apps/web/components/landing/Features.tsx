@@ -57,7 +57,7 @@ function ScaledSite({
         className="absolute top-0 left-0 origin-top-left overflow-hidden"
         style={{ width, height, transform: "scale(var(--s))" }}
       >
-        <SiteRenderer spec={spec} />
+        <SiteRenderer spec={spec} anchors={false} />
       </div>
     </div>
   );

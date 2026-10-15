@@ -26,12 +26,14 @@ export function HomeServicesTemplate({
   contactEndpoint,
   editable = false,
   selectedSection = null,
+  anchors = true,
 }: TemplateProps) {
   const { business, sections } = spec;
 
   // Só a primeira seção de cada tipo recebe âncora (#services, #reviews...), para não duplicar ids.
   const anchored = new Set<SectionType>();
   const anchorFor = (type: SectionType): string | undefined => {
+    if (!anchors) return undefined;
     const nav = NAV[type];
     if (!nav || anchored.has(type)) return undefined;
     anchored.add(type);
@@ -151,7 +153,7 @@ export function HomeServicesTemplate({
   };
 
   return (
-    <div id="top" className="flex min-h-full flex-col">
+    <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
       <TopBar business={business} />
       <Header business={business} links={links} />
       <main className="flex-1">

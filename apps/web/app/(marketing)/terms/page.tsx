@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "Terms of Service",
   description:
     "The terms for using No Sweat to build, edit and publish a website for your small business.",
+  alternates: { canonical: "/terms" },
 };
 
 const SECTIONS: LegalSection[] = [

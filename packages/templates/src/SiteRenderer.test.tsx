@@ -277,3 +277,13 @@ describe("compositions", () => {
     expect(hero(ctaFirst).indexOf("#contact")).toBeLessThan(hero(ctaFirst).indexOf("tel:"));
   });
 });
+
+describe("miniaturas dentro de outra página", () => {
+  it.each(Composition.options)("%s sem âncoras não cria ids de seção", (composition) => {
+    const spec = { ...fixtures["joes-plumbing"], design: { composition } };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} anchors={false} />);
+    for (const id of ["top", "services", "faq", "contact", "reviews", "work"]) {
+      expect(html).not.toContain(`id="${id}"`);
+    }
+  });
+});

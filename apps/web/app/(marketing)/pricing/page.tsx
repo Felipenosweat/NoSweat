@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "@/components/marketing/icons";
+import { PRICING_FAQS } from "@/components/marketing/faqs";
+import { JsonLd } from "@/components/marketing/JsonLd";
+import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, textLink } from "@/components/marketing/styles";
@@ -27,35 +30,13 @@ export const metadata: Metadata = {
   },
 };
 
-const FAQS = [
-  {
-    question: "Do I need a credit card to start?",
-    answer:
-      "No. Describe your business and get a full website draft without a credit card. You don’t even need an account to start.",
-  },
-  {
-    question: "Can I use my own domain?",
-    answer:
-      "Yes, on Pro and Premium. You connect a domain you already own and we show you the DNS records to add at your registrar. Domain registration is not included.",
-  },
-  {
-    question: "Can I cancel?",
-    answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Creating and previewing your site is free; you’re only charged when you choose a plan to publish.",
-  },
-  {
-    question: "What happens to my website if I don’t publish?",
-    answer:
-      "It stays as a private draft; sign up free to keep it. Only you can see it, and you can keep editing it anytime.",
-  },
-];
-
 const h2Class =
   "font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-balance text-ink lg:text-[2.5rem]";
 
 export default function PricingPage() {
   return (
     <>
+      <JsonLd data={jsonLd(product(), faqPage(PRICING_FAQS, "/pricing"))} />
       <section aria-labelledby="pricing-title" className="bg-surface">
         <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
           <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
@@ -107,7 +88,7 @@ export default function PricingPage() {
             </p>
           </div>
           <div className="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-8">
-            {FAQS.map((faq) => (
+            {PRICING_FAQS.map((faq) => (
               <details key={faq.question} className="group">
                 <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
                   {faq.question}

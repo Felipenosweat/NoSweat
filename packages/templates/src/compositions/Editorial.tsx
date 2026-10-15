@@ -28,8 +28,9 @@ export function EditorialComposition({
   contactEndpoint,
   editable = false,
   selectedSection = null,
+  anchors = true,
 }: TemplateProps) {
-  const model = buildModel(spec);
+  const model = buildModel(spec, anchors);
 
   const render = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -80,7 +81,7 @@ export function EditorialComposition({
   };
 
   return (
-    <div id="top" className="flex min-h-full flex-col">
+    <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
       <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
         <Wrap className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
           <a

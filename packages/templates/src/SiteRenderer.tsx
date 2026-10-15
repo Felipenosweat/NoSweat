@@ -12,6 +12,8 @@ export type SiteRendererProps = {
   editable?: boolean;
   /** Seção destacada no modo de edição (índice em `spec.sections`). */
   selectedSection?: number | null;
+  /** `false` para miniaturas dentro de outra página: sem ids de seção (ver TemplateProps). */
+  anchors?: boolean;
 };
 
 /**
@@ -28,6 +30,7 @@ export function SiteRenderer({
   contactEndpoint,
   editable = false,
   selectedSection = null,
+  anchors = true,
 }: SiteRendererProps) {
   // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
@@ -50,9 +53,10 @@ export function SiteRenderer({
           contactEndpoint={contactEndpoint}
           editable
           selectedSection={selectedSection}
+          anchors={anchors}
         />
       ) : (
-        <Template spec={spec} contactEndpoint={contactEndpoint} />
+        <Template spec={spec} contactEndpoint={contactEndpoint} anchors={anchors} />
       )}
     </div>
   );

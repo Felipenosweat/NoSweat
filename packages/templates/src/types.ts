@@ -9,5 +9,10 @@ export type TemplateProps = {
   editable?: boolean;
   /** Seção destacada no modo de edição. */
   selectedSection?: number | null;
+  /**
+   * `false`: sem ids de seção (#services, #faq...) nem #top. Para miniaturas do site dentro de
+   * outra página (ex.: demonstrações da landing), onde esses ids colidiriam com os da página.
+   */
+  anchors?: boolean;
 };
 export type TemplateComponent = ComponentType<TemplateProps>;
