@@ -15,7 +15,7 @@ import {
   isClientStage,
 } from "@/lib/clients";
 import { getCurrentUser } from "@/server/auth/session";
-import { listClients, syncLeadsToClients } from "@/server/clients/service";
+import { listClients } from "@/server/clients/service";
 import { PlusIcon, SearchIcon, StageBadge, fieldClass, pageTitle, sectionTitle } from "./ui";
 
 export const metadata: Metadata = { title: "Clients", robots: { index: false } };
@@ -30,16 +30,11 @@ function firstParam(value: string | string[] | undefined): string {
 }
 
 /**
- * Lista de clientes (fora do componente: usa o relógio). Antes de listar, os pedidos novos do
- * formulário do site viram clientes. `clients: null` = erro ao ler.
+ * Lista de clientes (fora do componente: usa o relógio). O serviço já transforma os pedidos novos
+ * do formulário do site em clientes antes de listar. `clients: null` = erro ao ler.
  */
 async function loadClients(ownerId: string, q: string) {
   const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date());
-  try {
-    await syncLeadsToClients(ownerId);
-  } catch {
-    // Falhou ao trazer os pedidos do site: mostra o que já existe.
-  }
   try {
     const clients: Client[] = await listClients(ownerId, q ? { q } : undefined);
     return { today, clients };

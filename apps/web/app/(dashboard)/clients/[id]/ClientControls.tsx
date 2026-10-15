@@ -8,18 +8,8 @@ import {
 } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
-import {
-  focusRing,
-  primaryButton,
-  secondaryButton,
-  textButton,
-} from "@/components/DashboardUi";
-import {
-  CLIENT_STAGES,
-  STAGE_LABELS,
-  followUpState,
-  formatDateOnly,
-} from "@/lib/clients";
+import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
+import { CLIENT_STAGES, STAGE_LABELS, followUpState, formatDateOnly } from "@/lib/clients";
 import {
   ErrorNote,
   clientUrl,

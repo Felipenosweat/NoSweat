@@ -18,14 +18,13 @@ export const STAGE_LABELS: Record<ClientStage, string> = {
 };
 
 /** Cor do selo de cada etapa (tons que o `StatusBadge` já tem). */
-export const STAGE_TONES: Record<ClientStage, "info" | "neutral" | "pending" | "live" | "draft"> =
-  {
-    new: "info",
-    contacted: "neutral",
-    quoted: "pending",
-    won: "live",
-    lost: "draft",
-  };
+export const STAGE_TONES: Record<ClientStage, "info" | "neutral" | "pending" | "live" | "draft"> = {
+  new: "info",
+  contacted: "neutral",
+  quoted: "pending",
+  won: "live",
+  lost: "draft",
+};
 
 /** A string é uma etapa conhecida? (o histórico guarda a etapa como texto). */
 export function isClientStage(value: string): value is ClientStage {

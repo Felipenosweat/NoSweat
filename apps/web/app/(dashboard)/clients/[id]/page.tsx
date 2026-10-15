@@ -136,20 +136,17 @@ function ContactView({ client }: { client: Client }) {
 // ---------- histórico ----------
 
 function activityTitle(activity: ClientActivity): string {
-  switch (activity.kind) {
-    case "lead":
-      return "Message from your website";
-    case "note":
-      return "Note";
-    case "job":
-      return activity.amountCents !== null && activity.amountCents > 0
-        ? `Job done · ${formatCents(activity.amountCents)}`
-        : "Job done";
-    case "stage": {
-      const stage = activity.body.trim();
-      return `Moved to ${isClientStage(stage) ? STAGE_LABELS[stage] : stage}`;
-    }
+  if (activity.kind === "lead") return "Message from your website";
+  if (activity.kind === "job") {
+    return activity.amountCents !== null && activity.amountCents > 0
+      ? `Job done · ${formatCents(activity.amountCents)}`
+      : "Job done";
   }
+  if (activity.kind === "stage") {
+    const stage = activity.body.trim();
+    return `Moved to ${isClientStage(stage) ? STAGE_LABELS[stage] : stage}`;
+  }
+  return "Note";
 }
 
 const ACTIVITY_ICONS: Record<ClientActivity["kind"], (props: { className?: string }) => ReactNode> =
@@ -179,7 +176,10 @@ function TimelineItem({ activity }: { activity: ClientActivity }) {
           <h3 className="text-[15px] leading-6 font-semibold text-ink tabular-nums">
             {activityTitle(activity)}
           </h3>
-          <LocalTime iso={activity.occurredAt} className="text-[13px] text-slate-500 tabular-nums" />
+          <LocalTime
+            iso={activity.occurredAt}
+            className="text-[13px] text-slate-500 tabular-nums"
+          />
         </div>
         {body && (
           <p className="mt-1 max-w-[65ch] text-[15px] leading-[1.6] break-words whitespace-pre-line text-slate-600">
@@ -283,10 +283,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
               done.
             </p>
           ) : (
-            <ol
-              aria-label="Newest first"
-              className="mt-4 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white"
-            >
+            <ol className="mt-4 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
               {activities.map((activity) => (
                 <TimelineItem key={activity.id} activity={activity} />
               ))}
