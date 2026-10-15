@@ -6,7 +6,7 @@ import { isAppHost } from "@/server/domains/hosts";
 import { GUEST_COOKIE } from "@/server/guest-cookie";
 
 // Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
-const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin", "/social"];
+const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin", "/social", "/clients"];
 
 // Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio
 // site. A página confere se o site é mesmo do visitante (senão, 404).

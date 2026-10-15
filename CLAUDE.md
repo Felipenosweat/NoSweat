@@ -28,6 +28,7 @@ apps/web/                       Next.js (App Router): telas + API
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
   server/social/                Instagram: contas, posts, IA dos posts, publicador e store → back
+  server/clients/               Clientes (CRM simples): store, sync dos pedidos do site e regras → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
 packages/schema/                @nosweat/schema: o contrato (Zod) de SiteSpec e da API → os dois
@@ -101,6 +102,12 @@ Como as peças se ligam:
   vira `missed` (não publica); o `igContainerId` é salvo antes de publicar e conferido antes de
   tentar de novo (nunca publicar duas vezes). `ownerNotePt` é nota do dono em português
   (conteúdo, não interface) e nunca é publicada.
+- Clientes (`server/clients/`, migration 0017, rotas `/api/clients/*`, página `/clients`): um CRM
+  simples do dono. `syncLeadsToClients` (roda ao listar) transforma cada pedido do formulário dos
+  sites do dono em cliente, juntando pelo e-mail (minúsculas) ou telefone (só dígitos); cada pedido
+  entra uma vez só (índice único em `client_activities.lead_id`). Histórico: pedidos, notas,
+  serviços (somados em `total_jobs_cents`) e mudanças de etapa. Cliente apagado deixa os pedidos
+  em `client_dismissed_leads` para não voltar no próximo sync.
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 
