@@ -28,8 +28,9 @@ export function ModularComposition({
   contactEndpoint,
   editable = false,
   selectedSection = null,
+  anchors = true,
 }: TemplateProps) {
-  const model = buildModel(spec);
+  const model = buildModel(spec, anchors);
 
   const render = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -111,7 +112,7 @@ export function ModularComposition({
   };
 
   return (
-    <div id="top" className="flex min-h-full flex-col">
+    <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
       <header className="sticky top-3 z-40 px-3 pt-3">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 rounded-full border border-ns-border bg-ns-background/90 pr-2 pl-6 shadow-sm backdrop-blur">
           <a

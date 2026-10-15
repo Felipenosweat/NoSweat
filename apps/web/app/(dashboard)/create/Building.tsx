@@ -188,7 +188,7 @@ function SiteThumbnail({ spec }: { spec: SiteSpec }) {
           className="pointer-events-none absolute top-0 left-0 origin-top-left"
           style={{ width: layout.width, transform: `scale(${layout.scale})` }}
         >
-          <SiteRenderer spec={spec} />
+          <SiteRenderer spec={spec} anchors={false} />
         </div>
       )}
     </div>

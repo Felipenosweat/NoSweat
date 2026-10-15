@@ -98,7 +98,7 @@ export function isVisible(section: Section): boolean {
   return section.type !== "gallery" || section.images.some((image) => image.kind === "owner");
 }
 
-export function buildModel(spec: SiteSpec): SiteModel {
+export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
   const { business, sections } = spec;
   const words = VOCABULARY[spec.template];
   const labels: Partial<Record<SectionType, string>> = {
@@ -139,7 +139,7 @@ export function buildModel(spec: SiteSpec): SiteModel {
     business,
     hero,
     links,
-    anchorFor: (section) => anchors.get(section),
+    anchorFor: (section) => (withAnchors ? anchors.get(section) : undefined),
     ctaHref,
     ctaLabel: hero?.ctaLabel ?? "Contact us",
     phoneHref,

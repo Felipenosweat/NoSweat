@@ -10,7 +10,7 @@ import { SiteThumbFrame } from "./SiteThumbFrame";
 export function SiteThumb({ spec }: { spec: SiteSpec }) {
   return (
     <SiteThumbFrame>
-      <SiteRenderer spec={spec} />
+      <SiteRenderer spec={spec} anchors={false} />
     </SiteThumbFrame>
   );
 }
