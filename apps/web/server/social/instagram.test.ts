@@ -28,7 +28,14 @@ function stubFetch(responses: (Response | Error)[]) {
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 const graphError = (code: number, subcode?: number, status = 400) =>
   json(
-    { error: { message: `boom access_token=${TOKEN}`, type: "OAuthException", code, error_subcode: subcode } },
+    {
+      error: {
+        message: `boom access_token=${TOKEN}`,
+        type: "OAuthException",
+        code,
+        error_subcode: subcode,
+      },
+    },
     status,
   );
 
@@ -47,7 +54,9 @@ describe("mapGraphError", () => {
   ];
   it("maps Graph error codes to error kinds", () => {
     for (const { status, code, subcode, kind } of cases) {
-      const error = mapGraphError(status, { error: { message: "x", code, error_subcode: subcode } });
+      const error = mapGraphError(status, {
+        error: { message: "x", code, error_subcode: subcode },
+      });
       expect(error.kind, `code ${code}/${subcode ?? "-"}`).toBe(kind);
       expect(error.code).toBe(code);
     }
@@ -79,7 +88,15 @@ describe("LiveInstagramClient", () => {
 
   it("exchanges the code for a long-lived token", async () => {
     const { client, calls } = stubFetch([
-      json({ data: [{ access_token: "short", user_id: 9988, permissions: "instagram_business_basic,instagram_business_content_publish" }] }),
+      json({
+        data: [
+          {
+            access_token: "short",
+            user_id: 9988,
+            permissions: "instagram_business_basic,instagram_business_content_publish",
+          },
+        ],
+      }),
       json({ access_token: TOKEN, token_type: "bearer", expires_in: 5_183_944 }),
     ]);
     const token = await client.exchangeCode("the-code");
@@ -108,7 +125,12 @@ describe("LiveInstagramClient", () => {
       json({ data: [{ quota_usage: 3 }] }),
     ]);
     const profile = await client.getProfile(TOKEN);
-    expect(profile).toEqual({ id: "1784", username: "joe", accountType: "BUSINESS", avatarUrl: null });
+    expect(profile).toEqual({
+      id: "1784",
+      username: "joe",
+      accountType: "BUSINESS",
+      avatarUrl: null,
+    });
     await client.createImageContainer(TOKEN, "1784", {
       imageUrl: "https://x.supabase.co/a.jpg",
       isCarouselItem: true,

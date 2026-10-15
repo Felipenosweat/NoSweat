@@ -111,9 +111,9 @@ describe("Meta compliance callbacks", () => {
   const SECRET = "meta-app-secret";
 
   function signedRequest(userId: string, secret = SECRET): Request {
-    const body = Buffer.from(JSON.stringify({ algorithm: "HMAC-SHA256", user_id: userId })).toString(
-      "base64url",
-    );
+    const body = Buffer.from(
+      JSON.stringify({ algorithm: "HMAC-SHA256", user_id: userId }),
+    ).toString("base64url");
     const sig = createHmac("sha256", secret).update(body).digest("base64url");
     return new Request("https://nosweatfd.com/api/meta/x", {
       method: "POST",

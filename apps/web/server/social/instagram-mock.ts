@@ -85,7 +85,10 @@ export class MockInstagramClient implements InstagramClient {
 
   async refresh(accessToken: string): Promise<{ accessToken: string; expiresIn: number }> {
     this.hit("refresh");
-    return { accessToken: `${accessToken.split("~")[0]}~r${this.nextId()}`, expiresIn: SIXTY_DAYS_S };
+    return {
+      accessToken: `${accessToken.split("~")[0]}~r${this.nextId()}`,
+      expiresIn: SIXTY_DAYS_S,
+    };
   }
 
   async getProfile(): Promise<InstagramProfile> {

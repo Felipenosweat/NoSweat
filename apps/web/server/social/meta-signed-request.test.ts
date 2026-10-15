@@ -20,14 +20,16 @@ describe("parseSignedRequest", () => {
   });
 
   it("turns numeric user ids into strings", () => {
-    expect(parseSignedRequest(sign({ algorithm: "HMAC-SHA256", user_id: 42 }), SECRET)?.user_id).toBe(
-      "42",
-    );
+    expect(
+      parseSignedRequest(sign({ algorithm: "HMAC-SHA256", user_id: 42 }), SECRET)?.user_id,
+    ).toBe("42");
   });
 
   it("rejects a wrong secret, tampering, a bad algorithm or garbage", () => {
     const valid = sign({ algorithm: "HMAC-SHA256", user_id: "1" });
-    expect(parseSignedRequest(sign({ algorithm: "HMAC-SHA256", user_id: "1" }, "other"), SECRET)).toBeNull();
+    expect(
+      parseSignedRequest(sign({ algorithm: "HMAC-SHA256", user_id: "1" }, "other"), SECRET),
+    ).toBeNull();
     const [sig] = valid.split(".");
     const forged = Buffer.from(JSON.stringify({ algorithm: "HMAC-SHA256", user_id: "2" })).toString(
       "base64url",
