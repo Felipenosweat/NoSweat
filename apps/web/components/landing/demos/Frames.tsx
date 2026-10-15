@@ -8,7 +8,7 @@ import type { CSSProperties, ReactNode } from "react";
 export function ExampleTag({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`inline-flex items-center rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] leading-4 font-semibold text-slate-500 ${className}`}
+      className={`inline-flex items-center rounded-md border border-slate-200 bg-white px-1.5 py-0.5 font-sans text-[11px] leading-4 font-semibold tracking-normal text-slate-500 ${className}`}
     >
       Example
     </span>

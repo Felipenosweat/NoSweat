@@ -137,11 +137,7 @@ export function SoundToggle() {
         playing ? "text-white" : "text-slate-300"
       }`}
     >
-      {playing ? (
-        <SpeakerWaveIcon className="size-5" />
-      ) : (
-        <SpeakerXMarkIcon className="size-5" />
-      )}
+      {playing ? <SpeakerWaveIcon className="size-5" /> : <SpeakerXMarkIcon className="size-5" />}
     </button>
   );
 }

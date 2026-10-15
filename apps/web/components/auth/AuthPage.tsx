@@ -142,7 +142,7 @@ export async function AuthPage({
           aria-label="How No Sweat works"
           className="ns-enter-slow sticky top-0 flex h-dvh flex-col gap-8 overflow-hidden px-12 py-12 text-white xl:px-16"
         >
-          <p className="max-w-[12ch] font-[family-name:var(--ns-font-landing-display)] text-[clamp(3rem,4.6vw,4.5rem)] leading-[0.9] font-extrabold tracking-[-0.01em]">
+          <p className="max-w-[12ch] font-display text-[clamp(2.5rem,4vw,3.75rem)] leading-[1.02] font-bold tracking-[-0.035em] text-balance">
             Your business, online by <span className="text-[#4da3ff]">lunch.</span>
           </p>
 

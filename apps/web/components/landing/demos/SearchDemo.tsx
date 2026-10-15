@@ -1,5 +1,6 @@
 import { fixtures } from "@nosweat/fixtures";
 import { searchSnippet } from "@/components/site-metadata";
+import { ExampleTag } from "./Frames";
 
 // Resultado de busca com o título e a descrição que o site de exemplo realmente publica
 // (a mesma regra de `searchSnippet`, usada nos sites publicados).
@@ -13,9 +14,7 @@ export function SearchDemo() {
       aria-hidden="true"
       className="relative max-w-xl rounded-xl border border-slate-200 bg-white p-4 sm:p-5"
     >
-      <span className="absolute top-3 right-3 inline-flex items-center rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] leading-4 font-semibold text-slate-500">
-        Example
-      </span>
+      <ExampleTag className="absolute top-3 right-3" />
       <p className="flex items-center gap-2.5 pr-16">
         <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-600">
           S

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { SparklesIcon } from "@/components/marketing/icons";
+import { ExampleTag } from "./Frames";
 
 // Cena "Post": o calendário de /social. A IA preenche o mês (marcas âmbar "Needs approval"),
 // o dono aprova e o post vira "Scheduled" (azul da marca). As classes `st-*` são os ganchos das
@@ -18,8 +19,11 @@ export function SocialCalendar() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-display text-lg font-bold tracking-[-0.02em]">November 2026</p>
-        <span className="st-fill inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-3 text-xs font-semibold text-white">
+        <p className="flex items-center gap-2 font-display text-lg font-bold tracking-[-0.02em]">
+          November 2026
+          <ExampleTag />
+        </p>
+        <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-3 text-xs font-semibold text-white">
           <SparklesIcon className="size-3.5" />
           Fill my month with AI
         </span>
@@ -77,7 +81,7 @@ export function SocialCalendar() {
 export function SocialPost() {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white text-ink shadow-[0_20px_40px_-20px_rgb(7_27_51/.35)]">
-      <div className="relative aspect-[16/9] w-full bg-slate-100">
+      <div className="relative hidden aspect-[16/9] w-full bg-slate-100 sm:block">
         <Image
           src="/photos/cleaner.webp"
           alt=""
