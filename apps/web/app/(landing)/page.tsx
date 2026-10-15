@@ -22,7 +22,7 @@ import { container } from "@/components/marketing/styles";
 // O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
 const TITLE = "No Sweat: AI Website Builder for Local Businesses";
 const DESCRIPTION =
-  "Describe your business in one sentence and get a real website for your trade: services, phone button, contact form. Change it by asking, then publish. Plans from $39/month.";
+  "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. Plans from $39/month.";
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const metadata: Metadata = {
@@ -68,8 +68,8 @@ export default function LandingPage() {
               data-l-reveal="0.1"
               className="text-lg leading-relaxed text-slate-300 lg:col-span-4 lg:col-start-9"
             >
-              Create and preview your whole site without paying. Pick a plan when you’re ready to
-              publish. Nothing is charged today.
+              Create and preview your whole site without paying. You only pay when you pick a plan
+              to publish.
             </p>
           </div>
           <div

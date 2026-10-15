@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 // Imagem de compartilhamento da landing (1200×630): fundo ink e o endereço como motivo.
-// Fica em (marketing) e não na raiz do app para não virar a imagem padrão dos sites
+// Fica em (landing) e não na raiz do app para não virar a imagem padrão dos sites
 // publicados dos clientes (/s/…, domínio próprio), que têm a própria foto.
 
 export const alt = "No Sweat: describe your business, get a website. nosweatfd.com/s/your-business";

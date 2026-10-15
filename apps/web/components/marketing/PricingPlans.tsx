@@ -10,6 +10,9 @@ import { primaryButton, secondaryButton } from "./styles";
 // Único componente de cliente da seção: só guarda a escolha mensal/anual.
 // Preços combinados com o fundador (2026-10-13). Anual = 10× o mensal ("2 months free" é exato).
 // Nada de preço riscado, "mais popular" ou desconto inventado.
+// "Up to N websites" = sites publicados ao mesmo tempo (`publishedSitesLimit` em
+// server/billing/plans.ts). Sem números de edições da IA nem de posts por plano: o fundador
+// ainda não decidiu (créditos virão depois; ver o TODO em plans.ts).
 
 type Billing = "monthly" | "annual";
 
@@ -23,7 +26,6 @@ type Plan = {
   annualPerMonth: string;
   /** Taxa de implantação no plano mensal; `null` = o plano não tem. */
   setupMonthly: string | null;
-  aiEdits: string;
   recommended?: boolean;
   intro?: string;
   features: string[];
@@ -38,38 +40,38 @@ const PLANS: Plan[] = [
     annual: "$390",
     annualPerMonth: "$32.50",
     setupMonthly: "$249",
-    aiEdits: "30",
     features: [
-      "1 website",
+      "Up to 3 websites",
       "Free nosweatfd.com/s/ address",
       "Editor with live preview",
+      "Photo uploads and a photo gallery",
       "Contact form with messages in your dashboard",
+      "Clients area",
+      "Instagram post calendar",
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    summary: "Your own domain and your own photos.",
+    summary: "Your own domain and more live websites.",
     monthly: "$69",
     annual: "$690",
     annualPerMonth: "$57.50",
     setupMonthly: "$249",
-    aiEdits: "150",
     recommended: true,
     intro: "Everything in Starter, plus:",
-    features: ["Connect your own domain", "Photo uploads and a photo gallery"],
+    features: ["Up to 5 websites", "Connect your own domain", "More Instagram posts each month"],
   },
   {
     id: "premium",
     name: "Premium",
-    summary: "More AI edits and a person checking your site.",
+    summary: "The most live websites and Instagram posts.",
     monthly: "$129",
     annual: "$1,290",
     annualPerMonth: "$107.50",
     setupMonthly: null,
-    aiEdits: "500",
     intro: "Everything in Pro, plus:",
-    features: ["Priority support", "A human review of your site before launch"],
+    features: ["Up to 10 websites", "The most Instagram posts each month"],
   },
 ];
 
@@ -153,7 +155,7 @@ export function PricingPlans() {
                 label="Setup, one time"
                 value={plan.setupMonthly === null ? "None" : annual ? "Waived" : plan.setupMonthly}
               />
-              <ReceiptLine label="AI edits a month" value={plan.aiEdits} />
+              <ReceiptLine label="AI edits" value="Included" />
             </dl>
 
             <div className="mt-6 flex-1">

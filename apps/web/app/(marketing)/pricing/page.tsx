@@ -9,13 +9,25 @@ import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, textLink } from "@/components/marketing/styles";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
-// A cobrança ainda não existe, então as respostas do FAQ dizem só o que é verdade hoje.
+// Criar e ver a prévia é grátis; a cobrança (Stripe) só acontece ao escolher um plano para
+// publicar. As respostas do FAQ dizem só o que é verdade hoje.
+
+const TITLE = "Pricing";
+const DESCRIPTION =
+  "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.";
 
 export const metadata: Metadata = {
-  title: "Pricing",
-  description:
-    "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.",
+  title: TITLE,
+  description: DESCRIPTION,
   alternates: { canonical: "/pricing" },
+  openGraph: {
+    type: "website",
+    url: "/pricing",
+    siteName: "No Sweat",
+    title: `${TITLE} · No Sweat`,
+    description: DESCRIPTION,
+    locale: "en_US",
+  },
 };
 
 const h2Class =
@@ -50,8 +62,8 @@ export default function PricingPage() {
           </div>
 
           <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
-            Prices in US dollars. Paid plans aren’t live yet, so nothing is charged today. Domain
-            registration is not included. See our{" "}
+            Prices in US dollars. Creating and previewing your site is free; you pay when you choose
+            a plan to publish. Domain registration is not included. See our{" "}
             <Link href="/terms" className={textLink}>
               Terms of Service
             </Link>

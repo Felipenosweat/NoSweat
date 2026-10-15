@@ -23,17 +23,27 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "Can AI change my site for me?",
     answer:
-      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. Starter includes 30 AI edits a month, Pro 150 and Premium 500. AI edits reset monthly and don’t roll over.",
+      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. AI edits are included in every plan.",
   },
   {
     question: "Can I add my own photos?",
     answer:
-      "Yes, on Pro and Premium. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
+      "Yes, on every plan. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
   },
   {
     question: "What happens after I publish?",
     answer:
-      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard. Keep editing anytime; changes stay in a draft until you publish again.",
+      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard and added to your Clients list. Keep editing anytime; changes stay in a draft until you publish again.",
+  },
+  {
+    question: "What is the Clients area?",
+    answer:
+      "A simple list of the people who contact you. Every request from your website’s contact form becomes a client automatically. Move each one from New to Contacted, Quoted, then Won or Lost, add notes and follow-up dates, log the jobs you did and what they paid, and tap to call, text or email them.",
+  },
+  {
+    question: "Can it post to Instagram for me?",
+    answer:
+      "Yes, with your approval. Connect a professional Instagram account and AI drafts a month of posts from your website. You review and approve each one, and approved posts go out on schedule. Nothing is posted without your approval.",
   },
   {
     question: "How much does it cost?",
@@ -43,7 +53,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Nothing is charged today.",
+      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal.",
   },
   {
     question: "Can I use my own domain?",
@@ -66,11 +76,11 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Nothing is charged today.",
+      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Creating and previewing your site is free; you’re only charged when you choose a plan to publish.",
   },
   {
     question: "What happens to my website if I don’t publish?",
     answer:
-      "It stays as a private draft in your account. Only you can see it, and you can keep editing it anytime.",
+      "It stays as a private draft; sign up free to keep it. Only you can see it, and you can keep editing it anytime.",
   },
 ];

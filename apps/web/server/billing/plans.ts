@@ -13,6 +13,8 @@ export type Plan = {
   setupCents: number | null;
   /** Pode ligar domínio próprio. */
   customDomain: boolean;
+  /** Sites publicados (no ar) ao mesmo tempo. Rascunhos não contam e não têm limite. */
+  publishedSitesLimit: number;
   /** Posts no Instagram aprovados por mês (calendário de redes sociais). */
   socialPostsPerMonth: number;
   /** Contas de rede social conectadas. */
@@ -25,6 +27,7 @@ export type Plan = {
 export const PLANS: Record<PlanId, Plan> = {
   starter: {
     id: "starter",
+    publishedSitesLimit: 3,
     name: "Starter",
     monthlyCents: 3900,
     annualCents: 39000,
@@ -35,6 +38,7 @@ export const PLANS: Record<PlanId, Plan> = {
   },
   pro: {
     id: "pro",
+    publishedSitesLimit: 5,
     name: "Pro",
     monthlyCents: 6900,
     annualCents: 69000,
@@ -45,6 +49,7 @@ export const PLANS: Record<PlanId, Plan> = {
   },
   premium: {
     id: "premium",
+    publishedSitesLimit: 10,
     name: "Premium",
     monthlyCents: 12900,
     annualCents: 129000,

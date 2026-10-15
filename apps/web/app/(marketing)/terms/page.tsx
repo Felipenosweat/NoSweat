@@ -248,16 +248,17 @@ const SECTIONS: LegalSection[] = [
     content: (
       <>
         <p>
-          <strong>We don’t charge anything today.</strong> Paid plans are not live yet.
+          <strong>Creating an account and previewing your site are free.</strong> You pay when you
+          choose a plan to publish.
         </p>
         <p>
-          When paid plans launch, we’ll show you the price, what’s included, how often you’ll be
-          billed and how to cancel before you pay anything. You’ll only be charged after you agree
-          to those billing terms. Our current planned prices are on the{" "}
+          Before you pay anything, we show you the price, what’s included, how often you’ll be
+          billed and how to cancel. You’ll only be charged after you agree to those billing terms.
+          Current prices are on the{" "}
           <Link href="/pricing" className={textLink}>
             pricing page
-          </Link>{" "}
-          and may change before launch.
+          </Link>
+          . If we change a price, we’ll tell you before it applies to your plan.
         </p>
       </>
     ),
@@ -267,7 +268,7 @@ const SECTIONS: LegalSection[] = [
     title: "Automatic renewal",
     content: (
       <>
-        <p>When paid plans launch, these renewal rules apply to them:</p>
+        <p>These renewal rules apply to paid plans:</p>
         <ul>
           <li>
             <strong>Plans renew automatically</strong> at the end of each billing period (every
