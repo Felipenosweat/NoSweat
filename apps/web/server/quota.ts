@@ -10,16 +10,26 @@ import { getSiteStore, type AiUsageKind } from "./store";
 // Visitantes sem conta têm três travas: por visitante (cookie), por IP (quem apaga o cookie
 // continua limitado) e um teto global por dia somando todos os visitantes (custo máximo).
 
-const DEFAULTS: Record<AiUsageKind, number> = { generate: 5, ai_edit: 30 };
+const DEFAULTS: Record<AiUsageKind, number> = {
+  generate: 5,
+  ai_edit: 30,
+  social_plan: 3,
+  social_caption: 30,
+};
 const ENV: Record<AiUsageKind, string> = {
   generate: "AI_DAILY_GENERATIONS",
   ai_edit: "AI_DAILY_EDITS",
+  social_plan: "AI_DAILY_SOCIAL_PLANS",
+  social_caption: "AI_DAILY_SOCIAL_CAPTIONS",
 };
 
 type GuestLimits = { perGuest: number; perIp: number; global: number };
 const GUEST_DEFAULTS: Record<AiUsageKind, GuestLimits> = {
   generate: { perGuest: 2, perIp: 4, global: 300 },
   ai_edit: { perGuest: 5, perIp: 15, global: 2000 },
+  // Redes sociais são só para contas: visitante sempre recebe 429.
+  social_plan: { perGuest: 0, perIp: 0, global: 0 },
+  social_caption: { perGuest: 0, perIp: 0, global: 0 },
 };
 const GUEST_ENV: Record<AiUsageKind, Record<keyof GuestLimits, string>> = {
   generate: {
@@ -32,11 +42,23 @@ const GUEST_ENV: Record<AiUsageKind, Record<keyof GuestLimits, string>> = {
     perIp: "GUEST_IP_DAILY_EDITS",
     global: "GUEST_GLOBAL_DAILY_EDITS",
   },
+  social_plan: {
+    perGuest: "GUEST_DAILY_SOCIAL_PLANS",
+    perIp: "GUEST_IP_DAILY_SOCIAL_PLANS",
+    global: "GUEST_GLOBAL_DAILY_SOCIAL_PLANS",
+  },
+  social_caption: {
+    perGuest: "GUEST_DAILY_SOCIAL_CAPTIONS",
+    perIp: "GUEST_IP_DAILY_SOCIAL_CAPTIONS",
+    global: "GUEST_GLOBAL_DAILY_SOCIAL_CAPTIONS",
+  },
 };
 
 const LABELS: Record<AiUsageKind, string> = {
   generate: "new websites",
   ai_edit: "AI changes",
+  social_plan: "AI month plans",
+  social_caption: "AI captions",
 };
 
 function envNumber(name: string, fallback: number): number {

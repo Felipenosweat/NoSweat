@@ -29,7 +29,7 @@ export type SiteMeta = Partial<
   Pick<SiteRecord, "status" | "slug" | "customDomain" | "publishedAt" | "publishedSpec">
 >;
 
-export type AiUsageKind = "generate" | "ai_edit";
+export type AiUsageKind = "generate" | "ai_edit" | "social_plan" | "social_caption";
 
 /** Uso da IA por visitante sem conta. `ipHash` é o hash do IP (nunca o IP puro). */
 export type GuestUsage = { guestId: string; ipHash: string | null };

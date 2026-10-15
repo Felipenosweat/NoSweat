@@ -115,6 +115,37 @@ export async function customDomainBlocked(user: CurrentUser): Promise<Response |
   );
 }
 
+// ---------- Redes sociais ----------
+
+/** 402 pronto se o plano da conta não inclui posts nas redes sociais; senão `null`. */
+export async function socialBlocked(user: CurrentUser): Promise<Response | null> {
+  if (!billingEnforced() || (await isAdmin(user.id))) return null;
+  const plan = await activePlan(user.id);
+  if (plan && PLANS[plan].socialPostsPerMonth > 0) return null;
+  return errorResponse(402, "payment_required", "Social posting is part of the paid plans.");
+}
+
+/**
+ * Posts aprovados por mês que o plano permite (`null` = sem limite: cobrança desligada ou
+ * admin). Sem plano ativo = 0.
+ */
+export async function socialMonthlyCap(user: CurrentUser): Promise<number | null> {
+  if (!billingEnforced() || (await isAdmin(user.id))) return null;
+  const plan = await activePlan(user.id);
+  return plan ? PLANS[plan].socialPostsPerMonth : 0;
+}
+
+/**
+ * `true` se o publicador pode postar pelo dono agora. Diferente de `ownerHasLiveAccess`, falha
+ * no banco não libera nem bloqueia: o erro sobe e o publicador tenta de novo depois.
+ */
+export async function ownerHasSocialAccess(ownerId: string): Promise<boolean> {
+  if (!billingEnforced()) return true;
+  if (await isAdmin(ownerId)) return true;
+  const plan = await activePlan(ownerId);
+  return plan !== null && PLANS[plan].socialPostsPerMonth > 0;
+}
+
 type StripeCustomer = { id: string };
 type StripeSession = { id: string; url: string | null };
 

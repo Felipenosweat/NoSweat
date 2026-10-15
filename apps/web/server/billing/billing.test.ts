@@ -8,7 +8,10 @@ import {
   getGrantStore,
   handleStripeEvent,
   ownerHasLiveAccess,
+  ownerHasSocialAccess,
   publishBlocked,
+  socialBlocked,
+  socialMonthlyCap,
   verifyWebhookSignature,
 } from "./index";
 import { getBillingStore } from "./store";
@@ -161,6 +164,52 @@ describe("manual access (Pix/WhatsApp)", () => {
     expect(extendExpiry(active, 30, now)).toBe("2026-02-10T00:00:00.000Z");
     expect(extendExpiry(expired, 30, now)).toBe("2026-01-31T00:00:00.000Z");
     expect(extendExpiry(null, 1, now)).toBe("2026-01-02T00:00:00.000Z");
+  });
+});
+
+describe("social plan rules", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  async function grant(plan: "starter" | "pro" | "premium") {
+    await getGrantStore().upsert({
+      userId: user.id,
+      plan,
+      expiresAt: new Date(Date.now() + 30 * DAY).toISOString(),
+      note: null,
+      grantedBy: null,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  it("leaves social posting open with no cap while plans are off", async () => {
+    expect(await socialBlocked(user)).toBeNull();
+    expect(await socialMonthlyCap(user)).toBeNull();
+    expect(await ownerHasSocialAccess(user.id)).toBe(true);
+  });
+
+  it("blocks without a plan and unlocks with a grant (REQUIRE_PLAN)", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    const blocked = await socialBlocked(user);
+    expect(blocked?.status).toBe(402);
+    expect(await blocked?.json()).toMatchObject({
+      error: { code: "payment_required", message: "Social posting is part of the paid plans." },
+    });
+    expect(await socialMonthlyCap(user)).toBe(0);
+    expect(await ownerHasSocialAccess(user.id)).toBe(false);
+
+    await grant("pro");
+    expect(await socialBlocked(user)).toBeNull();
+    expect(await ownerHasSocialAccess(user.id)).toBe(true);
+  });
+
+  it("caps approved posts per month by plan", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    await grant("starter");
+    expect(await socialMonthlyCap(user)).toBe(12);
+    await grant("pro");
+    expect(await socialMonthlyCap(user)).toBe(30);
+    await grant("premium");
+    expect(await socialMonthlyCap(user)).toBe(60);
   });
 });
 

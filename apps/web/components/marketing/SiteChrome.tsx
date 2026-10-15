@@ -40,6 +40,7 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
     links: [
       { href: "/terms", label: "Terms of Service" },
       { href: "/privacy", label: "Privacy Policy" },
+      { href: "/data-deletion", label: "Data deletion" },
     ],
     note: "Example businesses on this site are fictional.",
   },

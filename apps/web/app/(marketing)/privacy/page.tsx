@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   ContactEmailLink,
   LegalPage,
   type LegalSection,
 } from "@/components/marketing/legal/LegalPage";
+import { textLink } from "@/components/marketing/styles";
 
 // Rascunho da Política de Privacidade. Só descreve o que a plataforma faz hoje (Supabase,
-// Vercel, Anthropic; Stripe quando a cobrança existir). Sem selos ou certificações.
+// Vercel, Anthropic; Stripe quando a cobrança existir; Meta quando o cliente conecta o
+// Instagram). Sem selos ou certificações. Revisar com um advogado antes do App Review da Meta.
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -91,6 +94,7 @@ const SECTIONS: LegalSection[] = [
         <li>To create your account, log you in and keep your account secure.</li>
         <li>To generate, edit, store, publish and host your website.</li>
         <li>To deliver contact-form messages from your visitors to your dashboard.</li>
+        <li>If you connect Instagram, to publish the posts you approve at the times you choose.</li>
         <li>To apply usage limits and prevent spam, fraud and abuse.</li>
         <li>To answer your questions and send important notices about your account.</li>
         <li>
@@ -120,6 +124,71 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "connected-social-accounts",
+    title: "Connected social accounts (Instagram)",
+    content: (
+      <>
+        <p>
+          You can connect an Instagram professional account so No Sweat can publish posts for your
+          business. Connecting is optional. When you connect, Instagram (Meta Platforms) shares this
+          information with us, based on the permissions you approve:
+        </p>
+        <ul>
+          <li>Your Instagram account ID and username.</li>
+          <li>Your profile picture and account type.</li>
+          <li>The permissions you granted to No Sweat.</li>
+          <li>The IDs and links of the posts we publish for you.</li>
+          <li>An access token that lets us publish on your behalf.</li>
+        </ul>
+        <p>
+          <strong>Why we use it.</strong> Only to publish the posts you approve, at the time you
+          choose, and to show you their status in your dashboard. We never publish anything you
+          haven’t approved.
+        </p>
+        <p>
+          <strong>How we protect it.</strong> Access tokens are encrypted at rest. We never sell or
+          share your Instagram data, and we don’t use it for advertising or to train AI models.
+        </p>
+        <p>
+          <strong>AI captions.</strong> If you ask for caption ideas, we send your business
+          information (not your Instagram data or token) to our AI provider, Anthropic. You review
+          and edit every caption before it can be published.
+        </p>
+        <p>
+          <strong>How long we keep it.</strong> Your access token is deleted as soon as you
+          disconnect the account in No Sweat or remove No Sweat’s access in Instagram. Other data we
+          received from Instagram is deleted within 30 days of a deletion request.
+        </p>
+        <p>
+          <strong>How to delete it.</strong> You can do any of these:
+        </p>
+        <ul>
+          <li>
+            Disconnect the account on the{" "}
+            <Link href="/social" className={textLink}>
+              Social
+            </Link>{" "}
+            page of your dashboard.
+          </li>
+          <li>
+            In Instagram, go to Settings, then <strong>Apps and websites</strong>, and remove No
+            Sweat.
+          </li>
+          <li>
+            Email us at <ContactEmailLink /> from the address on your account.
+          </li>
+        </ul>
+        <p>
+          Step-by-step instructions, and a way to check the status of a request, are on our{" "}
+          <Link href="/data-deletion" className={textLink}>
+            data deletion page
+          </Link>
+          .
+        </p>
+      </>
+    ),
+  },
+  {
     id: "service-providers",
     title: "Service providers",
     content: (
@@ -136,7 +205,12 @@ const SECTIONS: LegalSection[] = [
             <strong>Vercel</strong>: website hosting and custom domain connections.
           </li>
           <li>
-            <strong>Anthropic</strong>: the AI that writes and edits website content.
+            <strong>Anthropic</strong>: the AI that writes and edits website content and suggests
+            social media captions.
+          </li>
+          <li>
+            <strong>Meta Platforms</strong>: Instagram, if you connect an Instagram account so we
+            can publish the posts you approve.
           </li>
           <li>
             <strong>Resend</strong>: sending emails (contact-form notices and, if you opted in,
@@ -286,8 +360,8 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      updatedIso="2026-10-13"
-      updatedLabel="October 13, 2026"
+      updatedIso="2026-10-15"
+      updatedLabel="October 15, 2026"
       intro={
         <p>
           What we collect when you use No Sweat, why we collect it, and how you can see, change or
