@@ -13,14 +13,8 @@ export type HubModule = {
 
 export const MODULES: readonly HubModule[] = [
   { key: "website", label: "Website", href: "/dashboard#sites" },
+  { key: "clients", label: "Clients", href: "/clients" },
   { key: "social", label: "Social", href: "/social" },
-  {
-    key: "clients",
-    label: "Clients",
-    href: "/clients",
-    comingSoon: true,
-    soonText: "Keep each customer’s details and job history in one place.",
-  },
   {
     key: "reviews",
     label: "Google reviews",

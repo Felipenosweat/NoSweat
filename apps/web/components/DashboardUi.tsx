@@ -24,10 +24,11 @@ export const panelTitle = "font-display text-[15px] leading-6 font-semibold text
 
 export const panelText = "text-[15px] leading-[1.6] text-slate-600";
 
-type BadgeTone = "live" | "draft" | "pending" | "neutral";
+type BadgeTone = "live" | "draft" | "pending" | "info" | "neutral";
 
 const DOTS: Record<BadgeTone, string> = {
   live: "bg-emerald-500",
+  info: "bg-brand",
   draft: "bg-slate-400",
   pending: "bg-amber-500",
   neutral: "",

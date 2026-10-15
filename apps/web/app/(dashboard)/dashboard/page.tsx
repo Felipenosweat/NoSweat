@@ -1,3 +1,4 @@
+import type { Client } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -8,8 +9,10 @@ import { StatusBadge, focusRing } from "@/components/DashboardUi";
 import { ExampleSiteEmpty } from "@/components/ExampleSiteEmpty";
 import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
+import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { MODULES, type HubModule } from "@/lib/modules";
 import { createSupabaseServerClient, getCurrentUser } from "@/server/auth/session";
+import { clientsNeedingAttention, listClients } from "@/server/clients/service";
 import { getSocialStore } from "@/server/social/store";
 import type { SocialAccountRecord, SocialPostRecord } from "@/server/social/types";
 import { getSiteStore, type SiteRecord } from "@/server/store";
@@ -101,6 +104,38 @@ async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot>
   }
 }
 
+type ClientsSnapshot = {
+  total: number;
+  newCount: number;
+  followUpsDue: Client[];
+  /** Hoje no fuso da empresa ("AAAA-MM-DD"). */
+  today: string;
+};
+
+/**
+ * Resumo do módulo de clientes (o serviço já traz os pedidos novos do site antes de ler). `null` =
+ * erro (a página volta a mostrar as mensagens do site por site, como antes).
+ */
+async function loadClients(ownerId: string, now: number): Promise<ClientsSnapshot | null> {
+  const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date(now));
+  try {
+    // Um depois do outro: os dois importam os pedidos do site, e em paralelo poderiam duplicar.
+    const clients = await listClients(ownerId);
+    const attention = await clientsNeedingAttention(ownerId, today);
+    return {
+      total: clients.length,
+      newCount: attention.newCount,
+      followUpsDue: attention.followUpsDue,
+      today,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Quantos retornos aparecem um por um em "Needs you" (o resto vira uma linha só). */
+const MAX_FOLLOW_UP_ROWS = 2;
+
 type NeedRow = { key: string; href: string; text: ReactNode; action: string };
 
 /** Número em destaque dentro de uma frase. */
@@ -117,11 +152,13 @@ function needsRows({
   sites,
   weekLeads,
   social,
+  clients,
   now,
 }: {
   sites: SiteRecord[];
   weekLeads: Record<string, number>;
   social: SocialSnapshot;
+  clients: ClientsSnapshot | null;
   now: number;
 }): NeedRow[] {
   const rows: NeedRow[] = [];
@@ -151,6 +188,49 @@ function needsRows({
     });
   }
 
+  if (clients) {
+    const { followUpsDue, today } = clients;
+    for (const client of followUpsDue.slice(0, MAX_FOLLOW_UP_ROWS)) {
+      const due =
+        client.followUpOn === null || client.followUpOn === today
+          ? "today"
+          : formatDateOnly(client.followUpOn, today);
+      rows.push({
+        key: `follow-up-${client.id}`,
+        href: `/clients/${encodeURIComponent(client.id)}`,
+        text: (
+          <>
+            Follow up with <span className="font-medium">{client.name}</span> (due {due}).
+          </>
+        ),
+        action: "Open",
+      });
+    }
+    // O serviço manda no máximo 5 retornos: sem número aqui, para não contar a menos.
+    if (followUpsDue.length > MAX_FOLLOW_UP_ROWS) {
+      rows.push({
+        key: "follow-ups-more",
+        href: "/clients",
+        text: "You have more follow-ups due.",
+        action: "Clients",
+      });
+    }
+
+    if (clients.newCount > 0) {
+      rows.push({
+        key: "new-clients",
+        href: "/clients?stage=new",
+        text: (
+          <>
+            <Count value={clients.newCount} /> new{" "}
+            {plural(clients.newCount, "client is", "clients are")} waiting for a reply.
+          </>
+        ),
+        action: "Reply",
+      });
+    }
+  }
+
   // Só os problemas recentes (últimos 30 dias), para não lembrar para sempre de um post antigo.
   const problems = posts.filter(
     (post) =>
@@ -172,7 +252,8 @@ function needsRows({
     });
   }
 
-  for (const site of sites) {
+  // Mensagens do site por site: só sem o módulo de clientes (com ele, viram "new clients" acima).
+  for (const site of clients ? [] : sites) {
     const count = weekLeads[site.id] ?? 0;
     if (count === 0) continue;
     rows.push({
@@ -258,7 +339,8 @@ function LiveTile({
   linkText,
 }: {
   hub: HubModule;
-  value: number;
+  /** `null` = número indisponível (erro ao ler): só o rótulo e o link. */
+  value: number | null;
   unit: string;
   linkText: string;
 }) {
@@ -269,9 +351,11 @@ function LiveTile({
         className={`${tileBase} h-full border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 ${focusRing}`}
       >
         <h3 className="text-sm font-semibold text-slate-600">{hub.label}</h3>
-        <p className="mt-1.5 font-display text-[2rem] leading-none font-bold tracking-[-0.02em] text-ink tabular-nums">
-          {value}
-        </p>
+        {value !== null && (
+          <p className="mt-1.5 font-display text-[2rem] leading-none font-bold tracking-[-0.02em] text-ink tabular-nums">
+            {value}
+          </p>
+        )}
         <p className="text-[13px] text-slate-500">{unit}</p>
         <span className="mt-auto pt-2.5 text-sm font-semibold text-brand">{linkText}</span>
       </Link>
@@ -295,10 +379,12 @@ function YourOffice({
   liveSites,
   totalSites,
   scheduledSoon,
+  clients,
 }: {
   liveSites: number;
   totalSites: number;
   scheduledSoon: number;
+  clients: ClientsSnapshot | null;
 }) {
   return (
     <section aria-labelledby="office-heading">
@@ -316,6 +402,21 @@ function YourOffice({
                 value={liveSites}
                 unit={`live of ${totalSites} ${plural(totalSites, "site", "sites")}`}
                 linkText="See sites"
+              />
+            );
+          }
+          if (hub.key === "clients") {
+            return (
+              <LiveTile
+                key={hub.key}
+                hub={hub}
+                value={clients?.total ?? null}
+                unit={
+                  clients
+                    ? `${plural(clients.total, "client", "clients")} · ${clients.newCount} new`
+                    : "Everyone who contacted you"
+                }
+                linkText="Open clients"
               />
             );
           }
@@ -338,10 +439,11 @@ function YourOffice({
 async function loadHome(ownerId: string) {
   const now = Date.now();
   const store = getSiteStore();
-  const [sites, firstName, social] = await Promise.all([
+  const [sites, firstName, social, clients] = await Promise.all([
     store.list(ownerId),
     getFirstName(),
     loadSocial(ownerId, now),
+    loadClients(ownerId, now),
   ]);
   const leadLists = await Promise.all(sites.map((site) => store.listLeads(site.id)));
   const weekAgo = now - 7 * DAY_MS;
@@ -352,7 +454,7 @@ async function loadHome(ownerId: string) {
     leadCounts[site.id] = leads.length;
     weekLeads[site.id] = leads.filter((lead) => Date.parse(lead.createdAt) >= weekAgo).length;
   });
-  return { now, sites, firstName, social, leadCounts, weekLeads };
+  return { now, sites, firstName, social, clients, leadCounts, weekLeads };
 }
 
 export default async function DashboardPage() {
@@ -360,7 +462,7 @@ export default async function DashboardPage() {
   await connection();
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/dashboard");
-  const { now, sites, firstName, social, leadCounts, weekLeads } = await loadHome(user.id);
+  const { now, sites, firstName, social, clients, leadCounts, weekLeads } = await loadHome(user.id);
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
 
@@ -388,9 +490,14 @@ export default async function DashboardPage() {
     },
   ];
 
-  const needs = <NeedsYou rows={needsRows({ sites, weekLeads, social, now })} />;
+  const needs = <NeedsYou rows={needsRows({ sites, weekLeads, social, clients, now })} />;
   const office = (
-    <YourOffice liveSites={liveSites} totalSites={sites.length} scheduledSoon={scheduledSoon} />
+    <YourOffice
+      liveSites={liveSites}
+      totalSites={sites.length}
+      scheduledSoon={scheduledSoon}
+      clients={clients}
+    />
   );
   const yourSites = (
     <section id="sites" aria-labelledby="sites-heading">

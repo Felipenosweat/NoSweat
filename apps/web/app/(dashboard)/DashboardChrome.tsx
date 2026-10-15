@@ -39,6 +39,14 @@ const soonItem = "flex min-h-10 items-center gap-3 rounded-lg px-3 text-[15px] t
 
 const tabItem = `relative flex h-full flex-col items-center justify-center gap-0.5 text-xs font-medium text-slate-500 transition-colors duration-150 hover:text-ink aria-[current=page]:text-ink aria-[current=page]:before:absolute aria-[current=page]:before:inset-x-[22%] aria-[current=page]:before:top-0 aria-[current=page]:before:h-0.5 aria-[current=page]:before:rounded-b-sm aria-[current=page]:before:bg-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
 
+// Colunas da barra de abas: Home + módulos ativos + More (classes inteiras para o Tailwind achar).
+const TAB_COLUMNS: Record<number, string> = {
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+  6: "grid-cols-6",
+};
+
 const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-[15px] font-medium text-ink transition-colors duration-150 hover:bg-slate-50 ${focusRing}`;
 
 function useCurrent() {
@@ -178,7 +186,7 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <ul className="grid h-16 grid-cols-4">
+      <ul className={`grid h-16 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
         <li>
           <Link href="/dashboard" aria-current={current("/dashboard")} className={tabItem}>
             <HomeIcon className="size-6" />
