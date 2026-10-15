@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { InstagramError, type InstagramClient } from "./client";
 import { decryptToken, encryptToken, tokenAad } from "./crypto";
 import { refreshExpiringTokens, type RefreshDeps } from "./refresh";
@@ -72,7 +72,7 @@ function fakeClient() {
 }
 
 function deps(client: InstagramClient): RefreshDeps & {
-  sendReconnectEmail: ReturnType<typeof vi.fn<(ownerId: string) => Promise<void>>>;
+  sendReconnectEmail: Mock<(ownerId: string) => Promise<void>>;
 } {
   return {
     client,
@@ -107,9 +107,7 @@ describe("refreshExpiringTokens", () => {
     expect(decryptToken(saved?.accessTokenEnc ?? "", aad("due"))).toBe("token-due-new");
     expect(Date.parse(saved?.tokenExpiresAt ?? "")).toBeGreaterThan(Date.now() + 59 * DAY);
     expect(Date.parse(saved?.tokenRefreshedAt ?? "")).toBeGreaterThan(Date.now() - 60_000);
-    expect(await store.countEventsSince(OWNER, "token_refresh", new Date(0).toISOString())).toBe(
-      1,
-    );
+    expect(await store.countEventsSince(OWNER, "token_refresh", new Date(0).toISOString())).toBe(1);
   });
 
   it("asks to reconnect and pauses posts when Instagram refuses the token", async () => {

@@ -103,10 +103,17 @@ function deps(client: InstagramClient | null, extra: Partial<PublisherDeps> = {}
     hasSocialAccess: async () => true,
     getToken: () => "token",
     pauseAccountPosts: async (ownerId: string, accountId: string, reason: string) =>
-      (await store.updateOwnerPosts(ownerId, ["scheduled", "needs_check"], {
-        status: "paused",
-        lastError: reason,
-      }, accountId)).length,
+      (
+        await store.updateOwnerPosts(
+          ownerId,
+          ["scheduled", "needs_check"],
+          {
+            status: "paused",
+            lastError: reason,
+          },
+          accountId,
+        )
+      ).length,
     sendPostFailedEmail: vi.fn<NonNullable<PublisherDeps["sendPostFailedEmail"]>>(async () => {}),
     sendReconnectEmail: vi.fn<NonNullable<PublisherDeps["sendReconnectEmail"]>>(async () => {}),
     ...extra,
@@ -292,7 +299,10 @@ describe("publishDuePosts", () => {
     vi.stubEnv("SOCIAL_DAILY_POST_CAP", "1");
     try {
       const done = await duePost();
-      await store.updatePost(done.id, { status: "published", publishedAt: new Date().toISOString() });
+      await store.updatePost(done.id, {
+        status: "published",
+        publishedAt: new Date().toISOString(),
+      });
       const post = await duePost();
       const client = fakeClient();
       const summary = await publishDuePosts({}, deps(client));

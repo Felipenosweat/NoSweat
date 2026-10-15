@@ -7,7 +7,8 @@ export const maxDuration = 300;
 
 /**
  * GET /api/cron/social-publish: publica no Instagram os posts aprovados que chegaram na hora.
- * Roda a cada minuto pelo Cron da Vercel (vercel.json), com `Authorization: Bearer CRON_SECRET`.
+ * Chamada a cada minuto pelo pg_cron do Supabase (o Cron da Vercel no plano Hobby só roda 1x por
+ * dia, como reserva). Os dois mandam `Authorization: Bearer CRON_SECRET`.
  */
 export async function GET(request: Request): Promise<Response> {
   return handle(async () => {
