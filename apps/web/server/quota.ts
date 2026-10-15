@@ -125,7 +125,7 @@ function userLimitResponse(kind: AiUsageKind): Response {
   return errorResponse(
     429,
     "quota_exceeded",
-    `You've reached today's limit of ${dailyLimit(kind)} ${LABELS[kind]}. Please try again tomorrow.`,
+    `You've reached the limit of ${dailyLimit(kind)} ${LABELS[kind]} for the last 24 hours. Please try again later.`,
   );
 }
 

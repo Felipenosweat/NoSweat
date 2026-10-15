@@ -19,8 +19,9 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     if (!user) return unauthorized();
     if (!site) return notFound();
 
-    // Com a cobrança ligada, publicar exige um plano ativo (402 → tela de planos).
-    const unpaid = await publishBlocked(user);
+    // Com a cobrança ligada, publicar exige um plano ativo e respeita o limite de sites no ar
+    // do plano (402 → tela de planos). Republicar um site que já está no ar não conta.
+    const unpaid = await publishBlocked(user, site);
     if (unpaid) return unpaid;
 
     // Texto de exemplo do editor (ex.: depoimento de mentira) nunca vai ao ar.

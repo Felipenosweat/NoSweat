@@ -14,6 +14,8 @@ import {
   socialMonthlyCap,
   verifyWebhookSignature,
 } from "./index";
+import { fixtures } from "@nosweat/fixtures";
+import { getSiteStore } from "../store";
 import { getBillingStore } from "./store";
 import { encodeForm } from "./stripe";
 
@@ -210,6 +212,61 @@ describe("social plan rules", () => {
     expect(await socialMonthlyCap(user)).toBe(30);
     await grant("premium");
     expect(await socialMonthlyCap(user)).toBe(60);
+  });
+});
+
+describe("published sites limit", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const owner = { id: "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d", email: "limit@example.com" };
+
+  beforeEach(() => {
+    (globalThis as { __nosweatSites?: unknown }).__nosweatSites = undefined;
+  });
+
+  async function grant(plan: "starter" | "pro" | "premium") {
+    await getGrantStore().upsert({
+      userId: owner.id,
+      plan,
+      expiresAt: new Date(Date.now() + 30 * DAY).toISOString(),
+      note: null,
+      grantedBy: null,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  async function liveSite() {
+    const store = getSiteStore();
+    const site = await store.create(fixtures["joes-plumbing"], owner.id);
+    const published = await store.updateMeta(site.id, { status: "published" });
+    if (!published) throw new Error("site not found");
+    return published;
+  }
+
+  it("has no limit while plans are off", async () => {
+    for (let i = 0; i < 3; i++) await liveSite();
+    const draft = await getSiteStore().create(fixtures["glow-salon"], owner.id);
+    expect(await publishBlocked(owner, draft)).toBeNull();
+  });
+
+  it("allows 3 live sites on Starter, more on Pro, and always lets a live site republish", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    await grant("starter");
+    const live = [await liveSite(), await liveSite(), await liveSite()];
+
+    const draft = await getSiteStore().create(fixtures["glow-salon"], owner.id);
+    const blocked = await publishBlocked(owner, draft);
+    expect(blocked?.status).toBe(402);
+    expect(await blocked?.json()).toMatchObject({
+      error: {
+        code: "payment_required",
+        message: "Your plan includes 3 live websites. Upgrade to publish more.",
+      },
+    });
+    // Publicar as mudanças de um site que já está no ar nunca é bloqueado pelo limite.
+    expect(await publishBlocked(owner, live[0])).toBeNull();
+
+    await grant("pro");
+    expect(await publishBlocked(owner, draft)).toBeNull();
   });
 });
 

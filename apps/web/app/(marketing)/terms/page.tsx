@@ -266,7 +266,7 @@ const SECTIONS: LegalSection[] = [
     title: "Automatic renewal",
     content: (
       <>
-        <p>When paid plans launch, these renewal rules apply to them:</p>
+        <p>These renewal rules apply to paid plans:</p>
         <ul>
           <li>
             <strong>Plans renew automatically</strong> at the end of each billing period (every
