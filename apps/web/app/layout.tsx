@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { SITE_ORIGIN } from "@/lib/site";
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nosweatfd.com"),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: "No Sweat · Your website, no sweat.",
     template: "%s · No Sweat",

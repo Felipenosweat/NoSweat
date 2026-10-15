@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Data deletion",
   description:
     "How to delete the data No Sweat received from Instagram, and how to check the status of a deletion request.",
+  alternates: { canonical: "/data-deletion" },
 };
 
 type SearchParams = Promise<{ code?: string | string[] }>;
