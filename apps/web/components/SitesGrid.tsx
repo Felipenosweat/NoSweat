@@ -103,13 +103,17 @@ export function SitesGrid({
   sites,
   emptyState,
   leadCounts,
+  headingLevel = 2,
 }: {
   sites: SiteRecord[];
   emptyState?: ReactNode;
   /** Pedidos de contato por site (id → quantidade). Sem isto, a linha não aparece. */
   leadCounts?: Record<string, number>;
+  /** Nível do título de cada card (3 quando a lista fica sob um título "Your sites"). */
+  headingLevel?: 2 | 3;
 }) {
   if (sites.length === 0) return emptyState ?? <DefaultEmptyState />;
+  const CardHeading = headingLevel === 3 ? "h3" : "h2";
 
   return (
     <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,7 +131,7 @@ export function SitesGrid({
               </div>
               <div className="flex-1 px-5 pt-4 pb-5">
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="line-clamp-2 font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] break-words text-ink">
+                  <CardHeading className="line-clamp-2 font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] break-words text-ink">
                     {/* Link "esticado": o card inteiro abre as configurações do site. */}
                     <Link
                       href={`/sites/${site.id}`}
@@ -135,7 +139,7 @@ export function SitesGrid({
                     >
                       {business.name}
                     </Link>
-                  </h2>
+                  </CardHeading>
                   <StatusBadge tone={live ? "live" : "draft"}>
                     {live ? "Live" : "Draft"}
                   </StatusBadge>

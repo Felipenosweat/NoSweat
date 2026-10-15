@@ -1,70 +1,72 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { signOut } from "@/app/(auth)/login/actions";
 import { Logo } from "@/components/Logo";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAdminUser } from "@/server/admin";
 import { getCurrentUser } from "@/server/auth/session";
-import { NavLinks } from "./NavLinks";
+import { getSiteStore } from "@/server/store";
+import { DashboardChrome } from "./DashboardChrome";
+
+/** Id do site mais recente da conta (atalho "Messages"). Erro no banco = sem atalho. */
+async function latestSiteId(ownerId: string): Promise<string | null> {
+  try {
+    // `list` já vem do mais recente para o mais antigo.
+    const [latest] = await getSiteStore().list(ownerId);
+    return latest?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Com login desligado (dev local) todo mundo é o DEV_USER: sem e-mail, "Log out" nem "Sign up".
   const authEnabled = getSupabaseAuthConfig() !== null;
   const currentUser = await getCurrentUser();
   const user = authEnabled ? currentUser : null;
-  // Visitante sem conta (pode usar o /create): vê "Log in" e "Sign up" em vez da conta.
-  const guest = authEnabled && !currentUser;
-  const admin = await isAdminUser(currentUser);
+
+  // Visitante sem conta (só com login ligado; pode usar o /create): o mesmo topo de antes, com
+  // "Log in" e "Sign up" em vez da conta (sem barra lateral nem abas).
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
+          <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
+            <Logo />
+            <nav aria-label="Main" className="flex items-center gap-3 sm:gap-6">
+              <Link
+                href="/login"
+                className="inline-flex min-h-11 items-center text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex h-10 items-center rounded-lg bg-brand px-3 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
+              >
+                Sign up
+              </Link>
+            </nav>
+          </div>
+        </header>
+        <main className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  const [admin, latest] = await Promise.all([
+    isAdminUser(currentUser),
+    latestSiteId(currentUser.id),
+  ]);
 
   return (
-    <div className="min-h-screen bg-surface">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
-          <Logo />
-          <nav aria-label="Main" className="flex items-center gap-3 sm:gap-6">
-            <NavLinks admin={admin} guest={guest} />
-            {guest ? (
-              <>
-                <Link
-                  href="/login"
-                  className="inline-flex min-h-11 items-center text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/signup"
-                  className="inline-flex h-10 items-center rounded-lg bg-brand px-3 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
-                >
-                  Sign up
-                </Link>
-              </>
-            ) : (
-              <Link
-                href="/create"
-                className="inline-flex h-11 items-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold whitespace-nowrap text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
-              >
-                New site
-              </Link>
-            )}
-            {user && (
-              <form action={signOut} className="flex items-center gap-3">
-                <span className="hidden max-w-[22ch] truncate text-sm text-slate-500 md:inline">
-                  {user.email}
-                </span>
-                <button
-                  type="submit"
-                  className="min-h-11 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  Log out
-                </button>
-              </form>
-            )}
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
-        {children}
-      </main>
-    </div>
+    <DashboardChrome
+      admin={admin}
+      account={user ? { email: user.email } : null}
+      latestSiteId={latest}
+    >
+      {children}
+    </DashboardChrome>
   );
 }

@@ -73,7 +73,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             href="/dashboard"
             className={`inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
           >
-            <span aria-hidden="true">&larr;&nbsp;</span>My sites
+            <span aria-hidden="true">&larr;&nbsp;</span>Dashboard
           </Link>
         </div>
       </header>

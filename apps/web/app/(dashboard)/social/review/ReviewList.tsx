@@ -221,7 +221,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
         </p>
       )}
 
-      <div className="sticky bottom-0 mt-6 -mx-5 border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur-sm sm:mx-0 sm:rounded-xl sm:border">
+      <div className="sticky bottom-0 mt-6 -mx-5 max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur-sm sm:mx-0 sm:rounded-xl sm:border">
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"

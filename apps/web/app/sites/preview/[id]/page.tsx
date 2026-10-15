@@ -57,7 +57,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
         <div className="flex items-center gap-4">
           {!guest && (
             <Link href="/dashboard" className={`rounded-sm hover:text-white ${focusRing}`}>
-              &larr; My sites
+              &larr; Dashboard
             </Link>
           )}
           <Link
