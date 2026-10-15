@@ -102,9 +102,23 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     }
   }, []);
 
+  // Primeira carga: o setState só roda na volta da promessa (regra react-hooks/set-state-in-effect).
   useEffect(() => {
-    void loadState();
-  }, [loadState]);
+    let alive = true;
+    socialApi("/api/social/state", SocialStateResponse)
+      .then((next) => {
+        if (!alive) return;
+        setState(next);
+        setStateError(null);
+        setMonth((m) => m ?? currentMonth(next.settings.timezone));
+      })
+      .catch((err: unknown) => {
+        if (alive) setStateError(toApiError(err));
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const tz = state?.settings.timezone ?? null;
   const postsKey = month && tz ? `${month}|${tz}` : null;
