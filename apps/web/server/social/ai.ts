@@ -246,9 +246,11 @@ export class MockPostPlanner implements PostPlanner {
 
   async writeCaption(ctx: BusinessContext, req: CaptionRequest): Promise<CaptionResponse> {
     const current = req.currentCaption?.trim();
+    const idea = req.idea?.trim() ?? "";
+    const opening = idea && !/[.!?]$/.test(idea) ? `${idea}.` : idea;
     const base =
       req.action === "write" || !current
-        ? `${req.idea?.trim() ? `${req.idea.trim()} ` : ""}From all of us at ${ctx.businessName}.`
+        ? `${opening ? `${opening} ` : ""}From all of us at ${ctx.businessName}.`
         : current;
     let caption = base;
     let ownerNotePt = "Legenda nova escrita a partir da sua ideia.";

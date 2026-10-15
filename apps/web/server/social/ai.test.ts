@@ -45,7 +45,8 @@ describe("planDates", () => {
 
     // 7 dias marcados, mas só 2 por semana (semana de segunda a domingo).
     const two = planDates("2026-11", [0, 1, 2, 3, 4, 5, 6], 2, 30);
-    expect(two.slice(0, 3)).toEqual(["2026-11-01", "2026-11-02", "2026-11-03"].slice(0, 1).concat(["2026-11-02", "2026-11-03"]));
+    // 1º/nov é domingo (semana que começou em outubro), depois seg e ter de cada semana.
+    expect(two.slice(0, 4)).toEqual(["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-09"]);
   });
 
   it("uses default days when none were chosen and respects maxPosts", () => {
@@ -68,7 +69,7 @@ describe("MockPostPlanner", () => {
       expect(hasUnverifiedClaims(item.caption, ctx.highlights)).toBe(false);
     }
     expect(items.some((i) => i.caption.includes("Joe's Plumbing"))).toBe(true);
-    expect(items.some((i) => i.caption.includes("Drain cleaning"))).toBe(true);
+    expect(items.some((i) => i.caption.includes("Water heaters"))).toBe(true);
     // As hashtags já vêm dentro da legenda.
     expect(items[0]?.caption).toContain("#JoesPlumbing");
   });
@@ -244,6 +245,8 @@ describe("buildBusinessContext", () => {
 
   it("reads the owner's newest site and keeps only uploaded photos", async () => {
     await getSiteStore().create(fixtures["rosas-kitchen"], OWNER);
+    // createdAt diferente para o mais recente ficar em primeiro.
+    await new Promise((resolve) => setTimeout(resolve, 5));
     const site = await getSiteStore().create(specWithPhotos(), OWNER);
     const result = await buildBusinessContext(OWNER);
     expect(result?.siteId).toBe(site.id);
@@ -257,6 +260,6 @@ describe("buildBusinessContext", () => {
     const other = await getSiteStore().create(fixtures["glow-salon"], "someone-else");
     expect(await buildBusinessContext("no-sites-owner")).toBeNull();
     expect(await buildBusinessContext("no-sites-owner", other.id)).toBeNull();
-    expect(contextFromSpec("x", fixtures["glow-salon"]).photos.every((p) => p.url.includes("supabase"))).toBe(true);
+    expect(contextFromSpec("x", fixtures["glow-salon"]).photos).toEqual([]);
   });
 });
