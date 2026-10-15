@@ -1,15 +1,26 @@
 import { fixtures } from "@nosweat/fixtures";
-import type { SiteSpec } from "@nosweat/schema";
+import type { ClientStage, SiteSpec } from "@nosweat/schema";
 import { SiteRenderer } from "@nosweat/templates";
+import Image from "next/image";
 import type { CSSProperties, ReactNode } from "react";
+import { StatusBadge } from "@/components/DashboardUi";
+import {
+  ChatIcon,
+  EnvelopeIcon,
+  PencilIcon,
+  PhoneIcon,
+  SparklesIcon,
+} from "@/components/marketing/icons";
 import { container } from "@/components/marketing/styles";
 import { searchSnippet } from "@/components/site-metadata";
+import { STAGE_LABELS, STAGE_TONES } from "@/lib/clients";
 
 // "O que vem junto": cada recurso mostrado com a interface de verdade, não com desenho.
 // - Ligar e domínio: o próprio <SiteRenderer> de um site de exemplo (negócio fictício), em
 //   escala, inerte (`inert`: ninguém liga nem clica sem querer) e escondido de leitores de tela.
-// - Pedidos, pedir mudança e busca: HTML que reproduz o que o produto faz hoje (o e-mail de
-//   aviso, o painel "Describe a change" do editor e a regra de título/descrição dos sites).
+// - Pedidos, clientes, pedir mudança, Instagram e busca: HTML que reproduz o que o produto faz
+//   hoje (o e-mail de aviso, a ficha do cliente em /clients, o painel "Describe a change" do
+//   editor, o calendário de /social e a regra de título/descrição dos sites).
 // Conteúdo de exemplo sempre rotulado como exemplo.
 
 const joe = fixtures["joes-plumbing"];
@@ -53,6 +64,7 @@ function ScaledSite({
 }
 
 function Feature({
+  id,
   index,
   title,
   body,
@@ -60,6 +72,8 @@ function Feature({
   note,
   flip = false,
 }: {
+  /** Âncora para os links do rodapé (ex.: /#clients). */
+  id?: string;
   index: number;
   title: string;
   body: ReactNode;
@@ -69,6 +83,7 @@ function Feature({
 }) {
   return (
     <li
+      id={id}
       data-l-reveal
       className="grid grid-cols-1 items-center gap-10 border-t border-white/10 py-14 lg:grid-cols-12 lg:gap-8 lg:py-20"
     >
@@ -162,6 +177,106 @@ function InboxDemo() {
   );
 }
 
+/** Selo da etapa do cliente, o mesmo do painel (/clients). */
+function StageBadge({ stage }: { stage: ClientStage }) {
+  return <StatusBadge tone={STAGE_TONES[stage]}>{STAGE_LABELS[stage]}</StatusBadge>;
+}
+
+/** Botão de contato da ficha do cliente (Call / Text / Email), só visual. */
+function ContactButton({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <span className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold">
+      {icon}
+      {label}
+    </span>
+  );
+}
+
+/**
+ * Lista de clientes e a ficha de um deles como em /clients (etapa, retorno, ações e histórico).
+ * A mesma Dana Moore do e-mail de aviso acima: o pedido dela virou cliente sozinho.
+ */
+function ClientsDemo() {
+  const clients: { name: string; stage: ClientStage; detail: string }[] = [
+    { name: "Dana Moore", stage: "quoted", detail: "Follow up Thu, Oct 22" },
+    { name: "Luis Ortega", stage: "new", detail: "Came from your website" },
+    { name: "Karen Walsh", stage: "won", detail: "2 jobs · $640" },
+    { name: "Ben Carter", stage: "contacted", detail: "Called back Monday" },
+  ];
+  return (
+    <div
+      aria-hidden="true"
+      className="grid gap-4 text-[#071b33] sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]"
+    >
+      <div className="rounded-2xl bg-white p-4 shadow-[0_40px_100px_-30px_rgb(0_0_0/.9)]">
+        <p className="px-1 text-[15px] font-semibold">Clients</p>
+        <ul className="mt-3 divide-y divide-slate-200">
+          {clients.map((client, index) => (
+            <li
+              key={client.name}
+              className={`rounded-lg px-2 py-2.5 ${index === 0 ? "bg-[#0066ff]/[0.06]" : ""}`}
+            >
+              <p className="flex items-center justify-between gap-2">
+                <span className="truncate text-sm font-semibold">{client.name}</span>
+                <StageBadge stage={client.stage} />
+              </p>
+              <p className="mt-0.5 truncate text-xs text-slate-500 tabular-nums">{client.detail}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl bg-white p-5 shadow-[0_40px_100px_-30px_rgb(0_0_0/.9)] sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <p className="text-xl font-bold tracking-[-0.02em]">Dana Moore</p>
+          <StageBadge stage="quoted" />
+        </div>
+        <p className="mt-1 text-xs text-slate-500">Came from your website · since Oct 13</p>
+        <p className="mt-4 flex flex-wrap gap-2">
+          <ContactButton icon={<PhoneIcon className="size-4" />} label="Call" />
+          <ContactButton icon={<ChatIcon className="size-4" />} label="Text" />
+          <ContactButton icon={<EnvelopeIcon className="size-4" />} label="Email" />
+        </p>
+        <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4 text-sm">
+          <div>
+            <dt className="text-xs font-medium text-slate-500">Follow-up</dt>
+            <dd className="mt-0.5 font-semibold tabular-nums">Thu, Oct 22</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-slate-500">Phone</dt>
+            <dd className="mt-0.5 tabular-nums">(512) 555-0187</dd>
+          </div>
+        </dl>
+        <p className="mt-5 text-sm font-semibold">History</p>
+        <ol className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
+          <li className="flex gap-3 p-3">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-600">
+              <PencilIcon className="size-3.5" />
+            </span>
+            <span className="min-w-0 text-sm leading-snug">
+              <span className="block font-semibold">Note</span>
+              <span className="text-slate-600">
+                Quoted $1,150 to replace the 40-gallon water heater.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 p-3">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#0066ff]/10 text-[#0066ff]">
+              <EnvelopeIcon className="size-3.5" />
+            </span>
+            <span className="min-w-0 text-sm leading-snug">
+              <span className="block font-semibold">Message from your website</span>
+              <span className="line-clamp-2 text-slate-600">
+                The water heater in our garage is leaking. Could someone come by Thursday morning?
+              </span>
+            </span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  );
+}
+
 /** Painel "Describe a change" do editor e o topo do site antes e depois do pedido. */
 function AskDemo() {
   const hero = sparkle.sections.find((s) => s.type === "hero");
@@ -217,7 +332,115 @@ function AskDemo() {
   );
 }
 
-/** Barra de endereço com o site de exemplo e os dois registros de DNS que o produto pede. */
+/**
+ * Calendário do mês e a prévia de um post como em /social: a IA preencheu o mês, o dono já
+ * aprovou os primeiros (Scheduled) e o resto espera aprovação. Negócio e textos de exemplo.
+ */
+function SocialDemo() {
+  // Novembro de 2026 começa num domingo: 30 dias em 5 semanas.
+  const scheduled = new Set([3, 5, 7, 10]);
+  const needsApproval = new Set([12, 14, 17, 19, 21, 24, 26, 28]);
+  const selected = 12;
+  const days = Array.from({ length: 35 }, (_, i) => (i < 30 ? i + 1 : null));
+  const handle = "sparkleandco_cleaning";
+  return (
+    <div
+      aria-hidden="true"
+      className="grid gap-4 text-[#071b33] sm:grid-cols-[minmax(0,1fr)_minmax(0,15rem)]"
+    >
+      <div className="rounded-2xl bg-white p-4 shadow-[0_40px_100px_-30px_rgb(0_0_0/.9)] sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[15px] font-semibold">November 2026</p>
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0066ff] px-3 text-xs font-semibold text-white">
+            <SparklesIcon className="size-3.5" />
+            Fill my month with AI
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-slate-500">
+          {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+            <span key={index}>{day}</span>
+          ))}
+        </div>
+        <div className="mt-1 grid grid-cols-7 gap-1">
+          {days.map((day, index) => (
+            <span
+              key={index}
+              className={`flex aspect-square flex-col items-start justify-between rounded-md p-1 text-[11px] tabular-nums ${
+                day === null
+                  ? ""
+                  : day === selected
+                    ? "bg-[#0066ff]/[0.08] ring-2 ring-[#0066ff]"
+                    : "bg-[#f8fafc]"
+              }`}
+            >
+              {day}
+              {day !== null && (scheduled.has(day) || needsApproval.has(day)) && (
+                <span
+                  className={`size-1.5 rounded-full ${scheduled.has(day) ? "bg-[#0066ff]" : "bg-amber-500"}`}
+                />
+              )}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-amber-500" />
+            Needs approval
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-1.5 rounded-full bg-[#0066ff]" />
+            Scheduled
+          </span>
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl bg-white shadow-[0_40px_100px_-30px_rgb(0_0_0/.9)]">
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          <span
+            className="flex size-7 items-center justify-center rounded-full text-xs font-bold text-white"
+            style={{ background: sparkle.theme.primary }}
+          >
+            S
+          </span>
+          <span className="truncate text-[13px] font-semibold">{handle}</span>
+        </div>
+        <div className="relative aspect-[4/5] w-full bg-slate-100">
+          <Image
+            src="/photos/cleaner.webp"
+            alt=""
+            fill
+            sizes="(min-width: 640px) 240px, 90vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="p-3">
+          <p className="line-clamp-3 text-[13px] leading-snug">
+            <span className="font-semibold">{handle}</span> Getting the house ready for the
+            holidays? We’ll handle the deep clean: baseboards, inside the oven, the works. Ask for a
+            quote at the link in our bio.
+          </p>
+          <p className="mt-3 flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-white px-2 py-0.5 text-xs font-medium ring-1 ring-slate-200">
+              <span className="size-1.5 rounded-full bg-amber-500" />
+              Needs approval
+            </span>
+            <span className="text-xs text-slate-500 tabular-nums">Thu, Nov 12 · 10:00 AM</span>
+          </p>
+          <p className="mt-3 flex gap-2">
+            <span className="inline-flex h-8 flex-1 items-center justify-center rounded-lg bg-[#0066ff] text-xs font-semibold text-white">
+              Approve
+            </span>
+            <span className="inline-flex h-8 flex-1 items-center justify-center rounded-lg border border-slate-300 text-xs font-semibold">
+              Edit
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Barra de endereço com o site de exemplo e os três registros de DNS que o produto pede. */
 function DomainDemo() {
   return (
     <div aria-hidden="true" className="space-y-3">
@@ -273,6 +496,12 @@ function DomainDemo() {
               <td className="py-0.5">CNAME</td>
               <td>www</td>
               <td className="break-all">cname.vercel-dns.com</td>
+            </tr>
+            {/* Prova de que o domínio é do cliente (server/domains/verify.ts). */}
+            <tr>
+              <td className="py-0.5 align-top">TXT</td>
+              <td className="align-top">_nosweat</td>
+              <td className="break-all">nosweat-verify=3f7a9c1e…</td>
             </tr>
           </tbody>
         </table>
@@ -330,8 +559,8 @@ export function Features() {
             data-l-reveal="0.1"
             className="text-lg leading-relaxed text-slate-300 lg:col-span-4 lg:col-start-9"
           >
-            Every plan comes with the editor, a contact form and AI edits. No plugins, nothing to
-            install, nothing to learn.
+            Every plan comes with the editor, a contact form, AI edits, a client list and an
+            Instagram calendar. No plugins, nothing to install, nothing to learn.
           </p>
         </div>
 
@@ -352,28 +581,46 @@ export function Features() {
             demo={<InboxDemo />}
           />
           <Feature
+            id="clients"
             index={3}
+            title="Every request becomes a client"
+            body="Requests from your contact form land in your Clients list on their own. Move each one from New to Contacted, Quoted, Won or Lost. Add notes and follow-up dates, log jobs and what they paid, and tap to call, text or email."
+            note="Example client. The names and amounts are made up."
+            demo={<ClientsDemo />}
+          />
+          <Feature
+            index={4}
+            flip
             title="Change it by asking"
             body="Type the change in your own words. You get a new draft and a short summary of what changed. Nothing goes live until you publish, and you can undo."
             demo={<AskDemo />}
+          />
+          <Feature
+            id="social"
+            index={5}
+            title="Instagram posts you approve"
+            body="Connect your business’s professional Instagram account and AI drafts a month of posts from your website. You approve each one, and approved posts go out on schedule. Nothing is posted without your OK."
+            note="Example calendar for the fictional Sparkle & Co. Cleaning."
+            demo={<SocialDemo />}
           />
           <li
             data-l-reveal
             className="grid grid-cols-1 gap-14 border-t border-white/10 py-14 lg:grid-cols-2 lg:gap-12 lg:py-20"
           >
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#4da3ff] tabular-nums">04</p>
+              <p className="text-sm font-semibold text-[#4da3ff] tabular-nums">06</p>
               <h3 className="mt-3 text-2xl font-semibold text-white lg:text-3xl">
                 Your own domain
               </h3>
               <p className="mt-4 mb-8 max-w-[44ch] text-[17px] leading-relaxed text-slate-300">
-                On Pro and Premium, connect a domain you already own. We show the two records to add
-                at your domain company and check them for you.
+                On Pro and Premium, connect a domain you already own. We show the three records to
+                add at your domain company: an A record, a CNAME, and a TXT record that proves the
+                domain is yours. Then we check them for you.
               </p>
               <DomainDemo />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-[#4da3ff] tabular-nums">05</p>
+              <p className="text-sm font-semibold text-[#4da3ff] tabular-nums">07</p>
               <h3 className="mt-3 text-2xl font-semibold text-white lg:text-3xl">
                 Set up for search
               </h3>
