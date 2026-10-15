@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/social-publish",
-      "schedule": "* * * * *"
+      "schedule": "5 13 * * *"
     },
     {
       "path": "/api/cron/social-refresh",
