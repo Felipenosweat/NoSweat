@@ -75,7 +75,10 @@ describe("MockPostPlanner", () => {
   });
 
   it("stops at maxPosts and uses null photos when there are none", async () => {
-    const items = await new MockPostPlanner().planMonth({ ...ctx, photos: [] }, { ...nov, maxPosts: 4 });
+    const items = await new MockPostPlanner().planMonth(
+      { ...ctx, photos: [] },
+      { ...nov, maxPosts: 4 },
+    );
     expect(items).toHaveLength(4);
     expect(items.every((i) => i.photoIndex === null)).toBe(true);
   });

@@ -19,18 +19,49 @@ export const MAX_HASHTAGS = 8;
 
 /** Datas e épocas dos EUA que rendem posts em cada mês (1 = janeiro). */
 export const US_SEASONAL_MOMENTS: Record<number, string[]> = {
-  1: ["New Year's Day (Jan 1)", "New Year resolutions", "Martin Luther King Jr. Day (3rd Monday)", "winter weather"],
-  2: ["Super Bowl Sunday", "Valentine's Day (Feb 14)", "Presidents' Day (3rd Monday)", "late winter"],
-  3: ["St. Patrick's Day (Mar 17)", "daylight saving time starts (2nd Sunday)", "first day of spring", "spring cleaning"],
+  1: [
+    "New Year's Day (Jan 1)",
+    "New Year resolutions",
+    "Martin Luther King Jr. Day (3rd Monday)",
+    "winter weather",
+  ],
+  2: [
+    "Super Bowl Sunday",
+    "Valentine's Day (Feb 14)",
+    "Presidents' Day (3rd Monday)",
+    "late winter",
+  ],
+  3: [
+    "St. Patrick's Day (Mar 17)",
+    "daylight saving time starts (2nd Sunday)",
+    "first day of spring",
+    "spring cleaning",
+  ],
   4: ["Easter (date varies)", "Earth Day (Apr 22)", "spring showers", "Tax Day (around Apr 15)"],
-  5: ["Mother's Day (2nd Sunday)", "Memorial Day (last Monday)", "graduation season", "start of summer prep"],
+  5: [
+    "Mother's Day (2nd Sunday)",
+    "Memorial Day (last Monday)",
+    "graduation season",
+    "start of summer prep",
+  ],
   6: ["Father's Day (3rd Sunday)", "Juneteenth (Jun 19)", "first day of summer", "summer break"],
   7: ["Independence Day (Jul 4)", "summer heat", "vacation season"],
   8: ["back to school", "late-summer heat", "end of summer"],
   9: ["Labor Day (1st Monday)", "first day of fall", "football season", "fall maintenance"],
   10: ["Halloween (Oct 31)", "fall colors", "fall home prep", "cooler weather"],
-  11: ["Veterans Day (Nov 11)", "daylight saving time ends (1st Sunday)", "Thanksgiving (4th Thursday)", "Small Business Saturday (Saturday after Thanksgiving)"],
-  12: ["holiday season", "Christmas (Dec 25)", "Hanukkah (date varies)", "New Year's Eve (Dec 31)", "winter prep"],
+  11: [
+    "Veterans Day (Nov 11)",
+    "daylight saving time ends (1st Sunday)",
+    "Thanksgiving (4th Thursday)",
+    "Small Business Saturday (Saturday after Thanksgiving)",
+  ],
+  12: [
+    "holiday season",
+    "Christmas (Dec 25)",
+    "Hanukkah (date varies)",
+    "New Year's Eve (Dec 31)",
+    "winter prep",
+  ],
 };
 
 const RULES = `Hard rules (the business could get in legal trouble if you break them):
@@ -146,6 +177,7 @@ export function planRequest(
 export function captionRequest(ctx: BusinessContext, req: CaptionRequest): string {
   const parts = [businessBlock(ctx), `Action: ${req.action}`];
   if (req.idea) parts.push(`<owner_idea>\n${req.idea}\n</owner_idea>`);
-  if (req.currentCaption) parts.push(`<current_caption>\n${req.currentCaption}\n</current_caption>`);
+  if (req.currentCaption)
+    parts.push(`<current_caption>\n${req.currentCaption}\n</current_caption>`);
   return parts.join("\n\n");
 }

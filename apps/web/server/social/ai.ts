@@ -128,7 +128,9 @@ export function normalizeHashtags(tags: string[]): string[] {
 export function finishCaption(caption: string, hashtags: string[]): string {
   const text = caption.trim();
   const lower = text.toLowerCase();
-  const missing = hashtags.filter((tag) => !new RegExp(`${escapeRegExp(tag.toLowerCase())}(?![\\p{L}\\p{N}_])`, "u").test(lower));
+  const missing = hashtags.filter(
+    (tag) => !new RegExp(`${escapeRegExp(tag.toLowerCase())}(?![\\p{L}\\p{N}_])`, "u").test(lower),
+  );
   const full = missing.length ? `${text}\n\n${missing.join(" ")}` : text;
   return full.slice(0, MAX_CAPTION_LENGTH).trim();
 }
@@ -202,7 +204,11 @@ const MOCK_NOTES: Record<SocialPillar, string> = {
   cta: "Convida as pessoas a entrar em contato com você.",
 };
 
-function mockCaption(ctx: BusinessContext, pillar: SocialPillar, service: string | undefined): string {
+function mockCaption(
+  ctx: BusinessContext,
+  pillar: SocialPillar,
+  service: string | undefined,
+): string {
   const name = ctx.businessName;
   const place = ctx.serviceArea ?? ctx.city ?? "our neighborhood";
   const what = service ?? "what we do";
@@ -337,9 +343,7 @@ export class AnthropicPostPlanner implements PostPlanner {
         max_tokens: 8000,
         output_config: { effort: "medium", format: zodOutputFormat(SocialPlan) },
         system: SOCIAL_PLAN_SYSTEM_PROMPT,
-        messages: [
-          { role: "user", content: planRequest(ctx, req.month, slots, req.timezone) },
-        ],
+        messages: [{ role: "user", content: planRequest(ctx, req.month, slots, req.timezone) }],
       }),
     );
     // Só as datas pedidas (a IA não escolhe dias fora da agenda do dono).
