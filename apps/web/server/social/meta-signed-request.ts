@@ -39,13 +39,14 @@ export function parseSignedRequest(
   }
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
   const data = payload as Record<string, unknown>;
-  if (typeof data.algorithm !== "string" || data.algorithm.toUpperCase() !== "HMAC-SHA256") {
+  const algorithm = data.algorithm;
+  if (typeof algorithm !== "string" || algorithm.toUpperCase() !== "HMAC-SHA256") {
     return null;
   }
   const userId = data.user_id;
   if (typeof userId !== "string" && typeof userId !== "number") return null;
   if (String(userId).length === 0) return null;
-  return { ...data, algorithm: data.algorithm, user_id: String(userId) };
+  return { ...data, algorithm, user_id: String(userId) };
 }
 
 /** Lê o `signed_request` do formulário que a Meta manda. `null` sem app configurado ou se não bater. */

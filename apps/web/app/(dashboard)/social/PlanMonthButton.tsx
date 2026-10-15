@@ -3,7 +3,14 @@
 import { PlanMonthResponse, type PlanMonthRequest, type SocialPost } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { primaryButton, textButton } from "@/components/DashboardUi";
-import { ErrorNote, monthLabel, shiftMonth, socialApi, toApiError, type SocialApiError } from "./shared";
+import {
+  ErrorNote,
+  monthLabel,
+  shiftMonth,
+  socialApi,
+  toApiError,
+  type SocialApiError,
+} from "./shared";
 
 // "Fill my month with AI": a IA escreve rascunhos para o mês escolhido. Nada sai sem aprovação.
 // A geração pode levar ~1 minuto: mostramos o progresso e travamos o botão.

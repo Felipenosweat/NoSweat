@@ -49,13 +49,23 @@ export async function socialApi<T>(
   }
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
-    throw new SocialApiError("internal_error", "Something went wrong. Please refresh the page.", 500);
+    throw new SocialApiError(
+      "internal_error",
+      "Something went wrong. Please refresh the page.",
+      500,
+    );
   }
   return parsed.data;
 }
 
 /** Mensagem de erro com o atalho certo (planos para 402). */
-export function ErrorNote({ error, className = "" }: { error: SocialApiError; className?: string }) {
+export function ErrorNote({
+  error,
+  className = "",
+}: {
+  error: SocialApiError;
+  className?: string;
+}) {
   return (
     <p role="alert" className={`rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ${className}`}>
       {error.message}

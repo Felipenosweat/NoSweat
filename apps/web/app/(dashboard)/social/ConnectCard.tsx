@@ -110,9 +110,9 @@ export function ConnectCard({
 
       {manual ? (
         <p className={`mt-4 ${panelText}`}>
-          Auto-posting opens soon — for now we&rsquo;ll remind you and you post in one tap. Plan
-          and approve your posts here; when it&rsquo;s time, copy the caption, save the photo and
-          share it on Instagram.
+          Auto-posting opens soon — for now we&rsquo;ll remind you and you post in one tap. Plan and
+          approve your posts here; when it&rsquo;s time, copy the caption, save the photo and share
+          it on Instagram.
         </p>
       ) : !live ? (
         <p className={`mt-4 ${panelText}`}>
