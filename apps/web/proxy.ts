@@ -6,7 +6,7 @@ import { isAppHost } from "@/server/domains/hosts";
 import { GUEST_COOKIE } from "@/server/guest-cookie";
 
 // Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
-const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin"];
+const PROTECTED_PATHS = ["/dashboard", "/sites", "/admin", "/social"];
 
 // Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio
 // site. A página confere se o site é mesmo do visitante (senão, 404).
@@ -50,7 +50,14 @@ export async function proxy(request: NextRequest) {
   // Se o link de confirmação de e-mail cair fora de /auth/callback (Redirect URL não liberada
   // no Supabase), ele chega como ?code=... em outra página. Encaminha para o callback.
   const { pathname, searchParams } = request.nextUrl;
-  if (searchParams.has("code") && !pathname.startsWith("/auth/")) {
+  // Não mexe no ?code= da API (volta do OAuth do Instagram) nem no código de exclusão de dados
+  // da Meta em /data-deletion: esses não são do login.
+  if (
+    searchParams.has("code") &&
+    !pathname.startsWith("/auth/") &&
+    !pathname.startsWith("/api/") &&
+    pathname !== "/data-deletion"
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/callback";
     return NextResponse.redirect(url);

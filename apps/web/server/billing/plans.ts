@@ -13,7 +13,14 @@ export type Plan = {
   setupCents: number | null;
   /** Pode ligar domínio próprio. */
   customDomain: boolean;
+  /** Posts no Instagram aprovados por mês (calendário de redes sociais). */
+  socialPostsPerMonth: number;
+  /** Contas de rede social conectadas. */
+  socialAccounts: number;
 };
+
+// TODO: os limites de redes sociais (12/30/60 posts por mês, 1 conta) são sugestão; o fundador
+// ainda não decidiu preços nem o texto da tabela. Não mudar preços nem PricingPlans.tsx até lá.
 
 export const PLANS: Record<PlanId, Plan> = {
   starter: {
@@ -23,6 +30,8 @@ export const PLANS: Record<PlanId, Plan> = {
     annualCents: 39000,
     setupCents: 24900,
     customDomain: false,
+    socialPostsPerMonth: 12,
+    socialAccounts: 1,
   },
   pro: {
     id: "pro",
@@ -31,6 +40,8 @@ export const PLANS: Record<PlanId, Plan> = {
     annualCents: 69000,
     setupCents: 24900,
     customDomain: true,
+    socialPostsPerMonth: 30,
+    socialAccounts: 1,
   },
   premium: {
     id: "premium",
@@ -39,6 +50,8 @@ export const PLANS: Record<PlanId, Plan> = {
     annualCents: 129000,
     setupCents: null,
     customDomain: true,
+    socialPostsPerMonth: 60,
+    socialAccounts: 1,
   },
 };
 

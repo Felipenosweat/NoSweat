@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LIVE_MODULES } from "@/lib/modules";
 
 // Links de navegação do painel. Componente de cliente só para saber a rota atual (aria-current).
 const linkClass =
   "relative inline-flex h-16 items-center text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand aria-[current=page]:text-ink aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-0 aria-[current=page]:after:-bottom-px aria-[current=page]:after:h-0.5 aria-[current=page]:after:bg-brand";
 
-// Visitante sem conta (`guest`) não tem "My sites": os sites dele só aparecem depois do cadastro.
+// Visitante sem conta (`guest`) não tem "My sites" nem "Social": os sites dele só aparecem depois do cadastro.
 export function NavLinks({ admin, guest = false }: { admin: boolean; guest?: boolean }) {
   const pathname = usePathname();
   const current = (href: string) =>
@@ -24,9 +25,16 @@ export function NavLinks({ admin, guest = false }: { admin: boolean; guest?: boo
       )}
       {!guest && (
         <>
-          <Link href="/dashboard" aria-current={current("/dashboard")} className={linkClass}>
-            My sites
-          </Link>
+          {LIVE_MODULES.map((hub) => (
+            <Link
+              key={hub.key}
+              href={hub.href}
+              aria-current={current(hub.href)}
+              className={linkClass}
+            >
+              {hub.navLabel ?? hub.label}
+            </Link>
+          ))}
           <Link
             href="/billing"
             aria-current={current("/billing")}

@@ -218,6 +218,126 @@ Pode usar junto com o Stripe: vale o maior plano ativo entre os dois.
 **Atenção:** ao ligar `REQUIRE_PLAN`, sites já publicados de quem não tem plano saem do ar.
 Libere o acesso desses clientes antes.
 
+## Passo 7: redes sociais (Instagram)
+
+O dono conecta o Instagram em `/social`, a IA sugere os posts do mês como **rascunho**, o dono
+aprova cada um e o cron publica no horário. Sem as chaves abaixo, em produção o botão de conectar
+fica desligado (no dev local entra a conta de mentira `@mock_business`).
+
+> Os nomes dos menus da Meta mudam com frequência. Os caminhos abaixo foram conferidos na
+> documentação da Meta em outubro de 2026; se algum botão estiver com outro nome, procure o
+> equivalente. Os pontos marcados com _(confirmar)_ não deu para conferir na tela.
+
+### 7.1 Banco
+
+No Supabase → **SQL Editor**, rode, nesta ordem, cada arquivo inteiro (como no Passo 1):
+[`0013_social.sql`](supabase/migrations/0013_social.sql),
+[`0014_social_media_bucket.sql`](supabase/migrations/0014_social_media_bucket.sql) (cria o bucket
+público `social-media`) e
+[`0015_ai_usage_social_kinds.sql`](supabase/migrations/0015_ai_usage_social_kinds.sql).
+
+### 7.2 Criar o app na Meta
+
+1. Entre em https://developers.facebook.com com a conta do Facebook que administra o
+   Instagram da No Sweat → **My Apps → Create App**.
+2. Nome: `No Sweat`. E-mail de contato: `hello@nosweatfd.com`.
+3. Caso de uso: **Manage messaging & content on Instagram** (nas telas antigas: tipo
+   **Business** e depois **Add product → Instagram**).
+4. Ligue o app ao portfólio empresarial (Business Manager) da No Sweat, se pedir.
+5. No menu do app: **Instagram → API setup with Instagram login**. Só dá para ter um tipo de
+   configuração por app: escolha **com Instagram login** (não "with Facebook login").
+
+### 7.3 Endereços do app
+
+Ainda em **API setup with Instagram login**:
+
+1. Etapa **3. Set up Instagram business login** → **Business login settings**:
+   - **OAuth redirect URIs**: `https://nosweatfd.com/api/social/instagram/callback`
+     (tem que ser igual, letra por letra, ao `INSTAGRAM_REDIRECT_URI`; a Meta às vezes põe uma
+     `/` no final: confira e tire).
+   - **Deauthorize callback URL**: `https://nosweatfd.com/api/meta/deauthorize`
+   - **Data deletion request URL**: `https://nosweatfd.com/api/meta/data-deletion`
+   - **Save**.
+2. **App settings → Basic**:
+   - **Privacy Policy URL**: `https://nosweatfd.com/privacy`
+   - **Terms of Service URL**: `https://nosweatfd.com/terms`
+   - **User data deletion** (se a tela pedir de novo): se for _Data deletion callback URL_, use
+     `https://nosweatfd.com/api/meta/data-deletion`; se for _Data deletion instructions URL_, use
+     `https://nosweatfd.com/data-deletion` _(confirmar qual opção aparece)_.
+   - Ícone do app (1024×1024), categoria e **Save changes**.
+
+### 7.4 Testadores (antes do App Review)
+
+Enquanto a Meta não aprova o app, ele fica em modo de desenvolvimento e **só funciona com
+testadores**.
+
+1. **App roles → Roles → Add People → Instagram Tester** (confirmar o nome do botão; em telas
+   antigas é **Add Instagram Testers**) e digite o @ do Instagram.
+2. A pessoa aceita o convite **no Instagram**: Settings → **Apps and websites → Tester invites →
+   Accept** (pelo navegador: instagram.com/accounts/manage_access). Pode levar alguns minutos
+   para aparecer.
+3. A conta do testador precisa ser **Profissional** (Business ou Creator). Conta pessoal é
+   recusada ao conectar.
+4. Na No Sweat, coloque o e-mail da conta dele em `SOCIAL_TESTER_EMAILS` (admins já contam).
+
+### 7.5 Chaves na Vercel
+
+1. Em **Instagram → API setup with Instagram login**, copie o **Instagram app ID** e o
+   **Instagram app secret** (clique em _Show_). Atenção: são diferentes do App ID/App Secret de
+   **App settings → Basic**; use os da tela do Instagram.
+2. No seu computador, gere a chave dos tokens: `openssl rand -base64 32`.
+3. Vercel → Settings → Environment Variables:
+
+| Nome                     | Valor                                                 |
+| ------------------------ | ----------------------------------------------------- |
+| `INSTAGRAM_APP_ID`       | Instagram app ID                                      |
+| `INSTAGRAM_APP_SECRET`   | Instagram app secret                                  |
+| `INSTAGRAM_REDIRECT_URI` | `https://nosweatfd.com/api/social/instagram/callback` |
+| `SOCIAL_TOKEN_KEYS`      | `v1:` + o resultado do `openssl` (ex.: `v1:Zm9v...=`) |
+| `SOCIAL_TESTER_EMAILS`   | e-mails dos testadores, separados por vírgula         |
+
+> ⚠️ Guarde uma cópia do `SOCIAL_TOKEN_KEYS` num lugar seguro. Se ele se perder, todos os
+> clientes precisam conectar o Instagram de novo. Para trocar: `v2:<nova>,v1:<antiga>`.
+
+Opcionais (padrões no código): `META_GRAPH_VERSION`, `SOCIAL_TESTER_ONLY` (`true`),
+`SOCIAL_DAILY_POST_CAP` (10), `SOCIAL_MAX_LATENESS_HOURS` (6), `AI_DAILY_SOCIAL_PLANS` (3),
+`AI_DAILY_SOCIAL_CAPTIONS` (30). Depois **Deployments → ⋯ → Redeploy**.
+
+### 7.6 Crons (precisa do plano Pro da Vercel)
+
+O `apps/web/vercel.json` tem dois crons novos: `/api/cron/social-publish` **a cada minuto**
+(publica os posts aprovados) e `/api/cron/social-refresh` uma vez por dia (renova os tokens antes
+de vencerem). O plano Hobby só aceita cron diário, então o publicador **exige o plano Pro**.
+Os dois usam o mesmo `CRON_SECRET` do Passo 5. Confira em Vercel → Settings → **Cron Jobs**.
+
+### 7.7 Teste com um testador
+
+1. Entre na No Sweat com a conta do testador → `/social` → **Connect Instagram** → aceite.
+2. Gere o plano do mês, coloque uma foto num post, aprove para daqui a 5 minutos.
+3. Confira se o post aparece no Instagram e fica **Published** no painel.
+4. Instagram → Apps and websites → remova a No Sweat: a conta tem que aparecer desconectada.
+
+### 7.8 Liberar para todos os clientes (App Review)
+
+Sem isto, só testadores publicam. Na Meta, nesta ordem:
+
+1. **Business Verification** (verificação da empresa): **App settings → Basic → Verification**
+   ou no Business Manager → Security Center. Pede documentos da empresa e domínio verificado.
+2. **Access Verification** (para apps que dão acesso a outras empresas, como a No Sweat):
+   aparece no painel depois da verificação da empresa _(confirmar)_.
+3. **App Review → Permissions and features**: peça **Advanced Access** para
+   `instagram_business_basic` e `instagram_business_content_publish`. Para cada uma:
+   - explique em inglês o uso: "Small businesses connect their Instagram professional account so
+     No Sweat can publish the posts they approve, at the time they choose.";
+   - grave um vídeo de tela (screencast) **em inglês**, mostrando: login na No Sweat → Connect
+     Instagram → tela de permissão da Meta → conta conectada (com o @) → criar post → aprovar →
+     o post publicado no Instagram → desconectar. Use legendas ou narração, mostre a URL
+     `nosweatfd.com` e não corte a tela de permissão;
+   - dê um usuário de teste com acesso (conta No Sweat + Instagram profissional de teste).
+4. Mude o app para **Live** (chave no topo do painel).
+5. Só **depois** de aprovado e Live: na Vercel, `SOCIAL_TESTER_ONLY` = `false` e Redeploy.
+   Antes disso, clientes que não são testadores não conseguem publicar automaticamente.
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page.

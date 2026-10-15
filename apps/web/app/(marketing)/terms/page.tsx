@@ -177,6 +177,53 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "connected-accounts",
+    title: "Connected accounts and scheduled posts",
+    content: (
+      <>
+        <p>
+          You can connect an Instagram professional account and schedule posts for your business.
+          When you do:
+        </p>
+        <ul>
+          <li>
+            <strong>We publish only posts you approve.</strong> Drafts and AI suggestions are never
+            published until you approve them.
+          </li>
+          <li>
+            You’re responsible for the content of your posts, including the photos and captions, and
+            for following Instagram’s terms and community guidelines. The “Truthful content” rules
+            above apply to posts too.
+          </li>
+          <li>
+            AI caption suggestions can be wrong. Review and edit every caption before you approve
+            it.
+          </li>
+          <li>
+            We try to publish each post at the time you chose, but timing is best effort. Instagram
+            outages, limits or errors can delay a post, and a post that can’t go out within a few
+            hours of its time is skipped so you can reschedule it.
+          </li>
+          <li>
+            Scheduled posts pause if your Instagram access expires or is removed, or if your plan
+            ends. You can reconnect or renew to continue.
+          </li>
+          <li>
+            You can disconnect your account anytime. See the{" "}
+            <Link href="/privacy#connected-social-accounts" className={textLink}>
+              Privacy Policy
+            </Link>{" "}
+            for what we receive from Instagram and how to delete it.
+          </li>
+        </ul>
+        <p>
+          No Sweat is not affiliated with, endorsed by or sponsored by Meta Platforms or Instagram.
+          Instagram is a trademark of Meta Platforms, Inc.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "ai-output",
     title: "AI-generated content",
     content: (
@@ -343,8 +390,8 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      updatedIso="2026-10-13"
-      updatedLabel="October 13, 2026"
+      updatedIso="2026-10-15"
+      updatedLabel="October 15, 2026"
       intro={
         <p>
           The rules for using No Sweat, in plain English. They cover your account, the websites you

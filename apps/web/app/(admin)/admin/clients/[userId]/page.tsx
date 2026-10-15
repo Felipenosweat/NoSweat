@@ -6,8 +6,11 @@ import { SitesGrid } from "@/components/SitesGrid";
 import { listClients, requireAdmin } from "@/server/admin";
 import { billingEnforced, getGrantStore } from "@/server/billing";
 import { getBillingStore } from "@/server/billing/store";
+import { getSocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
+import type { SocialPostStatus } from "@nosweat/schema";
 import { AccessPanel } from "./AccessPanel";
+import { SocialPanel } from "./SocialPanel";
 
 export const metadata: Metadata = { title: "Client" };
 
@@ -16,15 +19,25 @@ type ClientPageProps = { params: Promise<{ userId: string }> };
 /** "Ver como o cliente": o mesmo painel que o cliente vê em /dashboard. */
 export default async function AdminClientPage({ params }: ClientPageProps) {
   await connection();
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { userId } = await params;
   const client = (await listClients()).find((c) => c.id === userId);
   if (!client) notFound();
-  const [sites, grant, subscription] = await Promise.all([
-    getSiteStore().list(client.id),
-    getGrantStore().get(client.id),
-    getBillingStore().get(client.id),
-  ]);
+  const social = getSocialStore();
+  const [sites, grant, subscription, socialAccount, socialSettings, socialPosts] =
+    await Promise.all([
+      getSiteStore().list(client.id),
+      getGrantStore().get(client.id),
+      getBillingStore().get(client.id),
+      social.getAccountForOwner(client.id, "instagram"),
+      social.getSettings(client.id),
+      // Todos os posts (intervalo largo + rascunhos sem data), só para contar por status.
+      social.listPosts(client.id, "2000-01-01T00:00:00.000Z", "2100-01-01T00:00:00.000Z"),
+    ]);
+  const postCounts: Partial<Record<SocialPostStatus, number>> = {};
+  for (const post of socialPosts) postCounts[post.status] = (postCounts[post.status] ?? 0) + 1;
+  // Registro de que um admin abriu os dados sociais do cliente (sem detalhes sensíveis).
+  await social.logEvent({ ownerId: client.id, actorId: admin.id, action: "admin_view" });
 
   return (
     <div>
@@ -41,6 +54,13 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         grant={grant}
         subscription={subscription}
         enforced={billingEnforced()}
+      />
+
+      <SocialPanel
+        userId={client.id}
+        account={socialAccount}
+        settings={socialSettings}
+        counts={postCounts}
       />
 
       <div className="mt-6 rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-200 sm:p-8">
