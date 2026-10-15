@@ -91,7 +91,7 @@ export class MockInstagramClient implements InstagramClient {
     };
   }
 
-  async getProfile(): Promise<InstagramProfile> {
+  async getProfile(_accessToken?: string): Promise<InstagramProfile> {
     this.hit("getProfile");
     return {
       id: "17841400000000001",
