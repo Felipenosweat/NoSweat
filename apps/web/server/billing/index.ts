@@ -3,10 +3,12 @@ import type {
   BillingStatusResponse,
   CheckoutRequest,
   PlanId,
+  SiteStatus,
 } from "@nosweat/schema";
 import { isAdmin } from "../admin";
 import type { CurrentUser } from "../auth/session";
 import { errorResponse } from "../http";
+import { getSiteStore } from "../store";
 import { getGrantStore, isGrantActive } from "./grants";
 import { PLANS, priceCents, setupCentsFor } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
@@ -96,11 +98,32 @@ export async function ownerHasLiveAccess(ownerId: string | null): Promise<boolea
   }
 }
 
-/** 402 pronto se a conta precisa de um plano para publicar; senão `null`. */
-export async function publishBlocked(user: CurrentUser): Promise<Response | null> {
+/**
+ * 402 pronto se a conta precisa de um plano para publicar `site`, ou se o plano já chegou ao
+ * limite de sites no ar; senão `null`. Republicar um site que já está no ar sempre passa pelo
+ * limite (só conta os OUTROS sites publicados). Admin e cobrança desligada: sem limite.
+ */
+export async function publishBlocked(
+  user: CurrentUser,
+  site?: { id: string; status: SiteStatus },
+): Promise<Response | null> {
   if (!billingEnforced() || (await isAdmin(user.id))) return null;
-  if (await activePlan(user.id)) return null;
-  return errorResponse(402, "payment_required", "Choose a plan to put your website live.");
+  const plan = await activePlan(user.id);
+  if (!plan) {
+    return errorResponse(402, "payment_required", "Choose a plan to put your website live.");
+  }
+  if (!site || site.status === "published") return null;
+
+  const limit = PLANS[plan].publishedSitesLimit;
+  const live = (await getSiteStore().list(user.id)).filter(
+    (other) => other.id !== site.id && other.status === "published",
+  ).length;
+  if (live < limit) return null;
+  return errorResponse(
+    402,
+    "payment_required",
+    `Your plan includes ${limit} live ${limit === 1 ? "website" : "websites"}. Upgrade to publish more.`,
+  );
 }
 
 /** 402 pronto se o plano da conta não inclui domínio próprio; senão `null`. */

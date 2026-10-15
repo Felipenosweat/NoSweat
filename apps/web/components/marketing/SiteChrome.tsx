@@ -8,7 +8,7 @@ import { container, focusRing } from "./styles";
 type Tone = "light" | "dark";
 
 const NAV = [
-  { href: "/#how-it-works", label: "How it works" },
+  { href: "/#build", label: "How it works" },
   { href: "/#examples", label: "Examples" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
@@ -21,7 +21,9 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   {
     title: "Product",
     links: [
-      { href: "/#how-it-works", label: "How it works" },
+      { href: "/#build", label: "Websites" },
+      { href: "/#clients", label: "Clients" },
+      { href: "/#social", label: "Instagram posts" },
       { href: "/#examples", label: "Examples" },
       { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
@@ -166,7 +168,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
         <div
           className={`${container} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:justify-between ${dark ? "text-slate-400" : "text-slate-500"}`}
         >
-          <p>&copy; {new Date().getFullYear()} NoSweat. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} No Sweat. All rights reserved.</p>
           <p>nosweatfd.com</p>
         </div>
       </div>

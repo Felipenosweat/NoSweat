@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { primaryButton } from "./styles";
 
 /**
- * Barra fixa embaixo (só < lg) com o CTA principal. Aparece quando o hero sai da tela e some
+ * Barra fixa embaixo (só < sm, telas de celular) com o CTA principal. Aparece quando o hero sai da tela e some
  * de novo quando um bloco com `data-hide-mobile-cta` (hero, CTA final) está visível, para não
  * repetir o botão azul que já está na tela. Respeita a área segura do iPhone.
  */

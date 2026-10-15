@@ -128,8 +128,9 @@ export function Hero() {
           className="l-intro mt-7 max-w-[44ch] text-lg leading-relaxed text-pretty text-slate-300 lg:text-xl"
           style={line(2)}
         >
-          Tell us about your business in one sentence. We build a real website with your services,
-          your phone and a contact form. You change it by asking, then publish.
+          Tell us about your business in one sentence. We build a real website with your phone and a
+          contact form, keep every request in a simple client list, and draft Instagram posts you
+          approve.
         </p>
 
         <div className="l-intro mt-9 max-w-[34rem]" style={line(3)}>

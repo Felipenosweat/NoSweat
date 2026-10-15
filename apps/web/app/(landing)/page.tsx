@@ -18,7 +18,7 @@ import { container } from "@/components/marketing/styles";
 
 const TITLE = "No Sweat · Your business, online by lunch.";
 const DESCRIPTION =
-  "Describe your business in one sentence and get a real website for your trade: services, phone button, contact form. Change it by asking, then publish. Plans from $39/month.";
+  "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. Plans from $39/month.";
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const metadata: Metadata = {
@@ -55,17 +55,27 @@ const FAQS = [
   {
     question: "Can AI change my site for me?",
     answer:
-      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. Starter includes 30 AI edits a month, Pro 150 and Premium 500. AI edits reset monthly and don’t roll over.",
+      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. AI edits are included in every plan.",
   },
   {
     question: "Can I add my own photos?",
     answer:
-      "Yes, on Pro and Premium. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
+      "Yes, on every plan. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
   },
   {
     question: "What happens after I publish?",
     answer:
-      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard. Keep editing anytime; changes stay in a draft until you publish again.",
+      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard and added to your Clients list. Keep editing anytime; changes stay in a draft until you publish again.",
+  },
+  {
+    question: "What is the Clients area?",
+    answer:
+      "A simple list of the people who contact you. Every request from your website’s contact form becomes a client automatically. Move each one from New to Contacted, Quoted, then Won or Lost, add notes and follow-up dates, log the jobs you did and what they paid, and tap to call, text or email them.",
+  },
+  {
+    question: "Can it post to Instagram for me?",
+    answer:
+      "Yes, with your approval. Connect a professional Instagram account and AI drafts a month of posts from your website. You review and approve each one, and approved posts go out on schedule. Nothing is posted without your approval.",
   },
   {
     question: "How much does it cost?",
@@ -75,7 +85,7 @@ const FAQS = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Nothing is charged today.",
+      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal.",
   },
   {
     question: "Can I use my own domain?",
@@ -111,8 +121,8 @@ export default function LandingPage() {
               data-l-reveal="0.1"
               className="text-lg leading-relaxed text-slate-300 lg:col-span-4 lg:col-start-9"
             >
-              Create and preview your whole site without paying. Pick a plan when you’re ready to
-              publish. Nothing is charged today.
+              Create and preview your whole site without paying. You only pay when you pick a plan
+              to publish.
             </p>
           </div>
           <div
