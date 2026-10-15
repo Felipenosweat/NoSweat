@@ -100,12 +100,12 @@ export function PostComposer({
   const [current, setCurrent] = useState<SocialPost | null>(post);
   const [caption, setCaption] = useState(post?.caption ?? "");
   const [media, setMedia] = useState<SocialMedia[]>(post?.media ?? []);
-  const [date, setDate] = useState(
+  const [date, setDate] = useState(() =>
     post?.scheduledAt
       ? zonedDateKey(new Date(post.scheduledAt), tz)
       : (defaultDate ?? tomorrowIn(tz)),
   );
-  const [time, setTime] = useState(
+  const [time, setTime] = useState(() =>
     post?.scheduledAt ? zonedTimeKey(new Date(post.scheduledAt), tz) : settings.postTime,
   );
   const [note, setNote] = useState(post?.ownerNotePt ?? "");
@@ -137,6 +137,9 @@ export function PostComposer({
         : !scheduledAt
           ? "Pick a date and time."
           : null;
+  /** Já aprovado e sem mudanças: não há o que aprovar de novo. */
+  const showApprove =
+    editable && !(current && ["approved", "scheduled"].includes(current.status) && !dirty);
   const isBusy = busy !== null || uploading > 0;
   const shownSlide = Math.min(slide, Math.max(0, media.length - 1));
   const slideMedia = media[shownSlide];
@@ -798,11 +801,11 @@ export function PostComposer({
             ) : null}
           </div>
           {error && <ErrorNote error={error} className="mb-2" />}
-          {editable && missing && (
+          {showApprove && missing && (
             <p className="mb-2 text-[13px] text-slate-500">To approve: {missing}</p>
           )}
           <div className="flex flex-wrap items-center gap-3">
-            {editable && (
+            {showApprove && (
               <button
                 type="button"
                 onClick={() => void approve()}
