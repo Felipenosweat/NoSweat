@@ -2,7 +2,7 @@
 
 import { PlanMonthResponse, type PlanMonthRequest, type SocialPost } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
+import { primaryButton, textButton } from "@/components/DashboardUi";
 import { ErrorNote, monthLabel, shiftMonth, socialApi, toApiError, type SocialApiError } from "./shared";
 
 // "Fill my month with AI": a IA escreve rascunhos para o mês escolhido. Nada sai sem aprovação.
@@ -32,11 +32,19 @@ export function PlanMonthButton({
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState<SocialApiError | null>(null);
   const firstFieldRef = useRef<HTMLSelectElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
+  /** Já abriu alguma vez: ao fechar, o foco volta para o botão. */
+  const wasOpen = useRef(false);
   const formId = useId();
   const out = remaining !== null && remaining <= 0;
 
   useEffect(() => {
-    if (open) firstFieldRef.current?.focus();
+    if (open) {
+      wasOpen.current = true;
+      firstFieldRef.current?.focus();
+    } else if (wasOpen.current) {
+      openerRef.current?.focus();
+    }
   }, [open]);
 
   // Relógio do progresso enquanto a IA trabalha.
@@ -82,7 +90,13 @@ export function PlanMonthButton({
   if (!open) {
     return (
       <div className="flex flex-col items-start gap-1">
-        <button type="button" onClick={openForm} disabled={out} className={primaryButton}>
+        <button
+          ref={openerRef}
+          type="button"
+          onClick={openForm}
+          disabled={out}
+          className={primaryButton}
+        >
           <svg
             viewBox="0 0 24 24"
             className="size-4"
@@ -200,7 +214,6 @@ export function PlanMonthButton({
           Cancel
         </button>
       </div>
-      <span className={`sr-only ${focusRing} ${secondaryButton}`} aria-hidden="true" />
     </form>
   );
 }
