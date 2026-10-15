@@ -11,6 +11,7 @@ A IA nunca escreve código de site: só SiteSpec validado pelo Zod.
 apps/web/                       Next.js (App Router): telas + API
   app/(marketing)/              landing page (/)                         → front
   app/(dashboard)/              /create e /dashboard (painel do cliente) → front
+  app/(dashboard)/social/       /social: calendário de posts do Instagram do cliente → front
   app/(admin)/admin/            painel principal da No Sweat (só admins)  → front
   app/sites/                    /sites/[id] (publicar, domínio, mensagens), /sites/[id]/edit
                                 (editor com prévia ao vivo) e /sites/preview/[id] → front
@@ -26,6 +27,7 @@ apps/web/                       Next.js (App Router): telas + API
   server/admin.ts               quem é admin (tabela platform_admins) e lista de clientes → back
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
+  server/social/                Instagram: contas, posts, IA dos posts, publicador e store → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
 packages/schema/                @nosweat/schema: o contrato (Zod) de SiteSpec e da API → os dois
@@ -92,6 +94,13 @@ Como as peças se ligam:
   "temporarily unavailable" (`ownerHasLiveAccess`).
 - Planos e preços mostrados no site: só em `components/marketing/PricingPlans.tsx` (landing e
   `/pricing` usam o mesmo componente).
+- Redes sociais (`server/social/`, migrations 0013-0015, DEPLOY.md Passo 7): a IA cria posts
+  como rascunho → o dono aprova cada um → o cron `/api/cron/social-publish` publica no horário.
+  A IA nunca aprova nem publica. Sem chaves do Instagram (dev) entra o cliente de mentira. Tokens
+  criptografados com `SOCIAL_TOKEN_KEYS`. Post atrasado mais que `SOCIAL_MAX_LATENESS_HOURS`
+  vira `missed` (não publica); o `igContainerId` é salvo antes de publicar e conferido antes de
+  tentar de novo (nunca publicar duas vezes). `ownerNotePt` é nota do dono em português
+  (conteúdo, não interface) e nunca é publicada.
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

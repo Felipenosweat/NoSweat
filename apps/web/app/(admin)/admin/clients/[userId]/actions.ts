@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { listClients, requireAdmin } from "@/server/admin";
 import { extendExpiry, getGrantStore } from "@/server/billing";
+import { getSocialStore } from "@/server/social/store";
 
 // Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp).
 
@@ -49,5 +50,21 @@ export async function grantAccess(userId: string, formData: FormData): Promise<v
 export async function revokeAccess(userId: string): Promise<void> {
   await requireClient(userId);
   await getGrantStore().remove(userId);
+  refresh(userId);
+}
+
+/** Liga/desliga o "testador" do Instagram (pode conectar enquanto o app da Meta está em teste). */
+export async function toggleSocialTester(userId: string): Promise<void> {
+  const admin = await requireClient(userId);
+  const store = getSocialStore();
+  const current = await store.getSettings(userId);
+  const tester = !current.tester;
+  await store.upsertSettings(userId, { tester });
+  await store.logEvent({
+    ownerId: userId,
+    actorId: admin.id,
+    action: "admin_set_tester",
+    detail: { tester },
+  });
   refresh(userId);
 }

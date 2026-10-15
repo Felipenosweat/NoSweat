@@ -115,8 +115,8 @@ export default async function DataDeletionPage({ searchParams }: { searchParams:
         <div className={`${container} pt-12 pb-10 lg:pt-20 lg:pb-14`}>
           <h1 className={titleClass}>Data deletion</h1>
           <p className={`mt-6 max-w-[62ch] ${bodyClass}`}>
-            How to delete the data No Sweat received from Instagram when you connected your
-            account, and how to check the status of a deletion request.
+            How to delete the data No Sweat received from Instagram when you connected your account,
+            and how to check the status of a deletion request.
           </p>
           {result.kind !== "none" && <StatusCard result={result} />}
         </div>
@@ -143,10 +143,7 @@ export default async function DataDeletionPage({ searchParams }: { searchParams:
             </div>
           </section>
 
-          <section
-            aria-labelledby="how-to-delete"
-            className="border-t border-slate-200 pt-8 pb-10"
-          >
+          <section aria-labelledby="how-to-delete" className="border-t border-slate-200 pt-8 pb-10">
             <h2 id="how-to-delete" className={h2Class}>
               How to request deletion
             </h2>

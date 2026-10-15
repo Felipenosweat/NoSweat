@@ -288,13 +288,13 @@ testadores**.
 2. No seu computador, gere a chave dos tokens: `openssl rand -base64 32`.
 3. Vercel → Settings → Environment Variables:
 
-| Nome                     | Valor                                                  |
-| ------------------------ | ------------------------------------------------------ |
-| `INSTAGRAM_APP_ID`       | Instagram app ID                                       |
-| `INSTAGRAM_APP_SECRET`   | Instagram app secret                                   |
-| `INSTAGRAM_REDIRECT_URI` | `https://nosweatfd.com/api/social/instagram/callback`  |
+| Nome                     | Valor                                                 |
+| ------------------------ | ----------------------------------------------------- |
+| `INSTAGRAM_APP_ID`       | Instagram app ID                                      |
+| `INSTAGRAM_APP_SECRET`   | Instagram app secret                                  |
+| `INSTAGRAM_REDIRECT_URI` | `https://nosweatfd.com/api/social/instagram/callback` |
 | `SOCIAL_TOKEN_KEYS`      | `v1:` + o resultado do `openssl` (ex.: `v1:Zm9v...=`) |
-| `SOCIAL_TESTER_EMAILS`   | e-mails dos testadores, separados por vírgula          |
+| `SOCIAL_TESTER_EMAILS`   | e-mails dos testadores, separados por vírgula         |
 
 > ⚠️ Guarde uma cópia do `SOCIAL_TOKEN_KEYS` num lugar seguro. Se ele se perder, todos os
 > clientes precisam conectar o Instagram de novo. Para trocar: `v2:<nova>,v1:<antiga>`.

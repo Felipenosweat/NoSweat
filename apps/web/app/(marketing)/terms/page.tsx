@@ -191,9 +191,9 @@ const SECTIONS: LegalSection[] = [
             published until you approve them.
           </li>
           <li>
-            You’re responsible for the content of your posts, including the photos and captions,
-            and for following Instagram’s terms and community guidelines. The “Truthful content”
-            rules above apply to posts too.
+            You’re responsible for the content of your posts, including the photos and captions, and
+            for following Instagram’s terms and community guidelines. The “Truthful content” rules
+            above apply to posts too.
           </li>
           <li>
             AI caption suggestions can be wrong. Review and edit every caption before you approve
