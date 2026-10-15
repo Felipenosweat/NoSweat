@@ -23,7 +23,8 @@ function subscribe(onChange: () => void) {
 }
 
 /**
- * "N de 5" do site mais recente. Os 4 primeiros passos vêm do servidor; "Share your link" é
+ * "N de M" do site mais recente. Os passos do site vêm do servidor, depois os `extraSteps`
+ * (ex.: Instagram, também do servidor); "Share your link" (sempre o último) é
  * PROVISÓRIO: lê uma marca no localStorage (gravada ao copiar/compartilhar no diálogo de
  * publicação) até existir um registro no servidor. Por isso o componente é de cliente.
  */
@@ -31,11 +32,14 @@ export function DashboardChecklist({
   siteId,
   siteName,
   steps,
+  extraSteps = [],
   shareHref,
 }: {
   siteId: string;
   siteName: string;
   steps: ChecklistStep[];
+  /** Passos de outros módulos (ex.: "Connect Instagram"), antes de "Share your link". */
+  extraSteps?: ChecklistStep[];
   shareHref: string | null;
 }) {
   const shared = useSyncExternalStore(
@@ -52,6 +56,7 @@ export function DashboardChecklist({
 
   const all: ChecklistStep[] = [
     ...steps,
+    ...extraSteps,
     {
       label: "Share your link",
       done: shared,
@@ -65,12 +70,12 @@ export function DashboardChecklist({
   return (
     <section
       aria-labelledby="checklist-heading"
-      className="mt-8 rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
+      className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2
           id="checklist-heading"
-          className="font-display text-[15px] leading-6 font-semibold text-ink"
+          className="font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] text-ink"
         >
           Get {siteName} ready for customers
         </h2>
@@ -87,7 +92,7 @@ export function DashboardChecklist({
         ))}
       </div>
 
-      <ol className="mt-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-5 lg:gap-3">
+      <ol className="mt-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
         {all.map((step) => {
           const marker = (
             <span
