@@ -46,7 +46,8 @@ export function PromptForm({
   /** Mostra os chips de exemplo que preenchem o campo. */
   examples?: boolean;
   caption?: string;
-  /** "dark": versão para fundo escuro (landing V5), com o placeholder se digitando. */
+  /** "dark": versão para fundo escuro (hero da landing): campo branco sólido e o placeholder
+   * se digitando. */
   tone?: "light" | "dark";
 }) {
   const id = useId();
@@ -130,7 +131,7 @@ export function PromptForm({
         onSubmit={onSubmit}
         className={`rounded-2xl border p-2 transition-colors duration-150 focus-within:ring-4 ${
           dark
-            ? "border-white/15 bg-white/[0.07] shadow-[0_20px_60px_-20px_rgb(0_102_255/.55)] backdrop-blur-xl focus-within:border-[#3d8bff] focus-within:ring-[#3d8bff]/25 hover:border-white/25"
+            ? "border-white bg-white focus-within:ring-white/40"
             : "border-slate-300 bg-white focus-within:border-brand focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
         }`}
       >
@@ -151,9 +152,7 @@ export function PromptForm({
           }}
           aria-describedby={`${id}-caption`}
           placeholder="Family-owned plumbing in Austin, TX…"
-          className={`block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] focus:outline-none ${
-            dark ? "text-white placeholder:text-slate-400" : "text-ink placeholder:text-slate-500"
-          }`}
+          className="block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] text-ink placeholder:text-slate-500 focus:outline-none"
         />
         <div className="flex justify-end px-1 pb-1">
           <button type="submit" className={`w-full sm:w-auto ${primaryButton}`}>
@@ -172,10 +171,10 @@ export function PromptForm({
               key={example.label}
               type="button"
               onClick={() => fill(example.text)}
-              className={`inline-flex h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${focusRing} ${
+              className={`inline-flex h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${
                 dark
-                  ? "border-white/15 bg-white/[0.04] text-slate-200 hover:border-white/30 hover:bg-white/10 hover:text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-ink"
+                  ? "border-white/15 text-slate-200 hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  : `border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-ink ${focusRing}`
               }`}
             >
               <span className="sr-only">Use example: </span>

@@ -12,7 +12,7 @@ export const customDomainUrl = (domain: string) => `https://${domain}`;
 
 /**
  * Título e descrição que o Google e outros buscadores leem (as tags <title> e description).
- * A mesma regra aparece na demonstração da landing (components/landing/Features.tsx).
+ * A mesma regra aparece na demonstração da landing (components/landing/demos/SearchDemo.tsx).
  */
 export function searchSnippet(spec: SiteSpec): { title: string; description?: string } {
   const { business, sections } = spec;

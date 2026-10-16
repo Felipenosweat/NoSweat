@@ -1,277 +1,453 @@
-/* Landing V5 (fundo escuro). Tokens e efeitos que não cabem em utilitários do Tailwind.
-   Tudo que se move para com prefers-reduced-motion. Cores só da marca:
-   #0066FF (brand), #00C2FF (accent), #071B33 (ink) e um ink mais fundo para o fundo. */
+/* Landing V6: o tour (#story) sobre ink sólido e as seções claras depois.
+   Aqui só fica o que não cabe em utilitários do Tailwind: as cenas fixas, as batidas
+   (`data-beat` em cada cena, escrito pelo ScrollStage) e a faixa que "acende".
+   Batidas trocam só opacity, transform e clip-path, em 450 ms. Cores só da marca:
+   #0066FF (brand), #071B33 (ink), #F8FAFC (surface) e slate. */
 
-.l-root {
-  --l-bg: #040d1c;
-  --l-bg-2: #071b33;
-  --l-line: rgb(255 255 255 / 0.1);
-  --l-text: #eaf1ff;
-  --l-muted: #9fb0c9;
-  --l-brand: #0066ff;
-  --l-brand-soft: #3d8bff;
-  --l-cyan: #00c2ff;
-  --l-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  background: var(--l-bg);
-  color: var(--l-text);
+.st-theater {
+  --beat: 50svh;
+  --st-dur: 450ms;
+  --st-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.l-root {
-  font-family: var(--ns-font-landing-body), ui-sans-serif, system-ui, sans-serif;
+@media (min-width: 1024px) {
+  .st-theater {
+    --beat: 60svh;
+  }
 }
 
-/* Títulos: Big Shoulders (condensada, de letreiro). */
-.l-display {
-  font-family: var(--ns-font-landing-display), var(--font-display);
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  line-height: 0.9;
+/* ---------- Versão estática (padrão: sem JS, movimento reduzido, tela baixa) ---------- */
+
+.st-pin {
+  display: flex;
+  flex-direction: column;
+  padding-block: 3rem;
 }
 
-/* Palavra de destaque dentro do título: mesma fonte, cor sólida (sem itálico nem degradê). */
-.l-serif {
-  font-family: inherit;
-  font-style: normal;
+@media (min-width: 1024px) {
+  .st-pin {
+    justify-content: center;
+    padding-block: 5rem;
+  }
 }
 
-.l-gradient-text {
-  color: #4da3ff;
+/* O palco é um container de tamanho: as molduras cabem na altura dele (unidades cqh). */
+.st-stage {
+  position: relative;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  height: min(52svh, 560px);
+  min-height: 18rem;
 }
 
-/* ---------- Grão (textura de papel/filme) ---------- */
-.l-grain::after {
+@media (min-width: 1024px) {
+  .st-stage {
+    height: min(70svh, 600px);
+    min-height: 26rem;
+  }
+}
+
+/* Moldura de navegador: largura limitada para a página (proporção --ar) caber no palco. */
+.st-frame {
+  width: min(100%, 760px, calc((100cqh - var(--st-offset, 2.25rem)) * var(--ar, 1.6)));
+}
+
+.st-caps {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.st-progress {
+  transform-origin: left;
+  transform: scaleX(var(--p, 1));
+}
+
+/* Trilho de capítulos: linha de 2px à esquerda; o ativo fica branco com a linha azul. */
+.st-rail::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.625rem;
+  bottom: 0.625rem;
+  width: 2px;
+  background: rgb(255 255 255 / 0.12);
+}
+
+.st-rail[aria-current="step"] {
+  color: #ffffff;
+}
+
+.st-rail[aria-current="step"]::before {
+  background: #0066ff;
+}
+
+/* ---------- Tour ligado: cenas fixas ---------- */
+
+[data-story="on"] .st-scene {
+  height: calc(100svh + var(--beats) * var(--beat));
+}
+
+[data-story="on"] .st-pin {
+  position: sticky;
+  top: 4rem;
+  height: calc(100svh - 4rem);
+  padding-block: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+  [data-story="on"] .st-body {
+    padding-top: 1rem;
+  }
+}
+
+/* Legendas empilhadas no mesmo lugar; só a da batida atual aparece (as outras seguem no DOM). */
+[data-story="on"] .st-caps {
+  gap: 0;
+}
+
+[data-story="on"] .st-caps > li {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--st-dur) var(--st-ease),
+    transform var(--st-dur) var(--st-ease);
+}
+
+[data-story="on"] [data-beat="-1"] .st-caps > li:nth-child(1),
+[data-story="on"] [data-beat="0"] .st-caps > li:nth-child(1),
+[data-story="on"] [data-beat="1"] .st-caps > li:nth-child(2),
+[data-story="on"] [data-beat="2"] .st-caps > li:nth-child(3),
+[data-story="on"] [data-beat="3"] .st-caps > li:nth-child(4),
+[data-story="on"] [data-beat="4"] .st-caps > li:nth-child(5) {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Peças das batidas ---------- */
+
+.st-mark::after,
+.st-chip,
+.st-caret,
+.st-b-header,
+.st-b-text,
+.st-b-photo,
+.st-b-photo-img,
+.st-b-hours,
+.st-b-hours-clip,
+.st-b-updated,
+.st-b-ask,
+.st-seg::before,
+.st-look,
+.st-live-frame,
+.st-live-phone,
+.st-live-dns,
+.st-url-free,
+.st-url-own,
+.st-c-mail,
+.st-c-list,
+.st-c-card,
+.st-dot,
+.st-dot-ok,
+.st-s-post,
+.st-status-wait,
+.st-status-ok {
+  transition:
+    opacity var(--st-dur) var(--st-ease),
+    transform var(--st-dur) var(--st-ease),
+    clip-path 600ms var(--st-ease);
+}
+
+/* 1. Describe: a frase se digita; depois os fatos ganham sublinhado e viram chips. */
+.st-mark {
+  position: relative;
+  background: transparent;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.st-mark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.08em;
+  height: 3px;
+  border-radius: 2px;
+  background: #0066ff;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+[data-beat="1"] .st-mark::after {
+  transform: scaleX(1);
+}
+
+.st-chip {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+[data-beat="1"] .st-chip {
+  opacity: 1;
+  transform: none;
+}
+
+.st-chip:nth-child(2) {
+  transition-delay: 60ms;
+}
+
+.st-chip:nth-child(3) {
+  transition-delay: 120ms;
+}
+
+.st-chip:nth-child(4) {
+  transition-delay: 180ms;
+}
+
+.st-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: -0.2em;
+  background: #0066ff;
+  opacity: 0;
+}
+
+[data-story="on"] [data-typing] + .st-caret {
+  opacity: 1;
+}
+
+/* 2. Build: topo → foto → horário → pedido de mudança (sábado aparece com "Updated"). */
+[data-beat="-1"] .st-b-header {
+  opacity: 0;
+  transform: translateY(-60%);
+}
+
+.st-b-text {
+  clip-path: inset(0 0 0 0);
+}
+
+[data-beat="-1"] .st-b-text {
+  clip-path: inset(0 0 100% 0);
+}
+
+.st-b-photo {
+  clip-path: inset(0 0 0 100%);
+}
+
+.st-b-photo-img {
+  transform: scale(1.15);
+}
+
+[data-beat="1"] .st-b-photo,
+[data-beat="2"] .st-b-photo,
+[data-beat="3"] .st-b-photo {
+  clip-path: inset(0 0 0 0);
+}
+
+[data-beat="1"] .st-b-photo-img,
+[data-beat="2"] .st-b-photo-img,
+[data-beat="3"] .st-b-photo-img {
+  transform: none;
+}
+
+.st-b-hours {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+[data-beat="2"] .st-b-hours,
+[data-beat="3"] .st-b-hours {
+  opacity: 1;
+  transform: none;
+}
+
+/* Recorte da linha "Sat" (cantos de baixo arredondados como o cartão da captura). */
+.st-b-hours-clip {
+  clip-path: inset(0 0 38% 0 round 0 0 4.6% 4.6% / 0 0 15.8% 15.8%);
+}
+
+[data-beat="3"] .st-b-hours-clip {
+  clip-path: inset(0 0 0 0 round 0 0 4.6% 4.6% / 0 0 15.8% 15.8%);
+}
+
+.st-b-updated,
+.st-b-ask {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+[data-beat="3"] .st-b-updated,
+[data-beat="3"] .st-b-ask {
+  opacity: 1;
+  transform: none;
+}
+
+/* 3. Five layouts: o seletor marca o atual e cada captura entra por cima com uma cortina. */
+.st-seg {
+  color: #94a3b8;
+}
+
+.st-seg::before {
   content: "";
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  opacity: 0.09;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  border-radius: inherit;
+  background: #0066ff;
+  opacity: 0;
 }
 
-/* ---------- Malha de luz do hero (azul e ciano à deriva) ---------- */
-.l-mesh {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  background:
-    radial-gradient(40% 35% at 70% 30%, rgb(0 102 255 / 0.55), transparent 70%),
-    radial-gradient(30% 30% at 85% 70%, rgb(0 194 255 / 0.35), transparent 70%),
-    radial-gradient(35% 40% at 20% 80%, rgb(0 102 255 / 0.25), transparent 70%);
-  filter: blur(40px);
+[data-beat="0"] .st-seg-0,
+[data-beat="1"] .st-seg-1,
+[data-beat="2"] .st-seg-2,
+[data-beat="3"] .st-seg-3,
+[data-beat="4"] .st-seg-4 {
+  color: #ffffff;
 }
 
-@keyframes l-drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(-4%, 3%, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
+[data-beat="0"] .st-seg-0::before,
+[data-beat="1"] .st-seg-1::before,
+[data-beat="2"] .st-seg-2::before,
+[data-beat="3"] .st-seg-3::before,
+[data-beat="4"] .st-seg-4::before {
+  opacity: 1;
 }
 
-/* ---------- Entrada do título (CSS puro: aparece mesmo antes do JS) ---------- */
-@keyframes l-rise {
-  from {
-    transform: translateY(105%);
-  }
-  to {
-    transform: translateY(0);
-  }
+.st-look {
+  clip-path: inset(0 100% 0 0);
 }
 
-@keyframes l-fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.st-look-0,
+[data-beat="1"] .st-look-1,
+[data-beat="2"] :is(.st-look-1, .st-look-2),
+[data-beat="3"] :is(.st-look-1, .st-look-2, .st-look-3),
+[data-beat="4"] :is(.st-look-1, .st-look-2, .st-look-3, .st-look-4) {
+  clip-path: inset(0 0 0 0);
 }
 
-.l-line {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+/* 4. Go live: publicado → o celular sobe com a barra de ligar → domínio próprio e DNS. */
+[data-beat="1"] .st-live-frame,
+[data-beat="2"] .st-live-frame {
+  transform: scale(0.84) translateX(-9%);
 }
 
-.l-line > span {
-  display: inline-block;
+.st-live-phone {
+  opacity: 0;
+  transform: translateY(30px);
 }
 
-/* ---------- Parede 3D de sites ---------- */
-.l-wall {
-  perspective: 1800px;
+[data-beat="1"] .st-live-phone,
+[data-beat="2"] .st-live-phone {
+  opacity: 1;
+  transform: none;
 }
 
-.l-wall-plane {
-  transform: rotateX(22deg) rotateY(-24deg) rotateZ(9deg);
-  transform-style: preserve-3d;
+.st-live-dns {
+  opacity: 0;
+  transform: translateY(16px);
 }
 
-@keyframes l-scroll-up {
-  to {
-    transform: translateY(-50%);
-  }
+[data-beat="2"] .st-live-dns {
+  opacity: 1;
+  transform: none;
 }
 
-@keyframes l-scroll-down {
-  from {
-    transform: translateY(-50%);
-  }
-  to {
-    transform: translateY(0);
-  }
+.st-url-own,
+[data-beat="2"] .st-url-free {
+  opacity: 0;
 }
 
-/* ---------- Faixas de texto em movimento ---------- */
-@keyframes l-marquee {
-  to {
-    transform: translateX(-50%);
-  }
+[data-beat="2"] .st-url-own {
+  opacity: 1;
 }
 
-@keyframes l-marquee-rev {
-  from {
-    transform: translateX(-50%);
-  }
-  to {
-    transform: translateX(0);
-  }
+/* 5. Clients: e-mail → lista → ficha da cliente. */
+.st-c-list,
+.st-c-card {
+  opacity: 0;
+  transform: translateY(12px);
 }
 
-.l-outline {
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.55);
+[data-beat="1"] .st-c-mail,
+[data-beat="2"] .st-c-mail {
+  opacity: 0;
 }
 
-/* ---------- Brilho que segue o mouse nos cartões ---------- */
-.l-card {
+[data-beat="1"] .st-c-list,
+[data-beat="2"] .st-c-card {
+  opacity: 1;
+  transform: none;
+}
+
+/* 6. Instagram: o mês se enche de rascunhos (âmbar); os aprovados ficam azuis. */
+.st-dot {
+  opacity: 0;
+  transform: scaleX(0.3);
+  transition-delay: calc(var(--i, 0) * 40ms);
+}
+
+[data-beat="1"] .st-dot,
+[data-beat="2"] .st-dot {
+  opacity: 1;
+  transform: none;
+}
+
+.st-dot-ok,
+.st-status-ok,
+[data-beat="2"] .st-status-wait {
+  opacity: 0;
+}
+
+[data-beat="2"] .st-dot-ok,
+[data-beat="2"] .st-status-ok {
+  opacity: 1;
+}
+
+.st-s-post {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+[data-beat="1"] .st-s-post,
+[data-beat="2"] .st-s-post {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Faixa "That's the whole morning.": de ink para surface com a rolagem ---------- */
+
+.st-lights {
   position: relative;
   isolation: isolate;
+  background: #071b33;
+  color: #ffffff;
+  transition: color 200ms linear;
 }
 
-.l-card::before {
+.st-lights::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 300ms var(--l-ease);
-  background: radial-gradient(
-    420px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(0 102 255 / 0.22),
-    transparent 60%
-  );
+  background: #f8fafc;
+  opacity: var(--l, 0);
 }
 
-.l-card:hover::before {
-  opacity: 1;
+.st-lights[data-lit="true"] {
+  color: #071b33;
 }
 
-/* ---------- Esqueleto "carregando" da montagem ---------- */
-@keyframes l-shimmer {
-  to {
-    background-position: -200% 0;
-  }
-}
+/* ---------- Movimento reduzido: nada anda (o tour nem liga, ver ScrollStage) ---------- */
 
-.l-skeleton {
-  background: linear-gradient(90deg, #e7eaee 0%, #f3f5f7 40%, #e7eaee 80%) 0 0 / 200% 100%;
-}
-
-/* ---------- Foto em duotone (azul da marca) ---------- */
-.l-duotone {
-  position: relative;
-  overflow: hidden;
-  background: #071b33;
-}
-
-.l-duotone img {
-  filter: grayscale(1) contrast(1.15) brightness(0.95);
-  mix-blend-mode: luminosity;
-  opacity: 0.9;
-}
-
-.l-duotone::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    160deg,
-    rgb(0 102 255 / 0.55),
-    rgb(0 194 255 / 0.15) 60%,
-    rgb(4 13 28 / 0.6)
-  );
-  mix-blend-mode: color;
-}
-
-/* ---------- Toque demonstrado no botão de ligar (Features) ---------- */
-@keyframes l-tap {
-  0% {
-    transform: scale(0.55);
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  70%,
-  100% {
-    transform: scale(1.35);
-    opacity: 0;
-  }
-}
-
-/* Sem movimento: o anel fica parado, só marcando o lugar. */
-.l-tap {
-  opacity: 0.8;
-}
-
-/* ---------- Movimento permitido ---------- */
-@media (prefers-reduced-motion: no-preference) {
-  .l-mesh {
-    animation: l-drift 18s ease-in-out infinite;
-  }
-  .l-line > span {
-    animation: l-rise 1s var(--l-ease) both;
-    animation-delay: calc(var(--i, 0) * 110ms + 100ms);
-  }
-  .l-intro {
-    animation: l-fade-up 900ms var(--l-ease) both;
-    animation-delay: calc(var(--i, 0) * 110ms + 450ms);
-  }
-  .l-col-up {
-    animation: l-scroll-up var(--speed, 60s) linear infinite;
-  }
-  .l-col-down {
-    animation: l-scroll-down var(--speed, 60s) linear infinite;
-  }
-  .l-marquee {
-    animation: l-marquee var(--speed, 40s) linear infinite;
-  }
-  .l-marquee-rev {
-    animation: l-marquee-rev var(--speed, 40s) linear infinite;
-  }
-  .l-skeleton {
-    animation: l-shimmer 1.4s linear infinite;
-  }
-  .l-tap {
-    animation: l-tap 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-  }
-}
-
-/* Sem movimento: o que a animação revelaria já aparece pronto. */
 @media (prefers-reduced-motion: reduce) {
-  .l-reveal {
-    opacity: 1 !important;
-    transform: none !important;
+  .st-theater *,
+  .st-theater *::before,
+  .st-theater *::after,
+  .st-lights {
+    transition: none !important;
   }
 }

@@ -1,15 +1,16 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { container, focusRing } from "./styles";
 
 // Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
-// "dark" (a landing V5, fundo escuro). Mesmos links nos dois.
+// "dark" (o header da landing, sobre o ink do hero e do tour). Mesmos links nos dois.
 
 type Tone = "light" | "dark";
 
 const NAV = [
-  { href: "/#build", label: "How it works" },
-  { href: "/#examples", label: "Examples" },
+  { href: "/#story", label: "How it works" },
+  { href: "/#looks", label: "Examples" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -21,10 +22,10 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   {
     title: "Product",
     links: [
-      { href: "/#build", label: "Websites" },
+      { href: "/#story", label: "Websites" },
       { href: "/#clients", label: "Clients" },
       { href: "/#social", label: "Instagram posts" },
-      { href: "/#examples", label: "Examples" },
+      { href: "/#looks", label: "Examples" },
       { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
     ],
@@ -53,12 +54,23 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   },
 ];
 
-export function MarketingHeader({ tone = "light" }: { tone?: Tone }) {
+export function MarketingHeader({
+  tone = "light",
+  actions,
+}: {
+  tone?: Tone;
+  /** Botões extras antes do "Log in" (ex.: o som da landing). */
+  actions?: ReactNode;
+}) {
   const dark = tone === "dark";
+  // No fundo escuro o contorno de foco é branco (o azul da marca some no ink).
+  const ring = dark
+    ? "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+    : focusRing;
   return (
     <header
       className={`sticky top-0 z-30 border-b backdrop-blur-md ${
-        dark ? "border-white/10 bg-[#040d1c]/70" : "border-slate-200/80 bg-white/90"
+        dark ? "border-white/10 bg-ink" : "border-slate-200/80 bg-white/90"
       }`}
     >
       {/* min-h + flex-wrap: com o texto aumentado (zoom 200%), os itens descem de linha em vez
@@ -72,7 +84,7 @@ export function MarketingHeader({ tone = "light" }: { tone?: Tone }) {
             <a
               key={item.href}
               href={item.href}
-              className={`inline-flex min-h-11 items-center rounded-sm font-medium transition-colors duration-150 ${focusRing} ${
+              className={`inline-flex min-h-11 items-center rounded-sm font-medium transition-colors duration-150 ${ring} ${
                 dark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-ink"
               }`}
             >
@@ -81,9 +93,10 @@ export function MarketingHeader({ tone = "light" }: { tone?: Tone }) {
           ))}
         </nav>
         <div className="flex flex-wrap items-center gap-2 text-sm font-semibold sm:gap-3">
+          {actions}
           <Link
             href="/login"
-            className={`inline-flex h-11 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 ${focusRing} ${
+            className={`inline-flex h-11 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 ${ring} ${
               dark
                 ? "text-slate-200 hover:bg-white/10 hover:text-white"
                 : "text-slate-700 hover:bg-slate-50 hover:text-ink"
@@ -95,7 +108,7 @@ export function MarketingHeader({ tone = "light" }: { tone?: Tone }) {
               aparece a barra fixa embaixo (um botão azul por tela). */}
           <Link
             href="/create"
-            className={`hidden h-11 items-center rounded-lg px-4 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:inline-flex ${focusRing} ${
+            className={`hidden h-11 items-center rounded-lg px-4 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:inline-flex ${ring} ${
               dark
                 ? "bg-white text-ink hover:bg-slate-200"
                 : "bg-brand text-white hover:bg-brand-dark"
@@ -117,7 +130,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
   return (
     <footer
       className={`border-t pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-0 ${
-        dark ? "border-white/10 bg-[#030a16]" : "border-slate-200 bg-surface"
+        dark ? "border-white/10 bg-ink" : "border-slate-200 bg-surface"
       }`}
     >
       <div className={`${container} grid gap-10 py-14 lg:grid-cols-12 lg:gap-x-8`}>
