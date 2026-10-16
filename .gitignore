@@ -32,3 +32,4 @@ coverage/
 
 # Resultados da auditoria do site (gerados pelo workflow site-audit)
 qa/out/
+qa/out-local/
