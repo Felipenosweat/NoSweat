@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <div className="rounded-lg bg-white px-2 py-1 text-ink">
               <Logo />
             </div>
-            <span className="rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-ink">
+            <span className="hidden rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-ink min-[420px]:inline">
               ADMIN
             </span>
           </div>
