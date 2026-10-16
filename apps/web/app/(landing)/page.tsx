@@ -7,13 +7,17 @@ import { PlusIcon } from "@/components/marketing/icons";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { PromptForm } from "@/components/marketing/PromptForm";
 import { container, focusRing } from "@/components/marketing/styles";
+import { LANDING_FAQS } from "@/components/marketing/faqs";
+import { JsonLd } from "@/components/marketing/JsonLd";
+import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 
 // Landing V6 (aprovada pelo fundador): hero → tour em seis cenas sobre ink (#story, uma só
 // história: a Sparkle & Co. Cleaning, fictícia) → a faixa que "acende" → o que vem junto →
 // preço → dúvidas → CTA final, no claro.
 // Só afirmações que o produto cumpre hoje. Nada de números, logos ou depoimentos inventados.
 
-const TITLE = "No Sweat · Your business, online by lunch.";
+// O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
+const TITLE = "No Sweat: AI Website Builder for Local Businesses";
 const DESCRIPTION =
   "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. Plans from $39/month.";
 
@@ -33,65 +37,13 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-const FAQS = [
-  {
-    question: "How much does it cost?",
-    answer:
-      "Starter is $39 a month, Pro $69 and Premium $129. Monthly Starter and Pro plans have a one-time $249 setup fee. Pay yearly and get 2 months free with no setup fee: $390, $690 or $1,290 a year. Creating an account and previewing your site are free; you pick a plan when you go live.",
-  },
-  {
-    question: "Do I need technical experience?",
-    answer:
-      "No. If you can write a text message, you can do this. No code, no plugins, nothing to install.",
-  },
-  {
-    question: "Can I customize my site?",
-    answer:
-      "Yes. Edit your business details, hero text, services, reviews you provide, and FAQ. Change colors, pick from ten font pairings, switch between five page layouts, and add, remove or reorder sections, all with a live preview.",
-  },
-  {
-    question: "Can AI change my site for me?",
-    answer:
-      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. AI edits are included in every plan.",
-  },
-  {
-    question: "Can I add my own photos?",
-    answer:
-      "Yes, on every plan. Upload JPG, PNG or WebP photos and show them in a gallery on your site. Every site can also start with a hero photo picked for your industry from a stock library, credited to the photographer.",
-  },
-  {
-    question: "What happens after I publish?",
-    answer:
-      "Your site goes live at nosweatfd.com/s/your-business or on your own domain. You get an email when someone sends a request through your contact form, and every request is saved in your dashboard and added to your Clients list. Keep editing anytime; changes stay in a draft until you publish again.",
-  },
-  {
-    question: "What is the Clients area?",
-    answer:
-      "A simple list of the people who contact you. Every request from your website’s contact form becomes a client automatically. Move each one from New to Contacted, Quoted, then Won or Lost, add notes and follow-up dates, log the jobs you did and what they paid, and tap to call, text or email them.",
-  },
-  {
-    question: "Can it post to Instagram for me?",
-    answer:
-      "Yes, with your approval. Connect a professional Instagram account and AI drafts a month of posts from your website. You review and approve each one, and approved posts go out on schedule. Nothing is posted without your approval.",
-  },
-  {
-    question: "Can I cancel?",
-    answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal.",
-  },
-  {
-    question: "Can I use my own domain?",
-    answer:
-      "Yes, on Pro and Premium, if you already own one (from any domain registrar). On your site’s page we show the DNS records to add and verify the connection. Every plan can publish on a free nosweatfd.com/s/ address.",
-  },
-];
-
 const h2Light =
   "font-display text-[clamp(2rem,4.6vw,3.5rem)] leading-[1.04] font-bold tracking-[-0.03em] text-balance text-ink";
 
 export default function LandingPage() {
   return (
     <>
+      <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
       <Hero />
       <Story />
 
@@ -145,7 +97,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-8">
-            {FAQS.map((faq) => (
+            {LANDING_FAQS.map((faq) => (
               <details key={faq.question} className="ns-faq group">
                 <summary
                   className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-5 text-lg font-semibold text-ink transition-colors duration-150 hover:text-brand lg:py-6 lg:text-xl [&::-webkit-details-marker]:hidden ${focusRing}`}

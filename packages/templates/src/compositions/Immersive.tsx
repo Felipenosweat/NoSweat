@@ -31,8 +31,9 @@ export function ImmersiveComposition({
   contactEndpoint,
   editable = false,
   selectedSection = null,
+  anchors = true,
 }: TemplateProps) {
-  const model = buildModel(spec);
+  const model = buildModel(spec, anchors);
   const first = spec.sections[0];
   // O cabeçalho só fica transparente por cima da foto quando o site começa por ela.
   const overlay = first?.type === "hero";
@@ -118,7 +119,7 @@ export function ImmersiveComposition({
   };
 
   return (
-    <div id="top" className="relative flex min-h-full flex-col">
+    <div id={anchors ? "top" : undefined} className="relative flex min-h-full flex-col">
       <header
         className={
           overlay

@@ -1,10 +1,11 @@
 import type { SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
+import { SITE_ORIGIN } from "@/lib/site";
 import { liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
 
 /** Endereço grátis de um site publicado (mesma origem do `metadataBase` do layout). */
-export const freeSiteUrl = (slug: string) => `https://nosweatfd.com/s/${slug}`;
+export const freeSiteUrl = (slug: string) => `${SITE_ORIGIN}/s/${slug}`;
 
 /** Endereço no domínio próprio do cliente (raiz, sem "www"). */
 export const customDomainUrl = (domain: string) => `https://${domain}`;
@@ -94,7 +95,7 @@ export function siteJsonLd(site: SiteRecord, url: string): string {
  * Impede que um texto do cliente feche a tag <script> ("</script>") ou abra um comentário
  * HTML: troca <, >, & e os separadores de linha U+2028/U+2029 por escapes \uXXXX (JSON válido).
  */
-function escapeJsonForScript(json: string): string {
+export function escapeJsonForScript(json: string): string {
   return json.replace(/[<>&\u2028\u2029]/g, (char) => {
     return `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`;
   });

@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "What information No Sweat collects, how we use it, who helps us process it, and the choices you have.",
+  alternates: { canonical: "/privacy" },
 };
 
 const SECTIONS: LegalSection[] = [
