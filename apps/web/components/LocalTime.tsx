@@ -15,14 +15,17 @@ export function LocalTime({ iso, className }: { iso: string; className?: string 
     () => true,
     () => false,
   );
+  // dateStyle/timeStyle não podem ir junto com timeZoneName (o Intl lança TypeError e a página
+  // inteira cai com erro 500); no servidor o "UTC" vai escrito à mão.
   const format = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
-    ...(onClient ? {} : { timeZone: "UTC", timeZoneName: "short" }),
+    ...(onClient ? {} : { timeZone: "UTC" }),
   });
+  const text = format.format(new Date(iso));
   return (
     <time dateTime={iso} className={className}>
-      {format.format(new Date(iso))}
+      {onClient ? text : `${text} UTC`}
     </time>
   );
 }
