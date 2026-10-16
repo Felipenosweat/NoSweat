@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { SearchDemo } from "@/components/landing/demos/SearchDemo";
-import { ArrowUturnLeftIcon, GlobeIcon, PencilIcon, PhotoIcon } from "@/components/marketing/icons";
+import { ArrowUturnLeftIcon, GlobeIcon } from "@/components/marketing/icons";
 import { container } from "@/components/marketing/styles";
 
-// "Also in every plan": quatro linhas (sem cartões) com o que vem junto e não coube no tour.
-// Só o que o produto faz hoje.
+// "Also in every plan": as linhas (sem cartões) com o que vem junto e não coube no tour (fotos,
+// cores e fontes agora estão na cena Edit). Só o que o produto faz hoje.
 
 const ROWS: { icon: ReactNode; title: string; body: string; demo?: ReactNode }[] = [
   {
@@ -12,16 +12,6 @@ const ROWS: { icon: ReactNode; title: string; body: string; demo?: ReactNode }[]
     title: "Set up for search",
     body: "Every site gets a page title and a description written from your business details, so search results say who you are and where you work. Rankings are up to the search engines.",
     demo: <SearchDemo />,
-  },
-  {
-    icon: <PhotoIcon className="size-6" />,
-    title: "Your own photos",
-    body: "Upload JPG, PNG or WebP photos and show them in a gallery. Until then, your site starts with a photo picked for your trade, credited to the photographer.",
-  },
-  {
-    icon: <PencilIcon className="size-6" />,
-    title: "Colors, fonts and sections you control",
-    body: "Change colors, pick from ten font pairings, switch between five layouts, and add, remove or reorder sections, all with a live preview.",
   },
   {
     icon: <ArrowUturnLeftIcon className="size-6" />,

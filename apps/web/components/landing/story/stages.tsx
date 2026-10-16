@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { StatusBadge } from "@/components/DashboardUi";
-import { AskPanel } from "@/components/landing/demos/AskDemo";
+import { DashboardHome } from "@/components/landing/demos/DashboardDemo";
+import { EditorPanel } from "@/components/landing/demos/EditorDemo";
 import { ClientCard, ClientList, RequestEmail } from "@/components/landing/demos/ClientsDemo";
 import { DnsRecords } from "@/components/landing/demos/DomainDemo";
 import { BrowserFrame, ExampleTag, PhoneFrame } from "@/components/landing/demos/Frames";
@@ -15,7 +16,7 @@ import { SocialCalendar, SocialPost } from "@/components/landing/demos/SocialDem
 
 export function DescribeStage() {
   return (
-    <div className="relative w-full max-w-[620px] rounded-2xl bg-white p-5 text-ink sm:p-6">
+    <div className="relative w-full max-w-[620px] rounded-2xl bg-white p-5 text-ink shadow-[0_40px_100px_-30px_rgb(0_0_0/.7)] sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[13px] font-semibold text-slate-500">Tell us about your business</p>
         <ExampleTag />
@@ -67,68 +68,112 @@ const box = (b: { x: number; y: number; w: number; h: number }) => ({
   height: `${b.h}%`,
 });
 
+/** Uma camada do site de exemplo, recortada da captura (eager: são pequenas e entram já). */
+function Layer({ name, sizes }: { name: "header" | "text" | "photo" | "hours"; sizes: string }) {
+  return (
+    <Image
+      src={`/landing/build/${name}.webp`}
+      alt=""
+      fill
+      sizes={sizes}
+      loading="eager"
+      className="object-cover"
+    />
+  );
+}
+
+const SIZES = {
+  header: "(min-width: 1024px) 690px, 90vw",
+  text: "(min-width: 1024px) 430px, 56vw",
+  photo: "(min-width: 1024px) 215px, 28vw",
+  hours: "(min-width: 1024px) 320px, 42vw",
+} as const;
+
+// Sem caixas cinzas de "lugar reservado": cada batida só mostra conteúdo de verdade.
+// Batida 0: topo e texto; 1: a foto entra; 2: o horário (de segunda a sexta).
 export function BuildStage() {
   return (
     <BrowserFrame url="nosweatfd.com/create" ratio={1280 / 860}>
-      {/* Lugar reservado de cada bloco antes de ele chegar. */}
-      <div className="absolute rounded-full bg-slate-100" style={box(LAYERS.header)} />
-      <div className="absolute rounded-3xl bg-slate-100" style={box(LAYERS.text)} />
-      <div className="absolute rounded-3xl bg-slate-100" style={box(LAYERS.photo)} />
-      <div className="absolute rounded-3xl bg-slate-100" style={box(LAYERS.hours)} />
-
-      <div className="st-b-header absolute" style={box(LAYERS.header)}>
-        <Image
-          src="/landing/build/header.webp"
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 690px, 90vw"
-          className="object-cover"
-        />
+      <div className="absolute" style={box(LAYERS.header)}>
+        <Layer name="header" sizes={SIZES.header} />
       </div>
       <div className="st-b-text absolute" style={box(LAYERS.text)}>
-        <Image
-          src="/landing/build/text.webp"
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 430px, 56vw"
-          className="object-cover"
-        />
+        <Layer name="text" sizes={SIZES.text} />
       </div>
       <div className="st-b-photo absolute overflow-hidden rounded-3xl" style={box(LAYERS.photo)}>
         <div className="st-b-photo-img absolute inset-0">
-          <Image
-            src="/landing/build/photo.webp"
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 215px, 28vw"
-            className="object-cover"
-          />
+          <Layer name="photo" sizes={SIZES.photo} />
         </div>
       </div>
       <div className="st-b-hours absolute" style={box(LAYERS.hours)}>
-        {/* Antes do pedido a linha de sábado fica recortada; ela aparece com "Updated". */}
-        <div className="st-b-hours-clip absolute inset-0">
-          <Image
-            src="/landing/build/hours.webp"
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 320px, 42vw"
-            className="object-cover"
-          />
+        {/* A linha de sábado fica recortada: ela só aparece na cena Edit, com "Updated". */}
+        <div className="st-hours-clip absolute inset-0">
+          <Layer name="hours" sizes={SIZES.hours} />
         </div>
-        <span className="st-b-updated absolute -top-2.5 right-3">
-          <StatusBadge tone="live">Updated</StatusBadge>
-        </span>
-      </div>
-
-      <div className="st-b-ask absolute right-[3%] bottom-[4%] w-[min(16rem,50%)]">
-        <AskPanel />
       </div>
     </BrowserFrame>
   );
 }
 
-/* ---------- 3. Five layouts ---------- */
+/* ---------- 3. Edit ---------- */
+
+// O mesmo site da Sparkle & Co., agora no editor. Batidas: 0 a seção clicada ganha o contorno;
+// 1 a IA acrescenta o sábado ("Updated"); 2 a foto do dono entra no lugar; 3 o estilo "Harbor"
+// muda as cores (cópias com hue-rotate das camadas, que aparecem por opacidade).
+export function EditStage() {
+  return (
+    <div className="relative flex h-full w-full items-center justify-center">
+      <BrowserFrame
+        url="nosweatfd.com/sites/sparkle/edit"
+        ratio={1280 / 860}
+        className="st-e-frame"
+      >
+        <div className="absolute" style={box(LAYERS.header)}>
+          <Layer name="header" sizes={SIZES.header} />
+          <div className="st-e-tint absolute inset-0">
+            <Layer name="header" sizes={SIZES.header} />
+          </div>
+        </div>
+        <div className="absolute" style={box(LAYERS.text)}>
+          <Layer name="text" sizes={SIZES.text} />
+          <div className="st-e-tint absolute inset-0">
+            <Layer name="text" sizes={SIZES.text} />
+          </div>
+          <span className="st-e-outline absolute -inset-1 rounded-[1.6rem] ring-2 ring-brand" />
+        </div>
+        <div className="absolute overflow-hidden rounded-3xl" style={box(LAYERS.photo)}>
+          <Layer name="photo" sizes={SIZES.photo} />
+          <div className="st-e-photo absolute inset-0">
+            <Image
+              src="/photos/crew.webp"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 215px, 28vw"
+              quality={60}
+              className="object-cover"
+            />
+          </div>
+        </div>
+        <div className="absolute" style={box(LAYERS.hours)}>
+          <div className="st-e-hours st-hours-clip absolute inset-0">
+            <Layer name="hours" sizes={SIZES.hours} />
+            <div className="st-e-tint absolute inset-0">
+              <Layer name="hours" sizes={SIZES.hours} />
+            </div>
+          </div>
+          <span className="st-e-updated absolute -top-2.5 right-3">
+            <StatusBadge tone="live">Updated</StatusBadge>
+          </span>
+        </div>
+      </BrowserFrame>
+      <div className="absolute right-0 bottom-[2%] w-[min(16rem,50%)]">
+        <EditorPanel />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- 4. Five layouts ---------- */
 
 /** As cinco composições, cada uma num site de exemplo (fixtures de @nosweat/fixtures). */
 export const LOOKS = [
@@ -172,7 +217,7 @@ export const LOOKS = [
 export function LooksStage() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3">
-      <div className="flex w-full max-w-[760px] gap-0.5 rounded-lg border border-white/10 p-[3px]">
+      <div className="flex w-full max-w-[760px] gap-0.5 rounded-lg border border-white/15 bg-ink/60 p-[3px] backdrop-blur-md">
         {LOOKS.map((look, index) => (
           <span
             key={look.slug}
@@ -199,7 +244,7 @@ export function LooksStage() {
   );
 }
 
-/* ---------- 4. Go live ---------- */
+/* ---------- 5. Go live ---------- */
 
 export function LiveStage() {
   return (
@@ -241,7 +286,7 @@ export function LiveStage() {
   );
 }
 
-/* ---------- 5. Clients ---------- */
+/* ---------- 6. Clients ---------- */
 
 export function ClientsStage() {
   const layer = "absolute inset-0 px-5 pt-10 pb-5 sm:px-6";
@@ -261,7 +306,7 @@ export function ClientsStage() {
   );
 }
 
-/* ---------- 6. Instagram ---------- */
+/* ---------- 7. Instagram ---------- */
 
 export function SocialStage() {
   return (
@@ -270,6 +315,16 @@ export function SocialStage() {
       <div className="st-s-post absolute right-3 bottom-3 w-[min(14rem,52%)]">
         <SocialPost />
       </div>
+    </div>
+  );
+}
+
+/* ---------- 8. Your day ---------- */
+
+export function DashboardStage() {
+  return (
+    <div className="relative max-h-full w-full max-w-[600px] overflow-hidden rounded-2xl bg-surface p-4 shadow-[0_40px_100px_-30px_rgb(0_0_0/.7)] sm:p-5">
+      <DashboardHome />
     </div>
   );
 }

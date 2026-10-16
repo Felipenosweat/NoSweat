@@ -6,7 +6,9 @@ import { useEffect } from "react";
 // quadro por vez (requestAnimationFrame), e um IntersectionObserver para só calcular as cenas
 // que estão na tela. Escreve direto no DOM, sem estado do React por quadro:
 // - `data-story="on"` no #story (liga as cenas fixas no CSS);
-// - em cada cena: `--p` (0–1) e `data-beat` (o CSS troca as batidas com transições);
+// - em cada cena: `--p` (0–1), `--in` (0–1, o fundo da cena entrando por cima do anterior) e
+//   `data-beat` (o CSS troca as batidas com transições);
+// - no hero [data-hero]: `--hero-p` (0–1, os celulares se endireitam e sobem);
 // - o pedaço da frase digitada em [data-typewriter];
 // - `aria-current="step"` no capítulo ativo do trilho;
 // - na faixa [data-lights]: `--l` (0–1) e `data-lit` (texto escuro depois da metade).
@@ -19,6 +21,8 @@ const HEADER = 64;
 const TYPE_UNTIL = 0.8;
 /** Distância (px) antes de fixar em que a cena ainda está no estado "antes" (data-pre). */
 const PRE_MARGIN = 32;
+/** Parte da tela (de baixo para cima) em que o fundo da próxima cena aparece por inteiro. */
+const FADE_SPAN = 0.7;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -29,6 +33,7 @@ export function ScrollStage() {
     const scenes = Array.from(root.querySelectorAll<HTMLElement>("[data-scene]"));
     const rail = Array.from(root.querySelectorAll<HTMLAnchorElement>("[data-rail-link]"));
     const lights = document.querySelector<HTMLElement>("[data-lights]");
+    const hero = document.querySelector<HTMLElement>("[data-hero]");
     const finalBeats = new Map(scenes.map((scene) => [scene, scene.dataset.beat ?? "0"]));
 
     // Texto da frase: cada nó de texto guarda o seu pedaço completo.
@@ -60,6 +65,8 @@ export function ScrollStage() {
       "(prefers-reduced-motion: no-preference) and (min-height: 600px)",
     );
     const onScreen = new Set<Element>();
+    // Quem acabou de sair da tela ganha uma última medida (o fundo não fica pela metade).
+    const leaving = new Set<Element>();
     let frame = 0;
     let active = -1;
     let enabled = false;
@@ -79,6 +86,8 @@ export function ScrollStage() {
       const travel = Math.max(1, rect.height - vh + HEADER);
       const p = clamp((HEADER - rect.top) / travel);
       scene.style.setProperty("--p", p.toFixed(3));
+      // O fundo começa uma tela antes da cena: entra enquanto o topo dela sobe pela tela.
+      scene.style.setProperty("--in", clamp((vh - rect.top) / (vh * FADE_SPAN)).toFixed(3));
       const pre = scene.hasAttribute("data-pre") && rect.top > HEADER + PRE_MARGIN;
       const beat = pre ? "-1" : String(Math.min(beats - 1, Math.floor(p * beats)));
       if (scene.dataset.beat !== beat) scene.dataset.beat = beat;
@@ -90,10 +99,14 @@ export function ScrollStage() {
       frame = 0;
       const vh = window.innerHeight;
       scenes.forEach((scene, index) => {
-        if (!all && !onScreen.has(scene)) return;
+        if (!all && !onScreen.has(scene) && !leaving.has(scene)) return;
         const rect = measure(scene, vh);
         if (rect.top <= vh / 2 && rect.bottom > vh / 2) setActive(index);
       });
+      if (hero && (all || onScreen.has(hero) || leaving.has(hero))) {
+        const rect = hero.getBoundingClientRect();
+        hero.style.setProperty("--hero-p", clamp(-rect.top / Math.max(1, rect.height)).toFixed(3));
+      }
       if (lights && (all || onScreen.has(lights))) {
         const rect = lights.getBoundingClientRect();
         const l = clamp((vh - rect.top) / (rect.height + vh * 0.4));
@@ -101,6 +114,7 @@ export function ScrollStage() {
         const lit = l > 0.5 ? "true" : "false";
         if (lights.dataset.lit !== lit) lights.dataset.lit = lit;
       }
+      leaving.clear();
     };
 
     const schedule = () => {
@@ -110,7 +124,7 @@ export function ScrollStage() {
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) onScreen.add(entry.target);
-        else onScreen.delete(entry.target);
+        else if (onScreen.delete(entry.target)) leaving.add(entry.target);
       }
       schedule();
     });
@@ -121,6 +135,7 @@ export function ScrollStage() {
       root.dataset.story = "on";
       scenes.forEach((scene) => observer.observe(scene));
       if (lights) observer.observe(lights);
+      if (hero) observer.observe(hero);
       window.addEventListener("scroll", schedule, { passive: true });
       window.addEventListener("resize", schedule);
       // Primeira passada em todas as cenas: cada uma já começa na batida certa.
@@ -132,6 +147,7 @@ export function ScrollStage() {
       enabled = false;
       observer.disconnect();
       onScreen.clear();
+      leaving.clear();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       cancelAnimationFrame(frame);
@@ -141,9 +157,11 @@ export function ScrollStage() {
       scenes.forEach((scene) => {
         scene.dataset.beat = finalBeats.get(scene) ?? "0";
         scene.style.removeProperty("--p");
+        scene.style.removeProperty("--in");
       });
       type(total);
       setActive(-1);
+      hero?.style.removeProperty("--hero-p");
       if (lights) {
         lights.style.removeProperty("--l");
         delete lights.dataset.lit;

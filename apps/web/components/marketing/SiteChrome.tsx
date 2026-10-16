@@ -70,7 +70,7 @@ export function MarketingHeader({
   return (
     <header
       className={`sticky top-0 z-30 border-b backdrop-blur-md ${
-        dark ? "border-white/10 bg-ink" : "border-slate-200/80 bg-white/90"
+        dark ? "border-white/10 bg-ink/75" : "border-slate-200/80 bg-white/90"
       }`}
     >
       {/* min-h + flex-wrap: com o texto aumentado (zoom 200%), os itens descem de linha em vez

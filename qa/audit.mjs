@@ -14,6 +14,41 @@ const OUT = process.env.OUT_DIR ?? "qa/out";
 mkdirSync(OUT, { recursive: true });
 const report = [];
 const browser = await chromium.launch();
+
+// SEED=1 (só no app rodando localmente, sem login): cria um site, publica, manda um pedido de
+// contato e enche o mês do Instagram, para as telas de dentro da conta terem conteúdo.
+if (process.env.SEED === "1") {
+  const api = await browser.newContext();
+  const post = async (path, body) => {
+    const res = await api.request.post(BASE + path, { data: body });
+    const text = await res.text();
+    console.log(`seed ${path} → ${res.status()}`);
+    try {
+      return JSON.parse(text);
+    } catch {
+      return {};
+    }
+  };
+  const gen = await post("/api/sites/generate", {
+    brief: "Sparkle & Co. Cleaning: weekly and move-out house cleaning in Worcester, MA. Call (508) 555-0142.",
+  });
+  const id = gen.siteId;
+  if (id) {
+    await post(`/api/sites/${id}/publish`, {});
+    await post(`/api/sites/${id}/leads`, {
+      name: "Maria Chen",
+      email: "maria.chen@example.com",
+      phone: "(508) 555-0187",
+      message: "Move-out clean for a 3-bedroom on Oct 30. Can you send a quote?",
+    });
+    const next = new Date();
+    next.setUTCMonth(next.getUTCMonth() + 1, 1);
+    const month = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
+    await post("/api/social/plan", { month, postsPerWeek: 3 });
+    PAGES.push(`/sites/${id}`, `/sites/${id}/edit`, "/clients", "/social", "/social/review", "/billing", "/admin");
+  }
+  await api.close();
+}
 for (const vp of VIEWPORTS) {
   const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
   for (const path of PAGES) {
@@ -35,7 +70,7 @@ for (const vp of VIEWPORTS) {
         // Rola como uma pessoa (as animações aparecem com a rolagem) e tira um print por tela.
         const total = await page.evaluate(() => document.documentElement.scrollHeight);
         let shot = 0;
-        for (let y = 0; y < total && shot < 30; y += vp.height) {
+        for (let y = 0; y < total && shot < 60; y += vp.height) {
           await page.evaluate((top) => window.scrollTo(0, top), y);
           await page.waitForTimeout(900);
           await page.screenshot({ path: `${OUT}/${vp.name}-home-scroll-${String(shot).padStart(2, "0")}.png` });
