@@ -3,6 +3,7 @@ import { BackdropPhoto, BackdropShade } from "@/components/landing/Backdrop";
 import { PhoneFrame } from "@/components/landing/demos/Frames";
 import type { PhotoKey } from "@/components/photos";
 import { PromptForm } from "@/components/marketing/PromptForm";
+import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container } from "@/components/marketing/styles";
 
 // Hero da landing (V7, tela cheia): uma montagem de fotos de ofícios que se trocam sozinhas
@@ -44,7 +45,10 @@ export function Hero() {
             id="hero-title"
             className="max-w-[11ch] font-display text-[clamp(3rem,8.4vw,7rem)] leading-[0.94] font-extrabold tracking-[-0.045em] text-balance text-white"
           >
-            Your business, <span className="lp-accent-text">online by lunch.</span>
+            <TightPunctuation strong>Your business,</TightPunctuation>{" "}
+            <span className="lp-accent-text">
+              <TightPunctuation strong>online by lunch.</TightPunctuation>
+            </span>
           </h1>
           <p className="mt-7 max-w-[42ch] text-lg leading-[1.55] text-pretty text-slate-200 lg:text-xl">
             Describe your business in one sentence. Get a real website for your trade, a client list
