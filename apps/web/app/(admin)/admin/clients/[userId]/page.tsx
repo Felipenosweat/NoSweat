@@ -227,7 +227,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const canDelete = account.testAccount && !targetIsAdmin && !isSelf;
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <Link href="/admin#accounts" className={`${textButton} -ml-1 w-fit`}>
         <span aria-hidden="true">&larr;</span> All accounts
       </Link>

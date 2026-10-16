@@ -15,7 +15,7 @@ const SECTIONS = [
   { href: "/admin#usage", label: "Usage" },
 ];
 
-const navItem = `inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-semibold whitespace-nowrap text-slate-300 transition-colors duration-150 hover:bg-white/10 hover:text-white ${focusRing}`;
+const navItem = `inline-flex min-h-10 items-center rounded-lg px-2 text-sm sm:px-3 font-semibold whitespace-nowrap text-slate-300 transition-colors duration-150 hover:bg-white/10 hover:text-white ${focusRing}`;
 
 /** Painel principal da No Sweat. Só admins (public.platform_admins); para os outros, 404. */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -27,7 +27,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="min-h-screen bg-surface">
       {viewer?.viewingAs && <ViewAsBanner email={viewer.viewingAs.email} />}
       <header className="bg-ink text-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-8">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-white px-2 py-1 text-ink">
               <Logo />

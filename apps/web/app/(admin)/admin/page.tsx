@@ -145,7 +145,7 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
     : "Couldn't load subscriptions";
 
   return (
-    <div className="grid gap-10">
+    <div className="grid grid-cols-1 gap-10">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-[-0.025em] text-ink">
           Command center
@@ -214,7 +214,7 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         </dl>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section aria-labelledby="plans-heading" className={panelClass}>
           <h2 id="plans-heading" className={panelTitle}>
             Active plans
