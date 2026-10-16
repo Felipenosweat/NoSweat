@@ -11,7 +11,12 @@ export const AI_COST_PER_USE_USD: Record<AiUsageKind, number> = {
 };
 
 /** Todos os tipos de uso da IA, na ordem em que aparecem no painel. */
-export const AI_USAGE_KINDS: AiUsageKind[] = ["generate", "ai_edit", "social_plan", "social_caption"];
+export const AI_USAGE_KINDS: AiUsageKind[] = [
+  "generate",
+  "ai_edit",
+  "social_plan",
+  "social_caption",
+];
 
 export const AI_USAGE_LABELS: Record<AiUsageKind, string> = {
   generate: "New websites",

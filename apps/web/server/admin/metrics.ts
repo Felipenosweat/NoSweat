@@ -4,7 +4,6 @@ import { getGrantStore, isGrantActive, type AccessGrant } from "../billing/grant
 import { getBillingStore, type SubscriptionRecord } from "../billing/store";
 import { getClientStore } from "../clients/store";
 import { getSocialStore } from "../social/store";
-import type { SocialAccountRecord } from "../social/types";
 import { getSiteStore, type AiUsageKind, type SiteRecord } from "../store";
 import { AI_USAGE_KINDS } from "./costs";
 import { listAdminIds, listClients, type ClientAccount } from "./index";
@@ -126,11 +125,8 @@ export async function loadOverview(): Promise<Overview> {
 export type AccountActivity = {
   /** Clientes no CRM do dono e quantos estão em "new" (`null` = erro ao ler). */
   clients: { total: number; newCount: number } | null;
-  social: {
-    account: SocialAccountRecord | null;
-    scheduledThisMonth: number;
-    publishedThisMonth: number;
-  } | null;
+  /** Posts do mês atual (UTC): agendados e publicados. */
+  social: { scheduledThisMonth: number; publishedThisMonth: number } | null;
   /** Usos da IA da conta nos últimos 30 dias. */
   ai30d: UsageByKind | null;
 };
@@ -149,14 +145,12 @@ function monthRange(now: Date): { from: string; to: string } {
 export async function loadAccountActivity(userId: string): Promise<AccountActivity> {
   const now = new Date();
   const store = getSiteStore();
-  const social = getSocialStore();
   const month = monthRange(now);
   const since30d = new Date(now.getTime() - 30 * DAY_MS).toISOString();
 
-  const [clientRecords, socialAccount, monthPosts, ai30d] = await Promise.all([
+  const [clientRecords, monthPosts, ai30d] = await Promise.all([
     orNull("clients", getClientStore().listClients(userId)),
-    orNull("social account", social.getAccountForOwner(userId, "instagram")),
-    orNull("social posts", social.listPosts(userId, month.from, month.to)),
+    orNull("social posts", getSocialStore().listPosts(userId, month.from, month.to)),
     orNull(
       "account AI usage",
       usageSince(since30d, (kind, sinceIso) => store.countAiUsage(userId, kind, sinceIso)),
@@ -179,7 +173,6 @@ export async function loadAccountActivity(userId: string): Promise<AccountActivi
       : null,
     social: monthPosts
       ? {
-          account: socialAccount,
           scheduledThisMonth: monthPosts.filter(
             (post) => post.status === "scheduled" && inMonth(post.scheduledAt),
           ).length,

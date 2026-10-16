@@ -72,11 +72,7 @@ export async function signViewAsToken(
   if (!TARGET_ID.test(targetId)) throw new Error("Invalid account id.");
   const expiresAt = nowSeconds(options.now) + VIEW_AS_TTL_SECONDS;
   const key = await hmacKey(options.secret ?? serverSecret());
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    signedText(adminId, targetId, expiresAt),
-  );
+  const signature = await crypto.subtle.sign("HMAC", key, signedText(adminId, targetId, expiresAt));
   return `${targetId}.${expiresAt}.${toBase64Url(signature)}`;
 }
 
@@ -141,7 +137,11 @@ export async function resolveViewer(input: ResolveViewerInput): Promise<Viewer> 
   if (!(await input.isAdmin(input.user.id))) return self;
   const target = await input.findAccount(targetId);
   if (!target) return self;
-  return { user: input.user, ownerId: target.id, viewingAs: { id: target.id, email: target.email } };
+  return {
+    user: input.user,
+    ownerId: target.id,
+    viewingAs: { id: target.id, email: target.email },
+  };
 }
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);

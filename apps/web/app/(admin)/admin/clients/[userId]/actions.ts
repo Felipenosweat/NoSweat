@@ -1,12 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { z } from "zod";
-import { listClients, requireAdmin } from "@/server/admin";
+import { getAccount, requireAdmin } from "@/server/admin";
+import { VIEW_AS_COOKIE, signViewAsToken, viewAsCookieOptions } from "@/server/auth/view-as-token";
 import { extendExpiry, getGrantStore } from "@/server/billing";
 import { getSocialStore } from "@/server/social/store";
 
-// Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp).
+// Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp),
+// o testador do Instagram e o modo "ver como" (só leitura).
 
 const GrantForm = z.object({
   plan: z.enum(["starter", "pro", "premium"]),
@@ -16,7 +20,7 @@ const GrantForm = z.object({
 
 async function requireClient(userId: string) {
   const admin = await requireAdmin();
-  if (!(await listClients()).some((c) => c.id === userId)) throw new Error("Unknown client.");
+  if (!(await getAccount(userId))) throw new Error("Unknown client.");
   return admin;
 }
 
@@ -67,4 +71,16 @@ export async function toggleSocialTester(userId: string): Promise<void> {
     detail: { tester },
   });
   refresh(userId);
+}
+
+/**
+ * "Ver como esta conta": grava o cookie `ns_view_as` (httpOnly, assinado, 1 hora) e abre o
+ * painel com os dados dela. Só leitura: o proxy.ts recusa qualquer escrita na API até sair.
+ */
+export async function startViewAs(userId: string): Promise<void> {
+  const admin = await requireClient(userId);
+  if (userId === admin.id) redirect("/dashboard");
+  const token = await signViewAsToken(admin.id, userId);
+  (await cookies()).set(VIEW_AS_COOKIE, token, viewAsCookieOptions());
+  redirect("/dashboard");
 }

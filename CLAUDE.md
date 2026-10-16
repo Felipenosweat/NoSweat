@@ -24,7 +24,8 @@ apps/web/                       Next.js (App Router): telas + API
   app/api/                      rotas HTTP (validam com @nosweat/schema) → back
   server/ai/                    geradores de SiteSpec (mock, anthropic, openai) → back
   server/design/                direção de arte antes da IA (plano + biblioteca de referências) → back
-  server/admin.ts               quem é admin (tabela platform_admins) e lista de clientes → back
+  server/admin/                 quem é admin (tabela platform_admins), contas, contas de teste,
+                                números do /admin e custo estimado da IA (costs.ts) → back
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
   server/social/                Instagram: contas, posts, IA dos posts, publicador e store → back
@@ -59,6 +60,17 @@ Como as peças se ligam:
   (`POST /api/unsubscribe`) e endereço postal (`MARKETING_POSTAL_ADDRESS`; sem ele não envia).
 - Admins (tabela `platform_admins`) veem `/admin` e acessam qualquer site (`getOwnedSite`).
   TODO: separar dados privados do cliente quando houver clientes de verdade.
+- Conta mestre (admin): a conta da No Sweat manda em todas as outras. `/admin` mostra números reais
+  (contas, sites, pedidos, planos, acessos vencendo) e o uso da IA com custo ESTIMADO
+  (`server/admin/costs.ts`, preço fixo por uso: atualizar quando o preço do provedor mudar).
+  Contas de teste: o admin cria pela API de administração do Supabase Auth
+  (`server/admin/test-accounts.ts`), já com e-mail confirmado, perfil completo e
+  `test_account: true` no user_metadata e no app_metadata; a senha aparece uma vez. Só contas de
+  teste podem ser apagadas pelo painel (sites primeiro, pelo mesmo caminho do
+  `DELETE /api/sites/[id]`, depois a conta). "Ver como" (`/admin/clients/[id]`): cookie httpOnly
+  `ns_view_as` assinado (HMAC, 1 hora, amarrado ao admin); `getViewer()` (`server/auth/viewer.ts`)
+  faz `/dashboard`, `/clients`, `/social` e `/billing` mostrarem a conta vista, e o `proxy.ts`
+  recusa toda escrita em `/api/*` (403) até sair do modo.
 - Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
