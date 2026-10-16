@@ -7,7 +7,8 @@ import { MarketingFooter, MarketingHeader } from "@/components/marketing/SiteChr
 import "../(marketing)/marketing.css";
 import "./landing.css";
 
-// Landing V6: hero e tour (#story) sobre ink, depois as seções claras (preço, dúvidas, CTA).
+// Landing V7: hero e tour (#story) sobre fotos de ofícios, depois as seções claras (preço,
+// dúvidas) e o CTA final sobre foto.
 // O movimento do tour é do ScrollStage (components/landing/story). As outras páginas de
 // marketing (preço, termos…) ficam em app/(marketing), no tema claro.
 

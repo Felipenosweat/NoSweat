@@ -20,7 +20,12 @@
   .lp-shade-left {
     background:
       linear-gradient(90deg, rgb(7 27 51 / 0.65) 0%, rgb(7 27 51 / 0.2) 55%, rgb(7 27 51 / 0) 80%),
-      linear-gradient(180deg, rgb(7 27 51 / 0.35) 0%, rgb(7 27 51 / 0) 25%, rgb(7 27 51 / 0.45) 100%),
+      linear-gradient(
+        180deg,
+        rgb(7 27 51 / 0.35) 0%,
+        rgb(7 27 51 / 0) 25%,
+        rgb(7 27 51 / 0.45) 100%
+      ),
       rgb(7 27 51 / 0.66);
   }
 }
@@ -547,7 +552,7 @@
 
 /* 4. Five layouts: o seletor marca o atual e cada captura entra por cima com uma cortina. */
 .st-seg {
-  color: #94a3b8;
+  color: #cbd5e1;
 }
 
 .st-seg::before {

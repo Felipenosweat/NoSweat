@@ -47,6 +47,8 @@ const nextConfig: NextConfig = {
   images: {
     // AVIF primeiro (menor), WebP como alternativa.
     formats: ["image/avif", "image/webp"],
+    // 75 é o padrão do Next; 60 é para as fotos de fundo em tela cheia da landing (escurecidas).
+    qualities: [60, 75],
     // Fotos dos sites: bancos de imagens (hotlink, como pedem as regras deles) e uploads do dono.
     remotePatterns: [
       { protocol: "https", hostname: "images.pexels.com" },

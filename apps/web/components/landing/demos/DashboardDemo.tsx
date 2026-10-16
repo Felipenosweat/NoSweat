@@ -43,8 +43,8 @@ const ROWS: { key: string; text: ReactNode; action: string }[] = [
     key: "next-post",
     text: (
       <>
-        Your next post goes out <span className="font-medium tabular-nums">Tue, Nov 3, 10:00 AM</span>
-        .
+        Your next post goes out{" "}
+        <span className="font-medium tabular-nums">Tue, Nov 3, 10:00 AM</span>.
       </>
     ),
     action: "Calendar",

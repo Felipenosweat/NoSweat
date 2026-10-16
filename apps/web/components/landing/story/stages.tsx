@@ -16,7 +16,7 @@ import { SocialCalendar, SocialPost } from "@/components/landing/demos/SocialDem
 
 export function DescribeStage() {
   return (
-    <div className="relative w-full max-w-[620px] rounded-2xl bg-white p-5 text-ink sm:p-6">
+    <div className="relative w-full max-w-[620px] rounded-2xl bg-white p-5 text-ink shadow-[0_40px_100px_-30px_rgb(0_0_0/.7)] sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[13px] font-semibold text-slate-500">Tell us about your business</p>
         <ExampleTag />
@@ -123,7 +123,11 @@ export function BuildStage() {
 export function EditStage() {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
-      <BrowserFrame url="nosweatfd.com/sites/sparkle/edit" ratio={1280 / 860} className="st-e-frame">
+      <BrowserFrame
+        url="nosweatfd.com/sites/sparkle/edit"
+        ratio={1280 / 860}
+        className="st-e-frame"
+      >
         <div className="absolute" style={box(LAYERS.header)}>
           <Layer name="header" sizes={SIZES.header} />
           <div className="st-e-tint absolute inset-0">
@@ -213,7 +217,7 @@ export const LOOKS = [
 export function LooksStage() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3">
-      <div className="flex w-full max-w-[760px] gap-0.5 rounded-lg border border-white/10 p-[3px]">
+      <div className="flex w-full max-w-[760px] gap-0.5 rounded-lg border border-white/15 bg-ink/60 p-[3px] backdrop-blur-md">
         {LOOKS.map((look, index) => (
           <span
             key={look.slug}

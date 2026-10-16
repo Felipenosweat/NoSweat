@@ -92,7 +92,16 @@ export function Hero() {
       >
         <svg viewBox="0 0 24 36" className="h-9 w-6" fill="none" stroke="currentColor">
           <rect x="1" y="1" width="22" height="34" rx="11" strokeWidth="1.5" />
-          <rect className="lp-wheel" x="10.5" y="8" width="3" height="7" rx="1.5" fill="currentColor" stroke="none" />
+          <rect
+            className="lp-wheel"
+            x="10.5"
+            y="8"
+            width="3"
+            height="7"
+            rx="1.5"
+            fill="currentColor"
+            stroke="none"
+          />
         </svg>
         Scroll
       </div>

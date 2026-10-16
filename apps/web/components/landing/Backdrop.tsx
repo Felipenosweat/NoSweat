@@ -7,10 +7,11 @@ import { getPhoto, type PhotoKey } from "@/components/photos";
 // Foto ausente no catálogo = só o ink com a luz (o layout não muda).
 
 /** Luz da marca + grão por cima da foto (as classes ficam no landing.css). */
-export function BackdropShade({ side = "left" }: { side?: "left" | "right" | "bottom" }) {
+export function BackdropShade({ side = "left" }: { side?: "left" | "even" }) {
+  // "left": no computador a sombra é mais forte à esquerda, onde fica o texto.
   return (
     <>
-      <div className={`lp-shade lp-shade-${side} absolute inset-0`} />
+      <div className={`lp-shade ${side === "left" ? "lp-shade-left" : ""} absolute inset-0`} />
       <div className="lp-glow absolute inset-0" />
       <div className="lp-grain absolute inset-0" />
     </>

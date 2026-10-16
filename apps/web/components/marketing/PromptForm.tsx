@@ -163,7 +163,7 @@ export function PromptForm({
 
       {examples && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <p className={`mr-1 text-[13px] ${dark ? "text-slate-400" : "text-slate-500"}`}>
+          <p className={`mr-1 text-[13px] ${dark ? "text-slate-300" : "text-slate-500"}`}>
             Try an example:
           </p>
           {EXAMPLES.map((example) => (
@@ -173,7 +173,7 @@ export function PromptForm({
               onClick={() => fill(example.text)}
               className={`inline-flex h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${
                 dark
-                  ? "border-white/15 text-slate-200 hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  ? "border-white/20 bg-ink/40 text-slate-100 backdrop-blur-sm hover:border-white/40 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   : `border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-ink ${focusRing}`
               }`}
             >
@@ -186,7 +186,7 @@ export function PromptForm({
 
       <p
         id={`${id}-caption`}
-        className={`mt-4 text-[13px] ${dark ? "text-slate-400" : "text-slate-500"}`}
+        className={`mt-4 text-[13px] ${dark ? "text-slate-300" : "text-slate-500"}`}
       >
         {caption}
       </p>

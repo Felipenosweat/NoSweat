@@ -1,0 +1,53 @@
+name: Local audit
+
+# Prints do código DESTA branch rodando no próprio GitHub (sem Supabase e sem chaves: IA de
+# mentira e banco em memória, todo mundo é o DEV_USER). Serve para ver telas que ainda não estão
+# no ar, inclusive as de dentro da conta. Roda quando qa/trigger-local.txt muda; o resultado
+# (prints + report.json) é commitado na própria branch, em qa/out-local/.
+on:
+  push:
+    branches: ["claude/dreamy-maxwell-19fv98"]
+    paths: ["qa/trigger-local.txt"]
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      AI_PROVIDER: mock
+      DEV_ADMIN: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @nosweat/web build
+      - name: Start app
+        run: |
+          (cd apps/web && nohup pnpm start -p 3000 > /tmp/next.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 2; done
+      # Fora do monorepo (pnpm): só o Playwright, numa pasta separada.
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/qa && cp qa/*.mjs /tmp/qa/
+          cd /tmp/qa && npm init -y >/dev/null && npm install playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Audit
+        run: cd /tmp/qa && BASE_URL=http://localhost:3000 SEED=1 OUT_DIR="$GITHUB_WORKSPACE/qa/out-local" node audit.mjs
+      - name: Server log
+        if: always()
+        run: tail -n 80 /tmp/next.log || true
+      - name: Commit results
+        run: |
+          git config user.name "site-audit"
+          git config user.email "site-audit@users.noreply.github.com"
+          git add -f qa/out-local
+          git commit -m "chore(qa): local audit results [skip ci]" || exit 0
+          git pull --rebase origin "${GITHUB_REF_NAME}" || true
+          git push

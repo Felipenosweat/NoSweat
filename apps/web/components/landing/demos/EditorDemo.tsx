@@ -79,7 +79,9 @@ export function EditorPanel() {
         {/* 0. Content: o texto do topo, aberto ao clicar na seção. */}
         <div className="st-e-layer st-e-l0 col-start-1 row-start-1">
           <p className={fieldLabel}>Headline</p>
-          <p className={`${fieldBox} ring-2 ring-brand`}>A Spotless Home Without Lifting a Finger</p>
+          <p className={`${fieldBox} ring-2 ring-brand`}>
+            A Spotless Home Without Lifting a Finger
+          </p>
           <p className={`mt-2 ${fieldLabel}`}>Button</p>
           <p className={fieldBox}>Get a Cleaning Quote</p>
         </div>

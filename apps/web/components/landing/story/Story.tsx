@@ -138,9 +138,7 @@ const SCENES: SceneDef[] = [
     stage: <LooksStage />,
     foot: (
       <div className="mt-4">
-        <p className="text-[13px] text-slate-300">
-          We pick the one that fits. See each example:
-        </p>
+        <p className="text-[13px] text-slate-300">We pick the one that fits. See each example:</p>
         <ul className="mt-1 flex flex-wrap gap-x-4 text-sm font-semibold">
           {LOOKS.map((look) => (
             <li key={look.slug}>
