@@ -234,6 +234,16 @@ export class SupabaseSiteStore implements SiteStore {
     return this.count(this.aiUsageEndpoint, `${query}&select=id`);
   }
 
+  async countAllAiUsage(kind: AiUsageKind, sinceIso: string): Promise<number> {
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    return this.count(this.aiUsageEndpoint, `?kind=eq.${kind}&created_at=gte.${since}&select=id`);
+  }
+
+  async countAllLeads(sinceIso: string): Promise<number> {
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    return this.count(this.leadsEndpoint, `?created_at=gte.${since}&select=id`);
+  }
+
   async countLeads(siteId: string, sinceIso: string, ipHash?: string): Promise<number> {
     if (!UUID.test(siteId)) return 0;
     const since = encodeURIComponent(new Date(sinceIso).toISOString());

@@ -1,12 +1,13 @@
 "use server";
 
 import { Credentials } from "@nosweat/schema";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { confirmationErrors, profileMetadata, signUpSchema } from "@/lib/signup-rules";
 import { safeNextPath } from "@/server/auth/config";
 import { isOAuthProvider } from "@/server/auth/providers";
 import { createSupabaseServerClient } from "@/server/auth/session";
+import { VIEW_AS_COOKIE } from "@/server/auth/view-as-token";
 import { claimGuestSites } from "@/server/guest";
 import { joinLaunchListLater } from "@/server/marketing";
 
@@ -222,5 +223,7 @@ export async function signInWithProvider(formData: FormData): Promise<void> {
 export async function signOut(): Promise<void> {
   const supabase = await createSupabaseServerClient();
   await supabase?.auth.signOut();
+  // Sai também do modo "ver como" do admin (o cookie não serve para mais ninguém).
+  (await cookies()).delete(VIEW_AS_COOKIE);
   redirect("/");
 }

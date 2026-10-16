@@ -28,6 +28,8 @@ type ChromeProps = {
   account: { email: string | null } | null;
   /** Site mais recente, para o atalho "Messages". `null` = conta sem sites (atalho escondido). */
   latestSiteId: string | null;
+  /** Faixa no topo do conteúdo (ex.: modo "ver como" do admin). */
+  banner?: ReactNode;
   children: ReactNode;
 };
 
@@ -298,13 +300,14 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
   );
 }
 
-export function DashboardChrome({ admin, account, latestSiteId, children }: ChromeProps) {
+export function DashboardChrome({ admin, account, latestSiteId, banner, children }: ChromeProps) {
   const { isCreate } = useCurrent();
 
   // /create: tela de foco. Sem barra lateral nem abas; só o logo, a volta ao painel e "Log out".
   if (isCreate) {
     return (
       <div className="min-h-screen bg-surface">
+        {banner}
         <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
@@ -345,6 +348,7 @@ export function DashboardChrome({ admin, account, latestSiteId, children }: Chro
         </Link>
       </header>
       <main className="pb-24 lg:pb-0 lg:pl-60">
+        {banner}
         <div className="mx-auto max-w-[1080px] px-5 pt-8 pb-8 sm:px-8 lg:px-10 lg:pt-10 lg:pb-16">
           {children}
         </div>

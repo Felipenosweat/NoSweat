@@ -16,7 +16,7 @@ import {
   mapsHref,
   phoneHref,
 } from "@/lib/clients";
-import { getCurrentUser } from "@/server/auth/session";
+import { getViewer } from "@/server/auth/viewer";
 import { getClientDetail } from "@/server/clients/service";
 import {
   JobIcon,
@@ -195,10 +195,12 @@ export default async function ClientPage({ params }: ClientPageProps) {
   // Sempre na hora do request (dados do dono).
   await connection();
   const { id } = await params;
-  const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
+  // No modo "ver como" do admin, o cliente da conta vista (só leitura: sem anotar nem apagar).
+  const viewer = await getViewer();
+  if (!viewer) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
+  const readOnly = viewer.viewingAs !== null;
 
-  const { today, detail, since } = await loadClient(user.id, id);
+  const { today, detail, since } = await loadClient(viewer.ownerId, id);
   if (!detail) notFound();
   const { client, activities } = detail;
 
@@ -273,9 +275,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
             )}
           </div>
 
-          <div className="mt-3">
-            <ActivityComposer clientId={client.id} />
-          </div>
+          {!readOnly && (
+            <div className="mt-3">
+              <ActivityComposer clientId={client.id} />
+            </div>
+          )}
 
           {activities.length === 0 ? (
             <p className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-6 text-[15px] text-slate-600 sm:px-5">
@@ -292,9 +296,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
         </section>
       </div>
 
-      <div className="mt-12 border-t border-slate-200 pt-6">
-        <DeleteClientButton clientId={client.id} name={client.name} />
-      </div>
+      {!readOnly && (
+        <div className="mt-12 border-t border-slate-200 pt-6">
+          <DeleteClientButton clientId={client.id} name={client.name} />
+        </div>
+      )}
     </div>
   );
 }

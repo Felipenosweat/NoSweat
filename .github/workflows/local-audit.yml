@@ -3,7 +3,7 @@ name: Local audit
 # Prints do código DESTA branch rodando no próprio GitHub (sem Supabase e sem chaves: IA de
 # mentira e banco em memória, todo mundo é o DEV_USER). Serve para ver telas que ainda não estão
 # no ar, inclusive as de dentro da conta. Roda quando qa/trigger-local.txt muda; o resultado
-# (prints + report.json) é commitado na própria branch, em qa/out-local/.
+# (prints + report.json) vai para a ref refs/qa/local-audit (fora da branch).
 on:
   push:
     branches: ["claude/dreamy-maxwell-19fv98"]
@@ -43,11 +43,11 @@ jobs:
       - name: Server log
         if: always()
         run: tail -n 80 /tmp/next.log || true
-      - name: Commit results
+      # Os prints NÃO entram na branch (sujariam o PR e pulariam o CI). Vão para uma ref à parte,
+      # refs/qa/local-audit, que o Claude lê com: git fetch origin refs/qa/local-audit
+      - name: Publish results to refs/qa/local-audit
         run: |
-          git config user.name "site-audit"
-          git config user.email "site-audit@users.noreply.github.com"
-          git add -f qa/out-local
-          git commit -m "chore(qa): local audit results [skip ci]" || exit 0
-          git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git push
+          cd qa/out-local
+          git init -q -b results && git add -A
+          git -c user.name="site-audit" -c user.email="site-audit@users.noreply.github.com" commit -qm "local audit results for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" results:refs/qa/local-audit

@@ -249,4 +249,12 @@ export class MemorySiteStore implements SiteStore {
         (filter.ipHash === undefined || u.ipHash === filter.ipHash),
     ).length;
   }
+
+  async countAllAiUsage(kind: AiUsageKind, sinceIso: string): Promise<number> {
+    return aiUsage().filter((u) => u.kind === kind && u.at >= sinceIso).length;
+  }
+
+  async countAllLeads(sinceIso: string): Promise<number> {
+    return leads().filter((lead) => lead.createdAt >= sinceIso).length;
+  }
 }

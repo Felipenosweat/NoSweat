@@ -19,6 +19,8 @@ export type SubscriptionRecord = {
 export interface BillingStore {
   get(userId: string): Promise<SubscriptionRecord | null>;
   getByCustomer(stripeCustomerId: string): Promise<SubscriptionRecord | null>;
+  /** Todas as assinaturas (painel do admin). */
+  listAll(): Promise<SubscriptionRecord[]>;
   /** Cria ou atualiza a linha da conta (chave: userId). */
   upsert(record: SubscriptionRecord): Promise<void>;
 }
@@ -88,6 +90,14 @@ export class SupabaseBillingStore implements BillingStore {
     return CUSTOMER.test(customerId) ? this.one(`?stripe_customer_id=eq.${customerId}`) : null;
   }
 
+  async listAll(): Promise<SubscriptionRecord[]> {
+    // TODO: paginar quando houver mais de 1000 assinaturas.
+    return z
+      .array(Row)
+      .parse(await this.call("?select=*&limit=1000"))
+      .map(toRecord);
+  }
+
   async upsert(record: SubscriptionRecord): Promise<void> {
     if (!UUID.test(record.userId)) throw new Error(`Invalid user id: ${record.userId}`);
     await this.call("?on_conflict=user_id", {
@@ -123,6 +133,10 @@ export class MemoryBillingStore implements BillingStore {
 
   async getByCustomer(customerId: string): Promise<SubscriptionRecord | null> {
     return [...this.rows.values()].find((r) => r.stripeCustomerId === customerId) ?? null;
+  }
+
+  async listAll(): Promise<SubscriptionRecord[]> {
+    return [...this.rows.values()].map((r) => ({ ...r }));
   }
 
   async upsert(record: SubscriptionRecord): Promise<void> {
