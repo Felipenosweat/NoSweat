@@ -1,5 +1,6 @@
 import { isAdmin } from "./admin";
 import { getCurrentUser, type CurrentUser } from "./auth/session";
+import { getVercelConfig, removeDomain } from "./domains/vercel";
 import { getGuestId } from "./guest";
 import { getSiteStore, type SiteRecord } from "./store";
 
@@ -74,4 +75,18 @@ export function hasUnpublishedChanges(site: SiteRecord): boolean {
 /** O que os visitantes veem: a versão publicada (sites antigos, sem cópia, usam o rascunho). */
 export function liveSpec(site: SiteRecord) {
   return site.publishedSpec ?? site.spec;
+}
+
+/**
+ * Apaga o site para sempre: libera o domínio próprio na Vercel e apaga o site (versões e mensagens
+ * vão junto, on delete cascade). Usado por DELETE /api/sites/[id] e ao apagar uma conta de teste.
+ * Devolve `false` se o site já não existia. Quem chama confere antes se pode apagar.
+ */
+export async function deleteSiteForever(site: SiteRecord): Promise<boolean> {
+  const vercel = getVercelConfig();
+  if (vercel && site.customDomain) {
+    // Se a Vercel falhar, o site é apagado mesmo assim; o domínio sobra no projeto (inofensivo).
+    await removeDomain(vercel, site.customDomain).catch(() => undefined);
+  }
+  return getSiteStore().delete(site.id);
 }

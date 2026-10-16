@@ -11,7 +11,9 @@ import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
 import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { MODULES, type HubModule } from "@/lib/modules";
-import { createSupabaseServerClient, getCurrentUser } from "@/server/auth/session";
+import { getAccount } from "@/server/admin";
+import { createSupabaseServerClient } from "@/server/auth/session";
+import { getViewer, type ViewingAs } from "@/server/auth/viewer";
 import { clientsNeedingAttention, listClients } from "@/server/clients/service";
 import { getSocialStore } from "@/server/social/store";
 import type { SocialAccountRecord, SocialPostRecord } from "@/server/social/types";
@@ -67,9 +69,11 @@ function checklistSteps(site: SiteRecord, leads: number): ChecklistStep[] {
 /**
  * Primeiro nome do cadastro (`user_metadata.first_name`), para a saudação. `null` sem login
  * (dev local), sem nome (login Google/Apple ou conta antiga) ou se a sessão falhar.
+ * No modo "ver como" do admin, o nome da conta vista.
  */
-async function getFirstName(): Promise<string | null> {
+async function getFirstName(viewingAs: ViewingAs | null): Promise<string | null> {
   try {
+    if (viewingAs) return (await getAccount(viewingAs.id))?.firstName?.slice(0, 40) ?? null;
     const supabase = await createSupabaseServerClient();
     if (!supabase) return null;
     const { data } = await supabase.auth.getClaims();
@@ -436,12 +440,12 @@ function YourOffice({
 }
 
 /** Tudo o que a página inicial mostra, lido de uma vez (fora do componente: usa o relógio). */
-async function loadHome(ownerId: string) {
+async function loadHome(ownerId: string, viewingAs: ViewingAs | null) {
   const now = Date.now();
   const store = getSiteStore();
   const [sites, firstName, social, clients] = await Promise.all([
     store.list(ownerId),
-    getFirstName(),
+    getFirstName(viewingAs),
     loadSocial(ownerId, now),
     loadClients(ownerId, now),
   ]);
@@ -460,9 +464,13 @@ async function loadHome(ownerId: string) {
 export default async function DashboardPage() {
   // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
   await connection();
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/dashboard");
-  const { now, sites, firstName, social, clients, leadCounts, weekLeads } = await loadHome(user.id);
+  // No modo "ver como" do admin, os dados da conta vista (só leitura).
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login?next=/dashboard");
+  const { now, sites, firstName, social, clients, leadCounts, weekLeads } = await loadHome(
+    viewer.ownerId,
+    viewer.viewingAs,
+  );
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
 

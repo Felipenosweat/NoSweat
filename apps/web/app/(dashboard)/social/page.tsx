@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { panelText } from "@/components/DashboardUi";
-import { getCurrentUser } from "@/server/auth/session";
+import { getViewer } from "@/server/auth/viewer";
+import { ReadOnlySocial, loadReadOnlySocial } from "./ReadOnlySocial";
 import { SocialCalendar } from "./SocialCalendar";
 
 export const metadata: Metadata = { title: "Social", robots: { index: false } };
@@ -34,8 +35,27 @@ const GENERIC_CONNECT_ERROR = "We couldn't connect Instagram. Please try again i
 export default async function SocialPage({ searchParams }: SocialPageProps) {
   // Sempre na hora do request (dados do dono e da sessão).
   await connection();
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/social");
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login?next=/social");
+
+  // Modo "ver como" do admin: o calendário busca pela API com a conta logada (a do admin), então
+  // aqui o servidor mostra a lista da conta vista, só para ler.
+  if (viewer.viewingAs) {
+    const data = await loadReadOnlySocial(viewer.ownerId);
+    return (
+      <div>
+        <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.03em] text-ink lg:text-[2.5rem]">
+          Social
+        </h1>
+        <p className={`mt-2 max-w-[60ch] ${panelText}`}>
+          Read-only list of this account&rsquo;s Instagram posts. Planning and approving are off
+          while you view another account.
+        </p>
+        <ReadOnlySocial data={data} />
+      </div>
+    );
+  }
+
   const { connected, error, approved, month } = await searchParams;
 
   const initialMonth = month && /^\d{4}-(0[1-9]|1[0-2])$/.test(month) ? month : null;

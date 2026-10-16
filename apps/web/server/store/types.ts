@@ -99,4 +99,8 @@ export interface SiteStore {
   listLeads(siteId: string): Promise<LeadRecord[]>;
   recordGuestAiUsage(usage: GuestUsage, kind: AiUsageKind): Promise<void>;
   countGuestAiUsage(filter: GuestUsageFilter, kind: AiUsageKind, sinceIso: string): Promise<number>;
+  /** Usos da IA de todo mundo (contas e visitantes) desde `sinceIso` (painel do admin). */
+  countAllAiUsage(kind: AiUsageKind, sinceIso: string): Promise<number>;
+  /** Mensagens do formulário de todos os sites desde `sinceIso` (painel do admin). */
+  countAllLeads(sinceIso: string): Promise<number>;
 }

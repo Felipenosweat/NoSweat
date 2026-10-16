@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
+import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { isAdminUser } from "@/server/admin";
-import { getCurrentUser } from "@/server/auth/session";
+import { getViewer } from "@/server/auth/viewer";
 import { getSiteStore } from "@/server/store";
 import { DashboardChrome } from "./DashboardChrome";
 
@@ -21,7 +22,10 @@ async function latestSiteId(ownerId: string): Promise<string | null> {
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   // Com login desligado (dev local) todo mundo é o DEV_USER: sem e-mail, "Log out" nem "Sign up".
   const authEnabled = getSupabaseAuthConfig() !== null;
-  const currentUser = await getCurrentUser();
+  // `viewer.user` é a conta logada; `viewer.ownerId` é de quem são os dados (no modo "ver como"
+  // do admin, a conta vista).
+  const viewer = await getViewer();
+  const currentUser = viewer?.user ?? null;
   const user = authEnabled ? currentUser : null;
 
   // Visitante sem conta (só com login ligado; pode usar o /create): o mesmo topo de antes, com
@@ -57,7 +61,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   const [admin, latest] = await Promise.all([
     isAdminUser(currentUser),
-    latestSiteId(currentUser.id),
+    latestSiteId(viewer?.ownerId ?? currentUser.id),
   ]);
 
   return (
@@ -65,6 +69,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       admin={admin}
       account={user ? { email: user.email } : null}
       latestSiteId={latest}
+      banner={viewer?.viewingAs ? <ViewAsBanner email={viewer.viewingAs.email} /> : null}
     >
       {children}
     </DashboardChrome>

@@ -2,6 +2,12 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasCompleteProfile } from "@/lib/signup-rules";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
+import {
+  VIEW_AS_COOKIE,
+  VIEW_AS_READ_ONLY_MESSAGE,
+  isWriteBlockedWhileViewing,
+  verifyViewAsToken,
+} from "@/server/auth/view-as-token";
 import { isAppHost } from "@/server/domains/hosts";
 import { GUEST_COOKIE } from "@/server/guest-cookie";
 
@@ -15,6 +21,14 @@ const GUEST_PATHS = [/^\/sites\/[^/]+\/edit(\/canvas)?\/?$/, /^\/sites\/preview\
 const isProtected = (path: string) =>
   !GUEST_PATHS.some((pattern) => pattern.test(path)) &&
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
+/** 403 do modo "ver como" (admin vendo outra conta só para ler). */
+function readOnlyResponse(): NextResponse {
+  return NextResponse.json(
+    { error: { code: "unauthorized", message: VIEW_AS_READ_ONLY_MESSAGE } },
+    { status: 403 },
+  );
+}
 
 /**
  * 1. Domínio de cliente (joesplumbing.com): mostra o site publicado dele (rewrite para /d/<host>).
@@ -44,8 +58,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  // Modo "ver como" (cookie ns_view_as): nenhuma escrita na API passa (só GET; o formulário
+  // público dos sites, links de e-mail, webhooks e crons continuam). Sair do modo é uma Server
+  // Action (não é /api), então sempre funciona.
+  const viewAsToken = request.cookies.get(VIEW_AS_COOKIE)?.value;
+  const blockedWrite =
+    Boolean(viewAsToken) && isWriteBlockedWhileViewing(request.method, request.nextUrl.pathname);
+
   const auth = getSupabaseAuthConfig();
-  if (!auth) return NextResponse.next(); // dev local sem Supabase: login desligado
+  if (!auth) {
+    // dev local sem Supabase: login desligado
+    return blockedWrite ? readOnlyResponse() : NextResponse.next();
+  }
 
   // Se o link de confirmação de e-mail cair fora de /auth/callback (Redirect URL não liberada
   // no Supabase), ele chega como ?code=... em outra página. Encaminha para o callback.
@@ -82,6 +106,19 @@ export async function proxy(request: NextRequest) {
 
   // Não colocar nada entre createServerClient e getClaims (recomendação do Supabase).
   const { data } = await supabase.auth.getClaims();
+
+  if (viewAsToken && blockedWrite) {
+    // O cookie é amarrado ao admin que o pediu: só bloqueia se valer para quem está logado.
+    // Cookie velho (venceu, ou outra pessoa entrou neste navegador) é apagado e o pedido segue.
+    const sub = data?.claims?.sub;
+    const viewing = typeof sub === "string" ? await verifyViewAsToken(viewAsToken, sub) : null;
+    if (viewing) {
+      const blocked = readOnlyResponse();
+      response.cookies.getAll().forEach((cookie) => blocked.cookies.set(cookie));
+      return blocked;
+    }
+    response.cookies.delete(VIEW_AS_COOKIE);
+  }
 
   if (!data?.claims && isProtected(pathname)) {
     const url = request.nextUrl.clone();

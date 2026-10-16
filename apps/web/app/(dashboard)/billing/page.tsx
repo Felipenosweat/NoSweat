@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { panelClass, panelText, panelTitle, textButton } from "@/components/DashboardUi";
-import { getCurrentUser } from "@/server/auth/session";
+import { getViewer } from "@/server/auth/viewer";
 import { getBillingStatus, PLANS } from "@/server/billing";
 import { BillingPlans, type PlanCard, type SalesContact } from "./BillingPlans";
 
@@ -17,8 +17,10 @@ const usd = (cents: number) =>
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
   const { status, site } = await searchParams;
-  const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent("/billing")}`);
+  const viewer = await getViewer();
+  if (!viewer) redirect(`/login?next=${encodeURIComponent("/billing")}`);
+  // No modo "ver como" do admin, o plano da conta vista (comprar fica bloqueado pelo proxy.ts).
+  const user = viewer.viewingAs ?? viewer.user;
   const billing = await getBillingStatus(user);
   // Só ids no formato esperado voltam para a página do site (nada de texto solto na URL).
   const siteId = site && /^[\w-]{1,64}$/.test(site) ? site : null;

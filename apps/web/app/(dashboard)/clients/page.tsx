@@ -14,7 +14,7 @@ import {
   formatDateOnly,
   isClientStage,
 } from "@/lib/clients";
-import { getCurrentUser } from "@/server/auth/session";
+import { getViewer } from "@/server/auth/viewer";
 import { listClients } from "@/server/clients/service";
 import { PlusIcon, SearchIcon, StageBadge, fieldClass, pageTitle, sectionTitle } from "./ui";
 
@@ -204,15 +204,17 @@ const addClientLink = (
 export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   // Sempre na hora do request (dados do dono).
   await connection();
-  const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/clients");
+  // No modo "ver como" do admin, os clientes da conta vista (só leitura: sem "Add client").
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login?next=/clients");
+  const readOnly = viewer.viewingAs !== null;
 
   const params = await searchParams;
   const rawStage = firstParam(params.stage);
   const stage = isClientStage(rawStage) ? rawStage : null;
   const q = firstParam(params.q).trim().slice(0, 100);
 
-  const { today, clients } = await loadClients(user.id, q);
+  const { today, clients } = await loadClients(viewer.ownerId, q);
 
   const counts: Record<ClientStage, number> = { new: 0, contacted: 0, quoted: 0, won: 0, lost: 0 };
   for (const client of clients ?? []) counts[client.stage] += 1;
@@ -228,7 +230,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             Everyone who contacted you, and everyone you&rsquo;ve worked for.
           </p>
         </div>
-        {!noClientsAtAll && addClientLink}
+        {!noClientsAtAll && !readOnly && addClientLink}
       </div>
 
       {clients === null ? (
@@ -244,7 +246,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             When someone sends a message through your website&rsquo;s contact form, they show up
             here on their own, with their message. You can also add people you already work with.
           </p>
-          <div className="mt-5">{addClientLink}</div>
+          {!readOnly && <div className="mt-5">{addClientLink}</div>}
         </section>
       ) : (
         <>

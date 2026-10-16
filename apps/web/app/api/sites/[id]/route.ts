@@ -4,10 +4,14 @@ import {
   UpdateSiteRequest,
   UpdateSiteResponse,
 } from "@nosweat/schema";
-import { getVercelConfig, removeDomain } from "@/server/domains";
 import { savesExceeded } from "@/server/quota";
 import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server/http";
-import { hasUnpublishedChanges, requireOwnedSite, requireSiteAccess } from "@/server/sites";
+import {
+  deleteSiteForever,
+  hasUnpublishedChanges,
+  requireOwnedSite,
+  requireSiteAccess,
+} from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
 type Context = { params: Promise<{ id: string }> };
@@ -61,12 +65,7 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     if (!user) return unauthorized();
     if (!site) return notFound();
 
-    const vercel = getVercelConfig();
-    if (vercel && site.customDomain) {
-      // Se a Vercel falhar, o site é apagado mesmo assim; o domínio sobra no projeto (inofensivo).
-      await removeDomain(vercel, site.customDomain).catch(() => undefined);
-    }
-    if (!(await getSiteStore().delete(site.id))) return notFound();
+    if (!(await deleteSiteForever(site))) return notFound();
     return jsonResponse(DeleteSiteResponse, { siteId: site.id, deleted: true });
   });
 }
