@@ -102,6 +102,62 @@ export const PlusIcon = (props: IconProps) => (
   </Icon>
 );
 
+// ---------- ícones das listas do painel ("Needs you", painéis do site) ----------
+
+// Prancheta com visto: posts esperando aprovação.
+export const ApproveIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4V3h6v1M9 12.5l2 2 4-4" />
+  </Icon>
+);
+
+// Elos de corrente: reconectar a conta.
+export const LinkIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1" />
+    <path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" />
+  </Icon>
+);
+
+// Relógio: retornos e histórico de versões.
+export const ClockIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Icon>
+);
+
+// Triângulo de alerta: posts que não saíram.
+export const AlertIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" />
+    <path d="M12 9.5v4M12 17h.01" />
+  </Icon>
+);
+
+// Visto: nada pendente / passo feito.
+export const CheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m5 12.5 4.5 4.5L19 7" />
+  </Icon>
+);
+
+// Globo: publicar e domínio próprio.
+export const GlobeIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+  </Icon>
+);
+
+// Lixeira: apagar o site.
+export const TrashIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+  </Icon>
+);
+
 /** Ícone de cada módulo do hub. */
 export const MODULE_ICONS: Record<HubModule["key"], (props: IconProps) => ReactElement> = {
   website: WebsiteIcon,

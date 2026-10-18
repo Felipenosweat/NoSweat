@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { pageTitle } from "@/components/DashboardUi";
 
 const subscribe = () => () => {};
 
@@ -34,15 +35,16 @@ export function Greeting({ firstName, nowIso }: { firstName: string | null; nowI
     timeZone,
   }).format(now);
 
+  // Como a tela "Hoje" do iOS: a data pequena em cima, a saudação grande embaixo.
   return (
     <div>
-      <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.03em] text-ink lg:text-[2.25rem]">
+      <p className="text-[13px] leading-5 font-semibold tracking-[0.04em] text-slate-500 uppercase tabular-nums">
+        <time dateTime={nowIso}>{date}</time>
+      </p>
+      <h1 className={`mt-1 ${pageTitle}`}>
         Good {partOfDay(hour)}
         {firstName ? `, ${firstName}` : ""}.
       </h1>
-      <p className="mt-1 text-[13px] text-slate-500 tabular-nums">
-        <time dateTime={nowIso}>{date}</time>
-      </p>
     </div>
   );
 }

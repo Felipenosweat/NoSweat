@@ -1,28 +1,154 @@
 import type { ReactNode } from "react";
 
-// Peças visuais compartilhadas do painel do cliente (/dashboard e /sites/[id]).
+// Peças visuais compartilhadas do painel do cliente (/dashboard, /clients, /social, /billing e
+// /sites/[id]). Linguagem "Apple": superfícies claras, cartões brancos raio 2xl com linha fina
+// (slate-200/70) e sombra bem leve, controles raio xl, hierarquia pelo tamanho e peso do texto.
 // Sem "use client" e sem imports do servidor: servem tanto para server quanto para client components.
 
 export const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-[15px] font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 sm:min-h-10 ${focusRing}`;
+/**
+ * Espaço entre palavras dos títulos (`font-display`). O Plus Jakarta tem um espaço estreito e, com
+ * o tracking negativo e o arredondamento de pixels do navegador, "Needs you" aparecia como
+ * "Needsyou". Vai na raiz de cada tela do painel e vale para todo `.font-display` dentro dela
+ * (a landing tem os próprios ajustes e não usa isto).
+ */
+export const displayWordSpacing = "[&_.font-display]:[word-spacing:0.08em]";
+
+const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 sm:min-h-10 ${focusRing}`;
 
 /** Ação principal (azul da marca). Só uma por tela. */
 export const primaryButton = `${buttonBase} bg-brand text-white hover:bg-brand-dark disabled:bg-slate-100 disabled:text-slate-400`;
 
-/** Ação secundária: contorno neutro. */
-export const secondaryButton = `${buttonBase} border border-slate-300 bg-white text-ink hover:border-slate-400 hover:bg-slate-50 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400`;
+/** Ação secundária: fundo branco, linha fina e sombra mínima. */
+export const secondaryButton = `${buttonBase} border border-slate-200 bg-white text-ink shadow-xs hover:border-slate-300 hover:bg-slate-50 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none`;
 
 /** Ação de texto (terciária). */
 export const textButton = `inline-flex min-h-11 items-center gap-1.5 rounded-lg px-1 text-[15px] font-semibold text-slate-600 transition-colors duration-150 hover:text-ink disabled:cursor-not-allowed disabled:text-slate-400 sm:min-h-10 ${focusRing}`;
 
-/** Painel de configurações: borda fina, raio xl, título 15px Jakarta. */
-export const panelClass = "rounded-xl border border-slate-200 bg-white p-5 sm:p-6";
+/** Sombra dos cartões: quase só um contorno, com um pouco de profundidade embaixo. */
+export const cardShadow = "shadow-[0_1px_2px_rgb(7_27_51/0.04),0_2px_12px_-4px_rgb(7_27_51/0.06)]";
 
-export const panelTitle = "font-display text-[15px] leading-6 font-semibold text-ink";
+/** Sombra do cartão em foco/hover (links que são cartões). */
+export const cardShadowHover =
+  "hover:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_12px_28px_-12px_rgb(7_27_51/0.16)]";
+
+/** Cartão branco (raio 2xl, linha fina, sombra leve), sem padding: listas agrupadas e grades. */
+export const cardClass = `rounded-2xl border border-slate-200/70 bg-white ${cardShadow}`;
+
+/** Painel de configurações: o cartão com padding. */
+export const panelClass = `${cardClass} p-5 sm:p-6`;
+
+export const panelTitle =
+  "font-display text-[17px] leading-6 font-semibold tracking-[-0.01em] text-ink";
 
 export const panelText = "text-[15px] leading-[1.6] text-slate-600";
+
+/** Título da página (32px no celular, 40px no computador). */
+export const pageTitle =
+  "font-display text-[2rem] leading-[1.15] font-bold tracking-[-0.022em] text-ink lg:text-[2.5rem]";
+
+/** Linha de apoio embaixo do título da página: texto secundário calmo. */
+export const pageLead = "text-[15px] leading-[1.6] text-slate-500 lg:text-base";
+
+/** Título de seção dentro da página ("Needs you", "Your office"...). */
+export const sectionTitle =
+  "font-display text-xl leading-7 font-semibold tracking-[-0.012em] text-ink";
+
+/**
+ * Linha fina entre as linhas de uma lista agrupada, recuada até o texto (depois do ícone de 36px),
+ * como nas listas do iOS. Vai no <li>; a primeira linha não tem.
+ */
+export const insetDivider =
+  "relative before:absolute before:top-0 before:right-0 before:left-[66px] before:h-px before:bg-slate-200/70 first:before:hidden sm:before:left-[70px]";
+
+/** Cabeçalho de página: título grande, linha de apoio e ações à direita (embaixo no celular). */
+export function PageHeader({
+  title,
+  description,
+  actions,
+  back,
+  badge,
+  titleId,
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  actions?: ReactNode;
+  /** Link de volta acima do título (ex.: "‹ Clients"). */
+  back?: ReactNode;
+  /** Selo ao lado do título (ex.: "Live"). */
+  badge?: ReactNode;
+  titleId?: string;
+}) {
+  return (
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
+      <div className="min-w-0">
+        {back && <div className="mb-2">{back}</div>}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <h1 id={titleId} className={`min-w-0 break-words ${pageTitle}`}>
+            {title}
+          </h1>
+          {badge}
+        </div>
+        {description && <p className={`mt-2 max-w-[60ch] ${pageLead}`}>{description}</p>}
+      </div>
+      {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+    </header>
+  );
+}
+
+export type IconTone = "brand" | "amber" | "sky" | "red" | "emerald" | "slate";
+
+const ICON_TONES: Record<IconTone, string> = {
+  brand: "bg-brand/10 text-brand",
+  amber: "bg-amber-100 text-amber-700",
+  sky: "bg-sky-100 text-sky-700",
+  red: "bg-red-100 text-red-600",
+  emerald: "bg-emerald-100 text-emerald-700",
+  slate: "bg-slate-100 text-slate-500",
+};
+
+/** Quadradinho colorido (cor clara + ícone na cor forte) na frente de uma linha ou cartão. */
+export function IconTile({
+  tone = "brand",
+  size = "md",
+  children,
+}: {
+  tone?: IconTone;
+  /** "md" = 36px (linhas e cartões), "lg" = 48px (estados vazios). */
+  size?: "md" | "lg";
+  children: ReactNode;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`grid shrink-0 place-items-center ${
+        size === "lg" ? "size-12 rounded-xl" : "size-9 rounded-lg"
+      } ${ICON_TONES[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Seta "›" das linhas que levam a outra tela. */
+export function ChevronRightIcon({ className = "size-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
 
 type BadgeTone = "live" | "draft" | "pending" | "info" | "neutral";
 
@@ -34,10 +160,10 @@ const DOTS: Record<BadgeTone, string> = {
   neutral: "",
 };
 
-/** Selo neutro com bolinha de status real (estática: nada de pulsar). */
+/** Selo em cápsula com bolinha de status real (estática: nada de pulsar). */
 export function StatusBadge({ tone, children }: { tone: BadgeTone; children: ReactNode }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-2 py-0.5 text-[13px] leading-5 font-medium text-ink ring-1 ring-slate-200">
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[13px] leading-5 font-medium text-ink ring-1 ring-slate-200">
       {tone !== "neutral" && (
         <span aria-hidden="true" className={`size-1.5 rounded-full ${DOTS[tone]}`} />
       )}
