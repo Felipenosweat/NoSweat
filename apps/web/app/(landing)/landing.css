@@ -161,8 +161,27 @@
 .st-bg-pin {
   position: sticky;
   top: 0;
-  height: 100svh;
+  /* lvh: altura com a barra do Safari recolhida. Com svh sobrava uma faixa sem foto embaixo
+     quando a barra do iPhone encolhia durante a rolagem. */
+  height: 100vh;
+  height: 100lvh;
   overflow: hidden;
+  /* As pontas da foto somem no fundo escuro: sem "degrau" entre o fundo de uma cena e o da
+     seguinte (nem entre o hero e a primeira cena). */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 10%,
+    #000 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 90%, transparent 100%);
+}
+
+/* A área atrás das barras do Safari (e o "elástico" da rolagem) fica escura na landing, não
+   branca. */
+:root:has([data-hero]) {
+  background-color: #071b33;
 }
 
 /* Ken Burns: a foto vai encolhendo bem devagar com o progresso da cena. */
