@@ -1,6 +1,6 @@
 // Peças visuais compartilhadas pelos painéis do editor.
-// Regras do brief: dois raios (rounded-xl para campos e molduras, rounded-lg para botões e
-// chips), bordas finas, texto do app em 15px e campos com 16px no celular (o iOS não dá zoom).
+// Regras do brief: dois raios (rounded-xl para campos, botões e chips; rounded-2xl para cartões
+// e molduras), bordas finas, texto do app em 15px e campos com 16px no celular (o iOS não dá zoom).
 
 export const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
@@ -13,7 +13,7 @@ export const textareaClass = `${inputClass} min-h-20 resize-y field-sizing-conte
 
 export const labelClass = "block text-[13px] font-medium text-slate-700";
 
-const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-3.5 text-[15px] font-semibold transition-colors duration-150 motion-reduce:transition-none ${focusRing}`;
+const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3.5 text-[15px] font-semibold transition-colors duration-150 motion-reduce:transition-none ${focusRing}`;
 
 /** Ação principal: azul da marca; desabilitado fica cinza (nunca azul apagado). */
 export const primaryButton = `${buttonBase} bg-brand text-white hover:bg-brand-dark active:translate-y-px disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 disabled:active:translate-y-0`;

@@ -159,7 +159,14 @@ async function loadClients(ownerId: string, now: number): Promise<ClientsSnapsho
 const MAX_FOLLOW_UP_ROWS = 2;
 
 /** Tipo de cada linha "Needs you": decide o ícone, a cor e a linha de apoio. */
-type NeedKind = "approval" | "reconnect" | "follow-up" | "clients" | "problem" | "messages" | "next";
+type NeedKind =
+  | "approval"
+  | "reconnect"
+  | "follow-up"
+  | "clients"
+  | "problem"
+  | "messages"
+  | "next";
 
 type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; action: string };
 

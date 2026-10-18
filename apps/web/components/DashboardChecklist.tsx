@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
-import {
-  ChevronRightIcon,
-  cardClass,
-  focusRing,
-  sectionTitle,
-  shareFlagKey,
-} from "./DashboardUi";
+import { ChevronRightIcon, cardClass, focusRing, sectionTitle, shareFlagKey } from "./DashboardUi";
 
 export type ChecklistStep = {
   label: string;
@@ -165,7 +159,14 @@ function ProgressRing({ percent }: { percent: number }) {
   return (
     <span aria-hidden="true" className="relative grid size-14 shrink-0 place-items-center">
       <svg viewBox="0 0 56 56" className="absolute inset-0 size-14 -rotate-90">
-        <circle cx="28" cy="28" r={radius} fill="none" strokeWidth={5} className="stroke-slate-200" />
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          fill="none"
+          strokeWidth={5}
+          className="stroke-slate-200"
+        />
         {percent > 0 && (
           <circle
             cx="28"

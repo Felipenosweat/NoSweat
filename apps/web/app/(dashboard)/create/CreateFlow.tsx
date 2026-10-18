@@ -6,6 +6,7 @@ import {
   GenerateSiteResponse,
   type SiteSpec,
 } from "@nosweat/schema";
+import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
@@ -13,60 +14,79 @@ import {
   useState,
   useSyncExternalStore,
   type FormEvent,
+  type KeyboardEvent,
   type ReactNode,
 } from "react";
 import {
+  BUSINESS_KINDS,
+  CHOICES_KEY,
   DRAFT_KEY,
+  EMPTY_CHOICES,
+  EMPTY_FIELDS,
   LANDING_BRIEF_KEY,
+  LAYOUT_OPTIONS,
   LIMITS,
+  PROMPT_LIMIT,
+  STYLE_OPTIONS,
   US_STATES,
   composeBrief,
-  fieldsFromBrief,
+  formatLocation,
+  parseChoices,
   parseDraft,
   slugBase,
+  type BusinessKind,
+  type CreateChoices,
   type CreateFields,
   type StoredDraft,
 } from "./brief";
 import { BUILD_STEPS, BuildingPanel, ReadyPanel } from "./Building";
 import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
-import { StylePicker } from "./StylePicker";
 import { focusRing, inputClass, primaryButton, secondaryButton } from "./ui";
+import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
+
+// Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um assistente
+// de 4 passos num <dialog> (pedido → layout → cores → revisão). O pedido vai no campo `what`
+// do CreateFields (o `details` fica vazio); tudo vira UM texto para POST /api/sites/generate.
 
 const STEPS = [
   {
-    title: "What’s your business called, and what do you do?",
-    lead: "Two quick answers. You can change every word later.",
+    title: "What are we building?",
+    lead: "Tell us about your business. You can change every word later.",
   },
   {
-    title: "Where do you work?",
-    lead: "Customers want to know you serve their area. Leave it blank if you work online.",
+    title: "Style",
+    lead: "How your homepage is laid out. Every layout works great on phones.",
   },
   {
-    title: "Anything else?",
-    lead: "Optional. Services, hours, a phone number, or what makes you different.",
+    title: "Colors",
+    lead: "Sets the colors, fonts and tone of voice. You can fine-tune them in the editor.",
+  },
+  {
+    title: "Ready to start?",
+    lead: "Check your request and create the first version.",
   },
 ] as const;
 
 const LAST_STEP = STEPS.length - 1;
 
-// Exemplos de detalhes (limpeza primeiro, nicho inicial). Sem telefone inventado.
-const DETAIL_EXAMPLES = [
+// Exemplos de pedido (limpeza primeiro, nicho inicial). Sem telefone nem nota inventados.
+const PROMPT_EXAMPLES = [
   {
     label: "House cleaning",
-    text: "Weekly, biweekly and move-out cleans. We bring eco-friendly supplies. Open Mon–Sat, 8 AM – 6 PM.",
+    text: "House cleaning for busy families in Austin, TX. Weekly, biweekly and move-out cleans. We bring eco-friendly supplies. Open Mon–Sat, 8 AM – 6 PM.",
   },
   {
     label: "Plumbing",
-    text: "Emergency repairs, drain cleaning and water heater installs. Open 7 days a week.",
+    text: "Family-owned plumbing in Denver, CO. Emergency repairs, drain cleaning and water heater installs. Open 7 days a week.",
   },
   {
     label: "Hair salon",
-    text: "Balayage, keratin treatments and bridal styling. Open Tuesday to Saturday, walk-ins welcome.",
+    text: "Hair salon in Miami, FL. Balayage, keratin treatments and bridal styling. Open Tuesday to Saturday, walk-ins welcome.",
   },
   {
     label: "Restaurant",
-    text: "Handmade tortillas, fish tacos and weekend brunch. Takeout and catering available.",
+    text: "Neighborhood taqueria in San Antonio, TX. Handmade tortillas, fish tacos and weekend brunch. Takeout and catering available.",
   },
 ];
 
@@ -77,6 +97,7 @@ type FormError = { title: string; body: string; loginLink?: boolean; signupLink?
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
 type Generated = { siteId: string; spec: SiteSpec };
+type InitialState = StoredDraft & { choices: CreateChoices };
 
 /** Mensagens amigáveis para cada `error.code` da API. */
 function errorFor(code: string, fallback: string): FormError {
@@ -117,36 +138,54 @@ function errorFor(code: string, fallback: string): FormError {
   }
 }
 
-function validateStep(step: number, fields: CreateFields): FieldErrors {
+/** Erro do pedido (o mesmo teste do schema da API), ou `undefined` se está bom. */
+function promptError(fields: CreateFields, choices: CreateChoices): string | undefined {
+  if (fields.what.trim().length < 3) return "Tell us what you do in a few words.";
+  const check = GenerateSiteRequest.safeParse({ brief: composeBrief(fields, choices) });
+  return check.success ? undefined : check.error.issues[0]?.message;
+}
+
+function validateFirstStep(fields: CreateFields, choices: CreateChoices): FieldErrors {
   const errors: FieldErrors = {};
-  if (step === 0) {
-    if (fields.what.trim().length < 3) {
-      errors.what = "Tell us what you do in a few words.";
-    } else {
-      const check = GenerateSiteRequest.safeParse({ brief: composeBrief(fields) });
-      if (!check.success) errors.what = check.error.issues[0]?.message;
-    }
-  }
-  if (step === 1 && fields.state.trim() && !US_STATES.has(fields.state.trim().toUpperCase())) {
+  const what = promptError(fields, choices);
+  if (what) errors.what = what;
+  if (fields.state.trim() && !US_STATES.has(fields.state.trim().toUpperCase())) {
     errors.state = "Use the two-letter code, like TX.";
   }
   return errors;
 }
 
 /** Lê o que dá para preencher: rascunho desta aba, ?brief= da landing ou sessionStorage. */
-function initialState(initialBrief: string, canReadStorage: boolean): StoredDraft {
-  if (!canReadStorage)
-    return { source: initialBrief, step: 0, fields: fieldsFromBrief(initialBrief) };
+function initialState(initialBrief: string, canReadStorage: boolean): InitialState {
+  const fromText = (text: string): InitialState => ({
+    source: text,
+    step: 0,
+    fields: { ...EMPTY_FIELDS, what: text.slice(0, PROMPT_LIMIT) },
+    choices: { ...EMPTY_CHOICES },
+  });
+  if (!canReadStorage) return fromText(initialBrief);
   let source = initialBrief;
   let draft: StoredDraft | null = null;
+  let choices: CreateChoices = { ...EMPTY_CHOICES };
   try {
     if (!source) source = sessionStorage.getItem(LANDING_BRIEF_KEY)?.trim().slice(0, 2000) ?? "";
     draft = parseDraft(sessionStorage.getItem(DRAFT_KEY));
+    choices = parseChoices(sessionStorage.getItem(CHOICES_KEY));
   } catch {
     // Armazenamento bloqueado (modo privado restrito): segue sem rascunho.
   }
-  if (draft && draft.source === source) return draft;
-  return { source, step: 0, fields: fieldsFromBrief(source) };
+  if (draft && draft.source === source) {
+    // Rascunhos antigos (fluxo de 3 passos) tinham "what" e "details" separados.
+    const prompt = [draft.fields.what.trim(), draft.fields.details.trim()]
+      .filter(Boolean)
+      .join("\n\n");
+    return {
+      ...draft,
+      fields: { ...draft.fields, what: prompt.slice(0, PROMPT_LIMIT), details: "" },
+      choices,
+    };
+  }
+  return fromText(source);
 }
 
 const noopSubscribe = () => () => {};
@@ -172,38 +211,65 @@ export function CreateFlow({ initialBrief }: { initialBrief: string }) {
 
 function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadStorage: boolean }) {
   const [initial] = useState(() => initialState(initialBrief, canReadStorage));
-  const [step, setStep] = useState(initial.step);
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fields, setFields] = useState<CreateFields>(initial.fields);
+  const [choices, setChoices] = useState<CreateChoices>(initial.choices);
+  const [cardError, setCardError] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<FormError | null>(null);
   const [phase, setPhase] = useState<Phase>("form");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<Generated | null>(null);
+  // A seção "nome e endereço" já começa aberta se o rascunho tinha algo nela.
+  const [detailsInitiallyOpen] = useState(() =>
+    Boolean(
+      initial.fields.name ||
+      initial.fields.city ||
+      initial.fields.state ||
+      initial.fields.serviceArea,
+    ),
+  );
 
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const moreRef = useRef<HTMLDetailsElement>(null);
   // Só move o foco depois de uma ação do usuário (nunca no primeiro carregamento).
   const shouldFocusHeading = useRef(false);
 
+  // Abre/fecha o <dialog> nativo (showModal prende o foco e Esc fecha).
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (wizardOpen && !dialog.open) dialog.showModal();
+    else if (!wizardOpen && dialog.open) dialog.close();
+  }, [wizardOpen, phase]);
+
+  // Depois do showModal (acima): o título do passo só recebe foco com o diálogo aberto.
   useEffect(() => {
     if (!shouldFocusHeading.current) return;
     shouldFocusHeading.current = false;
     headingRef.current?.focus();
-  }, [step, phase]);
+  }, [step, phase, wizardOpen]);
 
   // Guarda as respostas na aba (ex.: sessão expirou → login → volta com tudo preenchido).
   useEffect(() => {
     if (!canReadStorage) return;
     try {
-      if (phase === "ready") sessionStorage.removeItem(DRAFT_KEY);
-      else {
+      if (phase === "ready") {
+        sessionStorage.removeItem(DRAFT_KEY);
+        sessionStorage.removeItem(CHOICES_KEY);
+      } else {
         const draft: StoredDraft = { source: initial.source, step, fields };
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        sessionStorage.setItem(CHOICES_KEY, JSON.stringify(choices));
       }
     } catch {
       // Sem armazenamento: o fluxo continua funcionando, só não lembra as respostas.
     }
-  }, [canReadStorage, initial.source, step, fields, phase]);
+  }, [canReadStorage, initial.source, step, fields, choices, phase]);
 
   // Avança as etapas da construção; a última só termina quando a resposta da API chega.
   useEffect(() => {
@@ -224,6 +290,11 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
   function update<K extends keyof CreateFields>(key: K, value: CreateFields[K]) {
     setFields((current) => ({ ...current, [key]: value }));
     if (fieldErrors[key]) setFieldErrors((current) => ({ ...current, [key]: undefined }));
+    if (key === "what") setCardError(null);
+  }
+
+  function choose<K extends keyof CreateChoices>(key: K, value: CreateChoices[K]) {
+    setChoices((current) => ({ ...current, [key]: value }));
   }
 
   function goTo(next: number) {
@@ -233,16 +304,49 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
     setStep(next);
   }
 
-  function backToForm(error: FormError) {
+  /** Confere o passo 1; se houver erro, mostra e leva o foco ao campo. */
+  function firstStepIsValid(): boolean {
+    const errors = validateFirstStep(fields, choices);
+    setFieldErrors(errors);
+    if (errors.what) {
+      document.getElementById("wizard-prompt")?.focus();
+      return false;
+    }
+    if (errors.state) {
+      if (moreRef.current) moreRef.current.open = true;
+      document.getElementById("create-state")?.focus();
+      return false;
+    }
+    return true;
+  }
+
+  function openWizard(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const error = promptError(fields, choices);
+    if (error) {
+      setCardError(error);
+      promptRef.current?.focus();
+      return;
+    }
+    setCardError(null);
+    setFieldErrors({});
+    setDirection("forward");
+    setStep(0);
+    shouldFocusHeading.current = true;
+    setWizardOpen(true);
+  }
+
+  function backToWizard(error: FormError) {
     setFormError(error);
     setDirection("back");
     setStep(LAST_STEP);
     shouldFocusHeading.current = true;
     setPhase("form");
+    setWizardOpen(true);
   }
 
   async function generate() {
-    const input = GenerateSiteRequest.safeParse({ brief: composeBrief(fields) });
+    const input = GenerateSiteRequest.safeParse({ brief: composeBrief(fields, choices) });
     if (!input.success) {
       setFormError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
       return;
@@ -252,6 +356,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
     setResult(null);
     setProgress(0);
     shouldFocusHeading.current = true;
+    setWizardOpen(false);
     setPhase("building");
 
     try {
@@ -266,37 +371,54 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
         const apiError = ApiError.safeParse(body);
         const code = apiError.success ? apiError.data.error.code : "internal_error";
         const message = apiError.success ? apiError.data.error.message : "";
-        backToForm(errorFor(code, message));
+        backToWizard(errorFor(code, message));
         return;
       }
 
       const { siteId, spec } = GenerateSiteResponse.parse(body);
       setResult({ siteId, spec });
     } catch {
-      backToForm(errorFor("network_error", ""));
+      backToWizard(errorFor("network_error", ""));
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleWizardSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const errors = validateStep(step, fields);
-    const firstInvalid = Object.keys(errors)[0];
-    if (firstInvalid) {
-      setFieldErrors(errors);
-      document.getElementById(`create-${firstInvalid}`)?.focus();
-      return;
-    }
+    if (step === 0 && !firstStepIsValid()) return;
     if (step < LAST_STEP) {
       goTo(step + 1);
+      return;
+    }
+    // Revisão: confere o pedido de novo (pode ter mudado) antes de gerar.
+    const errors = validateFirstStep(fields, choices);
+    if (errors.what || errors.state) {
+      goTo(0);
       return;
     }
     void generate();
   }
 
-  function applyExample(text: string) {
-    const current = fields.details.trim();
-    const replace = !current || DETAIL_EXAMPLES.some((example) => example.text === current);
-    update("details", (replace ? text : `${current}\n${text}`).slice(0, LIMITS.details));
+  /** "Let AI decide the rest": layout e cores ficam com a No Sweat e vai direto à revisão. */
+  function letAiDecide() {
+    if (!firstStepIsValid()) return;
+    setChoices((current) => ({ ...current, layout: "auto" }));
+    update("style", "auto");
+    goTo(LAST_STEP);
+  }
+
+  function applyExample(text: string, target: HTMLTextAreaElement | null) {
+    const current = fields.what.trim();
+    const replace = !current || PROMPT_EXAMPLES.some((example) => example.text === current);
+    update("what", (replace ? text : `${current}\n${text}`).slice(0, PROMPT_LIMIT));
+    requestAnimationFrame(() => target?.focus());
+  }
+
+  function submitOnModEnter(event: KeyboardEvent<HTMLTextAreaElement>) {
+    // Cmd/Ctrl + Enter envia; Enter sozinho quebra a linha (o pedido pode ter vários parágrafos).
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
   }
 
   if (phase === "building") {
@@ -309,202 +431,435 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
   }
 
   const meta = STEPS[step] ?? STEPS[0];
+  const kindLabel =
+    BUSINESS_KINDS.find((option) => option.id === choices.kind)?.label ??
+    "No Sweat detects it from your description";
+  const layoutLabel =
+    LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
+  const colorLabel =
+    STYLE_OPTIONS.find((option) => option.id === fields.style)?.label ?? "No Sweat chooses";
+  const location = formatLocation(fields.city, fields.state);
+  const nameAndPlace = [
+    fields.name.trim(),
+    location,
+    fields.serviceArea.trim() && `serving ${fields.serviceArea.trim()}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="mx-auto max-w-[42rem]">
-      <form
-        onSubmit={handleSubmit}
-        noValidate
-        aria-labelledby="create-step-heading"
-        className="pb-4 sm:rounded-xl sm:border sm:border-slate-200 sm:bg-white sm:p-10 sm:pb-10"
-      >
-        <div className="flex items-center gap-3">
-          <ol aria-hidden="true" className="flex items-center gap-1.5">
-            {STEPS.map((item, index) => (
-              <li
-                key={item.title}
-                className={`size-2 rounded-full transition-colors duration-200 ${
-                  index === step ? "bg-brand" : index < step ? "bg-slate-500" : "bg-slate-300"
-                }`}
-              />
-            ))}
-          </ol>
-          <p className="text-[13px] font-medium text-slate-500">
-            Step {step + 1} of {STEPS.length}
-          </p>
-        </div>
+    <div className="mx-auto max-w-[44rem] pt-4 sm:pt-12 lg:pt-16">
+      {/* ---------- Cartão do pedido ---------- */}
+      <h1 className="font-display text-[2rem] leading-[1.08] font-bold tracking-[-0.035em] text-balance text-ink sm:text-[2.75rem]">
+        Start with your idea.
+      </h1>
+      <p className="mt-3 max-w-[52ch] text-[15px] leading-[1.6] text-pretty text-slate-600 sm:text-[17px]">
+        Describe your business in a sentence or two: what you do and where. We&rsquo;ll build the
+        first draft.
+      </p>
 
-        <div key={step} className={direction === "forward" ? styles.stepForward : styles.stepBack}>
-          <h1
-            id="create-step-heading"
-            ref={headingRef}
-            tabIndex={-1}
-            className="mt-4 font-display text-[1.75rem] leading-[1.1] font-bold tracking-[-0.03em] text-balance text-ink outline-none sm:text-[2.25rem]"
-          >
-            {meta.title}
-          </h1>
-          <p className="mt-3 max-w-[52ch] text-[15px] leading-[1.6] text-pretty text-slate-600 sm:text-base">
-            {meta.lead}
-          </p>
-
-          <div className="mt-8 space-y-6">
-            {step === 0 && (
-              <>
-                <TextField
-                  id="create-name"
-                  label="Business name"
-                  optional
-                  hint="No name yet? Leave it blank and we’ll suggest one."
-                  value={fields.name}
-                  maxLength={LIMITS.name}
-                  autoComplete="organization"
-                  placeholder="Sparkle & Shine Cleaning"
-                  onChange={(value) => update("name", value)}
-                />
-                <Field
-                  id="create-what"
-                  label="What do you do?"
-                  hint="One line is plenty."
-                  error={fieldErrors.what}
-                >
-                  {(describedBy) => (
-                    <textarea
-                      id="create-what"
-                      rows={2}
-                      value={fields.what}
-                      maxLength={LIMITS.what}
-                      onChange={(event) => update("what", event.target.value)}
-                      onKeyDown={(event) => {
-                        // Campo de uma linha: Enter avança (Shift+Enter ainda quebra a linha).
-                        if (
-                          event.key === "Enter" &&
-                          !event.shiftKey &&
-                          !event.nativeEvent.isComposing
-                        ) {
-                          event.preventDefault();
-                          event.currentTarget.form?.requestSubmit();
-                        }
-                      }}
-                      aria-describedby={describedBy}
-                      aria-invalid={fieldErrors.what ? true : undefined}
-                      placeholder="House cleaning for busy families, weekly or one-time"
-                      className={`${inputClass(Boolean(fieldErrors.what))} min-h-[4.5rem] resize-none py-3 leading-[1.5] [field-sizing:content]`}
-                    />
-                  )}
-                </Field>
-              </>
-            )}
-
-            {step === 1 && (
-              <LocationFields fields={fields} update={update} stateError={fieldErrors.state} />
-            )}
-
-            {step === 2 && (
-              <>
-                {formError && (
-                  <div
-                    role="alert"
-                    className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-                  >
-                    <AlertIcon />
-                    <p>
-                      <strong className="font-semibold">{formError.title}</strong> {formError.body}
-                      {formError.signupLink && (
-                        <>
-                          {" "}
-                          <Link
-                            href="/signup?next=/create"
-                            className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
-                          >
-                            Create a free account
-                          </Link>
-                        </>
-                      )}
-                      {formError.loginLink && (
-                        <>
-                          {" "}
-                          <Link
-                            href="/login?next=/create"
-                            className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
-                          >
-                            Log in
-                          </Link>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <Field
-                    id="create-details"
-                    label="Details"
-                    optional
-                    hint="Services, hours, phone, what makes you different."
-                  >
-                    {(describedBy) => (
-                      <textarea
-                        id="create-details"
-                        rows={3}
-                        value={fields.details}
-                        maxLength={LIMITS.details}
-                        onChange={(event) => update("details", event.target.value)}
-                        aria-describedby={describedBy}
-                        className={`${inputClass(false)} min-h-24 resize-y py-3 leading-[1.5]`}
-                      />
-                    )}
-                  </Field>
-                  <div className="mt-3">
-                    <p id="examples-label" className="text-[13px] text-slate-500">
-                      Need ideas? Start from an example:
-                    </p>
-                    <div
-                      role="group"
-                      aria-labelledby="examples-label"
-                      className="-mx-5 mt-2 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
-                    >
-                      {DETAIL_EXAMPLES.map((example) => (
-                        <button
-                          key={example.label}
-                          type="button"
-                          onClick={() => applyExample(example.text)}
-                          className={`min-h-11 shrink-0 rounded-lg border border-slate-200 bg-white px-3 text-sm whitespace-nowrap text-slate-700 transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 active:translate-y-px ${focusRing}`}
-                        >
-                          <span className="sr-only">Use example details: </span>
-                          {example.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <StylePicker value={fields.style} onChange={(value) => update("style", value)} />
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Ações: no celular ficam presas embaixo (com a área segura do iPhone). */}
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:static sm:mt-10 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-          <div className="mx-auto flex max-w-[42rem] items-center gap-3">
-            {step > 0 && (
-              <button type="button" onClick={() => goTo(step - 1)} className={secondaryButton}>
-                <ArrowIcon direction="back" />
-                Back
-              </button>
-            )}
-            {step === LAST_STEP && (
-              <p className="hidden text-[13px] text-slate-500 sm:block">
-                Your draft stays private until you publish.
-              </p>
-            )}
-            <button type="submit" className={`${primaryButton} flex-1 sm:ml-auto sm:flex-none`}>
-              {step === LAST_STEP ? "Build my website" : "Continue"}
-              {step < LAST_STEP && <ArrowIcon direction="forward" />}
+      <form onSubmit={openWizard} noValidate className="mt-8">
+        <div
+          className={`rounded-2xl border bg-white shadow-[0_1px_2px_rgb(7_27_51/.04),0_12px_32px_-12px_rgb(7_27_51/.14)] transition-[border-color,box-shadow] duration-150 focus-within:ring-4 motion-reduce:transition-none ${
+            cardError
+              ? "border-red-400 focus-within:ring-red-100"
+              : "border-slate-200 focus-within:border-slate-300 focus-within:ring-brand/10"
+          }`}
+        >
+          <label htmlFor="create-prompt" className="sr-only">
+            Describe your business
+          </label>
+          <textarea
+            id="create-prompt"
+            ref={promptRef}
+            rows={4}
+            value={fields.what}
+            maxLength={PROMPT_LIMIT}
+            onChange={(event) => update("what", event.target.value)}
+            onKeyDown={submitOnModEnter}
+            aria-invalid={cardError ? true : undefined}
+            aria-describedby={cardError ? "create-prompt-error" : "create-prompt-hint"}
+            placeholder="House cleaning for busy families in Austin, TX. Weekly and move-out cleans, eco-friendly supplies."
+            className="block max-h-[50vh] min-h-32 w-full resize-none rounded-t-2xl bg-transparent px-5 pt-5 pb-2 text-base leading-[1.6] text-ink [field-sizing:content] placeholder:text-slate-400 focus:outline-none"
+          />
+          <div className="flex items-center justify-between gap-3 px-3 pb-3 sm:pl-5">
+            <p id="create-prompt-hint" className="min-w-0 text-[13px] text-slate-500">
+              <span className="hidden sm:inline">Your draft stays private until you publish.</span>
+            </p>
+            <button
+              type="submit"
+              className={`${primaryButton} h-11 shrink-0 px-4 max-sm:flex-1 sm:px-5`}
+            >
+              <ArrowIcon direction="forward" />
+              Create website
             </button>
           </div>
         </div>
+        {cardError && (
+          <p
+            id="create-prompt-error"
+            role="alert"
+            className="mt-3 flex gap-1.5 text-[13px] text-red-700"
+          >
+            <AlertIcon small />
+            {cardError}
+          </p>
+        )}
       </form>
+
+      <div className="mt-5">
+        <p id="prompt-examples-label" className="sr-only">
+          Start from an example
+        </p>
+        <div
+          role="group"
+          aria-labelledby="prompt-examples-label"
+          className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+        >
+          {PROMPT_EXAMPLES.map((example) => (
+            <button
+              key={example.label}
+              type="button"
+              onClick={() => applyExample(example.text, promptRef.current)}
+              className={`min-h-11 shrink-0 rounded-xl border border-slate-200 bg-white px-3.5 text-[13px] font-medium whitespace-nowrap text-slate-600 transition-colors duration-150 hover:border-slate-300 hover:text-ink active:translate-y-px motion-reduce:transition-none sm:min-h-9 ${focusRing}`}
+            >
+              <span className="sr-only">Use example: </span>
+              {example.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-4 text-[13px] text-slate-500 sm:hidden">
+          Your draft stays private until you publish.
+        </p>
+      </div>
+
+      {/* ---------- Assistente de 4 passos ---------- */}
+      <dialog
+        ref={dialogRef}
+        aria-labelledby="create-step-heading"
+        onClose={() => setWizardOpen(false)}
+        onClick={(event) => {
+          // Clique no fundo escuro (fora da caixa) fecha.
+          if (event.target === event.currentTarget) setWizardOpen(false);
+        }}
+        className="m-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white p-0 text-ink shadow-[0_1px_2px_rgb(7_27_51/.06),0_24px_48px_-12px_rgb(7_27_51/.25)] backdrop:bg-ink/30 open:flex sm:m-auto sm:max-h-[min(46rem,calc(100dvh-4rem))] sm:w-[calc(100%-3rem)] sm:max-w-[40rem] sm:rounded-2xl motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(.2,.8,.2,1)] motion-safe:starting:open:translate-y-4 motion-safe:starting:open:opacity-0"
+      >
+        {wizardOpen && (
+          <form onSubmit={handleWizardSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+            <div className="shrink-0 px-5 pt-2 sm:px-8 sm:pt-5">
+              <div aria-hidden="true" className="flex justify-center pb-2 sm:hidden">
+                <span className="h-1 w-9 rounded-full bg-slate-300" />
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
+                  <Image
+                    src="/brand/nosweat-mark-64.png"
+                    alt=""
+                    width={20}
+                    height={20}
+                    className="size-5 shrink-0"
+                  />
+                  Create website
+                </p>
+                <p className="text-[13px] text-slate-500 tabular-nums">
+                  Step {step + 1} of {STEPS.length}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setWizardOpen(false)}
+                  aria-label="Close"
+                  className={`-mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
+                {STEPS.map((item, index) => (
+                  <li
+                    key={item.title}
+                    className={`h-1 rounded-full transition-colors duration-200 motion-reduce:transition-none ${
+                      index <= step ? "bg-brand" : "bg-slate-200"
+                    }`}
+                  />
+                ))}
+              </ol>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-6 pb-6 sm:px-8">
+              <div
+                key={step}
+                className={direction === "forward" ? styles.stepForward : styles.stepBack}
+              >
+                <h2
+                  id="create-step-heading"
+                  ref={headingRef}
+                  tabIndex={-1}
+                  className="font-display text-[1.5rem] leading-[1.15] font-bold tracking-[-0.03em] text-balance text-ink outline-none sm:text-[1.75rem]"
+                >
+                  {meta.title}
+                </h2>
+                <p className="mt-1.5 text-[15px] leading-[1.6] text-pretty text-slate-600">
+                  {meta.lead}
+                </p>
+
+                <div className="mt-6 space-y-5">
+                  {step === 0 && (
+                    <>
+                      <Field
+                        id="wizard-prompt"
+                        label="Your request"
+                        error={fieldErrors.what}
+                        hint={`${fields.what.length.toLocaleString("en-US")} / ${PROMPT_LIMIT.toLocaleString("en-US")}`}
+                      >
+                        {(describedBy) => (
+                          <textarea
+                            id="wizard-prompt"
+                            rows={4}
+                            value={fields.what}
+                            maxLength={PROMPT_LIMIT}
+                            onChange={(event) => update("what", event.target.value)}
+                            onKeyDown={submitOnModEnter}
+                            aria-describedby={describedBy}
+                            aria-invalid={fieldErrors.what ? true : undefined}
+                            className={`${inputClass(Boolean(fieldErrors.what))} max-h-64 min-h-28 resize-none py-3 leading-[1.55] [field-sizing:content]`}
+                          />
+                        )}
+                      </Field>
+
+                      <Field id="wizard-kind" label="Type of business" optional>
+                        {(describedBy) => (
+                          <div className="relative">
+                            <select
+                              id="wizard-kind"
+                              value={choices.kind}
+                              onChange={(event) =>
+                                choose("kind", event.target.value as BusinessKind)
+                              }
+                              aria-describedby={describedBy}
+                              className={`${inputClass(false)} h-12 cursor-pointer appearance-none pr-11`}
+                            >
+                              <option value="auto">
+                                No Sweat detects it from your description
+                              </option>
+                              {BUSINESS_KINDS.map((option) => (
+                                <option key={option.id} value={option.id}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronIcon className="pointer-events-none absolute top-1/2 right-4 mt-1 size-4 -translate-y-1/2 text-slate-500" />
+                          </div>
+                        )}
+                      </Field>
+
+                      <details className="group/examples">
+                        <summary
+                          className={`inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl text-[13px] font-medium text-slate-600 hover:text-ink [&::-webkit-details-marker]:hidden ${focusRing}`}
+                        >
+                          <ChevronIcon className="size-4 -rotate-90 transition-transform duration-150 group-open/examples:rotate-0 motion-reduce:transition-none" />
+                          See examples
+                        </summary>
+                        <ul className="mt-1 space-y-2">
+                          {PROMPT_EXAMPLES.map((example) => (
+                            <li key={example.label}>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  applyExample(
+                                    example.text,
+                                    document.getElementById(
+                                      "wizard-prompt",
+                                    ) as HTMLTextAreaElement | null,
+                                  )
+                                }
+                                className={`block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors duration-150 hover:border-slate-300 hover:bg-surface motion-reduce:transition-none ${focusRing}`}
+                              >
+                                <span className="block text-[13px] font-semibold text-ink">
+                                  <span className="sr-only">Use example: </span>
+                                  {example.label}
+                                </span>
+                                <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-slate-500">
+                                  {example.text}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+
+                      <details
+                        ref={moreRef}
+                        open={detailsInitiallyOpen}
+                        className="group/more rounded-xl border border-slate-200"
+                      >
+                        <summary
+                          className={`flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-xl px-4 text-[15px] font-medium text-ink [&::-webkit-details-marker]:hidden ${focusRing}`}
+                        >
+                          <span className="flex-1">
+                            Business name and location
+                            <span className="font-normal text-slate-500"> (optional)</span>
+                          </span>
+                          <ChevronIcon className="size-4 text-slate-500 transition-transform duration-150 group-open/more:rotate-180 motion-reduce:transition-none" />
+                        </summary>
+                        <div className="space-y-5 border-t border-slate-200 px-4 pt-4 pb-5">
+                          <TextField
+                            id="create-name"
+                            label="Business name"
+                            optional
+                            hint="No name yet? Leave it blank and we’ll suggest one."
+                            value={fields.name}
+                            maxLength={LIMITS.name}
+                            autoComplete="organization"
+                            placeholder="Sparkle & Shine Cleaning"
+                            onChange={(value) => update("name", value)}
+                          />
+                          <LocationFields
+                            fields={fields}
+                            update={update}
+                            stateError={fieldErrors.state}
+                          />
+                        </div>
+                      </details>
+                    </>
+                  )}
+
+                  {step === 1 && (
+                    <LayoutPicker
+                      value={choices.layout}
+                      onChange={(value) => choose("layout", value)}
+                      labelledBy="create-step-heading"
+                    />
+                  )}
+
+                  {step === 2 && (
+                    <ColorPicker
+                      value={fields.style}
+                      onChange={(value) => update("style", value)}
+                      labelledBy="create-step-heading"
+                    />
+                  )}
+
+                  {step === LAST_STEP && (
+                    <>
+                      {formError && (
+                        <div
+                          role="alert"
+                          className="flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                        >
+                          <AlertIcon />
+                          <p>
+                            <strong className="font-semibold">{formError.title}</strong>{" "}
+                            {formError.body}
+                            {formError.signupLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href="/signup?next=/create"
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  Create a free account
+                                </Link>
+                              </>
+                            )}
+                            {formError.loginLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href="/login?next=/create"
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  Log in
+                                </Link>
+                              </>
+                            )}
+                          </p>
+                        </div>
+                      )}
+                      <dl className="divide-y divide-slate-200 border-y border-slate-200">
+                        <SummaryRow label="Your request" onChange={() => goTo(0)}>
+                          <span className="line-clamp-4 whitespace-pre-line">
+                            {fields.what.trim()}
+                          </span>
+                        </SummaryRow>
+                        {nameAndPlace && (
+                          <SummaryRow label="Name and place" onChange={() => goTo(0)}>
+                            {nameAndPlace}
+                          </SummaryRow>
+                        )}
+                        <SummaryRow label="Business type" onChange={() => goTo(0)}>
+                          {kindLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Style" onChange={() => goTo(1)}>
+                          {layoutLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Colors" onChange={() => goTo(2)}>
+                          {colorLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Level of detail">Balanced</SummaryRow>
+                      </dl>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Rodapé: no celular respeita a área segura do iPhone. */}
+            <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-4">
+              {step === 0 ? (
+                <button
+                  type="button"
+                  onClick={letAiDecide}
+                  className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 text-[13px] font-semibold text-brand hover:text-brand-dark sm:text-[15px] ${focusRing}`}
+                >
+                  <SparkIcon />
+                  Let AI decide the rest
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => goTo(step - 1)}
+                  className={`${secondaryButton} h-11 px-4`}
+                >
+                  Back
+                </button>
+              )}
+              <button type="submit" className={`${primaryButton} ml-auto h-11 px-5`}>
+                <ArrowIcon direction="forward" />
+                {step === LAST_STEP ? "Create website" : "Continue"}
+              </button>
+            </div>
+          </form>
+        )}
+      </dialog>
+    </div>
+  );
+}
+
+/** Linha da revisão: rótulo, valor e "Change" (volta ao passo). */
+function SummaryRow({
+  label,
+  onChange,
+  children,
+}: {
+  label: string;
+  onChange?: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[6.5rem_minmax(0,1fr)_auto] items-start gap-x-3 py-2 sm:grid-cols-[8rem_minmax(0,1fr)_auto]">
+      <dt className="pt-2.5 text-[13px] text-slate-500">{label}</dt>
+      <dd className="pt-2 text-[15px] leading-[1.5] break-words text-ink">{children}</dd>
+      <dd>
+        {onChange && (
+          <button
+            type="button"
+            onClick={onChange}
+            className={`inline-flex min-h-11 items-center rounded-xl px-1 text-[13px] font-semibold text-brand hover:text-brand-dark ${focusRing}`}
+          >
+            Change<span className="sr-only"> {label.toLowerCase()}</span>
+          </button>
+        )}
+      </dd>
     </div>
   );
 }
@@ -549,8 +904,6 @@ type TextFieldProps = Omit<FieldProps, "children"> & {
   maxLength: number;
   placeholder?: string;
   autoComplete?: string;
-  autoCapitalize?: string;
-  spellCheck?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -559,8 +912,6 @@ function TextField({
   maxLength,
   placeholder,
   autoComplete,
-  autoCapitalize,
-  spellCheck,
   onChange,
   ...field
 }: TextFieldProps) {
@@ -574,8 +925,6 @@ function TextField({
           maxLength={maxLength}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          autoCapitalize={autoCapitalize}
-          spellCheck={spellCheck}
           onChange={(event) => onChange(event.target.value)}
           aria-describedby={describedBy}
           aria-invalid={field.error ? true : undefined}
@@ -617,6 +966,39 @@ function ArrowIcon({ direction }: { direction: "forward" | "back" }) {
       className="size-4"
     >
       <path d={direction === "forward" ? "M3 8h10M9 4l4 4-4 4" : "M13 8H3M7 4 3 8l4 4"} />
+    </svg>
+  );
+}
+
+function ChevronIcon({ className = "size-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="m4 6 4 4 4-4" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className="size-5"
+    >
+      <path d="M6 18 18 6M6 6l12 12" />
     </svg>
   );
 }

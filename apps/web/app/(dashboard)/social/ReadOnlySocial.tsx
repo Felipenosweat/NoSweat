@@ -1,5 +1,11 @@
 import type { SocialPostStatus } from "@nosweat/schema";
-import { StatusBadge, panelClass, panelText, panelTitle } from "@/components/DashboardUi";
+import {
+  StatusBadge,
+  cardClass,
+  panelClass,
+  panelText,
+  panelTitle,
+} from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import { getSocialStore } from "@/server/social/store";
 import type {
@@ -81,7 +87,7 @@ function caption(post: SocialPostRecord): string {
 export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
   if (!data) {
     return (
-      <p role="alert" className="mt-8 rounded-lg bg-red-50 px-4 py-3 text-[15px] text-red-700">
+      <p role="alert" className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-[15px] text-red-700">
         We couldn&rsquo;t load this account&rsquo;s posts. Please refresh the page.
       </p>
     );
@@ -107,11 +113,11 @@ export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
           Posts · last 30 days and next 60 days
         </h2>
         {posts.length === 0 ? (
-          <p className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-6 text-[15px] text-slate-600 sm:px-5">
+          <p className={`mt-3 px-4 py-6 text-[15px] text-slate-600 sm:px-5 ${cardClass}`}>
             No posts in this period.
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <ul className={`mt-3 divide-y divide-slate-200/70 overflow-hidden ${cardClass}`}>
             {posts.map((post) => (
               <li key={post.id} className="flex flex-col gap-1.5 px-4 py-3 sm:px-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">

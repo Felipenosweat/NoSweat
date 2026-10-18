@@ -47,7 +47,7 @@ const sideIcon =
 
 const soonItem = "flex min-h-10 items-center gap-3 rounded-xl px-3 text-[15px] text-slate-500";
 
-const tabItem = `flex h-full flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500 transition-colors duration-150 hover:text-ink aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
+const tabItem = `flex h-full flex-col items-center justify-center gap-1 text-xs font-medium text-slate-600 transition-colors duration-150 hover:text-ink aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
 
 // Colunas da barra de abas: Home + módulos ativos + More (classes inteiras para o Tailwind achar).
 const TAB_COLUMNS: Record<number, string> = {
@@ -194,8 +194,11 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/70 bg-white/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/70 pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
+      {/* Vidro da barra numa camada à parte: `backdrop-filter` na própria <nav> viraria o bloco
+          de referência dos filhos `fixed` (a folha "More" e o fundo dela ficariam presos aqui). */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/90 backdrop-blur-xl" />
       <ul className={`grid h-16 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
         <li>
           <Link href="/dashboard" aria-current={current("/dashboard")} className={tabItem}>
@@ -275,7 +278,10 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
                 )}
               </ul>
 
-              <p id="sheet-soon" className="px-3 pt-4 pb-1 text-[13px] font-semibold text-slate-500">
+              <p
+                id="sheet-soon"
+                className="px-3 pt-4 pb-1 text-[13px] font-semibold text-slate-500"
+              >
                 Coming soon
               </p>
               <ul aria-labelledby="sheet-soon" className="grid gap-0.5">
@@ -321,7 +327,7 @@ export function DashboardChrome({ admin, account, latestSiteId, banner, children
     return (
       <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
         {banner}
-        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
             <div className="flex items-center gap-3 sm:gap-6">
@@ -344,7 +350,10 @@ export function DashboardChrome({ admin, account, latestSiteId, banner, children
             </div>
           </div>
         </header>
-        <main id="main" className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+        <main
+          id="main"
+          className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24"
+        >
           {children}
         </main>
       </div>
@@ -354,7 +363,7 @@ export function DashboardChrome({ admin, account, latestSiteId, banner, children
   return (
     <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
       <SidebarNav admin={admin} account={account} latestSiteId={latestSiteId} />
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/80 px-5 backdrop-blur-xl sm:px-8 lg:hidden">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/85 px-5 backdrop-blur-xl sm:px-8 lg:hidden">
         <Logo />
         <Link href="/create" className={newSiteButton}>
           <PlusIcon className="size-4" />

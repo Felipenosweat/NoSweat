@@ -210,7 +210,7 @@ export function StagePicker({ clientId, stage }: { clientId: string; stage: Clie
           {CLIENT_STAGES.map((option) => (
             <label
               key={option}
-              className="flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-slate-300 px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:border-slate-400 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed sm:min-h-9"
+              className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:border-slate-400 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed sm:min-h-9"
             >
               <input
                 type="radio"
@@ -410,7 +410,7 @@ export function DeleteClientButton({ clientId, name }: { clientId: string; name:
           setError(null);
           dialogRef.current?.showModal();
         }}
-        className={`inline-flex min-h-11 items-center rounded-lg border border-red-200 bg-white px-4 text-[15px] font-semibold text-red-700 transition-colors duration-150 hover:bg-red-50 active:translate-y-px sm:min-h-10 ${focusRing}`}
+        className={`inline-flex min-h-11 items-center rounded-xl border border-red-200 bg-white px-4 text-[15px] font-semibold text-red-700 transition-colors duration-150 hover:bg-red-50 active:translate-y-px sm:min-h-10 ${focusRing}`}
       >
         Delete client
       </button>
@@ -421,7 +421,7 @@ export function DeleteClientButton({ clientId, name }: { clientId: string; name:
         onCancel={(event) => {
           if (pending) event.preventDefault();
         }}
-        className="m-auto w-[min(100%-2.5rem,28rem)] rounded-xl border border-slate-200 bg-white p-5 text-ink backdrop:bg-ink/40 sm:p-6"
+        className="m-auto w-[min(100%-2.5rem,28rem)] rounded-2xl border border-slate-200/70 bg-white p-5 text-ink shadow-[0_1px_2px_rgb(7_27_51/0.06),0_24px_48px_-12px_rgb(7_27_51/0.25)] backdrop:bg-ink/40 sm:p-6"
       >
         <h2
           id={`${ids}-title`}
@@ -446,7 +446,7 @@ export function DeleteClientButton({ clientId, name }: { clientId: string; name:
             type="button"
             onClick={() => void remove()}
             disabled={pending}
-            className={`inline-flex min-h-11 items-center justify-center rounded-lg bg-red-600 px-4 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-red-700 active:translate-y-px disabled:opacity-70 sm:min-h-10 ${focusRing}`}
+            className={`inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-4 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-red-700 active:translate-y-px disabled:opacity-70 sm:min-h-10 ${focusRing}`}
           >
             {pending ? "Deleting…" : "Yes, delete"}
           </button>

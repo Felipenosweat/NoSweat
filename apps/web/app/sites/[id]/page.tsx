@@ -2,9 +2,22 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import type { ReactNode } from "react";
 import {
+  ClockIcon,
+  GlobeIcon,
+  LinkIcon,
+  MessagesIcon,
+  TrashIcon,
+} from "@/app/(dashboard)/NavIcons";
+import {
+  IconTile,
+  PageHeader,
   SiteUrlLine,
   StatusBadge,
+  cardClass,
+  cardShadow,
+  displayWordSpacing,
   focusRing,
   panelClass,
   panelText,
@@ -12,13 +25,14 @@ import {
   primaryButton,
   secondaryButton,
   textButton,
+  type IconTone,
 } from "@/components/DashboardUi";
 import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
 import { Logo } from "@/components/Logo";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
-import { getDomainState } from "@/server/domains";
+import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec, publicUrl } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
@@ -37,6 +51,28 @@ async function requestOrigin(): Promise<string> {
 }
 
 const linkClass = `rounded-sm font-medium text-brand underline-offset-4 hover:underline ${focusRing}`;
+
+/** Título de painel com o quadradinho do ícone na frente (como os grupos dos Ajustes do iOS). */
+function PanelHeading({
+  id,
+  icon,
+  tone = "brand",
+  children,
+}: {
+  id: string;
+  icon: ReactNode;
+  tone?: IconTone;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <IconTile tone={tone}>{icon}</IconTile>
+      <h2 id={id} className={panelTitle}>
+        {children}
+      </h2>
+    </div>
+  );
+}
 
 export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const { id } = await params;
@@ -61,12 +97,15 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
     : pendingChanges
       ? "Publish changes"
       : null;
+  // Endereço grátis: o atual, ou o que o site vai receber ao publicar (mesmo makeSlug da API).
+  const address = free ?? `${origin}/s/${makeSlug(site.spec.business.name, site.id)}`;
+  const publishState = !isPublished ? "draft" : pendingChanges ? "outdated" : "current";
   const { business } = site.spec;
   const where = [business.city, business.state].filter(Boolean).join(", ");
 
   return (
-    <div className="min-h-svh bg-surface">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
+    <div className={`min-h-svh bg-surface ${displayWordSpacing}`}>
+      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
           <Logo />
           <Link
@@ -78,25 +117,25 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.03em] break-words text-ink lg:text-[2.5rem]">
-            {business.name}
-          </h1>
-          <StatusBadge tone={isPublished ? "live" : "draft"}>
-            {isPublished ? "Live" : "Draft"}
-          </StatusBadge>
-        </div>
-        {where && <p className="mt-1 text-[15px] text-slate-500">{where}</p>}
+      <main id="main" className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+        <PageHeader
+          title={business.name}
+          badge={
+            <StatusBadge tone={isPublished ? "live" : "draft"}>
+              {isPublished ? "Live" : "Draft"}
+            </StatusBadge>
+          }
+          description={where || undefined}
+        />
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-12 lg:gap-x-8">
+        <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-12 lg:gap-x-8">
           {/* Coluna da direita (miniatura): vem primeiro no HTML para aparecer no topo no celular. */}
           <aside
             aria-label="Your site"
             className="lg:sticky lg:top-24 lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:self-start"
           >
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <div className="border-b border-slate-200">
+            <div className={`overflow-hidden ${cardClass}`}>
+              <div className="border-b border-slate-200/70">
                 <SiteThumb spec={liveSpec(site)} />
               </div>
               <div className="p-5">
@@ -136,10 +175,10 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               aria-labelledby="publish-title"
               className={`${panelClass} scroll-mt-24`}
             >
-              <h2 id="publish-title" className={panelTitle}>
+              <PanelHeading id="publish-title" icon={<GlobeIcon className="size-[18px]" />}>
                 Publish
-              </h2>
-              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+              </PanelHeading>
+              <p className={`mt-3 max-w-[60ch] ${panelText}`}>
                 {pendingChanges
                   ? "You have saved changes that aren’t live yet. Publish them when you’re ready."
                   : isPublished
@@ -160,6 +199,8 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   siteName={business.name}
                   label={publishLabel}
                   liveUrl={isPublished ? free : null}
+                  address={address}
+                  state={publishState}
                   hasDomain={Boolean(domain.domain)}
                 />
               </div>
@@ -171,16 +212,16 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               className={`${panelClass} scroll-mt-24`}
             >
               <div className="flex items-center justify-between gap-4">
-                <h2 id="messages-title" className={panelTitle}>
+                <PanelHeading id="messages-title" icon={<MessagesIcon className="size-[18px]" />}>
                   Messages from your website
-                </h2>
+                </PanelHeading>
                 <StatusBadge tone="neutral">
                   <span className="tabular-nums">{leads.length}</span>
                   <span className="sr-only"> messages</span>
                 </StatusBadge>
               </div>
               {leads.length === 0 ? (
-                <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+                <p className={`mt-3 max-w-[60ch] ${panelText}`}>
                   When visitors fill out the contact form on your website, their messages show up
                   here.
                   {free && isPublished && (
@@ -200,7 +241,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   )}
                 </p>
               ) : (
-                <ul className="mt-4 divide-y divide-slate-200 border-t border-slate-200">
+                <ul className="mt-4 divide-y divide-slate-200/70 border-t border-slate-200/70">
                   {leads.map((lead) => (
                     <li key={lead.id} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -238,10 +279,10 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               aria-labelledby="domain-title"
               className={`${panelClass} scroll-mt-24 focus:outline-none`}
             >
-              <h2 id="domain-title" className={panelTitle}>
+              <PanelHeading id="domain-title" icon={<LinkIcon className="size-[18px]" />}>
                 Your own domain
-              </h2>
-              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+              </PanelHeading>
+              <p className={`mt-3 max-w-[60ch] ${panelText}`}>
                 Already own a domain like{" "}
                 <span className="font-medium text-ink">yourbusiness.com</span>? Connect it here.
                 Don&rsquo;t have one yet? Buy it at any registrar (GoDaddy, Namecheap,
@@ -255,10 +296,14 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               aria-labelledby="versions-title"
               className={`${panelClass} scroll-mt-24`}
             >
-              <h2 id="versions-title" className={panelTitle}>
+              <PanelHeading
+                id="versions-title"
+                tone="slate"
+                icon={<ClockIcon className="size-[18px]" />}
+              >
                 Version history
-              </h2>
-              <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+              </PanelHeading>
+              <p className={`mt-3 max-w-[60ch] ${panelText}`}>
                 Every time you save, we keep a copy. Restore an older one if you change your mind.
               </p>
               <VersionHistory
@@ -271,11 +316,18 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               />
             </section>
 
-            <section aria-labelledby="delete-title" className={`${panelClass} border-red-100`}>
-              <h2 id="delete-title" className={panelTitle}>
+            <section
+              aria-labelledby="delete-title"
+              className={`rounded-2xl border border-red-200/70 bg-white p-5 sm:p-6 ${cardShadow}`}
+            >
+              <PanelHeading
+                id="delete-title"
+                tone="red"
+                icon={<TrashIcon className="size-[18px]" />}
+              >
                 Delete website
-              </h2>
-              <p className={`mt-1 mb-4 max-w-[60ch] ${panelText}`}>
+              </PanelHeading>
+              <p className={`mt-3 mb-4 max-w-[60ch] ${panelText}`}>
                 Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
               </p>
               <DeleteSiteButton

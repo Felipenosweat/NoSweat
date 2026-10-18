@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   if (!currentUser) {
     return (
       <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
-        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
             <nav aria-label="Main" className="flex items-center gap-3 sm:gap-6">
@@ -53,7 +53,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
             </nav>
           </div>
         </header>
-        <main id="main" className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+        <main
+          id="main"
+          className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24"
+        >
           {children}
         </main>
       </div>

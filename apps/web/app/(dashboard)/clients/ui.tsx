@@ -1,13 +1,13 @@
 import type { ClientStage } from "@nosweat/schema";
 import type { ReactNode, SVGProps } from "react";
-import { StatusBadge } from "@/components/DashboardUi";
+import { StatusBadge, sectionTitle as baseSectionTitle } from "@/components/DashboardUi";
 import { STAGE_LABELS, STAGE_TONES } from "@/lib/clients";
 
 // Peças visuais do módulo de clientes. Sem "use client": servem para server e client components.
 
 /** Classe dos campos de texto (igual ao compositor de posts). */
 export const fieldClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:border-red-500";
+  "w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:border-red-500";
 
 export const labelClass = "block text-[13px] font-medium text-ink";
 
@@ -15,11 +15,8 @@ export const hintClass = "mt-1.5 text-[13px] leading-5 text-slate-500";
 
 export const fieldErrorClass = "mt-1.5 text-[13px] leading-5 text-red-700";
 
-export const pageTitle =
-  "font-display text-3xl leading-tight font-bold tracking-[-0.03em] text-ink lg:text-[2.5rem]";
-
-export const sectionTitle =
-  "font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] text-ink";
+// Título de seção: o mesmo do painel inteiro (DashboardUi).
+export const sectionTitle = baseSectionTitle;
 
 /** Selo da etapa do cliente. */
 export function StageBadge({ stage }: { stage: ClientStage }) {

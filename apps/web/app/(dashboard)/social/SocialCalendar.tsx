@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
+  cardClass,
   focusRing,
   panelClass,
   panelText,
@@ -163,8 +164,8 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
   if (!state || !month || !tz) {
     return (
       <div className="mt-8 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
-        <div className="h-36 animate-pulse rounded-xl bg-slate-200/60 motion-reduce:animate-none" />
-        <div className="h-96 animate-pulse rounded-xl bg-slate-200/60 motion-reduce:animate-none" />
+        <div className="h-36 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
+        <div className="h-96 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
       </div>
     );
   }
@@ -195,7 +196,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
         {message}
       </div>
       {message && (
-        <p className="mt-6 flex items-start justify-between gap-3 rounded-lg bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
+        <p className="mt-6 flex items-start justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
           <span>{message}</span>
           <button
             type="button"
@@ -265,14 +266,14 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
         </section>
       </div>
 
-      <section aria-labelledby="calendar-heading" className="mt-8">
+      <section aria-labelledby="calendar-heading" className="mt-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setMonth(shiftMonth(month, -1))}
               aria-label="Previous month"
-              className={`inline-flex size-11 items-center justify-center rounded-lg text-slate-600 hover:bg-white hover:text-ink sm:size-10 ${focusRing}`}
+              className={`inline-flex size-11 items-center justify-center rounded-xl text-slate-600 transition-colors duration-150 hover:bg-slate-200/50 hover:text-ink sm:size-10 ${focusRing}`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -287,7 +288,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
             </button>
             <h2
               id="calendar-heading"
-              className="min-w-[11ch] text-center font-display text-xl font-semibold tracking-[-0.02em] text-ink tabular-nums"
+              className="min-w-[11ch] text-center font-display text-xl font-semibold tracking-[-0.012em] text-ink tabular-nums"
             >
               {monthLabel(month)}
             </h2>
@@ -295,7 +296,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
               type="button"
               onClick={() => setMonth(shiftMonth(month, 1))}
               aria-label="Next month"
-              className={`inline-flex size-11 items-center justify-center rounded-lg text-slate-600 hover:bg-white hover:text-ink sm:size-10 ${focusRing}`}
+              className={`inline-flex size-11 items-center justify-center rounded-xl text-slate-600 transition-colors duration-150 hover:bg-slate-200/50 hover:text-ink sm:size-10 ${focusRing}`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -334,9 +335,9 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
 
         <div aria-busy={loading} className={loading ? "opacity-60 transition-opacity" : undefined}>
           {/* ---------- grade do mês (md+) ---------- */}
-          <div className="mt-4 hidden overflow-hidden rounded-xl border border-slate-200 bg-white md:block">
+          <div className={`mt-4 hidden overflow-hidden md:block ${cardClass}`}>
             <div
-              className="grid grid-cols-7 border-b border-slate-200 bg-surface"
+              className="grid grid-cols-7 border-b border-slate-200/70 bg-slate-50/70"
               aria-hidden="true"
             >
               {WEEKDAYS.map((day) => (
@@ -371,7 +372,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                     <div className="flex items-center justify-between">
                       <span
                         className={`inline-flex size-7 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums ${
-                          isToday ? "bg-ink text-white" : past ? "text-slate-400" : "text-ink"
+                          isToday ? "bg-brand text-white" : past ? "text-slate-400" : "text-ink"
                         }`}
                       >
                         <span className="sr-only">{dayHeading(dateKey)}</span>
@@ -431,7 +432,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
           {/* ---------- lista (celular) ---------- */}
           <div className="mt-4 md:hidden">
             {dated.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center">
+              <div className={`px-5 py-10 text-center ${cardClass}`}>
                 <p className="text-[15px] font-medium text-ink">
                   Nothing planned for {monthLabel(month)}.
                 </p>
@@ -531,7 +532,7 @@ function AgendaRow({
     <button
       type="button"
       onClick={() => onOpen(post)}
-      className={`flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors duration-150 hover:border-slate-300 ${focusRing}`}
+      className={`flex w-full items-start gap-3 p-3 text-left transition-[border-color,box-shadow] duration-150 hover:border-slate-300/80 ${cardClass} ${focusRing}`}
     >
       {photo ? (
         // eslint-disable-next-line @next/next/no-img-element -- foto no storage (host externo)
@@ -598,10 +599,10 @@ function SettingsForm({
   }
 
   const field =
-    "mt-1 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
+    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
 
   return (
-    <details className="group mt-5 border-t border-slate-200 pt-4">
+    <details className="group mt-5 border-t border-slate-200/70 pt-4">
       <summary
         className={`inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-ink sm:min-h-10 [&::-webkit-details-marker]:hidden ${focusRing}`}
       >

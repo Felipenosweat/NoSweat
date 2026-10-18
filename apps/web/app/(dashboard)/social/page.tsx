@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { panelText } from "@/components/DashboardUi";
+import { PageHeader } from "@/components/DashboardUi";
 import { getViewer } from "@/server/auth/viewer";
 import { ReadOnlySocial, loadReadOnlySocial } from "./ReadOnlySocial";
 import { SocialCalendar } from "./SocialCalendar";
@@ -44,13 +44,15 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
     const data = await loadReadOnlySocial(viewer.ownerId);
     return (
       <div>
-        <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.03em] text-ink lg:text-[2.5rem]">
-          Social
-        </h1>
-        <p className={`mt-2 max-w-[60ch] ${panelText}`}>
-          Read-only list of this account&rsquo;s Instagram posts. Planning and approving are off
-          while you view another account.
-        </p>
+        <PageHeader
+          title="Social"
+          description={
+            <>
+              Read-only list of this account&rsquo;s Instagram posts. Planning and approving are off
+              while you view another account.
+            </>
+          }
+        />
         <ReadOnlySocial data={data} />
       </div>
     );
@@ -64,23 +66,21 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.03em] text-ink lg:text-[2.5rem]">
-        Social
-      </h1>
-      <p className={`mt-2 max-w-[60ch] ${panelText}`}>
-        Plan a month of Instagram posts in minutes. Nothing goes out until you approve it.
-      </p>
+      <PageHeader
+        title="Social"
+        description="Plan a month of Instagram posts in minutes. Nothing goes out until you approve it."
+      />
 
       {connected === "1" && !errorText && (
         <p
           role="status"
-          className="mt-6 rounded-lg bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
+          className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
         >
           Instagram connected. Approved posts will go out at their scheduled time.
         </p>
       )}
       {errorText && (
-        <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-[15px] text-red-700">
+        <p role="alert" className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-[15px] text-red-700">
           {errorText}
           {error === "payment_required" && (
             <>
@@ -98,7 +98,7 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
       {approvedCount > 0 && (
         <p
           role="status"
-          className="mt-6 rounded-lg bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
+          className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
         >
           {approvedCount} post{approvedCount === 1 ? "" : "s"} approved.
         </p>

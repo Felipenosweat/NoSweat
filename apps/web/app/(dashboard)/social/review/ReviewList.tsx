@@ -9,7 +9,13 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { focusRing, primaryButton, textButton } from "@/components/DashboardUi";
+import {
+  cardClass,
+  cardShadow,
+  focusRing,
+  primaryButton,
+  textButton,
+} from "@/components/DashboardUi";
 import {
   ErrorNote,
   byDate,
@@ -64,8 +70,8 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   if (!data) {
     return (
       <div className="mt-8 grid gap-4" aria-busy="true" aria-label="Loading your drafts">
-        <div className="h-48 animate-pulse rounded-xl bg-slate-200/60 motion-reduce:animate-none" />
-        <div className="h-48 animate-pulse rounded-xl bg-slate-200/60 motion-reduce:animate-none" />
+        <div className="h-48 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
+        <div className="h-48 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
       </div>
     );
   }
@@ -107,7 +113,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
 
   if (data.posts.length === 0) {
     return (
-      <div className="mt-8 rounded-xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
+      <div className={`mt-8 px-5 py-10 text-center ${cardClass}`}>
         <p className="text-[15px] font-medium text-ink">
           No drafts waiting in {monthLabel(data.month)}.
         </p>
@@ -132,8 +138,8 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
           return (
             <li
               key={post.id}
-              className={`rounded-xl border bg-white p-4 sm:p-5 ${
-                checked ? "border-slate-300" : "border-slate-200"
+              className={`rounded-2xl border bg-white p-4 sm:p-5 ${cardShadow} ${
+                checked ? "border-slate-300" : "border-slate-200/70"
               }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -221,7 +227,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
         </p>
       )}
 
-      <div className="sticky bottom-0 mt-6 -mx-5 max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200 bg-white/95 px-5 py-4 backdrop-blur-sm sm:mx-0 sm:rounded-xl sm:border">
+      <div className="sticky bottom-0 mt-6 -mx-5 max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200/70 bg-white/85 px-5 py-4 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border sm:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_12px_28px_-12px_rgb(7_27_51/0.16)]">
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"

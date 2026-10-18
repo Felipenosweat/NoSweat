@@ -4,7 +4,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
-import { focusRing, panelClass, secondaryButton, textButton } from "@/components/DashboardUi";
+import {
+  cardClass,
+  focusRing,
+  panelClass,
+  secondaryButton,
+  textButton,
+} from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import {
   CLIENTS_TIME_ZONE,
@@ -120,7 +126,7 @@ function ContactView({ client }: { client: Client }) {
     },
   ];
   return (
-    <dl className="mt-5 grid gap-3 border-t border-slate-200 pt-4 text-[15px] leading-6">
+    <dl className="mt-5 grid gap-3 border-t border-slate-200/70 pt-4 text-[15px] leading-6">
       {rows.map((row) => (
         <div key={row.label}>
           <dt className="text-[13px] font-medium text-slate-500">{row.label}</dt>
@@ -216,16 +222,26 @@ export default async function ClientPage({ params }: ClientPageProps) {
         {/* ---------- coluna da esquerda: contato, etapa, retorno e anotação ---------- */}
         <div className="grid gap-4">
           <section aria-labelledby="client-name" className={panelClass}>
-            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+            {/* Como um cartão de contato: avatar com a inicial, nome grande e a etapa (no HTML o
+                nome vem antes da etapa; a grade põe a etapa no canto de cima). */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3">
+              <span
+                aria-hidden="true"
+                className="col-start-1 row-start-1 grid size-14 place-items-center rounded-full bg-slate-100 font-display text-xl font-semibold text-slate-600"
+              >
+                {client.name.trim().charAt(0).toUpperCase() || "?"}
+              </span>
               <h1
                 id="client-name"
-                className="min-w-0 font-display text-2xl leading-tight font-bold tracking-[-0.025em] break-words text-ink"
+                className="col-span-2 row-start-2 mt-4 min-w-0 font-display text-2xl leading-tight font-bold tracking-[-0.02em] break-words text-ink"
               >
                 {client.name}
               </h1>
-              <StageBadge stage={client.stage} />
+              <span className="col-start-2 row-start-1">
+                <StageBadge stage={client.stage} />
+              </span>
             </div>
-            <p className="mt-1.5 text-[13px] text-slate-500">
+            <p className="mt-1 text-[13px] text-slate-500">
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>
@@ -282,12 +298,12 @@ export default async function ClientPage({ params }: ClientPageProps) {
           )}
 
           {activities.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-6 text-[15px] text-slate-600 sm:px-5">
+            <p className={`mt-4 px-4 py-6 text-[15px] text-slate-600 sm:px-5 ${cardClass}`}>
               Nothing here yet. Add a note after you talk to them, or log a job when it&rsquo;s
               done.
             </p>
           ) : (
-            <ol className="mt-4 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <ol className={`mt-4 divide-y divide-slate-200/70 overflow-hidden ${cardClass}`}>
               {activities.map((activity) => (
                 <TimelineItem key={activity.id} activity={activity} />
               ))}
@@ -297,7 +313,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
       </div>
 
       {!readOnly && (
-        <div className="mt-12 border-t border-slate-200 pt-6">
+        <div className="mt-12 border-t border-slate-200/70 pt-6">
           <DeleteClientButton clientId={client.id} name={client.name} />
         </div>
       )}

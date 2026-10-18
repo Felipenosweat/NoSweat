@@ -10,26 +10,32 @@ import {
   type SectionType,
   type Theme,
 } from "@nosweat/schema";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { z } from "zod";
-import { PublishDialog } from "../PublishDialog";
-import { AskAiPanel } from "./AskAiPanel";
+import { PublishDialog, type PublishState } from "../PublishDialog";
+import { AskAiPanel, type ChatMessage } from "./AskAiPanel";
 import { CanvasFrame, DESKTOP_QUERY, useMediaQuery, type Device } from "./CanvasFrame";
 import { ContentPanel } from "./ContentPanel";
 import { newSection } from "./defaults";
 import {
-  ArrowLeftIcon,
-  CheckIcon,
+  ChevronDownIcon,
   CloseIcon,
   DesktopIcon,
+  DocumentIcon,
+  ExpandIcon,
   ExternalIcon,
+  EyeIcon,
   PencilIcon,
   PhoneIcon,
+  RefreshIcon,
+  SidebarIcon,
   SparklesIcon,
   SwatchIcon,
   TabletIcon,
   UndoIcon,
+  UploadIcon,
 } from "./icons";
 import { CanvasMessage, postToCanvas, readMessage } from "./messages";
 import {
@@ -45,9 +51,9 @@ type Business = SiteSpec["business"];
 type TabId = "ai" | "content" | "style" | "sections" | "edit";
 type Tab = { id: TabId; label: string };
 
-// Computador: quatro abas. Celular: três (Edit junta Content e Sections na gaveta).
-const DESKTOP_TABS: Tab[] = [
-  { id: "ai", label: "Ask AI" },
+// Computador: "Preview" mostra a conversa com a IA; "Edit" mostra três abas (Content, Style,
+// Sections). Celular: três abas na gaveta (Edit junta Content e Sections).
+const EDIT_TABS: Tab[] = [
   { id: "content", label: "Content" },
   { id: "style", label: "Style" },
   { id: "sections", label: "Sections" },
@@ -63,6 +69,9 @@ const DEVICES: { id: Device; label: string; Icon: typeof DesktopIcon }[] = [
   { id: "tablet", label: "Tablet", Icon: TabletIcon },
   { id: "phone", label: "Phone", Icon: PhoneIcon },
 ];
+
+/** Largura do painel lateral no computador (o aviso flutuante se alinha a ela). */
+const PANEL_WIDTH = "lg:w-[380px]";
 
 const UNSAVED_FOR_AI = "Save your changes first, then ask the AI.";
 const OUT_OF_EDITS = "You’ve used today’s AI changes. More tomorrow.";
@@ -122,18 +131,30 @@ function missingGalleryAlt(spec: SiteSpec): string | null {
   return null;
 }
 
+/** Omit que preserva cada variante de uma união (o Omit direto junta tudo numa só). */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
 type Toast = { id: number; kind: "ok" | "error"; text: string; undo?: boolean };
 
 export function SiteEditor({
   siteId,
   initialSpec,
   status,
+  pendingChanges = false,
+  freeAddress,
+  hasDomain = false,
   aiEditsLeft: initialAiEditsLeft,
   isGuest = false,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
   status: "live" | "draft";
+  /** O rascunho salvo tem mudanças que ainda não estão no ar? */
+  pendingChanges?: boolean;
+  /** Endereço grátis (o atual, ou o que o site vai receber ao publicar). */
+  freeAddress: string;
+  /** O site já tem domínio próprio (o modal mostra "Manage domain"). */
+  hasDomain?: boolean;
   /** Pedidos à IA que ainda cabem hoje; `null` = sem limite. */
   aiEditsLeft: number | null;
   /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
@@ -147,8 +168,9 @@ export function SiteEditor({
 
   const [instruction, setInstruction] = useState("");
   const [aiPending, setAiPending] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [lastSummary, setLastSummary] = useState<string | null>(null);
+  /** Conversa desta sessão com a IA (pedidos, resultados e erros). */
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const nextMessageId = useRef(1);
   const [aiEditsLeft, setAiEditsLeft] = useState(initialAiEditsLeft);
   const [rewritingIndex, setRewritingIndex] = useState<number | null>(null);
   /** Versão anterior ao último pedido à IA, para o botão "Undo". */
@@ -158,7 +180,12 @@ export function SiteEditor({
 
   const isDesktop = useMediaQuery(DESKTOP_QUERY, true);
   const [tab, setTab] = useState<TabId>("ai");
+  /** Última aba de edição usada (o botão "Edit" do topo volta para ela). */
+  const [editTab, setEditTab] = useState<TabId>("content");
   const [sheetOpen, setSheetOpen] = useState(false);
+  /** Painel lateral visível no computador (o botão do topo esconde para ver só a prévia). */
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
   /** `null` = automático: computador no desktop, celular em telas pequenas. */
   const [chosenDevice, setChosenDevice] = useState<Device | null>(null);
   const device: Device = chosenDevice ?? (isDesktop ? "desktop" : "phone");
@@ -171,6 +198,7 @@ export function SiteEditor({
   const scrollPanelTo = useRef<number | null>(null);
   const sheetOpener = useRef<HTMLElement | null>(null);
   const sheet = useRef<HTMLElement>(null);
+  const previewArea = useRef<HTMLElement>(null);
   const latest = useRef({ spec, openSection });
 
   // As abas mudam com a largura (Edit no celular = Content + Sections no computador).
@@ -185,6 +213,17 @@ export function SiteEditor({
   const showToast = useCallback((next: Omit<Toast, "id">) => {
     setToast({ ...next, id: Date.now() });
   }, []);
+
+  /** Acrescenta uma mensagem à conversa com a IA. */
+  function say(message: DistributiveOmit<ChatMessage, "id">) {
+    const id = nextMessageId.current++;
+    setMessages((current) => [...current, { ...message, id } as ChatMessage]);
+  }
+
+  function selectTab(next: TabId) {
+    setTab(next);
+    if (next !== "ai") setEditTab(next);
+  }
 
   // ---------- Conversa com a prévia (iframe) ----------
 
@@ -215,7 +254,9 @@ export function SiteEditor({
       scrollPanelTo.current = message.index;
       setOpenSection(message.index);
       setTab(desktop ? "sections" : "edit");
+      setEditTab(desktop ? "sections" : "edit");
       setSheetOpen(true);
+      setPanelOpen(true);
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
@@ -256,8 +297,35 @@ export function SiteEditor({
 
   function openSheet(next: TabId, opener: HTMLElement) {
     sheetOpener.current = opener;
-    setTab(next);
+    selectTab(next);
     setSheetOpen(true);
+  }
+
+  // ---------- Tela cheia e recarregar a prévia ----------
+
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement !== null);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+      return;
+    }
+    const area = previewArea.current;
+    // Sem a API de tela cheia (ex.: iPhone): esconde o painel para a prévia ocupar tudo.
+    if (!area || typeof area.requestFullscreen !== "function") {
+      setPanelOpen((open) => !open);
+      return;
+    }
+    area.requestFullscreen().catch(() => setPanelOpen(false));
+  }
+
+  /** Recarrega a prévia; ao carregar ela pede o rascunho de novo ("ready"). */
+  function reloadPreview() {
+    iframe.current?.contentWindow?.location.reload();
   }
 
   function closeSheet() {
@@ -350,8 +418,8 @@ export function SiteEditor({
 
   async function runAi(text: string, options: { fromPrompt: boolean; sectionIndex?: number }) {
     setAiPending(true);
-    setAiError(null);
     setRewritingIndex(options.sectionIndex ?? null);
+    say({ role: "user", text: text.trim() });
     const previous = spec;
     try {
       const res = await fetch(`/api/sites/${siteId}/ai-edit`, {
@@ -366,7 +434,7 @@ export function SiteEditor({
         const message = apiError.success
           ? apiError.data.error.message
           : "The AI couldn't make that change.";
-        setAiError(message);
+        say({ role: "assistant", kind: "error", text: message });
         if (!options.fromPrompt) showToast({ kind: "error", text: message });
         return;
       }
@@ -375,12 +443,19 @@ export function SiteEditor({
       setDirty(false);
       setBeforeAi(previous);
       setThemeBeforeShuffle(null);
-      setLastSummary(result.summary);
       setAiEditsLeft((left) => (left === null ? null : Math.max(0, left - 1)));
+      // A IA salvou um rascunho novo: se o site está no ar, agora há mudanças para publicar.
+      setPublishState((state) => (state === "draft" ? state : "outdated"));
+      say({
+        role: "assistant",
+        kind: "done",
+        text: result.summary,
+        steps: ["Updated the site", "Saved as a draft"],
+      });
       if (options.fromPrompt) setInstruction("");
       showToast({ kind: "ok", text: result.summary, undo: true });
     } catch {
-      setAiError(OFFLINE);
+      say({ role: "assistant", kind: "error", text: OFFLINE });
       if (!options.fromPrompt) showToast({ kind: "error", text: OFFLINE });
     } finally {
       setAiPending(false);
@@ -399,8 +474,12 @@ export function SiteEditor({
     if (!beforeAi) return;
     setSpec(beforeAi);
     setBeforeAi(null);
-    setLastSummary(null);
     setDirty(true);
+    say({
+      role: "assistant",
+      kind: "note",
+      text: "Change undone. Click “Save” to keep it this way.",
+    });
     showToast({ kind: "ok", text: "Change undone. Click “Save” to keep it this way." });
   }
 
@@ -439,6 +518,7 @@ export function SiteEditor({
       const saved = UpdateSiteResponse.parse(body).spec;
       setSpec(saved);
       setDirty(false);
+      setPublishState((state) => (state === "draft" ? state : "outdated"));
       // A galeria vazia saiu ao salvar: os índices mudaram, então nenhuma seção fica aberta.
       if (saved.sections.length !== spec.sections.length) setOpenSection(null);
       showToast({
@@ -454,16 +534,29 @@ export function SiteEditor({
     }
   }
 
-  // Publicar direto do editor: salva o que estiver pendente e publica o rascunho salvo.
+  // Publicar pelo modal: salva o que estiver pendente e publica o rascunho salvo.
   const [publishing, setPublishing] = useState(false);
-  const [published, setPublished] = useState(false);
-  const [liveUrl, setLiveUrl] = useState<string | null>(null);
+  const [publishState, setPublishState] = useState<PublishState>(
+    status === "draft" ? "draft" : pendingChanges ? "outdated" : "current",
+  );
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [address, setAddress] = useState(freeAddress);
   const publishRef = useRef<HTMLButtonElement>(null);
 
+  function openPublish() {
+    setPublishError(null);
+    setPublishOpen(true);
+  }
+
   async function publish() {
-    if (dirty && !(await save())) return;
+    // Se o rascunho não salva, fecha o modal para o erro (barra vermelha do topo) aparecer.
+    if (dirty && !(await save())) {
+      setPublishOpen(false);
+      return;
+    }
     setPublishing(true);
-    setSaveError(null);
+    setPublishError(null);
     try {
       const res = await fetch(`/api/sites/${siteId}/publish`, { method: "POST" });
       const body: unknown = await res.json().catch(() => null);
@@ -474,15 +567,15 @@ export function SiteEditor({
           window.location.assign(`/billing?site=${encodeURIComponent(siteId)}`);
           return;
         }
-        setSaveError(
+        setPublishError(
           apiError.success ? apiError.data.error.message : "We couldn't publish your site.",
         );
         return;
       }
-      setLiveUrl(PublishSiteResponse.parse(body).url);
-      setPublished(true);
+      setAddress(PublishSiteResponse.parse(body).url);
+      setPublishState("current");
     } catch {
-      setSaveError(OFFLINE);
+      setPublishError(OFFLINE);
     } finally {
       setPublishing(false);
     }
@@ -509,19 +602,36 @@ export function SiteEditor({
 
   // ---------- Desenho ----------
 
+  const editMode = activeTab !== "ai";
+  // Mudanças ainda não salvas também contam como "não publicadas".
+  const shownPublishState: PublishState =
+    publishState === "current" && dirty ? "outdated" : publishState;
+
+  /** "+" do campo da IA → "Add your photos": abre as seções na foto do topo. */
+  function openPhotos() {
+    const hero = spec.sections.findIndex((section) => section.type === "hero");
+    selectTab(isDesktop ? "sections" : "edit");
+    if (hero >= 0) {
+      scrollCanvasNext.current = true;
+      scrollPanelTo.current = hero;
+      setOpenSection(hero);
+    }
+  }
+
   const tabPanel =
     activeTab === "ai" ? (
       <AskAiPanel
+        messages={messages}
         instruction={instruction}
         onInstructionChange={setInstruction}
         onSubmit={() => void runAi(instruction, { fromPrompt: true })}
         pending={aiPending}
         blockedReason={dirty ? UNSAVED_FOR_AI : null}
         aiEditsLeft={aiEditsLeft}
-        lastSummary={lastSummary}
         canUndo={beforeAi !== null}
         onUndo={undoAi}
-        error={aiError}
+        onAddPhotos={openPhotos}
+        historyHref={isGuest ? null : `/sites/${siteId}`}
       />
     ) : activeTab === "style" ? (
       <StylePanel
@@ -558,111 +668,219 @@ export function SiteEditor({
       </>
     );
 
+  // Abas: no celular sempre (na gaveta); no computador só no modo "Edit".
+  const hasTabs = !isDesktop || editMode;
   const labelledBy = isDesktop ? `tab-d-${activeTab}` : `tab-m-${activeTab}`;
+  const toolButton = `inline-flex size-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-ink motion-reduce:transition-none ${focusRing}`;
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-surface text-[15px] text-ink">
       {/* ---------- Barra do topo ---------- */}
-      <header className="relative z-30 flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-2 sm:px-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-4 lg:px-4">
-        <div className="flex min-w-0 flex-1 items-center gap-1 sm:gap-2">
+      <header className="relative z-30 shrink-0 border-b border-slate-200 bg-white">
+        {/* Linha 1: marca e nome do site; estado, salvar e publicar. */}
+        <div className="flex h-14 items-center gap-1.5 px-2 sm:gap-2 sm:px-3 lg:px-4">
           <Link
             // Visitante volta para a prévia (a página do site exige conta).
             href={isGuest ? `/sites/preview/${siteId}` : `/sites/${siteId}`}
-            className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-2.5 font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-ink motion-reduce:transition-none ${focusRing}`}
+            title={isGuest ? "Back to preview" : "Back to site page"}
+            className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-slate-50 motion-reduce:transition-none ${focusRing}`}
           >
-            <ArrowLeftIcon className="size-4" />
-            <span className="sr-only sm:not-sr-only">Back</span>
-            <span className="sr-only"> to site page</span>
+            <Image
+              src="/brand/nosweat-mark-64.png"
+              alt=""
+              width={26}
+              height={26}
+              className="size-[26px]"
+            />
+            <span className="sr-only">{isGuest ? "Back to preview" : "Back to site page"}</span>
           </Link>
-          <span aria-hidden="true" className="hidden h-5 w-px shrink-0 bg-slate-200 sm:block" />
           <h1 className="min-w-0 truncate font-display text-[15px] font-semibold tracking-[-0.01em]">
             {spec.business.name || "Your website"}
           </h1>
-          <StatusBadge status={published ? "live" : status} />
-        </div>
+          {/* Celular: só a bolinha do estado de publicação (o texto aparece em telas maiores). */}
+          <span className="inline-flex shrink-0 md:hidden">
+            <StatusDot state={shownPublishState} />
+            <span className="sr-only">{publishLabel(shownPublishState)}</span>
+          </span>
 
-        <div role="group" aria-label="Preview size" className="hidden lg:flex">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-surface p-0.5">
-            {DEVICES.map(({ id, label, Icon }) => {
-              const active = device === id;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={active}
-                  title={label}
-                  onClick={() => setChosenDevice(id)}
-                  className={`relative inline-flex h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors duration-150 after:absolute after:inset-x-0 after:-inset-y-1 after:content-[''] motion-reduce:transition-none ${focusRing} ${
-                    active
-                      ? "bg-white text-ink shadow-[0_1px_2px_rgb(7_27_51/.08)] ring-1 ring-slate-200"
-                      : "text-slate-500 hover:text-ink"
-                  }`}
-                >
-                  <Icon className="size-[18px]" />
-                  <span className="sr-only xl:not-sr-only">{label}</span>
-                </button>
-              );
-            })}
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <EditorStatus saving={saving} dirty={dirty} publishState={shownPublishState} />
+            <a
+              href={`/sites/preview/${siteId}`}
+              target="_blank"
+              rel="noopener"
+              className={`${secondaryButton} w-11 px-0 lg:hidden`}
+            >
+              <ExternalIcon className="size-4" />
+              <span className="sr-only">Preview saved draft (opens in a new tab)</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => void save()}
+              disabled={!canSave}
+              aria-keyshortcuts="Control+S Meta+S"
+              className={`${secondaryButton} max-sm:px-3 sm:min-w-[4.5rem] lg:min-h-9`}
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            {isGuest ? (
+              // Publicar exige conta: depois do cadastro o site passa para a conta e volta aqui.
+              <Link
+                href={`/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`}
+                onClick={(event) => {
+                  if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
+                    event.preventDefault();
+                  }
+                }}
+                className={`${primaryButton} lg:min-h-9`}
+              >
+                <span className="sm:hidden">Sign up</span>
+                <span className="hidden sm:inline">Sign up to publish</span>
+              </Link>
+            ) : (
+              <button
+                ref={publishRef}
+                type="button"
+                onClick={openPublish}
+                aria-haspopup="dialog"
+                className={`${primaryButton} lg:min-h-9`}
+              >
+                <UploadIcon className="hidden size-4 sm:block" />
+                Publish
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-2">
-          <SaveState saving={saving} dirty={dirty} />
-          <a
-            href={`/sites/preview/${siteId}`}
-            target="_blank"
-            rel="noopener"
-            className={`${secondaryButton} max-sm:w-11 max-sm:px-0`}
+        {/* Linha 2 (computador): painel, modo, página, tela cheia, aparelhos e recarregar. */}
+        <div className="hidden h-12 items-center gap-3 border-t border-slate-100 px-4 lg:flex">
+          <div
+            className={`flex shrink-0 items-center gap-2 ${panelOpen ? "w-[calc(380px-2rem)]" : ""}`}
           >
-            <ExternalIcon className="size-4 sm:hidden" />
-            <span className="sr-only sm:not-sr-only">Preview</span>
-            <span className="sr-only"> saved draft (opens in a new tab)</span>
-          </a>
-          <button
-            type="button"
-            onClick={() => void save()}
-            disabled={!canSave}
-            aria-keyshortcuts="Control+S Meta+S"
-            className={`${secondaryButton} max-sm:px-3 sm:min-w-[4.5rem]`}
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
-          {isGuest ? (
-            // Publicar exige conta: depois do cadastro o site passa para a conta e volta aqui.
-            <Link
-              href={`/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`}
-              onClick={(event) => {
-                if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
-                  event.preventDefault();
-                }
-              }}
-              className={primaryButton}
-            >
-              <span className="sm:hidden">Sign up</span>
-              <span className="hidden sm:inline">Sign up to publish</span>
-            </Link>
-          ) : (
             <button
-              ref={publishRef}
               type="button"
-              onClick={() => void publish()}
-              disabled={publishing || saving}
-              aria-busy={publishing}
-              className={`${primaryButton} disabled:cursor-wait`}
+              onClick={() => setPanelOpen((open) => !open)}
+              aria-pressed={panelOpen}
+              title={panelOpen ? "Hide side panel" : "Show side panel"}
+              className={toolButton}
             >
-              {publishing ? "Publishing…" : "Publish"}
+              <SidebarIcon className="size-[18px]" />
+              <span className="sr-only">Side panel</span>
             </button>
-          )}
+            <div
+              role="group"
+              aria-label="Side panel mode"
+              className="inline-flex rounded-xl bg-slate-100 p-0.5"
+            >
+              <ModeButton
+                active={!editMode}
+                onClick={() => {
+                  selectTab("ai");
+                  setPanelOpen(true);
+                }}
+                Icon={EyeIcon}
+                label="Preview"
+              />
+              <ModeButton
+                active={editMode}
+                onClick={() => {
+                  selectTab(editTab);
+                  setPanelOpen(true);
+                }}
+                Icon={PencilIcon}
+                label="Edit"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <label htmlFor="editor-page" className="sr-only">
+              Page
+            </label>
+            <div className="relative">
+              <DocumentIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-500" />
+              <select
+                id="editor-page"
+                defaultValue="home"
+                className={`h-9 min-w-[10rem] cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white pr-9 pl-9 text-[13px] font-medium text-ink hover:border-slate-300 ${focusRing}`}
+              >
+                <option value="home">Homepage</option>
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-slate-500" />
+            </div>
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              title="Full screen preview"
+              className={toolButton}
+            >
+              <ExpandIcon className="size-[18px]" />
+              <span className="sr-only">Full screen preview</span>
+            </button>
+          </div>
+
+          <div className="ml-auto flex items-center gap-1">
+            <div
+              role="group"
+              aria-label="Preview size"
+              className="inline-flex rounded-xl bg-slate-100 p-0.5"
+            >
+              {DEVICES.map(({ id, label, Icon }) => {
+                const active = device === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={active}
+                    title={label}
+                    onClick={() => setChosenDevice(id)}
+                    className={`inline-flex h-8 items-center gap-1.5 rounded-[10px] px-2.5 text-[13px] font-medium transition-colors duration-150 motion-reduce:transition-none ${focusRing} ${
+                      active
+                        ? "bg-white text-ink shadow-[0_1px_2px_rgb(7_27_51/.08)]"
+                        : "text-slate-500 hover:text-ink"
+                    }`}
+                  >
+                    <Icon className="size-[18px]" />
+                    <span className="sr-only">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={reloadPreview}
+              title="Reload preview"
+              className={toolButton}
+            >
+              <RefreshIcon className="size-[18px]" />
+              <span className="sr-only">Reload preview</span>
+            </button>
+            <a
+              href={`/sites/preview/${siteId}`}
+              target="_blank"
+              rel="noopener"
+              title="Open saved draft in a new tab"
+              className={toolButton}
+            >
+              <ExternalIcon className="size-[18px]" />
+              <span className="sr-only">Preview saved draft (opens in a new tab)</span>
+            </a>
+          </div>
         </div>
       </header>
 
-      {liveUrl && (
+      {!isGuest && (
         <PublishDialog
-          open
-          url={liveUrl}
+          open={publishOpen}
+          onClose={() => setPublishOpen(false)}
           siteId={siteId}
           siteName={spec.business.name || "Your website"}
-          onClose={() => setLiveUrl(null)}
+          state={shownPublishState}
+          address={address}
+          onPublish={() => void publish()}
+          pending={publishing || saving}
+          error={publishError}
+          domain={{ href: `/sites/${siteId}#domain`, samePage: false, connected: hasDomain }}
           returnFocusTo={() => publishRef.current}
         />
       )}
@@ -677,7 +895,7 @@ export function SiteEditor({
             type="button"
             onClick={() => setSaveError(null)}
             aria-label="Dismiss message"
-            className={`flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-red-100 ${focusRing}`}
+            className={`flex size-11 shrink-0 items-center justify-center rounded-xl hover:bg-red-100 ${focusRing}`}
           >
             <CloseIcon className="size-4" />
           </button>
@@ -685,7 +903,7 @@ export function SiteEditor({
       )}
 
       <div className="relative flex min-h-0 flex-1">
-        {/* ---------- Trilho (computador) / gaveta (celular) ---------- */}
+        {/* ---------- Painel (computador) / gaveta (celular) ---------- */}
         <aside
           ref={sheet}
           tabIndex={-1}
@@ -693,9 +911,9 @@ export function SiteEditor({
           onKeyDown={(event: KeyboardEvent) => {
             if (event.key === "Escape" && !isDesktop && sheetOpen) closeSheet();
           }}
-          className={`fixed inset-x-0 bottom-0 z-40 flex outline-none md:max-lg:mx-auto md:max-lg:max-w-xl md:max-lg:border-x h-[min(80dvh,44rem)] flex-col rounded-t-xl border-t border-slate-200 bg-white shadow-[0_-8px_24px_-8px_rgb(7_27_51/.18)] transition-[translate,visibility] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none lg:visible lg:static lg:z-auto lg:h-auto lg:w-[360px] lg:shrink-0 lg:translate-y-0 lg:rounded-none lg:border-t-0 lg:border-r lg:shadow-none lg:transition-none ${
+          className={`fixed inset-x-0 bottom-0 z-40 flex h-[min(80dvh,44rem)] flex-col rounded-t-2xl border-t border-slate-200 bg-white shadow-[0_-8px_24px_-8px_rgb(7_27_51/.18)] outline-none transition-[translate,visibility] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none md:max-lg:mx-auto md:max-lg:max-w-xl md:max-lg:border-x lg:visible lg:static lg:z-auto lg:h-auto ${PANEL_WIDTH} lg:shrink-0 lg:translate-y-0 lg:rounded-none lg:border-t-0 lg:border-r lg:shadow-none lg:transition-none ${
             sheetOpen ? "visible translate-y-0" : "invisible translate-y-full"
-          }`}
+          } ${panelOpen ? "" : "lg:hidden"}`}
         >
           {/* Celular: alça, abas e fechar. */}
           <div className="shrink-0 lg:hidden">
@@ -703,28 +921,37 @@ export function SiteEditor({
               <span className="h-1 w-9 rounded-full bg-slate-300" />
             </div>
             <div className="flex items-center border-b border-slate-200 pr-1 pl-2">
-              <TabList tabs={MOBILE_TABS} active={activeTab} onSelect={setTab} idPrefix="tab-m" />
+              <TabList
+                tabs={MOBILE_TABS}
+                active={activeTab}
+                onSelect={selectTab}
+                idPrefix="tab-m"
+              />
               <button
                 type="button"
                 onClick={closeSheet}
                 aria-label="Close panel"
-                className={`ml-auto flex size-11 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-ink ${focusRing}`}
+                className={`ml-auto flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 hover:text-ink ${focusRing}`}
               >
                 <CloseIcon className="size-5" />
               </button>
             </div>
           </div>
-          {/* Computador: quatro abas. */}
-          <div className="hidden shrink-0 border-b border-slate-200 px-2 lg:block">
-            <TabList tabs={DESKTOP_TABS} active={activeTab} onSelect={setTab} idPrefix="tab-d" />
-          </div>
+          {/* Computador, modo "Edit": três abas. */}
+          {editMode && (
+            <div className="hidden shrink-0 border-b border-slate-200 px-2 lg:block">
+              <TabList tabs={EDIT_TABS} active={activeTab} onSelect={selectTab} idPrefix="tab-d" />
+            </div>
+          )}
 
           <div
             key={activeTab}
-            role="tabpanel"
+            role={hasTabs ? "tabpanel" : undefined}
             id="editor-tabpanel"
-            aria-labelledby={labelledBy}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[env(safe-area-inset-bottom)]"
+            aria-labelledby={hasTabs ? labelledBy : undefined}
+            className={`min-h-0 flex-1 pb-[env(safe-area-inset-bottom)] ${
+              activeTab === "ai" ? "flex flex-col" : "overflow-y-auto overscroll-contain"
+            }`}
           >
             {tabPanel}
           </div>
@@ -732,9 +959,20 @@ export function SiteEditor({
 
         {/* ---------- Prévia ---------- */}
         <main
+          ref={previewArea}
           aria-label="Preview"
-          className="flex min-w-0 flex-1 flex-col max-lg:pb-[calc(3.5rem+max(0.625rem,env(safe-area-inset-bottom)))]"
+          className="relative flex min-w-0 flex-1 flex-col bg-surface max-lg:pb-[calc(3.5rem+max(0.625rem,env(safe-area-inset-bottom)))]"
         >
+          {fullscreen && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className={`${secondaryButton} absolute top-4 right-4 z-10 shadow-[0_8px_24px_-8px_rgb(7_27_51/.25)]`}
+            >
+              <CloseIcon className="size-4" />
+              Exit full screen
+            </button>
+          )}
           <CanvasFrame src={`/sites/${siteId}/edit/canvas`} device={device} iframeRef={iframe} />
         </main>
       </div>
@@ -751,16 +989,16 @@ export function SiteEditor({
             type="button"
             aria-controls="editor-tabpanel"
             onClick={(event) => openSheet("ai", event.currentTarget)}
-            className={`inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 font-semibold text-ink shadow-[0_1px_2px_rgb(7_27_51/.06),0_8px_24px_-8px_rgb(7_27_51/.12)] active:translate-y-px ${focusRing}`}
+            className={`inline-flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-left text-slate-500 shadow-[0_1px_2px_rgb(7_27_51/.04)] active:translate-y-px ${focusRing}`}
           >
-            <SparklesIcon className="size-5 text-brand" />
-            Ask AI
+            <SparklesIcon className="size-5 shrink-0 text-brand" />
+            <span className="truncate">Ask for a change…</span>
           </button>
           <button
             type="button"
             aria-controls="editor-tabpanel"
             onClick={(event) => openSheet("edit", event.currentTarget)}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 font-medium text-slate-700 hover:bg-slate-50 ${focusRing}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-medium text-slate-700 hover:bg-slate-50 ${focusRing}`}
           >
             <PencilIcon className="size-5 text-slate-500" />
             Edit
@@ -769,7 +1007,7 @@ export function SiteEditor({
             type="button"
             aria-controls="editor-tabpanel"
             onClick={(event) => openSheet("style", event.currentTarget)}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 font-medium text-slate-700 hover:bg-slate-50 ${focusRing}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-medium text-slate-700 hover:bg-slate-50 ${focusRing}`}
           >
             <SwatchIcon className="size-5 text-slate-500" />
             Style
@@ -780,13 +1018,15 @@ export function SiteEditor({
       {/* ---------- Aviso (salvo, mudança da IA com Undo, erro) ---------- */}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed inset-x-3 top-[4.25rem] z-50 flex justify-center lg:inset-x-auto lg:top-auto lg:bottom-6 lg:left-[calc(360px+1.5rem)] lg:justify-start"
+        className={`pointer-events-none fixed inset-x-3 top-[4.25rem] z-50 flex justify-center lg:inset-x-auto lg:top-auto lg:bottom-6 lg:justify-start ${
+          panelOpen ? "lg:left-[calc(380px+1.5rem)]" : "lg:left-6"
+        }`}
       >
         {toast && (
           <div
             key={toast.id}
             role={toast.kind === "error" ? "alert" : "status"}
-            className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl bg-ink py-2 pr-2 pl-4 text-[13px] text-white shadow-[0_1px_2px_rgb(7_27_51/.06),0_24px_48px_-12px_rgb(7_27_51/.25)] transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none"
+            className="pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl bg-ink py-2 pr-2 pl-4 text-[13px] text-white shadow-[0_1px_2px_rgb(7_27_51/.06),0_24px_48px_-12px_rgb(7_27_51/.25)] transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none"
           >
             <span
               aria-hidden="true"
@@ -801,7 +1041,7 @@ export function SiteEditor({
                 onClick={() => {
                   undoAi();
                 }}
-                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-3 font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 <UndoIcon className="size-4" />
                 Undo
@@ -811,7 +1051,7 @@ export function SiteEditor({
               type="button"
               onClick={() => setToast(null)}
               aria-label="Dismiss"
-              className="flex size-11 shrink-0 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="flex size-11 shrink-0 items-center justify-center rounded-xl text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <CloseIcon className="size-4" />
             </button>
@@ -822,38 +1062,79 @@ export function SiteEditor({
   );
 }
 
-function StatusBadge({ status }: { status: "live" | "draft" }) {
-  return (
-    <span className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-lg bg-white px-2 text-[12px] font-medium text-ink ring-1 ring-slate-200">
-      <span
-        aria-hidden="true"
-        className={`size-1.5 rounded-full ${status === "live" ? "bg-emerald-500" : "bg-slate-400"}`}
-      />
-      {status === "live" ? "Live" : "Draft"}
-    </span>
-  );
+function publishLabel(state: PublishState): string {
+  return state === "draft"
+    ? "Not published"
+    : state === "outdated"
+      ? "Changes not published"
+      : "Published";
 }
 
-function SaveState({ saving, dirty }: { saving: boolean; dirty: boolean }) {
+function StatusDot({ state }: { state: PublishState | "saved" | "unsaved" | "saving" }) {
+  const color =
+    state === "current" || state === "saved"
+      ? "bg-emerald-500"
+      : state === "outdated" || state === "unsaved"
+        ? "bg-amber-500"
+        : "bg-slate-400";
+  return <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${color}`} />;
+}
+
+/** "● Saved · ● Not published": estado do rascunho e da publicação (telas médias para cima). */
+function EditorStatus({
+  saving,
+  dirty,
+  publishState,
+}: {
+  saving: boolean;
+  dirty: boolean;
+  publishState: PublishState;
+}) {
   return (
     <p
       role="status"
-      className="hidden items-center gap-1.5 text-[13px] whitespace-nowrap text-slate-500 md:flex"
+      className="mr-1 hidden items-center gap-3 text-[13px] whitespace-nowrap text-slate-500 md:flex"
     >
-      {saving ? (
-        "Saving…"
-      ) : dirty ? (
-        <>
-          <span aria-hidden="true" className="size-1.5 rounded-full bg-amber-500" />
-          <span className="text-slate-700">Unsaved changes</span>
-        </>
-      ) : (
-        <>
-          <CheckIcon className="size-3.5" />
-          Saved
-        </>
-      )}
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot state={saving ? "saving" : dirty ? "unsaved" : "saved"} />
+        <span className={dirty && !saving ? "text-slate-700" : ""}>
+          {saving ? "Saving…" : dirty ? "Unsaved changes" : "Saved"}
+        </span>
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot state={publishState} />
+        {publishLabel(publishState)}
+      </span>
     </p>
+  );
+}
+
+/** Botão do seletor "Preview / Edit" do topo. */
+function ModeButton({
+  active,
+  onClick,
+  Icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  Icon: typeof EyeIcon;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`inline-flex h-8 items-center gap-1.5 rounded-[10px] px-3 text-[13px] font-medium transition-colors duration-150 motion-reduce:transition-none ${focusRing} ${
+        active
+          ? "bg-white text-ink shadow-[0_1px_2px_rgb(7_27_51/.08)]"
+          : "text-slate-500 hover:text-ink"
+      }`}
+    >
+      <Icon className="size-4" />
+      {label}
+    </button>
   );
 }
 

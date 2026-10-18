@@ -2,9 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { panelClass, panelText, panelTitle, textButton } from "@/components/DashboardUi";
+import {
+  IconTile,
+  PageHeader,
+  panelClass,
+  panelText,
+  panelTitle,
+  textButton,
+} from "@/components/DashboardUi";
 import { getViewer } from "@/server/auth/viewer";
 import { getBillingStatus, PLANS } from "@/server/billing";
+import { BillingIcon } from "../NavIcons";
 import { BillingPlans, type PlanCard, type SalesContact } from "./BillingPlans";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
@@ -43,16 +51,14 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   }));
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-ink">
-        Plans and billing
-      </h1>
-      <p className={`mt-2 max-w-[60ch] ${panelText}`}>
-        Building and previewing is free. A plan puts your website live and keeps it there.
-      </p>
+    <div className="max-w-4xl">
+      <PageHeader
+        title="Plans and billing"
+        description="Building and previewing is free. A plan puts your website live and keeps it there."
+      />
 
       {status === "success" && (
-        <p role="status" className="mt-6 rounded-lg bg-emerald-50 px-4 py-3 text-emerald-800">
+        <p role="status" className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-emerald-800">
           Payment received. It can take a few seconds to show here.
           {siteId && (
             <>
@@ -65,21 +71,26 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         </p>
       )}
       {status === "cancelled" && (
-        <p role="status" className="mt-6 rounded-lg bg-slate-100 px-4 py-3 text-slate-700">
+        <p role="status" className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-slate-700">
           No payment was made. You can pick a plan whenever you&rsquo;re ready.
         </p>
       )}
 
       {!billing.enabled ? (
-        <section className={`${panelClass} mt-8`}>
-          <h2 className={panelTitle}>Publishing is free for now</h2>
-          <p className={`mt-1 ${panelText}`}>
-            Paid plans aren&rsquo;t live yet, so nothing is charged. You can publish your website
-            and connect your domain today.
-          </p>
-          <Link href="/dashboard" className={`${textButton} mt-3`}>
-            Back to my sites
-          </Link>
+        <section className={`${panelClass} mt-8 flex items-start gap-4`}>
+          <IconTile tone="emerald">
+            <BillingIcon className="size-[18px]" />
+          </IconTile>
+          <div className="min-w-0">
+            <h2 className={panelTitle}>Publishing is free for now</h2>
+            <p className={`mt-1 ${panelText}`}>
+              Paid plans aren&rsquo;t live yet, so nothing is charged. You can publish your website
+              and connect your domain today.
+            </p>
+            <Link href="/dashboard" className={`${textButton} mt-2 -ml-1`}>
+              Back to my sites
+            </Link>
+          </div>
         </section>
       ) : (
         <BillingPlans plans={plans} current={billing} siteId={siteId} contact={contact} />
