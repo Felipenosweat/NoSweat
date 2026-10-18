@@ -4,7 +4,15 @@ import type { ReactNode } from "react";
 import { getPhoto } from "@/components/photos";
 import { liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
-import { StatusBadge, focusRing, primaryButton, secondaryButton, textButton } from "./DashboardUi";
+import {
+  StatusBadge,
+  cardClass,
+  cardShadow,
+  focusRing,
+  primaryButton,
+  secondaryButton,
+  textButton,
+} from "./DashboardUi";
 import { DeleteSiteButton } from "./DeleteSiteButton";
 import { SiteThumb } from "./SiteThumb";
 
@@ -22,7 +30,7 @@ function DefaultEmptyState() {
   return (
     <section
       aria-labelledby="empty-heading"
-      className="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white lg:grid lg:grid-cols-12"
+      className={`mt-8 overflow-hidden lg:grid lg:grid-cols-12 ${cardClass}`}
     >
       <div className="flex flex-col justify-center p-6 sm:p-10 lg:col-span-6 lg:p-12">
         <h2
@@ -44,7 +52,7 @@ function DefaultEmptyState() {
 
       {photo ? (
         <figure className="p-4 pt-0 sm:p-6 sm:pt-0 lg:col-span-6 lg:p-6 lg:pl-0">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-black/5">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-slate-900/5">
             <Image
               src={photo.src}
               alt={photo.alt}
@@ -68,7 +76,7 @@ function DefaultEmptyState() {
           </figcaption>
         </figure>
       ) : (
-        <ol className="border-t border-slate-200 bg-surface p-6 sm:p-10 lg:col-span-6 lg:border-t-0 lg:border-l lg:p-12">
+        <ol className="border-t border-slate-200/70 bg-surface p-6 sm:p-10 lg:col-span-6 lg:border-t-0 lg:border-l lg:p-12">
           {STEPS.map((step, index) => (
             <li key={step.title} className="flex gap-4 py-3 first:pt-0 last:pb-0">
               <span className="font-display text-[15px] leading-6 font-semibold text-slate-400 tabular-nums">
@@ -115,8 +123,10 @@ export function SitesGrid({
   if (sites.length === 0) return emptyState ?? <DefaultEmptyState />;
   const CardHeading = headingLevel === 3 ? "h3" : "h2";
 
+  // Cartões como os da App Store: miniatura grande arredondada com sombra leve, e embaixo o nome,
+  // o status e as ações. O card inteiro abre as configurações do site (link "esticado").
   return (
-    <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="mt-4 grid gap-x-6 gap-y-10 sm:grid-cols-2">
       {sites.map((site) => {
         const { business } = site.spec;
         const where = [business.city, business.state].filter(Boolean).join(", ");
@@ -125,40 +135,42 @@ export function SitesGrid({
         const leads = leadCounts?.[site.id];
         return (
           <li key={site.id}>
-            <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300">
-              <div className="border-b border-slate-200">
-                <SiteThumb spec={liveSpec(site)} />
+            <article className="group relative flex h-full flex-col">
+              <div
+                className={`overflow-hidden rounded-2xl border border-slate-200/70 bg-white ${cardShadow} transition-shadow duration-200 group-hover:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_18px_40px_-18px_rgb(7_27_51/0.25)]`}
+              >
+                <div className="transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
+                  <SiteThumb spec={liveSpec(site)} />
+                </div>
               </div>
-              <div className="flex-1 px-5 pt-4 pb-5">
-                <div className="flex items-start justify-between gap-3">
-                  <CardHeading className="line-clamp-2 font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] break-words text-ink">
+              <div className="mt-4 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <CardHeading className="line-clamp-2 font-display text-lg leading-6 font-semibold tracking-[-0.012em] break-words text-ink">
                     {/* Link "esticado": o card inteiro abre as configurações do site. */}
                     <Link
                       href={`/sites/${site.id}`}
-                      className="after:absolute after:inset-0 after:rounded-xl after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                      className="after:absolute after:-inset-1.5 after:rounded-[1.25rem] after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-brand"
                     >
                       {business.name}
                     </Link>
                   </CardHeading>
-                  <StatusBadge tone={live ? "live" : "draft"}>
-                    {live ? "Live" : "Draft"}
-                  </StatusBadge>
+                  {where && <p className="mt-0.5 text-[15px] text-slate-500">{where}</p>}
                 </div>
-                {where && <p className="mt-1 text-sm text-slate-600">{where}</p>}
-                <p className="mt-3 flex flex-wrap gap-x-2 text-[13px] text-slate-500 tabular-nums">
-                  <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>
-                  {leads !== undefined && (
-                    <>
-                      <span aria-hidden="true">·</span>
-                      <span className={leads > 0 ? "font-medium text-ink" : undefined}>
-                        {leadsLabel(leads)}
-                      </span>
-                    </>
-                  )}
-                </p>
+                <StatusBadge tone={live ? "live" : "draft"}>{live ? "Live" : "Draft"}</StatusBadge>
               </div>
+              <p className="mt-2 flex flex-wrap gap-x-2 text-[13px] text-slate-500 tabular-nums">
+                <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>
+                {leads !== undefined && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className={leads > 0 ? "font-medium text-ink" : undefined}>
+                      {leadsLabel(leads)}
+                    </span>
+                  </>
+                )}
+              </p>
               {/* Ações acima do link esticado (z-10) para continuarem clicáveis. */}
-              <div className="relative z-10 flex items-center gap-2 border-t border-slate-200 px-5 py-3">
+              <div className="relative z-10 mt-3 flex items-center gap-2">
                 <Link href={`/sites/${site.id}/edit`} className={secondaryButton}>
                   Edit
                 </Link>
