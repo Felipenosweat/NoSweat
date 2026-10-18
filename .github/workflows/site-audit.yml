@@ -1,7 +1,7 @@
 name: Site audit
 
 # Prints e erros do site no ar. Roda no push da branch de trabalho (quando estes arquivos mudam);
-# (prints + report.json) é commitado na própria branch, em qa/out/.
+# (prints + report.json) vai para a ref refs/qa/site-audit (fora da branch).
 on:
   push:
     branches: ["claude/dreamy-maxwell-19fv98"]
@@ -29,10 +29,10 @@ jobs:
         run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node audit.mjs
       - name: Landing build layers
         run: cd /tmp/qa && OUT_DIR="$GITHUB_WORKSPACE/qa/out" node build-layers.mjs
-      - name: Commit results
+      # Prints fora da branch (não sujam o PR nem pulam o CI): ref refs/qa/site-audit.
+      - name: Publish results to refs/qa/site-audit
         run: |
-          git config user.name "site-audit"
-          git config user.email "site-audit@users.noreply.github.com"
-          git add -f qa/out
-          git commit -m "chore(qa): site audit results [skip ci]" || exit 0
-          git push
+          cd qa/out
+          git init -q -b results && git add -A
+          git -c user.name="site-audit" -c user.email="site-audit@users.noreply.github.com" commit -qm "site audit results for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" results:refs/qa/site-audit
