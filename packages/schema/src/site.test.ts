@@ -75,6 +75,54 @@ describe("SiteSpec", () => {
     ).toBe(false);
   });
 
+  it("accepts the model-site fields: about, prices, captions, address and links", () => {
+    const result = SiteSpec.safeParse({
+      ...minimal,
+      business: {
+        ...minimal.business,
+        address: "1550 Wynkoop St",
+        category: "Bookkeeper",
+        links: { booking: "https://calendly.com/acme/intro" },
+      },
+      sections: [
+        ...minimal.sections,
+        {
+          type: "services",
+          title: "Services and fees",
+          items: [
+            {
+              name: "Monthly books",
+              description: "Reconciled every month.",
+              price: "from $250",
+              detail: "Monthly",
+              group: "Bookkeeping",
+            },
+          ],
+        },
+        {
+          type: "about",
+          title: "Who you'll work with",
+          body: "Two accountants, one office.",
+          people: [{ name: "Dana Hale", role: "CPA" }],
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects links that are not https and an about text that is too long", () => {
+    const badLink = SiteSpec.safeParse({
+      ...minimal,
+      business: { ...minimal.business, links: { booking: "http://calendly.com/acme" } },
+    });
+    expect(badLink.success).toBe(false);
+    const longAbout = SiteSpec.safeParse({
+      ...minimal,
+      sections: [...minimal.sections, { type: "about", body: "x".repeat(701) }],
+    });
+    expect(longAbout.success).toBe(false);
+  });
+
   it("rejects an unknown section type", () => {
     const result = SiteSpec.safeParse({
       ...minimal,

@@ -1,6 +1,7 @@
 import type { SiteSpec } from "@nosweat/schema";
 
-// Exemplo sem foto de propósito: a composição tipográfica não depende de imagem.
+// Modelo profissional (ver docs/design/model-sites.md). Fatos: briefs.ts.
+// Sem foto de propósito: a composição tipográfica não depende de imagem.
 export const haleOrtiz: SiteSpec = {
   version: 1,
   template: "professional",
@@ -12,15 +13,18 @@ export const haleOrtiz: SiteSpec = {
   },
   business: {
     name: "Hale & Ortiz",
+    category: "Bookkeeping and tax practice",
     phone: "(720) 555-0148",
     email: "hello@haleortiz.example.com",
+    address: "1550 Wynkoop St, Suite 300",
     city: "Denver",
     state: "CO",
     hours: [{ days: "Mon–Fri", time: "9 AM – 5 PM" }],
+    links: { booking: "https://haleortiz.example.com/book" },
   },
   theme: {
     primary: "#1E3A5F",
-    secondary: "#C2884A",
+    secondary: "#B08D57",
     background: "#FAFAF7",
     text: "#14181F",
     font: "refined",
@@ -31,7 +35,7 @@ export const haleOrtiz: SiteSpec = {
       title: "Your books, kept. Your taxes, filed.",
       subtitle:
         "A two-person bookkeeping and tax practice in Denver for small businesses and the people who run them.",
-      ctaLabel: "Book a Consultation",
+      ctaLabel: "Book a consultation",
       imageQuery: "tidy desk ledger notebook",
     },
     {
@@ -40,22 +44,61 @@ export const haleOrtiz: SiteSpec = {
         {
           name: "Monthly bookkeeping",
           description: "Your accounts reconciled every month, with a short report you can read.",
+          price: "from $350",
+          detail: "Monthly",
         },
         {
           name: "Business tax returns",
           description: "Returns for sole proprietors, partnerships and small corporations.",
+          price: "from $900",
+          detail: "Yearly",
         },
         {
           name: "Individual tax returns",
           description: "Personal returns, including income from your own business.",
+          price: "from $300",
+          detail: "Yearly",
         },
         {
           name: "Quarterly estimates",
           description: "We work out what to set aside each quarter, so April has no surprises.",
+          price: "$150",
+          detail: "Each quarter",
         },
         {
           name: "IRS letters",
           description: "Bring us the letter. We explain what it means and help you answer it.",
+          detail: "As needed",
+        },
+      ],
+    },
+    {
+      type: "about",
+      body: "Hale & Ortiz is two people. You always work with one of us, from the first meeting to the filed return.",
+      people: [
+        {
+          name: "Dana Hale",
+          role: "CPA, licensed in Colorado",
+          note: "Business returns and monthly bookkeeping.",
+        },
+        {
+          name: "Luis Ortiz",
+          role: "Enrolled agent",
+          note: "Individual returns and IRS letters.",
+        },
+      ],
+    },
+    {
+      type: "testimonials",
+      items: [
+        {
+          quote:
+            "Dana caught a payroll mistake in our first month that would have cost us more than a year of her fees.",
+          author: "Priya S., small business owner",
+        },
+        {
+          quote: "Luis turned a scary IRS letter into a two-page reply and it was over.",
+          author: "Tom W.",
         },
       ],
     },

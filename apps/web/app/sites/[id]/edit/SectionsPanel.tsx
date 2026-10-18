@@ -34,6 +34,7 @@ const SECTION_NAMES: Record<SectionType, string> = {
   faq: "FAQ",
   contact: "Contact",
   gallery: "Gallery",
+  about: "About",
 };
 
 /**
@@ -71,6 +72,8 @@ function sectionSummary(section: Section): string {
       );
     case "gallery":
       return count(section.images.length, "photo");
+    case "about":
+      return section.title?.trim() || section.body.slice(0, 60) || "About";
   }
 }
 

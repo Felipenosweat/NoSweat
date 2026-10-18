@@ -23,40 +23,97 @@ export function compositionOf(spec: SiteSpec): Composition {
 
 type NavItem = { anchor: string; label: string };
 
-/** Vocabulário de cada ramo: os títulos fixos das seções mudam com o tipo de negócio. */
-const VOCABULARY: Record<
-  TemplateId,
-  { services: string; servicesTitle: string; contactTitle: string; faqTitle: string }
-> = {
+/** Modelo do formulário de contato: os campos extras mudam com o tipo de negócio. */
+export type FormPreset = "trade" | "appointment" | "catering" | "consultation" | "inquiry";
+
+/** Vocabulário de cada ramo: títulos padrão das seções, rótulos do menu e o formulário. */
+export type Vocabulary = {
+  /** Rótulo do menu para os serviços ("Menu" num restaurante). */
+  services: string;
+  servicesTitle: string;
+  about: string;
+  aboutTitle: string;
+  gallery: string;
+  galleryTitle: string;
+  testimonialsTitle: string;
+  faqTitle: string;
+  contactTitle: string;
+  /** Negócio que recebe gente no endereço: "Find us"; senão, a área atendida. */
+  visited: boolean;
+  formPreset: FormPreset;
+  submitLabel: string;
+};
+
+const VOCABULARY: Record<TemplateId, Vocabulary> = {
   "home-services": {
     services: "Services",
     servicesTitle: "What we can do for you",
-    contactTitle: "Tell us what you need",
+    about: "About",
+    aboutTitle: "Who you'll talk to",
+    gallery: "Recent jobs",
+    galleryTitle: "Recent jobs",
+    testimonialsTitle: "What customers told us",
     faqTitle: "Good questions, straight answers",
+    contactTitle: "Tell us what you need",
+    visited: false,
+    formPreset: "trade",
+    submitLabel: "Send request",
   },
   beauty: {
     services: "Services",
-    servicesTitle: "Services and treatments",
-    contactTitle: "Book your visit",
+    servicesTitle: "Services and prices",
+    about: "The chairs",
+    aboutTitle: "The chairs",
+    gallery: "Work",
+    galleryTitle: "Recent work",
+    testimonialsTitle: "From our clients",
     faqTitle: "Before your appointment",
+    contactTitle: "Book your visit",
+    visited: true,
+    formPreset: "appointment",
+    submitLabel: "Request an appointment",
   },
   restaurant: {
     services: "Menu",
-    servicesTitle: "From our kitchen",
-    contactTitle: "Come by or get in touch",
+    servicesTitle: "The menu",
+    about: "Our story",
+    aboutTitle: "Our story",
+    gallery: "Gallery",
+    galleryTitle: "At the table",
+    testimonialsTitle: "From our guests",
     faqTitle: "Good to know",
+    contactTitle: "Visit us",
+    visited: true,
+    formPreset: "catering",
+    submitLabel: "Send catering request",
   },
   professional: {
     services: "Services",
     servicesTitle: "How we can help",
-    contactTitle: "Start a conversation",
+    about: "About",
+    aboutTitle: "Who you'll work with",
+    gallery: "Work",
+    galleryTitle: "Our work",
+    testimonialsTitle: "From our clients",
     faqTitle: "Common questions",
+    contactTitle: "Book a consultation",
+    visited: false,
+    formPreset: "consultation",
+    submitLabel: "Request a consultation",
   },
   portfolio: {
-    services: "Services",
-    servicesTitle: "What's on offer",
-    contactTitle: "Start a project",
+    services: "Packages",
+    servicesTitle: "Packages",
+    about: "About",
+    aboutTitle: "About",
+    gallery: "Work",
+    galleryTitle: "Selected work",
+    testimonialsTitle: "Kind words",
     faqTitle: "Working together",
+    contactTitle: "Start a project",
+    visited: false,
+    formPreset: "inquiry",
+    submitLabel: "Send inquiry",
   },
 };
 
@@ -70,10 +127,21 @@ export type SiteModel = {
   /** Destino do botão principal do topo. */
   ctaHref: string;
   ctaLabel: string;
+  /** O botão principal leva para outro site (agendamento, pedido online): abre em nova aba. */
+  ctaExternal: boolean;
   phoneHref?: string;
+  /** Rota no Google Maps (só com endereço de rua informado pelo dono). */
+  directionsHref?: string;
+  /** Área atendida (ou cidade/estado). */
   where?: string;
+  /** Rótulo da área: "Serving" (área informada pelo dono) ou "Based in" (só a cidade). */
+  areaLabel: string;
+  /** Endereço de rua completo numa linha, se o dono informou. */
+  address?: string;
   primaryAction: PrimaryAction;
-  words: (typeof VOCABULARY)[TemplateId];
+  words: Vocabulary;
+  /** Título da seção: o do dono, senão o padrão do ramo. */
+  titleOf: (section: Section) => string;
 };
 
 export function location(business: Business): string | undefined {
@@ -85,17 +153,50 @@ export function areaServed(business: Business): string | undefined {
   return business.serviceArea?.trim() || location(business);
 }
 
+/** Endereço completo numa linha ("2112 Logan Ave, San Diego, CA"), se houver rua. */
+export function fullAddress(business: Business): string | undefined {
+  const street = business.address?.trim();
+  if (!street) return undefined;
+  return [street, location(business)].filter(Boolean).join(", ");
+}
+
+/** Busca do Google Maps (sem chave de API): abre a rota no app de mapas do celular. */
+export function directionsHrefFor(business: Business): string | undefined {
+  const address = fullAddress(business);
+  if (!address) return undefined;
+  const query = encodeURIComponent(`${business.name}, ${address}`);
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
+/** Link para fora do site (abre em nova aba com rel="noopener"). */
+export function isExternal(href: string): boolean {
+  return /^https?:\/\//.test(href);
+}
+
+/** Atributos de um link externo; links internos (#, tel:, mailto:) ficam sem nada. */
+export function externalProps(href: string): { target?: string; rel?: string } {
+  return isExternal(href) ? { target: "_blank", rel: "noopener" } : {};
+}
+
 const NAV_ANCHORS: Partial<Record<SectionType, string>> = {
   services: "services",
   gallery: "work",
+  about: "about",
   testimonials: "reviews",
   faq: "faq",
   contact: "contact",
 };
 
+/** Foto do dono (a única que pode aparecer como "nosso trabalho" ou "nossa equipe"). */
+export function isOwnerPhoto<T extends { kind: string }>(image: T | undefined): image is T {
+  return image?.kind === "owner";
+}
+
 /** Seção que não aparece (galeria sem fotos do dono) não entra no menu nem ganha âncora. */
 export function isVisible(section: Section): boolean {
-  return section.type !== "gallery" || section.images.some((image) => image.kind === "owner");
+  if (section.type === "gallery") return section.images.some((image) => isOwnerPhoto(image));
+  if (section.type === "services") return section.items.length > 0;
+  return true;
 }
 
 export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
@@ -103,10 +204,20 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
   const words = VOCABULARY[spec.template];
   const labels: Partial<Record<SectionType, string>> = {
     services: words.services,
-    gallery: "Our work",
+    gallery: words.gallery,
+    about: words.about,
     testimonials: "Reviews",
     faq: "FAQ",
     contact: "Contact",
+  };
+  const defaultTitles: Record<SectionType, string> = {
+    hero: "",
+    services: words.servicesTitle,
+    gallery: words.galleryTitle,
+    about: words.aboutTitle,
+    testimonials: words.testimonialsTitle,
+    faq: words.faqTitle,
+    contact: words.contactTitle,
   };
 
   const anchors = new Map<Section, string>();
@@ -124,15 +235,21 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
 
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const phoneHref = business.phone ? telHref(business.phone) : undefined;
-  // Sem seção de contato, o botão principal liga ou manda e-mail direto.
-  const ctaHref = sections.some((s) => s.type === "contact")
-    ? "#contact"
-    : (phoneHref ?? (business.email ? `mailto:${business.email}` : "#top"));
+  // Link de agendamento/pedido do dono vem primeiro; sem ele, o contato da página. Sem seção de
+  // contato, o botão principal liga ou manda e-mail direto.
+  const external = business.links?.booking ?? business.links?.order;
+  const ctaHref =
+    external ??
+    (sections.some((s) => s.type === "contact")
+      ? "#contact"
+      : (phoneHref ?? (business.email ? `mailto:${business.email}` : "#top")));
 
   const planned = spec.design?.primaryAction;
   // "Ligar" só é a ação principal quando existe telefone.
   const primaryAction: PrimaryAction =
     planned === "call" && !phoneHref ? "quote" : (planned ?? (phoneHref ? "call" : "quote"));
+
+  const directionsHref = directionsHrefFor(business);
 
   return {
     spec,
@@ -142,10 +259,16 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
     anchorFor: (section) => (withAnchors ? anchors.get(section) : undefined),
     ctaHref,
     ctaLabel: hero?.ctaLabel ?? "Contact us",
+    ctaExternal: isExternal(ctaHref),
     phoneHref,
+    directionsHref,
     where: areaServed(business),
+    areaLabel: business.serviceArea?.trim() ? "Serving" : "Based in",
+    address: fullAddress(business),
     primaryAction,
     words,
+    titleOf: (section) =>
+      (section.type === "hero" ? "" : section.title?.trim()) || defaultTitles[section.type],
   };
 }
 

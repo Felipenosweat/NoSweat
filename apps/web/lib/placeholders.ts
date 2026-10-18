@@ -11,6 +11,7 @@ export const PLACEHOLDERS = {
   reviewAuthor: "Customer name",
   faqQuestion: "A question customers ask",
   faqAnswer: "Your answer.",
+  aboutBody: "A few words about who you are and how you work.",
 } as const;
 
 const ALL: ReadonlySet<string> = new Set(Object.values(PLACEHOLDERS));
@@ -44,6 +45,9 @@ export function placeholdersIn(spec: SiteSpec): string[] {
           check(item.q);
           check(item.a);
         }
+        break;
+      case "about":
+        check(section.body);
         break;
       case "contact":
         break;

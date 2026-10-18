@@ -1,5 +1,6 @@
 import type { SiteSpec } from "@nosweat/schema";
 
+// Modelo de restaurante (ver docs/design/model-sites.md). Fatos: briefs.ts.
 export const rosasKitchen: SiteSpec = {
   version: 1,
   template: "restaurant",
@@ -11,19 +12,24 @@ export const rosasKitchen: SiteSpec = {
   },
   business: {
     name: "Rosa's Kitchen",
+    category: "Mexican restaurant",
     phone: "(619) 555-0163",
     email: "eat@rosaskitchen.example.com",
+    address: "2196 Logan Ave",
     city: "San Diego",
     state: "CA",
     serviceArea: "Barrio Logan, San Diego",
-    hours: [{ days: "Tue–Sun", time: "11 AM – 9 PM" }],
+    hours: [
+      { days: "Tue–Sat", time: "11 AM – 9 PM" },
+      { days: "Sun", time: "9 AM – 8 PM" },
+    ],
   },
   theme: {
-    primary: "#C2410C",
-    secondary: "#15803D",
-    background: "#FFFBF5",
-    text: "#292524",
-    font: "friendly",
+    primary: "#B23A1E",
+    secondary: "#2F5D3A",
+    background: "#FFF8EE",
+    text: "#2A211C",
+    font: "fresh",
   },
   sections: [
     {
@@ -31,40 +37,77 @@ export const rosasKitchen: SiteSpec = {
       title: "Handmade tortillas, family recipes",
       subtitle:
         "A family Mexican kitchen in Barrio Logan. Walk in for carne asada and fish tacos, or call ahead to reserve a table.",
-      ctaLabel: "Reserve a Table",
-      imageQuery: "cozy restaurant booths",
+      ctaLabel: "Plan your visit",
+      imageQuery: "chef plating mexican food",
       image: {
-        url: "/photos/example-restaurant.webp",
-        alt: "Warm restaurant booths set for dinner",
+        url: "/photos/cook.webp",
+        alt: "A cook plating food under copper lamps",
         source: "unsplash",
         kind: "scene",
-        credit: { name: "Carlos Aranda", url: "https://unsplash.com/photos/IYMceGutrbQ" },
-        width: 2400,
-        height: 1602,
+        credit: { name: "Louis Hansel", url: "https://unsplash.com/photos/v3OlBE6-fhU" },
+        width: 1169,
+        height: 1800,
+        focus: "50% 55%",
       },
     },
     {
       type: "services",
       items: [
         {
-          name: "Carne Asada Plate",
-          description: "Grilled marinated steak, rice, beans, and fresh handmade corn tortillas.",
+          group: "Plates",
+          name: "Carne asada plate",
+          description: "Grilled marinated steak, rice, beans and handmade corn tortillas.",
+          price: "$18",
         },
         {
-          name: "Fish Tacos",
-          description: "Beer-battered fish, cabbage slaw and our chipotle crema.",
+          group: "Plates",
+          name: "Mole poblano",
+          description: "Grandma's mole over tender chicken, with rice and tortillas.",
+          price: "$17",
+          detail: "Sundays",
         },
         {
-          name: "Mole Poblano",
-          description: "Grandma's mole poblano over tender chicken, served on Sundays.",
+          group: "Tacos",
+          name: "Fish tacos",
+          description: "Beer-battered fish, cabbage slaw and chipotle crema.",
+          price: "$14",
         },
         {
-          name: "Weekend Brunch",
-          description: "Chilaquiles, huevos rancheros and café de olla, Saturday and Sunday.",
+          group: "Tacos",
+          name: "Tacos al pastor",
+          description: "Marinated pork off the grill, pineapple, onion and cilantro.",
+          price: "$12",
         },
         {
-          name: "Catering",
-          description: "Taco bars and family-style trays for parties, offices, and celebrations.",
+          group: "Sunday brunch",
+          name: "Chilaquiles",
+          description: "Red or green, with eggs your way and crema.",
+          price: "$13",
+          detail: "Sundays until 1 PM",
+        },
+        {
+          group: "Catering",
+          name: "Taco bar for 20",
+          description: "Two meats, tortillas, rice, beans and all the salsas.",
+          price: "$320",
+          detail: "48 hours notice",
+        },
+      ],
+    },
+    {
+      type: "about",
+      body: "Rosa Delgado opened the kitchen in 2014 with her mother's recipes. Her son Marco runs the grill, and the corn tortillas are still pressed by hand every morning.",
+    },
+    {
+      type: "testimonials",
+      items: [
+        {
+          quote: "The mole tastes like my abuela's, and I don't say that lightly.",
+          author: "Teresa M.",
+        },
+        {
+          quote: "We order the taco bar for every office lunch now.",
+          author: "Kevin L.",
         },
       ],
     },
@@ -73,21 +116,21 @@ export const rosasKitchen: SiteSpec = {
       items: [
         {
           q: "Do you take reservations?",
-          a: "Yes! Call us to reserve a table. Walk-ins are always welcome too.",
-        },
-        {
-          q: "Do you have vegetarian options?",
-          a: "Ask your server: several dishes can be made without meat, and we're happy to adjust when we can.",
+          a: "Call us to reserve a table. Walk-ins are always welcome too.",
         },
         {
           q: "Is there parking?",
-          a: "Street parking is available nearby. Call us if you need directions.",
+          a: "Street parking on Logan Ave.",
+        },
+        {
+          q: "How much notice do you need for catering?",
+          a: "48 hours for the taco bar. Send the form below or call us.",
         },
       ],
     },
     {
       type: "contact",
-      showForm: false,
+      showForm: true,
       showMap: true,
     },
   ],

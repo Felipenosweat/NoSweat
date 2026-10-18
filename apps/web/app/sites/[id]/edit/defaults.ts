@@ -25,6 +25,8 @@ export function newSection(type: SectionType): Section {
     case "gallery":
       // Só fotos do dono: começa vazia e o cliente envia as fotos.
       return { type, images: [] };
+    case "about":
+      return { type, body: P.aboutBody };
   }
 }
 
@@ -35,6 +37,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   faq: "FAQ",
   contact: "Contact",
   gallery: "Photo gallery (your photos)",
+  about: "About",
 };
 
 /** Limite de itens de cada lista (o mesmo do schema). */

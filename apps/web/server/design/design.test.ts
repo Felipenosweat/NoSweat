@@ -34,9 +34,10 @@ describe("readBrief", () => {
 });
 
 describe("planDesign", () => {
-  it("gives each showcase business its own composition", () => {
+  it("covers every composition across the showcase businesses", () => {
+    // Seis modelos, cinco composições: o fotógrafo e o salão dividem a editorial.
     const compositions = Object.values(exampleBriefs).map((b) => planDesign(b).composition);
-    expect(new Set(compositions).size).toBe(compositions.length);
+    expect(new Set(compositions).size).toBe(5);
   });
 
   it("changes the composition (not just colors) when the owner picks another style", () => {
