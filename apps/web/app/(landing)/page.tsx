@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { AlsoIncluded } from "@/components/landing/AlsoIncluded";
 import { BackdropPhoto, BackdropShade } from "@/components/landing/Backdrop";
@@ -25,6 +25,9 @@ const DESCRIPTION =
   "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. Plans from $39/month.";
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
+// Barra do navegador do celular escura, da cor do topo da landing (o padrão do app é branco).
+export const viewport: Viewport = { themeColor: "#071b33" };
+
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
