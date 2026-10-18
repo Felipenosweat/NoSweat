@@ -1,13 +1,20 @@
 import type { Business, SectionOf, SiteImage } from "@nosweat/schema";
 import type { ReactNode } from "react";
-import { ArrowRightIcon, CheckIcon, ChevronDownIcon, PhoneIcon } from "../components/icons";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  MailIcon,
+  MapPinIcon,
+  PhoneIcon,
+} from "../components/icons";
 import { Photo, PhotoCredit } from "../components/photo";
-import { ContactForm } from "../sections/ContactForm";
-import { location, type SiteModel } from "./model";
+import { ContactForm, type ContactFormRadius } from "../sections/ContactForm";
+import { externalProps, isOwnerPhoto, location, type SiteModel } from "./model";
 
 // Peças pequenas que as composições combinam de jeitos diferentes. Só utilidades ns-*.
 
-const focus =
+export const focus =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
 
 /** Onde o botão aparece: fundo do tema, bloco da cor principal ou por cima de foto escurecida. */
@@ -28,7 +35,7 @@ const buttonBase = `inline-flex min-h-12 items-center justify-center gap-2 px-6 
 
 /**
  * Botões do topo. A ordem segue a ação principal do plano de design: "call" põe o telefone
- * na frente; as outras põem o botão do texto (ex.: "Book Your Appointment") na frente.
+ * na frente; as outras põem o botão do texto (ex.: "Book an appointment") na frente.
  */
 export function HeroActions({
   model,
@@ -46,6 +53,7 @@ export function HeroActions({
     <a
       key="cta"
       href={ctaHref}
+      {...externalProps(ctaHref)}
       className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
     >
       {ctaLabel}
@@ -60,7 +68,7 @@ export function HeroActions({
         className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
       >
         <PhoneIcon className="size-5 shrink-0" />
-        <span className="whitespace-nowrap">
+        <span className="whitespace-nowrap tabular-nums">
           {primary ? `Call ${business.phone}` : business.phone}
         </span>
       </a>
@@ -75,7 +83,10 @@ export function HeroActions({
   );
 }
 
-/** Foto com o tratamento do plano (classe ns-photo, ver styles.css) e o crédito do banco. */
+/**
+ * Foto com o tratamento do plano (classe ns-photo, ver styles.css) e o crédito do banco.
+ * `data-kind` deixa as fotos do dono fora dos filtros (preto e branco, véu de cor).
+ */
 export function PhotoFrame({
   image,
   className = "",
@@ -83,6 +94,7 @@ export function PhotoFrame({
   sizes,
   eager = false,
   credit = "overlay",
+  radius = "",
 }: {
   image: SiteImage;
   className?: string;
@@ -91,11 +103,16 @@ export function PhotoFrame({
   eager?: boolean;
   /** "overlay": etiqueta no canto da foto; "below": legenda embaixo; "none": quem chama mostra. */
   credit?: "overlay" | "below" | "none";
+  /** Raio da moldura da foto (o mesmo da composição). */
+  radius?: string;
 }) {
   const hasCredit = Boolean(image.credit) && image.source !== "upload";
   return (
     <figure className={className}>
-      <div className="ns-photo relative size-full overflow-hidden bg-ns-border">
+      <div
+        data-kind={image.kind}
+        className={`ns-photo relative size-full overflow-hidden bg-ns-border ${radius}`}
+      >
         <Photo
           image={image}
           loading={eager ? "eager" : "lazy"}
@@ -157,6 +174,139 @@ export function HoursTable({
   );
 }
 
+/** Horário numa linha: "Tue–Sun 11 AM – 9 PM · Sat 9 AM – 2 PM". */
+export function hoursSummary(hours: Business["hours"]): string | undefined {
+  if (!hours?.length) return undefined;
+  return hours.map((row) => `${row.days} ${row.time}`).join(" · ");
+}
+
+/** Menor preço dito pelo dono nos serviços ("$45"), para o fato "From". Sem preço, nada. */
+export function lowestPrice(model: SiteModel): string | undefined {
+  let lowest: number | undefined;
+  for (const section of model.spec.sections) {
+    if (section.type !== "services") continue;
+    for (const item of section.items) {
+      const match = item.price ? /\$\s?(\d+(?:\.\d{1,2})?)/.exec(item.price) : null;
+      const value = match?.[1] ? Number(match[1]) : Number.NaN;
+      if (Number.isFinite(value) && (lowest === undefined || value < lowest)) lowest = value;
+    }
+  }
+  return lowest === undefined ? undefined : `$${lowest}`;
+}
+
+/** Um fato como placa: micro-rótulo em caixa alta + o fato. */
+export type Fact = { label: string; content: ReactNode };
+
+/**
+ * Fatos do negócio para faixas e painéis: horário, onde (endereço com rota, ou a área atendida),
+ * telefone e o menor preço. Só o que o dono informou; nada de adjetivos.
+ */
+export function factsFor(
+  model: SiteModel,
+  options: { phone?: boolean; price?: boolean; hours?: "table" | "line" } = {},
+): Fact[] {
+  const { business, where, address, phoneHref, words } = model;
+  const facts: Fact[] = [];
+  const hours = business.hours?.length ? business.hours : null;
+  if (hours) {
+    facts.push({
+      label: "Hours",
+      content:
+        options.hours === "line" ? (
+          <span className="tabular-nums">{hoursSummary(hours)}</span>
+        ) : (
+          <HoursTable hours={hours} />
+        ),
+    });
+  }
+  if (address && (words.visited || !where)) {
+    facts.push({
+      label: "Find us",
+      content: <AddressBlock model={model} />,
+    });
+  } else if (where) {
+    facts.push({ label: model.areaLabel, content: where });
+  }
+  if (options.phone !== false && business.phone && phoneHref) {
+    facts.push({
+      label: "Phone",
+      content: (
+        <a
+          href={phoneHref}
+          className={`whitespace-nowrap tabular-nums underline-offset-4 hover:underline ${focus}`}
+        >
+          {business.phone}
+        </a>
+      ),
+    });
+  }
+  const price = options.price === false ? undefined : lowestPrice(model);
+  if (price) facts.push({ label: "From", content: <span className="tabular-nums">{price}</span> });
+  return facts;
+}
+
+/** Lista de fatos (dl). As classes deixam cada composição desenhar a sua placa. */
+export function FactList({
+  facts,
+  className = "",
+  itemClassName = "",
+  labelClassName = "text-xs font-semibold tracking-[0.18em] uppercase",
+  valueClassName = "mt-2 font-medium",
+}: {
+  facts: Fact[];
+  className?: string;
+  itemClassName?: string;
+  labelClassName?: string;
+  valueClassName?: string;
+}) {
+  if (facts.length === 0) return null;
+  return (
+    <dl className={className}>
+      {facts.map((fact) => (
+        <div key={fact.label} className={itemClassName}>
+          <dt className={labelClassName}>{fact.label}</dt>
+          <dd className={valueClassName}>{fact.content}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Endereço do dono (rua e cidade) com o link de rota. Sem rua, nada. */
+export function AddressBlock({
+  model,
+  className = "",
+  large = false,
+}: {
+  model: SiteModel;
+  className?: string;
+  large?: boolean;
+}) {
+  const { business, directionsHref } = model;
+  const street = business.address?.trim();
+  if (!street) return null;
+  const city = location(business);
+  return (
+    <address className={`not-italic ${className}`}>
+      <span className={`block ${large ? "font-ns-heading text-3xl leading-tight font-bold" : ""}`}>
+        {street}
+      </span>
+      {city && <span className={`block ${large ? "mt-1 text-lg" : ""}`}>{city}</span>}
+      {directionsHref && (
+        <a
+          href={directionsHref}
+          {...externalProps(directionsHref)}
+          className={`mt-2 inline-flex min-h-11 items-center gap-1.5 font-semibold underline decoration-current/40 underline-offset-4 hover:decoration-current ${focus}`}
+        >
+          <MapPinIcon className="size-4 shrink-0" />
+          Directions
+          <span className="sr-only"> (opens Google Maps)</span>
+        </a>
+      )}
+    </address>
+  );
+}
+
 /** Perguntas em <details> (sem JavaScript). `tone` muda só as linhas e o ícone. */
 export function FaqList({ data, className = "" }: { data: SectionOf<"faq">; className?: string }) {
   return (
@@ -176,17 +326,48 @@ export function FaqList({ data, className = "" }: { data: SectionOf<"faq">; clas
   );
 }
 
-/** Telefone, e-mail, área e horário em linhas simples (sem ícones grandes). */
-export function ContactLines({ model, className = "" }: { model: SiteModel; className?: string }) {
-  const { business, phoneHref, where } = model;
-  const hours = business.hours?.length ? business.hours : null;
+/** Telefone, e-mail, endereço, área e horário em linhas simples (sem ícones grandes). */
+export function ContactLines({
+  model,
+  className = "",
+  phone = true,
+  place = true,
+}: {
+  model: SiteModel;
+  className?: string;
+  /** `false` quando a composição já mostra o telefone grande ao lado. */
+  phone?: boolean;
+  /** `false` quando a composição já mostra endereço e horário grandes (placa de vitrine). */
+  place?: boolean;
+}) {
+  const { business, phoneHref, where, ctaExternal, ctaHref, ctaLabel } = model;
+  const address = place ? model.address : undefined;
+  const hours = place && business.hours?.length ? business.hours : null;
   return (
     <dl className={`grid gap-6 ${className}`}>
-      {business.phone && phoneHref && (
+      {ctaExternal && (
+        <div>
+          <dt className="text-sm font-medium">Online</dt>
+          <dd>
+            <a
+              href={ctaHref}
+              {...externalProps(ctaHref)}
+              className={`inline-flex min-h-11 items-center gap-2 text-lg font-semibold underline decoration-current/40 underline-offset-4 hover:decoration-current ${focus}`}
+            >
+              {ctaLabel}
+              <ArrowRightIcon className="size-4 shrink-0" />
+            </a>
+          </dd>
+        </div>
+      )}
+      {phone && business.phone && phoneHref && (
         <div>
           <dt className="text-sm font-medium">Phone</dt>
           <dd>
-            <a href={phoneHref} className={`text-2xl font-semibold whitespace-nowrap ${focus}`}>
+            <a
+              href={phoneHref}
+              className={`text-2xl font-semibold whitespace-nowrap tabular-nums ${focus}`}
+            >
               {business.phone}
             </a>
           </dd>
@@ -205,11 +386,17 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
           </dd>
         </div>
       )}
-      {where && (
+      {address && (
         <div>
-          <dt className="text-sm font-medium">
-            {business.serviceArea ? "Service area" : "Location"}
-          </dt>
+          <dt className="text-sm font-medium">Find us</dt>
+          <dd className="mt-1 text-lg font-medium">
+            <AddressBlock model={model} />
+          </dd>
+        </div>
+      )}
+      {place && where && (!address || business.serviceArea) && (
+        <div>
+          <dt className="text-sm font-medium">{model.areaLabel}</dt>
           <dd className="text-lg font-medium">{where}</dd>
         </div>
       )}
@@ -225,20 +412,32 @@ export function ContactLines({ model, className = "" }: { model: SiteModel; clas
   );
 }
 
-/** Formulário de contato (o mesmo de todas as composições). */
+/** Formulário de contato (o mesmo de todas as composições, com o modelo de campos do ramo). */
 export function ContactFormBlock({
   data,
+  model,
   endpoint,
+  radius = "md",
+  framed = true,
   className = "",
 }: {
   data: SectionOf<"contact">;
+  model: SiteModel;
   endpoint?: string;
+  radius?: ContactFormRadius;
+  framed?: boolean;
   className?: string;
 }) {
   if (!data.showForm) return null;
   return (
     <div className={className}>
-      <ContactForm endpoint={endpoint} submitLabel="Send request" />
+      <ContactForm
+        endpoint={endpoint}
+        submitLabel={model.words.submitLabel}
+        preset={model.words.formPreset}
+        radius={radius}
+        framed={framed}
+      />
     </div>
   );
 }
@@ -261,7 +460,7 @@ export function NavLinks({
           <li key={link.anchor}>
             <a
               href={`#${link.anchor}`}
-              className={`inline-flex min-h-11 items-center text-sm font-medium transition duration-150 motion-reduce:transition-none ${focus} ${linkClassName}`}
+              className={`inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap transition duration-150 motion-reduce:transition-none ${focus} ${linkClassName}`}
             >
               {link.label}
             </a>
@@ -272,7 +471,30 @@ export function NavLinks({
   );
 }
 
-/** Rodapé enxuto: nome, cidade, contato, menu e o crédito da plataforma. */
+const SOCIAL_LABELS = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  google: "Google",
+  yelp: "Yelp",
+  linkedin: "LinkedIn",
+  menu: "Full menu",
+} as const;
+
+/** Redes e links do dono, em texto (sem ícones de marca). */
+export function socialLinks(business: Business): { label: string; href: string }[] {
+  const links = business.links;
+  if (!links) return [];
+  return (Object.keys(SOCIAL_LABELS) as (keyof typeof SOCIAL_LABELS)[]).flatMap((key) => {
+    const href = links[key];
+    return href ? [{ label: SOCIAL_LABELS[key], href }] : [];
+  });
+}
+
+/**
+ * Rodapé: nome, rua, cidade/estado, telefone, e-mail, horário resumido, área atendida, redes
+ * em texto, rota e o crédito da plataforma. Só aparece o que o dono informou.
+ */
 export function SimpleFooter({
   model,
   className = "",
@@ -288,9 +510,12 @@ export function SimpleFooter({
   bigName?: boolean;
   children?: ReactNode;
 }) {
-  const { business, phoneHref, links } = model;
-  const where = location(business);
+  const { business, phoneHref, links, directionsHref, where } = model;
+  const city = location(business);
+  const hours = hoursSummary(business.hours);
+  const socials = socialLinks(business);
   const year = new Date().getFullYear();
+  const linkClass = `inline-flex min-h-11 items-center opacity-80 hover:opacity-100 ${focus}`;
   return (
     <footer className={`pb-24 @3xl:pb-0 ${className}`}>
       <div
@@ -301,31 +526,35 @@ export function SimpleFooter({
             {business.name}
           </p>
         )}
-        <div className="grid gap-8 text-sm @min-[40rem]:grid-cols-3">
+        <div className="grid gap-8 text-sm @min-[40rem]:grid-cols-2 @5xl:grid-cols-4">
           <div>
             {!bigName && (
               <p className="font-ns-heading text-lg font-bold [overflow-wrap:anywhere]">
                 {business.name}
               </p>
             )}
-            {where && <p className={bigName ? "" : "mt-2 opacity-75"}>{where}</p>}
+            {business.category && (
+              <p className={bigName ? "font-medium" : "mt-1 opacity-75"}>{business.category}</p>
+            )}
+            {(business.address || city) && (
+              <address className="mt-3 not-italic opacity-80">
+                {business.address && <span className="block">{business.address}</span>}
+                {city && <span className="block">{city}</span>}
+              </address>
+            )}
+            {directionsHref && (
+              <a href={directionsHref} {...externalProps(directionsHref)} className={linkClass}>
+                Directions
+                <span className="sr-only"> (opens Google Maps)</span>
+              </a>
+            )}
           </div>
-          {links.length > 0 && (
-            <nav aria-label="Footer" className="-my-3 flex flex-col">
-              {links.map((link) => (
-                <a
-                  key={link.anchor}
-                  href={`#${link.anchor}`}
-                  className={`inline-flex min-h-11 items-center opacity-80 hover:opacity-100 ${focus}`}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
-          )}
           <div className="flex flex-col gap-2">
             {business.phone && phoneHref && (
-              <a href={phoneHref} className={`text-lg font-semibold whitespace-nowrap ${focus}`}>
+              <a
+                href={phoneHref}
+                className={`text-lg font-semibold whitespace-nowrap tabular-nums ${focus}`}
+              >
                 {business.phone}
               </a>
             )}
@@ -337,7 +566,29 @@ export function SimpleFooter({
                 {business.email}
               </a>
             )}
+            {hours && <p className="opacity-80 tabular-nums">{hours}</p>}
+            {where && business.serviceArea && <p className="opacity-80">Serving {where}</p>}
           </div>
+          {links.length > 0 && (
+            <nav aria-label="Footer" className="-my-3 flex flex-col">
+              {links.map((link) => (
+                <a key={link.anchor} href={`#${link.anchor}`} className={linkClass}>
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          )}
+          {socials.length > 0 && (
+            <ul aria-label="Elsewhere" className="-my-3 flex flex-col">
+              {socials.map((social) => (
+                <li key={social.label}>
+                  <a href={social.href} {...externalProps(social.href)} className={linkClass}>
+                    {social.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         {children}
         <div className="mt-12 flex flex-col gap-2 border-t border-current/15 pt-6 text-xs opacity-70 @min-[40rem]:flex-row @min-[40rem]:justify-between">
@@ -360,10 +611,310 @@ export function HeaderCall({ model, className = "" }: { model: SiteModel; classN
       className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 font-semibold ${focus} ${className}`}
     >
       <PhoneIcon className="size-5 shrink-0" />
-      <span className="sr-only whitespace-nowrap @min-[40rem]:not-sr-only">
+      <span className="sr-only whitespace-nowrap tabular-nums @min-[40rem]:not-sr-only">
         {model.business.phone}
       </span>
     </a>
+  );
+}
+
+/**
+ * Ação do cabeçalho, pela ação principal: "call" mostra o telefone (como botão quando `filled`);
+ * as outras mostram o botão do topo (ex.: "Book an appointment") e o telefone só como ícone.
+ * No celular o botão do texto some: a barra fixa de baixo já faz esse papel.
+ */
+export function HeaderAction({
+  model,
+  className = "",
+  radius = "rounded-full",
+  filled = false,
+}: {
+  model: SiteModel;
+  className?: string;
+  radius?: string;
+  /** Telefone como botão cheio da cor de ação (serviços para casa). */
+  filled?: boolean;
+}) {
+  const { primaryAction, phoneHref, business, ctaHref, ctaLabel } = model;
+  if (primaryAction === "call" && phoneHref && business.phone) {
+    return (
+      <HeaderCall
+        model={model}
+        className={
+          filled
+            ? `${radius} bg-ns-primary px-3 text-ns-on-primary transition hover:brightness-110 motion-reduce:transition-none @min-[40rem]:px-4 ${className}`
+            : `text-ns-primary ${className}`
+        }
+      />
+    );
+  }
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      <HeaderCall model={model} />
+      <a
+        href={ctaHref}
+        {...externalProps(ctaHref)}
+        className={`hidden min-h-11 items-center px-4 text-sm font-semibold whitespace-nowrap @3xl:inline-flex ${radius} bg-ns-primary text-ns-on-primary transition hover:brightness-110 motion-reduce:transition-none ${focus}`}
+      >
+        {ctaLabel}
+      </a>
+    </div>
+  );
+}
+
+/** Pessoas do "quem somos": nome, função e uma frase. Foto só se for do dono. */
+export function PeopleList({
+  people,
+  className = "",
+  radius = "rounded-md",
+}: {
+  people: NonNullable<SectionOf<"about">["people"]>;
+  className?: string;
+  radius?: string;
+}) {
+  if (people.length === 0) return null;
+  return (
+    <ul className={`grid gap-8 @min-[40rem]:grid-cols-2 ${className}`}>
+      {people.map((person, index) => (
+        <li key={`${person.name}-${index}`} className="flex gap-5">
+          {isOwnerPhoto(person.image) && (
+            <div
+              data-kind="owner"
+              className={`ns-photo relative aspect-[4/5] w-24 shrink-0 overflow-hidden bg-ns-surface ${radius}`}
+            >
+              <Photo
+                image={person.image}
+                sizes="96px"
+                className="absolute inset-0 size-full object-cover"
+              />
+            </div>
+          )}
+          <div className="min-w-0">
+            <h3 className="font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+              {person.name}
+            </h3>
+            {person.role && (
+              <p className="mt-1 text-xs font-semibold tracking-[0.14em] text-ns-muted uppercase">
+                {person.role}
+              </p>
+            )}
+            {person.note && <p className="mt-3 leading-relaxed text-ns-muted">{person.note}</p>}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Foto do "quem somos" (só do dono; banco de imagens nunca passa por "nossa equipe"). */
+export function AboutPhoto({
+  data,
+  className = "",
+  radius = "",
+}: {
+  data: SectionOf<"about">;
+  className?: string;
+  radius?: string;
+}) {
+  if (!isOwnerPhoto(data.image)) return null;
+  return (
+    <PhotoFrame
+      image={data.image}
+      credit="below"
+      radius={radius}
+      sizes="(min-width: 1024px) 480px, 100vw"
+      className={className}
+    />
+  );
+}
+
+const AREA_NOTE = /^(nearby|surrounding|the surrounding|more|and more|other)\b/i;
+
+/** Lugares da área atendida ("Austin, Round Rock and Buda" → ["Austin", "Round Rock", "Buda"]). */
+export function areaPlaces(serviceArea: string | undefined): { places: string[]; note?: string } {
+  const parts = (serviceArea ?? "")
+    .split(/\s*(?:,|;|\/|\band\b|&)\s*/i)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const note = parts.find((part) => AREA_NOTE.test(part));
+  return { places: parts.filter((part) => !AREA_NOTE.test(part)), note };
+}
+
+/** Lista grande das cidades atendidas (só quando o dono citou mais de uma). */
+export function ServiceAreaList({
+  model,
+  className = "",
+}: {
+  model: SiteModel;
+  className?: string;
+}) {
+  const { places, note } = areaPlaces(model.business.serviceArea);
+  if (places.length < 2) return null;
+  return (
+    <div className={className}>
+      <p className="text-xs font-semibold tracking-[0.18em] uppercase">Serving</p>
+      <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-ns-heading text-2xl leading-tight font-bold @min-[40rem]:text-3xl">
+        {places.map((place) => (
+          <li key={place}>{place}</li>
+        ))}
+      </ul>
+      {note && <p className="mt-4 opacity-75">and {note.replace(/^and\s+/i, "")}</p>}
+    </div>
+  );
+}
+
+type PriceItem = SectionOf<"services">["items"][number];
+
+/** Itens seguidos do mesmo `group` ficam juntos; sem grupo, um bloco sem título. */
+function groupItems(items: PriceItem[]): { name?: string; items: PriceItem[] }[] {
+  const groups: { name?: string; items: PriceItem[] }[] = [];
+  for (const item of items) {
+    const name = item.group?.trim() || undefined;
+    const last = groups.at(-1);
+    if (last && last.name === name) last.items.push(item);
+    else groups.push({ name, items: [item] });
+  }
+  return groups;
+}
+
+/** Os serviços pedem lista de preços (o dono deu preço ou grupos)? */
+export function hasPriceList(data: SectionOf<"services">): boolean {
+  return data.items.some((item) => Boolean(item.price?.trim() || item.group?.trim()));
+}
+
+/**
+ * Cardápio de preços: grupos com micro-rótulo, nome … preço com pontilhado, descrição e
+ * detalhe (duração, frequência) embaixo. Preços só do dono, em números tabulares.
+ */
+export function PriceList({
+  data,
+  className = "",
+  columns = true,
+}: {
+  data: SectionOf<"services">;
+  className?: string;
+  /** Grupos em duas colunas no computador. */
+  columns?: boolean;
+}) {
+  const groups = groupItems(data.items);
+  return (
+    <div
+      className={`grid gap-x-16 gap-y-12 ${columns && groups.length > 1 ? "@3xl:grid-cols-2" : ""} ${className}`}
+    >
+      {groups.map((group, groupIndex) => {
+        const ItemHeading = group.name ? "h4" : "h3";
+        return (
+          <div key={`${group.name ?? "items"}-${groupIndex}`}>
+            {group.name && (
+              <h3 className="border-b border-current/20 pb-3 text-xs font-semibold tracking-[0.18em] uppercase">
+                {group.name}
+              </h3>
+            )}
+            <ul>
+              {group.items.map((item, index) => (
+                <li key={`${item.name}-${index}`} className="py-5">
+                  <div className="flex items-baseline gap-3">
+                    <ItemHeading className="min-w-0 font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+                      {item.name}
+                    </ItemHeading>
+                    {item.price && (
+                      <>
+                        <span
+                          aria-hidden="true"
+                          className="min-w-6 flex-1 border-b border-dotted border-current/40"
+                        />
+                        <p className="shrink-0 font-semibold whitespace-nowrap tabular-nums">
+                          {item.price}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <p className="mt-1.5 max-w-[56ch] leading-relaxed text-ns-muted">
+                    {item.description}
+                  </p>
+                  {item.detail && (
+                    <p className="mt-1.5 text-sm font-medium tabular-nums">{item.detail}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Barra fixa no rodapé do celular. Botão largo = ação principal; quadrado = telefone (ou a rota,
+ * ou o e-mail) com nome acessível. Na ação "ligar", o largo liga e o quadrado é a rota/e-mail.
+ */
+export function MobileCallBar({
+  model,
+  radius = "rounded-md",
+}: {
+  model: SiteModel;
+  radius?: string;
+}) {
+  const { business, phoneHref, ctaHref, ctaLabel, primaryAction, directionsHref } = model;
+  const callWide = primaryAction === "call" && Boolean(phoneHref && business.phone);
+  const email = business.email ? `mailto:${business.email}` : undefined;
+
+  const wide = callWide ? (
+    <a
+      href={phoneHref}
+      className={`flex min-h-12 items-center justify-center gap-2 ${radius} bg-ns-primary px-3 font-semibold text-ns-on-primary ${focus}`}
+    >
+      <PhoneIcon className="size-5 shrink-0" />
+      <span className="whitespace-nowrap tabular-nums">{`Call ${business.phone ?? ""}`}</span>
+    </a>
+  ) : (
+    <a
+      href={ctaHref}
+      {...externalProps(ctaHref)}
+      className={`flex min-h-12 items-center justify-center ${radius} bg-ns-primary px-3 text-center leading-tight font-semibold text-balance text-ns-on-primary ${focus}`}
+    >
+      {ctaLabel}
+    </a>
+  );
+
+  let square: ReactNode = null;
+  const squareClass = `flex min-h-12 items-center justify-center ${radius} border border-ns-border bg-ns-background text-ns-text ${focus}`;
+  if (!callWide && phoneHref && business.phone) {
+    square = (
+      <a href={phoneHref} aria-label={`Call ${business.phone}`} className={squareClass}>
+        <PhoneIcon className="size-5" />
+      </a>
+    );
+  } else if (directionsHref) {
+    square = (
+      <a
+        href={directionsHref}
+        {...externalProps(directionsHref)}
+        aria-label="Directions (opens Google Maps)"
+        className={squareClass}
+      >
+        <MapPinIcon className="size-5" />
+      </a>
+    );
+  } else if (email) {
+    square = (
+      <a href={email} aria-label={`Email ${business.email}`} className={squareClass}>
+        <MailIcon className="size-5" />
+      </a>
+    );
+  }
+
+  return (
+    <nav
+      aria-label="Quick contact"
+      className={`fixed inset-x-0 bottom-0 z-40 grid gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden ${
+        square ? "grid-cols-[1fr_3rem]" : "grid-cols-1"
+      }`}
+    >
+      {wide}
+      {square}
+    </nav>
   );
 }
 

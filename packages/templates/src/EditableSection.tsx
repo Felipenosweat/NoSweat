@@ -9,6 +9,7 @@ export const EDITABLE_SECTION_LABELS: Record<SectionType, string> = {
   faq: "FAQ",
   contact: "Contact",
   gallery: "Gallery",
+  about: "About",
 };
 
 export type EditableSectionProps = {

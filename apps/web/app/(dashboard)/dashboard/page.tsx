@@ -5,7 +5,17 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
 import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardChecklist";
-import { StatusBadge, focusRing } from "@/components/DashboardUi";
+import {
+  ChevronRightIcon,
+  IconTile,
+  StatusBadge,
+  cardClass,
+  cardShadowHover,
+  focusRing,
+  insetDivider,
+  sectionTitle,
+  type IconTone,
+} from "@/components/DashboardUi";
 import { ExampleSiteEmpty } from "@/components/ExampleSiteEmpty";
 import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
@@ -18,6 +28,17 @@ import { clientsNeedingAttention, listClients } from "@/server/clients/service";
 import { getSocialStore } from "@/server/social/store";
 import type { SocialAccountRecord, SocialPostRecord } from "@/server/social/types";
 import { getSiteStore, type SiteRecord } from "@/server/store";
+import {
+  AlertIcon,
+  ApproveIcon,
+  CheckIcon,
+  ClockIcon,
+  ClientsIcon,
+  LinkIcon,
+  MODULE_ICONS,
+  MessagesIcon,
+  SocialIcon,
+} from "../NavIcons";
 import { Greeting } from "./Greeting";
 
 export const metadata: Metadata = { title: "Home" };
@@ -25,9 +46,6 @@ export const metadata: Metadata = { title: "Home" };
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Quantas linhas "Needs you" mostrar no máximo. */
 const MAX_NEEDS = 5;
-
-const sectionTitle =
-  "font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] text-ink";
 
 /** O rascunho tem foto no topo ou alguma foto na galeria? */
 function hasPhotos(site: SiteRecord): boolean {
@@ -140,11 +158,34 @@ async function loadClients(ownerId: string, now: number): Promise<ClientsSnapsho
 /** Quantos retornos aparecem um por um em "Needs you" (o resto vira uma linha só). */
 const MAX_FOLLOW_UP_ROWS = 2;
 
-type NeedRow = { key: string; href: string; text: ReactNode; action: string };
+/** Tipo de cada linha "Needs you": decide o ícone, a cor e a linha de apoio. */
+type NeedKind =
+  | "approval"
+  | "reconnect"
+  | "follow-up"
+  | "clients"
+  | "problem"
+  | "messages"
+  | "next";
 
-/** Número em destaque dentro de uma frase. */
+type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; action: string };
+
+type IconComponent = (props: { className?: string }) => ReactNode;
+
+// Aprovação = âmbar, clientes = azul da marca, retorno = céu, problema = vermelho.
+const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconComponent }> = {
+  approval: { tone: "amber", label: "Social posts", Icon: ApproveIcon },
+  reconnect: { tone: "amber", label: "Instagram", Icon: LinkIcon },
+  "follow-up": { tone: "sky", label: "Follow-up", Icon: ClockIcon },
+  clients: { tone: "brand", label: "Clients", Icon: ClientsIcon },
+  problem: { tone: "red", label: "Social posts", Icon: AlertIcon },
+  messages: { tone: "brand", label: "Website messages", Icon: MessagesIcon },
+  next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
+};
+
+/** Número em destaque dentro de uma frase (peso, não cor). */
 function Count({ value }: { value: number }) {
-  return <span className="font-semibold text-brand tabular-nums">{value}</span>;
+  return <span className="font-semibold tabular-nums">{value}</span>;
 }
 
 function plural(count: number, one: string, many: string): string {
@@ -172,6 +213,7 @@ function needsRows({
   if (drafts > 0) {
     rows.push({
       key: "drafts",
+      kind: "approval",
       href: "/social/review",
       text: (
         <>
@@ -186,6 +228,7 @@ function needsRows({
   if (account?.status === "needs_reconnect") {
     rows.push({
       key: "reconnect",
+      kind: "reconnect",
       href: "/social",
       text: "Your Instagram account needs to be reconnected before posts can go out.",
       action: "Reconnect",
@@ -201,6 +244,7 @@ function needsRows({
           : formatDateOnly(client.followUpOn, today);
       rows.push({
         key: `follow-up-${client.id}`,
+        kind: "follow-up",
         href: `/clients/${encodeURIComponent(client.id)}`,
         text: (
           <>
@@ -214,6 +258,7 @@ function needsRows({
     if (followUpsDue.length > MAX_FOLLOW_UP_ROWS) {
       rows.push({
         key: "follow-ups-more",
+        kind: "follow-up",
         href: "/clients",
         text: "You have more follow-ups due.",
         action: "Clients",
@@ -223,6 +268,7 @@ function needsRows({
     if (clients.newCount > 0) {
       rows.push({
         key: "new-clients",
+        kind: "clients",
         href: "/clients?stage=new",
         text: (
           <>
@@ -245,6 +291,7 @@ function needsRows({
   if (problems > 0) {
     rows.push({
       key: "problems",
+      kind: "problem",
       href: "/social",
       text: (
         <>
@@ -262,6 +309,7 @@ function needsRows({
     if (count === 0) continue;
     rows.push({
       key: `leads-${site.id}`,
+      kind: "messages",
       href: `/sites/${site.id}#messages`,
       text: (
         <>
@@ -284,6 +332,7 @@ function needsRows({
   if (next?.scheduledAt) {
     rows.push({
       key: "next-post",
+      kind: "next",
       href: "/social",
       text: (
         <>
@@ -298,35 +347,58 @@ function needsRows({
   return rows.slice(0, MAX_NEEDS);
 }
 
+/** "Needs you" como lista agrupada do iOS: ícone colorido, a frase, a linha de apoio e a seta. */
 function NeedsYou({ rows }: { rows: NeedRow[] }) {
   return (
     <section aria-labelledby="needs-heading">
-      <h2 id="needs-heading" className={sectionTitle}>
-        Needs you
-      </h2>
-      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        {rows.length === 0 ? (
-          <p className="px-4 py-4 text-[15px] text-slate-600 sm:px-5">
-            Nothing needs you right now.
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 id="needs-heading" className={sectionTitle}>
+          Needs you
+        </h2>
+        {rows.length > 0 && (
+          <p className="text-[13px] text-slate-500 tabular-nums">
+            {rows.length} {plural(rows.length, "item", "items")}
           </p>
+        )}
+      </div>
+      <div className={`mt-3 overflow-hidden ${cardClass}`}>
+        {rows.length === 0 ? (
+          <div className="flex min-h-16 items-center gap-3.5 px-4 py-3 sm:px-5">
+            <IconTile tone="emerald">
+              <CheckIcon className="size-[18px]" />
+            </IconTile>
+            <p className="text-[15px] text-slate-600">Nothing needs you right now.</p>
+          </div>
         ) : (
-          <ul className="divide-y divide-slate-200">
-            {rows.map((row) => (
-              <li key={row.key}>
-                <Link
-                  href={row.href}
-                  className="flex min-h-14 items-center gap-4 px-4 py-2.5 text-[15px] leading-6 text-ink transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
-                >
-                  <span className="min-w-0 flex-1">{row.text}</span>
-                  <span
-                    aria-hidden="true"
-                    className="shrink-0 text-sm font-semibold whitespace-nowrap text-slate-600"
+          <ul>
+            {rows.map((row) => {
+              const style = NEED_STYLES[row.kind];
+              return (
+                <li key={row.key} className={insetDivider}>
+                  <Link
+                    href={row.href}
+                    className="group flex min-h-16 items-center gap-3.5 px-4 py-3 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
                   >
-                    <span className="max-sm:hidden">{row.action} </span>›
-                  </span>
-                </Link>
-              </li>
-            ))}
+                    <IconTile tone={style.tone}>
+                      <style.Icon className="size-[18px]" />
+                    </IconTile>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] leading-[1.45] text-ink">{row.text}</span>
+                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+                        {style.label}
+                      </span>
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-slate-500 transition-colors duration-150 group-hover:text-ink"
+                    >
+                      <span className="max-sm:hidden">{row.action}</span>
+                      <ChevronRightIcon className="size-4 text-slate-400" />
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -334,7 +406,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
   );
 }
 
-const tileBase = "flex min-h-[150px] flex-col gap-1.5 rounded-xl p-4";
+const tileBase = "flex h-full min-h-[10.5rem] flex-col rounded-2xl p-4 sm:p-5";
 
 function LiveTile({
   hub,
@@ -348,33 +420,57 @@ function LiveTile({
   unit: string;
   linkText: string;
 }) {
+  const ModuleIcon = MODULE_ICONS[hub.key];
   return (
     <li>
       <Link
         href={hub.href}
-        className={`${tileBase} h-full border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 ${focusRing}`}
+        className={`group ${tileBase} ${cardClass} transition-[box-shadow,border-color] duration-200 hover:border-slate-300/80 ${cardShadowHover} ${focusRing}`}
       >
-        <h3 className="text-sm font-semibold text-slate-600">{hub.label}</h3>
-        {value !== null && (
-          <p className="mt-1.5 font-display text-[2rem] leading-none font-bold tracking-[-0.02em] text-ink tabular-nums">
-            {value}
-          </p>
-        )}
-        <p className="text-[13px] text-slate-500">{unit}</p>
-        <span className="mt-auto pt-2.5 text-sm font-semibold text-brand">{linkText}</span>
+        <span className="flex items-start justify-between gap-2">
+          <IconTile tone="brand">
+            <ModuleIcon className="size-[18px]" />
+          </IconTile>
+          <ChevronRightIcon className="mt-2.5 size-4 text-slate-300 transition-colors duration-150 group-hover:text-slate-500" />
+        </span>
+        {/* No HTML o rótulo vem antes do número (o leitor de tela diz "Website, 1"); na tela o
+            número grande fica em cima. */}
+        <div className="mt-auto flex flex-col pt-5">
+          <h3 className="text-[15px] leading-6 font-semibold text-ink">{hub.label}</h3>
+          {value !== null && (
+            <span className="order-first font-display text-[2.25rem] leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums">
+              {value}
+            </span>
+          )}
+          <span className="text-[13px] leading-5 text-slate-500">{unit}</span>
+          <span className="sr-only">. {linkText}</span>
+        </div>
       </Link>
     </li>
   );
 }
 
 function SoonTile({ hub }: { hub: HubModule }) {
+  const ModuleIcon = MODULE_ICONS[hub.key];
   return (
-    <li
-      className={`${tileBase} h-full items-start border border-dashed border-slate-300 bg-surface`}
-    >
-      <h3 className="text-sm font-semibold text-slate-600">{hub.label}</h3>
-      <StatusBadge tone="neutral">Coming soon</StatusBadge>
-      {hub.soonText && <p className="mt-1 text-sm text-slate-500">{hub.soonText}</p>}
+    <li className={`${tileBase} border border-slate-200/70 bg-white/50`}>
+      <span className="flex items-start justify-between gap-2">
+        <IconTile tone="slate">
+          <ModuleIcon className="size-[18px]" />
+        </IconTile>
+        <span aria-hidden="true">
+          <StatusBadge tone="neutral">Soon</StatusBadge>
+        </span>
+      </span>
+      <div className="mt-auto pt-5">
+        <h3 className="text-[15px] leading-6 font-semibold text-slate-600">
+          {hub.label}
+          <span className="sr-only"> (coming soon)</span>
+        </h3>
+        {hub.soonText && (
+          <p className="mt-0.5 text-[13px] leading-5 text-slate-500">{hub.soonText}</p>
+        )}
+      </div>
     </li>
   );
 }
@@ -395,7 +491,7 @@ function YourOffice({
       <h2 id="office-heading" className={sectionTitle}>
         Your office
       </h2>
-      <ul className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <ul className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {MODULES.map((hub) => {
           if (hub.comingSoon) return <SoonTile key={hub.key} hub={hub} />;
           if (hub.key === "website") {
@@ -523,7 +619,7 @@ export default async function DashboardPage() {
         leadCounts={leadCounts}
         headingLevel={3}
         emptyState={
-          <div className="mt-3">
+          <div className="mt-4">
             <ExampleSiteEmpty />
           </div>
         }
@@ -536,7 +632,7 @@ export default async function DashboardPage() {
       <Greeting firstName={firstName} nowIso={new Date(now).toISOString()} />
 
       {latest ? (
-        <div className="mt-6 grid gap-10 lg:mt-8 lg:gap-12">
+        <div className="mt-8 grid gap-10 sm:gap-12 lg:mt-10 lg:gap-14">
           {needs}
           {office}
           <DashboardChecklist
@@ -550,7 +646,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         // Conta sem sites: primeiro o convite para criar, depois o resto.
-        <div className="mt-6 grid gap-10 lg:mt-8 lg:gap-12">
+        <div className="mt-8 grid gap-10 sm:gap-12 lg:mt-10 lg:gap-14">
           {yourSites}
           {needs}
           {office}

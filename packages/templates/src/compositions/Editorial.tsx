@@ -2,26 +2,37 @@ import type { Section, SectionOf } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import { Gallery } from "../sections/Gallery";
 import type { TemplateProps } from "../types";
-import { MobileCallBar } from "../templates/home-services/parts";
 import { buildModel, renderSections, type SiteModel } from "./model";
 import {
+  AboutPhoto,
   ContactFormBlock,
   ContactLines,
   FaqList,
-  HeaderCall,
+  HeaderAction,
   HeroActions,
   HighlightList,
+  MobileCallBar,
   NavLinks,
+  PeopleList,
   PhotoFrame,
+  PriceList,
   SimpleFooter,
   Wrap,
+  hasPriceList,
   sectionY,
 } from "./shared";
 
+/** Revista: cantos retos em tudo (botões, fotos e formulário). */
+const RADIUS = "rounded-none";
+
+const h2 =
+  "font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl";
+
 /**
  * Composição EDITORIAL (revista): título enorme em largura total, texto e botões numa linha
- * abaixo, foto larga com legenda, serviços como sumário numerado, perguntas com o título
- * fixo ao lado e o nome do negócio grande no rodapé. Linhas finas no lugar de cards.
+ * abaixo, foto larga com legenda, serviços como sumário numerado (ou cardápio de preços),
+ * galeria em folha de contato, perguntas com o título fixo ao lado e o nome do negócio grande
+ * no rodapé. Linhas finas no lugar de cards.
  */
 export function EditorialComposition({
   spec,
@@ -40,16 +51,52 @@ export function EditorialComposition({
         return <EditorialHero key={key} model={model} data={section} />;
       case "services":
         return <EditorialServices key={key} id={id} model={model} data={section} />;
+      case "about":
+        return (
+          <section
+            key={key}
+            id={id}
+            className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
+          >
+            <Wrap className="grid gap-10 @5xl:grid-cols-12">
+              <div className="@5xl:col-span-4">
+                <h2 className={h2}>{model.titleOf(section)}</h2>
+                <AboutPhoto data={section} radius={RADIUS} className="mt-10" />
+              </div>
+              <div className="@5xl:col-span-7 @5xl:col-start-6">
+                <p className="font-ns-heading text-2xl leading-snug text-pretty whitespace-pre-line @min-[40rem]:text-3xl">
+                  {section.body}
+                </p>
+                {section.people && (
+                  <PeopleList
+                    people={section.people}
+                    radius={RADIUS}
+                    className="mt-14 border-t border-ns-border pt-10"
+                  />
+                )}
+              </div>
+            </Wrap>
+          </section>
+        );
       case "testimonials":
-        return <EditorialQuotes key={key} id={id} data={section} />;
+        return <EditorialQuotes key={key} id={id} model={model} data={section} />;
       case "gallery":
-        return <Gallery key={key} id={id} data={section} />;
+        return (
+          <Gallery
+            key={key}
+            id={id}
+            data={section}
+            defaultTitle={model.titleOf(section)}
+            variant="sheet"
+            radius={RADIUS}
+          />
+        );
       case "faq":
         return (
           <section key={key} id={id} className={`scroll-mt-24 ${sectionY}`}>
             <Wrap className="grid gap-10 @5xl:grid-cols-12">
-              <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @5xl:sticky @5xl:top-28 @5xl:col-span-4 @5xl:self-start @min-[40rem]:text-5xl">
-                {model.words.faqTitle}
+              <h2 className={`${h2} @5xl:sticky @5xl:top-28 @5xl:col-span-4 @5xl:self-start`}>
+                {model.titleOf(section)}
               </h2>
               <FaqList data={section} className="@5xl:col-span-7 @5xl:col-start-6" />
             </Wrap>
@@ -61,13 +108,15 @@ export function EditorialComposition({
             <Wrap className="grid gap-12 @5xl:grid-cols-12">
               <div className="@5xl:col-span-5">
                 <h2 className="font-ns-heading text-4xl leading-[1.05] font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
-                  {model.words.contactTitle}
+                  {model.titleOf(section)}
                 </h2>
                 <ContactLines model={model} className="mt-10" />
               </div>
               <ContactFormBlock
                 data={section}
+                model={model}
                 endpoint={contactEndpoint}
+                radius="none"
                 className="@5xl:col-span-6 @5xl:col-start-7"
               />
             </Wrap>
@@ -90,35 +139,31 @@ export function EditorialComposition({
           >
             {model.business.name}
           </a>
-          <div className="flex items-center gap-8">
+          <div className="flex shrink-0 items-center gap-8">
             <NavLinks
               model={model}
-              className="hidden @3xl:block"
+              className="hidden @5xl:block"
               linkClassName="text-ns-muted hover:text-ns-text"
             />
-            <HeaderCall model={model} className="text-ns-primary" />
+            <HeaderAction model={model} radius={RADIUS} />
           </div>
         </Wrap>
       </header>
       <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
       <SimpleFooter model={model} bigName className="border-t border-ns-border" />
-      <MobileCallBar
-        phone={model.business.phone}
-        ctaLabel={model.ctaLabel}
-        ctaHref={model.ctaHref}
-        emphasis={model.primaryAction === "call" ? "call" : "cta"}
-      />
+      <MobileCallBar model={model} radius={RADIUS} />
     </div>
   );
 }
 
 function EditorialHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> }) {
+  const kicker = [model.business.category, model.where].filter(Boolean).join(" · ");
   return (
     <section className="pt-12 pb-(--ns-section-y) @min-[40rem]:pt-16 @5xl:pt-20">
       <Wrap>
-        {model.where && (
+        {kicker && (
           <p className="text-sm font-semibold tracking-[0.18em] text-ns-primary uppercase">
-            {model.where}
+            {kicker}
           </p>
         )}
         <h1 className="mt-5 max-w-[15ch] font-ns-heading text-[length:clamp(2.75rem,9cqw,7.5rem)] leading-[0.95] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
@@ -129,7 +174,7 @@ function EditorialHero({ model, data }: { model: SiteModel; data: SectionOf<"her
             {data.subtitle}
           </p>
           <div className="@5xl:col-span-6 @5xl:justify-self-end">
-            <HeroActions model={model} radius="rounded-none" />
+            <HeroActions model={model} radius={RADIUS} />
           </div>
         </div>
         <HighlightList highlights={model.business.highlights} className="mt-8 text-ns-muted" />
@@ -141,7 +186,6 @@ function EditorialHero({ model, data }: { model: SiteModel; data: SectionOf<"her
             eager
             credit="below"
             sizes="(min-width: 1280px) 1216px, 100vw"
-            className=""
             imgClassName="aspect-[4/3] w-full object-cover @min-[40rem]:aspect-[16/9] @5xl:aspect-[21/9]"
           />
         </Wrap>
@@ -164,49 +208,73 @@ function EditorialServices({
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap>
         <div className="flex flex-col gap-3 @5xl:flex-row @5xl:items-end @5xl:justify-between">
-          <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
-            {model.words.servicesTitle}
-          </h2>
-          {model.where && <p className="text-ns-muted">Serving {model.where}</p>}
+          <h2 className={h2}>{model.titleOf(data)}</h2>
+          {model.where && !hasPriceList(data) && (
+            <p className="text-ns-muted">
+              {model.areaLabel} {model.where}
+            </p>
+          )}
         </div>
-        <ol className="mt-12 border-b border-ns-border">
-          {data.items.map((item, index) => (
-            <li
-              key={`${item.name}-${index}`}
-              className="grid gap-3 border-t border-ns-border py-8 @3xl:grid-cols-12 @3xl:gap-8"
-            >
-              <span className="font-ns-heading text-sm font-semibold text-ns-primary tabular-nums @3xl:col-span-1 @3xl:pt-2">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3 className="font-ns-heading text-2xl leading-snug font-bold text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl @3xl:col-span-5">
-                {item.name}
-              </h3>
-              <p className="max-w-[52ch] leading-relaxed text-ns-muted @3xl:col-span-6 @3xl:pt-1.5">
-                {item.description}
-              </p>
-            </li>
-          ))}
-        </ol>
+        {hasPriceList(data) ? (
+          <PriceList data={data} className="mt-12" />
+        ) : (
+          <ol className="mt-12 border-b border-ns-border">
+            {data.items.map((item, index) => (
+              <li
+                key={`${item.name}-${index}`}
+                className="grid gap-3 border-t border-ns-border py-8 @3xl:grid-cols-12 @3xl:gap-8"
+              >
+                <span className="font-ns-heading text-sm font-semibold text-ns-primary tabular-nums @3xl:col-span-1 @3xl:pt-2">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3 className="font-ns-heading text-2xl leading-snug font-bold text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl @3xl:col-span-5">
+                  {item.name}
+                </h3>
+                <div className="max-w-[52ch] @3xl:col-span-6 @3xl:pt-1.5">
+                  <p className="leading-relaxed text-ns-muted">{item.description}</p>
+                  {item.detail && (
+                    <p className="mt-2 text-sm font-medium tabular-nums">{item.detail}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
       </Wrap>
     </section>
   );
 }
 
-function EditorialQuotes({ id, data }: { id?: string; data: SectionOf<"testimonials"> }) {
+function EditorialQuotes({
+  id,
+  model,
+  data,
+}: {
+  id?: string;
+  model: SiteModel;
+  data: SectionOf<"testimonials">;
+}) {
   if (data.items.length === 0) return null;
   return (
     <section id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
-      <Wrap className="space-y-16">
-        {data.items.map((item, index) => (
-          <figure key={`${item.author}-${index}`} className="max-w-4xl">
-            <blockquote className="font-ns-heading text-3xl leading-snug text-pretty @min-[40rem]:text-4xl">
-              &ldquo;{item.quote}&rdquo;
-            </blockquote>
-            <figcaption className="mt-6 text-sm font-semibold tracking-wider text-ns-muted uppercase">
-              {item.author}
-            </figcaption>
-          </figure>
-        ))}
+      <Wrap>
+        <h2 className="text-sm font-semibold tracking-[0.18em] text-ns-muted uppercase">
+          {model.titleOf(data)}
+        </h2>
+        <ul className="mt-12 space-y-16">
+          {data.items.map((item, index) => (
+            <li key={`${item.author}-${index}`}>
+              <figure className="max-w-4xl">
+                <blockquote className="font-ns-heading text-3xl leading-snug text-pretty @min-[40rem]:text-4xl">
+                  &ldquo;{item.quote}&rdquo;
+                </blockquote>
+                <figcaption className="mt-6 text-sm font-semibold tracking-wider text-ns-muted uppercase">
+                  {item.author}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
       </Wrap>
     </section>
   );

@@ -3,7 +3,7 @@
 import { ClientActivityResponse, CreateClientActivityRequest } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
-import { primaryButton } from "@/components/DashboardUi";
+import { cardClass, primaryButton } from "@/components/DashboardUi";
 import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientUrl, clientsApi, toClientsError, type ClientsApiError } from "../api";
 import { fieldClass, fieldErrorClass, labelClass } from "../ui";
@@ -87,7 +87,7 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
       onSubmit={(event) => void submit(event)}
       noValidate
       aria-label="Add to history"
-      className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5"
+      className={`p-4 sm:p-5 ${cardClass}`}
     >
       <fieldset disabled={pending}>
         <legend className="sr-only">What are you adding?</legend>

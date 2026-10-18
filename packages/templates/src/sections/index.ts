@@ -1,7 +1,9 @@
-export { Contact, type ContactProps } from "./Contact";
 export { Faq, type FaqProps } from "./Faq";
-export { Hero, type HeroProps } from "./Hero";
-export { Services, type ServicesProps } from "./Services";
-export { Testimonials, type TestimonialsProps } from "./Testimonials";
-export { ContactForm, type ContactFormProps } from "./ContactForm";
-export { Gallery, type GalleryProps } from "./Gallery";
+export { foldMessage } from "./fold-message";
+export {
+  ContactForm,
+  type ContactFormPreset,
+  type ContactFormProps,
+  type ContactFormRadius,
+} from "./ContactForm";
+export { Gallery, type GalleryProps, type GalleryVariant } from "./Gallery";

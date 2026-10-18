@@ -163,10 +163,12 @@ export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan
       : signals.primaryAction === "call"
         ? "compact"
         : "balanced";
+  // Comida e salão nunca em preto e branco: a cor é o próprio produto (docs/design/model-sites.md).
   const imageTreatment: DesignPlan["imageTreatment"] =
     (tones.has("refined") || tones.has("minimal")) &&
     (composition === "editorial" || composition === "typographic") &&
-    signals.industry !== "food"
+    signals.industry !== "food" &&
+    signals.industry !== "beauty"
       ? "monochrome"
       : "natural";
 

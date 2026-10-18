@@ -259,6 +259,34 @@ export function SectionFields({
         />
       );
 
+    case "about":
+      // Texto do "quem somos". Pessoas e foto ficam como estão (sem campos ainda).
+      return (
+        <div className="space-y-4">
+          <Field label="Title (optional)">
+            <input
+              className={inputClass}
+              value={section.title ?? ""}
+              maxLength={80}
+              onChange={(e) =>
+                onChange((s) => void (s.type === "about" && (s.title = e.target.value)))
+              }
+            />
+          </Field>
+          <Field label="About your business">
+            <textarea
+              rows={5}
+              className={textareaClass}
+              value={section.body}
+              maxLength={700}
+              onChange={(e) =>
+                onChange((s) => void (s.type === "about" && (s.body = e.target.value)))
+              }
+            />
+          </Field>
+        </div>
+      );
+
     default: {
       const unhandled: never = section;
       return unhandled;

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { displayWordSpacing } from "@/components/DashboardUi";
 import { Logo } from "@/components/Logo";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
@@ -32,8 +33,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // "Log in" e "Sign up" em vez da conta (sem barra lateral nem abas).
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-surface">
-        <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
+      <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
             <nav aria-label="Main" className="flex items-center gap-3 sm:gap-6">
@@ -45,14 +46,17 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               </Link>
               <Link
                 href="/signup"
-                className="inline-flex h-10 items-center rounded-lg bg-brand px-3 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:px-4"
+                className="inline-flex min-h-11 items-center rounded-xl bg-brand px-3.5 text-sm font-semibold whitespace-nowrap text-white transition-colors duration-150 hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:translate-y-px sm:min-h-10 sm:px-4"
               >
                 Sign up
               </Link>
             </nav>
           </div>
         </header>
-        <main className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+        <main
+          id="main"
+          className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24"
+        >
           {children}
         </main>
       </div>

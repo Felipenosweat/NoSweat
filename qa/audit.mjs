@@ -4,7 +4,7 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "https://nosweatfd.com";
-const PAGES = ["/", "/create", "/pricing", "/login", "/signup", "/terms", "/privacy", "/credits", "/examples/joes-plumbing", "/dashboard"];
+const PAGES = ["/", "/create", "/pricing", "/login", "/signup", "/terms", "/privacy", "/credits", "/examples/joes-plumbing", "/examples/glow-salon", "/examples/rosas-kitchen", "/examples/hale-ortiz", "/examples/sparkle-cleaning", "/examples/vega-photo", "/dashboard"];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1440, height: 900 },

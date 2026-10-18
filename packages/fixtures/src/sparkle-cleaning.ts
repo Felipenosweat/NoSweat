@@ -1,5 +1,6 @@
 import type { SiteSpec } from "@nosweat/schema";
 
+// Segundo modelo de serviços para casa, na composição modular (ver docs/design/model-sites.md).
 export const sparkleCleaning: SiteSpec = {
   version: 1,
   template: "home-services",
@@ -11,6 +12,7 @@ export const sparkleCleaning: SiteSpec = {
   },
   business: {
     name: "Sparkle & Co. Cleaning",
+    category: "House cleaning",
     phone: "(508) 555-0142",
     email: "hello@sparkleco.example.com",
     city: "Worcester",
@@ -31,10 +33,10 @@ export const sparkleCleaning: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "A Spotless Home Without Lifting a Finger",
+      title: "House cleaning in Worcester, priced before the first visit",
       subtitle:
-        "Weekly, biweekly and one-time house cleaning across Worcester County. Tell us about your home and we'll send a clear price before we start.",
-      ctaLabel: "Get a Cleaning Quote",
+        "Weekly, biweekly and one-time cleaning. Tell us about your home and we'll send a price by home size before we start.",
+      ctaLabel: "Get a cleaning quote",
       imageQuery: "cleaning crew bright kitchen",
       image: {
         url: "/photos/cleaner.webp",
@@ -47,31 +49,38 @@ export const sparkleCleaning: SiteSpec = {
         },
         width: 2400,
         height: 1601,
+        focus: "60% 40%",
       },
     },
     {
       type: "services",
       items: [
         {
-          name: "Recurring Cleaning",
-          description:
-            "Weekly or biweekly visits that keep kitchens, bathrooms and floors ready for company.",
+          name: "Recurring cleaning",
+          description: "Kitchens, bathrooms, floors and dusting, by the same team each visit.",
+          detail: "Weekly or every two weeks",
         },
         {
-          name: "Deep Cleaning",
+          name: "Deep cleaning",
           description:
             "Baseboards, inside appliances, grout and the corners a regular clean doesn't reach.",
+          detail: "One time",
         },
         {
-          name: "Move-In / Move-Out",
-          description:
-            "Empty-home cleaning so you can hand back the keys or move in to a fresh start.",
+          name: "Move-in / move-out",
+          description: "Empty-home cleaning so you can hand back the keys or move in fresh.",
+          detail: "One time",
         },
         {
-          name: "Post-Renovation",
+          name: "Post-renovation",
           description: "Dust and debris removal after contractors finish, top to bottom.",
+          detail: "One time",
         },
       ],
+    },
+    {
+      type: "about",
+      body: "Recurring clients get the same two-person team every visit, and we bring our own supplies. You get the price before the first visit, set by the size of your home.",
     },
     {
       type: "faq",
@@ -93,7 +102,7 @@ export const sparkleCleaning: SiteSpec = {
     {
       type: "contact",
       showForm: true,
-      showMap: true,
+      showMap: false,
     },
   ],
 };

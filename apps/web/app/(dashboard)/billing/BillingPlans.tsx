@@ -9,6 +9,7 @@ import {
 } from "@nosweat/schema";
 import { useState } from "react";
 import {
+  focusRing,
   panelClass,
   panelText,
   panelTitle,
@@ -139,7 +140,7 @@ export function BillingPlans({
       <div
         role="group"
         aria-label="Billing period"
-        className="inline-flex rounded-lg border border-slate-200 bg-white p-1"
+        className="inline-flex rounded-xl bg-slate-200/60 p-1"
       >
         {(["monthly", "annual"] as const).map((value) => (
           <button
@@ -147,8 +148,10 @@ export function BillingPlans({
             type="button"
             aria-pressed={interval === value}
             onClick={() => setBillingInterval(value)}
-            className={`min-h-10 rounded-md px-4 text-sm font-semibold ${
-              interval === value ? "bg-ink text-white" : "text-slate-600 hover:text-ink"
+            className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
+              interval === value
+                ? "bg-white text-ink shadow-[0_1px_2px_rgb(7_27_51/0.08),0_1px_1px_rgb(7_27_51/0.04)]"
+                : "text-slate-600 hover:text-ink"
             }`}
           >
             {value === "monthly" ? "Monthly" : "Annual · 2 months free"}
@@ -160,7 +163,7 @@ export function BillingPlans({
         {plans.map((plan) => (
           <li key={plan.id} className={`${panelClass} flex flex-col`}>
             <h2 className={panelTitle}>{plan.name}</h2>
-            <p className="mt-3 font-display text-3xl font-bold text-ink">
+            <p className="mt-3 font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
               {interval === "annual" ? plan.annual : plan.monthly}
               <span className="text-base font-medium text-slate-500">
                 {interval === "annual" ? "/yr" : "/mo"}

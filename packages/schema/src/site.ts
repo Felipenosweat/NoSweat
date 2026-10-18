@@ -9,6 +9,11 @@ const HttpsUrl = z
   .string()
   .max(1000)
   .regex(/^(https:\/\/\S+|\/photos\/[\w./-]+)$/);
+/** Link externo do negócio (agendamento, cardápio, redes): só https://. */
+const ExternalUrl = z
+  .string()
+  .max(500)
+  .regex(/^https:\/\/\S+$/);
 
 /**
  * Foto do site. Quem preenche é a PLATAFORMA (busca em banco de imagens ou upload do dono),
@@ -34,6 +39,8 @@ export const SiteImage = z.object({
     .string()
     .regex(/^\d{1,3}% \d{1,3}%$/)
     .optional(),
+  /** Legenda curta (ex.: "Ana & Luis · Biltmore Estate · 2025", o nome do prato, a técnica). */
+  caption: z.string().max(100).optional(),
 });
 export type SiteImage = z.infer<typeof SiteImage>;
 
@@ -70,6 +77,9 @@ export const Theme = z.object({
 export type Theme = z.infer<typeof Theme>;
 export type FontId = z.infer<typeof FontId>;
 
+/** Título de seção escrito pelo dono (opcional; sem ele, o título padrão do ramo). */
+const SectionTitle = z.string().max(80);
+
 export const Section = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("hero"),
@@ -83,22 +93,66 @@ export const Section = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("services"),
-    items: z.array(z.object({ name: z.string(), description: z.string() })).max(8),
+    /** Título da seção escrito pelo dono; sem ele, o título padrão do ramo. */
+    title: SectionTitle.optional(),
+    items: z
+      .array(
+        z.object({
+          name: z.string(),
+          description: z.string(),
+          /** Preço dito pelo dono (ex.: "from $85", "$45"). Nunca inventado. */
+          price: z.string().max(40).optional(),
+          /** Detalhe curto: duração, frequência ("Monthly", "45 min"). */
+          detail: z.string().max(80).optional(),
+          /** Grupo do cardápio de preços (ex.: "Color", "Tacos"). Itens seguidos se juntam. */
+          group: z.string().max(40).optional(),
+        }),
+      )
+      .max(8),
   }),
   z.object({
     type: z.literal("testimonials"),
+    title: SectionTitle.optional(),
     items: z.array(z.object({ quote: z.string(), author: z.string() })).max(6),
   }),
   z.object({
     type: z.literal("faq"),
+    title: SectionTitle.optional(),
     items: z.array(z.object({ q: z.string(), a: z.string() })).max(10),
   }),
-  z.object({ type: z.literal("contact"), showForm: z.boolean(), showMap: z.boolean() }),
+  z.object({
+    type: z.literal("contact"),
+    title: SectionTitle.optional(),
+    showForm: z.boolean(),
+    showMap: z.boolean(),
+  }),
   /** Galeria de fotos DO DONO (só kind "owner"). A IA nunca cria esta seção. */
   z.object({
     type: z.literal("gallery"),
-    title: z.string().max(80).optional(),
+    title: SectionTitle.optional(),
     images: z.array(SiteImage).max(12),
+  }),
+  /**
+   * Quem somos: um texto curto do dono e, opcionalmente, as pessoas que atendem.
+   * Fotos aqui só aparecem se forem do dono (kind "owner"), nunca de banco de imagens.
+   */
+  z.object({
+    type: z.literal("about"),
+    title: SectionTitle.optional(),
+    body: z.string().max(700),
+    image: SiteImage.optional(),
+    people: z
+      .array(
+        z.object({
+          name: z.string().max(80),
+          role: z.string().max(80).optional(),
+          /** Uma frase sobre a pessoa, nas palavras do dono (credenciais só se ele disse). */
+          note: z.string().max(200).optional(),
+          image: SiteImage.optional(),
+        }),
+      )
+      .max(6)
+      .optional(),
   }),
 ]);
 export type Section = z.infer<typeof Section>;
@@ -109,7 +163,7 @@ export type SectionOf<T extends SectionType> = Extract<Section, { type: T }>;
 /**
  * Composição da página: a ARQUITETURA do site (topo, ritmo das seções, navegação), separada do
  * ramo do negócio (`template`). Dois negócios do mesmo ramo podem ter composições diferentes.
- * - "service-led": telefone sempre à vista, topo em duas colunas com foto, cards de serviço.
+ * - "service-led": telefone sempre à vista, faixa de fatos, serviços em linhas, cidades atendidas.
  * - "editorial": título enorme de revista, foto larga com legenda, serviços numerados em lista.
  * - "immersive": foto de ponta a ponta no topo, texto sobre a foto, faixa de informações.
  * - "typographic": tipografia como imagem principal, bloco de cor, índice de serviços.
@@ -170,6 +224,24 @@ export const SiteSpec = z.object({
      * Viram os selos do site. Nunca inventar: sem confirmação, fica vazio.
      */
     highlights: z.array(z.string().max(40)).max(4).optional(),
+    /** Rua e número (ex.: "2112 Logan Ave"). Cidade e estado ficam em `city`/`state`. */
+    address: z.string().max(120).optional(),
+    /** Categoria em poucas palavras, como o cliente procuraria (ex.: "Plumber", "Hair salon"). */
+    category: z.string().max(60).optional(),
+    /** Links do negócio que o dono informou. O botão principal usa `booking` ou `order`. */
+    links: z
+      .object({
+        booking: ExternalUrl.optional(),
+        order: ExternalUrl.optional(),
+        menu: ExternalUrl.optional(),
+        instagram: ExternalUrl.optional(),
+        facebook: ExternalUrl.optional(),
+        tiktok: ExternalUrl.optional(),
+        google: ExternalUrl.optional(),
+        yelp: ExternalUrl.optional(),
+        linkedin: ExternalUrl.optional(),
+      })
+      .optional(),
   }),
   theme: Theme,
   sections: z.array(Section).min(2).max(10),

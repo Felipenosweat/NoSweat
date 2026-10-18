@@ -3,7 +3,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { focusRing, panelClass, panelText, primaryButton } from "@/components/DashboardUi";
+import {
+  IconTile,
+  PageHeader,
+  cardClass,
+  focusRing,
+  primaryButton,
+  secondaryButton,
+} from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import {
   CLIENTS_TIME_ZONE,
@@ -16,7 +23,8 @@ import {
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { listClients } from "@/server/clients/service";
-import { PlusIcon, SearchIcon, StageBadge, fieldClass, pageTitle, sectionTitle } from "./ui";
+import { ClientsIcon } from "../NavIcons";
+import { PlusIcon, SearchIcon, StageBadge, fieldClass, sectionTitle } from "./ui";
 
 export const metadata: Metadata = { title: "Clients", robots: { index: false } };
 
@@ -52,7 +60,8 @@ function filterHref(stage: ClientStage | null, q: string): string {
   return query ? `/clients?${query}` : "/clients";
 }
 
-const filterItem = `inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-ink aria-[current=page]:bg-ink aria-[current=page]:text-white sm:min-h-9 ${focusRing}`;
+// Controle segmentado (como o do iOS): trilho cinza e o filtro ativo numa cápsula branca.
+const filterItem = `inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-lg px-1.5 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink aria-[current=page]:bg-white aria-[current=page]:text-ink aria-[current=page]:shadow-[0_1px_2px_rgb(7_27_51/0.08),0_1px_1px_rgb(7_27_51/0.04)] sm:min-h-9 sm:w-auto sm:gap-1.5 sm:px-3 ${focusRing}`;
 
 function StageFilter({
   active,
@@ -71,7 +80,8 @@ function StageFilter({
   ];
   return (
     <nav aria-label="Filter by stage">
-      <ul className="flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1">
+      {/* Celular: 3 colunas que nunca passam da largura da tela; computador: uma linha só. */}
+      <ul className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-1 rounded-xl bg-slate-200/60 p-1 sm:flex sm:w-fit sm:flex-wrap">
         {items.map((item) => (
           <li key={item.label}>
             <Link
@@ -80,7 +90,7 @@ function StageFilter({
               className={filterItem}
             >
               {item.label}
-              <span className="font-normal tabular-nums opacity-70">{item.count}</span>
+              <span className="font-normal tabular-nums">{item.count}</span>
             </Link>
           </li>
         ))}
@@ -107,10 +117,7 @@ function SearchForm({ q, stage }: { q: string; stage: ClientStage | null }) {
           className={`${fieldClass} h-11 pl-9 sm:h-10`}
         />
       </div>
-      <button
-        type="submit"
-        className={`inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-4 text-[15px] font-semibold text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 sm:min-h-10 ${focusRing}`}
-      >
+      <button type="submit" className={secondaryButton}>
         Search
       </button>
     </form>
@@ -135,44 +142,66 @@ function FollowUp({ date, today }: { date: string; today: string }) {
 const columns =
   "sm:grid sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_7.5rem_8rem] sm:items-center sm:gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_7.5rem_8rem_11rem]";
 
+/** Letra do avatar do cliente (primeira letra do nome). */
+function initialOf(name: string): string {
+  return name.trim().charAt(0).toUpperCase() || "?";
+}
+
+function Avatar({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-[13px] font-semibold text-slate-600 ${className}`}
+    >
+      {initialOf(name)}
+    </span>
+  );
+}
+
 function ClientRow({ client, today }: { client: Client; today: string }) {
   const contact = [client.phone, client.email].filter(Boolean).join(" · ");
   return (
-    <li>
+    // Linha fina recuada até o texto no celular (depois do avatar); inteira no computador.
+    <li className="relative before:absolute before:top-0 before:right-0 before:left-16 before:h-px before:bg-slate-200/70 first:before:hidden sm:before:left-0">
       <Link
         href={`/clients/${encodeURIComponent(client.id)}`}
-        className={`block px-4 py-3 text-[15px] leading-6 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5 ${columns}`}
+        className={`flex items-start gap-3 px-4 py-3 text-[15px] leading-6 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5 ${columns}`}
       >
-        <span className="flex min-w-0 items-center justify-between gap-3 sm:block">
-          <span className="truncate font-semibold text-ink">{client.name}</span>
-          <span className="sm:hidden">
+        {/* Avatar do celular; no computador ele fica dentro da coluna do nome. */}
+        <Avatar name={client.name} className="grid sm:hidden" />
+        <span className="min-w-0 flex-1 sm:contents">
+          <span className="flex min-w-0 items-center justify-between gap-3 sm:justify-start">
+            <Avatar name={client.name} className="hidden sm:grid" />
+            <span className="truncate font-semibold text-ink">{client.name}</span>
+            <span className="sm:hidden">
+              <StageBadge stage={client.stage} />
+            </span>
+          </span>
+          <span className="block truncate text-slate-600">
+            {contact || <span className="text-slate-500">No contact info</span>}
+          </span>
+          <span className="hidden sm:block">
             <StageBadge stage={client.stage} />
           </span>
-        </span>
-        <span className="block truncate text-slate-600">
-          {contact || <span className="text-slate-500">No contact info</span>}
-        </span>
-        <span className="hidden sm:block">
-          <StageBadge stage={client.stage} />
-        </span>
-        <span className="mt-1 flex flex-wrap gap-x-3 text-[13px] text-slate-500 sm:mt-0 sm:block sm:text-[15px]">
-          {client.followUpOn ? (
-            <span>
-              <span className="sm:sr-only">Follow up </span>
-              <FollowUp date={client.followUpOn} today={today} />
+          <span className="mt-1 flex flex-wrap gap-x-3 text-[13px] text-slate-500 sm:mt-0 sm:block sm:text-[15px]">
+            {client.followUpOn ? (
+              <span>
+                <span className="sm:sr-only">Follow up </span>
+                <FollowUp date={client.followUpOn} today={today} />
+              </span>
+            ) : (
+              <span className="max-sm:hidden" aria-hidden="true">
+                —
+              </span>
+            )}
+            <span className="sm:hidden">
+              Last activity <LocalTime iso={client.lastActivityAt} className="tabular-nums" />
             </span>
-          ) : (
-            <span className="max-sm:hidden" aria-hidden="true">
-              —
-            </span>
-          )}
-          <span className="sm:hidden">
-            Last activity <LocalTime iso={client.lastActivityAt} className="tabular-nums" />
           </span>
-        </span>
-        <span className="hidden text-[13px] text-slate-500 lg:block">
-          <span className="sr-only">Last activity </span>
-          <LocalTime iso={client.lastActivityAt} className="tabular-nums" />
+          <span className="hidden text-[13px] text-slate-500 lg:block">
+            <span className="sr-only">Last activity </span>
+            <LocalTime iso={client.lastActivityAt} className="tabular-nums" />
+          </span>
         </span>
       </Link>
     </li>
@@ -183,9 +212,10 @@ function ListHeader() {
   return (
     <div
       aria-hidden="true"
-      className={`hidden border-b border-slate-200 px-4 py-2.5 text-[13px] font-medium text-slate-500 sm:px-5 ${columns}`}
+      className={`hidden border-b border-slate-200/70 bg-slate-50/70 px-4 py-2.5 text-[13px] font-medium text-slate-500 sm:px-5 ${columns}`}
     >
-      <span>Name</span>
+      {/* Recuo do avatar (36px + 12px) para alinhar com os nomes. */}
+      <span className="sm:pl-12">Name</span>
       <span>Contact</span>
       <span>Stage</span>
       <span>Follow up</span>
@@ -223,30 +253,32 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className={pageTitle}>Clients</h1>
-          <p className={`mt-2 max-w-[60ch] ${panelText}`}>
-            Everyone who contacted you, and everyone you&rsquo;ve worked for.
-          </p>
-        </div>
-        {!noClientsAtAll && !readOnly && addClientLink}
-      </div>
+      <PageHeader
+        title="Clients"
+        description={<>Everyone who contacted you, and everyone you&rsquo;ve worked for.</>}
+        actions={!noClientsAtAll && !readOnly ? addClientLink : undefined}
+      />
 
       {clients === null ? (
-        <p role="alert" className="mt-8 rounded-lg bg-red-50 px-4 py-3 text-[15px] text-red-700">
+        <p role="alert" className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-[15px] text-red-700">
           We couldn&rsquo;t load your clients. Please refresh the page.
         </p>
       ) : noClientsAtAll ? (
-        <section aria-labelledby="clients-empty" className={`mt-8 max-w-2xl ${panelClass}`}>
-          <h2 id="clients-empty" className={sectionTitle}>
+        <section
+          aria-labelledby="clients-empty"
+          className={`mt-8 flex flex-col items-center px-6 py-12 text-center sm:py-16 ${cardClass}`}
+        >
+          <IconTile size="lg">
+            <ClientsIcon className="size-6" />
+          </IconTile>
+          <h2 id="clients-empty" className={`mt-5 ${sectionTitle}`}>
             No clients yet
           </h2>
-          <p className={`mt-2 ${panelText}`}>
+          <p className="mt-2 max-w-[48ch] text-[15px] leading-[1.6] text-slate-500">
             When someone sends a message through your website&rsquo;s contact form, they show up
             here on their own, with their message. You can also add people you already work with.
           </p>
-          {!readOnly && <div className="mt-5">{addClientLink}</div>}
+          {!readOnly && <div className="mt-6">{addClientLink}</div>}
         </section>
       ) : (
         <>
@@ -268,7 +300,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             </p>
           )}
 
-          <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className={`mt-4 overflow-hidden ${cardClass}`}>
             {shown.length === 0 ? (
               <p className="px-4 py-6 text-[15px] text-slate-600 sm:px-5">
                 {stage && clients.length > 0
@@ -278,7 +310,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             ) : (
               <>
                 <ListHeader />
-                <ul className="divide-y divide-slate-200">
+                <ul>
                   {shown.map((client) => (
                     <ClientRow key={client.id} client={client} today={today} />
                   ))}

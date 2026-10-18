@@ -3,20 +3,24 @@ import type { ReactNode } from "react";
 import { PhoneIcon } from "../components/icons";
 import { Gallery } from "../sections/Gallery";
 import type { TemplateProps } from "../types";
-import { MobileCallBar } from "../templates/home-services/parts";
-import { buildModel, renderSections, type SiteModel } from "./model";
+import { buildModel, isOwnerPhoto, renderSections, type SiteModel } from "./model";
 import {
+  AddressBlock,
   ContactFormBlock,
   ContactLines,
   HeroActions,
   HighlightList,
   HoursTable,
+  MobileCallBar,
   NavLinks,
+  PeopleList,
   PhotoFrame,
   SimpleFooter,
   Wrap,
   sectionY,
 } from "./shared";
+
+const h2 = "font-ns-heading text-4xl font-bold tracking-tight text-balance @min-[40rem]:text-5xl";
 
 /**
  * Composição MODULAR (grade de blocos): o topo é uma grade com o título, a foto, o horário ou a
@@ -40,30 +44,69 @@ export function ModularComposition({
         return <BentoHero key={key} model={model} data={section} />;
       case "services":
         return <BentoServices key={key} id={id} model={model} data={section} />;
-      case "testimonials":
+      case "about":
         return (
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
-            <Wrap className="grid gap-3 @3xl:grid-cols-2 @5xl:grid-cols-3">
-              {section.items.map((item, i) => (
-                <figure key={`${item.author}-${i}`} className="rounded-[1.75rem] bg-ns-surface p-7">
-                  <blockquote className="leading-relaxed text-pretty">
-                    &ldquo;{item.quote}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-5 font-semibold">{item.author}</figcaption>
-                </figure>
-              ))}
+            <Wrap className="grid gap-3 @5xl:grid-cols-5">
+              <div className={`${tile} bg-ns-surface @5xl:col-span-3`}>
+                <h2 className={h2}>{model.titleOf(section)}</h2>
+                <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-pretty whitespace-pre-line">
+                  {section.body}
+                </p>
+                {section.people && (
+                  <PeopleList people={section.people} radius="rounded-xl" className="mt-10" />
+                )}
+              </div>
+              {isOwnerPhoto(section.image) ? (
+                <PhotoFrame
+                  image={section.image}
+                  radius="rounded-[1.75rem]"
+                  sizes="(min-width: 1024px) 440px, 100vw"
+                  className="relative aspect-[4/3] @5xl:col-span-2 @5xl:aspect-auto @5xl:min-h-80"
+                />
+              ) : (
+                <AboutFacts model={model} />
+              )}
+            </Wrap>
+          </section>
+        );
+      case "testimonials":
+        if (section.items.length === 0) return null;
+        return (
+          <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
+            <Wrap>
+              <h2 className={h2}>{model.titleOf(section)}</h2>
+              <ul className="mt-10 grid gap-3 @3xl:grid-cols-2 @5xl:grid-cols-3">
+                {section.items.map((item, i) => (
+                  <li key={`${item.author}-${i}`}>
+                    <figure className="h-full rounded-[1.75rem] bg-ns-surface p-7">
+                      <blockquote className="leading-relaxed text-pretty">
+                        &ldquo;{item.quote}&rdquo;
+                      </blockquote>
+                      <figcaption className="mt-5 font-semibold">{item.author}</figcaption>
+                    </figure>
+                  </li>
+                ))}
+              </ul>
             </Wrap>
           </section>
         );
       case "gallery":
-        return <Gallery key={key} id={id} data={section} />;
+        return (
+          <Gallery
+            key={key}
+            id={id}
+            data={section}
+            defaultTitle={model.titleOf(section)}
+            variant="tiles"
+            radius="rounded-[1.75rem]"
+          />
+        );
       case "faq":
         return (
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
             <Wrap>
-              <h2 className="font-ns-heading text-4xl font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
-                {model.words.faqTitle}
-              </h2>
+              <h2 className={h2}>{model.titleOf(section)}</h2>
               <div className="mt-10 grid gap-3 @3xl:grid-cols-2">
                 {section.items.map((item, i) => (
                   <details
@@ -92,13 +135,19 @@ export function ModularComposition({
             <Wrap className="grid gap-3 @5xl:grid-cols-5">
               <div className="rounded-[1.75rem] bg-ns-primary p-8 text-ns-on-primary @min-[40rem]:p-10 @5xl:col-span-2">
                 <h2 className="font-ns-heading text-4xl font-bold tracking-tight text-balance">
-                  {model.words.contactTitle}
+                  {model.titleOf(section)}
                 </h2>
                 <ContactLines model={model} className="mt-10" />
               </div>
               {section.showForm && (
                 <div className="rounded-[1.75rem] bg-ns-surface p-6 @min-[40rem]:p-10 @5xl:col-span-3">
-                  <ContactFormBlock data={section} endpoint={contactEndpoint} />
+                  <ContactFormBlock
+                    data={section}
+                    model={model}
+                    endpoint={contactEndpoint}
+                    radius="lg"
+                    framed={false}
+                  />
                 </div>
               )}
             </Wrap>
@@ -114,7 +163,7 @@ export function ModularComposition({
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
       <header className="sticky top-3 z-40 px-3 pt-3">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 rounded-full border border-ns-border bg-ns-background/90 pr-2 pl-6 shadow-sm backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 rounded-full border border-ns-border bg-ns-background/90 pr-2 pl-6 backdrop-blur">
           <a
             href="#top"
             className="min-w-0 truncate font-ns-heading text-lg font-bold tracking-tight"
@@ -124,7 +173,7 @@ export function ModularComposition({
           <div className="flex items-center gap-6">
             <NavLinks
               model={model}
-              className="hidden @3xl:block"
+              className="hidden @5xl:block"
               linkClassName="text-ns-muted hover:text-ns-text"
             />
             {model.phoneHref && model.business.phone && (
@@ -143,12 +192,7 @@ export function ModularComposition({
       </header>
       <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
       <SimpleFooter model={model} className="mt-(--ns-section-y) bg-ns-surface" />
-      <MobileCallBar
-        phone={model.business.phone}
-        ctaLabel={model.ctaLabel}
-        ctaHref={model.ctaHref}
-        emphasis={model.primaryAction === "call" ? "call" : "cta"}
-      />
+      <MobileCallBar model={model} radius="rounded-xl" />
     </div>
   );
 }
@@ -266,9 +310,7 @@ function BentoServices({
   return (
     <section id={id} className={`scroll-mt-28 ${sectionY}`}>
       <Wrap>
-        <h2 className="font-ns-heading text-4xl font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
-          {model.words.servicesTitle}
-        </h2>
+        <h2 className={h2}>{model.titleOf(data)}</h2>
         <ul className="mt-10 grid gap-3 @3xl:grid-cols-2 @5xl:grid-cols-3">
           {data.items.map((item, index) => (
             <li
@@ -283,10 +325,45 @@ function BentoServices({
               <p className={`mt-3 leading-relaxed ${index === 0 ? "opacity-85" : "text-ns-muted"}`}>
                 {item.description}
               </p>
+              {(item.price || item.detail) && (
+                <p className="mt-5 flex flex-wrap gap-x-3 text-sm font-semibold tabular-nums">
+                  {item.price && <span>{item.price}</span>}
+                  {item.detail && <span className="opacity-75">{item.detail}</span>}
+                </p>
+              )}
             </li>
           ))}
         </ul>
       </Wrap>
     </section>
+  );
+}
+
+/** Sem foto do dono no "quem somos": um bloco com onde fica e o horário (se houver). */
+function AboutFacts({ model }: { model: SiteModel }) {
+  const hours = model.business.hours?.length ? model.business.hours : null;
+  if (!hours && !model.address && !model.where) return null;
+  return (
+    <div className={`${tile} bg-ns-primary text-ns-on-primary @5xl:col-span-2`}>
+      {model.address ? (
+        <>
+          <p className="text-xs font-semibold tracking-[0.18em] uppercase">Find us</p>
+          <AddressBlock model={model} className="mt-4 text-lg" />
+        </>
+      ) : (
+        model.where && (
+          <>
+            <p className="text-xs font-semibold tracking-[0.18em] uppercase">{model.areaLabel}</p>
+            <p className="mt-4 text-2xl font-semibold">{model.where}</p>
+          </>
+        )
+      )}
+      {hours && (
+        <>
+          <p className="mt-8 text-xs font-semibold tracking-[0.18em] uppercase">Hours</p>
+          <HoursTable hours={hours} className="mt-4" />
+        </>
+      )}
+    </div>
   );
 }

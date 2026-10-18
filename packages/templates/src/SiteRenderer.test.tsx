@@ -3,6 +3,8 @@ import { Composition, FontId, TemplateId, type SiteImage, type SiteSpec } from "
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SiteRenderer } from "./SiteRenderer";
+import { foldMessage } from "./sections/fold-message";
+import type { GalleryVariant } from "./sections/Gallery";
 import { FONT_CSS_VARIABLES, FONT_PAIRS } from "./fonts";
 import { readableTextOn, themeToCssVars } from "./theme";
 
@@ -124,7 +126,7 @@ describe("photos", () => {
   it("renders no image or credit when the hero has no photo", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={withHeroImage(undefined)} />);
     expect(html).not.toContain("<img");
-    expect(html).not.toContain("<figcaption");
+    expect(html).not.toContain("Photo by");
     expect(html).not.toContain("Photo:");
   });
 
@@ -132,7 +134,8 @@ describe("photos", () => {
     const html = renderToStaticMarkup(
       <SiteRenderer spec={withGallery([owner(1), owner(2), owner(3)])} />,
     );
-    expect(html).toContain(">Our work</h2>");
+    // Título padrão do ramo (serviços para casa: "Recent jobs").
+    expect(html).toContain(">Recent jobs</h2>");
     expect(html).toContain('id="work"');
     expect(html).toContain('href="#work"');
     for (const n of [1, 2, 3]) {
@@ -144,31 +147,43 @@ describe("photos", () => {
 
   it("uses the owner's gallery title", () => {
     const html = renderToStaticMarkup(
-      <SiteRenderer spec={withGallery([owner(1)], "Recent jobs")} />,
+      <SiteRenderer spec={withGallery([owner(1)], "Bathrooms we remodeled")} />,
     );
-    expect(html).toContain(">Recent jobs</h2>");
-    expect(html).not.toContain(">Our work</h2>");
+    expect(html).toContain(">Bathrooms we remodeled</h2>");
+    expect(html).not.toContain(">Recent jobs</h2>");
   });
 
-  it("lays out 2 or 4 photos in an even grid and 3 photos in masonry columns", () => {
-    for (const count of [2, 4]) {
-      const images = Array.from({ length: count }, (_, i) => owner(i + 1));
-      const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);
-      expect(html).toContain("@min-[40rem]:grid-cols-2");
-      expect(html).toContain("aspect-[4/3]");
-      expect(html).not.toContain("columns-2");
-    }
-    const html = renderToStaticMarkup(
-      <SiteRenderer spec={withGallery([owner(1), owner(2), owner(3)])} />,
-    );
-    expect(html).toContain("@min-[40rem]:columns-2");
-  });
+  const variants: [Composition, GalleryVariant][] = [
+    ["service-led", "grid"],
+    ["editorial", "sheet"],
+    ["immersive", "wall"],
+    ["typographic", "grid"],
+    ["modular", "tiles"],
+  ];
+  it.each(variants)(
+    "%s shows the gallery as %s, with the owner's captions",
+    (composition, variant) => {
+      const images = [1, 2, 3].map((n) => ({
+        ...owner(n),
+        caption: `Job ${n} · Round Rock · 2025`,
+      }));
+      const spec = { ...withGallery(images), design: { composition } };
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      expect(html).toContain(`data-gallery="${variant}"`);
+      expect(html).toContain("Job 2 · Round Rock · 2025");
+      // Fotos do dono ficam fora dos filtros de preto e branco/véu de cor.
+      expect(html.match(/data-kind="owner"/g)).toHaveLength(3);
+    },
+  );
 
-  it("only shows a phone-only hero card next to a photo when the hero has two columns", () => {
-    const spec = withHeroImage(scene);
-    expect(spec.business.hours).toBeUndefined();
+  it("numbers the photos of a contact sheet", () => {
+    const spec = {
+      ...withGallery([owner(1), owner(2)]),
+      design: { composition: "editorial" as const },
+    };
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
-    expect(html).toContain("hidden @6xl:block");
+    expect(html).toMatch(/>01<\/span>/);
+    expect(html).toMatch(/>02<\/span>/);
   });
 
   it("hides the gallery (and its menu link) when there are no owner photos", () => {
@@ -180,7 +195,8 @@ describe("photos", () => {
         sections: [...heroWithoutPhoto.sections, { type: "gallery", images }],
       };
       const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
-      expect(html).not.toContain("Our work");
+      expect(html).not.toContain('id="work"');
+      expect(html).not.toContain('href="#work"');
       expect(html).not.toContain("<img");
     }
   });
@@ -285,5 +301,113 @@ describe("miniaturas dentro de outra página", () => {
     for (const id of ["top", "services", "faq", "contact", "reviews", "work"]) {
       expect(html).not.toContain(`id="${id}"`);
     }
+  });
+});
+
+describe("model sites", () => {
+  it.each(Composition.options)("%s renders the about section with its people", (composition) => {
+    const spec: SiteSpec = { ...fixtures["joes-plumbing"], design: { composition } };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain('id="about"');
+    expect(html).toContain('href="#about"');
+    expect(html).toContain(">Who picks up the phone</h2>");
+    expect(html).toContain("Maria Ramirez");
+  });
+
+  it("never shows a stock photo as the team in the about section", () => {
+    const base = fixtures["hale-ortiz"];
+    const stock: SiteImage = {
+      url: "https://images.pexels.com/photos/9/office.jpeg",
+      alt: "An office",
+      source: "pexels",
+      kind: "scene",
+    };
+    const spec: SiteSpec = {
+      ...base,
+      sections: base.sections.map((s) => (s.type === "about" ? { ...s, image: stock } : s)),
+    };
+    expect(renderToStaticMarkup(<SiteRenderer spec={spec} />)).not.toContain(stock.url);
+  });
+
+  it("groups a price list and shows the owner's prices", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />);
+    for (const group of ["Cut &amp; style", "Color", "Treatments"]) {
+      expect(html).toContain(`>${group}</h3>`);
+    }
+    expect(html).toContain("from $220");
+    expect(html).toContain("tabular-nums");
+  });
+
+  it("sends the main button to the owner's booking link, in a new tab", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />);
+    expect(html).toContain(
+      'href="https://book.glowsalon.example.com" target="_blank" rel="noopener"',
+    );
+  });
+
+  it("shows the street address with a Google Maps link and says Find us", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={fixtures["rosas-kitchen"]} />);
+    expect(html).toContain("2196 Logan Ave");
+    expect(html).toContain("https://www.google.com/maps/search/?api=1&amp;query=");
+    expect(html).toContain("Find us");
+    expect(html).not.toContain("Service area");
+  });
+
+  it("lists the towns served before the contact section", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} />);
+    const towns = html.indexOf(">Cedar Park</li>");
+    expect(towns).toBeGreaterThan(-1);
+    expect(towns).toBeLessThan(html.indexOf('id="contact"'));
+  });
+
+  it("uses the contact form preset of each business type", () => {
+    const cases: [keyof typeof fixtures, string][] = [
+      ["joes-plumbing", "Where is the job?"],
+      ["glow-salon", "Preferred day and time"],
+      ["rosas-kitchen", "Number of guests"],
+      ["hale-ortiz", "What do you need help with?"],
+      ["vega-photo", "Venue or location"],
+    ];
+    for (const [slug, label] of cases) {
+      const html = renderToStaticMarkup(<SiteRenderer spec={fixtures[slug]} />);
+      expect(html).toContain(label);
+      // Os campos extras vão no `message`: nada de campo novo na API.
+      expect(html).toMatch(/name="x_[a-z]+"/);
+    }
+  });
+
+  it("puts the call on the wide mobile button only when calling is the main action", () => {
+    const bar = (html: string) => html.slice(html.indexOf('aria-label="Quick contact"'));
+    const call = bar(renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} />));
+    expect(call).toContain("Call (512) 555-0142");
+    const book = bar(renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />));
+    expect(book).toContain(">Book an appointment</a>");
+    expect(book).toContain('aria-label="Call (305) 555-0187"');
+  });
+
+  it("keeps fixed claims, fake maps and star ratings out of the templates", () => {
+    for (const spec of Object.values(fixtures)) {
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      expect(html).not.toContain("5 out of 5 stars");
+      expect(html).not.toContain("Service area map");
+      expect(html).not.toContain("✓");
+    }
+  });
+});
+
+describe("foldMessage", () => {
+  it("puts the extra fields before the message, one line each", () => {
+    expect(
+      foldMessage(
+        [
+          { label: "Event date", value: "2026-11-07" },
+          { label: "Where is the job?", value: " 78704 " },
+          { label: "Number of guests", value: "" },
+        ],
+        "Taco bar, please.",
+      ),
+    ).toBe("Event date: 2026-11-07\nWhere is the job: 78704\n\nTaco bar, please.");
+    expect(foldMessage([], "  Hi  ")).toBe("Hi");
+    expect(foldMessage([{ label: "Service", value: "Blowout" }], "")).toBe("Service: Blowout");
   });
 });

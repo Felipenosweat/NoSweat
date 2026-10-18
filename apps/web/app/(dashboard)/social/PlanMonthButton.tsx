@@ -124,7 +124,7 @@ export function PlanMonthButton({
     );
   }
 
-  const fieldClass = `mt-1.5 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none`;
+  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none`;
 
   return (
     <form
@@ -134,7 +134,7 @@ export function PlanMonthButton({
         if (event.key === "Escape" && !pending) setOpen(false);
       }}
       aria-label="Fill my month with AI"
-      className="w-full rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
+      className="w-full rounded-xl border border-slate-200/70 bg-slate-50/70 p-4 sm:p-5"
     >
       <div className="grid gap-4 sm:grid-cols-[minmax(0,14rem)_1fr]">
         <label className="block text-[13px] font-medium text-ink">
@@ -159,7 +159,7 @@ export function PlanMonthButton({
             {PER_WEEK.map((value) => (
               <label
                 key={value}
-                className={`flex h-11 min-w-14 cursor-pointer items-center justify-center rounded-lg border px-4 text-[15px] font-semibold tabular-nums transition-colors duration-150 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand ${
+                className={`flex h-11 min-w-14 cursor-pointer items-center justify-center rounded-xl border px-4 text-[15px] font-semibold tabular-nums transition-colors duration-150 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand ${
                   perWeek === value ? "" : "border-slate-300 text-ink hover:border-slate-400"
                 }`}
               >

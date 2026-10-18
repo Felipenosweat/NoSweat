@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
-import { focusRing, shareFlagKey } from "./DashboardUi";
+import { ChevronRightIcon, cardClass, focusRing, sectionTitle, shareFlagKey } from "./DashboardUi";
 
 export type ChecklistStep = {
   label: string;
@@ -66,39 +66,29 @@ export function DashboardChecklist({
   ];
   const doneCount = all.filter((step) => step.done).length;
   if (doneCount === all.length) return null;
+  const percent = Math.round((doneCount / all.length) * 100);
 
   return (
-    <section
-      aria-labelledby="checklist-heading"
-      className="rounded-xl border border-slate-200 bg-white p-5 sm:p-6"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2
-          id="checklist-heading"
-          className="font-display text-[17px] leading-6 font-semibold tracking-[-0.015em] text-ink"
-        >
-          Get {siteName} ready for customers
-        </h2>
-        <p className="text-[13px] font-medium text-slate-500 tabular-nums">
-          {doneCount} of {all.length} done
-        </p>
-      </div>
-      <div className="mt-3 flex gap-1" aria-hidden="true">
-        {all.map((step) => (
-          <span
-            key={step.label}
-            className={`h-1 flex-1 rounded-full ${step.done ? "bg-brand" : "bg-slate-200"}`}
-          />
-        ))}
+    <section aria-labelledby="checklist-heading" className={`${cardClass} p-5 sm:p-6`}>
+      <div className="flex items-center gap-4">
+        <ProgressRing percent={percent} />
+        <div className="min-w-0">
+          <h2 id="checklist-heading" className={`${sectionTitle} text-balance`}>
+            Get {siteName} ready for customers
+          </h2>
+          <p className="mt-0.5 text-[13px] leading-5 text-slate-500 tabular-nums">
+            {doneCount} of {all.length} done
+          </p>
+        </div>
       </div>
 
-      <ol className="mt-4 grid gap-1 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+      <ol className="mt-5 grid gap-1 border-t border-slate-200/70 pt-4 sm:grid-cols-2 sm:gap-x-4 lg:grid-cols-4">
         {all.map((step) => {
           const marker = (
             <span
               aria-hidden="true"
-              className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full ${
-                step.done ? "bg-ink text-white" : "ring-1 ring-slate-300 ring-inset"
+              className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full ${
+                step.done ? "bg-brand text-white" : "ring-[1.5px] ring-slate-300 ring-inset"
               }`}
             >
               {step.done && (
@@ -114,7 +104,7 @@ export function DashboardChecklist({
             </span>
           );
           const text = (
-            <span className="min-w-0">
+            <span className="min-w-0 flex-1">
               <span
                 className={`block text-[15px] leading-6 font-medium ${
                   step.done ? "text-slate-500" : "text-ink"
@@ -128,7 +118,11 @@ export function DashboardChecklist({
               )}
             </span>
           );
-          const rowClass = "flex min-h-11 gap-3 rounded-lg px-2 py-2 -mx-2";
+          const rowClass = "flex min-h-12 items-start gap-3 rounded-xl px-2.5 py-2.5 -mx-2.5";
+          const linkClass = `group ${rowClass} transition-colors duration-150 hover:bg-slate-50 ${focusRing}`;
+          const chevron = (
+            <ChevronRightIcon className="mt-1 size-4 shrink-0 text-slate-300 transition-colors duration-150 group-hover:text-slate-500" />
+          );
           return (
             <li key={step.label}>
               {step.done || !step.href ? (
@@ -137,22 +131,17 @@ export function DashboardChecklist({
                   {text}
                 </div>
               ) : step.external ? (
-                <a
-                  href={step.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${rowClass} transition-colors duration-150 hover:bg-slate-50 ${focusRing}`}
-                >
+                <a href={step.href} target="_blank" rel="noreferrer" className={linkClass}>
                   {marker}
                   {text}
+                  <span className="sr-only"> (opens in a new tab)</span>
+                  {chevron}
                 </a>
               ) : (
-                <Link
-                  href={step.href}
-                  className={`${rowClass} transition-colors duration-150 hover:bg-slate-50 ${focusRing}`}
-                >
+                <Link href={step.href} className={linkClass}>
                   {marker}
                   {text}
+                  {chevron}
                 </Link>
               )}
             </li>
@@ -160,5 +149,38 @@ export function DashboardChecklist({
         })}
       </ol>
     </section>
+  );
+}
+
+/** Anel de progresso (como os do Fitness): trilho cinza e arco azul com o percentual no meio. */
+function ProgressRing({ percent }: { percent: number }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <span aria-hidden="true" className="relative grid size-14 shrink-0 place-items-center">
+      <svg viewBox="0 0 56 56" className="absolute inset-0 size-14 -rotate-90">
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          fill="none"
+          strokeWidth={5}
+          className="stroke-slate-200"
+        />
+        {percent > 0 && (
+          <circle
+            cx="28"
+            cy="28"
+            r={radius}
+            fill="none"
+            strokeWidth={5}
+            strokeLinecap="round"
+            strokeDasharray={`${(circumference * percent) / 100} ${circumference}`}
+            className="stroke-brand"
+          />
+        )}
+      </svg>
+      <span className="text-[13px] font-semibold text-ink tabular-nums">{percent}%</span>
+    </span>
   );
 }

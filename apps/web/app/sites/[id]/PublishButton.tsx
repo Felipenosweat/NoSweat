@@ -4,31 +4,40 @@ import { ApiError, PublishSiteResponse } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { primaryButton, secondaryButton } from "@/components/DashboardUi";
-import { PublishDialog } from "./PublishDialog";
+import { PublishDialog, type PublishState } from "./PublishDialog";
 
 /**
- * Ações de publicação. Fica SEMPRE montado na página (mesmo depois de publicar), para o
- * diálogo "You're live." continuar aberto quando o `router.refresh()` troca o botão.
+ * Ações de publicação da página do site. O botão abre o modal "Publish website", que faz o
+ * POST /api/sites/[id]/publish. Fica SEMPRE montado (mesmo depois de publicar), para o modal
+ * continuar aberto quando o `router.refresh()` troca o botão.
  * - `label`: texto do botão de publicar; `null` = nada para publicar (site no ar e em dia).
- * - `liveUrl`: endereço grátis já no ar; mostra "Share" para reabrir o diálogo.
+ * - `liveUrl`: endereço grátis já no ar; mostra "Share your link" (abre o mesmo modal).
+ * - `address`: endereço grátis (o atual ou o que o site vai ter ao publicar).
  */
 export function PublishButton({
   siteId,
   siteName,
   label = "Publish my website",
   liveUrl = null,
+  address,
+  state,
   hasDomain = false,
 }: {
   siteId: string;
   siteName: string;
   label?: string | null;
   liveUrl?: string | null;
+  address: string;
+  state: PublishState;
   hasDomain?: boolean;
 }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dialogUrl, setDialogUrl] = useState<string | null>(null);
+  /** Publicado agora, antes de o `router.refresh()` trazer o estado novo da página. */
+  const [justPublished, setJustPublished] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const shareRef = useRef<HTMLButtonElement>(null);
 
   async function publish() {
@@ -48,7 +57,8 @@ export function PublishButton({
         return;
       }
       const published = PublishSiteResponse.parse(body);
-      setDialogUrl(published.url);
+      setPublishedUrl(published.url);
+      setJustPublished(true);
       router.refresh();
     } catch {
       setError("We couldn't reach our servers. Please try again.");
@@ -57,52 +67,40 @@ export function PublishButton({
     }
   }
 
-  const shareUrl = liveUrl ?? dialogUrl;
+  function openDialog() {
+    setError(null);
+    setOpen(true);
+  }
+
+  const shareUrl = liveUrl ?? publishedUrl;
 
   return (
     <div>
       <div className="flex flex-wrap gap-3">
-        {label && (
-          <button
-            type="button"
-            onClick={publish}
-            disabled={pending}
-            aria-busy={pending}
-            className={`${primaryButton} disabled:cursor-wait`}
-          >
-            {pending ? "Publishing…" : label}
+        {label && !justPublished && (
+          <button type="button" onClick={openDialog} className={primaryButton}>
+            {label}
           </button>
         )}
         {shareUrl && (
-          <button
-            ref={shareRef}
-            type="button"
-            onClick={() => setDialogUrl(shareUrl)}
-            className={secondaryButton}
-          >
+          <button ref={shareRef} type="button" onClick={openDialog} className={secondaryButton}>
             Share your link
           </button>
         )}
       </div>
-      {error && (
-        <p
-          role="alert"
-          className="mt-3 inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
-        >
-          {error}
-        </p>
-      )}
-      {dialogUrl && (
-        <PublishDialog
-          open
-          url={dialogUrl}
-          siteId={siteId}
-          siteName={siteName}
-          showDomainAction={!hasDomain}
-          onClose={() => setDialogUrl(null)}
-          returnFocusTo={() => shareRef.current}
-        />
-      )}
+      <PublishDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        siteId={siteId}
+        siteName={siteName}
+        state={justPublished ? "current" : state}
+        address={publishedUrl ?? address}
+        onPublish={() => void publish()}
+        pending={pending}
+        error={error}
+        domain={{ href: "#domain", samePage: true, connected: hasDomain }}
+        returnFocusTo={() => shareRef.current}
+      />
     </div>
   );
 }

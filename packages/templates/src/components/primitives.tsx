@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { StarIcon } from "./icons";
 
 /** Link `tel:` a partir de um telefone formatado, ex.: "(512) 555-0142". */
 export function telHref(phone: string): string {
@@ -54,24 +53,4 @@ export function SectionHeading({
       {description && <p className="mt-4 text-lg text-pretty text-ns-muted">{description}</p>}
     </div>
   );
-}
-
-export function Stars({ className = "" }: { className?: string }) {
-  return (
-    <div className={`flex gap-0.5 text-ns-secondary ${className}`} aria-label="5 out of 5 stars">
-      {Array.from({ length: 5 }, (_, i) => (
-        <StarIcon key={i} className="size-4" />
-      ))}
-    </div>
-  );
-}
-
-export function initials(name: string): string {
-  return name
-    .replace(/[^\p{L}\p{N}\s]/gu, "")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
 }

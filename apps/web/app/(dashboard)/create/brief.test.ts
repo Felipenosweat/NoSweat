@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   EMPTY_FIELDS,
   LIMITS,
+  PROMPT_LIMIT,
+  parseChoices,
   composeBrief,
   fieldsFromBrief,
   parseDraft,
@@ -49,6 +51,59 @@ describe("composeBrief", () => {
       style: "professional",
     });
     expect(GenerateSiteRequest.safeParse({ brief }).success).toBe(true);
+  });
+});
+
+describe("composeBrief with wizard choices", () => {
+  it("adds the business type and layout as hint sentences before the style line", () => {
+    const brief = composeBrief(
+      { ...EMPTY_FIELDS, what: "Hair salon in Miami, FL", style: "elegant" },
+      { kind: "beauty", layout: "editorial" },
+    );
+    expect(brief).toBe(
+      "Hair salon in Miami, FL.\n\n" +
+        "Type of business: beauty and personal care. Preferred layout: editorial.\n\n" +
+        "Style: elegant.",
+    );
+  });
+
+  it("leaves the hints out when No Sweat decides", () => {
+    const brief = composeBrief(
+      { ...EMPTY_FIELDS, what: "Mobile dog grooming!" },
+      { kind: "auto", layout: "auto" },
+    );
+    expect(brief).toBe("Mobile dog grooming!");
+  });
+
+  it("stays within the API limit with a full prompt and every choice", () => {
+    const brief = composeBrief(
+      {
+        name: "n".repeat(LIMITS.name),
+        what: "w".repeat(PROMPT_LIMIT),
+        city: "c".repeat(LIMITS.city),
+        state: "TX",
+        serviceArea: "s".repeat(LIMITS.serviceArea),
+        details: "",
+        style: "professional",
+      },
+      { kind: "professional", layout: "typographic" },
+    );
+    expect(GenerateSiteRequest.safeParse({ brief }).success).toBe(true);
+  });
+});
+
+describe("parseChoices", () => {
+  it("keeps known choices and falls back to auto", () => {
+    expect(parseChoices('{"kind":"restaurant","layout":"modular"}')).toEqual({
+      kind: "restaurant",
+      layout: "modular",
+    });
+    expect(parseChoices('{"kind":"spaceship","layout":7}')).toEqual({
+      kind: "auto",
+      layout: "auto",
+    });
+    expect(parseChoices("not json")).toEqual({ kind: "auto", layout: "auto" });
+    expect(parseChoices(null)).toEqual({ kind: "auto", layout: "auto" });
   });
 });
 

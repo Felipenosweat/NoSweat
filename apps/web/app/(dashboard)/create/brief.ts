@@ -1,3 +1,5 @@
+import type { Composition, TemplateId } from "@nosweat/schema";
+
 // Lógica pura do fluxo /create: estilos, montagem do texto único (brief) enviado para
 // POST /api/sites/generate e leitura do texto que vem da landing (?brief= ou sessionStorage).
 // Sem React aqui, para poder testar com o Vitest em ambiente node.
@@ -118,6 +120,90 @@ export const STYLE_OPTIONS: StyleOption[] = [
   },
 ];
 
+/** Tamanho máximo do pedido único do /create (cabe nos 2.000 do schema com o resto). */
+export const PROMPT_LIMIT = 1500;
+
+/** Tipos de negócio do passo 1 (um por `TemplateId`), com a frase que vai no brief. */
+export const BUSINESS_KINDS = [
+  {
+    id: "home-services",
+    label: "Home services & trades",
+    briefName: "home services (repairs and contractor work)",
+  },
+  { id: "beauty", label: "Beauty & personal care", briefName: "beauty and personal care" },
+  { id: "restaurant", label: "Restaurant & food", briefName: "restaurant or food business" },
+  {
+    id: "professional",
+    label: "Professional services",
+    briefName: "professional services (consulting, legal, financial)",
+  },
+  { id: "portfolio", label: "Creative & portfolio", briefName: "creative work and portfolio" },
+] as const satisfies readonly { id: TemplateId; label: string; briefName: string }[];
+
+export type BusinessKind = TemplateId | "auto";
+
+/**
+ * Layouts do passo 2 (um por `Composition` do renderer). A captura é o topo de um site de
+ * exemplo feito com aquela composição (ver packages/fixtures).
+ */
+export const LAYOUT_OPTIONS = [
+  {
+    id: "service-led",
+    label: "Classic",
+    note: "Phone up top, photo beside the headline, service cards.",
+    image: "/landing/wall/joes-plumbing-top.webp",
+  },
+  {
+    id: "editorial",
+    label: "Editorial",
+    note: "Magazine headline, a wide photo, numbered services.",
+    image: "/landing/wall/glow-salon-top.webp",
+  },
+  {
+    id: "immersive",
+    label: "Immersive",
+    note: "Full-width photo with the headline on top of it.",
+    image: "/landing/wall/rosas-kitchen-top.webp",
+  },
+  {
+    id: "typographic",
+    label: "Typographic",
+    note: "Big type as the main image, a bold block of color.",
+    image: "/landing/wall/hale-ortiz-top.webp",
+  },
+  {
+    id: "modular",
+    label: "Modular",
+    note: "A grid of blocks: headline, photo, hours and contact.",
+    image: "/landing/wall/sparkle-cleaning-top.webp",
+  },
+] as const satisfies readonly { id: Composition; label: string; note: string; image: string }[];
+
+export type LayoutChoice = Composition | "auto";
+
+/** Escolhas do assistente que não são campos de texto ("auto" = a No Sweat decide). */
+export type CreateChoices = { kind: BusinessKind; layout: LayoutChoice };
+
+export const EMPTY_CHOICES: CreateChoices = { kind: "auto", layout: "auto" };
+
+/** Escolhas guardadas na aba (junto do rascunho). */
+export const CHOICES_KEY = "ns-create-choices";
+
+export function parseChoices(raw: string | null): CreateChoices {
+  if (!raw) return { ...EMPTY_CHOICES };
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (typeof value !== "object" || value === null) return { ...EMPTY_CHOICES };
+    const { kind, layout } = value as Record<string, unknown>;
+    return {
+      kind: BUSINESS_KINDS.find((option) => option.id === kind)?.id ?? "auto",
+      layout: LAYOUT_OPTIONS.find((option) => option.id === layout)?.id ?? "auto",
+    };
+  } catch {
+    return { ...EMPTY_CHOICES };
+  }
+}
+
 /** Siglas aceitas no campo de estado (50 estados, DC e territórios). */
 export const US_STATES = new Set([
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA",
@@ -219,7 +305,7 @@ export function formatLocation(city: string, state: string): string {
  * Monta UM texto em frases naturais a partir dos três passos. A linha "Style: …" fica
  * sozinha no fim (o prompt do gerador procura por ela).
  */
-export function composeBrief(fields: CreateFields): string {
+export function composeBrief(fields: CreateFields, choices: CreateChoices = EMPTY_CHOICES): string {
   const location = formatLocation(fields.city, fields.state);
   const intro = [
     fields.name.trim() ? sentence(`The business is called ${fields.name.trim()}`) : "",
@@ -231,6 +317,17 @@ export function composeBrief(fields: CreateFields): string {
     .join(" ");
 
   const paragraphs = [intro, fields.details.trim()];
+  // Escolhas do assistente (tipo de negócio e layout): frases de dica para o gerador. A API
+  // só recebe o texto; quem decide de verdade é server/design + a IA.
+  const kind = BUSINESS_KINDS.find((option) => option.id === choices.kind);
+  const layout = LAYOUT_OPTIONS.find((option) => option.id === choices.layout);
+  const hints = [
+    kind ? `Type of business: ${kind.briefName}.` : "",
+    layout ? `Preferred layout: ${layout.id}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  paragraphs.push(hints);
   const style = STYLE_OPTIONS.find((option) => option.id === fields.style);
   if (style) paragraphs.push(`Style: ${style.briefName}.`);
   return paragraphs.filter(Boolean).join("\n\n");
@@ -326,7 +423,7 @@ export function parseDraft(raw: string | null): StoredDraft | null {
     if (!["auto", ...STYLE_OPTIONS.map((option) => option.id)].includes(fields.style)) {
       fields.style = "auto";
     }
-    const step = draft.step === 1 || draft.step === 2 ? draft.step : 0;
+    const step = draft.step === 1 || draft.step === 2 || draft.step === 3 ? draft.step : 0;
     return { source: draft.source, step, fields };
   } catch {
     return null;

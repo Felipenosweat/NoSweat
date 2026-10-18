@@ -22,6 +22,7 @@ const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
     ],
   },
   { slug: "hale-ortiz", keywords: ["bookkeep", "tax", "accountant", "cpa"] },
+  { slug: "vega-photo", keywords: ["photograph"] },
 ];
 
 const DEFAULT_SLUG: FixtureSlug = "joes-plumbing";
