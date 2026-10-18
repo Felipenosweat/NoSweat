@@ -121,7 +121,7 @@ export const STYLE_OPTIONS: StyleOption[] = [
 ];
 
 /** Tamanho máximo do pedido único do /create (cabe nos 2.000 do schema com o resto). */
-export const PROMPT_LIMIT = 1400;
+export const PROMPT_LIMIT = 1500;
 
 /** Tipos de negócio do passo 1 (um por `TemplateId`), com a frase que vai no brief. */
 export const BUSINESS_KINDS = [

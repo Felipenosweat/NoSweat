@@ -42,7 +42,7 @@ import {
 import { BUILD_STEPS, BuildingPanel, ReadyPanel } from "./Building";
 import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
-import { focusRing, inputClass, primaryButton, secondaryButton } from "./ui";
+import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
 // Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um assistente
@@ -486,10 +486,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
             <p id="create-prompt-hint" className="min-w-0 text-[13px] text-slate-500">
               <span className="hidden sm:inline">Your draft stays private until you publish.</span>
             </p>
-            <button
-              type="submit"
-              className={`${primaryButton} h-11 shrink-0 px-4 max-sm:flex-1 sm:px-5`}
-            >
+            <button type="submit" className={`${primaryButtonCompact} shrink-0 max-sm:flex-1`}>
               <ArrowIcon direction="forward" />
               Create website
             </button>
@@ -818,12 +815,12 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                 <button
                   type="button"
                   onClick={() => goTo(step - 1)}
-                  className={`${secondaryButton} h-11 px-4`}
+                  className={secondaryButtonCompact}
                 >
                   Back
                 </button>
               )}
-              <button type="submit" className={`${primaryButton} ml-auto h-11 px-5`}>
+              <button type="submit" className={`${primaryButtonCompact} ml-auto`}>
                 <ArrowIcon direction="forward" />
                 {step === LAST_STEP ? "Create website" : "Continue"}
               </button>

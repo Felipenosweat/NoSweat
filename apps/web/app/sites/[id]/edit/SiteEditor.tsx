@@ -709,7 +709,7 @@ export function SiteEditor({
               href={`/sites/preview/${siteId}`}
               target="_blank"
               rel="noopener"
-              className={`${secondaryButton} w-11 px-0 lg:hidden`}
+              className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 motion-reduce:transition-none lg:hidden ${focusRing}`}
             >
               <ExternalIcon className="size-4" />
               <span className="sr-only">Preview saved draft (opens in a new tab)</span>
