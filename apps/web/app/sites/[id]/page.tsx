@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { AccountShellForCurrentViewer } from "@/app/(dashboard)/AccountShell";
 import {
   ClockIcon,
   GlobeIcon,
@@ -17,7 +18,6 @@ import {
   StatusBadge,
   cardClass,
   cardShadow,
-  displayWordSpacing,
   focusRing,
   panelClass,
   panelText,
@@ -29,7 +29,6 @@ import {
 } from "@/components/DashboardUi";
 import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
-import { Logo } from "@/components/Logo";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
 import { getDomainState, makeSlug } from "@/server/domains";
@@ -104,21 +103,14 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const where = [business.city, business.state].filter(Boolean).join(", ");
 
   return (
-    <div className={`min-h-svh bg-surface ${displayWordSpacing}`}>
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
-          <Logo />
-          <Link
-            href="/dashboard"
-            className={`inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
-          >
-            <span aria-hidden="true">&larr;&nbsp;</span>Dashboard
-          </Link>
-        </div>
-      </header>
-
-      <main id="main" className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+    <AccountShellForCurrentViewer>
+      <div>
         <PageHeader
+          back={
+            <Link href="/dashboard#sites" className={`${textButton} -ml-1`}>
+              <span aria-hidden="true">‹</span> My sites
+            </Link>
+          }
           title={business.name}
           badge={
             <StatusBadge tone={isPublished ? "live" : "draft"}>
@@ -338,7 +330,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             </section>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AccountShellForCurrentViewer>
   );
 }
