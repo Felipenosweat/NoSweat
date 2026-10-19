@@ -5,6 +5,7 @@ import type { Section, SectionOf, SiteSpec } from "@nosweat/schema";
 
 const MAX_SECTIONS = 10;
 
+type About = SectionOf<"about">;
 type Gallery = SectionOf<"gallery">;
 type Hero = SectionOf<"hero">;
 
@@ -48,6 +49,43 @@ function restoreHero(next: Hero, previous: Hero | undefined): Hero {
   if (queryChanged) return clean;
 
   return { ...clean, image: previous.image };
+}
+
+/** "Quem somos" sem nenhuma foto (nem a da seção, nem as das pessoas). */
+function withoutAboutImages(about: About): About {
+  const clean = { ...about };
+  delete clean.image;
+  if (clean.people) {
+    clean.people = clean.people.map((person) => {
+      const rest = { ...person };
+      delete rest.image;
+      return rest;
+    });
+  }
+  return clean;
+}
+
+const personKey = (name: string) => name.trim().toLowerCase();
+
+/**
+ * Regra do "quem somos" (fotos só do dono, como nas galerias): a IA nunca põe nem troca foto.
+ * Numa edição, cada "quem somos" recupera as fotos do de mesma ordem no site anterior: a da
+ * seção e a de cada pessoa (pelo nome; se a IA mudou o nome, pela posição).
+ */
+function restoreAbout(next: About, previous: About | undefined): About {
+  const clean = withoutAboutImages(next);
+  if (!previous) return clean;
+  if (previous.image) clean.image = previous.image;
+  const previousPeople = previous.people ?? [];
+  if (clean.people && previousPeople.length > 0) {
+    clean.people = clean.people.map((person, i) => {
+      const byName = previousPeople.find((p) => personKey(p.name) === personKey(person.name));
+      const match =
+        byName ?? (previousPeople.length === clean.people?.length ? previousPeople[i] : undefined);
+      return match?.image ? { ...person, image: match.image } : person;
+    });
+  }
+  return clean;
 }
 
 /** Chave da âncora de uma galeria: a seção (tipo + ordem entre as do mesmo tipo) logo antes dela. */
@@ -117,19 +155,30 @@ function fitSectionLimit(sections: Section[]): Section[] {
 
 /**
  * Limpa as fotos da saída da IA.
- * - Geração (sem `previousSpec`): tira `image` de todo hero e descarta galerias.
+ * - Geração (sem `previousSpec`): tira `image` de todo hero, as fotos do "quem somos" (seção e
+ *   pessoas) e descarta galerias.
  * - Edição (com `previousSpec`): o hero recupera a foto anterior (ver restoreHero), galerias
  *   inventadas pela IA saem e as galerias do site anterior voltam exatamente como eram, na
- *   mesma posição relativa. A IA não apaga nem muda galerias: isso é feito no editor.
+ *   mesma posição relativa, e as fotos do "quem somos" voltam (ver restoreAbout). A IA não
+ *   apaga nem muda galerias nem fotos: isso é feito no editor.
  */
 export function sanitizeAiImages(newSpec: SiteSpec, previousSpec?: SiteSpec): SiteSpec {
   const previousHeroes = (previousSpec?.sections ?? []).filter(
     (section): section is Hero => section.type === "hero",
   );
+  const previousAbouts = (previousSpec?.sections ?? []).filter(
+    (section): section is About => section.type === "about",
+  );
   let heroIndex = 0;
+  let aboutIndex = 0;
   const sections = newSpec.sections
     .filter((section) => !isGallery(section))
     .map((section) => {
+      if (section.type === "about") {
+        const previous = previousSpec ? previousAbouts[aboutIndex] : undefined;
+        aboutIndex += 1;
+        return restoreAbout(section, previous);
+      }
       if (section.type !== "hero") return section;
       const previous = previousSpec ? previousHeroes[heroIndex] : undefined;
       heroIndex += 1;

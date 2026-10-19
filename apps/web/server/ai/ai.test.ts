@@ -25,7 +25,9 @@ describe("generateSiteSpec", () => {
       new MockGenerator({ delayMs: 0 }),
     );
     expect(SiteSpec.safeParse(spec).success).toBe(true);
-    expect(spec.business.name).toBe("Joe's Plumbing");
+    // O mock também parte do modelo e junta um fill: os fatos do modelo não ficam.
+    expect(spec.template).toBe("home-services");
+    expect(spec.business.name).not.toBe("Joe's Plumbing");
   });
 
   it("rejects an invalid result from a generator", async () => {
@@ -52,9 +54,13 @@ describe("AnthropicGenerator", () => {
       typeof AnthropicGenerator
     >[0];
 
-    const result = await new AnthropicGenerator(client, "claude-opus-5-5").generateSite(
-      "Mexican restaurant in San Diego",
-    );
+    // Caminho completo (sem a geração a partir do modelo).
+    const result = await new AnthropicGenerator(
+      client,
+      "claude-opus-5-5",
+      undefined,
+      false,
+    ).generateSite("Mexican restaurant in San Diego");
     expect(result).toEqual(spec);
     const [request] = parse.mock.calls[0] as unknown as [{ model: string; messages: unknown[] }];
     expect(request.model).toBe("claude-opus-5-5");

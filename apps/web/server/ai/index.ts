@@ -25,7 +25,9 @@ export function getSiteGenerator(provider = process.env.AI_PROVIDER || "mock"): 
 /**
  * Gera e VALIDA o SiteSpec. Nada sai daqui sem passar por SiteSpec.parse.
  * 1. Direção de arte (server/design): composição, ação principal e referências, sem IA.
- * 2. A IA escreve o site para essa direção (o plano vai no pedido).
+ * 2. A IA escreve o site para essa direção (o plano vai no pedido). Com a Anthropic, primeiro
+ *    a partir do site-modelo da categoria (só um ModelFill no modelo barato, ver model-fill.ts);
+ *    se falhar, o caminho completo.
  * 3. O plano fica gravado em `spec.design` (com os ids das referências, para depuração).
  * A IA não escolhe fotos: `image` e galerias da saída dela são descartados (a foto do topo é
  * buscada depois pelo servidor a partir de `hero.imageQuery`, ver server/images).

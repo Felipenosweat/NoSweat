@@ -48,6 +48,24 @@ describe("siteJsonLd", () => {
     expect(data.areaServed).toBe("Worcester County");
   });
 
+  it("inclui a rua (streetAddress) quando o dono deu o endereço", () => {
+    const spec: SiteSpec = {
+      ...joesPlumbing,
+      business: {
+        name: "Rosa's Kitchen",
+        address: "2196 Logan Ave",
+        city: "San Diego",
+        state: "CA",
+      },
+    };
+    expect(JSON.parse(siteJsonLd(record(spec), URL)).address).toEqual({
+      "@type": "PostalAddress",
+      streetAddress: "2196 Logan Ave",
+      addressLocality: "San Diego",
+      addressRegion: "CA",
+    });
+  });
+
   it("escapa texto do cliente que fecharia a tag <script>", () => {
     const spec: SiteSpec = {
       ...joesPlumbing,

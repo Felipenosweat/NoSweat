@@ -68,9 +68,10 @@ export function siteMetadata(site: SiteRecord, url: string): Metadata {
 export function siteJsonLd(site: SiteRecord, url: string): string {
   const { business } = liveSpec(site);
   const address =
-    business.city || business.state
+    business.address || business.city || business.state
       ? {
           "@type": "PostalAddress",
+          streetAddress: business.address || undefined,
           addressLocality: business.city || undefined,
           addressRegion: business.state || undefined,
         }

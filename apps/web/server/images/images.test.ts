@@ -276,6 +276,61 @@ describe("sanitizeAiImages", () => {
     expect(result.sections.find((s) => s.type === "gallery")).toEqual(gallery);
   });
 
+  it("strips AI photos from the about section and keeps the owner's on edit", () => {
+    const withAbout = (about: Extract<Section, { type: "about" }>): SiteSpec => {
+      const base = structuredClone(fixtures["joes-plumbing"]);
+      return {
+        ...base,
+        sections: base.sections.map((s) => (s.type === "about" ? about : s)),
+      };
+    };
+    const aboutOf = (spec: SiteSpec) => {
+      const about = spec.sections.find((s) => s.type === "about");
+      if (about?.type !== "about") throw new Error("no about");
+      return about;
+    };
+
+    // Geração: nenhuma foto no "quem somos".
+    const generated = sanitizeAiImages(
+      withAbout({
+        type: "about",
+        body: "We fix pipes.",
+        image: stockPhoto,
+        people: [{ name: "Joe", image: stockPhoto }],
+      }),
+    );
+    expect(aboutOf(generated).image).toBeUndefined();
+    expect(aboutOf(generated).people).toEqual([{ name: "Joe" }]);
+
+    // Edição: as fotos do dono voltam (a IA tirou uma e trocou a outra), nada novo entra.
+    const previous = withAbout({
+      type: "about",
+      body: "We fix pipes.",
+      image: ownerPhoto,
+      people: [
+        { name: "Joe", image: ownerPhoto },
+        { name: "Maria", role: "Office" },
+      ],
+    });
+    const edited = sanitizeAiImages(
+      withAbout({
+        type: "about",
+        body: "We fix pipes and drains.",
+        people: [
+          { name: "Maria", role: "Office", image: stockPhoto },
+          { name: "Joe", image: stockPhoto },
+        ],
+      }),
+      previous,
+    );
+    expect(aboutOf(edited).body).toBe("We fix pipes and drains.");
+    expect(aboutOf(edited).image).toEqual(ownerPhoto);
+    expect(aboutOf(edited).people).toEqual([
+      { name: "Maria", role: "Office" },
+      { name: "Joe", image: ownerPhoto },
+    ]);
+  });
+
   it("puts a gallery whose anchor section disappeared before contact", () => {
     const base = fixtures["joes-plumbing"];
     const previous: SiteSpec = {

@@ -66,7 +66,9 @@ describe("POST /api/sites/generate", () => {
     const { siteId, spec } = await generateSite("plumbing company in Austin");
     expect(siteId).toBeTruthy();
     expect(spec.template).toBe("home-services");
-    expect(spec.business.name).toBe("Joe's Plumbing");
+    // Parte do modelo da categoria, mas sem os fatos dele (nome, telefone...).
+    expect(spec.business.name).not.toBe("Joe's Plumbing");
+    expect(spec.business.phone).toBeUndefined();
   });
 
   it("rejects a brief that is too short", async () => {
@@ -126,7 +128,8 @@ describe("GET /api/sites/[id]", () => {
     expect(res.status).toBe(200);
     const body = GetSiteResponse.parse(await res.json());
     expect(body.status).toBe("draft");
-    expect(body.spec.business.name).toBe("Glow Salon");
+    expect(body.spec.template).toBe("beauty");
+    expect(body.spec.business.name).not.toBe("Glow Salon");
   });
 });
 
