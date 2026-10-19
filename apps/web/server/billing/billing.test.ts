@@ -27,26 +27,77 @@ function sign(payload: string, secret: string, timestamp = Math.floor(Date.now()
   return `t=${timestamp},v1=${v1}`;
 }
 
-async function subscribe(plan: "starter" | "pro" | "premium", status = "active") {
+type FakeSub = {
+  id: string;
+  customer: string;
+  status: string;
+  cancel_at_period_end: boolean;
+  metadata: Record<string, string>;
+  items: { data: { current_period_end: number; price: { recurring: { interval: string } } }[] };
+};
+
+/** Stripe de mentira: guarda as assinaturas e responde GET/DELETE /subscriptions/:id. */
+function fakeStripe() {
+  const subs = new Map<string, FakeSub>();
+  const calls: { method: string; url: string; body: string }[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init: RequestInit) => {
+      const method = init.method ?? "GET";
+      calls.push({ method, url, body: String(init.body ?? "") });
+      const subMatch = /\/subscriptions\/([^?]+)/.exec(url);
+      if (subMatch) {
+        const sub = subs.get(decodeURIComponent(subMatch[1]!));
+        if (!sub)
+          return Response.json({ error: { message: "No such subscription" } }, { status: 404 });
+        if (method === "DELETE") sub.status = "canceled";
+        return Response.json(sub);
+      }
+      if (url.endsWith("/customers")) return Response.json({ id: "cus_1" });
+      if (/\/customers\//.test(url)) return Response.json({ id: "cus_1" });
+      return Response.json({ id: "cs_1", url: "https://checkout.stripe.com/c/pay/cs_1" });
+    }),
+  );
+  return { subs, calls };
+}
+
+let stripe: ReturnType<typeof fakeStripe>;
+
+function fakeSub(id: string, plan: string, status: string, interval = "monthly"): FakeSub {
+  return {
+    id,
+    customer: "cus_1",
+    status,
+    cancel_at_period_end: false,
+    metadata: { user_id: user.id, plan, interval },
+    items: {
+      data: [
+        {
+          current_period_end: 1893456000,
+          price: { recurring: { interval: interval === "annual" ? "year" : "month" } },
+        },
+      ],
+    },
+  };
+}
+
+async function subscribe(
+  plan: "starter" | "pro" | "premium",
+  status = "active",
+  id = "sub_1",
+  interval = "monthly",
+) {
+  const sub = fakeSub(id, plan, status, interval);
+  stripe.subs.set(id, sub);
   await handleStripeEvent(config, {
     id: "evt_1",
     type: "customer.subscription.updated",
-    data: {
-      object: {
-        id: "sub_1",
-        customer: "cus_1",
-        status,
-        cancel_at_period_end: false,
-        metadata: { user_id: user.id, plan, interval: "monthly" },
-        items: {
-          data: [{ current_period_end: 1893456000, price: { recurring: { interval: "month" } } }],
-        },
-      },
-    },
+    data: { object: { ...sub } },
   });
 }
 
 beforeEach(() => {
+  stripe = fakeStripe();
   (globalThis as { __nosweatSubscriptions?: unknown }).__nosweatSubscriptions = undefined;
   (globalThis as { __nosweatGrants?: unknown }).__nosweatGrants = undefined;
 });
@@ -258,8 +309,9 @@ describe("published sites limit", () => {
     expect(blocked?.status).toBe(402);
     expect(await blocked?.json()).toMatchObject({
       error: {
-        code: "payment_required",
-        message: "Your plan includes 3 live websites. Upgrade to publish more.",
+        code: "plan_limit",
+        message:
+          "Your plan includes 3 live websites. Upgrade your plan in Billing to publish more.",
       },
     });
     // Publicar as mudanças de um site que já está no ar nunca é bloqueado pelo limite.
@@ -313,5 +365,51 @@ describe("createCheckoutUrl", () => {
     expect(annual).not.toContain("line_items[1]");
     // O cliente do Stripe é reaproveitado.
     expect(calls.some((c) => c.url.endsWith("/customers"))).toBe(false);
+  });
+});
+
+describe("plan changes and duplicate payments", () => {
+  it("refuses a second checkout for the plan the account already has", async () => {
+    await subscribe("starter");
+    await expect(
+      createCheckoutUrl(config, user, { plan: "starter", interval: "monthly" }, "https://x.test"),
+    ).rejects.toThrow("You already have this plan.");
+  });
+
+  it("upgrades without a new setup fee and cancels the old subscription", async () => {
+    await subscribe("starter");
+    stripe.calls.length = 0;
+    await createCheckoutUrl(config, user, { plan: "pro", interval: "monthly" }, "https://x.test");
+    const session = decodeURIComponent(
+      stripe.calls.find((c) => c.url.endsWith("/checkout/sessions"))!.body,
+    );
+    expect(session).toContain("line_items[0][price_data][unit_amount]=6900");
+    expect(session).not.toContain("line_items[1]");
+    expect(session).toContain("session_id={CHECKOUT_SESSION_ID}");
+
+    await subscribe("pro", "active", "sub_2");
+    const stored = await getBillingStore().get(user.id);
+    expect(stored).toMatchObject({ stripeSubscriptionId: "sub_2", plan: "pro", status: "active" });
+    expect(stripe.subs.get("sub_1")?.status).toBe("canceled");
+
+    // O "deleted" da assinatura antiga chega depois e não tira o plano novo do ar.
+    await handleStripeEvent(config, {
+      id: "evt_2",
+      type: "customer.subscription.deleted",
+      data: { object: { id: "sub_1", customer: "cus_1" } },
+    });
+    expect((await getBillingStore().get(user.id))?.stripeSubscriptionId).toBe("sub_2");
+    expect((await getBillingStore().get(user.id))?.status).toBe("active");
+  });
+
+  it("uses the current state from Stripe when events arrive out of order", async () => {
+    await subscribe("pro");
+    // Evento velho ("incomplete") chegando depois do "active": vale o estado atual do Stripe.
+    await handleStripeEvent(config, {
+      id: "evt_old",
+      type: "customer.subscription.created",
+      data: { object: { ...fakeSub("sub_1", "pro", "incomplete") } },
+    });
+    expect((await getBillingStore().get(user.id))?.status).toBe("active");
   });
 });

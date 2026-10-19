@@ -1,9 +1,10 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { SiteUnavailable } from "@/components/SiteUnavailable";
-import { ownerHasLiveAccess } from "@/server/billing";
+import { ownerHasCustomDomainAccess, ownerHasLiveAccess } from "@/server/billing";
+import { appOrigin } from "@/server/notify";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -48,6 +49,11 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
   if (!site) notFound();
   if (!(await ownerHasLiveAccess(site.ownerId))) {
     return <SiteUnavailable name={liveSpec(site).business.name} />;
+  }
+  // Plano atual sem domínio próprio (ex.: desceu de Pro para Starter): o site segue no ar no
+  // endereço grátis. `appOrigin` com um host de fora devolve o endereço da No Sweat (APP_URL).
+  if (site.slug && !(await ownerHasCustomDomainAccess(site.ownerId))) {
+    redirect(`${appOrigin("https://customer.invalid/")}/s/${encodeURIComponent(site.slug)}`);
   }
   return (
     <>

@@ -31,6 +31,7 @@ import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
+import { ownerHasLiveAccess } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec, publicUrl } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -90,6 +91,8 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
+  // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
+  const offline = isPublished && !(await ownerHasLiveAccess(site.ownerId));
   // Publicar é a única ação azul da tela; sem nada para publicar, "Edit site" vira a principal.
   const publishLabel = !isPublished
     ? "Publish my website"
@@ -119,6 +122,21 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
           }
           description={where || undefined}
         />
+
+        {offline && (
+          <p
+            role="status"
+            className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-[15px] text-amber-900"
+          >
+            Your plan has ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page.{" "}
+            <Link
+              href={`/billing?site=${encodeURIComponent(site.id)}`}
+              className="font-semibold underline"
+            >
+              Choose a plan to bring it back →
+            </Link>
+          </p>
+        )}
 
         <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-12 lg:gap-x-8">
           {/* Coluna da direita (miniatura): vem primeiro no HTML para aparecer no topo no celular. */}
