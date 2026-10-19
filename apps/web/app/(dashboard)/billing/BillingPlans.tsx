@@ -55,7 +55,7 @@ export function BillingPlans({
   contact: SalesContact;
 }) {
   const checkout = current.checkoutEnabled !== false;
-  const [interval, setBillingInterval] = useState<BillingInterval>("annual");
+  const [interval, setBillingInterval] = useState<BillingInterval>(current.interval ?? "annual");
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,39 +104,40 @@ export function BillingPlans({
     );
   }
 
-  if (current.active && current.plan) {
-    const plan = plans.find((p) => p.id === current.plan);
-    return (
-      <section className={`${panelClass} mt-8`}>
-        <h2 className={panelTitle}>
-          Your plan: {plan?.name ?? current.plan}
-          {current.interval ? ` (${current.interval})` : ""}
-        </h2>
-        <p className={`mt-1 ${panelText}`}>
-          {current.currentPeriodEnd
-            ? `${current.cancelAtPeriodEnd ? "Ends" : "Renews"} on ${dateFormat.format(new Date(current.currentPeriodEnd))}.`
-            : "Your plan is active."}
-          {current.status === "past_due" && " Your last payment failed. Please update your card."}
-        </p>
-        <button
-          type="button"
-          onClick={() => void go("/api/billing/portal")}
-          disabled={pending !== null}
-          className={`${secondaryButton} mt-4`}
-        >
-          {pending ? "Opening…" : "Manage billing"}
-        </button>
-        {error && (
-          <p role="alert" className="mt-3 text-sm text-red-700">
-            {error}
-          </p>
-        )}
-      </section>
-    );
-  }
+  // Plano do Stripe ativo: mostra o plano e o portal, e logo abaixo os planos para trocar.
+  const stripeActive = current.active && current.plan !== null;
+  const currentPlan = stripeActive ? plans.find((p) => p.id === current.plan) : undefined;
+  const isCurrent = (planId: PlanId) =>
+    stripeActive && current.plan === planId && current.interval === interval;
 
   return (
     <div className="mt-8">
+      {stripeActive && (
+        <section className={`${panelClass} mb-8`}>
+          <h2 className={panelTitle}>
+            Your plan: {currentPlan?.name ?? current.plan}
+            {current.interval ? ` (${current.interval})` : ""}
+          </h2>
+          <p className={`mt-1 ${panelText}`}>
+            {current.currentPeriodEnd
+              ? `${current.cancelAtPeriodEnd ? "Ends" : "Renews"} on ${dateFormat.format(new Date(current.currentPeriodEnd))}.`
+              : "Your plan is active."}
+            {current.status === "past_due" && " Your last payment failed. Please update your card."}
+          </p>
+          <button
+            type="button"
+            onClick={() => void go("/api/billing/portal")}
+            disabled={pending !== null}
+            className={`${secondaryButton} mt-4`}
+          >
+            {pending === "/api/billing/portal" ? "Opening…" : "Manage billing"}
+          </button>
+          <p className="mt-4 text-[13px] text-slate-500">
+            To change plans, pick a new one below. It starts today, with no setup fee, and the
+            unused time on your current plan is credited to your account.
+          </p>
+        </section>
+      )}
       <div
         role="group"
         aria-label="Billing period"
@@ -170,7 +171,7 @@ export function BillingPlans({
               </span>
             </p>
             <p className={`mt-1 text-sm ${panelText}`}>
-              {interval === "monthly" && plan.setup
+              {interval === "monthly" && plan.setup && !stripeActive
                 ? `+ ${plan.setup} one-time setup`
                 : "No setup fee"}
             </p>
@@ -178,7 +179,14 @@ export function BillingPlans({
               {plan.customDomain ? "Your own domain included." : "Free nosweatfd.com address."}
             </p>
             <div className="mt-auto pt-5">
-              {checkout ? (
+              {isCurrent(plan.id) ? (
+                <p
+                  className={`${secondaryButton} w-full cursor-default hover:bg-white`}
+                  aria-current="true"
+                >
+                  Current plan
+                </p>
+              ) : checkout ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -191,7 +199,9 @@ export function BillingPlans({
                   disabled={pending !== null}
                   className={`${primaryButton} w-full`}
                 >
-                  {pending === plan.id ? "Opening checkout…" : `Choose ${plan.name}`}
+                  {pending === plan.id
+                    ? "Opening checkout…"
+                    : `${stripeActive ? "Switch to" : "Choose"} ${plan.name}`}
                 </button>
               ) : (
                 <a

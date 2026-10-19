@@ -100,7 +100,7 @@ function SidebarNav({ admin, account, latestSiteId }: Omit<ChromeProps, "childre
                 <li>
                   <Link
                     href={hub.href}
-                    aria-current={hub.key === "website" ? undefined : current(hub.href)}
+                    aria-current={hub.key === "website" ? current("/sites") : current(hub.href)}
                     className={sideItem}
                   >
                     <ModuleIcon className={sideIcon} />
@@ -212,7 +212,7 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
             <li key={hub.key}>
               <Link
                 href={hub.href}
-                aria-current={hub.key === "website" ? undefined : current(hub.href)}
+                aria-current={hub.key === "website" ? current("/sites") : current(hub.href)}
                 className={tabItem}
               >
                 <ModuleIcon className="size-6" />

@@ -17,6 +17,8 @@ export const ERROR_CODES = [
   "generation_failed",
   "image_error",
   "payment_required",
+  "plan_limit",
+  "already_subscribed",
   "reconnect_required",
   "social_error",
   "internal_error",
@@ -233,7 +235,12 @@ export type DomainResponse = z.infer<typeof DomainResponse>;
 export const LeadRequest = z
   .object({
     name: z.string().trim().min(1, "Please enter your name.").max(120),
-    email: z.union([z.literal(""), z.email("Please enter a valid email.")]).optional(),
+    // trim antes de validar: " ana@x.com " (espaço do celular) não pode ser recusado.
+    email: z
+      .string()
+      .trim()
+      .pipe(z.union([z.literal(""), z.email("Please enter a valid email.")]))
+      .optional(),
     phone: z.string().trim().max(40).optional(),
     message: z.string().trim().min(1, "Please tell us how we can help.").max(2000),
     /**

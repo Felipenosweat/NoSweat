@@ -49,9 +49,12 @@ describe("SupabaseSiteStore", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects rows whose spec breaks the contract", async () => {
+  it("skips rows whose spec breaks the contract instead of failing the whole list", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const { store } = storeWith([{ ...row, spec: { version: 1 } }]);
-    await expect(store.get(ID)).rejects.toThrow();
+    expect(await store.get(ID)).toBeNull();
+    const mixed = storeWith([{ ...row, spec: { version: 1 } }, row]).store;
+    expect(await mixed.list(OWNER)).toHaveLength(1);
   });
 
   it("deletes a site and reports whether it existed", async () => {

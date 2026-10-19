@@ -50,13 +50,14 @@ export function encodeForm(params: Params, prefix = ""): string[] {
 
 export async function stripeRequest<T>(
   config: StripeConfig,
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "DELETE",
   path: string,
   params: Params = {},
   fetchImpl: typeof fetch = fetch,
 ): Promise<T> {
   const body = encodeForm(params).join("&");
-  const url = `https://api.stripe.com/v1${path}${method === "GET" && body ? `?${body}` : ""}`;
+  // GET e DELETE mandam os parâmetros na URL; POST, no corpo.
+  const url = `https://api.stripe.com/v1${path}${method !== "POST" && body ? `?${body}` : ""}`;
   const res = await fetchImpl(url, {
     method,
     headers: {

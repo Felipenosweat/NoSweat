@@ -12,7 +12,7 @@ import { getSiteStore } from "../store";
 import { getGrantStore, isGrantActive } from "./grants";
 import { PLANS, priceCents, setupCentsFor } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
-import { getStripeConfig, stripeRequest, type StripeConfig } from "./stripe";
+import { getStripeConfig, StripeError, stripeRequest, type StripeConfig } from "./stripe";
 
 export { extendExpiry, getGrantStore, isGrantActive, type AccessGrant } from "./grants";
 export { PLANS } from "./plans";
@@ -21,6 +21,11 @@ export { getStripeConfig, StripeError, verifyWebhookSignature } from "./stripe";
 // Cobrança com Stripe Checkout + webhook, ou acesso liberado à mão pelo admin (Pix/WhatsApp,
 // ver grants.ts). Os planos valem quando há STRIPE_SECRET_KEY ou REQUIRE_PLAN=true; sem nenhum
 // dos dois, publicar e conectar domínio continuam liberados (como antes).
+
+/** `true` se o checkout do Stripe pode abrir (chave secreta E segredo do webhook). */
+export function checkoutReady(): boolean {
+  return Boolean(getStripeConfig()?.webhookSecret);
+}
 
 /** `true` se publicar exige plano (Stripe ligado ou REQUIRE_PLAN=true). */
 export function billingEnforced(): boolean {
@@ -36,7 +41,7 @@ export function isActiveStatus(status: string | null): boolean {
 
 export async function getBillingStatus(user: CurrentUser): Promise<BillingStatusResponse> {
   const enabled = billingEnforced();
-  const checkoutEnabled = getStripeConfig() !== null;
+  const checkoutEnabled = checkoutReady();
   const [sub, grant] = await Promise.all([
     getBillingStore().get(user.id),
     getGrantStore().get(user.id),
@@ -99,6 +104,23 @@ export async function ownerHasLiveAccess(ownerId: string | null): Promise<boolea
 }
 
 /**
+ * `true` se o site do dono pode aparecer no domínio próprio. Quem desceu para um plano sem
+ * domínio (ex.: Pro → Starter) continua no ar, mas só no endereço grátis.
+ */
+export async function ownerHasCustomDomainAccess(ownerId: string | null): Promise<boolean> {
+  if (!billingEnforced() || !ownerId) return true;
+  try {
+    if (await isAdmin(ownerId)) return true;
+    const plan = await activePlan(ownerId);
+    return plan !== null && PLANS[plan].customDomain;
+  } catch (error) {
+    // Falha no banco não derruba o site do cliente.
+    console.error("[billing] could not check the owner's plan", error);
+    return true;
+  }
+}
+
+/**
  * 402 pronto se a conta precisa de um plano para publicar `site`, ou se o plano já chegou ao
  * limite de sites no ar; senão `null`. Republicar um site que já está no ar sempre passa pelo
  * limite (só conta os OUTROS sites publicados). Admin e cobrança desligada: sem limite.
@@ -119,10 +141,11 @@ export async function publishBlocked(
     (other) => other.id !== site.id && other.status === "published",
   ).length;
   if (live < limit) return null;
+  // Código próprio: a tela mostra a mensagem (em vez de mandar para /billing sem explicar nada).
   return errorResponse(
     402,
-    "payment_required",
-    `Your plan includes ${limit} live ${limit === 1 ? "website" : "websites"}. Upgrade to publish more.`,
+    "plan_limit",
+    `Your plan includes ${limit} live ${limit === 1 ? "website" : "websites"}. Upgrade your plan in Billing to publish more.`,
   );
 }
 
@@ -169,18 +192,41 @@ export async function ownerHasSocialAccess(ownerId: string): Promise<boolean> {
   return plan !== null && PLANS[plan].socialPostsPerMonth > 0;
 }
 
-type StripeCustomer = { id: string };
+type StripeCustomer = { id: string; deleted?: boolean };
 type StripeSession = { id: string; url: string | null };
 
+/** `true` se o cliente guardado ainda existe no Stripe (some ao trocar a chave de teste pela real). */
+async function customerExists(config: StripeConfig, customerId: string): Promise<boolean> {
+  try {
+    const customer = await stripeRequest<StripeCustomer>(
+      config,
+      "GET",
+      `/customers/${encodeURIComponent(customerId)}`,
+    );
+    return !customer.deleted;
+  } catch (error) {
+    if (error instanceof StripeError && (error.status === 404 || error.status === 400)) {
+      return false;
+    }
+    throw error;
+  }
+}
+
 /** Cliente do Stripe da conta (cria na primeira compra e guarda na tabela). */
-async function ensureCustomer(config: StripeConfig, user: CurrentUser): Promise<string> {
+async function ensureCustomer(
+  config: StripeConfig,
+  user: CurrentUser,
+  existing: SubscriptionRecord | null,
+): Promise<string> {
   const store = getBillingStore();
-  const existing = await store.get(user.id);
-  if (existing) return existing.stripeCustomerId;
+  if (existing && (await customerExists(config, existing.stripeCustomerId))) {
+    return existing.stripeCustomerId;
+  }
   const customer = await stripeRequest<StripeCustomer>(config, "POST", "/customers", {
     email: user.email ?? undefined,
     metadata: { user_id: user.id },
   });
+  // Cliente novo (primeira compra, ou o antigo não existe mais): começa sem assinatura.
   await store.upsert({
     userId: user.id,
     stripeCustomerId: customer.id,
@@ -194,6 +240,9 @@ async function ensureCustomer(config: StripeConfig, user: CurrentUser): Promise<
   return customer.id;
 }
 
+/** Compra recusada antes de abrir o Stripe (ex.: a conta já tem este mesmo plano). */
+export class CheckoutRefused extends Error {}
+
 /** Página de pagamento do Stripe para o plano escolhido. */
 export async function createCheckoutUrl(
   config: StripeConfig,
@@ -202,8 +251,17 @@ export async function createCheckoutUrl(
   origin: string,
 ): Promise<string> {
   const plan = PLANS[input.plan];
-  const customer = await ensureCustomer(config, user);
-  const setup = setupCentsFor(plan, input.interval);
+  const existing = await getBillingStore().get(user.id);
+  const current = existing && isActiveStatus(existing.status) ? existing : null;
+  // Mesmo plano e período já ativos: nada de pagar duas vezes (ex.: voltou do Stripe e clicou de
+  // novo antes do webhook chegar).
+  if (current && current.plan === plan.id && current.interval === input.interval) {
+    throw new CheckoutRefused("You already have this plan.");
+  }
+  const customer = await ensureCustomer(config, user, existing);
+  // Troca de plano (ex.: Starter → Pro): quem já paga não paga a taxa de instalação de novo. A
+  // assinatura antiga é cancelada quando a nova fica ativa (ver syncSubscription).
+  const setup = current ? 0 : setupCentsFor(plan, input.interval);
   const back = input.siteId ? `&site=${encodeURIComponent(input.siteId)}` : "";
   const meta = { user_id: user.id, plan: plan.id, interval: input.interval };
 
@@ -237,7 +295,9 @@ export async function createCheckoutUrl(
     metadata: meta,
     subscription_data: { metadata: meta },
     allow_promotion_codes: true,
-    success_url: `${origin}/billing?status=success${back}`,
+    // {CHECKOUT_SESSION_ID}: o Stripe troca pelo id da sessão; a página /billing usa para
+    // confirmar o pagamento na hora, sem esperar o webhook.
+    success_url: `${origin}/billing?status=success&session_id={CHECKOUT_SESSION_ID}${back}`,
     cancel_url: `${origin}/billing?status=cancelled${back}`,
   });
   if (!session.url) throw new Error("Stripe did not return a checkout URL.");
@@ -291,8 +351,21 @@ function intervalFrom(sub: StripeSubscription): BillingInterval | null {
   return meta === "annual" || meta === "monthly" ? meta : null;
 }
 
+/** Cancela uma assinatura antiga (troca de plano). O tempo não usado vira crédito no Stripe. */
+async function cancelReplaced(config: StripeConfig, subscriptionId: string): Promise<void> {
+  try {
+    await stripeRequest(config, "DELETE", `/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+      prorate: true,
+      invoice_now: true,
+    });
+  } catch (error) {
+    // Não derruba o webhook (o Stripe reenviaria): fica no log para cancelar à mão no painel.
+    console.error("[billing] could not cancel the replaced subscription", subscriptionId, error);
+  }
+}
+
 /** Grava o estado da assinatura (achando a conta pelo metadata ou pelo cliente). */
-async function syncSubscription(sub: StripeSubscription): Promise<void> {
+async function syncSubscription(config: StripeConfig, sub: StripeSubscription): Promise<void> {
   const store = getBillingStore();
   const existing = await store.getByCustomer(sub.customer);
   const userId = sub.metadata?.user_id ?? existing?.userId;
@@ -300,6 +373,13 @@ async function syncSubscription(sub: StripeSubscription): Promise<void> {
     console.warn("[billing] subscription without a known account", sub.id);
     return;
   }
+  const other =
+    existing?.stripeSubscriptionId && existing.stripeSubscriptionId !== sub.id ? existing : null;
+  // Evento de uma assinatura que não é a guardada, enquanto a guardada está ativa: só vale se esta
+  // também estiver ativa (é a nova, de uma troca de plano). Senão é a antiga sendo cancelada ou
+  // uma tentativa que não foi paga, e não pode tirar o site do ar.
+  if (other && isActiveStatus(other.status) && !isActiveStatus(sub.status)) return;
+
   const periodEnd =
     sub.items?.data?.find((item) => item.current_period_end)?.current_period_end ??
     sub.current_period_end;
@@ -307,13 +387,53 @@ async function syncSubscription(sub: StripeSubscription): Promise<void> {
     userId,
     stripeCustomerId: sub.customer,
     stripeSubscriptionId: sub.id,
-    plan: planFrom(sub.metadata?.plan) ?? existing?.plan ?? null,
-    interval: intervalFrom(sub) ?? existing?.interval ?? null,
+    plan: planFrom(sub.metadata?.plan) ?? (other ? null : existing?.plan) ?? null,
+    interval: intervalFrom(sub) ?? (other ? null : existing?.interval) ?? null,
     status: sub.status,
     currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
   };
   await store.upsert(record);
+  // Troca de plano concluída: a assinatura antiga para de cobrar.
+  if (other?.stripeSubscriptionId && isActiveStatus(other.status) && isActiveStatus(sub.status)) {
+    await cancelReplaced(config, other.stripeSubscriptionId);
+  }
+}
+
+/** Busca a assinatura no Stripe (estado atual, mesmo que os eventos cheguem fora de ordem). */
+async function fetchSubscription(
+  config: StripeConfig,
+  subscriptionId: string,
+): Promise<StripeSubscription> {
+  return stripeRequest<StripeSubscription>(
+    config,
+    "GET",
+    `/subscriptions/${encodeURIComponent(subscriptionId)}`,
+  );
+}
+
+type StripeCheckoutSession = {
+  id: string;
+  client_reference_id?: string | null;
+  subscription?: string | null;
+};
+
+/**
+ * Volta do Stripe (/billing?status=success&session_id=...): confirma a sessão e grava a
+ * assinatura na hora, sem esperar o webhook. Só vale para a sessão da própria conta.
+ */
+export async function syncCheckoutSession(
+  config: StripeConfig,
+  user: CurrentUser,
+  sessionId: string,
+): Promise<void> {
+  const session = await stripeRequest<StripeCheckoutSession>(
+    config,
+    "GET",
+    `/checkout/sessions/${encodeURIComponent(sessionId)}`,
+  );
+  if (session.client_reference_id !== user.id || typeof session.subscription !== "string") return;
+  await syncSubscription(config, await fetchSubscription(config, session.subscription));
 }
 
 /** Trata um evento já verificado do Stripe. Eventos que não interessam são ignorados. */
@@ -323,19 +443,19 @@ export async function handleStripeEvent(config: StripeConfig, event: StripeEvent
     case "checkout.session.completed": {
       const subscriptionId = object.subscription;
       if (typeof subscriptionId !== "string") return;
-      const sub = await stripeRequest<StripeSubscription>(
-        config,
-        "GET",
-        `/subscriptions/${encodeURIComponent(subscriptionId)}`,
-      );
-      await syncSubscription(sub);
+      await syncSubscription(config, await fetchSubscription(config, subscriptionId));
       return;
     }
     case "customer.subscription.created":
     case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      await syncSubscription(object as unknown as StripeSubscription);
+    case "customer.subscription.deleted": {
+      // O evento pode chegar fora de ordem (um "created/incomplete" antigo depois do "active"):
+      // grava o estado ATUAL da assinatura, buscado no Stripe.
+      const subscriptionId = object.id;
+      if (typeof subscriptionId !== "string") return;
+      await syncSubscription(config, await fetchSubscription(config, subscriptionId));
       return;
+    }
     default:
       return;
   }

@@ -28,8 +28,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       {viewer?.viewingAs && <ViewAsBanner email={viewer.viewingAs.email} />}
       <header className="bg-ink text-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-white px-2 py-1 text-ink">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            {/* Volta para o painel do cliente (a própria conta), sempre à vista na esquerda. */}
+            <Link
+              href="/dashboard"
+              className={`${navItem} gap-1.5 border border-white/15 bg-white/5`}
+            >
+              <span aria-hidden="true">&larr;</span>
+              <span className="max-[360px]:sr-only">Dashboard</span>
+            </Link>
+            <div className="hidden rounded-lg bg-white px-2 py-1 text-ink sm:block">
               <Logo />
             </div>
             <span className="hidden rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-ink min-[420px]:inline">
@@ -37,9 +45,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <Link href="/dashboard" className={navItem}>
-              My sites
-            </Link>
             <form action={signOut}>
               <button type="submit" className={navItem}>
                 Log out

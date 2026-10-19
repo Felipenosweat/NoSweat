@@ -20,6 +20,7 @@ import { CanvasFrame, DESKTOP_QUERY, useMediaQuery, type Device } from "./Canvas
 import { ContentPanel } from "./ContentPanel";
 import { newSection } from "./defaults";
 import {
+  ArrowLeftIcon,
   ChevronDownIcon,
   CloseIcon,
   DesktopIcon,
@@ -683,17 +684,24 @@ export function SiteEditor({
             // Visitante volta para a prévia (a página do site exige conta).
             href={isGuest ? `/sites/preview/${siteId}` : `/sites/${siteId}`}
             title={isGuest ? "Back to preview" : "Back to site page"}
-            className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-150 hover:bg-slate-50 motion-reduce:transition-none ${focusRing}`}
+            onClick={(event) => {
+              if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
+                event.preventDefault();
+              }
+            }}
+            className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-sm font-semibold text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-ink motion-reduce:transition-none ${focusRing}`}
           >
-            <Image
-              src="/brand/nosweat-mark-64.png"
-              alt=""
-              width={26}
-              height={26}
-              className="size-[26px]"
-            />
-            <span className="sr-only">{isGuest ? "Back to preview" : "Back to site page"}</span>
+            <ArrowLeftIcon className="size-[18px]" />
+            <span className="max-sm:sr-only">{isGuest ? "Preview" : "Back"}</span>
           </Link>
+          <span aria-hidden="true" className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
+          <Image
+            src="/brand/nosweat-mark-64.png"
+            alt=""
+            width={22}
+            height={22}
+            className="hidden size-[22px] shrink-0 sm:block"
+          />
           <h1 className="min-w-0 truncate font-display text-[15px] font-semibold tracking-[-0.01em]">
             {spec.business.name || "Your website"}
           </h1>

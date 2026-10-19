@@ -11,24 +11,40 @@ import {
   textButton,
 } from "@/components/DashboardUi";
 import { getViewer } from "@/server/auth/viewer";
-import { getBillingStatus, PLANS } from "@/server/billing";
+import { getBillingStatus, getStripeConfig, PLANS, syncCheckoutSession } from "@/server/billing";
 import { BillingIcon } from "../NavIcons";
 import { BillingPlans, type PlanCard, type SalesContact } from "./BillingPlans";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
-type BillingPageProps = { searchParams: Promise<{ status?: string; site?: string }> };
+type BillingPageProps = {
+  searchParams: Promise<{ status?: string; site?: string; session_id?: string }>;
+};
 
 const usd = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: cents % 100 ? 2 : 0 })}`;
 
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
-  const { status, site } = await searchParams;
+  const { status, site, session_id: sessionId } = await searchParams;
   const viewer = await getViewer();
   if (!viewer) redirect(`/login?next=${encodeURIComponent("/billing")}`);
   // No modo "ver como" do admin, o plano da conta vista (comprar fica bloqueado pelo proxy.ts).
   const user = viewer.viewingAs ?? viewer.user;
+  // Voltou do Stripe: confirma o pagamento agora (o webhook pode demorar alguns segundos). Assim o
+  // plano já aparece e ninguém clica em "Choose" de novo e paga duas vezes.
+  const stripe = getStripeConfig();
+  if (
+    status === "success" &&
+    sessionId &&
+    /^cs_\w{1,200}$/.test(sessionId) &&
+    stripe &&
+    !viewer.viewingAs
+  ) {
+    await syncCheckoutSession(stripe, viewer.user, sessionId).catch((error: unknown) => {
+      console.error("[billing] could not confirm the checkout session", error);
+    });
+  }
   const billing = await getBillingStatus(user);
   // Só ids no formato esperado voltam para a página do site (nada de texto solto na URL).
   const siteId = site && /^[\w-]{1,64}$/.test(site) ? site : null;
@@ -59,7 +75,9 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
 
       {status === "success" && (
         <p role="status" className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-emerald-800">
-          Payment received. It can take a few seconds to show here.
+          {billing.active
+            ? "Payment received. Your plan is active."
+            : "Payment received. It can take a few seconds to show here."}
           {siteId && (
             <>
               {" "}

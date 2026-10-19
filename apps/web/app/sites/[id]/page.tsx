@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { AccountShellForCurrentViewer } from "@/app/(dashboard)/AccountShell";
 import {
   ClockIcon,
   GlobeIcon,
@@ -17,7 +18,6 @@ import {
   StatusBadge,
   cardClass,
   cardShadow,
-  displayWordSpacing,
   focusRing,
   panelClass,
   panelText,
@@ -29,9 +29,9 @@ import {
 } from "@/components/DashboardUi";
 import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
-import { Logo } from "@/components/Logo";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
+import { ownerHasLiveAccess } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec, publicUrl } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -91,6 +91,8 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
+  // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
+  const offline = isPublished && !(await ownerHasLiveAccess(site.ownerId));
   // Publicar é a única ação azul da tela; sem nada para publicar, "Edit site" vira a principal.
   const publishLabel = !isPublished
     ? "Publish my website"
@@ -104,21 +106,14 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const where = [business.city, business.state].filter(Boolean).join(", ");
 
   return (
-    <div className={`min-h-svh bg-surface ${displayWordSpacing}`}>
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
-          <Logo />
-          <Link
-            href="/dashboard"
-            className={`inline-flex min-h-11 items-center rounded-lg text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
-          >
-            <span aria-hidden="true">&larr;&nbsp;</span>Dashboard
-          </Link>
-        </div>
-      </header>
-
-      <main id="main" className="mx-auto max-w-[1200px] px-5 pt-8 pb-16 sm:px-8 lg:pt-12 lg:pb-24">
+    <AccountShellForCurrentViewer>
+      <div>
         <PageHeader
+          back={
+            <Link href="/dashboard#sites" className={`${textButton} -ml-1`}>
+              <span aria-hidden="true">‹</span> My sites
+            </Link>
+          }
           title={business.name}
           badge={
             <StatusBadge tone={isPublished ? "live" : "draft"}>
@@ -127,6 +122,21 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
           }
           description={where || undefined}
         />
+
+        {offline && (
+          <p
+            role="status"
+            className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-[15px] text-amber-900"
+          >
+            Your plan has ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page.{" "}
+            <Link
+              href={`/billing?site=${encodeURIComponent(site.id)}`}
+              className="font-semibold underline"
+            >
+              Choose a plan to bring it back →
+            </Link>
+          </p>
+        )}
 
         <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-12 lg:gap-x-8">
           {/* Coluna da direita (miniatura): vem primeiro no HTML para aparecer no topo no celular. */}
@@ -338,7 +348,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             </section>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </AccountShellForCurrentViewer>
   );
 }

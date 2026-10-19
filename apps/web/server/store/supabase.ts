@@ -127,7 +127,16 @@ export class SupabaseSiteStore implements SiteStore {
   }
 
   private async request(query: string, init: RequestInit = {}): Promise<Row[]> {
-    return z.array(Row).parse(await this.raw(this.endpoint, query, init));
+    const rows = z.array(z.unknown()).parse(await this.raw(this.endpoint, query, init));
+    // Uma linha que não passa no SiteSpec atual (site antigo, schema mudou) fica de fora e vai
+    // para o log, em vez de derrubar a lista inteira (painel, /admin, limite de sites).
+    return rows.flatMap((row) => {
+      const parsed = Row.safeParse(row);
+      if (parsed.success) return [parsed.data];
+      const id = (row as { id?: unknown } | null)?.id;
+      console.error("[store] skipping a site row that fails the schema", id, parsed.error.issues);
+      return [];
+    });
   }
 
   private async raw(endpoint: string, query: string, init: RequestInit): Promise<unknown> {
