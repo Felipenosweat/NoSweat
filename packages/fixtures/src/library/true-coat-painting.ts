@@ -1,7 +1,10 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de pintura residencial (serviços para casa) na composição editorial: título de revista,
-// serviços como sumário numerado, sem foto (a tipografia carrega o topo). Fatos: só os do brief.
+// serviços como sumário numerado. A tipografia carrega o topo; embaixo, uma faixa 21:9 de camadas
+// de tinta velha descascando ilustra o título ("prep is the paint job") e repete a terracota e o
+// verde do tema. É cena (kind "scene"), não obra da empresa. Sem galeria: nenhuma foto de
+// interior ou fachada candidata tinha qualidade. Fatos: só os do brief. Foto: Flickr, CC BY 2.0.
 export const trueCoatPainting: ModelEntry = {
   slug: "true-coat-painting",
   category: "home-services",
@@ -65,6 +68,19 @@ export const trueCoatPainting: ModelEntry = {
         subtitle:
           "Interior and exterior painting, cabinets and decks for Portland houses. We spend most of every job scraping, patching, caulking and taping, because that's what makes two coats last.",
         ctaLabel: "Book a walkthrough",
+        image: {
+          url: "/photos/models/true-coat-painting-1.webp",
+          alt: "Layers of old ochre, green and gray paint flaking off a plaster wall",
+          source: "upload",
+          kind: "scene",
+          credit: {
+            name: "Radoslav Minchev",
+            url: "https://www.flickr.com/photos/25566545@N02/6017423260",
+          },
+          width: 1023,
+          height: 731,
+          focus: "40% 45%",
+        },
       },
       {
         type: "about",

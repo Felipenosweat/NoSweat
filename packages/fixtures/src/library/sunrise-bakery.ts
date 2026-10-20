@@ -71,16 +71,19 @@ export const sunriseBakery: ModelEntry = {
         subtitle:
           "Sourdough fermented for 48 hours, laminated pastries and custom cakes on J St in Midtown. Weekend bread sells out by noon, so preorder the Saturday box or come early.",
         ctaLabel: "Preorder for pickup",
-        imageQuery: "baker kneading dough",
+        imageQuery: "butter croissant close up",
         image: {
-          url: "/photos/shop-owner.webp",
-          alt: "A baker kneading dough by hand",
-          source: "unsplash",
+          url: "/photos/models/sunrise-bakery-12.webp",
+          alt: "Close-up of golden, flaky butter croissants with their laminated layers showing",
+          source: "upload",
           kind: "scene",
-          credit: { name: "Adam Bartoszewicz", url: "https://unsplash.com/photos/AYLSwAtdb90" },
-          width: 1200,
-          height: 1800,
-          focus: "50% 40%",
+          credit: {
+            name: "Blarvar",
+            url: "https://www.flickr.com/photos/46583370@N04/4599562280",
+          },
+          width: 1024,
+          height: 632,
+          focus: "40% 50%",
         },
       },
       {

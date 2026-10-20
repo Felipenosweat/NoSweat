@@ -1,7 +1,36 @@
+import type { SiteImage } from "@nosweat/schema";
 import type { ModelEntry } from "./types";
+
+/** Foto de trabalho (papel de foto do dono), 1024px, do Flickr. */
+function work(
+  n: number,
+  alt: string,
+  caption: string,
+  credit: { name: string; url: string },
+  height: number,
+): SiteImage {
+  return {
+    url: `/photos/models/greenline-landscaping-${n}.webp`,
+    alt,
+    source: "upload",
+    kind: "owner",
+    credit,
+    width: 1024,
+    height,
+    caption,
+  };
+}
+
+const CWWYCOFF = (id: string) => ({
+  name: "cwwycoff1",
+  url: `https://www.flickr.com/photos/80909625@N00/${id}`,
+});
 
 // Modelo de paisagismo e gramado (serviços para casa) na composição imersiva: foto de ponta a
 // ponta no topo, faixa de informações e serviços como cardápio em grupos. Fatos: só os do brief.
+// A galeria faz o papel das fotos do próprio dono (kind "owner", como em vega-photo.ts): fotos do
+// Flickr (CC BY / BY-SA 2.0, crédito em `credit`), legendas só descrevem o serviço, sem lugar nem
+// ano (o brief não cita obras). São 5 de propósito: a parede ("wall") fecha a grade com 5.
 export const greenlineLandscaping: ModelEntry = {
   slug: "greenline-landscaping",
   category: "home-services",
@@ -131,6 +160,47 @@ export const greenlineLandscaping: ModelEntry = {
             description: "Leaves blown out of the beds and off the lawn, then hauled away.",
             price: "from $225",
           },
+        ],
+      },
+      {
+        type: "gallery",
+        title: "Yards we look after",
+        images: [
+          work(
+            1,
+            "A freshly mowed lawn with even stripes, edged by tall shade trees",
+            "01 · Weekly mowing",
+            { name: "heipei", url: "https://www.flickr.com/photos/97859317@N00/25718450" },
+            768,
+          ),
+          work(
+            16,
+            "Pink lilies and orange daylilies along a wooden picket fence, over a band of yellow flowers",
+            "02 · Lily border along a fence",
+            CWWYCOFF("3757274244"),
+            685,
+          ),
+          work(
+            15,
+            "A brick patio with two wicker chairs, framed by planted beds and trimmed lawn",
+            "03 · Patio beds and lawn edge",
+            CWWYCOFF("3756462621"),
+            685,
+          ),
+          work(
+            14,
+            "Trimmed lawn and planted edges around a small green garden shed with a brick pad",
+            "04 · Lawn and beds around a garden shed",
+            CWWYCOFF("3757246440"),
+            685,
+          ),
+          work(
+            13,
+            "A raised bed of purple liatris and yellow coreopsis in front of a lattice screen",
+            "05 · Raised perennial bed",
+            CWWYCOFF("3756459353"),
+            685,
+          ),
         ],
       },
       {

@@ -1,7 +1,10 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de eletricista (serviços para casa) na composição tipográfica: a frase do topo é a
-// imagem, sem foto. Todos os fatos do site estão no brief, nas palavras do "dono" (regra 8).
+// imagem; a foto (cena, não "nosso trabalho") fica em faixa larga embaixo do bloco preto, e o
+// amarelo da grade de obra repete o fio amarelo do tema. Sem galeria: não havia fotos de serviço
+// residencial boas o bastante. Todos os fatos do site estão no brief, nas palavras do "dono"
+// (regra 8). Foto: Flickr, CC BY 2.0, crédito em `credit`.
 export const brightSparkElectric: ModelEntry = {
   slug: "bright-spark-electric",
   category: "home-services",
@@ -66,6 +69,20 @@ export const brightSparkElectric: ModelEntry = {
         subtitle:
           "Panel upgrades, EV chargers and rewiring for houses that were built before the second fridge, the pool pump and the car in the garage. Call and you get Marcus or Tasha.",
         ctaLabel: "Call for a quote",
+        image: {
+          url: "/photos/models/bright-spark-electric-2.webp",
+          alt: "An electrician in a hard hat and safety vest wiring a junction box from a lift platform",
+          source: "upload",
+          kind: "scene",
+          credit: {
+            name: "garryknight",
+            url: "https://www.flickr.com/photos/8176740@N05/15657882247",
+          },
+          width: 1024,
+          height: 683,
+          // A faixa 3:1 corta muito na altura: alto o bastante para manter o capacete e as mãos.
+          focus: "60% 15%",
+        },
       },
       {
         type: "services",

@@ -72,16 +72,19 @@ export const brickOvenPizza: ModelEntry = {
         subtitle:
           "Wood-fired pies from an oak-burning oven we built by hand on Graham Ave. Grab a slice at the counter, order a pie for pickup or delivery, or have us bring the oven to your party.",
         ctaLabel: "Order pickup or delivery",
-        imageQuery: "chef plating wood fired pizza",
+        imageQuery: "pizza baking in wood fired brick oven",
         image: {
-          url: "/photos/cook.webp",
-          alt: "A cook plating food under copper lamps",
-          source: "unsplash",
+          url: "/photos/models/brick-oven-pizza-6.webp",
+          alt: "A pizza baking on the brick floor of a wood-fired oven, next to burning logs",
+          source: "upload",
           kind: "scene",
-          credit: { name: "Louis Hansel", url: "https://unsplash.com/photos/v3OlBE6-fhU" },
-          width: 1169,
-          height: 1800,
-          focus: "50% 55%",
+          credit: {
+            name: "Lotus Head from Johannesburg, Gauteng, South Africa",
+            url: "https://commons.wikimedia.org/w/index.php?curid=358898",
+          },
+          width: 1600,
+          height: 1200,
+          focus: "55% 55%",
         },
       },
       {

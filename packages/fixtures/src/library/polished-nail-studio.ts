@@ -1,7 +1,7 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de estúdio de unhas (beleza, composição modular): blocos lado a lado com cardápio,
-// horário e contato. Verde-azulado + pêssego (pêssego nunca como texto). Fatos: só os do `brief`.
+// horário e contato; foto de ambiente (esmalte, kind "scene") no bloco ao lado do título. Verde-azulado + pêssego (pêssego nunca como texto). Fatos: só os do `brief`.
 export const polishedNailStudio: ModelEntry = {
   slug: "polished-nail-studio",
   category: "beauty",
@@ -73,6 +73,19 @@ export const polishedNailStudio: ModelEntry = {
         subtitle:
           "Gel, structured gel, dip and hand-painted nail art on South Lamar. Sterilized tools, a new file for every client and free parking out back.",
         ctaLabel: "Book your nails",
+        image: {
+          url: "/photos/models/polished-nail-studio-8.webp",
+          alt: "A drop of glossy red nail polish falling from the brush back into the bottle",
+          source: "upload",
+          kind: "scene",
+          credit: {
+            name: "spurekar",
+            url: "https://www.flickr.com/photos/63324741@N04/25788709725",
+          },
+          width: 1024,
+          height: 1024,
+          focus: "50% 42%",
+        },
       },
       {
         type: "services",

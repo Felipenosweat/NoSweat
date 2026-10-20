@@ -1,6 +1,6 @@
 import type { ModelEntry } from "./types";
 
-// Modelo de restaurante: café de bairro (composição editorial, sem foto de comida no topo).
+// Modelo de restaurante: café de bairro (composição editorial; foto do topo = o espresso).
 // Todo fato do site está no `brief`, nas palavras da "dona" (regra 8).
 export const northLoopCoffee: ModelEntry = {
   slug: "north-loop-coffee",
@@ -71,16 +71,19 @@ export const northLoopCoffee: ModelEntry = {
         subtitle:
           "A neighborhood coffee shop in an old North Loop printing warehouse. Espresso from beans we roast ourselves, cardamom buns baked every morning, and a seat that's yours until 3.",
         ctaLabel: "Order ahead",
-        imageQuery: "neighborhood coffee shop storefront",
+        imageQuery: "espresso cup on saucer with coffee beans",
         image: {
-          url: "/photos/storefront.webp",
-          alt: "A small storefront with striped awnings",
-          source: "unsplash",
+          url: "/photos/models/north-loop-coffee-6.webp",
+          alt: "An espresso in a white ceramic cup on a saucer, with a few roasted coffee beans beside it",
+          source: "upload",
           kind: "scene",
-          credit: { name: "Zhen Yao", url: "https://unsplash.com/photos/kHkYP2ERSnk" },
-          width: 2400,
-          height: 1606,
-          focus: "50% 50%",
+          credit: {
+            name: "scribblesteve",
+            url: "https://www.flickr.com/photos/33434850@N06/5598864934",
+          },
+          width: 1024,
+          height: 680,
+          focus: "50% 45%",
         },
       },
       {

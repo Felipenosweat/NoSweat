@@ -106,7 +106,7 @@ export function PhotoFrame({
   /** Raio da moldura da foto (o mesmo da composição). */
   radius?: string;
 }) {
-  const hasCredit = Boolean(image.credit) && image.source !== "upload";
+  const hasCredit = Boolean(image.credit);
   return (
     <figure className={className}>
       <div

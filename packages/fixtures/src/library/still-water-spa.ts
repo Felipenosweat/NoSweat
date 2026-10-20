@@ -1,7 +1,7 @@
 import type { ModelEntry } from "./types";
 
-// Modelo de spa e massagem (beleza, composição imersiva). Sem foto própria do spa: o topo usa
-// o palco escuro só com tipografia. Sálvia + areia, fonte "luxe". Fatos: só os do `brief`.
+// Modelo de spa e massagem (beleza, composição imersiva). O topo usa uma foto de ambiente (toalha
+// e suculentas, kind "scene"), sem pessoas. Sálvia + areia, fonte "luxe". Fatos: só os do `brief`.
 export const stillWaterSpa: ModelEntry = {
   slug: "still-water-spa",
   category: "beauty",
@@ -66,6 +66,18 @@ export const stillWaterSpa: ModelEntry = {
         subtitle:
           "Massage and facials in Old Town Scottsdale. Five quiet rooms, no phones, no music unless you ask for it, and licensed therapists who listen before they start.",
         ctaLabel: "Book a treatment",
+        image: {
+          url: "/photos/models/still-water-spa-9.webp",
+          alt: "A rolled white towel and two small potted succulents on a warm wooden table",
+          source: "upload",
+          kind: "scene",
+          credit: {
+            name: "wellness_photos",
+            url: "https://www.flickr.com/photos/130100316@N04/16161105698",
+          },
+          width: 1024,
+          height: 683,
+        },
       },
       {
         type: "about",

@@ -2,8 +2,9 @@ import type { ModelEntry } from "./types";
 
 // Modelo profissional "modular": consultório odontológico de família. Grade de blocos com
 // horário e ligar no topo, preços para quem não tem plano e a lista de convênios aceitos (só os
-// que o dono citou). Sem foto: não há foto do consultório, e banco de imagens não pode virar
-// "nossa equipe". Saúde: nada de promessa de resultado nem "sem dor".
+// que o dono citou). Uma foto de cena só (detalhe de escova, sem pessoas): não há foto do
+// consultório, e banco de imagens não pode virar "nossa equipe". Saúde: nada de promessa de
+// resultado nem "sem dor".
 export const baysideFamilyDental: ModelEntry = {
   slug: "bayside-family-dental",
   category: "professional",
@@ -73,6 +74,16 @@ export const baysideFamilyDental: ModelEntry = {
           "Cleanings, fillings and whitening in South Tampa. Toothache? Call before noon and we try to see you that day. Open until 7 PM on Wednesdays.",
         ctaLabel: "Book a visit",
         imageQuery: "bright dental office chair",
+        image: {
+          url: "/photos/models/bayside-family-dental-11.webp",
+          alt: "Close-up of a toothbrush head with teal and green bristles on a clean white background",
+          source: "upload",
+          kind: "scene",
+          credit: { name: "wwarby", url: "https://www.flickr.com/photos/26782864@N00/11693522135" },
+          width: 1023,
+          height: 678,
+          focus: "66% 50%",
+        },
       },
       {
         type: "services",
