@@ -1,8 +1,38 @@
+import type { SiteImage } from "@nosweat/schema";
 import type { ModelEntry } from "./types";
 
+/** Crédito de uma foto da Paintzen no Flickr (CC BY 2.0). */
+const PAINTZEN = (id: string) => ({
+  name: "Paintzen",
+  url: `https://www.flickr.com/photos/147489968@N06/${id}`,
+});
+
+/** Foto de trabalho (papel de foto da dona), do Flickr, com o tamanho do arquivo. */
+function room(
+  n: number,
+  alt: string,
+  caption: string,
+  id: string,
+  width: number,
+  height: number,
+): SiteImage {
+  return {
+    url: `/photos/models/hollis-interiors-${n}.webp`,
+    alt,
+    source: "upload",
+    kind: "owner",
+    credit: PAINTZEN(id),
+    width,
+    height,
+    caption,
+  };
+}
+
 // Modelo de portfólio: designer de interiores em Nashville (composição "immersive").
-// Sem fotos de trabalho de verdade, então sem galeria: os projetos aparecem no "about" logo
-// depois do topo (o trabalho vem primeiro). Todo fato do site está no brief (regra 8).
+// O trabalho vem primeiro: foto de ponta a ponta no topo e a galeria logo depois. As fotos fazem
+// o papel das fotos da dona (kind "owner", como em vega-photo.ts): Flickr, CC BY 2.0, crédito em
+// `credit`. São 3 de propósito (só 4 fotos boas no lote, todas da mesma casa; nenhuma fraca para
+// encher). Legendas usam só projetos do brief. Todo fato do site está no brief (regra 8).
 export const hollisInteriors: ModelEntry = {
   slug: "hollis-interiors",
   category: "portfolio",
@@ -66,11 +96,51 @@ export const hollisInteriors: ModelEntry = {
         subtitle:
           "Full-home design, kitchens and baths for old Nashville houses and new ones. About 10 projects a year, each one drawn around how the family actually lives.",
         ctaLabel: "Book a consultation",
+        image: {
+          url: "/photos/models/hollis-interiors-11.webp",
+          alt: "A white kitchen with a marble-topped island, two steel pendant lights, subway tile and dark oak floors",
+          source: "upload",
+          kind: "owner",
+          credit: PAINTZEN("29813588732"),
+          width: 1024,
+          height: 669,
+          focus: "50% 60%",
+        },
+      },
+      {
+        type: "gallery",
+        title: "Selected work",
+        images: [
+          room(
+            9,
+            "A farmhouse sink in a marble island facing a steel range, white cabinets and subway tile",
+            "01 · Kitchen · Belmont-Hillsboro foursquare · 2025",
+            "29300385324",
+            1024,
+            669,
+          ),
+          room(
+            14,
+            "A bedroom with a tufted headboard, a navy quilt, a floor mirror and plantation shutters",
+            "02 · Bedroom · 1920s Craftsman, East Nashville · 2025",
+            "29813589472",
+            1024,
+            676,
+          ),
+          room(
+            15,
+            "A bedside table with mirrored drawers and a white lamp beside a tufted bed with navy bedding",
+            "03 · Bedroom · 1920s Craftsman, East Nashville · 2025",
+            "29844388151",
+            1023,
+            655,
+          ),
+        ],
       },
       {
         type: "about",
-        title: "Recent rooms, and who made them",
-        body: "Lately: a 1920s Craftsman in East Nashville (2025), a kitchen and two baths in a Belmont-Hillsboro foursquare (2025), a lake house on Percy Priest Lake (2024) and a loft in Germantown (2024).\n\nI opened the studio in 2017 after 8 years at an architecture firm, so we start with the floor plan and the light before we talk about pillows. Jess keeps the contractors, orders and install day on schedule.",
+        title: "Who makes them",
+        body: "I opened the studio in 2017 after 8 years at an architecture firm, so we start with the floor plan and the light before we talk about pillows. Jess keeps the contractors, orders and install day on schedule.\n\nAlso lately: a lake house on Percy Priest Lake (2024) and a loft in Germantown (2024).",
         people: [
           {
             name: "Claire Hollis",
