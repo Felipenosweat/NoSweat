@@ -39,5 +39,5 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
       action: "manual_published",
     });
     return jsonResponse(SocialPostResponse, { post: toPublicPost(updated) });
-  });
+  }, "/api/social/posts/[id]/mark-posted");
 }

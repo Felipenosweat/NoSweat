@@ -70,5 +70,5 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
         headers: { "Cache-Control": "public, max-age=3600, s-maxage=3600" },
       },
     );
-  });
+  }, "/api/sites/[id]/og");
 }

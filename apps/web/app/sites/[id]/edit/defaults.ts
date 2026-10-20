@@ -21,7 +21,7 @@ export function newSection(type: SectionType): Section {
     case "faq":
       return { type, items: [{ q: P.faqQuestion, a: P.faqAnswer }] };
     case "contact":
-      return { type, showForm: true, showMap: true };
+      return { type, showForm: true, showMap: false };
     case "gallery":
       // Só fotos do dono: começa vazia e o cliente envia as fotos.
       return { type, images: [] };

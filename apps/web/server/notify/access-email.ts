@@ -3,7 +3,7 @@
 // lead-email.ts. Sem RESEND_API_KEY não faz nada. Nunca lança erro.
 
 export const DEFAULT_BILLING_FROM = "No Sweat <billing@nosweatfd.com>";
-const DEFAULT_APP_URL = "https://nosweatfd.com";
+const DEFAULT_APP_URL = "https://www.nosweatfd.com";
 const TIMEOUT_MS = 5_000;
 
 /** Variáveis usadas (aceita `process.env` direto; nos testes, um objeto simples). */
@@ -21,7 +21,7 @@ export function accessEmailConfigured(env: AccessEmailEnv = process.env): boolea
   return Boolean(env.RESEND_API_KEY);
 }
 
-/** Endereço do painel para os links dos e-mails (APP_URL ou nosweatfd.com), sem "/" no fim. */
+/** Endereço do painel nos links dos e-mails (APP_URL ou www.nosweatfd.com), sem "/" no fim. */
 export function accessAppUrl(env: AccessEmailEnv = process.env): string {
   return (env.APP_URL || DEFAULT_APP_URL).replace(/\/+$/, "");
 }

@@ -62,5 +62,5 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       url: url ?? new URL(request.url).origin,
       updatedAt: published.updatedAt,
     });
-  });
+  }, "/api/sites/[id]/publish");
 }

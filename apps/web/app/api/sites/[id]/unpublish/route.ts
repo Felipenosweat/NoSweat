@@ -33,5 +33,5 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       url: freeUrl(updated, origin) ?? origin,
       updatedAt: updated.updatedAt,
     });
-  });
+  }, "/api/sites/[id]/unpublish");
 }

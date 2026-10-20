@@ -31,7 +31,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
     if (!user) return unauthorized();
     if (!site) return notFound();
     return jsonResponse(DomainResponse, await getDomainState(site));
-  });
+  }, "/api/sites/[id]/domain");
 }
 
 /** PUT /api/sites/[id]/domain: { domain } → liga o domínio do cliente ao site. */
@@ -95,7 +95,7 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
       }
       throw error;
     }
-  });
+  }, "/api/sites/[id]/domain");
 }
 
 /** DELETE /api/sites/[id]/domain → desliga o domínio próprio (o endereço grátis continua). */
@@ -117,7 +117,7 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     const updated = await getSiteStore().updateMeta(site.id, { customDomain: null });
     if (!updated) return notFound();
     return jsonResponse(DomainResponse, await getDomainState(updated));
-  });
+  }, "/api/sites/[id]/domain");
 }
 
 function domainTaken(domain: string): Response {

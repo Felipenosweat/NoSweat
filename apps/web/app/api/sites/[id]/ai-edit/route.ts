@@ -62,5 +62,5 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       summary: result.summary,
       updatedAt: updated.updatedAt,
     });
-  });
+  }, "/api/sites/[id]/ai-edit");
 }

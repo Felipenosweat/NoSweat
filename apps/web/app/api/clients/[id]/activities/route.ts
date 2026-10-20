@@ -16,5 +16,5 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const result = await addClientActivity(user.id, id, input.data);
     if (!result) return notFound("Client");
     return jsonResponse(ClientActivityResponse, result, 201);
-  });
+  }, "/api/clients/[id]/activities");
 }

@@ -48,5 +48,5 @@ export async function POST(request: Request): Promise<Response> {
       }
       throw error;
     }
-  });
+  }, "/api/social/caption");
 }

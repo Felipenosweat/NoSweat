@@ -314,7 +314,10 @@ export type ImageSearchQuery = z.infer<typeof ImageSearchQuery>;
 export const ImageSearchResponse = z.object({ results: z.array(SiteImage) });
 export type ImageSearchResponse = z.infer<typeof ImageSearchResponse>;
 
-/** POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 8 MB) → foto do dono. */
+/**
+ * POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 4 MB, e o editor reduz as
+ * fotos maiores no navegador) → foto do dono.
+ */
 export const UploadImageResponse = z.object({ image: SiteImage });
 export type UploadImageResponse = z.infer<typeof UploadImageResponse>;
 

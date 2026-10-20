@@ -138,6 +138,8 @@ export function SiteEditor({
   hasDomain = false,
   aiEditsLeft: initialAiEditsLeft,
   isGuest = false,
+  needsPlan = false,
+  domainUrl = null,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
@@ -158,6 +160,10 @@ export function SiteEditor({
   aiEditsLeft: number | null;
   /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
   isGuest?: boolean;
+  /** Publicar exige escolher um plano antes (o modal mostra "Plan required"). */
+  needsPlan?: boolean;
+  /** Domínio próprio JÁ funcionando (https://dominio.com): vira o link de compartilhar. */
+  domainUrl?: string | null;
 }) {
   const [spec, setSpec] = useState<SiteSpec>(initialSpec);
   const [dirty, setDirty] = useState(false);
@@ -698,6 +704,8 @@ export function SiteEditor({
   );
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  /** Publicou neste editor: o plano existe, o aviso "Plan required" não vale mais. */
+  const [publishedHere, setPublishedHere] = useState(false);
   const [address, setAddress] = useState(freeAddress);
   /** O endereço já está definido (publicado)? Antes disso ele acompanha o nome digitado. */
   const [slugFixed, setSlugFixed] = useState(hasSlug);
@@ -742,6 +750,7 @@ export function SiteEditor({
       setAddress(published.url);
       setSlugFixed(true);
       setPublishState("current");
+      setPublishedHere(true);
     } catch {
       setPublishError(OFFLINE);
     } finally {
@@ -1132,6 +1141,8 @@ export function SiteEditor({
           siteName={spec.business.name || "Your website"}
           state={shownPublishState}
           address={shownAddress}
+          domainUrl={domainUrl}
+          needsPlan={needsPlan && !publishedHere}
           onPublish={() => void publish()}
           pending={publishing || saving}
           error={publishError}

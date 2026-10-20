@@ -16,5 +16,5 @@ export async function POST(request: Request): Promise<Response> {
     const result = await approvePosts(user, input.data.ids);
     if ("response" in result) return result.response;
     return jsonResponse(SocialPostsResponse, { posts: result.posts.map(toPublicPost) });
-  });
+  }, "/api/social/posts/approve");
 }

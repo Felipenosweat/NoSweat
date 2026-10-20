@@ -17,7 +17,7 @@ export type InstagramConfig = {
   graphVersion: string;
 };
 
-const DEFAULT_APP_URL = "https://nosweatfd.com";
+const DEFAULT_APP_URL = "https://www.nosweatfd.com";
 /** Versão da Graph API (v26.0 saiu em julho de 2026). Trocar por META_GRAPH_VERSION. */
 export const DEFAULT_GRAPH_VERSION = "v26.0";
 export const CALLBACK_PATH = "/api/social/instagram/callback";

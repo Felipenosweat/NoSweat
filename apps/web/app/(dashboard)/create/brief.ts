@@ -1,4 +1,5 @@
 import type { Composition, TemplateId } from "@nosweat/schema";
+import { makeSlug } from "@/lib/slug";
 
 // Lógica pura do fluxo /create: estilos, montagem do texto único (brief) enviado para
 // POST /api/sites/generate e leitura do texto que vem da landing (?brief= ou sessionStorage).
@@ -397,11 +398,11 @@ export function slugBase(name: string): string {
 }
 
 /**
- * O endereço grátis que o site recebe ao publicar: espelha `makeSlug(name, id)` de
- * server/domains (o cliente não pode importar código do servidor).
+ * O endereço grátis que o site recebe ao publicar: a mesma regra do servidor (`makeSlug` de
+ * lib/slug, módulo puro que o navegador também pode importar).
  */
 export function publishedSlug(name: string, id: string): string {
-  return `${slugBase(name) || "site"}-${id.replace(/-/g, "").slice(0, 6).toLowerCase()}`;
+  return makeSlug(name, id);
 }
 
 /** Rascunho do formulário guardado na aba (sobrevive a um login no meio do caminho). */

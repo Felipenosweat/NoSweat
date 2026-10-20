@@ -20,5 +20,5 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
         createdAt,
       })),
     });
-  });
+  }, "/api/sites/[id]/versions");
 }

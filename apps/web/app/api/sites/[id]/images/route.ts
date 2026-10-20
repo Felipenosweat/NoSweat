@@ -76,5 +76,5 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       ...(check.width && check.height ? { width: check.width, height: check.height } : {}),
     };
     return jsonResponse(UploadImageResponse, { image }, 201);
-  });
+  }, "/api/sites/[id]/images");
 }

@@ -14,7 +14,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
     const detail = await getClientDetail(user.id, id);
     if (!detail) return notFound("Client");
     return jsonResponse(ClientDetailResponse, detail);
-  });
+  }, "/api/clients/[id]");
 }
 
 /** PATCH /api/clients/[id]: muda dados, etapa ou retorno. Mudança de etapa entra no histórico. */
@@ -28,7 +28,7 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     const client = await updateClient(user.id, id, input.data);
     if (!client) return notFound("Client");
     return jsonResponse(ClientResponse, { client });
-  });
+  }, "/api/clients/[id]");
 }
 
 /** DELETE /api/clients/[id] → { ok: true }. Apaga o cliente e o histórico dele. */
@@ -39,5 +39,5 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     const { id } = await params;
     if (!(await deleteClient(user.id, id))) return notFound("Client");
     return Response.json({ ok: true });
-  });
+  }, "/api/clients/[id]");
 }

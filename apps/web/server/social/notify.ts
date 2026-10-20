@@ -6,7 +6,7 @@ import { getSocialStore, type SocialStore } from "./store";
 // Nunca lança: o estado do post já foi salvo e aparece em /social de qualquer jeito.
 
 export const DEFAULT_SOCIAL_FROM = "No Sweat <hello@nosweatfd.com>";
-const DEFAULT_ORIGIN = "https://nosweatfd.com";
+const DEFAULT_ORIGIN = "https://www.nosweatfd.com";
 const TIMEOUT_MS = 5_000;
 /** No máximo um aviso de "reconectar" a cada 3 dias por dono. */
 const RECONNECT_EMAIL_EVERY_MS = 3 * 24 * 60 * 60 * 1000;

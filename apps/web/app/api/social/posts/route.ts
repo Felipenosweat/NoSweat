@@ -16,7 +16,7 @@ export async function GET(request: Request): Promise<Response> {
     if (!range) return errorResponse(400, "invalid_request", "Invalid date range.");
     const posts = await store.listPosts(user.id, range.fromIso, range.toIso);
     return jsonResponse(SocialPostsResponse, { posts: posts.map(toPublicPost) });
-  });
+  }, "/api/social/posts");
 }
 
 /** POST /api/social/posts: novo rascunho (o dono aprova depois). */
@@ -46,5 +46,5 @@ export async function POST(request: Request): Promise<Response> {
       claimsFlagged: await claimsFlag(user.id, caption),
     });
     return jsonResponse(SocialPostResponse, { post: toPublicPost(post) }, 201);
-  });
+  }, "/api/social/posts");
 }

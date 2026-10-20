@@ -150,6 +150,12 @@ export function getBillingStore(): BillingStore {
   if (store) return store;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Como em getSiteStore: na produção da Vercel, sem Supabase é erro (a memória perderia tudo).
+  if (!(url && serviceKey) && process.env.VERCEL_ENV === "production") {
+    throw new Error(
+      "Supabase is not configured in production. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+    );
+  }
   store =
     url && serviceKey ? new SupabaseBillingStore({ url, serviceKey }) : new MemoryBillingStore();
   return store;

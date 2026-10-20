@@ -53,5 +53,5 @@ export async function GET(request: Request, { params }: Context): Promise<Respon
         headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" },
       },
     );
-  });
+  }, "/api/sites/[id]/icon");
 }

@@ -22,7 +22,7 @@ export async function GET(request: Request): Promise<Response> {
     // O e-mail da conta separa o pedido de teste do próprio dono (não vira cliente).
     const clients = await listClients(user.id, { stage, q, ownerEmail: user.email });
     return jsonResponse(ClientsResponse, { clients });
-  });
+  }, "/api/clients");
 }
 
 /** POST /api/clients: cadastro manual de um cliente. */
@@ -34,5 +34,5 @@ export async function POST(request: Request): Promise<Response> {
     if (!input.ok) return input.response;
     const client = await createClient(user.id, input.data);
     return jsonResponse(ClientResponse, { client }, 201);
-  });
+  }, "/api/clients");
 }

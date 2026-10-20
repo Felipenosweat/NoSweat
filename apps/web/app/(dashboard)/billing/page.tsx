@@ -66,20 +66,22 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   // Só ids no formato esperado voltam para a página do site (nada de texto solto na URL).
   const siteId = site && /^[\w-]{1,64}$/.test(site) ? site : null;
 
-  // Veio do botão Publicar sem plano: diz qual site vai ao ar (só o nome; o site é dele ou 404).
-  const pendingSite =
-    billing.enabled && !billing.active && siteId
-      ? await getOwnedSite(user, siteId).catch(() => null)
-      : null;
-  // Plano manual que acabou: a página explica que o site saiu do ar e mostra como renovar.
-  const ended = endedPlan(
-    billing.enabled && !billing.active ? await getGrantStore().get(user.id) : null,
-  );
   // Chegou ao limite de sites no ar do plano (402 plan_limit no Publicar).
   const planLimit =
     reason === "plan_limit" && billing.active && billing.plan
       ? PLANS[billing.plan].publishedSitesLimit
       : null;
+  // Veio do botão Publicar (sem plano ou no limite do plano): diz qual site vai ao ar (só o
+  // nome; o site é dele ou 404).
+  const bannerSite =
+    billing.enabled && siteId && (!billing.active || planLimit !== null)
+      ? await getOwnedSite(user, siteId).catch(() => null)
+      : null;
+  const pendingSite = billing.active ? null : bannerSite;
+  // Plano manual que acabou: a página explica que o site saiu do ar e mostra como renovar.
+  const ended = endedPlan(
+    billing.enabled && !billing.active ? await getGrantStore().get(user.id) : null,
+  );
 
   // Número do WhatsApp de vendas só com dígitos (ex.: 14075551234), como o wa.me pede.
   const whatsapp = process.env.SALES_WHATSAPP?.replace(/\D/g, "") || null;
@@ -137,8 +139,20 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
       )}
       {planLimit !== null && (
         <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-amber-950">
-          Your plan allows {planLimit} live {planLimit === 1 ? "website" : "websites"}. Switch
-          plans, or take one site offline.
+          Your plan allows {planLimit} live {planLimit === 1 ? "website" : "websites"}.{" "}
+          {bannerSite ? (
+            <>
+              Upgrade to put{" "}
+              <strong className="font-semibold">{bannerSite.spec.business.name}</strong> live
+            </>
+          ) : (
+            "Upgrade to put another website live"
+          )}
+          , or open one of your{" "}
+          <Link href="/dashboard" className="font-semibold underline">
+            live websites
+          </Link>{" "}
+          and choose &ldquo;Take website offline&rdquo;.
         </p>
       )}
 

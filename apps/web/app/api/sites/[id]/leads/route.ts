@@ -65,7 +65,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       appOrigin: appOrigin(request.url),
     });
     return jsonResponse(LeadCreatedResponse, { ok: true }, 201);
-  });
+  }, "/api/sites/[id]/leads");
 }
 
 /** GET /api/sites/[id]/leads → pedidos de contato do site (só o dono ou um admin). */
@@ -76,5 +76,5 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
     if (!user) return unauthorized();
     if (!site) return notFound();
     return jsonResponse(LeadsResponse, { leads: await getSiteStore().listLeads(site.id) });
-  });
+  }, "/api/sites/[id]/leads");
 }

@@ -44,5 +44,5 @@ export async function GET(request: Request): Promise<Response> {
         "We couldn't search for photos right now. Please try again.",
       );
     }
-  });
+  }, "/api/images/search");
 }

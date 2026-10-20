@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
     const post = await getSocialStore().getPost(user.id, id);
     if (!post) return notFound("Post");
     return jsonResponse(SocialPostResponse, { post: toPublicPost(post) });
-  });
+  }, "/api/social/posts/[id]");
 }
 
 /**
@@ -87,7 +87,7 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
       return errorResponse(409, "invalid_request", "This post changed. Reload and try again.");
     }
     return jsonResponse(SocialPostResponse, { post: toPublicPost(updated) });
-  });
+  }, "/api/social/posts/[id]");
 }
 
 /** DELETE /api/social/posts/[id]: apaga. Post já publicado só some do calendário (fica no Instagram). */
@@ -108,5 +108,5 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
       await store.deletePost(user.id, post.id);
     }
     return Response.json({ ok: true });
-  });
+  }, "/api/social/posts/[id]");
 }

@@ -22,5 +22,5 @@ export async function POST(request: Request): Promise<Response> {
       await store.logEvent({ ownerId: null, action: "deauthorize", detail: { matched: 0 } });
     }
     return Response.json({ ok: true });
-  });
+  }, "/api/meta/deauthorize");
 }

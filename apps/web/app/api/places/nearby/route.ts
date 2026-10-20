@@ -21,5 +21,5 @@ export async function GET(request: Request): Promise<Response> {
     });
     response.headers.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
     return response;
-  });
+  }, "/api/places/nearby");
 }

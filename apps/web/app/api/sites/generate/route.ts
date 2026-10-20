@@ -52,7 +52,7 @@ export async function POST(request: Request): Promise<Response> {
       actor.kind === "user" ? actor.user.id : { guestId: actor.guestId },
     );
     return jsonResponse(GenerateSiteResponse, { siteId: site.id, spec: site.spec }, 201);
-  });
+  }, "/api/sites/generate");
 }
 
 /**

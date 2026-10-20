@@ -72,7 +72,7 @@ describe("image upload validation", () => {
     expect(checkImageUpload("image/png", new Uint8Array())).toMatchObject({ ok: false });
   });
 
-  it("rejects files over 8 MB", () => {
+  it("rejects files over 4 MB", () => {
     const big = new Uint8Array(MAX_IMAGE_BYTES + 1);
     big.set(png());
     expect(checkImageUpload("image/png", big)).toMatchObject({ ok: false, status: 413 });

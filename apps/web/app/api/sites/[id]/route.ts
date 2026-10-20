@@ -38,7 +38,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
       publishedSpec: site.publishedSpec,
       hasUnpublishedChanges: hasUnpublishedChanges(site),
     });
-  });
+  }, "/api/sites/[id]");
 }
 
 /** Os dois horários são o mesmo instante? (O banco pode escrever o fuso de outro jeito.) */
@@ -83,7 +83,7 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
       spec: site.spec,
       updatedAt: site.updatedAt,
     });
-  });
+  }, "/api/sites/[id]");
 }
 
 /**
@@ -99,5 +99,5 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
 
     if (!(await deleteSiteForever(site))) return notFound();
     return jsonResponse(DeleteSiteResponse, { siteId: site.id, deleted: true });
-  });
+  }, "/api/sites/[id]");
 }

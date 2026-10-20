@@ -107,5 +107,5 @@ export async function POST(request: Request): Promise<Response> {
       detail: { month, posts: created.length },
     });
     return jsonResponse(PlanMonthResponse, { posts: created.map(toPublicPost) }, 201);
-  });
+  }, "/api/social/plan");
 }

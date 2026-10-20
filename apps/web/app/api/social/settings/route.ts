@@ -26,5 +26,5 @@ export async function PATCH(request: Request): Promise<Response> {
     const postDays = patch.postDays ? [...new Set(patch.postDays)].sort() : undefined;
     const settings = await getSocialStore().upsertSettings(user.id, { ...patch, postDays });
     return jsonResponse(SocialSettingsResponse, { settings: toPublicSettings(settings) });
-  });
+  }, "/api/social/settings");
 }

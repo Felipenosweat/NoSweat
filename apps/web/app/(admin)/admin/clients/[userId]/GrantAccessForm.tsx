@@ -87,9 +87,17 @@ function DaysField({ active }: { active: boolean }) {
   );
 }
 
-function RevokeAccess({ action, enforced }: { action: AccessAction; enforced: boolean }) {
+/** Botão de cortar o acesso, com confirmação. O resultado fica no pai (ele some depois de cortar). */
+function RevokeAccess({
+  dispatch,
+  pending,
+  enforced,
+}: {
+  dispatch: (payload: FormData) => void;
+  pending: boolean;
+  enforced: boolean;
+}) {
   const [confirming, setConfirming] = useState(false);
-  const [state, dispatch, pending] = useActionState(action, initialState);
 
   return (
     <div className="mt-5 border-t border-slate-100 pt-4">
@@ -130,7 +138,6 @@ function RevokeAccess({ action, enforced }: { action: AccessAction; enforced: bo
           Remove manual access…
         </button>
       )}
-      <Result state={state} />
     </div>
   );
 }
@@ -158,12 +165,23 @@ export function GrantAccessForm({
   emailOn: boolean;
 }) {
   const [state, dispatch, pending] = useActionState(grantAction, initialState);
+  const [revokeState, revokeDispatch, revoking] = useActionState(revokeAction, initialState);
+  // Só o resultado da última ação fica à mostra (nada de "removido" velho depois de liberar).
+  const [last, setLast] = useState<"grant" | "revoke">("grant");
+  const grant = (data: FormData) => {
+    setLast("grant");
+    dispatch(data);
+  };
+  const revoke = (data: FormData) => {
+    setLast("revoke");
+    revokeDispatch(data);
+  };
 
   return (
     <>
       <form
         key={grantExpiresAt ?? "none"}
-        onSubmit={submitWith(dispatch)}
+        onSubmit={submitWith(grant)}
         className="mt-5 grid gap-4 sm:grid-cols-4"
       >
         <input type="hidden" name="expected" value={grantExpiresAt ?? "none"} />
@@ -204,9 +222,10 @@ export function GrantAccessForm({
           </span>
         </div>
       </form>
-      <Result state={state} />
+      {last === "grant" && <Result state={state} />}
 
-      {active && <RevokeAccess action={revokeAction} enforced={enforced} />}
+      {active && <RevokeAccess dispatch={revoke} pending={revoking} enforced={enforced} />}
+      {last === "revoke" && <Result state={revokeState} />}
     </>
   );
 }

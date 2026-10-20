@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
-import { displayWordSpacing, focusRing } from "@/components/DashboardUi";
+import { focusRing } from "@/components/DashboardUi";
 import { Logo } from "@/components/Logo";
 import { LIVE_MODULES, SOON_MODULES } from "@/lib/modules";
 import {
+  AccountIcon,
   AdminIcon,
   BillingIcon,
+  HelpIcon,
   HomeIcon,
   LogOutIcon,
   MODULE_ICONS,
@@ -28,6 +30,11 @@ type ChromeProps = {
   account: { email: string | null } | null;
   /** Site mais recente, para o atalho "Messages". `null` = conta sem sites (atalho escondido). */
   latestSiteId: string | null;
+  /**
+   * Link "Help" (WhatsApp ou e-mail da equipe, montado no AccountShell). Sem ele, o item some.
+   * Links do WhatsApp abrem em outra aba; e-mail abre o app de e-mail.
+   */
+  supportHref?: string;
   /** Faixa no topo do conteúdo (ex.: modo "ver como" do admin). */
   banner?: ReactNode;
   children: ReactNode;
@@ -72,7 +79,17 @@ function initial(email: string | null): string {
   return email?.trim().charAt(0).toUpperCase() || "?";
 }
 
-function SidebarNav({ admin, account, latestSiteId }: Omit<ChromeProps, "children">) {
+/** Atributos do link "Help": o WhatsApp abre em outra aba; o mailto, não. */
+function supportLinkProps(href: string): { target?: "_blank"; rel?: string } {
+  return href.startsWith("mailto:") ? {} : { target: "_blank", rel: "noreferrer" };
+}
+
+function SidebarNav({
+  admin,
+  account,
+  latestSiteId,
+  supportHref,
+}: Omit<ChromeProps, "children" | "banner">) {
   const { current } = useCurrent();
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r border-slate-200/70 bg-white/80 px-3 pt-5 pb-4 backdrop-blur-xl lg:flex">
@@ -145,6 +162,18 @@ function SidebarNav({ admin, account, latestSiteId }: Omit<ChromeProps, "childre
               Admin
             </Link>
           )}
+          {supportHref && (
+            <a href={supportHref} {...supportLinkProps(supportHref)} className={sideItem}>
+              <HelpIcon className={sideIcon} />
+              Help
+            </a>
+          )}
+          {account && (
+            <Link href="/account" aria-current={current("/account")} className={sideItem}>
+              <AccountIcon className={sideIcon} />
+              Account
+            </Link>
+          )}
           <Link href="/billing" aria-current={current("/billing")} className={sideItem}>
             <BillingIcon className={sideIcon} />
             Billing
@@ -176,15 +205,24 @@ function SidebarNav({ admin, account, latestSiteId }: Omit<ChromeProps, "childre
   );
 }
 
-function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">) {
-  const { current } = useCurrent();
+function TabBar({
+  admin,
+  account,
+  latestSiteId,
+  supportHref,
+}: Omit<ChromeProps, "children" | "banner">) {
+  const { current, pathname } = useCurrent();
   const moreRef = useRef<HTMLDetailsElement>(null);
-  const moreActive = current("/billing") === "page";
+  const moreActive = current("/billing") === "page" || current("/account") === "page";
 
   // Fecha a folha "More" mexendo direto no <details> (sem estado do React).
   const closeMore = () => {
     if (moreRef.current) moreRef.current.open = false;
   };
+  // Mudou de tela (aba, voltar do navegador...): a folha não fica aberta por cima da nova.
+  useEffect(() => {
+    if (moreRef.current) moreRef.current.open = false;
+  }, [pathname]);
   const onMoreKeyDown = (event: KeyboardEvent<HTMLDetailsElement>) => {
     if (event.key !== "Escape" || !moreRef.current?.open) return;
     closeMore();
@@ -201,7 +239,12 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/90 backdrop-blur-xl" />
       <ul className={`grid h-16 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
         <li>
-          <Link href="/dashboard" aria-current={current("/dashboard")} className={tabItem}>
+          <Link
+            href="/dashboard"
+            aria-current={current("/dashboard")}
+            onClick={closeMore}
+            className={tabItem}
+          >
             <HomeIcon className="size-6" />
             Home
           </Link>
@@ -213,6 +256,7 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
               <Link
                 href={hub.href}
                 aria-current={hub.key === "website" ? current("/sites") : current(hub.href)}
+                onClick={closeMore}
                 className={tabItem}
               >
                 <ModuleIcon className="size-6" />
@@ -254,6 +298,32 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
                     >
                       <MessagesIcon className="size-[22px] shrink-0 text-slate-500" />
                       Messages
+                    </Link>
+                  </li>
+                )}
+                {supportHref && (
+                  <li>
+                    <a
+                      href={supportHref}
+                      {...supportLinkProps(supportHref)}
+                      onClick={closeMore}
+                      className={sheetItem}
+                    >
+                      <HelpIcon className="size-[22px] shrink-0 text-slate-500" />
+                      Help
+                    </a>
+                  </li>
+                )}
+                {account && (
+                  <li>
+                    <Link
+                      href="/account"
+                      aria-current={current("/account")}
+                      onClick={closeMore}
+                      className={sheetItem}
+                    >
+                      <AccountIcon className="size-[22px] shrink-0 text-slate-500" />
+                      Account
                     </Link>
                   </li>
                 )}
@@ -319,13 +389,20 @@ function TabBar({ admin, account, latestSiteId }: Omit<ChromeProps, "children">)
   );
 }
 
-export function DashboardChrome({ admin, account, latestSiteId, banner, children }: ChromeProps) {
+export function DashboardChrome({
+  admin,
+  account,
+  latestSiteId,
+  supportHref,
+  banner,
+  children,
+}: ChromeProps) {
   const { isCreate } = useCurrent();
 
   // /create: tela de foco. Sem barra lateral nem abas; só o logo, a volta ao painel e "Log out".
   if (isCreate) {
     return (
-      <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
+      <div className="min-h-screen bg-surface">
         {banner}
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
@@ -361,8 +438,13 @@ export function DashboardChrome({ admin, account, latestSiteId, banner, children
   }
 
   return (
-    <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
-      <SidebarNav admin={admin} account={account} latestSiteId={latestSiteId} />
+    <div className="min-h-screen bg-surface">
+      <SidebarNav
+        admin={admin}
+        account={account}
+        latestSiteId={latestSiteId}
+        supportHref={supportHref}
+      />
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/85 px-5 backdrop-blur-xl sm:px-8 lg:hidden">
         <Logo />
         <Link href="/create" className={newSiteButton}>
@@ -376,7 +458,12 @@ export function DashboardChrome({ admin, account, latestSiteId, banner, children
           {children}
         </div>
       </main>
-      <TabBar admin={admin} account={account} latestSiteId={latestSiteId} />
+      <TabBar
+        admin={admin}
+        account={account}
+        latestSiteId={latestSiteId}
+        supportHref={supportHref}
+      />
     </div>
   );
 }

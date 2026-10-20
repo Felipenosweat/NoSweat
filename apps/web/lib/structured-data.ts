@@ -21,7 +21,7 @@ export function organization() {
     "@id": ORG_ID,
     name: "No Sweat",
     url: siteUrl(),
-    logo: `${SITE_ORIGIN}/icon.png`,
+    logo: `${SITE_ORIGIN}/brand/icon.png`,
     email: "hello@nosweatfd.com",
     description:
       "No Sweat builds websites for small local businesses in the United States from a one-sentence description, with AI.",

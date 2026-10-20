@@ -21,8 +21,9 @@ in `apps/web/app/fonts.ts`.
 Logo (approved, do not redraw): `apps/web/components/Logo.tsx` — the "N" ribbon mark with a
 sparkle (`apps/web/public/brand/nosweat-mark-*.png`) plus the wordmark "No" in ink and "Sweat" in
 brand, bold display font; optional tagline "AI websites for businesses". Favicon:
-`apps/web/app/icon.png` and `apple-icon.png`. Source files: `docs/brand/`. The logo's own
-gradient is the only gradient allowed in the SaaS UI.
+`apps/web/public/brand/icon.png` and `apple-icon.png`, wired in the `app/layout.tsx` metadata,
+plus the static `apps/web/public/manifest.webmanifest`. Source files: `docs/brand/`. The logo's
+own gradient is the only gradient allowed in the SaaS UI.
 
 ## Voice
 
