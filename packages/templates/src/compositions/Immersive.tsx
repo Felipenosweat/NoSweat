@@ -273,7 +273,7 @@ function ImmersiveHero({
         <HeroActions model={model} surface="dark" radius={RADIUS} className="mt-10" />
         <HighlightList highlights={model.business.highlights} className="mt-8 opacity-90" />
       </Wrap>
-      {image.credit && image.source !== "upload" && (
+      {image.credit && (
         <div className="absolute right-3 bottom-3 max-w-[calc(100%-1.5rem)] rounded-md bg-ns-background/90 px-2 py-1 text-[0.6875rem] leading-tight text-ns-text">
           <PhotoCredit image={image} />
         </div>
