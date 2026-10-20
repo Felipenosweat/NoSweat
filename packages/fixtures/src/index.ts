@@ -9,6 +9,7 @@ import { vegaPhoto } from "./vega-photo";
 export { glowSalon, haleOrtiz, joesPlumbing, rosasKitchen, sparkleCleaning, vegaPhoto };
 export { exampleBriefs, secondDirectionBrief } from "./briefs";
 export { MODEL_LIBRARY, type ModelEntry } from "./library";
+export { MODEL_PHOTO_LICENSES } from "./library/photo-licenses";
 
 /** Todas as fixtures (os sites-modelo de cada categoria), indexadas pelo slug. */
 export const fixtures = {

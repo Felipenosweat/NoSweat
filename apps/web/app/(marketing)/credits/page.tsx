@@ -1,4 +1,5 @@
-import { fixtures } from "@nosweat/fixtures";
+import { fixtures, MODEL_LIBRARY, MODEL_PHOTO_LICENSES } from "@nosweat/fixtures";
+import type { SiteImage, SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { container, focusRing, h2Class, leadClass } from "@/components/marketing/styles";
@@ -35,24 +36,48 @@ type CreditRow = {
   usedOn: string;
 };
 
-function exampleCredits(): CreditRow[] {
-  return Object.values(fixtures).flatMap((spec) => {
-    const hero = spec.sections.find((section) => section.type === "hero");
-    const image = hero?.type === "hero" ? hero.image : undefined;
-    const credit = image?.credit;
-    if (!image || !credit) return [];
-    return [
-      {
-        src: image.url,
-        alt: image.alt,
-        name: credit.name,
-        url: credit.url,
-        source: SOURCE_LABEL[image.source] ?? image.source,
-        license: LICENSE_FOR[image.source],
-        usedOn: `Example site: ${spec.business.name} (fictional)`,
-      },
-    ];
+/** Todas as fotos com crédito de um site de exemplo (topo, galeria e pessoas do "sobre"). */
+function creditedImages(spec: SiteSpec): SiteImage[] {
+  return spec.sections.flatMap((section) => {
+    switch (section.type) {
+      case "hero":
+        return section.image ? [section.image] : [];
+      case "gallery":
+        return section.images;
+      case "about":
+        return [
+          ...(section.image ? [section.image] : []),
+          ...(section.people ?? []).flatMap((person) => (person.image ? [person.image] : [])),
+        ];
+      default:
+        return [];
+    }
   });
+}
+
+function exampleCredits(): CreditRow[] {
+  const specs = [...Object.values(fixtures), ...MODEL_LIBRARY.map((entry) => entry.spec)];
+  const seen = new Set<string>();
+  return specs.flatMap((spec) =>
+    creditedImages(spec).flatMap((image) => {
+      const credit = image.credit;
+      if (!credit || seen.has(image.url)) return [];
+      seen.add(image.url);
+      // Fotos dos sites-modelo com licença Creative Commons: licença e origem vêm da tabela.
+      const licensed = MODEL_PHOTO_LICENSES[image.url];
+      return [
+        {
+          src: image.url,
+          alt: image.alt,
+          name: credit.name,
+          url: credit.url,
+          source: licensed?.source ?? SOURCE_LABEL[image.source] ?? image.source,
+          license: licensed?.license ?? LICENSE_FOR[image.source],
+          usedOn: `Example site: ${spec.business.name} (fictional)`,
+        },
+      ];
+    }),
+  );
 }
 
 const linkClass = `rounded-sm text-ink underline decoration-slate-300 underline-offset-2 hover:decoration-slate-500 ${focusRing}`;
