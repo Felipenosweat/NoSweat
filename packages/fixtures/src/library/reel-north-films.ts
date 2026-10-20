@@ -1,8 +1,11 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de portfólio: filmes de casamento e de marca em Minneapolis (composição "modular").
-// Tema escuro de cinema (fundo grafite, âmbar como única cor de ação). Sem fotos, sem galeria:
-// os trabalhos recentes ficam no "about". Todo fato do site está no brief (regra 8).
+// Tema escuro de cinema (fundo grafite, âmbar como única cor de ação). Uma foto no topo (câmera
+// gravando uma entrevista; kind "owner", papel de foto do estúdio; Flickr, CC BY-SA 2.0, crédito
+// em `credit`; recortada só para tirar a borda branca do original). Sem galeria: o lote não tinha
+// 3 fotos boas (rostos de perto, marcas de câmera, marca d'água ou licença ND). Os trabalhos
+// recentes ficam no "about". Todo fato do site está no brief (regra 8).
 export const reelNorthFilms: ModelEntry = {
   slug: "reel-north-films",
   category: "portfolio",
@@ -67,6 +70,19 @@ export const reelNorthFilms: ModelEntry = {
         subtitle:
           "We record the vows, the toasts and the speeches with real audio, so the film sounds like the day, not a music video. Weddings and brand films from Minneapolis.",
         ctaLabel: "Check your date",
+        image: {
+          url: "/photos/models/reel-north-films-2.webp",
+          alt: "A video camera recording a seated interview, the subject framed on its flip-out screen",
+          source: "upload",
+          kind: "owner",
+          credit: {
+            name: "jsawkins",
+            url: "https://www.flickr.com/photos/89589444@N00/4203341678",
+          },
+          width: 986,
+          height: 564,
+          focus: "30% 50%",
+        },
       },
       {
         type: "services",

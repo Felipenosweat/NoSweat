@@ -1,8 +1,10 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de portfólio: estúdio de identidade visual em Richmond (composição "service-led").
-// Papel claro, tinta preta e um vermelhão como única cor de ação. Sem fotos, sem galeria:
-// clientes recentes e o processo ficam no "about". Todo fato do site está no brief (regra 8).
+// Papel claro, tinta preta e um vermelhão como única cor de ação. Uma foto de embalagem no topo
+// (kind "owner", papel de foto do estúdio; Flickr, CC BY 2.0, crédito em `credit`). Sem galeria:
+// o resto do lote tinha marcas de terceiros, texto por cima, licença ND ou fotos amadoras.
+// Clientes recentes e o processo ficam no "about". Todo fato do site está no brief (regra 8).
 export const fieldworkStudio: ModelEntry = {
   slug: "fieldwork-studio",
   category: "portfolio",
@@ -64,6 +66,19 @@ export const fieldworkStudio: ModelEntry = {
         subtitle:
           "Logos, identities and packaging for cideries, bakeries, bike shops and the people who run them. Same four steps every time, from kickoff to final files.",
         ctaLabel: "Start a project",
+        image: {
+          url: "/photos/models/fieldwork-studio-16.webp",
+          alt: "Three printed boxes in red, teal and mustard beside a white bottle with tablets spilled on a gray table",
+          source: "upload",
+          kind: "owner",
+          credit: {
+            name: "SOCIALisBETTER",
+            url: "https://www.flickr.com/photos/27620885@N02/2602771763",
+          },
+          width: 500,
+          height: 375,
+          focus: "50% 55%",
+        },
       },
       {
         type: "services",

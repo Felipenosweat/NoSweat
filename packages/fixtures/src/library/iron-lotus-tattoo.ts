@@ -1,8 +1,11 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de portfólio: estúdio de tatuagem em Denver (composição "typographic").
-// O topo é um bloco verde-jade com a frase; o trabalho aparece como livro-caixa de serviços e
-// os artistas no "about". Sem fotos, sem galeria. Todo fato do site está no brief (regra 8).
+// O topo é um bloco verde-jade com a frase e, embaixo, uma faixa de foto (mão de luva com a
+// máquina, sem rosto; kind "owner", papel de foto do estúdio; Wikimedia Commons, CC BY-SA 3.0,
+// crédito em `credit`). Sem galeria: o lote não tinha nenhuma tatuagem pronta que passasse
+// (rostos, marca d'água, licença ND ou foto amadora). O trabalho aparece como livro-caixa de
+// serviços e os artistas no "about". Todo fato do site está no brief (regra 8).
 export const ironLotusTattoo: ModelEntry = {
   slug: "iron-lotus-tattoo",
   category: "portfolio",
@@ -37,7 +40,7 @@ export const ironLotusTattoo: ModelEntry = {
       density: "balanced",
       imageTreatment: "natural",
       rationale:
-        "A custom tattoo studio without photos: the headline is the image, prices and policies read like a shop board.",
+        "A custom tattoo studio: the headline is the image, one close photo of the work under it, prices and policies read like a shop board.",
     },
     business: {
       name: "Iron Lotus Tattoo",
@@ -65,6 +68,19 @@ export const ironLotusTattoo: ModelEntry = {
         subtitle:
           "A private custom studio in RiNo. Three artists for blackwork, fine line, color and cover-ups. Custom pieces are drawn from scratch and changed with you until they're right.",
         ctaLabel: "Book a consult",
+        image: {
+          url: "/photos/models/iron-lotus-tattoo-11.webp",
+          alt: "A tattooer's gloved hand holding a coil machine over two caps of ink, a tattooed forearm behind it",
+          source: "upload",
+          kind: "owner",
+          credit: {
+            name: "Franki2001 (Wikimedia Commons)",
+            url: "https://commons.wikimedia.org/w/index.php?curid=568642",
+          },
+          width: 900,
+          height: 600,
+          focus: "45% 55%",
+        },
       },
       {
         type: "services",

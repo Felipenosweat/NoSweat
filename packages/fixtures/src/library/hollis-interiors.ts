@@ -68,7 +68,7 @@ export const hollisInteriors: ModelEntry = {
       density: "airy",
       imageTreatment: "natural",
       rationale:
-        "Interior design sells a feeling first: a dark, quiet stage for the headline, then the projects, then the fees.",
+        "Interior design sells a feeling first: a finished room behind the headline, the rooms themselves right after, then the fees.",
     },
     business: {
       name: "Hollis Interiors",
