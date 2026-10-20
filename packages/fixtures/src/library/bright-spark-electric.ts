@@ -20,9 +20,10 @@ export const brightSparkElectric: ModelEntry = {
     "generator",
   ],
   brief: [
-    "Bright Spark Electric, a residential electrician in Phoenix, AZ. I'm Marcus Bell, master electrician; I've been wiring houses in the Valley since 2006 and started Bright Spark in 2014. My wife Tasha runs the office and handles the city permits.",
+    "Bright Spark Electric, a residential electrician in Phoenix, AZ. I'm Marcus Bell, master electrician; I've been wiring houses in the Valley since 2006 and started Bright Spark in 2014. My wife Tasha runs the office and handles the city permits. When you call, you talk to one of us, not a call center.",
     "Licensed with the Arizona ROC, bonded and insured. You get a written quote before we start, and we pull the permit when the job needs one.",
     "Panel upgrades to 200 amps from $2,400, Level 2 EV charger installs from $650 (Tesla, ChargePoint, any brand you bought), whole-home rewiring for older houses quoted after a walkthrough, lighting, recessed cans and ceiling fans from $175, and troubleshooting for breakers that keep tripping or outlets that went dead. The service call is $95.",
+    "For a panel upgrade I look at the panel and meter first and write the quote. On the day the power is off for part of it, and before I leave I walk you through every breaker. Tasha schedules the city inspection.",
     "Hours Mon–Fri 7 AM – 5 PM, Sat 8 AM – 12 PM. We cover Phoenix, Tempe, Scottsdale, Mesa, Chandler and Glendale.",
     'Customers said we could quote them: Rachel K. in Tempe, "Marcus upgraded our 1970s panel in one day and walked me through every breaker before he left." And Omar H. in Chandler, "The EV charger quote was $650 and the bill was $650. Tasha even scheduled the inspection for us."',
     "Phone (602) 555-0137, office@brightspark.example.com.",
@@ -51,18 +52,19 @@ export const brightSparkElectric: ModelEntry = {
       highlights: ["Arizona ROC licensed", "Bonded & insured", "Written quote first"],
     },
     theme: {
-      primary: "#1F3A93",
+      // Bloco preto do topo com fio amarelo de alerta: o amarelo nunca vira texto.
+      primary: "#17181C",
       secondary: "#F2B705",
-      background: "#F5F4EE",
-      text: "#14161B",
+      background: "#F2F0E8",
+      text: "#17181C",
       font: "technical",
     },
     sections: [
       {
         type: "hero",
-        title: "Panels, EV chargers and rewiring for Phoenix homes",
+        title: "More power for older Phoenix homes. Price in writing, permit pulled.",
         subtitle:
-          "Residential electrical work across the Valley, with a written quote before we start and the permit pulled when the job needs one. Call and you get Marcus or Tasha.",
+          "Panel upgrades, EV chargers and rewiring for houses that were built before the second fridge, the pool pump and the car in the garage. Call and you get Marcus or Tasha.",
         ctaLabel: "Call for a quote",
       },
       {
@@ -122,7 +124,7 @@ export const brightSparkElectric: ModelEntry = {
       {
         type: "about",
         title: "Who you'll deal with",
-        body: "Marcus Bell has been wiring houses in the Valley since 2006 and started Bright Spark in 2014. Tasha runs the office and handles the city permits, so the person who quotes your job is the person who answers the phone.",
+        body: "Marcus Bell has been wiring houses in the Valley since 2006 and started Bright Spark in 2014. Tasha runs the office and handles the city permits. When you call, you talk to one of them, not a call center.",
         people: [
           {
             name: "Marcus Bell",
@@ -142,6 +144,10 @@ export const brightSparkElectric: ModelEntry = {
           {
             q: "What does a service call cost?",
             a: "The service call is $95. Marcus finds the problem first, then quotes the repair.",
+          },
+          {
+            q: "How does a panel upgrade day go?",
+            a: "Marcus looks at your panel and meter first and gives you a written quote. On the day, the power is off for part of it, and before he leaves he walks you through every breaker. Tasha schedules the city inspection.",
           },
           {
             q: "Do you handle permits?",
