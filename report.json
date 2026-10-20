@@ -1,0 +1,608 @@
+[
+  {
+    "viewport": "mobile",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/examples/glow-salon?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "still invisible after scrolling: div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | li. | li. | li. | li. | li. | li. | span.st-e-outline absolute -inset-1 rounded-[1.6rem] ring-2 ring- | div.st-e-layer st-e-l0 col-start-1 row-start-1 | div.st-e-layer st-e-l1 col-start-1 row-start-1 | div.st-e-layer st-e-l2 col-start-1 row-start-1 | li."
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/glow-salon",
+    "finalUrl": "https://www.nosweatfd.com/examples/glow-salon",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "https://www.nosweatfd.com/examples/hale-ortiz",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "https://www.nosweatfd.com/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/vega-photo",
+    "finalUrl": "https://www.nosweatfd.com/examples/vega-photo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "https://www.nosweatfd.com/examples/bright-spark-electric",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/bright-spark-electric",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "https://www.nosweatfd.com/examples/greenline-landscaping",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/greenline-landscaping",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "https://www.nosweatfd.com/examples/true-coat-painting",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/true-coat-painting",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "https://www.nosweatfd.com/examples/fade-and-co-barbers",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/fade-and-co-barbers",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/polished-nail-studio",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/polished-nail-studio",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "https://www.nosweatfd.com/examples/still-water-spa",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/still-water-spa",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "https://www.nosweatfd.com/examples/arch-and-lash",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/arch-and-lash",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "https://www.nosweatfd.com/examples/north-loop-coffee",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/north-loop-coffee",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "https://www.nosweatfd.com/examples/brick-oven-pizza",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/brick-oven-pizza",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "https://www.nosweatfd.com/examples/sunrise-bakery",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/sunrise-bakery",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/mercer-law",
+    "finalUrl": "https://www.nosweatfd.com/examples/mercer-law",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/mercer-law",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "https://www.nosweatfd.com/examples/bayside-family-dental",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/bayside-family-dental",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "https://www.nosweatfd.com/examples/keystone-insurance",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/keystone-insurance",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "https://www.nosweatfd.com/examples/open-door-counseling",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/open-door-counseling",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "https://www.nosweatfd.com/examples/hollis-interiors",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/hollis-interiors",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "https://www.nosweatfd.com/examples/reel-north-films",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/reel-north-films",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/fieldwork-studio",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/fieldwork-studio",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/login?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/examples/hale-ortiz?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "still invisible after scrolling: div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | div.lp-montage absolute inset-0 | li. | li. | li. | li. | li. | li. | span.st-e-outline absolute -inset-1 rounded-[1.6rem] ring-2 ring- | div.st-e-layer st-e-l0 col-start-1 row-start-1 | div.st-e-layer st-e-l1 col-start-1 row-start-1 | div.st-e-layer st-e-l2 col-start-1 row-start-1 | li."
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/forgot-password?_rsc=_H_fFy2_Q06N8BA7 net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/signup?_rsc=sW2A7HEmFQnSVIMx net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=pfWg1qw4uMxqj7N2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=Ttf-lLNpP9wWk-0q net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/glow-salon",
+    "finalUrl": "https://www.nosweatfd.com/examples/glow-salon",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "https://www.nosweatfd.com/examples/hale-ortiz",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "https://www.nosweatfd.com/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/vega-photo",
+    "finalUrl": "https://www.nosweatfd.com/examples/vega-photo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "https://www.nosweatfd.com/examples/bright-spark-electric",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/bright-spark-electric",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "https://www.nosweatfd.com/examples/greenline-landscaping",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/greenline-landscaping",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "https://www.nosweatfd.com/examples/true-coat-painting",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/true-coat-painting",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "https://www.nosweatfd.com/examples/fade-and-co-barbers",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/fade-and-co-barbers",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/polished-nail-studio",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/polished-nail-studio",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "https://www.nosweatfd.com/examples/still-water-spa",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/still-water-spa",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "https://www.nosweatfd.com/examples/arch-and-lash",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/arch-and-lash",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "https://www.nosweatfd.com/examples/north-loop-coffee",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/north-loop-coffee",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "https://www.nosweatfd.com/examples/brick-oven-pizza",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/brick-oven-pizza",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "https://www.nosweatfd.com/examples/sunrise-bakery",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/sunrise-bakery",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/mercer-law",
+    "finalUrl": "https://www.nosweatfd.com/examples/mercer-law",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/mercer-law",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "https://www.nosweatfd.com/examples/bayside-family-dental",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/bayside-family-dental",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "https://www.nosweatfd.com/examples/keystone-insurance",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/keystone-insurance",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "https://www.nosweatfd.com/examples/open-door-counseling",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/open-door-counseling",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "https://www.nosweatfd.com/examples/hollis-interiors",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/hollis-interiors",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "https://www.nosweatfd.com/examples/reel-north-films",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/reel-north-films",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/fieldwork-studio",
+    "status": 404,
+    "issues": [
+      "HTTP 404 https://www.nosweatfd.com/examples/fieldwork-studio",
+      "console: Failed to load resource: the server responded with a status of 404 ()"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/forgot-password?_rsc=_H_fFy2_Q06N8BA7 net::ERR_ABORTED"
+    ]
+  }
+]
