@@ -7,7 +7,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
 
 const OUT = process.env.OUT_DIR ?? "out";
-const PER_QUERY = 6;
+const PER_QUERY = 4;
 const UA =
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 
@@ -36,7 +36,7 @@ async function searchUnsplash(query) {
 }
 
 async function searchOpenverse(query) {
-  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&license_type=commercial,modification&aspect_ratio=wide&size=large&page_size=20`;
+  const url = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(query)}&license_type=commercial&page_size=20&mature=false`;
   const json = await getJson(url);
   return (json.results ?? []).map((p) => ({
     source: p.source ?? "Openverse",
