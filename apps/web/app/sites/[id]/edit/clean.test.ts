@@ -148,7 +148,7 @@ describe("local draft", () => {
   it("compares specs regardless of key order", () => {
     const spec = withFacts();
     const reordered = JSON.parse(JSON.stringify({ ...spec, version: 1 })) as SiteSpec;
-    const shuffled = { sections: reordered.sections, ...reordered } as SiteSpec;
+    const shuffled = Object.fromEntries(Object.entries(reordered).reverse()) as SiteSpec;
     expect(sameSpec(spec, shuffled)).toBe(true);
   });
 });

@@ -16,6 +16,8 @@ export type ErrorReport = {
 };
 
 export type AlertEnv = {
+  // Assinatura de índice: aceita o process.env inteiro sem o TS reclamar de "tipo fraco".
+  [key: string]: string | undefined;
   ALERT_EMAIL?: string;
   RESEND_API_KEY?: string;
   LEADS_FROM_EMAIL?: string;
