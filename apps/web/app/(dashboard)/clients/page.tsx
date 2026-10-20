@@ -13,7 +13,6 @@ import {
 } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import {
-  CLIENTS_TIME_ZONE,
   CLIENT_STAGES,
   STAGE_LABELS,
   dateKeyIn,
@@ -22,7 +21,7 @@ import {
   isClientStage,
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
-import { listClients } from "@/server/clients/service";
+import { clientsTimeZone, listClients } from "@/server/clients/service";
 import { ClientsIcon } from "../NavIcons";
 import { PlusIcon, SearchIcon, StageBadge, fieldClass, sectionTitle } from "./ui";
 
@@ -39,12 +38,13 @@ function firstParam(value: string | string[] | undefined): string {
 
 /**
  * Lista de clientes (fora do componente: usa o relógio). O serviço já transforma os pedidos novos
- * do formulário do site em clientes antes de listar. `clients: null` = erro ao ler.
+ * do formulário do site em clientes antes de listar (menos o teste do próprio dono, achado pelo
+ * `ownerEmail`). "Hoje" no fuso da empresa. `clients: null` = erro ao ler.
  */
-async function loadClients(ownerId: string, q: string) {
-  const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date());
+async function loadClients(ownerId: string, ownerEmail: string | null, q: string) {
+  const today = dateKeyIn(await clientsTimeZone(ownerId), new Date());
   try {
-    const clients: Client[] = await listClients(ownerId, q ? { q } : undefined);
+    const clients: Client[] = await listClients(ownerId, { q: q || undefined, ownerEmail });
     return { today, clients };
   } catch {
     return { today, clients: null };
@@ -244,7 +244,9 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
   const stage = isClientStage(rawStage) ? rawStage : null;
   const q = firstParam(params.q).trim().slice(0, 100);
 
-  const { today, clients } = await loadClients(viewer.ownerId, q);
+  // E-mail da conta mostrada (no "ver como", a conta vista; nunca o do admin).
+  const ownerEmail = viewer.viewingAs ? viewer.viewingAs.email : viewer.user.email;
+  const { today, clients } = await loadClients(viewer.ownerId, ownerEmail, q);
 
   const counts: Record<ClientStage, number> = { new: 0, contacted: 0, quoted: 0, won: 0, lost: 0 };
   for (const client of clients ?? []) counts[client.stage] += 1;

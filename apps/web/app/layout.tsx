@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   },
   description:
     "Describe your business and get a beautiful, ready-to-publish website in minutes. Built for small businesses.",
+  // Ícones e manifesto da No Sweat ficam em public/ (não em app/icon.png nem app/manifest.ts):
+  // assim os sites dos clientes (/s/…, domínio próprio) trocam pelos deles em siteMetadata.
+  icons: { icon: "/brand/icon.png", apple: "/brand/apple-icon.png" },
+  manifest: "/manifest.webmanifest",
 };
 
 // Cor da barra do navegador e conteúdo até as bordas do iPhone (as barras fixas usam safe-area).

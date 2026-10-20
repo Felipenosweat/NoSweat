@@ -22,6 +22,7 @@ export const ERROR_CODES = [
   "reconnect_required",
   "social_error",
   "internal_error",
+  "conflict",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 
@@ -93,12 +94,20 @@ export type GetSiteResponse = z.infer<typeof GetSiteResponse>;
 
 export const UpdateSiteRequest = z.object({
   spec: SiteSpec,
+  /**
+   * `updatedAt` do site quando o editor carregou (ou salvou) pela última vez. Se o site mudou
+   * depois disso (outra aba, outro aparelho), a API responde 409 "conflict" em vez de
+   * sobrescrever. Sem ele, salva sempre (comportamento antigo).
+   */
+  baseUpdatedAt: z.string().optional(),
 });
 export type UpdateSiteRequest = z.infer<typeof UpdateSiteRequest>;
 
 export const UpdateSiteResponse = z.object({
   siteId: SiteId,
   spec: SiteSpec,
+  /** Novo `updatedAt` do site (o próximo salvamento manda de volta como `baseUpdatedAt`). */
+  updatedAt: z.string().optional(),
 });
 export type UpdateSiteResponse = z.infer<typeof UpdateSiteResponse>;
 
@@ -139,6 +148,8 @@ export const AiEditResponse = z.object({
   siteId: SiteId,
   spec: SiteSpec,
   summary: z.string(),
+  /** Novo `updatedAt` do site (ver UpdateSiteRequest.baseUpdatedAt). */
+  updatedAt: z.string().optional(),
 });
 export type AiEditResponse = z.infer<typeof AiEditResponse>;
 
@@ -148,6 +159,8 @@ export const PublishSiteResponse = z.object({
   siteId: SiteId,
   status: SiteStatus,
   url: z.url(),
+  /** Novo `updatedAt` do site (publicar também muda; ver UpdateSiteRequest.baseUpdatedAt). */
+  updatedAt: z.string().optional(),
 });
 export type PublishSiteResponse = z.infer<typeof PublishSiteResponse>;
 
@@ -301,7 +314,10 @@ export type ImageSearchQuery = z.infer<typeof ImageSearchQuery>;
 export const ImageSearchResponse = z.object({ results: z.array(SiteImage) });
 export type ImageSearchResponse = z.infer<typeof ImageSearchResponse>;
 
-/** POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 8 MB) → foto do dono. */
+/**
+ * POST /api/sites/[id]/images (multipart, campo "file"; jpg/png/webp até 4 MB, e o editor reduz as
+ * fotos maiores no navegador) → foto do dono.
+ */
 export const UploadImageResponse = z.object({ image: SiteImage });
 export type UploadImageResponse = z.infer<typeof UploadImageResponse>;
 

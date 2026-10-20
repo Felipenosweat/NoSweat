@@ -12,22 +12,43 @@ import {
 } from "@nosweat/schema";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { z } from "zod";
+import { useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
+import { makeSlug } from "@/lib/slug";
 import { PublishDialog, type PublishState } from "../PublishDialog";
 import { AskAiPanel, type ChatMessage } from "./AskAiPanel";
 import { CanvasFrame, DESKTOP_QUERY, useMediaQuery, type Device } from "./CanvasFrame";
+import {
+  clean,
+  describeIssue,
+  heroIndex,
+  localDraftKey,
+  missingGalleryAlt,
+  missingRequired,
+  parseLocalDraft,
+  previewSpec,
+  REQUIRED_MESSAGES,
+  sameSpec,
+  SECTION_NAMES,
+  serializeLocalDraft,
+} from "./clean";
 import { ContentPanel } from "./ContentPanel";
 import { newSection } from "./defaults";
 import {
   ArrowLeftIcon,
-  ChevronDownIcon,
   CloseIcon,
   DesktopIcon,
   DocumentIcon,
   ExpandIcon,
   ExternalIcon,
-  EyeIcon,
   PencilIcon,
   PhoneIcon,
   RefreshIcon,
@@ -46,13 +67,12 @@ import {
   type RewriteTone,
 } from "./SectionsPanel";
 import { StylePanel } from "./StylePanel";
-import { focusRing, primaryButton, secondaryButton } from "./ui";
+import { focusRing, primaryButton, secondaryButton, textButton } from "./ui";
 
-type Business = SiteSpec["business"];
 type TabId = "ai" | "content" | "style" | "sections" | "edit";
 type Tab = { id: TabId; label: string };
 
-// Computador: "Preview" mostra a conversa com a IA; "Edit" mostra três abas (Content, Style,
+// Computador: "Ask AI" mostra a conversa com a IA; "Edit" mostra três abas (Content, Style,
 // Sections). Celular: três abas na gaveta (Edit junta Content e Sections).
 const EDIT_TABS: Tab[] = [
   { id: "content", label: "Content" },
@@ -74,68 +94,37 @@ const DEVICES: { id: Device; label: string; Icon: typeof DesktopIcon }[] = [
 /** Largura do painel lateral no computador (o aviso flutuante se alinha a ela). */
 const PANEL_WIDTH = "lg:w-[380px]";
 
-const UNSAVED_FOR_AI = "Save your changes first, then ask the AI.";
 const OUT_OF_EDITS = "You’ve used today’s AI changes. More tomorrow.";
+const GUEST_OUT_OF_EDITS = "You’ve used the free AI changes. Create a free account to keep going.";
 const OFFLINE = "We couldn't reach our servers. Please try again.";
+const CONFLICT =
+  "This site was changed in another tab or device. Reload to get the latest version.";
 
-/**
- * Campos opcionais vazios saem do SiteSpec (ex.: e-mail "" não é um e-mail válido).
- * Galeria sem nenhuma foto também sai: no site ela não aparece mesmo.
- */
-function clean(spec: SiteSpec): SiteSpec {
-  const business: Business = { name: spec.business.name.trim() };
-  const optional = ["phone", "email", "city", "state", "serviceArea"] as const;
-  for (const key of optional) {
-    const value = spec.business[key]?.trim();
-    if (value) business[key] = key === "state" ? value.toUpperCase() : value;
+/** Guarda a cópia local do rascunho (navegação privada ou armazenamento cheio: sem cópia). */
+function writeLocalDraft(siteId: string, spec: SiteSpec) {
+  try {
+    window.localStorage.setItem(localDraftKey(siteId), serializeLocalDraft(spec));
+  } catch {
+    // Sem localStorage: o editor continua funcionando, só sem a cópia de segurança.
   }
-  const hours = (spec.business.hours ?? [])
-    .map((row) => ({ days: row.days.trim(), time: row.time.trim() }))
-    .filter((row) => row.days || row.time);
-  if (hours.length) business.hours = hours;
-  const highlights = (spec.business.highlights ?? []).map((h) => h.trim()).filter(Boolean);
-  if (highlights.length) business.highlights = highlights;
-  const sections = spec.sections.filter((s) => s.type !== "gallery" || s.images.length > 0);
-  return { ...spec, business, sections };
 }
 
-/**
- * Rascunho para a prévia: como `clean`, mas mantém todas as seções (o índice de cada uma
- * precisa bater com o painel) e ignora um e-mail ou estado ainda pela metade.
- * `null` se mesmo assim não for um SiteSpec válido (a prévia fica no último válido).
- */
-function previewSpec(spec: SiteSpec): SiteSpec | null {
-  const cleaned = clean(spec);
-  const business = { ...cleaned.business };
-  if (business.email && !z.email().safeParse(business.email).success) delete business.email;
-  if (business.state && business.state.length !== 2) delete business.state;
-  const parsed = SiteSpec.safeParse({ ...cleaned, business, sections: spec.sections });
-  return parsed.success ? parsed.data : null;
-}
-
-function describeError(path: PropertyKey[], message: string): string {
-  const where = path
-    .map((part) => (typeof part === "number" ? `#${part + 1}` : String(part)))
-    .join(" › ");
-  return where ? `${where}: ${message}` : message;
-}
-
-/** A galeria exige descrição (alt) em todas as fotos; o schema aceita vazio, o editor não. */
-function missingGalleryAlt(spec: SiteSpec): string | null {
-  for (const [sectionIndex, section] of spec.sections.entries()) {
-    if (section.type !== "gallery") continue;
-    const photo = section.images.findIndex((image) => !image.alt.trim());
-    if (photo >= 0) {
-      return `Section #${sectionIndex + 1} (gallery): photo ${photo + 1} needs a short description.`;
-    }
+function removeLocalDraft(siteId: string) {
+  try {
+    window.localStorage.removeItem(localDraftKey(siteId));
+  } catch {
+    // Sem localStorage: nada para apagar.
   }
-  return null;
 }
+
+/** `quiet`: salvamento automático (ao sair da aba), sem avisos; `notify: false`: sem o "Saved". */
+type SaveOptions = { quiet?: boolean; notify?: boolean };
 
 /** Omit que preserva cada variante de uma união (o Omit direto junta tudo numa só). */
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
-type Toast = { id: number; kind: "ok" | "error"; text: string; undo?: boolean };
+/** Aviso flutuante; `undo` mostra o botão "Undo" (mudança da IA, seção removida). */
+type Toast = { id: number; kind: "ok" | "error"; text: string; undo?: () => void };
 
 export function SiteEditor({
   siteId,
@@ -143,9 +132,14 @@ export function SiteEditor({
   status,
   pendingChanges = false,
   freeAddress,
+  origin,
+  hasSlug = true,
+  updatedAt: initialUpdatedAt,
   hasDomain = false,
   aiEditsLeft: initialAiEditsLeft,
   isGuest = false,
+  needsPlan = false,
+  domainUrl = null,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
@@ -154,18 +148,39 @@ export function SiteEditor({
   pendingChanges?: boolean;
   /** Endereço grátis (o atual, ou o que o site vai receber ao publicar). */
   freeAddress: string;
+  /** Origem do site (https://nosweatfd.com): com ela, o endereço acompanha o nome digitado. */
+  origin?: string;
+  /** O site já tem slug (já foi publicado): o endereço não muda mais com o nome. */
+  hasSlug?: boolean;
+  /** `updatedAt` do site ao abrir o editor (o PATCH manda de volta para detectar conflito). */
+  updatedAt?: string;
   /** O site já tem domínio próprio (o modal mostra "Manage domain"). */
   hasDomain?: boolean;
   /** Pedidos à IA que ainda cabem hoje; `null` = sem limite. */
   aiEditsLeft: number | null;
   /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
   isGuest?: boolean;
+  /** Publicar exige escolher um plano antes (o modal mostra "Plan required"). */
+  needsPlan?: boolean;
+  /** Domínio próprio JÁ funcionando (https://dominio.com): vira o link de compartilhar. */
+  domainUrl?: string | null;
 }) {
   const [spec, setSpec] = useState<SiteSpec>(initialSpec);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  /** Tentou salvar sem nome/título: mostra o aviso ao lado do campo. */
+  const [showRequired, setShowRequired] = useState(false);
+  /** O site mudou em outra aba ou aparelho (PATCH respondeu 409). */
+  const [conflict, setConflict] = useState(false);
+  /** Cópia local de uma visita anterior que não foi salva (oferece restaurar). */
+  const [localDraft, setLocalDraft] = useState<SiteSpec | null>(null);
+  /** `updatedAt` do servidor que este editor conhece (atualizado a cada resposta). */
+  const baseUpdatedAt = useRef(initialUpdatedAt);
+  /** Saindo de propósito (recarregar, cadastro): sem o aviso de "mudanças não salvas". */
+  const leaving = useRef(false);
+  const router = useRouter();
 
   const [instruction, setInstruction] = useState("");
   const [aiPending, setAiPending] = useState(false);
@@ -200,7 +215,7 @@ export function SiteEditor({
   const sheetOpener = useRef<HTMLElement | null>(null);
   const sheet = useRef<HTMLElement>(null);
   const previewArea = useRef<HTMLElement>(null);
-  const latest = useRef({ spec, openSection });
+  const latest = useRef({ spec, openSection, dirty, busy: false });
 
   // As abas mudam com a largura (Edit no celular = Content + Sections no computador).
   const activeTab: TabId = isDesktop
@@ -229,7 +244,7 @@ export function SiteEditor({
   // ---------- Conversa com a prévia (iframe) ----------
 
   useEffect(() => {
-    latest.current = { spec, openSection };
+    latest.current = { spec, openSection, dirty, busy: saving || aiPending };
   });
 
   const sendSpec = useCallback((draft: SiteSpec) => {
@@ -344,13 +359,65 @@ export function SiteEditor({
 
   // ---------- Edição ----------
 
-  // Avisa antes de sair da página com mudanças não salvas.
+  // Avisa antes de sair da página com mudanças não salvas (o iPhone ignora este aviso: por
+  // isso a cópia local e o salvamento ao trocar de app, logo abaixo).
   useEffect(() => {
     if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!leaving.current) event.preventDefault();
+    };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
+
+  // Cópia local do rascunho não salvo (1 s depois da última mudança), para nada se perder se a
+  // aba fechar, a conexão cair ou o iPhone descartar a página.
+  useEffect(() => {
+    if (!dirty) return;
+    const timer = window.setTimeout(() => writeLocalDraft(siteId, spec), 1_000);
+    return () => window.clearTimeout(timer);
+  }, [dirty, spec, siteId]);
+
+  // Ao abrir: se ficou uma cópia local diferente do que está salvo, oferece restaurar.
+  useEffect(() => {
+    let stored: SiteSpec | null = null;
+    try {
+      stored = parseLocalDraft(window.localStorage.getItem(localDraftKey(siteId)));
+    } catch {
+      stored = null;
+    }
+    if (!stored) return;
+    if (sameSpec(stored, initialSpec)) {
+      removeLocalDraft(siteId);
+      return;
+    }
+    const found = stored;
+    // Fora do corpo do efeito (regra react-hooks/set-state-in-effect).
+    const frame = requestAnimationFrame(() => setLocalDraft(found));
+    return () => cancelAnimationFrame(frame);
+  }, [siteId, initialSpec]);
+
+  function restoreLocalDraft() {
+    if (!localDraft || saving || aiPending) return;
+    setSpec(localDraft);
+    setDirty(true);
+    setSaveError(null);
+    setOpenSection(null);
+    setLocalDraft(null);
+    showToast({ kind: "ok", text: "Unsaved changes restored. Click “Save” to keep them." });
+  }
+
+  function discardLocalDraft() {
+    removeLocalDraft(siteId);
+    setLocalDraft(null);
+  }
+
+  /** Recarrega para pegar a versão mais nova (o que não foi salvo fica na cópia local). */
+  function reloadLatest() {
+    if (dirty) writeLocalDraft(siteId, spec);
+    leaving.current = true;
+    window.location.reload();
+  }
 
   /** Atualiza uma cópia do SiteSpec (nunca muta o estado atual). */
   function update(change: (draft: SiteSpec) => void) {
@@ -385,12 +452,39 @@ export function SiteEditor({
   }
 
   function removeSection(index: number) {
+    const removed = spec.sections[index];
+    if (!removed || saving || aiPending) return;
+    const wasOpen = openSection === index;
     update((draft) => void draft.sections.splice(index, 1));
-    if (openSection === index) setOpenSection(null);
+    if (wasOpen) setOpenSection(null);
     else if (openSection !== null && openSection > index) setOpenSection(openSection - 1);
+
+    // "Undo" põe a seção de volta no mesmo lugar (sem desfazer o que foi editado depois).
+    const name = SECTION_NAMES[removed.type];
+    const snapshot = structuredClone(removed);
+    showToast({
+      kind: "ok",
+      text: `${name} section removed.`,
+      undo: () => {
+        const current = latest.current;
+        if (current.busy || current.spec.sections.length >= 10) return;
+        setSpec((draft) => {
+          const next = structuredClone(draft);
+          next.sections.splice(Math.min(index, next.sections.length), 0, snapshot);
+          return next;
+        });
+        setOpenSection((open) =>
+          wasOpen ? index : open !== null && open >= index ? open + 1 : open,
+        );
+        setDirty(true);
+        setSaveError(null);
+        showToast({ kind: "ok", text: `${name} section is back.` });
+      },
+    });
   }
 
   function addSection(type: SectionType) {
+    if (saving || aiPending || spec.sections.length >= 10) return;
     const index = spec.sections.length;
     update((draft) => void draft.sections.push(newSection(type)));
     scrollCanvasNext.current = true;
@@ -418,10 +512,23 @@ export function SiteEditor({
   // ---------- IA ----------
 
   async function runAi(text: string, options: { fromPrompt: boolean; sectionIndex?: number }) {
+    if (saving || aiPending) return;
+    say({ role: "user", text: text.trim() });
+    // A IA trabalha sobre o rascunho SALVO: mudanças pendentes são salvas antes do pedido.
+    let previous = spec;
+    if (dirty) {
+      const saved = await saveDraft({ notify: false });
+      if (!saved) {
+        const message =
+          "Your edits couldn't be saved, so I didn't change anything yet. Check the message at the top.";
+        say({ role: "assistant", kind: "error", text: message });
+        if (!options.fromPrompt) showToast({ kind: "error", text: message });
+        return;
+      }
+      previous = saved;
+    }
     setAiPending(true);
     setRewritingIndex(options.sectionIndex ?? null);
-    say({ role: "user", text: text.trim() });
-    const previous = spec;
     try {
       const res = await fetch(`/api/sites/${siteId}/ai-edit`, {
         method: "POST",
@@ -440,8 +547,10 @@ export function SiteEditor({
         return;
       }
       const result = AiEditResponse.parse(body);
+      if (result.updatedAt) baseUpdatedAt.current = result.updatedAt;
       setSpec(result.spec);
       setDirty(false);
+      removeLocalDraft(siteId);
       setBeforeAi(previous);
       setThemeBeforeShuffle(null);
       setAiEditsLeft((left) => (left === null ? null : Math.max(0, left - 1)));
@@ -454,7 +563,9 @@ export function SiteEditor({
         steps: ["Updated the site", "Saved as a draft"],
       });
       if (options.fromPrompt) setInstruction("");
-      showToast({ kind: "ok", text: result.summary, undo: true });
+      showToast({ kind: "ok", text: result.summary, undo: () => undoAiRef.current() });
+      // Celular: fecha a gaveta para a pessoa ver a mudança na prévia (o "Undo" fica no aviso).
+      if (!window.matchMedia(DESKTOP_QUERY).matches) closeSheet();
     } catch {
       say({ role: "assistant", kind: "error", text: OFFLINE });
       if (!options.fromPrompt) showToast({ kind: "error", text: OFFLINE });
@@ -486,18 +597,49 @@ export function SiteEditor({
 
   // ---------- Salvar ----------
 
-  /** Salva o rascunho. Devolve true se deu certo (o Publish usa para publicar só o que foi salvo). */
-  async function save(): Promise<boolean> {
+  /** Leva o dono até o campo obrigatório que falta (nome no Content, título no Hero). */
+  function showMissing(missing: "name" | "headline") {
+    setPanelOpen(true);
+    if (missing === "name") {
+      selectTab(isDesktop ? "content" : "edit");
+      return;
+    }
+    selectTab(isDesktop ? "sections" : "edit");
+    const hero = heroIndex(spec);
+    if (hero >= 0) {
+      scrollCanvasNext.current = true;
+      scrollPanelTo.current = hero;
+      setOpenSection(hero);
+    }
+  }
+
+  /** Salva o rascunho. Devolve o SiteSpec salvo, ou `null` se não deu (o erro já aparece). */
+  async function saveDraft({
+    quiet = false,
+    notify = true,
+  }: SaveOptions = {}): Promise<SiteSpec | null> {
+    if (saving || aiPending) return null;
+    const missing = missingRequired(spec);
+    if (missing) {
+      if (!quiet) {
+        setShowRequired(true);
+        setSaveError(REQUIRED_MESSAGES[missing]);
+        showMissing(missing);
+      }
+      return null;
+    }
     const missingAlt = missingGalleryAlt(spec);
     if (missingAlt) {
-      setSaveError(missingAlt);
-      return false;
+      if (!quiet) setSaveError(missingAlt);
+      return null;
     }
     const result = SiteSpec.safeParse(clean(spec));
     if (!result.success) {
       const issue = result.error.issues[0];
-      setSaveError(issue ? describeError(issue.path, issue.message) : "Please check your changes.");
-      return false;
+      if (!quiet) {
+        setSaveError(issue ? describeIssue(issue, spec) : "Please check your changes.");
+      }
+      return null;
     }
 
     setSaving(true);
@@ -506,33 +648,53 @@ export function SiteEditor({
       const res = await fetch(`/api/sites/${siteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spec: result.data }),
+        body: JSON.stringify({ spec: result.data, baseUpdatedAt: baseUpdatedAt.current }),
       });
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
-        setSaveError(
-          apiError.success ? apiError.data.error.message : "We couldn't save your changes.",
-        );
-        return false;
+        // Outra aba ou aparelho salvou depois: não sobrescreve; o que está aqui fica na cópia local.
+        if (apiError.success && apiError.data.error.code === "conflict") {
+          writeLocalDraft(siteId, spec);
+          setConflict(true);
+          return null;
+        }
+        if (!quiet) {
+          setSaveError(
+            apiError.success ? apiError.data.error.message : "We couldn't save your changes.",
+          );
+        }
+        return null;
       }
-      const saved = UpdateSiteResponse.parse(body).spec;
+      const response = UpdateSiteResponse.parse(body);
+      if (response.updatedAt) baseUpdatedAt.current = response.updatedAt;
+      const saved = response.spec;
       setSpec(saved);
       setDirty(false);
+      setShowRequired(false);
+      removeLocalDraft(siteId);
+      setLocalDraft(null);
       setPublishState((state) => (state === "draft" ? state : "outdated"));
       // A galeria vazia saiu ao salvar: os índices mudaram, então nenhuma seção fica aberta.
       if (saved.sections.length !== spec.sections.length) setOpenSection(null);
-      showToast({
-        kind: "ok",
-        text: "Saved as a draft. Publish when you're ready to put it live.",
-      });
-      return true;
+      if (notify && !quiet) {
+        showToast({
+          kind: "ok",
+          text: "Saved as a draft. Publish when you're ready to put it live.",
+        });
+      }
+      return saved;
     } catch {
-      setSaveError(OFFLINE);
-      return false;
+      if (!quiet) setSaveError(OFFLINE);
+      return null;
     } finally {
       setSaving(false);
     }
+  }
+
+  /** Salva o rascunho. Devolve true se deu certo (o Publish usa para publicar só o que foi salvo). */
+  async function save(options?: SaveOptions): Promise<boolean> {
+    return (await saveDraft(options)) !== null;
   }
 
   // Publicar pelo modal: salva o que estiver pendente e publica o rascunho salvo.
@@ -542,7 +704,13 @@ export function SiteEditor({
   );
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  /** Publicou neste editor: o plano existe, o aviso "Plan required" não vale mais. */
+  const [publishedHere, setPublishedHere] = useState(false);
   const [address, setAddress] = useState(freeAddress);
+  /** O endereço já está definido (publicado)? Antes disso ele acompanha o nome digitado. */
+  const [slugFixed, setSlugFixed] = useState(hasSlug);
+  const shownAddress =
+    slugFixed || !origin ? address : `${origin}/s/${makeSlug(spec.business.name, siteId)}`;
   const publishRef = useRef<HTMLButtonElement>(null);
 
   function openPublish() {
@@ -563,9 +731,12 @@ export function SiteEditor({
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
-        // Sem plano ativo: vai escolher um (o rascunho já foi salvo acima).
-        if (apiError.success && apiError.data.error.code === "payment_required") {
-          window.location.assign(`/billing?site=${encodeURIComponent(siteId)}`);
+        const code = apiError.success ? apiError.data.error.code : null;
+        // Sem plano ativo, ou o plano não comporta mais um site no ar: vai para os planos
+        // (o rascunho já foi salvo acima).
+        if (code === "payment_required" || code === "plan_limit") {
+          const reason = code === "plan_limit" ? "&reason=plan_limit" : "";
+          router.push(`/billing?site=${encodeURIComponent(siteId)}${reason}`);
           return;
         }
         setPublishError(
@@ -573,8 +744,13 @@ export function SiteEditor({
         );
         return;
       }
-      setAddress(PublishSiteResponse.parse(body).url);
+      const published = PublishSiteResponse.parse(body);
+      // Publicar também muda o `updatedAt`: sem isto, o próximo Save daria conflito falso.
+      if (published.updatedAt) baseUpdatedAt.current = published.updatedAt;
+      setAddress(published.url);
+      setSlugFixed(true);
       setPublishState("current");
+      setPublishedHere(true);
     } catch {
       setPublishError(OFFLINE);
     } finally {
@@ -582,10 +758,27 @@ export function SiteEditor({
     }
   }
 
-  const canSave = dirty && !saving;
+  // ---------- Cadastro (visitante) ----------
+
+  const signUpHref = `/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`;
+
+  /** Antes de ir para o cadastro, salva o que estiver pendente (no iPhone o aviso não aparece). */
+  function onSignUpClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!dirty) return;
+    event.preventDefault();
+    void (async () => {
+      if (!(await save({ notify: false }))) return;
+      leaving.current = true;
+      router.push(signUpHref);
+    })();
+  }
+
+  const canSave = dirty && !saving && !aiPending;
   const saveRef = useRef(save);
+  const undoAiRef = useRef(undoAi);
   useEffect(() => {
     saveRef.current = save;
+    undoAiRef.current = undoAi;
   });
   // Cmd/Ctrl + S salva (em vez de "salvar página" do navegador).
   useEffect(() => {
@@ -599,7 +792,21 @@ export function SiteEditor({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [canSave]);
 
-  const aiBlockedReason = dirty ? UNSAVED_FOR_AI : aiEditsLeft === 0 ? OUT_OF_EDITS : null;
+  // Trocou de app ou de aba com mudanças pendentes: guarda a cópia local na hora e salva.
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState !== "hidden") return;
+      const current = latest.current;
+      if (!current.dirty) return;
+      writeLocalDraft(siteId, current.spec);
+      if (!current.busy) void saveRef.current({ quiet: true });
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [siteId]);
+
+  const outOfEditsReason = isGuest ? GUEST_OUT_OF_EDITS : OUT_OF_EDITS;
+  const aiBlockedReason = aiEditsLeft === 0 ? outOfEditsReason : null;
 
   // ---------- Desenho ----------
 
@@ -608,16 +815,47 @@ export function SiteEditor({
   const shownPublishState: PublishState =
     publishState === "current" && dirty ? "outdated" : publishState;
 
-  /** "+" do campo da IA → "Add your photos": abre as seções na foto do topo. */
+  /**
+   * "+" do campo da IA → "Add your photos": abre a galeria (as fotos do dono). Sem galeria,
+   * cria uma; com o site já no limite de seções, abre a foto do topo.
+   */
   function openPhotos() {
-    const hero = spec.sections.findIndex((section) => section.type === "hero");
     selectTab(isDesktop ? "sections" : "edit");
-    if (hero >= 0) {
+    const gallery = spec.sections.findIndex((section) => section.type === "gallery");
+    if (gallery < 0 && spec.sections.length < 10 && !saving && !aiPending) {
+      addSection("gallery");
+      return;
+    }
+    const target = gallery >= 0 ? gallery : heroIndex(spec);
+    if (target >= 0) {
       scrollCanvasNext.current = true;
-      scrollPanelTo.current = hero;
-      setOpenSection(hero);
+      scrollPanelTo.current = target;
+      setOpenSection(target);
     }
   }
+
+  // Enquanto salva ou a IA trabalha, os campos ficam travados (com aviso), em vez de ignorar
+  // o que a pessoa digita: a resposta do servidor substitui o SiteSpec inteiro.
+  const editLocked = saving || aiPending;
+  const lockable = (children: ReactNode) => (
+    <>
+      {editLocked && (
+        <p
+          role="status"
+          className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-200 bg-white/95 px-5 py-2.5 text-[13px] font-medium text-slate-600 backdrop-blur"
+        >
+          <span
+            aria-hidden="true"
+            className="size-3.5 shrink-0 rounded-full border-2 border-slate-200 border-t-brand motion-safe:animate-spin"
+          />
+          {aiPending ? "Working on your change…" : "Saving your changes…"}
+        </p>
+      )}
+      <fieldset disabled={editLocked} className="m-0 min-w-0 border-0 p-0">
+        {children}
+      </fieldset>
+    </>
+  );
 
   const tabPanel =
     activeTab === "ai" ? (
@@ -627,46 +865,59 @@ export function SiteEditor({
         onInstructionChange={setInstruction}
         onSubmit={() => void runAi(instruction, { fromPrompt: true })}
         pending={aiPending}
-        blockedReason={dirty ? UNSAVED_FOR_AI : null}
+        willSaveFirst={dirty}
         aiEditsLeft={aiEditsLeft}
         canUndo={beforeAi !== null}
         onUndo={undoAi}
         onAddPhotos={openPhotos}
         historyHref={isGuest ? null : `/sites/${siteId}`}
+        isGuest={isGuest}
+        signUpHref={isGuest ? signUpHref : null}
+        onSignUp={onSignUpClick}
       />
     ) : activeTab === "style" ? (
-      <StylePanel
-        spec={spec}
-        update={update}
-        themeBeforeShuffle={themeBeforeShuffle}
-        onShuffle={applyTheme}
-        onUndoShuffle={undoShuffle}
-      />
+      lockable(
+        <StylePanel
+          spec={spec}
+          update={update}
+          themeBeforeShuffle={themeBeforeShuffle}
+          onShuffle={applyTheme}
+          onUndoShuffle={undoShuffle}
+        />,
+      )
     ) : (
-      <>
-        {(activeTab === "content" || activeTab === "edit") && (
-          <ContentPanel business={spec.business} update={update} />
-        )}
-        {(activeTab === "sections" || activeTab === "edit") && (
-          <div className={activeTab === "edit" ? "border-t border-slate-200" : ""}>
-            <SectionsPanel
-              siteId={siteId}
-              sections={spec.sections}
-              openSection={openSection}
-              onToggle={toggleSection}
-              onMove={moveSection}
-              onRemove={removeSection}
-              onChange={updateSection}
-              onAdd={addSection}
-              rewrite={{
-                blockedReason: aiBlockedReason,
-                pendingIndex: rewritingIndex,
-                onRewrite: rewriteSection,
-              }}
+      lockable(
+        <>
+          {(activeTab === "content" || activeTab === "edit") && (
+            <ContentPanel
+              business={spec.business}
+              update={update}
+              nameError={
+                showRequired && !spec.business.name.trim() ? "Add your business name." : null
+              }
             />
-          </div>
-        )}
-      </>
+          )}
+          {(activeTab === "sections" || activeTab === "edit") && (
+            <div className={activeTab === "edit" ? "border-t border-slate-200" : ""}>
+              <SectionsPanel
+                siteId={siteId}
+                sections={spec.sections}
+                openSection={openSection}
+                onToggle={toggleSection}
+                onMove={moveSection}
+                onRemove={removeSection}
+                onChange={updateSection}
+                onAdd={addSection}
+                rewrite={{
+                  blockedReason: aiBlockedReason,
+                  pendingIndex: rewritingIndex,
+                  onRewrite: rewriteSection,
+                }}
+              />
+            </div>
+          )}
+        </>,
+      )
     );
 
   // Abas: no celular sempre (na gaveta); no computador só no modo "Edit".
@@ -702,14 +953,16 @@ export function SiteEditor({
             height={22}
             className="hidden size-[22px] shrink-0 sm:block"
           />
-          <h1 className="min-w-0 truncate font-display text-[15px] font-semibold tracking-[-0.01em]">
-            {spec.business.name || "Your website"}
-          </h1>
-          {/* Celular: só a bolinha do estado de publicação (o texto aparece em telas maiores). */}
-          <span className="inline-flex shrink-0 md:hidden">
-            <StatusDot state={shownPublishState} />
-            <span className="sr-only">{publishLabel(shownPublishState)}</span>
-          </span>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-[15px] font-semibold tracking-[-0.01em]">
+              {spec.business.name || "Your website"}
+            </h1>
+            {/* Celular: o estado de publicação numa linha pequena (telas maiores: à direita). */}
+            <p className="flex min-w-0 items-center gap-1.5 text-[12px] leading-4 text-slate-500 md:hidden">
+              <StatusDot state={shownPublishState} />
+              <span className="truncate">{publishLabel(shownPublishState)}</span>
+            </p>
+          </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <EditorStatus saving={saving} dirty={dirty} publishState={shownPublishState} />
@@ -734,27 +987,39 @@ export function SiteEditor({
             {isGuest ? (
               // Publicar exige conta: depois do cadastro o site passa para a conta e volta aqui.
               <Link
-                href={`/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`}
-                onClick={(event) => {
-                  if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
-                    event.preventDefault();
-                  }
-                }}
+                href={signUpHref}
+                // Com mudanças pendentes, salva antes de sair (no iPhone o aviso não aparece).
+                onClick={onSignUpClick}
                 className={`${primaryButton} lg:min-h-9`}
               >
                 <span className="sm:hidden">Sign up</span>
                 <span className="hidden sm:inline">Sign up to publish</span>
               </Link>
             ) : (
+              // O botão acompanha o estado: publicar, publicar as mudanças ou (em dia) compartilhar.
+              // Os três abrem o mesmo modal (que tem o link para compartilhar).
               <button
                 ref={publishRef}
                 type="button"
                 onClick={openPublish}
                 aria-haspopup="dialog"
-                className={`${primaryButton} lg:min-h-9`}
+                className={`${shownPublishState === "current" ? secondaryButton : primaryButton} lg:min-h-9`}
               >
-                <UploadIcon className="hidden size-4 sm:block" />
-                Publish
+                {shownPublishState === "current" ? (
+                  "Share"
+                ) : (
+                  <>
+                    <UploadIcon className="hidden size-4 sm:block" />
+                    {shownPublishState === "outdated" ? (
+                      <>
+                        <span className="sm:hidden">Publish</span>
+                        <span className="hidden sm:inline">Publish changes</span>
+                      </>
+                    ) : (
+                      "Publish"
+                    )}
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -786,8 +1051,8 @@ export function SiteEditor({
                   selectTab("ai");
                   setPanelOpen(true);
                 }}
-                Icon={EyeIcon}
-                label="Preview"
+                Icon={SparklesIcon}
+                label="Ask AI"
               />
               <ModeButton
                 active={editMode}
@@ -802,20 +1067,11 @@ export function SiteEditor({
           </div>
 
           <div className="flex items-center gap-1">
-            <label htmlFor="editor-page" className="sr-only">
-              Page
-            </label>
-            <div className="relative">
-              <DocumentIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-500" />
-              <select
-                id="editor-page"
-                defaultValue="home"
-                className={`h-9 min-w-[10rem] cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white pr-9 pl-9 text-[13px] font-medium text-ink hover:border-slate-300 ${focusRing}`}
-              >
-                <option value="home">Homepage</option>
-              </select>
-              <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-slate-500" />
-            </div>
+            {/* O site tem uma página só: um rótulo, não um seletor. */}
+            <span className="inline-flex h-9 items-center gap-2 px-2 text-[13px] font-medium text-slate-600">
+              <DocumentIcon className="size-4 text-slate-500" />
+              Home page
+            </span>
             <button
               type="button"
               onClick={toggleFullscreen}
@@ -884,13 +1140,57 @@ export function SiteEditor({
           siteId={siteId}
           siteName={spec.business.name || "Your website"}
           state={shownPublishState}
-          address={address}
+          address={shownAddress}
+          domainUrl={domainUrl}
+          needsPlan={needsPlan && !publishedHere}
           onPublish={() => void publish()}
           pending={publishing || saving}
           error={publishError}
           domain={{ href: `/sites/${siteId}#domain`, samePage: false, connected: hasDomain }}
           returnFocusTo={() => publishRef.current}
         />
+      )}
+
+      {conflict && (
+        <div
+          role="alert"
+          className="relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 py-1.5 pr-2 pl-4 text-[13px] font-medium text-amber-900"
+        >
+          <p className="py-1.5">
+            {CONFLICT}
+            {dirty && " Your unsaved edits stay on this device: you can restore them after."}
+          </p>
+          <button type="button" onClick={reloadLatest} className={`${secondaryButton} lg:min-h-9`}>
+            <RefreshIcon className="size-4" />
+            Reload
+          </button>
+        </div>
+      )}
+
+      {localDraft && !conflict && (
+        <div
+          role="status"
+          className="relative z-20 flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 py-1.5 pr-2 pl-4 text-[13px] font-medium text-amber-900"
+        >
+          <p className="py-1.5">You have unsaved changes from your last visit on this device.</p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={restoreLocalDraft}
+              disabled={editLocked}
+              className={`${secondaryButton} lg:min-h-9`}
+            >
+              Restore unsaved changes
+            </button>
+            <button
+              type="button"
+              onClick={discardLocalDraft}
+              className={`${textButton} px-2 text-amber-900`}
+            >
+              Discard
+            </button>
+          </div>
+        </div>
       )}
 
       {saveError && (
@@ -1043,12 +1343,10 @@ export function SiteEditor({
               }`}
             />
             <p className="min-w-0 flex-1 py-2.5 leading-snug">{toast.text}</p>
-            {toast.undo && beforeAi && (
+            {toast.undo && (
               <button
                 type="button"
-                onClick={() => {
-                  undoAi();
-                }}
+                onClick={toast.undo}
                 className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-3 font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 <UndoIcon className="size-4" />
@@ -1117,7 +1415,7 @@ function EditorStatus({
   );
 }
 
-/** Botão do seletor "Preview / Edit" do topo. */
+/** Botão do seletor "Ask AI / Edit" do topo. */
 function ModeButton({
   active,
   onClick,
@@ -1126,7 +1424,7 @@ function ModeButton({
 }: {
   active: boolean;
   onClick: () => void;
-  Icon: typeof EyeIcon;
+  Icon: typeof SparklesIcon;
   label: string;
 }) {
   return (

@@ -13,7 +13,6 @@ import {
 } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import {
-  CLIENTS_TIME_ZONE,
   STAGE_LABELS,
   dateKeyIn,
   formatCents,
@@ -23,7 +22,7 @@ import {
   phoneHref,
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
-import { getClientDetail } from "@/server/clients/service";
+import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
 import {
   JobIcon,
   MailIcon,
@@ -50,11 +49,14 @@ type ClientPageProps = { params: Promise<{ id: string }> };
 
 /** Ficha do cliente e "hoje" no fuso da empresa (fora do componente: usa o relógio). */
 async function loadClient(ownerId: string, id: string) {
-  const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date());
-  const detail = await getClientDetail(ownerId, id);
+  const [timeZone, detail] = await Promise.all([
+    clientsTimeZone(ownerId),
+    getClientDetail(ownerId, id),
+  ]);
+  const today = dateKeyIn(timeZone, new Date());
   // Desde quando é cliente, no mesmo fuso.
   const since = detail
-    ? formatDateOnly(dateKeyIn(CLIENTS_TIME_ZONE, new Date(detail.client.createdAt)), today)
+    ? formatDateOnly(dateKeyIn(timeZone, new Date(detail.client.createdAt)), today)
     : "";
   return { today, detail, since };
 }

@@ -6,6 +6,9 @@ import type {
   CreateClientRequest,
   UpdateClientRequest,
 } from "@nosweat/schema";
+import { CLIENTS_TIME_ZONE } from "@/lib/clients";
+import { isValidTimeZone } from "../social/service";
+import { getSocialStore } from "../social/store";
 import { getSiteStore, type LeadRecord } from "../store";
 import { byLastActivityDesc, getClientStore, type ClientStore } from "./store";
 import {
@@ -64,6 +67,19 @@ function blankToNull(value: string | null | undefined): string | null | undefine
   if (value === undefined) return undefined;
   const trimmed = (value ?? "").trim();
   return trimmed || null;
+}
+
+/**
+ * Fuso da empresa para "hoje" dos retornos: o mesmo das configurações de posts (a conta ainda não
+ * tem um fuso próprio). Sem configuração, fuso inválido ou erro: Nova York, como antes.
+ */
+export async function clientsTimeZone(ownerId: string): Promise<string> {
+  try {
+    const { timezone } = await getSocialStore().getSettings(ownerId);
+    return timezone && isValidTimeZone(timezone) ? timezone : CLIENTS_TIME_ZONE;
+  } catch {
+    return CLIENTS_TIME_ZONE;
+  }
 }
 
 // ---------- sync dos pedidos do site ----------
@@ -145,8 +161,13 @@ async function importLead(
  * Traz para os clientes os pedidos do formulário de todos os sites do dono que ainda não entraram.
  * Junta pelo e-mail (sem diferença de maiúsculas) ou pelo telefone (só dígitos). Pode rodar
  * quantas vezes for: pedido já importado (ou de cliente apagado) não entra de novo.
+ * `ownerEmail` (e-mail da conta): pedido com esse e-mail é o teste do próprio dono ("Send a test
+ * request" do checklist). Não vira cliente e vai para a lápide, para não voltar.
  */
-export async function syncLeadsToClients(ownerId: string): Promise<void> {
+export async function syncLeadsToClients(
+  ownerId: string,
+  ownerEmail?: string | null,
+): Promise<void> {
   const siteStore = getSiteStore();
   const sites = await siteStore.list(ownerId);
   if (sites.length === 0) return;
@@ -163,8 +184,13 @@ export async function syncLeadsToClients(ownerId: string): Promise<void> {
     .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
   if (pending.length === 0) return;
 
+  const ownEmail = normalizeEmail(ownerEmail);
   const clients = await store.listClients(ownerId);
   for (const lead of pending) {
+    if (ownEmail !== null && normalizeEmail(lead.email) === ownEmail) {
+      await store.dismissLead(ownerId, lead.id);
+      continue;
+    }
     await importLead(store, ownerId, lead, clients);
   }
 }
@@ -181,12 +207,15 @@ function matchesQuery(client: ClientRecord, q: string): boolean {
   return digits.length >= 3 && (client.phone ?? "").replace(/\D/g, "").includes(digits);
 }
 
-/** Clientes do dono (pedidos novos do site entram antes), último contato primeiro. */
+/**
+ * Clientes do dono (pedidos novos do site entram antes), último contato primeiro. `ownerEmail`:
+ * e-mail da conta, para o teste do próprio dono não virar cliente (ver `syncLeadsToClients`).
+ */
 export async function listClients(
   ownerId: string,
-  opts: { stage?: ClientStage; q?: string } = {},
+  opts: { stage?: ClientStage; q?: string; ownerEmail?: string | null } = {},
 ): Promise<Client[]> {
-  await syncLeadsToClients(ownerId);
+  await syncLeadsToClients(ownerId, opts.ownerEmail);
   const clients = await getClientStore().listClients(ownerId);
   return clients
     .filter((c) => !opts.stage || c.stage === opts.stage)
@@ -215,8 +244,9 @@ export async function getClientDetail(
 export async function clientsNeedingAttention(
   ownerId: string,
   today: string,
+  ownerEmail?: string | null,
 ): Promise<{ newCount: number; followUpsDue: Client[] }> {
-  await syncLeadsToClients(ownerId);
+  await syncLeadsToClients(ownerId, ownerEmail);
   const clients = await getClientStore().listClients(ownerId);
   const newCount = clients.filter((c) => c.stage === "new").length;
   const followUpsDue = clients

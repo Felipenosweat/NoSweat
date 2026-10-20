@@ -1,10 +1,11 @@
 "use client";
 
-import { ClientResponse, CreateClientRequest } from "@nosweat/schema";
+import { ClientResponse, CreateClientRequest, type ClientStage } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { primaryButton, textButton } from "@/components/DashboardUi";
+import { CLIENT_STAGES, STAGE_LABELS } from "@/lib/clients";
 import { ErrorNote, clientsApi, toClientsError, type ClientsApiError } from "../api";
 import { fieldClass, fieldErrorClass, hintClass, labelClass } from "../ui";
 
@@ -40,6 +41,9 @@ export function NewClientForm() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  // Quem é cadastrado à mão normalmente já conversou com o dono: "Contacted", e não "New" (que
+  // faria o painel dizer que a pessoa está esperando resposta).
+  const [stage, setStage] = useState<ClientStage>("contacted");
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<ClientsApiError | null>(null);
@@ -53,6 +57,7 @@ export function NewClientForm() {
       email: email.trim() || null,
       address: address.trim() || null,
       notes: notes.trim() || undefined,
+      stage,
     });
     if (!parsed.success) {
       setErrors(fieldErrors(parsed.error.issues));
@@ -156,6 +161,31 @@ export function NewClientForm() {
           />
           {errorText("address")}
         </div>
+
+        <fieldset>
+          <legend className={labelClass}>Stage</legend>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {CLIENT_STAGES.map((option) => (
+              <label
+                key={option}
+                className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:border-slate-400 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed sm:min-h-9"
+              >
+                <input
+                  type="radio"
+                  name="new-client-stage"
+                  value={option}
+                  checked={stage === option}
+                  onChange={() => setStage(option)}
+                  className="sr-only"
+                />
+                {STAGE_LABELS[option]}
+              </label>
+            ))}
+          </div>
+          <p className={hintClass}>
+            Pick &ldquo;New&rdquo; only if they&rsquo;re still waiting to hear back from you.
+          </p>
+        </fieldset>
 
         <div>
           <label htmlFor="new-client-notes" className={labelClass}>

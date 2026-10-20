@@ -154,6 +154,32 @@ describe("PATCH /api/sites/[id]", () => {
     expect(res.status).toBe(400);
     expect(ApiError.parse(await res.json()).error.code).toBe("invalid_request");
   });
+
+  it("refuses a stale baseUpdatedAt with 409 conflict and accepts the current one", async () => {
+    // Site direto no store (sem gastar o limite diário de gerações da conta de dev).
+    const { id: siteId, spec } = await ownSite();
+    const stale = await patchSite(
+      jsonRequest(`/sites/${siteId}`, "PATCH", { spec, baseUpdatedAt: "2000-01-01T00:00:00.000Z" }),
+      ctx(siteId),
+    );
+    expect(stale.status).toBe(409);
+    expect(ApiError.parse(await stale.json()).error.code).toBe("conflict");
+
+    const first = await patchSite(jsonRequest(`/sites/${siteId}`, "PATCH", { spec }), ctx(siteId));
+    expect(first.status).toBe(200);
+    const { updatedAt } = UpdateSiteResponse.parse(await first.json());
+    expect(updatedAt).toBeTruthy();
+
+    const renamed = { ...spec, business: { ...spec.business, name: "Rise & Shine Bakery" } };
+    const second = await patchSite(
+      jsonRequest(`/sites/${siteId}`, "PATCH", { spec: renamed, baseUpdatedAt: updatedAt }),
+      ctx(siteId),
+    );
+    expect(second.status).toBe(200);
+    expect(UpdateSiteResponse.parse(await second.json()).spec.business.name).toBe(
+      "Rise & Shine Bakery",
+    );
+  });
 });
 
 describe("GET /api/cron/cleanup-guests", () => {
@@ -257,6 +283,30 @@ describe("publishing with example text", () => {
     const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
     expect(res.status).toBe(400);
     expect(ApiError.parse(await res.json()).error.message).toMatch(/example text/);
+  });
+
+  it("refuses to publish a site without a business name", async () => {
+    const spec = structuredClone(fixtures["joes-plumbing"]);
+    spec.business.name = "";
+    const site = await getSiteStore().create(spec, "local-dev");
+    const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    expect(res.status).toBe(400);
+    expect(ApiError.parse(await res.json()).error.message).toBe(
+      "Add your business name and headline before publishing.",
+    );
+  });
+
+  it("refuses to publish a site with a blank headline", async () => {
+    const spec = structuredClone(fixtures["joes-plumbing"]);
+    const hero = spec.sections.find((section) => section.type === "hero");
+    expect(hero?.type).toBe("hero");
+    if (hero?.type === "hero") hero.title = "   ";
+    const site = await getSiteStore().create(spec, "local-dev");
+    const res = await publish(jsonRequest(`/x`, "POST", {}), ctx(site.id));
+    expect(res.status).toBe(400);
+    expect(ApiError.parse(await res.json()).error.message).toBe(
+      "Add your business name and headline before publishing.",
+    );
   });
 });
 

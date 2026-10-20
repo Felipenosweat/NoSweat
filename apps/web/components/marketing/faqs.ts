@@ -1,6 +1,8 @@
 // Perguntas frequentes da landing e de /pricing. Um lugar só: a página mostra este texto, e os
 // dados estruturados (FAQPage, para o Google) e o /llms.txt (para as IAs) leem daqui também.
-// Só o que o produto faz hoje.
+// Só o que o produto faz hoje. "Can I cancel?" vale nos dois modos de venda (Stripe, que renova
+// sozinho, e o manual por WhatsApp/e-mail, pago adiantado e sem renovação) e não promete e-mail
+// de lembrete (nenhum código manda).
 
 export type Faq = { question: string; answer: string };
 
@@ -43,7 +45,10 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "Can it post to Instagram for me?",
     answer:
-      "Yes, with your approval. Connect a professional Instagram account and AI drafts a month of posts from your website. You review and approve each one, and approved posts go out on schedule. Nothing is posted without your approval.",
+      // Enquanto SOCIAL_TESTER_ONLY=true (app da Meta ainda sem App Review), clientes postam à
+      // mão pelo calendário. Quando o fundador puser SOCIAL_TESTER_ONLY=false, voltar ao texto
+      // original: "You review and approve each one, and approved posts go out on schedule."
+      "Yes, with your approval. Connect a professional Instagram account and AI drafts a month of posts from your website. You review and approve each one, then share it from your calendar in one tap (copy the caption, save the photo). Automatic posting turns on as soon as Instagram approves our app. Nothing is posted without your approval.",
   },
   {
     question: "How much does it cost?",
@@ -53,7 +58,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal.",
+      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew.",
   },
   {
     question: "Can I use my own domain?",
@@ -76,7 +81,7 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. Plans renew automatically until you cancel, and you can cancel anytime in your account. You keep your plan until the end of the month or year you already paid for. For annual plans, we email you a reminder before each renewal. Creating and previewing your site is free; you’re only charged when you choose a plan to publish.",
+      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew. Creating and previewing your site is free; you’re only charged when you choose a plan to publish.",
   },
   {
     question: "What happens to my website if I don’t publish?",

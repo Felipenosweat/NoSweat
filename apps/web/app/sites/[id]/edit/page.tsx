@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { makeSlug } from "@/server/domains";
+import { ownerHasCustomDomainAccess, publishBlocked } from "@/server/billing";
+import { getDomainState, makeSlug } from "@/server/domains";
 import { remainingUses } from "@/server/quota";
 import { freeUrl, hasUnpublishedChanges } from "@/server/sites";
 import { requireEditableSite } from "./guard";
@@ -24,8 +25,22 @@ export default async function EditSitePage({ params }: EditPageProps) {
   const aiEditsLeft = await remainingUses(actor, "ai_edit");
   const origin = await requestOrigin();
   // Endereço grátis: o atual, ou o que o site vai receber ao publicar (mesmo makeSlug da API).
+  // Antes da primeira publicação o editor recalcula com o nome digitado (origin + hasSlug).
   const freeAddress =
     freeUrl(site, origin) ?? `${origin}/s/${makeSlug(site.spec.business.name, site.id)}`;
+  // Com os planos valendo e sem plano ativo, publicar leva para /billing: o modal avisa antes
+  // (mesma regra da página do site; admins nunca precisam de plano). Visitante não publica.
+  const needsPlan = actor.kind === "user" && (await publishBlocked(actor.user)) !== null;
+  // Domínio próprio só vira o link de compartilhar quando JÁ funciona (como em /sites/[id]).
+  // Se a consulta falhar, o editor abre do mesmo jeito (compartilha o endereço grátis).
+  const domain =
+    actor.kind === "user" && site.status === "published" && site.customDomain
+      ? await getDomainState(site).catch(() => null)
+      : null;
+  const domainUrl =
+    domain?.status === "active" && domain.domain && (await ownerHasCustomDomainAccess(site.ownerId))
+      ? `https://${domain.domain}`
+      : null;
   return (
     <SiteEditor
       siteId={site.id}
@@ -33,9 +48,14 @@ export default async function EditSitePage({ params }: EditPageProps) {
       status={site.status === "published" ? "live" : "draft"}
       pendingChanges={hasUnpublishedChanges(site)}
       freeAddress={freeAddress}
+      origin={origin}
+      hasSlug={Boolean(site.slug)}
+      updatedAt={site.updatedAt}
       hasDomain={Boolean(site.customDomain)}
       aiEditsLeft={aiEditsLeft}
       isGuest={actor.kind === "guest"}
+      needsPlan={needsPlan}
+      domainUrl={domainUrl}
     />
   );
 }

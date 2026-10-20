@@ -1,7 +1,9 @@
 import type { PlanId } from "@nosweat/schema";
 import { z } from "zod";
 import { passwordProblems, profileMetadata } from "@/lib/signup-rules";
+import { isActiveStatus } from "../billing";
 import { extendExpiry, getGrantStore } from "../billing/grants";
+import { getBillingStore } from "../billing/store";
 import { deleteSiteForever } from "../sites";
 import { getSiteStore, type SiteRecord } from "../store";
 import {
@@ -195,12 +197,41 @@ export function testAccountDeleteBlocker(
   return null;
 }
 
+/**
+ * Por que esta conta NÃO pode ser apagada pelo painel (`null` = pode), para qualquer conta (pedido
+ * de exclusão de um cliente de verdade): nunca um admin, nunca a própria conta. Conta de verdade
+ * exige digitar o e-mail dela (ou o id, se não tiver e-mail); conta de teste não.
+ */
+export function accountDeleteBlocker(
+  account: Pick<ClientAccount, "id" | "email" | "testAccount"> | null,
+  opts: { targetIsAdmin: boolean; actorId: string; confirmEmail?: string | null },
+): string | null {
+  if (!account) return "Account not found.";
+  if (account.id === opts.actorId) return "You can't delete your own account.";
+  if (opts.targetIsAdmin) return "Admin accounts can't be deleted.";
+  if (!account.testAccount) {
+    const expected = (account.email ?? account.id).trim().toLowerCase();
+    const typed = (opts.confirmEmail ?? "").trim().toLowerCase();
+    if (typed !== expected) {
+      return account.email
+        ? "Type the account's email exactly to confirm."
+        : "Type the account's id exactly to confirm.";
+    }
+  }
+  return null;
+}
+
 export type DeleteTestAccountDeps = {
   getAccount: (id: string) => Promise<ClientAccount | null>;
   isAdmin: (id: string) => Promise<boolean>;
   listSites: (ownerId: string) => Promise<SiteRecord[]>;
   deleteSite: (site: SiteRecord) => Promise<unknown>;
   deleteAuthUser: (id: string) => Promise<void>;
+  /**
+   * `true` se a conta tem assinatura do Stripe ativa (apagar a conta não para a cobrança no
+   * Stripe). Sem esta função, não confere.
+   */
+  hasActiveSubscription?: (id: string) => Promise<boolean>;
 };
 
 function defaultDeleteDeps(): DeleteTestAccountDeps {
@@ -214,12 +245,27 @@ function defaultDeleteDeps(): DeleteTestAccountDeps {
       if (!config) throw new TestAccountError("Deleting accounts needs Supabase.");
       await deleteAuthUser(config, id);
     },
+    hasActiveSubscription: async (id) => {
+      const sub = await getBillingStore().get(id);
+      return isActiveStatus(sub?.status ?? null);
+    },
   };
 }
 
 export type DeleteTestAccountResult =
   | { ok: true; email: string | null; sitesDeleted: number }
   | { ok: false; error: string };
+
+/** Sites primeiro (libera os domínios na Vercel), depois a conta no Supabase Auth. */
+async function deleteAccountAndSites(
+  account: ClientAccount,
+  deps: DeleteTestAccountDeps,
+): Promise<DeleteTestAccountResult> {
+  const sites = await deps.listSites(account.id);
+  for (const site of sites) await deps.deleteSite(site);
+  await deps.deleteAuthUser(account.id);
+  return { ok: true, email: account.email, sitesDeleted: sites.length };
+}
 
 /**
  * Apaga uma conta de teste: primeiro os sites (pelo mesmo caminho do DELETE /api/sites/[id], que
@@ -235,9 +281,34 @@ export async function deleteTestAccount(
   const targetIsAdmin = account ? await deps.isAdmin(account.id) : false;
   const blocker = testAccountDeleteBlocker(account, { targetIsAdmin, actorId });
   if (blocker || !account) return { ok: false, error: blocker ?? "Account not found." };
+  return deleteAccountAndSites(account, deps);
+}
 
-  const sites = await deps.listSites(account.id);
-  for (const site of sites) await deps.deleteSite(site);
-  await deps.deleteAuthUser(account.id);
-  return { ok: true, email: account.email, sitesDeleted: sites.length };
+/**
+ * Apaga qualquer conta que não seja admin nem a própria (ex.: um cliente pediu a exclusão dos
+ * dados, como prometem os Termos e a Privacidade). Mesmo caminho da conta de teste: sites antes
+ * (domínios liberados), depois a conta. Conta de verdade exige o e-mail digitado e não pode ter
+ * assinatura do Stripe ativa (cancelar no Stripe antes, senão a cobrança continua).
+ */
+export async function deleteAccount(
+  targetId: string,
+  actorId: string,
+  options: { confirmEmail?: string | null } = {},
+  deps: DeleteTestAccountDeps = defaultDeleteDeps(),
+): Promise<DeleteTestAccountResult> {
+  const account = await deps.getAccount(targetId);
+  const targetIsAdmin = account ? await deps.isAdmin(account.id) : false;
+  const blocker = accountDeleteBlocker(account, {
+    targetIsAdmin,
+    actorId,
+    confirmEmail: options.confirmEmail,
+  });
+  if (blocker || !account) return { ok: false, error: blocker ?? "Account not found." };
+  if (deps.hasActiveSubscription && (await deps.hasActiveSubscription(account.id))) {
+    return {
+      ok: false,
+      error: "This account has an active card subscription. Cancel it in Stripe first.",
+    };
+  }
+  return deleteAccountAndSites(account, deps);
 }

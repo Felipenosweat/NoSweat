@@ -1,7 +1,8 @@
 "use client";
 
 import type { SiteImage } from "@nosweat/schema";
-import { useId, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { ACCEPT_ATTR, MAX_ALT, searchImages, uploadImage } from "./images";
 import { inputClass, secondaryButton, textButton, Thumb } from "./ui";
 
@@ -10,7 +11,31 @@ type SearchState =
   | { status: "loading" }
   | { status: "done"; query: string; results: SiteImage[] }
   | { status: "not-configured" }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; signup?: boolean };
+
+/** Texto das fotos aceitas (topo, galeria e "quem somos"). */
+export const PHOTO_TYPES_NOTE = "JPG, PNG or WebP. Large photos are resized automatically.";
+
+/**
+ * Link para criar conta, de volta para este editor (o site do visitante passa para a conta).
+ * Navegação completa de propósito: o aviso de alterações não salvas do editor (beforeunload) aparece.
+ */
+export function SignupLink({ siteId, children }: { siteId: string; children: ReactNode }) {
+  const href = `/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`;
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      onClick={(event) => {
+        event.preventDefault();
+        window.location.assign(href);
+      }}
+      className="font-semibold text-brand underline underline-offset-2 hover:text-brand-dark"
+    >
+      {children}
+    </Link>
+  );
+}
 
 /** Foto do topo: miniatura, texto alternativo, crédito, busca em banco de imagens e upload. */
 export function HeroPhotoField({
@@ -30,7 +55,9 @@ export function HeroPhotoField({
   const [query, setQuery] = useState(suggestedQuery);
   const [search, setSearch] = useState<SearchState>({ status: "idle" });
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<{ message: string; signup?: boolean } | null>(
+    null,
+  );
 
   async function runSearch(event: FormEvent) {
     event.preventDefault();
@@ -43,7 +70,7 @@ export function HeroPhotoField({
     const result = await searchImages(q);
     if (result.ok) setSearch({ status: "done", query: q, results: result.results });
     else if (result.notConfigured) setSearch({ status: "not-configured" });
-    else setSearch({ status: "error", message: result.message });
+    else setSearch({ status: "error", message: result.message, signup: result.signup });
   }
 
   function choose(picked: SiteImage) {
@@ -62,7 +89,7 @@ export function HeroPhotoField({
       onChange(result.image);
       setSearchOpen(false);
     } else {
-      setUploadError(result.message);
+      setUploadError({ message: result.message, signup: result.signup });
     }
   }
 
@@ -154,12 +181,17 @@ export function HeroPhotoField({
           </button>
         )}
       </div>
-      <p className="text-xs text-slate-500">JPG, PNG or WebP, up to 8 MB.</p>
-      {uploadError && (
-        <p role="alert" className="text-xs font-medium text-red-700">
-          {uploadError}
-        </p>
-      )}
+      <p className="text-xs text-slate-500">{PHOTO_TYPES_NOTE}</p>
+      {uploadError &&
+        (uploadError.signup ? (
+          <p role="alert" className="text-xs text-slate-700">
+            <SignupLink siteId={siteId}>{uploadError.message}</SignupLink>
+          </p>
+        ) : (
+          <p role="alert" className="text-xs font-medium text-red-700">
+            {uploadError.message}
+          </p>
+        ))}
 
       {searchOpen && (
         <div id={`${ids}-panel`} className="space-y-3 rounded-lg bg-slate-50 p-3">
@@ -196,11 +228,16 @@ export function HeroPhotoField({
                 Photo search isn&rsquo;t set up yet. You can still upload your own photo.
               </p>
             )}
-            {search.status === "error" && (
-              <p role="alert" className="text-xs font-medium text-red-700">
-                {search.message}
-              </p>
-            )}
+            {search.status === "error" &&
+              (search.signup ? (
+                <p role="alert" className="text-xs text-slate-700">
+                  <SignupLink siteId={siteId}>{search.message}</SignupLink>
+                </p>
+              ) : (
+                <p role="alert" className="text-xs font-medium text-red-700">
+                  {search.message}
+                </p>
+              ))}
             {search.status === "done" && search.results.length === 0 && (
               <p className="text-xs text-slate-600">
                 No photos for &ldquo;{search.query}&rdquo;. Try simpler words, like

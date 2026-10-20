@@ -22,12 +22,15 @@ import {
 } from "@/server/admin/costs";
 import { loadOverview, type UsageByKind } from "@/server/admin/metrics";
 import { isGrantActive, PLANS, type AccessGrant } from "@/server/billing";
+import { getVercelConfig } from "@/server/domains/vercel";
 import type { SiteRecord } from "@/server/store";
 import { CreateTestAccount } from "./CreateTestAccount";
 
 export const metadata: Metadata = { title: "Admin" };
 
-type AdminPageProps = { searchParams: Promise<{ deleted?: string | string[] }> };
+type AdminPageProps = {
+  searchParams: Promise<{ deleted?: string | string[]; q?: string | string[] }>;
+};
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 const dateOnly = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
@@ -119,13 +122,27 @@ function firstParam(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
+/** Busca simples (sem diferença de maiúsculas) em vários campos. */
+function matches(query: string, values: (string | null | undefined)[]): boolean {
+  return values.some((value) => value?.toLowerCase().includes(query));
+}
+
+/** Mais nova primeiro; conta sem data vai para o fim. */
+function byNewest(a: ClientAccount, b: ClientAccount): number {
+  return (b.createdAt ? Date.parse(b.createdAt) : 0) - (a.createdAt ? Date.parse(a.createdAt) : 0);
+}
+
 export default async function AdminOverviewPage({ searchParams }: AdminPageProps) {
   await connection();
   await requireAdmin();
-  const deleted = firstParam((await searchParams).deleted).slice(0, 254);
+  const params = await searchParams;
+  const deleted = firstParam(params.deleted).slice(0, 254);
+  const query = firstParam(params.q).trim().slice(0, 100);
+  const needle = query.toLowerCase();
   const overview = await loadOverview();
   const { accounts, adminIds, sites, grants, leads7d, ai24h, ai30d, plans, expiringGrants } =
     overview;
+  const { ownersWithAccess, enforced } = overview;
 
   const grantByUser = new Map(grants.map((grant) => [grant.userId, grant]));
   const accountById = new Map(accounts.map((account) => [account.id, account]));
@@ -138,6 +155,34 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
   const liveSites = sites.filter((site) => site.status === "published").length;
   const customDomains = sites.filter((site) => site.customDomain).length;
   const testAccounts = accounts.filter((account) => account.testAccount).length;
+  // Site publicado de dono sem plano: com os planos valendo, o público vê "temporarily
+  // unavailable" (ownerHasLiveAccess); sem eles, sairia do ar ao ligar REQUIRE_PLAN.
+  const withoutPlan = (site: SiteRecord) =>
+    site.status === "published" &&
+    site.ownerId !== null &&
+    ownersWithAccess !== null &&
+    !ownersWithAccess.has(site.ownerId);
+  const liveWithoutPlan = sites.filter(withoutPlan).length;
+  // Sem VERCEL_TOKEN, domínio conectado fica "Being set up" até alguém pôr à mão na Vercel.
+  const manualDomains = getVercelConfig() ? [] : sites.filter((site) => site.customDomain);
+
+  const shownAccounts = (
+    needle
+      ? accounts.filter((account) =>
+          matches(needle, [account.email, accountName(account), account.id]),
+        )
+      : [...accounts]
+  ).sort(byNewest);
+  const shownSites = needle
+    ? sites.filter((site) =>
+        matches(needle, [
+          site.spec.business.name,
+          site.slug,
+          site.customDomain,
+          site.ownerId ? accountById.get(site.ownerId)?.email : null,
+        ]),
+      )
+    : sites;
   const planNote = plans
     ? plans.byPlan
         .map((entry) => `${PLANS[entry.plan].name} ${entry.stripe + entry.manual}`)
@@ -161,8 +206,80 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
           role="status"
           className="rounded-lg bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
         >
-          Deleted the test account <strong className="font-semibold">{deleted}</strong> and its
-          websites.
+          Deleted the account <strong className="font-semibold">{deleted}</strong> and its websites.
+        </p>
+      )}
+
+      {manualDomains.length > 0 && (
+        <section
+          aria-labelledby="domains-heading"
+          className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-[15px] text-amber-950"
+        >
+          <h2 id="domains-heading" className="font-semibold">
+            VERCEL_TOKEN is not set: these customer domains must be added by hand in Vercel →
+            Settings → Domains
+          </h2>
+          <p className="mt-1 text-sm text-amber-900">
+            Add each domain and its www version to the project. Until then the customer sees
+            &ldquo;Being set up&rdquo;.
+          </p>
+          <ul className="mt-3 space-y-1 text-sm">
+            {manualDomains.map((site) => {
+              const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
+              return (
+                <li key={site.id} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                  <span className="font-mono font-semibold">{site.customDomain}</span>
+                  <Link href={`/sites/${site.id}`} className={linkClass}>
+                    {site.spec.business.name}
+                  </Link>
+                  {site.ownerId && (
+                    <Link href={`/admin/clients/${site.ownerId}`} className={linkClass}>
+                      {owner?.email ?? site.ownerId}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      <form role="search" action="/admin" method="get" className="flex flex-wrap items-end gap-3">
+        <label className="min-w-0 flex-1 text-sm font-medium text-slate-700 sm:max-w-md">
+          Find an account or website
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            maxLength={100}
+            placeholder="Email, name, business or domain"
+            autoComplete="off"
+            className={`mt-1.5 block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink sm:h-10 ${focusRing}`}
+          />
+        </label>
+        <button
+          type="submit"
+          className={`inline-flex min-h-11 items-center rounded-lg bg-ink px-4 text-[15px] font-semibold text-white hover:bg-slate-800 sm:min-h-10 ${focusRing}`}
+        >
+          Search
+        </button>
+        {query && (
+          <Link
+            href="/admin"
+            className={`${linkClass} inline-flex min-h-11 items-center sm:min-h-10`}
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+      {query && (
+        <p role="status" className={`-mt-6 ${panelText}`}>
+          {shownAccounts.length} {shownAccounts.length === 1 ? "account" : "accounts"} and{" "}
+          {shownSites.length} {shownSites.length === 1 ? "website" : "websites"} match &ldquo;
+          {query}&rdquo;.{" "}
+          <a href="#accounts" className={linkClass}>
+            See results
+          </a>
         </p>
       )}
 
@@ -210,6 +327,17 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
             label="Access ending soon"
             value={count(expiringGrants.length)}
             note="Manual access · next 7 days"
+          />
+          <MetricTile
+            label="Live sites without a plan"
+            value={ownersWithAccess ? count(liveWithoutPlan) : "—"}
+            note={
+              ownersWithAccess
+                ? enforced
+                  ? "Offline: visitors see “temporarily unavailable”"
+                  : "Go offline when plans turn on"
+                : "Couldn't load subscriptions"
+            }
           />
         </dl>
       </section>
@@ -274,7 +402,10 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         className="rounded-xl border border-slate-200 bg-white"
       >
         <h2 id="accounts-heading" className={`border-b border-slate-200 px-5 py-4 ${panelTitle}`}>
-          Accounts <span className="font-normal text-slate-500">· {accounts.length}</span>
+          Accounts{" "}
+          <span className="font-normal text-slate-500">
+            · {query ? `${shownAccounts.length} of ${accounts.length}` : accounts.length}
+          </span>
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -290,15 +421,18 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
               </tr>
             </thead>
             <tbody>
-              {accounts.map((account) => {
+              {shownAccounts.map((account) => {
                 const own = sitesByOwner.get(account.id) ?? [];
                 const name = accountName(account);
                 return (
                   <tr key={account.id} className="border-t border-slate-100 align-top">
                     <td className={td}>
-                      <span className="block font-medium text-ink">
+                      <Link
+                        href={`/admin/clients/${account.id}`}
+                        className={`${linkClass} block break-all`}
+                      >
                         {account.email ?? account.id}
-                      </span>
+                      </Link>
                       {name && <span className="block text-slate-500">{name}</span>}
                       <span className="mt-1 block">
                         <AccountBadges account={account} admin={adminIds.has(account.id)} />
@@ -339,7 +473,10 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         className="rounded-xl border border-slate-200 bg-white"
       >
         <h2 id="websites-heading" className={`border-b border-slate-200 px-5 py-4 ${panelTitle}`}>
-          All websites <span className="font-normal text-slate-500">· {sites.length}</span>
+          All websites{" "}
+          <span className="font-normal text-slate-500">
+            · {query ? `${shownSites.length} of ${sites.length}` : sites.length}
+          </span>
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -355,7 +492,7 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
               </tr>
             </thead>
             <tbody>
-              {sites.map((site) => {
+              {shownSites.map((site) => {
                 const live = liveHref(site);
                 const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
                 return (
@@ -376,9 +513,15 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
                     </td>
                     <td className={`${td} text-slate-600`}>{site.spec.template}</td>
                     <td className={td}>
-                      <StatusBadge tone={site.status === "published" ? "live" : "draft"}>
-                        {site.status === "published" ? "Live" : "Draft"}
-                      </StatusBadge>
+                      {withoutPlan(site) ? (
+                        <StatusBadge tone="pending">
+                          {enforced ? "Offline · no plan" : "Live · no plan"}
+                        </StatusBadge>
+                      ) : (
+                        <StatusBadge tone={site.status === "published" ? "live" : "draft"}>
+                          {site.status === "published" ? "Live" : "Draft"}
+                        </StatusBadge>
+                      )}
                     </td>
                     <td className={`${td} font-mono text-xs text-slate-600`}>
                       {live ? (

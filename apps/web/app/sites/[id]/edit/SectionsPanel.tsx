@@ -66,10 +66,7 @@ function sectionSummary(section: Section): string {
     case "faq":
       return count(section.items.length, "question");
     case "contact":
-      return (
-        [section.showForm && "Form", section.showMap && "Map"].filter(Boolean).join(" · ") ||
-        "Details only"
-      );
+      return section.showForm ? "Form" : "Details only";
     case "gallery":
       return count(section.images.length, "photo");
     case "about":

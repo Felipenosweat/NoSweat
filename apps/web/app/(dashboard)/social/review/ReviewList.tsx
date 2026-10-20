@@ -18,21 +18,83 @@ import {
 } from "@/components/DashboardUi";
 import {
   ErrorNote,
+  approveBlocker,
   byDate,
   canApprove,
   currentMonth,
   formatWhen,
   monthLabel,
   monthRange,
+  shiftMonth,
   socialApi,
   toApiError,
+  zonedDateKey,
+  type ApproveBlocker,
   type SocialApiError,
 } from "../shared";
 
 // Lista de revisão: todos os rascunhos do mês com a legenda inteira. Aprovar exige marcar
 // "li todas as legendas" (regra: a IA nunca aprova; o dono confirma o que vai ao ar).
 
-type Loaded = { state: SocialStateResponse; month: string; posts: SocialPost[] };
+type Loaded = {
+  state: SocialStateResponse;
+  month: string;
+  posts: SocialPost[];
+  /** Relógio lido ao carregar (para "já passou?" sem chamar Date.now() no render). */
+  nowMs: number;
+  /** Primeiro dos 2 meses seguintes com rascunhos ainda no futuro (a IA planeja até 2 à frente). */
+  later: { month: string; count: number } | null;
+};
+
+/** Selo curto do que falta para aprovar. */
+const BLOCKER_BADGE: Record<ApproveBlocker, string> = {
+  date: "Needs a date",
+  photo: "Needs a photo",
+  caption: "Needs a caption",
+  past: "Time passed",
+};
+
+/** O que fazer no calendário antes de aprovar ("Open it from the calendar to …"). */
+const BLOCKER_HINT: Record<ApproveBlocker, string> = {
+  date: "pick a date",
+  photo: "add a photo",
+  caption: "write a caption",
+  past: "pick a new date",
+};
+
+/** Rascunhos com data, do mais cedo para o mais tarde. */
+function datedDrafts(posts: SocialPost[]): SocialPost[] {
+  return posts.filter((post) => post.status === "draft" && post.scheduledAt !== null).sort(byDate);
+}
+
+/**
+ * Procura rascunhos futuros nos 2 meses depois de `month` (bem dentro da janela de 95 dias da
+ * API) e devolve o primeiro mês que tiver algum. Erro aqui não derruba a tela: só não mostra o atalho.
+ */
+async function findLaterDrafts(
+  month: string,
+  timeZone: string,
+  nowMs: number,
+): Promise<Loaded["later"]> {
+  try {
+    const from = monthRange(month, timeZone).to;
+    const to = monthRange(shiftMonth(month, 2), timeZone).to;
+    const result = await socialApi(
+      `/api/social/posts?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+      SocialPostsResponse,
+    );
+    const counts = new Map<string, number>();
+    for (const post of datedDrafts(result.posts)) {
+      if (!post.scheduledAt || Date.parse(post.scheduledAt) <= nowMs) continue;
+      const key = zonedDateKey(new Date(post.scheduledAt), timeZone).slice(0, 7);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const first = [...counts.keys()].sort()[0];
+    return first ? { month: first, count: counts.get(first) ?? 0 } : null;
+  } catch {
+    return null;
+  }
+}
 
 export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   const router = useRouter();
@@ -40,7 +102,8 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   const [loadError, setLoadError] = useState<SocialApiError | null>(null);
   /** Posts desmarcados pelo dono (o resto dos aprováveis vai junto). */
   const [skipped, setSkipped] = useState<Set<string>>(() => new Set());
-  const [confirmed, setConfirmed] = useState(false);
+  /** Mês em que o dono marcou "li todas as legendas" (trocar de mês pede a confirmação de novo). */
+  const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<SocialApiError | null>(null);
 
@@ -54,10 +117,13 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
         `/api/social/posts?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
         SocialPostsResponse,
       );
-      const drafts = result.posts
-        .filter((post) => post.status === "draft" && post.scheduledAt !== null)
-        .sort(byDate);
-      if (alive) setData({ state, month, posts: drafts });
+      const nowMs = Date.now();
+      const drafts = datedDrafts(result.posts);
+      // Nada para aprovar neste mês: talvez a IA tenha planejado um dos próximos.
+      const later = drafts.some((post) => canApprove(post, nowMs))
+        ? null
+        : await findLaterDrafts(month, state.settings.timezone, nowMs);
+      if (alive) setData({ state, month, posts: drafts, nowMs, later });
     })().catch((err: unknown) => {
       if (alive) setLoadError(toApiError(err));
     });
@@ -77,8 +143,10 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   }
 
   const tz = data.state.settings.timezone;
-  const ready = data.posts.filter(canApprove);
-  const blocked = data.posts.filter((post) => !canApprove(post));
+  const { nowMs, later } = data;
+  const confirmed = confirmedFor === data.month;
+  const ready = data.posts.filter((post) => canApprove(post, nowMs));
+  const blocked = data.posts.filter((post) => !canApprove(post, nowMs));
   const selected = ready.filter((post) => !skipped.has(post.id));
   const { used, cap } = data.state.usage;
   const overCap = cap !== null && used + selected.length > cap;
@@ -111,15 +179,25 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
     }
   }
 
+  const laterLink = later ? (
+    <Link href={`/social/review?month=${later.month}`} className={textButton}>
+      You have {later.count} draft{later.count === 1 ? "" : "s"} in {monthLabel(later.month)}
+      <span aria-hidden="true"> &rarr;</span>
+    </Link>
+  ) : null;
+
   if (data.posts.length === 0) {
     return (
       <div className={`mt-8 px-5 py-10 text-center ${cardClass}`}>
         <p className="text-[15px] font-medium text-ink">
           No drafts waiting in {monthLabel(data.month)}.
         </p>
-        <Link href={`/social?month=${data.month}`} className={`${textButton} mt-2`}>
-          Back to calendar
-        </Link>
+        <div className="mt-2 flex flex-col items-center gap-1">
+          {laterLink}
+          <Link href={`/social?month=${data.month}`} className={textButton}>
+            Back to calendar
+          </Link>
+        </div>
       </div>
     );
   }
@@ -129,10 +207,12 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
       <p className="text-[13px] font-semibold text-slate-500">
         {monthLabel(data.month)} · {data.posts.length} draft{data.posts.length === 1 ? "" : "s"}
       </p>
+      {laterLink && <p className="mt-1">{laterLink}</p>}
 
       <ol className="mt-3 grid gap-4">
         {data.posts.map((post, index) => {
-          const approvable = canApprove(post);
+          const blocker = approveBlocker(post, nowMs);
+          const approvable = blocker === null;
           const checked = approvable && !skipped.has(post.id);
           const checkboxId = `review-${post.id}`;
           return (
@@ -164,9 +244,9 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                     </span>
                   </span>
                 </label>
-                {!approvable && (
+                {blocker && (
                   <span className="rounded-lg bg-amber-50 px-2 py-1 text-[13px] font-medium text-amber-900">
-                    {post.media.length === 0 ? "Needs a photo" : "Needs a caption"}
+                    {BLOCKER_BADGE[blocker]}
                   </span>
                 )}
               </div>
@@ -204,7 +284,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                   them only if they&rsquo;re true for your business.
                 </p>
               )}
-              {!approvable && (
+              {blocker && (
                 <p className="mt-3 text-[13px] text-slate-500">
                   Open it from the{" "}
                   <Link
@@ -213,7 +293,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                   >
                     calendar
                   </Link>{" "}
-                  to {post.media.length === 0 ? "add a photo" : "write a caption"} before approving.
+                  to {BLOCKER_HINT[blocker]} before approving.
                 </p>
               )}
             </li>
@@ -232,7 +312,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
           <input
             type="checkbox"
             checked={confirmed}
-            onChange={(event) => setConfirmed(event.target.checked)}
+            onChange={(event) => setConfirmedFor(event.target.checked ? data.month : null)}
             disabled={pending || selected.length === 0}
             required
             className={`mt-0.5 size-5 shrink-0 rounded accent-brand ${focusRing}`}

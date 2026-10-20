@@ -160,9 +160,11 @@ function Field({
         {label}
       </span>
       <span
-        className={`mt-1 block truncate rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] ${
+        // Valor (ex.: o código TXT de 47 letras) quebra a linha em vez de cortar com "…":
+        // as pessoas copiam o que veem.
+        className={`mt-1 block rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] ${
           value ? "text-ink" : "text-slate-400 italic"
-        } ${mono ? "font-mono" : "font-semibold"}`}
+        } ${mono ? "font-mono break-all" : "truncate font-semibold"}`}
       >
         {value || placeholder}
       </span>

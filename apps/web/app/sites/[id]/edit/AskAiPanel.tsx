@@ -1,13 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+} from "react";
 import { ArrowUpIcon, CheckIcon, PlusIcon, UndoIcon } from "./icons";
-import { focusRing, panelTitle } from "./ui";
+import { focusRing, panelTitle, primaryButton } from "./ui";
 
 // Painel "Build with No Sweat": a conversa desta sessão com a IA (pedidos e resultados) e o
 // campo "Ask for a change…". A lógica do pedido (POST /api/sites/[id]/ai-edit, limite diário,
-// desfazer) continua no SiteEditor; aqui só desenhamos.
+// salvar antes, desfazer) continua no SiteEditor; aqui só desenhamos.
 
 /** Uma mensagem da conversa (só desta sessão; o servidor guarda as versões, não o texto). */
 export type ChatMessage =
@@ -43,35 +51,47 @@ export function AskAiPanel({
   onInstructionChange,
   onSubmit,
   pending,
-  blockedReason,
+  willSaveFirst = false,
   aiEditsLeft,
   canUndo,
   onUndo,
   onAddPhotos,
   historyHref,
+  isGuest = false,
+  signUpHref = null,
+  onSignUp,
 }: {
   messages: ChatMessage[];
   instruction: string;
   onInstructionChange: (value: string) => void;
   onSubmit: () => void;
   pending: boolean;
-  /** Motivo para não poder pedir agora (ex.: há mudanças não salvas), ou `null`. */
-  blockedReason: string | null;
+  /** Há mudanças não salvas: o editor salva antes de mandar o pedido à IA. */
+  willSaveFirst?: boolean;
   /** Pedidos que ainda cabem hoje; `null` = sem limite. */
   aiEditsLeft: number | null;
   canUndo: boolean;
   onUndo: () => void;
-  /** Abre o painel de seções (onde ficam as fotos do topo e a galeria). */
+  /** Abre a galeria (ou cria uma) no painel de seções. */
   onAddPhotos: () => void;
   /** Histórico de versões (página do site); `null` para visitantes. */
   historyHref: string | null;
+  /** Visitante sem conta: sem pedidos à IA, oferece criar a conta (em vez de "amanhã"). */
+  isGuest?: boolean;
+  /** Página de cadastro que volta para este editor. */
+  signUpHref?: string | null;
+  /** Antes de ir para o cadastro (o editor salva o que estiver pendente). */
+  onSignUp?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const ids = useId();
   const field = useRef<HTMLTextAreaElement>(null);
   const log = useRef<HTMLDivElement>(null);
+  const menuArea = useRef<HTMLFormElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const outOfEdits = aiEditsLeft === 0;
-  const locked = pending || blockedReason !== null || outOfEdits;
+  const offerSignUp = isGuest && outOfEdits;
+  const locked = pending || outOfEdits;
   const canSend = !locked && instruction.trim().length >= 3;
   const lastDoneId = [...messages]
     .reverse()
@@ -84,6 +104,27 @@ export function AskAiPanel({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     element.scrollTo({ top: element.scrollHeight, behavior: reduce ? "instant" : "smooth" });
   }, [messages.length, pending]);
+
+  // Menu do "+": fecha ao tocar fora dele (como o menu "Rewrite with AI").
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onPointerDown(event: PointerEvent) {
+      if (event.target instanceof Node && !menuArea.current?.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [menuOpen]);
+
+  /** Escape fecha só o menu (não a gaveta do celular em volta) e devolve o foco ao "+". */
+  function onMenuKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Escape" || !menuOpen) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setMenuOpen(false);
+    menuButton.current?.focus();
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -108,13 +149,15 @@ export function AskAiPanel({
     });
   }
 
-  const hint =
-    blockedReason ??
-    (outOfEdits
-      ? "You’ve used today’s AI changes. More tomorrow."
+  const hint = outOfEdits
+    ? isGuest
+      ? "You’ve used the free AI changes."
+      : "You’ve used today’s AI changes. More tomorrow."
+    : willSaveFirst
+      ? "Your edits will be saved first, then the AI makes the change."
       : aiEditsLeft === null
         ? "Every change is saved as a draft you can undo."
-        : `${aiEditsLeft} AI ${aiEditsLeft === 1 ? "change" : "changes"} left today`);
+        : `${aiEditsLeft} AI ${aiEditsLeft === 1 ? "change" : "changes"} left today`;
 
   const suggestionButton = `inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-ink disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:border-slate-200 disabled:hover:bg-white motion-reduce:transition-none lg:min-h-9 ${focusRing}`;
 
@@ -248,7 +291,12 @@ export function AskAiPanel({
       </div>
 
       {/* ---------- Campo do pedido ---------- */}
-      <form onSubmit={submit} className="relative shrink-0 px-3 pt-1 pb-3">
+      <form
+        ref={menuArea}
+        onSubmit={submit}
+        onKeyDown={onMenuKeyDown}
+        className="relative shrink-0 px-3 pt-1 pb-3"
+      >
         {menuOpen && (
           <div
             id={`${ids}-menu`}
@@ -301,6 +349,7 @@ export function AskAiPanel({
           />
           <div className="flex items-center justify-between gap-2 px-2 pb-2">
             <button
+              ref={menuButton}
               type="button"
               onClick={() => setMenuOpen((value) => !value)}
               aria-expanded={menuOpen}
@@ -323,6 +372,15 @@ export function AskAiPanel({
         <p id={`${ids}-hint`} className="mt-2 px-1 text-[12px] text-slate-500">
           {hint}
         </p>
+        {offerSignUp && signUpHref && (
+          <a
+            href={signUpHref}
+            onClick={onSignUp}
+            className={`${primaryButton} mt-2 w-full text-center`}
+          >
+            Create a free account to keep editing with AI
+          </a>
+        )}
       </form>
     </div>
   );

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { displayWordSpacing } from "@/components/DashboardUi";
 import { Logo } from "@/components/Logo";
 import { getViewer } from "@/server/auth/viewer";
 import { AccountShell } from "./AccountShell";
@@ -14,7 +13,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // "Log in" e "Sign up" em vez da conta (sem barra lateral nem abas).
   if (!viewer) {
     return (
-      <div className={`min-h-screen bg-surface ${displayWordSpacing}`}>
+      <div className="min-h-screen bg-surface">
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />

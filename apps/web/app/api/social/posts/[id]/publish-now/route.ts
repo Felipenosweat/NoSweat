@@ -39,5 +39,5 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
       return errorResponse(409, "invalid_request", "This post changed. Reload and try again.");
     publishSoon(post.id);
     return jsonResponse(SocialPostResponse, { post: toPublicPost(post) });
-  });
+  }, "/api/social/posts/[id]/publish-now");
 }

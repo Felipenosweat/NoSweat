@@ -265,28 +265,33 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "renewal",
-    title: "Automatic renewal",
+    // Dois modos de venda: checkout online (Stripe, renova sozinho) e pagamento direto
+    // (WhatsApp/e-mail, acesso liberado pelo admin por X dias, sem renovação). Sem promessa de
+    // e-mail de lembrete até existir código que mande. Texto final aprovado pelo fundador.
+    title: "Renewal",
     content: (
       <>
         <p>These renewal rules apply to paid plans:</p>
         <ul>
           <li>
-            <strong>Plans renew automatically</strong> at the end of each billing period (every
-            month or every year, whichever you chose) at the price shown when you subscribed, until
-            you cancel.
+            <strong>Plans bought through online checkout renew automatically</strong> at the end of
+            each billing period (every month or every year, whichever you chose) at the price shown
+            when you subscribed, until you cancel.
+          </li>
+          <li>
+            <strong>If you pay us directly</strong> (for example by invoice or a payment link we
+            send), <strong>your plan does not renew automatically</strong>; it ends on the date
+            shown in your account unless you renew.
           </li>
           <li>
             The monthly Starter and Pro plans include a one-time setup fee on the first bill. Annual
             plans have no setup fee.
           </li>
           <li>
-            <strong>For annual plans, we email you a reminder before each renewal</strong>, with the
-            amount and the renewal date.
-          </li>
-          <li>
-            <strong>You can cancel anytime</strong> in your account, online, in a few clicks. You
-            don’t need to call or email us. Canceling stops the next renewal; you keep your plan
-            until the end of the period you already paid for.
+            <strong>For plans bought through online checkout, you can cancel anytime</strong> in
+            your account, online, in a few clicks. You don’t need to call or email us. Canceling
+            stops the next renewal; you keep your plan until the end of the period you already paid
+            for.
           </li>
           <li>
             If a price changes, we’ll tell you by email before it applies to your next renewal.
@@ -392,8 +397,8 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      updatedIso="2026-10-15"
-      updatedLabel="October 15, 2026"
+      updatedIso="2026-10-20"
+      updatedLabel="October 20, 2026"
       intro={
         <p>
           The rules for using No Sweat, in plain English. They cover your account, the websites you

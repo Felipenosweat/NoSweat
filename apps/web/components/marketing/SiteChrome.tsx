@@ -1,10 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
+import { MarketingMenu } from "./MobileCtaBar";
 import { container, focusRing } from "./styles";
 
 // Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
 // "dark" (o header da landing, sobre o ink do hero e do tour). Mesmos links nos dois.
+// Server component: lê SALES_WHATSAPP direto do ambiente (sem a variável, o link não aparece).
 
 type Tone = "light" | "dark";
 
@@ -16,6 +18,13 @@ const NAV = [
 ];
 
 type FooterLink = { href: string; label: string; external?: boolean };
+
+/** Link do WhatsApp de vendas (SALES_WHATSAPP, só dígitos como o wa.me pede) ou `null`. */
+export function salesWhatsappUrl(): string | null {
+  const digits = process.env.SALES_WHATSAPP?.replace(/\D/g, "");
+  if (!digits) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent("Hi! I have a question about No Sweat.")}`;
+}
 
 // Rodapé em 4 colunas (brief). Termos e privacidade são rascunhos (ver as próprias páginas).
 const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
@@ -94,9 +103,10 @@ export function MarketingHeader({
         </nav>
         <div className="flex flex-wrap items-center gap-2 text-sm font-semibold sm:gap-3">
           {actions}
+          {/* No celular o "Log in" fica dentro do menu (abaixo de sm não cabe tudo numa linha). */}
           <Link
             href="/login"
-            className={`inline-flex h-11 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 ${ring} ${
+            className={`hidden h-11 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 sm:inline-flex ${ring} ${
               dark
                 ? "text-slate-200 hover:bg-white/10 hover:text-white"
                 : "text-slate-700 hover:bg-slate-50 hover:text-ink"
@@ -104,18 +114,21 @@ export function MarketingHeader({
           >
             Log in
           </Link>
-          {/* No celular o CTA do header some: o hero tem o formulário e, depois dele,
-              aparece a barra fixa embaixo (um botão azul por tela). */}
+          {/* No celular o CTA fica compacto ("Start free"): a barra fixa de baixo some durante
+              o tour inteiro (#story), então o header precisa ter sempre um caminho para /create. */}
           <Link
             href="/create"
-            className={`hidden h-11 items-center rounded-lg px-4 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:inline-flex ${ring} ${
+            className={`inline-flex h-10 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-4 ${ring} ${
               dark
                 ? "bg-white text-ink hover:bg-slate-200"
                 : "bg-brand text-white hover:bg-brand-dark"
             }`}
           >
-            Build my website
+            <span className="sm:hidden">Start free</span>
+            <span className="hidden sm:inline">Build my website</span>
           </Link>
+          {/* Abaixo de lg a navegação principal some; o menu leva às mesmas seções e ao login. */}
+          <MarketingMenu tone={tone} items={[...NAV, { href: "/login", label: "Log in" }]} />
         </div>
       </div>
     </header>
@@ -124,6 +137,20 @@ export function MarketingHeader({
 
 export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
   const dark = tone === "dark";
+  const whatsapp = salesWhatsappUrl();
+  const groups = whatsapp
+    ? FOOTER_LINKS.map((group) =>
+        group.title === "Company"
+          ? {
+              ...group,
+              links: [
+                ...group.links,
+                { href: whatsapp, label: "Chat on WhatsApp", external: true },
+              ],
+            }
+          : group,
+      )
+    : FOOTER_LINKS;
   const link = `inline-flex min-h-11 items-center rounded-sm transition-colors duration-150 ${focusRing} ${
     dark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-ink"
   }`;
@@ -146,7 +173,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
           aria-label="Footer"
           className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:col-span-8"
         >
-          {FOOTER_LINKS.map((group) => (
+          {groups.map((group) => (
             <div key={group.title}>
               <p className={`text-sm font-semibold ${dark ? "text-white" : "text-ink"}`}>
                 {group.title}
@@ -155,7 +182,13 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
                 {group.links.map((item) => (
                   <li key={item.label}>
                     {item.external ? (
-                      <a href={item.href} className={`${link} break-all`}>
+                      <a
+                        href={item.href}
+                        className={`${link} break-all`}
+                        {...(item.href.startsWith("https://")
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                      >
                         {item.label}
                       </a>
                     ) : (

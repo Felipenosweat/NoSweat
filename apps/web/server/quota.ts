@@ -61,6 +61,9 @@ const LABELS: Record<AiUsageKind, string> = {
   social_caption: "AI captions",
 };
 
+/** Para visitantes ("today's free websites": "free new websites" lia estranho). */
+const GUEST_LABELS: Record<AiUsageKind, string> = { ...LABELS, generate: "websites" };
+
 function envNumber(name: string, fallback: number): number {
   const raw = process.env[name];
   const value = Number(raw);
@@ -119,6 +122,11 @@ export async function remainingUses(actor: Actor, kind: AiUsageKind): Promise<nu
   return Math.max(0, dailyLimit(kind) - used);
 }
 
+/**
+ * Convite para criar conta no fim das mensagens de limite do visitante. O /create tira esta
+ * frase e mostra o link "Create a free account" no lugar (ver CreateFlow.tsx); o editor mostra
+ * a mensagem inteira.
+ */
 const SIGN_UP_HINT = "Create a free account to keep going.";
 
 function userLimitResponse(kind: AiUsageKind): Response {
@@ -147,7 +155,7 @@ function guestLimitResponse(
     return errorResponse(
       429,
       "quota_exceeded",
-      `You've used today's free ${LABELS[kind]}. ${SIGN_UP_HINT}`,
+      `You’ve used today’s free ${GUEST_LABELS[kind]}. ${SIGN_UP_HINT}`,
     );
   }
   return null;

@@ -19,7 +19,7 @@ export const maxDuration = 300;
 type Context = { params: Promise<{ id: string }> };
 
 /**
- * POST /api/sites/[id]/ai-edit: { instruction } → { siteId, spec, summary }
+ * POST /api/sites/[id]/ai-edit: { instruction } → { siteId, spec, summary, updatedAt }
  * Aplica um pedido em linguagem natural ao RASCUNHO (vira uma versão "ai_edit").
  * O site no ar só muda quando o dono publica. Respeita o limite diário (conta ou visitante).
  */
@@ -60,6 +60,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       siteId: updated.id,
       spec: updated.spec,
       summary: result.summary,
+      updatedAt: updated.updatedAt,
     });
-  });
+  }, "/api/sites/[id]/ai-edit");
 }

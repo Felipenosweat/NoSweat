@@ -17,6 +17,16 @@
   --color-accent: #00c2ff;
 }
 
+/* Espaço entre palavras dos títulos. O Plus Jakarta tem um espaço estreito e, com o tracking
+   negativo e o arredondamento de pixels, "Do I need a credit card" aparecia como "Do Ineed acredit
+   card". Vale para todo .font-display das telas da No Sweat (os sites dos clientes não usam esta
+   classe). Na camada base: uma utilidade [word-spacing:...] num elemento ainda ganha dela. */
+@layer base {
+  .font-display {
+    word-spacing: 0.08em;
+  }
+}
+
 ::selection {
   background-color: rgb(0 102 255 / 0.18);
 }

@@ -206,7 +206,10 @@ const SCENES: SceneDef[] = [
     captions: [
       { title: "AI drafts posts from your website.", body: "One tap fills the month." },
       { title: "Read each one.", body: "Edit the words, swap the photo, or approve." },
-      { title: "Approved posts go out on schedule.", body: "Nothing posts without your OK." },
+      // Enquanto SOCIAL_TESTER_ONLY=true (app da Meta sem App Review), clientes postam à mão
+      // pelo calendário. Com SOCIAL_TESTER_ONLY=false, voltar ao título original:
+      // "Approved posts go out on schedule."
+      { title: "Approved posts wait on your calendar.", body: "Nothing posts without your OK." },
     ],
     summary:
       "Example: a November calendar for Sparkle & Co. Cleaning. “Fill my month with AI” adds twelve draft posts marked Needs approval. The owner approves the first ones and they turn Scheduled, like the November 12 post “Moving out this month? We’ll get your deposit back.”",

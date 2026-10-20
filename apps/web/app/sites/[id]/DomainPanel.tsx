@@ -1,7 +1,7 @@
 "use client";
 
 import { ApiError, DomainResponse, type DomainResponse as DomainState } from "@nosweat/schema";
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { StatusBadge, focusRing, secondaryButton, textButton } from "@/components/DashboardUi";
 import { DnsGuidePanel } from "./DnsGuidePanel";
 
@@ -17,7 +17,7 @@ const STATUS: Record<
   pending: {
     label: "Waiting for DNS",
     tone: "pending",
-    help: "Add the two records below where you bought your domain. Changes usually take a few minutes, sometimes up to a few hours.",
+    help: "Add the two records below where you bought your domain. Changes usually take a few minutes, sometimes up to a few hours. Your free address keeps working in the meantime.",
   },
   unverified: {
     label: "Confirm it's yours",
@@ -27,9 +27,35 @@ const STATUS: Record<
   manual: {
     label: "Being set up",
     tone: "draft",
-    help: "Add the two records below where you bought your domain. Our team will finish the connection for you.",
+    help: "Add the two records below where you bought your domain. Our team will finish the connection for you. Your free address keeps working in the meantime.",
   },
 };
+
+/** Enquanto espera o DNS, confere sozinho a cada 30 s, por no máximo 10 minutos. */
+const POLL_EVERY_MS = 30_000;
+const POLL_FOR_MS = 10 * 60_000;
+
+/** Domínio digitado que ainda espera a prova de dono (TXT): sobrevive a sair e voltar. */
+const storageKey = (siteId: string) => `ns-domain-${siteId}`;
+
+function rememberDomain(siteId: string, domain: string | null) {
+  try {
+    if (domain) window.localStorage.setItem(storageKey(siteId), domain);
+    else window.localStorage.removeItem(storageKey(siteId));
+  } catch {
+    // Navegação privada sem localStorage: só não lembra o domínio.
+  }
+}
+
+function rememberedDomain(siteId: string): string | null {
+  try {
+    return window.localStorage.getItem(storageKey(siteId));
+  } catch {
+    return null;
+  }
+}
+
+type Method = "GET" | "PUT" | "DELETE";
 
 export function DomainPanel({
   siteId,
@@ -47,35 +73,108 @@ export function DomainPanel({
   /** O plano atual não inclui domínio próprio: mostra o link para os planos. */
   const [needsPlan, setNeedsPlan] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  /** "Remove domain" pede confirmação antes (tira o site do domínio na hora). */
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  /** Aviso para leitores de tela (ex.: "Connected!" quando a conferência automática acha o DNS). */
+  const [announcement, setAnnouncement] = useState("");
+  /** Conferência automática que já acabou (os 10 minutos passaram ou deu erro). */
+  const [pollDone, setPollDone] = useState<string | null>(null);
+  /** Um pedido de cada vez: a conferência automática nunca se sobrepõe a outro pedido. */
+  const busy = useRef(false);
 
-  async function call(method: "GET" | "PUT" | "DELETE", body?: unknown) {
-    setPending(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/sites/${siteId}/domain`, {
-        method,
-        headers: body ? { "Content-Type": "application/json" } : undefined,
-        body: body ? JSON.stringify(body) : undefined,
-      });
-      const json: unknown = await res.json().catch(() => null);
-      if (!res.ok) {
-        const apiError = ApiError.safeParse(json);
-        setNeedsPlan(apiError.success && apiError.data.error.code === "payment_required");
-        setError(apiError.success ? apiError.data.error.message : "Something went wrong.");
+  const request = useCallback(
+    async (method: Method, body?: unknown, background = false): Promise<boolean> => {
+      if (busy.current) return true;
+      busy.current = true;
+      setPending(true);
+      if (!background) setError(null);
+      try {
+        const res = await fetch(`/api/sites/${siteId}/domain`, {
+          method,
+          headers: body ? { "Content-Type": "application/json" } : undefined,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        const json: unknown = await res.json().catch(() => null);
+        if (!res.ok) {
+          // Na conferência automática, um erro só para de conferir (sem alerta na tela).
+          if (background) return false;
+          const apiError = ApiError.safeParse(json);
+          setNeedsPlan(apiError.success && apiError.data.error.code === "payment_required");
+          setError(apiError.success ? apiError.data.error.message : "Something went wrong.");
+          return false;
+        }
+        const next = DomainResponse.parse(json);
+        setState(next);
+        setInput("");
+        setConfirmRemove(false);
+        if (next.status === "active" && next.domain) {
+          setAnnouncement(`Connected! Your website now shows at ${next.domain}.`);
+        }
+        // Só o domínio que ainda espera o TXT precisa ser lembrado (o resto já está salvo).
+        rememberDomain(siteId, next.status === "unverified" ? next.domain : null);
+        return true;
+      } catch {
+        if (!background) setError("We couldn't reach our servers. Please try again.");
+        return false;
+      } finally {
+        busy.current = false;
+        setPending(false);
+      }
+    },
+    [siteId],
+  );
+
+  // Ao abrir: preenche o campo com o domínio que esperava a prova de dono (saiu para criar o TXT).
+  useEffect(() => {
+    if (initial.domain) return;
+    const saved = rememberedDomain(siteId);
+    if (!saved) return;
+    // Fora do corpo do efeito (regra react-hooks/set-state-in-effect).
+    const frame = requestAnimationFrame(() => setInput((current) => current || saved));
+    return () => cancelAnimationFrame(frame);
+  }, [siteId, initial.domain]);
+
+  // Esperando o TXT (PUT de novo) ou o DNS (GET): confere sozinho a cada 30 s por até 10 min.
+  const pollStatus =
+    state.domain && (state.status === "unverified" || state.status === "pending")
+      ? state.status
+      : null;
+  const pollDomain = state.domain;
+  const pollKey = pollStatus && pollDomain ? `${pollStatus}:${pollDomain}` : null;
+  useEffect(() => {
+    if (!pollStatus || !pollDomain || !pollKey) return;
+    const startedAt = Date.now();
+    let stopped = false;
+    const timer = window.setInterval(() => {
+      if (stopped) return;
+      if (Date.now() - startedAt > POLL_FOR_MS) {
+        stopped = true;
+        window.clearInterval(timer);
+        setPollDone(pollKey);
         return;
       }
-      setState(DomainResponse.parse(json));
-      setInput("");
-    } catch {
-      setError("We couldn't reach our servers. Please try again.");
-    } finally {
-      setPending(false);
-    }
-  }
+      if (document.hidden) return;
+      const check =
+        pollStatus === "unverified"
+          ? request("PUT", { domain: pollDomain }, true)
+          : request("GET", undefined, true);
+      void check.then((ok) => {
+        if (ok || stopped) return;
+        stopped = true;
+        window.clearInterval(timer);
+        setPollDone(pollKey);
+      });
+    }, POLL_EVERY_MS);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, [pollStatus, pollDomain, pollKey, request]);
+  const autoChecking = pollKey !== null && pollDone !== pollKey;
 
   function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void call("PUT", { domain: input });
+    void request("PUT", { domain: input });
   }
 
   async function copy(value: string) {
@@ -212,7 +311,7 @@ export function DomainPanel({
         />
       )}
       <p aria-live="polite" className="sr-only">
-        {copied ? "Copied" : ""}
+        {copied ? "Copied" : announcement}
       </p>
 
       {error && (
@@ -221,33 +320,75 @@ export function DomainPanel({
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        {state.status !== "active" && (
+      {confirmRemove ? (
+        <div
+          role="alertdialog"
+          aria-label={`Remove ${state.domain}?`}
+          className="rounded-xl border border-slate-200 bg-surface p-4 text-sm"
+        >
+          <p className="font-medium text-ink">
+            Your site will stop showing at <span className="font-semibold">{state.domain}</span>.
+          </p>
+          <p className="mt-1 text-slate-600">Your free address keeps working.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => void request("DELETE")}
+              disabled={pending}
+              aria-busy={pending}
+              className="inline-flex min-h-10 items-center rounded-xl bg-red-600 px-4 font-semibold text-white transition-colors duration-150 hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-wait disabled:opacity-70"
+            >
+              {pending ? "Removing…" : "Remove"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmRemove(false)}
+              disabled={pending}
+              className={secondaryButton}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-3">
+          {state.status !== "active" && (
+            <button
+              type="button"
+              // Sem verificação ainda, o domínio não foi salvo: "Check again" tenta ligar de novo.
+              onClick={() =>
+                void (state.status === "unverified"
+                  ? request("PUT", { domain: state.domain })
+                  : request("GET"))
+              }
+              disabled={pending}
+              className={secondaryButton}
+            >
+              {pending ? "Checking…" : "Check again"}
+            </button>
+          )}
           <button
             type="button"
-            // Sem verificação ainda, o domínio não foi salvo: "Check again" tenta ligar de novo.
-            onClick={() =>
-              state.status === "unverified" ? call("PUT", { domain: state.domain }) : call("GET")
-            }
+            onClick={() => {
+              if (state.status === "unverified") {
+                rememberDomain(siteId, null);
+                setState({ ...state, domain: null, status: null, records: [] });
+              } else {
+                setConfirmRemove(true);
+              }
+            }}
             disabled={pending}
-            className={secondaryButton}
+            className={`${textButton} hover:text-red-700`}
           >
-            {pending ? "Checking…" : "Check again"}
+            {state.status === "unverified" ? "Use a different domain" : "Remove domain"}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() =>
-            state.status === "unverified"
-              ? setState({ ...state, domain: null, status: null, records: [] })
-              : call("DELETE")
-          }
-          disabled={pending}
-          className={`${textButton} hover:text-red-700`}
-        >
-          {state.status === "unverified" ? "Use a different domain" : "Remove domain"}
-        </button>
-      </div>
+        </div>
+      )}
+      {autoChecking && !confirmRemove && (
+        <p className="text-[13px] text-slate-500">
+          We check again automatically every 30 seconds for the next few minutes.
+        </p>
+      )}
     </div>
   );
 }

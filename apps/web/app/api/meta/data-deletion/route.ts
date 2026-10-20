@@ -45,5 +45,5 @@ export async function POST(request: Request): Promise<Response> {
       url: `${appOrigin(request.url)}/data-deletion?code=${code}`,
       confirmation_code: code,
     });
-  });
+  }, "/api/meta/data-deletion");
 }

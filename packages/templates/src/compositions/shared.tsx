@@ -9,7 +9,7 @@ import {
   PhoneIcon,
 } from "../components/icons";
 import { Photo, PhotoCredit } from "../components/photo";
-import { ContactForm, type ContactFormRadius } from "../sections/ContactForm";
+import { ContactForm, VISITOR_PRIVACY_URL, type ContactFormRadius } from "../sections/ContactForm";
 import { externalProps, isOwnerPhoto, location, type SiteModel } from "./model";
 
 // Peças pequenas que as composições combinam de jeitos diferentes. Só utilidades ns-*.
@@ -412,6 +412,22 @@ export function ContactLines({
   );
 }
 
+/**
+ * Exemplo do formulário com os serviços DO PRÓPRIO SITE (os dois primeiros da primeira seção de
+ * serviços), para o texto cinza não falar de outro ramo. Só fatos que já estão no SiteSpec.
+ */
+export function servicesExample(model: SiteModel): string | undefined {
+  const services = model.spec.sections.find(
+    (section): section is SectionOf<"services"> =>
+      section.type === "services" && section.items.some((item) => item.name.trim()),
+  );
+  const names = (services?.items ?? [])
+    .map((item) => item.name.trim())
+    .filter(Boolean)
+    .slice(0, 2);
+  return names.length > 0 ? `${names.join(", ")}...` : undefined;
+}
+
 /** Formulário de contato (o mesmo de todas as composições, com o modelo de campos do ramo). */
 export function ContactFormBlock({
   data,
@@ -429,14 +445,21 @@ export function ContactFormBlock({
   className?: string;
 }) {
   if (!data.showForm) return null;
+  const preset = model.words.formPreset;
+  const example = servicesExample(model);
+  // Agendamento e consultoria têm um campo "qual serviço"; os outros, só a mensagem.
+  const asTopic = preset === "appointment" || preset === "consultation";
   return (
     <div className={className}>
       <ContactForm
         endpoint={endpoint}
         submitLabel={model.words.submitLabel}
-        preset={model.words.formPreset}
+        preset={preset}
         radius={radius}
         framed={framed}
+        messagePlaceholder={asTopic ? undefined : example}
+        topicPlaceholder={asTopic ? example : undefined}
+        couple={/wedding/i.test(model.business.category ?? "")}
       />
     </div>
   );
@@ -517,7 +540,7 @@ export function SimpleFooter({
   const year = new Date().getFullYear();
   const linkClass = `inline-flex min-h-11 items-center opacity-80 hover:opacity-100 ${focus}`;
   return (
-    <footer className={`pb-24 @3xl:pb-0 ${className}`}>
+    <footer className={`pb-[calc(6rem+env(safe-area-inset-bottom))] @3xl:pb-0 ${className}`}>
       <div
         className={`mx-auto w-full ${wide ? "max-w-7xl" : "max-w-6xl"} px-4 py-14 @min-[40rem]:px-6 @5xl:px-8`}
       >
@@ -595,7 +618,18 @@ export function SimpleFooter({
           <p className="[overflow-wrap:anywhere]">
             &copy; {year} {business.name}. All rights reserved.
           </p>
-          <p>Website by No Sweat</p>
+          <p className="flex flex-wrap gap-x-4">
+            <span>Website by No Sweat</span>
+            <a
+              href={VISITOR_PRIVACY_URL}
+              target="_blank"
+              rel="noopener"
+              className={`inline-flex min-h-6 items-center underline-offset-2 hover:underline ${focus}`}
+            >
+              Privacy
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </p>
         </div>
       </div>
     </footer>
@@ -672,10 +706,12 @@ export function PeopleList({
   className?: string;
   radius?: string;
 }) {
-  if (people.length === 0) return null;
+  // Pessoa sem nome (recém-adicionada no editor) só aparece quando o dono escrever o nome.
+  const named = people.filter((person) => person.name.trim());
+  if (named.length === 0) return null;
   return (
     <ul className={`grid gap-8 @min-[40rem]:grid-cols-2 ${className}`}>
-      {people.map((person, index) => (
+      {named.map((person, index) => (
         <li key={`${person.name}-${index}`} className="flex gap-5">
           {isOwnerPhoto(person.image) && (
             <div
@@ -908,7 +944,7 @@ export function MobileCallBar({
   return (
     <nav
       aria-label="Quick contact"
-      className={`fixed inset-x-0 bottom-0 z-40 grid gap-2 border-t border-ns-border bg-ns-background/95 p-3 backdrop-blur @3xl:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-40 grid gap-2 border-t border-ns-border bg-ns-background/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur @3xl:hidden ${
         square ? "grid-cols-[1fr_3rem]" : "grid-cols-1"
       }`}
     >

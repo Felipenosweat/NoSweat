@@ -13,6 +13,8 @@ export const DNS_RECORDS: DnsRecord[] = [
 ];
 
 export { APP_DOMAINS, isAppHost, isReservedDomain } from "./hosts";
+// A regra do endereço grátis mora em lib/slug.ts (o editor também usa, no navegador).
+export { makeSlug } from "@/lib/slug";
 
 /** Estado do domínio de um site, já com os registros de DNS para mostrar ao cliente. */
 export async function getDomainState(site: SiteRecord): Promise<DomainResponse> {
@@ -34,19 +36,4 @@ export async function getDomainState(site: SiteRecord): Promise<DomainResponse> 
     // Só quem ainda vai mexer no DNS precisa do passo a passo.
     dnsProvider: configured ? null : await detectDnsProvider(domain),
   };
-}
-
-/** "Joe's Plumbing" + id → "joes-plumbing-6f1c2a" (único por causa do pedaço do id). */
-export function makeSlug(name: string, id: string): string {
-  const base =
-    name
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .toLowerCase()
-      .replace(/['’]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60)
-      .replace(/-+$/g, "") || "site";
-  return `${base}-${id.replace(/-/g, "").slice(0, 6).toLowerCase()}`;
 }

@@ -145,10 +145,17 @@ export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan
     if (Math.abs(diff) > 1e-9) return diff;
     return ((COMPOSITIONS.indexOf(a) + tiebreak) % 5) - ((COMPOSITIONS.indexOf(b) + tiebreak) % 5);
   });
-  const composition = order[0] ?? "service-led";
+  // Layout escolhido pelo dono no /create: vale sem discussão (a IA não pode trocar). A exceção
+  // é a imersiva sem banco de fotos, que não funciona sem foto: aí segue a pontuação.
+  const preferred = signals.preferredComposition;
+  const honoured =
+    preferred && !(preferred === "immersive" && options.photos === false) ? preferred : undefined;
+  const composition = honoured ?? order[0] ?? "service-led";
   const best = scores.get(composition) ?? 0;
   // A IA pode trocar só por uma composição quase tão boa quanto a primeira.
-  const allowed = order.filter((c) => best - (scores.get(c) ?? 0) <= 1).slice(0, 2);
+  const allowed = honoured
+    ? [honoured]
+    : order.filter((c) => best - (scores.get(c) ?? 0) <= 1).slice(0, 2);
 
   // Referências que valem para a composição escolhida (no máximo 3) vão para o pedido à IA.
   const references = ranked
@@ -175,6 +182,7 @@ export function planDesign(brief: string, options: PlanOptions = {}): DesignPlan
   const rationale = [
     `Business type: ${signals.industry}`,
     signals.style ? `owner style: ${signals.style}` : null,
+    honoured ? `owner layout: ${honoured}` : null,
     signals.tones.length ? `tone: ${signals.tones.join(", ")}` : null,
     `main action: ${signals.primaryAction}`,
     `composition: ${composition}${allowed.length > 1 ? ` (alternative: ${allowed[1]})` : ""}`,

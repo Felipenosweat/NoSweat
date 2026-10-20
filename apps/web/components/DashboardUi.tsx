@@ -8,13 +8,7 @@ import type { ReactNode } from "react";
 export const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-/**
- * Espaço entre palavras dos títulos (`font-display`). O Plus Jakarta tem um espaço estreito e, com
- * o tracking negativo e o arredondamento de pixels do navegador, "Needs you" aparecia como
- * "Needsyou". Vai na raiz de cada tela do painel e vale para todo `.font-display` dentro dela
- * (a landing tem os próprios ajustes e não usa isto).
- */
-export const displayWordSpacing = "[&_.font-display]:[word-spacing:0.08em]";
+// Espaço entre palavras dos títulos (`font-display`): vale para o app todo, em app/globals.css.
 
 const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 sm:min-h-10 ${focusRing}`;
 
@@ -200,7 +194,9 @@ export function SiteUrlLine({
 }) {
   const { prefix, name } = splitSiteUrl(url);
   return (
-    <span className={`font-display tracking-[-0.01em] break-all ${className}`}>
+    // overflow-wrap:anywhere quebra primeiro nos hífens do endereço (break-all cortava no meio
+    // da palavra: "worcester-home-servi / ces").
+    <span className={`font-display tracking-[-0.01em] [overflow-wrap:anywhere] ${className}`}>
       <span className="text-slate-500">{prefix}</span>
       <span className="font-semibold text-brand">{name}</span>
       {caret && (

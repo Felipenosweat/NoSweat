@@ -17,5 +17,5 @@ export async function GET(): Promise<Response> {
       remaining: remaining ?? limit,
       plan: "trial",
     });
-  });
+  }, "/api/me/credits");
 }

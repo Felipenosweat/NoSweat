@@ -73,6 +73,23 @@ export const BillingIcon = (props: IconProps) => (
   </Icon>
 );
 
+// Pessoa num círculo: configurações da conta.
+export const AccountIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="10" r="3" />
+    <path d="M6.2 18.4a6.5 6.5 0 0 1 11.6 0" />
+  </Icon>
+);
+
+// Ponto de interrogação num círculo: falar com a equipe.
+export const HelpIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01" />
+  </Icon>
+);
+
 // Escudo: painel do admin.
 export const AdminIcon = (props: IconProps) => (
   <Icon {...props}>

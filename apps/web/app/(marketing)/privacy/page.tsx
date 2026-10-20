@@ -218,8 +218,8 @@ const SECTIONS: LegalSection[] = [
             launch and product news).
           </li>
           <li>
-            <strong>Cloudflare Turnstile</strong>: a security check on sign-up and log-in that tells
-            people apart from bots.
+            <strong>Cloudflare Turnstile</strong>: a security check on sign-up, log-in, password
+            reset and confirmation-email resend that tells people apart from bots.
           </li>
           <li>
             <strong>Stripe</strong>: payment processing, once paid plans launch. We won’t see or
@@ -246,18 +246,41 @@ const SECTIONS: LegalSection[] = [
   },
   {
     id: "your-visitors",
-    title: "Your website’s visitors",
+    title: "If you contacted a business through its website",
     content: (
       <>
         <p>
-          When visitors use the contact form on your website, we store their submissions for you and
-          show them in your dashboard. For that information, you decide what to do with it and
-          you’re responsible for using it lawfully, for example only contacting people about the
-          request they sent.
+          Many small businesses build their websites with No Sweat. If you sent a message through
+          the contact form on one of those websites, this section explains what happens to it.
         </p>
         <p>
-          If one of your visitors asks us about their information, we may refer them to you or help
-          you respond.
+          <strong>Who receives your message.</strong> The business that owns the website. We show
+          your name, email address, phone number and message in that business’s No Sweat dashboard
+          and send the business an email notice with the same details. The business decides how to
+          reply, may keep your details in its client list, and is responsible for using them
+          lawfully, for example only contacting you about the request you sent.
+        </p>
+        <p>
+          <strong>What No Sweat stores, and why.</strong> What you typed in the form, which website
+          it was sent to and when, and a one-way hash of your IP address (not the address itself)
+          that we use to limit spam. We use this only to deliver your message to the business and to
+          protect the form from abuse. We don’t sell it, use it for advertising or add you to our
+          mailing lists.
+        </p>
+        <p>
+          <strong>How long we keep it.</strong> While the business’s website and account exist,
+          unless the business deletes the website or you ask us to delete your message.
+        </p>
+        <p>
+          <strong>How to ask for deletion.</strong> You can ask the business directly, or email us
+          at <ContactEmailLink /> with the website’s address and the email or phone number you used.
+          We’ll delete your message from No Sweat and may let the business know. Copies the business
+          already made, such as the email notice it received, are controlled by the business.
+        </p>
+        <p>
+          <strong>If you own a No Sweat website,</strong> you’re responsible for using these
+          messages lawfully. If one of your visitors asks us about their information, we may refer
+          them to you or help you respond.
         </p>
       </>
     ),
@@ -361,8 +384,8 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      updatedIso="2026-10-15"
-      updatedLabel="October 15, 2026"
+      updatedIso="2026-10-20"
+      updatedLabel="October 20, 2026"
       intro={
         <p>
           What we collect when you use No Sweat, why we collect it, and how you can see, change or

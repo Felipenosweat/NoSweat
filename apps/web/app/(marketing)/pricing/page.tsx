@@ -7,10 +7,12 @@ import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, primaryButton, textLink } from "@/components/marketing/styles";
+import { checkoutReady } from "@/server/billing";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
 // Criar e ver a prévia é grátis; a cobrança (Stripe) só acontece ao escolher um plano para
-// publicar. As respostas do FAQ dizem só o que é verdade hoje.
+// publicar (Stripe, ou à mão por WhatsApp/e-mail sem Stripe). As respostas do FAQ dizem só o
+// que é verdade hoje. A imagem de compartilhamento vem de ./opengraph-image.tsx.
 
 const TITLE = "Pricing";
 const DESCRIPTION =
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     locale: "en_US",
   },
+  twitter: { card: "summary_large_image", title: `${TITLE} · No Sweat`, description: DESCRIPTION },
 };
 
 const h2Class =
@@ -58,7 +61,7 @@ export default function PricingPage() {
           <div className="mt-12 lg:mt-16">
             {/* Título invisível: os nomes dos planos são h3 (mesmo componente da landing). */}
             <h2 className="sr-only">Plans</h2>
-            <PricingPlans />
+            <PricingPlans checkout={checkoutReady()} />
           </div>
 
           <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
@@ -103,9 +106,11 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
+      {/* CTA FINAL. data-hide-mobile-cta: a barra fixa do celular some aqui (o botão já está
+          na tela) e aparece no resto da página. */}
       <section
         aria-labelledby="pricing-cta-title"
+        data-hide-mobile-cta
         className="border-t border-slate-200 bg-surface py-16 lg:py-20"
       >
         <div className={`${container} grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8`}>

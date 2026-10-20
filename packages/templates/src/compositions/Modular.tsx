@@ -190,7 +190,9 @@ export function ModularComposition({
           </div>
         </div>
       </header>
-      <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
+      <main id={anchors ? "main" : undefined} className="flex-1">
+        {renderSections(spec, render, editable, selectedSection)}
+      </main>
       <SimpleFooter model={model} className="mt-(--ns-section-y) bg-ns-surface" />
       <MobileCallBar model={model} radius="rounded-xl" />
     </div>

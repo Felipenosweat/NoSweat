@@ -47,5 +47,5 @@ export async function POST(request: Request): Promise<Response> {
       alt || undefined,
     );
     return jsonResponse(UploadSocialMediaResponse, { media }, 201);
-  });
+  }, "/api/social/media");
 }

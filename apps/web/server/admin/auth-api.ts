@@ -6,6 +6,8 @@ import { normalizeSupabaseUrl } from "../store/supabase";
 // - GET    /auth/v1/admin/users?per_page=N → { users: [usuário, ...], aud }
 // - GET    /auth/v1/admin/users/{id}      → usuário (404 se não existir)
 // - POST   /auth/v1/admin/users           → usuário criado
+// - PUT    /auth/v1/admin/users/{id}      → usuário alterado (app_metadata é mesclado; chave com
+//                                           valor null é apagada)
 // - DELETE /auth/v1/admin/users/{id}      → {} (as tabelas com "on delete cascade" vão junto)
 // Erros: { code, error_code, msg } (versões antigas: { code, msg } ou { error, error_description }).
 
@@ -167,4 +169,23 @@ export async function deleteAuthUser(
     if (error instanceof AuthAdminError && error.status === 404) return;
     throw error;
   }
+}
+
+/**
+ * Mescla `patch` no app_metadata da conta (só o servidor, com a chave secreta, pode mudar).
+ * Chave com valor `null` é apagada pelo Supabase. Lança AuthAdminError se não der.
+ */
+export async function updateAuthUserAppMetadata(
+  config: ServiceConfig,
+  id: string,
+  patch: Record<string, unknown>,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  if (!UUID.test(id)) throw new Error(`Invalid user id: ${id}`);
+  await call(
+    config,
+    `/admin/users/${id}`,
+    { method: "PUT", body: { app_metadata: patch } },
+    fetchImpl,
+  );
 }

@@ -4,6 +4,8 @@ import { hasCompleteProfile, passwordProblems } from "@/lib/signup-rules";
 import type { SiteRecord } from "../store";
 import type { ClientAccount } from "./index";
 import {
+  accountDeleteBlocker,
+  deleteAccount,
   deleteTestAccount,
   generatePassword,
   testAccountAppMetadata,
@@ -107,6 +109,49 @@ describe("test account deletion guard", () => {
       sitesDeleted: 2,
     });
     expect(calls).toEqual(["site:site-1", "site:site-2", `user:${target.id}`]);
+  });
+});
+
+describe("account deletion (customer request)", () => {
+  it("never deletes admins or yourself, and asks for the email of a real account", () => {
+    const opts = { targetIsAdmin: false, actorId: ADMIN_ID };
+    const real = account({ testAccount: false, email: "Owner@JoesPlumbing.com" });
+    expect(accountDeleteBlocker(account(), opts)).toBeNull();
+    expect(accountDeleteBlocker(real, opts)).toMatch(/email/i);
+    expect(accountDeleteBlocker(real, { ...opts, confirmEmail: "someone@else.com" })).toMatch(
+      /email/i,
+    );
+    expect(
+      accountDeleteBlocker(real, { ...opts, confirmEmail: " owner@joesplumbing.com " }),
+    ).toBeNull();
+    expect(
+      accountDeleteBlocker(real, { ...opts, targetIsAdmin: true, confirmEmail: real.email }),
+    ).toMatch(/admin/i);
+    expect(accountDeleteBlocker(account({ id: ADMIN_ID }), opts)).toMatch(/your own/i);
+  });
+
+  it("deletes a real account (sites first) once the email is confirmed", async () => {
+    const real = account({ testAccount: false, email: "owner@joesplumbing.com" });
+    const { fake, calls } = deps(real);
+    expect((await deleteAccount(real.id, ADMIN_ID, {}, fake)).ok).toBe(false);
+    expect(calls).toEqual([]);
+    expect(
+      await deleteAccount(real.id, ADMIN_ID, { confirmEmail: "owner@joesplumbing.com" }, fake),
+    ).toEqual({ ok: true, email: real.email, sitesDeleted: 2 });
+    expect(calls).toEqual(["site:site-1", "site:site-2", `user:${real.id}`]);
+  });
+
+  it("refuses while a card subscription is still active", async () => {
+    const real = account({ testAccount: false, email: "owner@joesplumbing.com" });
+    const { fake, calls } = deps(real);
+    const result = await deleteAccount(
+      real.id,
+      ADMIN_ID,
+      { confirmEmail: real.email },
+      { ...fake, hasActiveSubscription: async () => true },
+    );
+    expect(result).toMatchObject({ ok: false, error: expect.stringMatching(/Stripe/) });
+    expect(calls).toEqual([]);
   });
 });
 

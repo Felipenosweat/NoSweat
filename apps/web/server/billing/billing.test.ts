@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  accessSummary,
   createCheckoutUrl,
   customDomainBlocked,
   getBillingStatus,
@@ -207,6 +208,34 @@ describe("manual access (Pix/WhatsApp)", () => {
 
   it("keeps every site live while plans are off", async () => {
     expect(await ownerHasLiveAccess(user.id)).toBe(true);
+  });
+
+  it("summarizes the owner's access for the dashboard warnings", async () => {
+    expect(await accessSummary(user.id)).toEqual({
+      enforced: false,
+      live: true,
+      endsAt: null,
+      source: null,
+    });
+
+    process.env.REQUIRE_PLAN = "true";
+    expect(await accessSummary(user.id)).toMatchObject({ enforced: true, live: false });
+
+    const until = new Date(Date.now() + 5 * DAY);
+    await grant("starter", until);
+    expect(await accessSummary(user.id)).toEqual({
+      enforced: true,
+      live: true,
+      endsAt: until.toISOString(),
+      source: "manual",
+    });
+
+    await grant("starter", new Date(Date.now() - DAY));
+    expect(await accessSummary(user.id)).toMatchObject({
+      enforced: true,
+      live: false,
+      endsAt: null,
+    });
   });
 
   it("adds days on top of the time left, or from today once expired", () => {

@@ -8,5 +8,5 @@ export async function GET(): Promise<Response> {
     const { user, response } = await requireSocialUser();
     if (!user) return response;
     return jsonResponse(SocialStateResponse, await getSocialState(user));
-  });
+  }, "/api/social/state");
 }

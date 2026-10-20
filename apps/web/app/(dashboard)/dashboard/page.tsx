@@ -23,14 +23,22 @@ import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { MODULES, type HubModule } from "@/lib/modules";
 import { getAccount } from "@/server/admin";
 import { createSupabaseServerClient } from "@/server/auth/session";
-import { getViewer, type ViewingAs } from "@/server/auth/viewer";
+import { getViewer, type Viewer, type ViewingAs } from "@/server/auth/viewer";
+import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
 import { clientsNeedingAttention, listClients } from "@/server/clients/service";
+import { socialCapability } from "@/server/social/config";
+import { isValidTimeZone, monthOf } from "@/server/social/service";
 import { getSocialStore } from "@/server/social/store";
-import type { SocialAccountRecord, SocialPostRecord } from "@/server/social/types";
+import type {
+  SocialAccountRecord,
+  SocialPostRecord,
+  SocialSettingsRecord,
+} from "@/server/social/types";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import {
   AlertIcon,
   ApproveIcon,
+  BillingIcon,
   CheckIcon,
   ClockIcon,
   ClientsIcon,
@@ -56,8 +64,11 @@ function hasPhotos(site: SiteRecord): boolean {
   );
 }
 
-/** Os 4 passos do checklist que o servidor sabe responder sobre o site (o último fica no cliente). */
-function checklistSteps(site: SiteRecord, leads: number): ChecklistStep[] {
+/**
+ * Os 4 passos do checklist que o servidor sabe responder sobre o site (o último fica no cliente).
+ * `domainIncluded = false`: o plano atual não tem domínio próprio, então o passo leva aos planos.
+ */
+function checklistSteps(site: SiteRecord, leads: number, domainIncluded: boolean): ChecklistStep[] {
   const live = site.status === "published";
   const liveHref = site.slug ? `/s/${site.slug}#contact` : null;
   return [
@@ -65,8 +76,8 @@ function checklistSteps(site: SiteRecord, leads: number): ChecklistStep[] {
     {
       label: "Connect domain",
       done: Boolean(site.customDomain),
-      href: `/sites/${site.id}#domain`,
-      hint: "Use yourbusiness.com",
+      href: domainIncluded ? `/sites/${site.id}#domain` : "/billing",
+      hint: domainIncluded ? "Use yourbusiness.com" : "Included in Pro",
     },
     {
       label: "Add photos",
@@ -126,6 +137,40 @@ async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot>
   }
 }
 
+/** Configurações de posts do dono (fuso da empresa e liberação de testador). Erro = `null`. */
+async function loadSettings(ownerId: string): Promise<SocialSettingsRecord | null> {
+  try {
+    return await getSocialStore().getSettings(ownerId);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * O dono consegue postar sozinho pelo Instagram? Usa a conta MOSTRADA (no "ver como", a conta
+ * vista: a do admin sempre daria "auto"). Erro = manual (o passo "Connect Instagram" some).
+ */
+async function loadAutoPublish(
+  account: { id: string; email: string | null },
+  settings: SocialSettingsRecord | null,
+): Promise<boolean> {
+  if (!settings) return false;
+  try {
+    return (await socialCapability(account, settings)).publishMode === "auto";
+  } catch {
+    return false;
+  }
+}
+
+/** Erro ao ler o plano = sem aviso e passo do domínio normal (como `ownerHasLiveAccess`). */
+async function loadAccess(ownerId: string): Promise<AccessSummary> {
+  try {
+    return await accessSummary(ownerId);
+  } catch {
+    return { enforced: false, live: true, endsAt: null, source: null };
+  }
+}
+
 type ClientsSnapshot = {
   total: number;
   newCount: number;
@@ -135,15 +180,21 @@ type ClientsSnapshot = {
 };
 
 /**
- * Resumo do módulo de clientes (o serviço já traz os pedidos novos do site antes de ler). `null` =
- * erro (a página volta a mostrar as mensagens do site por site, como antes).
+ * Resumo do módulo de clientes (o serviço já traz os pedidos novos do site antes de ler; o pedido
+ * de teste do próprio dono, achado por `ownerEmail`, não vira cliente). "Hoje" no fuso da empresa.
+ * `null` = erro (a página volta a mostrar as mensagens do site por site, como antes).
  */
-async function loadClients(ownerId: string, now: number): Promise<ClientsSnapshot | null> {
-  const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date(now));
+async function loadClients(
+  ownerId: string,
+  ownerEmail: string | null,
+  now: number,
+  timeZone: string,
+): Promise<ClientsSnapshot | null> {
+  const today = dateKeyIn(timeZone, new Date(now));
   try {
     // Um depois do outro: os dois importam os pedidos do site, e em paralelo poderiam duplicar.
-    const clients = await listClients(ownerId);
-    const attention = await clientsNeedingAttention(ownerId, today);
+    const clients = await listClients(ownerId, { ownerEmail });
+    const attention = await clientsNeedingAttention(ownerId, today, ownerEmail);
     return {
       total: clients.length,
       newCount: attention.newCount,
@@ -160,7 +211,10 @@ const MAX_FOLLOW_UP_ROWS = 2;
 
 /** Tipo de cada linha "Needs you": decide o ícone, a cor e a linha de apoio. */
 type NeedKind =
+  | "plan-ended"
+  | "plan-ending"
   | "approval"
+  | "ready"
   | "reconnect"
   | "follow-up"
   | "clients"
@@ -174,7 +228,10 @@ type IconComponent = (props: { className?: string }) => ReactNode;
 
 // Aprovação = âmbar, clientes = azul da marca, retorno = céu, problema = vermelho.
 const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconComponent }> = {
+  "plan-ended": { tone: "red", label: "Plan", Icon: BillingIcon },
+  "plan-ending": { tone: "amber", label: "Plan", Icon: BillingIcon },
   approval: { tone: "amber", label: "Social posts", Icon: ApproveIcon },
+  ready: { tone: "amber", label: "Social posts", Icon: SocialIcon },
   reconnect: { tone: "amber", label: "Instagram", Icon: LinkIcon },
   "follow-up": { tone: "sky", label: "Follow-up", Icon: ClockIcon },
   clients: { tone: "brand", label: "Clients", Icon: ClientsIcon },
@@ -192,36 +249,155 @@ function plural(count: number, one: string, many: string): string {
   return count === 1 ? one : many;
 }
 
+/** "YYYY-MM" → "Nov" (mês curto, para "across Nov–Dec"). */
+function shortMonth(month: string): string {
+  const [year, mon] = month.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(
+    new Date(Date.UTC(year ?? 1970, (mon ?? 1) - 1, 1)),
+  );
+}
+
+/** Mês do post no fuso da empresa, para abrir o calendário/revisão no mês certo. */
+function monthQuery(iso: string, timeZone: string): string {
+  return `month=${encodeURIComponent(monthOf(iso, timeZone))}`;
+}
+
+function byScheduledAt(a: SocialPostRecord, b: SocialPostRecord): number {
+  return Date.parse(a.scheduledAt ?? "") - Date.parse(b.scheduledAt ?? "");
+}
+
 /** Linhas "Needs you": só fatos que o banco sabe, do mais urgente para o informativo. */
 function needsRows({
   sites,
   weekLeads,
   social,
   clients,
+  access,
+  timeZone,
   now,
 }: {
   sites: SiteRecord[];
   weekLeads: Record<string, number>;
   social: SocialSnapshot;
   clients: ClientsSnapshot | null;
+  access: AccessSummary;
+  /** Fuso da empresa (meses do calendário e datas do plano). */
+  timeZone: string;
   now: number;
 }): NeedRow[] {
   const rows: NeedRow[] = [];
   const { account, posts } = social;
+  const hasLiveSite = sites.some((site) => site.status === "published");
 
-  const drafts = posts.filter((post) => post.status === "draft").length;
-  if (drafts > 0) {
+  // Plano acabou com site no ar: os visitantes já veem "temporarily unavailable". Vem primeiro.
+  if (access.enforced && !access.live && hasLiveSite) {
+    rows.push({
+      key: "plan-ended",
+      kind: "plan-ended",
+      href: "/billing",
+      text: (
+        <>
+          Your plan ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page. Renew to
+          bring your site back.
+        </>
+      ),
+      action: "Renew",
+    });
+  } else if (access.enforced && access.live && access.endsAt) {
+    const endsAt = Date.parse(access.endsAt);
+    if (endsAt > now && endsAt - now <= 7 * DAY_MS) {
+      const date = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        timeZone,
+      }).format(new Date(endsAt));
+      rows.push({
+        key: "plan-ending",
+        kind: "plan-ending",
+        href: "/billing",
+        text: (
+          <>
+            Your access ends <span className="font-medium tabular-nums">{date}</span>.{" "}
+            {hasLiveSite ? "Renew to keep your site online." : "Renew to keep your plan."}
+          </>
+        ),
+        action: "Renew",
+      });
+    }
+  }
+
+  // Só rascunhos com data ainda no futuro: a revisão não mostra (nem aprova) os outros.
+  const drafts = posts
+    .filter(
+      (post) =>
+        post.status === "draft" && post.scheduledAt !== null && Date.parse(post.scheduledAt) >= now,
+    )
+    .sort(byScheduledAt);
+  const firstDraft = drafts[0];
+  const lastDraft = drafts[drafts.length - 1];
+  if (firstDraft?.scheduledAt && lastDraft?.scheduledAt) {
+    const firstMonth = monthOf(firstDraft.scheduledAt, timeZone);
+    const lastMonth = monthOf(lastDraft.scheduledAt, timeZone);
+    const count = drafts.length;
     rows.push({
       key: "drafts",
       kind: "approval",
-      href: "/social/review",
-      text: (
+      href: `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`,
+      text:
+        firstMonth === lastMonth ? (
+          <>
+            <Count value={count} /> {plural(count, "post is", "posts are")} waiting for your
+            approval.
+          </>
+        ) : (
+          <>
+            <Count value={count} /> posts across {shortMonth(firstMonth)}&ndash;
+            {shortMonth(lastMonth)} are waiting for your approval.
+          </>
+        ),
+      action: "Review",
+    });
+  }
+
+  // Aprovados para postar à mão (sem postagem automática): os das próximas 24 horas e os que
+  // venceram na última semana e ainda não foram marcados como postados.
+  const ready = posts
+    .filter(
+      (post) =>
+        post.status === "approved" &&
+        post.scheduledAt !== null &&
+        Date.parse(post.scheduledAt) <= now + DAY_MS &&
+        Date.parse(post.scheduledAt) >= now - 7 * DAY_MS,
+    )
+    .sort(byScheduledAt);
+  const firstReady = ready[0];
+  if (firstReady?.scheduledAt) {
+    const count = ready.length;
+    const overdue = Date.parse(firstReady.scheduledAt) < now;
+    rows.push({
+      key: "ready",
+      kind: "ready",
+      href: `/social?${monthQuery(firstReady.scheduledAt, timeZone)}`,
+      text: overdue ? (
+        count === 1 ? (
+          <>
+            Your post was due{" "}
+            <LocalTime iso={firstReady.scheduledAt} className="font-medium tabular-nums" />. Share
+            it on Instagram, then mark it posted.
+          </>
+        ) : (
+          <>
+            <Count value={count} /> posts are ready to share. The first was due{" "}
+            <LocalTime iso={firstReady.scheduledAt} className="font-medium tabular-nums" />.
+          </>
+        )
+      ) : (
         <>
-          <Count value={drafts} /> {plural(drafts, "post is", "posts are")} waiting for your
-          approval.
+          <Count value={count} /> {plural(count, "post is", "posts are")} ready to share in the next
+          24 hours.
         </>
       ),
-      action: "Review",
+      action: "Open",
     });
   }
 
@@ -282,21 +458,25 @@ function needsRows({
   }
 
   // Só os problemas recentes (últimos 30 dias), para não lembrar para sempre de um post antigo.
-  const problems = posts.filter(
-    (post) =>
-      (post.status === "failed" || post.status === "missed") &&
-      post.scheduledAt !== null &&
-      Date.parse(post.scheduledAt) >= now - 30 * DAY_MS,
-  ).length;
-  if (problems > 0) {
+  const problems = posts
+    .filter(
+      (post) =>
+        (post.status === "failed" || post.status === "missed") &&
+        post.scheduledAt !== null &&
+        Date.parse(post.scheduledAt) >= now - 30 * DAY_MS,
+    )
+    .sort(byScheduledAt);
+  const newestProblem = problems[problems.length - 1];
+  if (newestProblem?.scheduledAt) {
+    const count = problems.length;
     rows.push({
       key: "problems",
       kind: "problem",
-      href: "/social",
+      href: `/social?${monthQuery(newestProblem.scheduledAt, timeZone)}`,
       text: (
         <>
-          <Count value={problems} /> {plural(problems, "post", "posts")} didn&rsquo;t go out. Pick a
-          new time or post {plural(problems, "it", "them")} yourself.
+          <Count value={count} /> {plural(count, "post", "posts")} didn&rsquo;t go out. Pick a new
+          time or post {plural(count, "it", "them")} yourself.
         </>
       ),
       action: "Open",
@@ -321,22 +501,25 @@ function needsRows({
     });
   }
 
+  // Próximo post já aprovado: "scheduled" sai sozinho; "approved" o dono posta à mão.
   const next = posts
     .filter(
       (post) =>
-        post.status === "scheduled" &&
+        (post.status === "scheduled" || post.status === "approved") &&
         post.scheduledAt !== null &&
         Date.parse(post.scheduledAt) > now,
     )
-    .sort((a, b) => Date.parse(a.scheduledAt ?? "") - Date.parse(b.scheduledAt ?? ""))[0];
-  if (next?.scheduledAt) {
+    .sort(byScheduledAt)[0];
+  if (next?.scheduledAt && !ready.includes(next)) {
     rows.push({
       key: "next-post",
       kind: "next",
-      href: "/social",
+      href: `/social?${monthQuery(next.scheduledAt, timeZone)}`,
       text: (
         <>
-          Your next post goes out{" "}
+          {next.status === "scheduled"
+            ? "Your next post goes out"
+            : "Your next post is planned for"}{" "}
           <LocalTime iso={next.scheduledAt} className="font-medium tabular-nums" />.
         </>
       ),
@@ -433,12 +616,11 @@ function LiveTile({
           </IconTile>
           <ChevronRightIcon className="mt-2.5 size-4 text-slate-300 transition-colors duration-150 group-hover:text-slate-500" />
         </span>
-        {/* No HTML o rótulo vem antes do número (o leitor de tela diz "Website, 1"); na tela o
-            número grande fica em cima. */}
+        {/* Rótulo, número e unidade, nessa ordem (na tela e no leitor de tela: "Website, 1"). */}
         <div className="mt-auto flex flex-col pt-5">
           <h3 className="text-[15px] leading-6 font-semibold text-ink">{hub.label}</h3>
           {value !== null && (
-            <span className="order-first font-display text-[2.25rem] leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums">
+            <span className="my-1 font-display text-[2.25rem] leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums">
               {value}
             </span>
           )}
@@ -500,7 +682,7 @@ function YourOffice({
                 key={hub.key}
                 hub={hub}
                 value={liveSites}
-                unit={`live of ${totalSites} ${plural(totalSites, "site", "sites")}`}
+                unit={`live · ${totalSites} ${plural(totalSites, "site", "sites")} total`}
                 linkText="See sites"
               />
             );
@@ -511,11 +693,7 @@ function YourOffice({
                 key={hub.key}
                 hub={hub}
                 value={clients?.total ?? null}
-                unit={
-                  clients
-                    ? `${plural(clients.total, "client", "clients")} · ${clients.newCount} new`
-                    : "Everyone who contacted you"
-                }
+                unit={clients ? `${clients.newCount} new` : "Everyone who contacted you"}
                 linkText="Open clients"
               />
             );
@@ -525,7 +703,7 @@ function YourOffice({
               key={hub.key}
               hub={hub}
               value={scheduledSoon}
-              unit="scheduled · next 30 days"
+              unit="posts in the next 30 days"
               linkText="Open calendar"
             />
           );
@@ -536,16 +714,31 @@ function YourOffice({
 }
 
 /** Tudo o que a página inicial mostra, lido de uma vez (fora do componente: usa o relógio). */
-async function loadHome(ownerId: string, viewingAs: ViewingAs | null) {
+async function loadHome(viewer: Viewer) {
+  const { ownerId, viewingAs } = viewer;
+  // A conta MOSTRADA: no "ver como", a conta vista (nunca o e-mail ou a liberação do admin).
+  const shown = { id: ownerId, email: viewingAs ? viewingAs.email : viewer.user.email };
   const now = Date.now();
   const store = getSiteStore();
-  const [sites, firstName, social, clients] = await Promise.all([
+  const [sites, firstName, social, settings, access] = await Promise.all([
     store.list(ownerId),
     getFirstName(viewingAs),
     loadSocial(ownerId, now),
-    loadClients(ownerId, now),
+    loadSettings(ownerId),
+    loadAccess(ownerId),
   ]);
-  const leadLists = await Promise.all(sites.map((site) => store.listLeads(site.id)));
+  // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
+  const timeZone =
+    settings?.timezone && isValidTimeZone(settings.timezone)
+      ? settings.timezone
+      : CLIENTS_TIME_ZONE;
+  const [clients, autoPublish, domainIncluded, leadLists] = await Promise.all([
+    loadClients(ownerId, shown.email, now, timeZone),
+    loadAutoPublish(shown, settings),
+    // Erro ao ler o plano já vira `true` lá dentro (o passo segue para o domínio, como antes).
+    ownerHasCustomDomainAccess(ownerId),
+    Promise.all(sites.map((site) => store.listLeads(site.id))),
+  ]);
   const weekAgo = now - 7 * DAY_MS;
   const leadCounts: Record<string, number> = {};
   const weekLeads: Record<string, number> = {};
@@ -554,7 +747,19 @@ async function loadHome(ownerId: string, viewingAs: ViewingAs | null) {
     leadCounts[site.id] = leads.length;
     weekLeads[site.id] = leads.filter((lead) => Date.parse(lead.createdAt) >= weekAgo).length;
   });
-  return { now, sites, firstName, social, clients, leadCounts, weekLeads };
+  return {
+    now,
+    sites,
+    firstName,
+    social,
+    clients,
+    leadCounts,
+    weekLeads,
+    access,
+    timeZone,
+    autoPublish,
+    domainIncluded,
+  };
 }
 
 export default async function DashboardPage() {
@@ -563,29 +768,47 @@ export default async function DashboardPage() {
   // No modo "ver como" do admin, os dados da conta vista (só leitura).
   const viewer = await getViewer();
   if (!viewer) redirect("/login?next=/dashboard");
-  const { now, sites, firstName, social, clients, leadCounts, weekLeads } = await loadHome(
-    viewer.ownerId,
-    viewer.viewingAs,
-  );
+  const {
+    now,
+    sites,
+    firstName,
+    social,
+    clients,
+    leadCounts,
+    weekLeads,
+    access,
+    timeZone,
+    autoPublish,
+    domainIncluded,
+  } = await loadHome(viewer);
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
+  // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
+  const offline = access.enforced && !access.live;
 
   const liveSites = sites.filter((site) => site.status === "published").length;
+  // Posts já aprovados nos próximos 30 dias: "scheduled" (sai sozinho) e "approved" (postar à mão).
   const scheduledSoon = social.posts.filter(
     (post) =>
-      post.status === "scheduled" &&
+      (post.status === "scheduled" || post.status === "approved") &&
       post.scheduledAt !== null &&
       Date.parse(post.scheduledAt) >= now &&
       Date.parse(post.scheduledAt) < now + 30 * DAY_MS,
   ).length;
 
+  // "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
+  // manual não há botão de conectar e o passo nunca terminaria.
   const socialSteps: ChecklistStep[] = [
-    {
-      label: "Connect Instagram",
-      done: social.account?.status === "active",
-      href: "/social",
-      hint: "Post without opening the app",
-    },
+    ...(autoPublish || social.account !== null
+      ? [
+          {
+            label: "Connect Instagram",
+            done: social.account?.status === "active",
+            href: "/social",
+            hint: "Post without opening the app",
+          },
+        ]
+      : []),
     {
       label: "Plan your first month",
       done: social.posts.length > 0,
@@ -594,7 +817,9 @@ export default async function DashboardPage() {
     },
   ];
 
-  const needs = <NeedsYou rows={needsRows({ sites, weekLeads, social, clients, now })} />;
+  const needs = (
+    <NeedsYou rows={needsRows({ sites, weekLeads, social, clients, access, timeZone, now })} />
+  );
   const office = (
     <YourOffice
       liveSites={liveSites}
@@ -618,6 +843,7 @@ export default async function DashboardPage() {
         sites={sites}
         leadCounts={leadCounts}
         headingLevel={3}
+        offline={offline}
         emptyState={
           <div className="mt-4">
             <ExampleSiteEmpty />
@@ -638,7 +864,7 @@ export default async function DashboardPage() {
           <DashboardChecklist
             siteId={latest.id}
             siteName={latest.spec.business.name}
-            steps={checklistSteps(latest, leadCounts[latest.id] ?? 0)}
+            steps={checklistSteps(latest, leadCounts[latest.id] ?? 0, domainIncluded)}
             extraSteps={socialSteps}
             shareHref={latest.status === "published" ? `/sites/${latest.id}#publish` : null}
           />

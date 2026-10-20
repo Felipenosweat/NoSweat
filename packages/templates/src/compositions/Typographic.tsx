@@ -162,7 +162,9 @@ export function TypographicComposition({
           </div>
         </Wrap>
       </header>
-      <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
+      <main id={anchors ? "main" : undefined} className="flex-1">
+        {renderSections(spec, render, editable, selectedSection)}
+      </main>
       <SimpleFooter model={model} bigName />
       <MobileCallBar model={model} radius={RADIUS} />
     </div>

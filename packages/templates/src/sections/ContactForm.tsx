@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { CheckIcon } from "../components/icons";
 import { foldMessage } from "./fold-message";
 
 /** Modelo do formulário: os campos extras mudam com o tipo de negócio. */
 export type ContactFormPreset = "trade" | "appointment" | "catering" | "consultation" | "inquiry";
+
+/**
+ * Aviso de privacidade dos sites publicados: a seção "your visitors" da política da No Sweat.
+ * Texto e destino provisórios, até o dono da plataforma decidir (política por site ou esta).
+ */
+export const VISITOR_PRIVACY_URL = "https://www.nosweatfd.com/privacy#your-visitors";
 
 /** Raio dos campos e do botão, o mesmo da composição. */
 export type ContactFormRadius = "none" | "sm" | "md" | "lg";
@@ -17,6 +23,8 @@ type ExtraField = {
   type?: "text" | "date" | "number";
   required?: boolean;
   autoComplete?: string;
+  /** Campo que diz o que a pessoa quer: recebe `topicPlaceholder` (serviços do próprio site). */
+  topic?: boolean;
 };
 
 type PresetCopy = {
@@ -30,6 +38,9 @@ type PresetCopy = {
 };
 
 /*
+ * Textos de exemplo neutros: servem para qualquer negócio do ramo (nada de "vazamento" num site de
+ * limpeza). O que for do próprio site (nomes dos serviços) chega por `messagePlaceholder` e
+ * `topicPlaceholder`.
  * Campos extras de cada modelo. Eles NÃO mudam o contrato da API (LeadRequest): o texto deles
  * vai junto na mensagem, uma linha por campo ("Event date: 2026-11-07"), antes do que a pessoa
  * escreveu. O dono lê tudo no painel, como qualquer outro pedido.
@@ -47,7 +58,7 @@ const PRESETS: Record<ContactFormPreset, PresetCopy> = {
       },
     ],
     messageLabel: "What's going on?",
-    messagePlaceholder: "Water heater leaking, slow drain in the kitchen...",
+    messagePlaceholder: "What do you need done, and when?",
     messageRequired: true,
   },
   appointment: {
@@ -57,8 +68,9 @@ const PRESETS: Record<ContactFormPreset, PresetCopy> = {
       {
         key: "service",
         label: "Service",
-        placeholder: "Cut and blowout, color...",
+        placeholder: "What would you like to book?",
         required: true,
+        topic: true,
       },
       { key: "when", label: "Preferred day and time", placeholder: "Saturday morning" },
     ],
@@ -83,16 +95,17 @@ const PRESETS: Record<ContactFormPreset, PresetCopy> = {
       {
         key: "topic",
         label: "What do you need help with?",
-        placeholder: "Monthly books, a tax return, a letter you received...",
+        placeholder: "What can we help with?",
         required: true,
+        topic: true,
       },
     ],
     messageLabel: "Anything else?",
     messageRequired: false,
   },
   inquiry: {
-    nameLabel: "Your names",
-    namePlaceholder: "Ana & Luis",
+    nameLabel: "Your name",
+    namePlaceholder: "Jane Smith",
     extras: [
       { key: "date", label: "Date", type: "date" },
       { key: "place", label: "Venue or location", placeholder: "Where it will happen" },
@@ -128,6 +141,12 @@ export type ContactFormProps = {
   radius?: ContactFormRadius;
   /** `false` quando a composição já põe o formulário dentro de um quadro. */
   framed?: boolean;
+  /** Exemplo da mensagem com os serviços do próprio site (ex.: "Drain cleaning, Repiping..."). */
+  messagePlaceholder?: string;
+  /** Exemplo do campo de serviço/assunto (agendamento e consultoria), com os serviços do site. */
+  topicPlaceholder?: string;
+  /** Negócio de casamentos: o nome vira "Your names" (o casal). */
+  couple?: boolean;
 };
 
 /** Formulário de contato do site publicado: envia o pedido para o painel do dono do site. */
@@ -137,10 +156,18 @@ export function ContactForm({
   preset,
   radius = "md",
   framed = true,
+  messagePlaceholder,
+  topicPlaceholder,
+  couple = false,
 }: ContactFormProps) {
   const [status, setStatus] = useState<Status>({ state: "idle" });
+  const reachHintId = useId();
   const copy = preset ? PRESETS[preset] : null;
-  const extras = copy?.extras ?? [];
+  const extras = (copy?.extras ?? []).map((extra) =>
+    extra.topic && topicPlaceholder ? { ...extra, placeholder: topicPlaceholder } : extra,
+  );
+  const nameLabel = couple ? "Your names" : (copy?.nameLabel ?? "Full name");
+  const namePlaceholder = couple ? "Ana & Luis" : (copy?.namePlaceholder ?? "Jane Smith");
   const r = RADIUS[radius];
   const inputClass = `${fieldBase} ${r.field}`;
 
@@ -170,6 +197,14 @@ export function ContactForm({
       message,
       company: text("ns_hp"),
     };
+    // A API pede telefone ou e-mail; avisar aqui evita a mensagem técnica do servidor.
+    if (!data.phone.trim() && !data.email.trim()) {
+      setStatus({
+        state: "error",
+        message: "Please leave a phone number or an email so we can reach you.",
+      });
+      return;
+    }
 
     setStatus({ state: "sending" });
     try {
@@ -218,16 +253,19 @@ export function ContactForm({
     <form onSubmit={handleSubmit} className={`relative text-ns-text ${frame}`}>
       <div className="grid gap-5 @min-[40rem]:grid-cols-2">
         <label className="block text-sm font-medium @min-[40rem]:col-span-2">
-          {copy?.nameLabel ?? "Full name"}
+          {nameLabel}
           <input
             name="name"
             required
             maxLength={120}
             autoComplete="name"
-            placeholder={copy?.namePlaceholder ?? "Jane Smith"}
+            placeholder={namePlaceholder}
             className={inputClass}
           />
         </label>
+        <p id={reachHintId} className="-mb-2 text-sm text-ns-muted @min-[40rem]:col-span-2">
+          Leave a phone number or email so we can reply.
+        </p>
         <label className="block text-sm font-medium">
           Phone
           <input
@@ -236,6 +274,7 @@ export function ContactForm({
             maxLength={40}
             autoComplete="tel"
             placeholder="(555) 555-0100"
+            aria-describedby={reachHintId}
             className={inputClass}
           />
         </label>
@@ -246,6 +285,7 @@ export function ContactForm({
             type="email"
             autoComplete="email"
             placeholder="jane@example.com"
+            aria-describedby={reachHintId}
             className={inputClass}
           />
         </label>
@@ -278,7 +318,10 @@ export function ContactForm({
             required={copy ? copy.messageRequired : true}
             rows={4}
             maxLength={1500}
-            placeholder={copy ? copy.messagePlaceholder : "Tell us a little about what you need..."}
+            placeholder={
+              messagePlaceholder ??
+              (copy ? copy.messagePlaceholder : "Tell us a little about what you need...")
+            }
             className={inputClass}
           />
         </label>
@@ -307,11 +350,25 @@ export function ContactForm({
       >
         {status.state === "sending" ? "Sending..." : submitLabel}
       </button>
-      <p className="mt-3 text-center text-sm text-ns-muted">
-        {endpoint
-          ? "We’ll get back to you soon."
-          : "Preview: the form starts working once the site is published."}
-      </p>
+      {endpoint ? (
+        // Aviso factual, sem prometer nada em nome do dono; o link leva à política da plataforma.
+        <p className="mt-3 text-center text-sm text-ns-muted">
+          Your details are sent to this business so they can reply.{" "}
+          <a
+            href={VISITOR_PRIVACY_URL}
+            target="_blank"
+            rel="noopener"
+            className="underline underline-offset-2 hover:text-ns-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary"
+          >
+            Privacy
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </p>
+      ) : (
+        <p className="mt-3 text-center text-sm text-ns-muted">
+          Preview: the form starts working once the site is published.
+        </p>
+      )}
     </form>
   );
 }

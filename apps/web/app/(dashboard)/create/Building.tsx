@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from "react";
 import { publishedSlug } from "./brief";
 import styles from "./create.module.css";
-import { primaryButton, secondaryButton } from "./ui";
+import { focusRing, primaryButton, secondaryButton } from "./ui";
 
 /** Etapas mostradas enquanto o site é gerado. A última só fecha quando a resposta chega. */
 export const BUILD_STEPS = [
@@ -17,6 +17,10 @@ export const BUILD_STEPS = [
 ] as const;
 
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+/** Aviso quando a geração demora mais que o normal (o caminho completo da IA leva minutos). */
+const SLOW_NOTE =
+  "Still working. Detailed sites can take up to 3 minutes. Please keep this tab open.";
 
 function subscribeReducedMotion(onChange: () => void) {
   const query = window.matchMedia(REDUCED_MOTION);
@@ -102,10 +106,12 @@ type BuildingPanelProps = {
   /** Quantas etapas já terminaram (0 a BUILD_STEPS.length). */
   progress: number;
   slug: string;
+  /** Passou do tempo normal: troca a dica por um aviso de que pode levar alguns minutos. */
+  slow?: boolean;
   headingRef: Ref<HTMLHeadingElement>;
 };
 
-export function BuildingPanel({ progress, slug, headingRef }: BuildingPanelProps) {
+export function BuildingPanel({ progress, slug, slow = false, headingRef }: BuildingPanelProps) {
   const current = BUILD_STEPS[Math.min(progress, BUILD_STEPS.length - 1)];
   return (
     <div className="flex min-h-[calc(100svh-10rem)] items-center justify-center lg:min-h-[calc(100svh-13rem)]">
@@ -144,11 +150,11 @@ export function BuildingPanel({ progress, slug, headingRef }: BuildingPanelProps
           })}
         </ol>
 
-        <p className="mt-4 text-[13px] text-slate-500">
-          Keep this tab open. It usually takes less than a minute.
+        <p className={`mt-4 text-[13px] ${slow ? "font-medium text-ink" : "text-slate-500"}`}>
+          {slow ? SLOW_NOTE : "Keep this tab open. It usually takes less than a minute."}
         </p>
         <p className="sr-only" aria-live="polite">
-          {progress >= BUILD_STEPS.length ? "Done." : `${current}…`}
+          {progress >= BUILD_STEPS.length ? "Done." : slow ? SLOW_NOTE : `${current}…`}
         </p>
       </section>
     </div>
@@ -198,10 +204,12 @@ function SiteThumbnail({ spec }: { spec: SiteSpec }) {
 type ReadyPanelProps = {
   siteId: string;
   spec: SiteSpec;
+  /** Visitante sem conta: avisa que o rascunho só existe neste navegador. */
+  signedIn?: boolean;
   headingRef: Ref<HTMLHeadingElement>;
 };
 
-export function ReadyPanel({ siteId, spec, headingRef }: ReadyPanelProps) {
+export function ReadyPanel({ siteId, spec, signedIn = true, headingRef }: ReadyPanelProps) {
   const slug = publishedSlug(spec.business.name, siteId);
   return (
     <section aria-labelledby="ready-heading" className="mx-auto max-w-[55rem] pb-4">
@@ -229,6 +237,17 @@ export function ReadyPanel({ siteId, spec, headingRef }: ReadyPanelProps) {
           See the preview
         </Link>
       </div>
+      {!signedIn && (
+        <p className="mx-auto mt-4 max-w-[36rem] text-center text-[13px] leading-[1.55] text-pretty text-slate-600">
+          This draft is saved in this browser only.{" "}
+          <Link
+            href={`/signup?next=/sites/${siteId}/edit`}
+            className={`font-semibold text-brand underline underline-offset-4 hover:text-brand-dark ${focusRing}`}
+          >
+            Create a free account to keep it and publish.
+          </Link>
+        </p>
+      )}
 
       <div
         className={`mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_1px_2px_rgb(7_27_51/.06),0_8px_24px_-8px_rgb(7_27_51/.12),0_24px_48px_-12px_rgb(7_27_51/.25)] ${styles.reveal}`}
@@ -240,14 +259,14 @@ export function ReadyPanel({ siteId, spec, headingRef }: ReadyPanelProps) {
             <span className="size-2.5 rounded-full bg-slate-200" />
           </span>
           <p className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-1 text-center ring-1 ring-slate-200">
-            <span className="sr-only">Your free address once you publish: </span>
+            <span className="sr-only">Your address once you publish: </span>
             <UrlLine slug={slug} className="text-[13px]" />
           </p>
         </div>
         <SiteThumbnail spec={spec} />
       </div>
       <p className="mt-3 text-center text-[13px] text-slate-500">
-        Your free address once you publish. You can connect your own domain later.
+        Your address once you publish. You can connect your own domain later.
       </p>
     </section>
   );

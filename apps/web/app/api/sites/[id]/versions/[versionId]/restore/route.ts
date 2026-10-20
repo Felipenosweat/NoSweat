@@ -28,5 +28,5 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
     const restored = await store.update(site.id, version.spec, "restore");
     if (!restored) return notFound();
     return jsonResponse(UpdateSiteResponse, { siteId: restored.id, spec: restored.spec });
-  });
+  }, "/api/sites/[id]/versions/[versionId]/restore");
 }

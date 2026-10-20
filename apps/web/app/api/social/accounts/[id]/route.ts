@@ -16,5 +16,5 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     if (!account || account.ownerId !== user.id) return notFound("Account");
     if (account.status !== "revoked") await disconnectAccount(account, user.id, "disconnect");
     return jsonResponse(SocialStateResponse, await getSocialState(user));
-  });
+  }, "/api/social/accounts/[id]");
 }

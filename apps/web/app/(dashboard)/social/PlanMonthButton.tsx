@@ -3,6 +3,7 @@
 import { PlanMonthResponse, type PlanMonthRequest, type SocialPost } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { primaryButton, textButton } from "@/components/DashboardUi";
+import { SparklesIcon } from "@/components/marketing/icons";
 import {
   ErrorNote,
   monthLabel,
@@ -104,19 +105,7 @@ export function PlanMonthButton({
           disabled={out}
           className={primaryButton}
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.75}
-            aria-hidden="true"
-          >
-            <path
-              d="M12 3v3m0 12v3M3 12h3m12 0h3M6.3 6.3l2.1 2.1m7.2 7.2 2.1 2.1m0-11.4-2.1 2.1m-7.2 7.2-2.1 2.1"
-              strokeLinecap="round"
-            />
-          </svg>
+          <SparklesIcon className="size-4" aria-hidden="true" />
           Fill my month with AI
         </button>
         {remainingText && <p className="text-[13px] text-slate-500">{remainingText}</p>}

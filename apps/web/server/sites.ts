@@ -54,13 +54,6 @@ export async function requireOwnedSite(
   return { user, site: await getOwnedSite(user, id) };
 }
 
-/** Endereço público do site: domínio próprio (se houver) ou o grátis em /s/<slug>. */
-export function publicUrl(site: SiteRecord, origin: string): string | null {
-  if (site.status !== "published") return null;
-  if (site.customDomain) return `https://${site.customDomain}`;
-  return site.slug ? `${origin}/s/${site.slug}` : null;
-}
-
 /** Endereço grátis, mesmo quando há domínio próprio (útil enquanto o DNS não propaga). */
 export function freeUrl(site: SiteRecord, origin: string): string | null {
   return site.slug ? `${origin}/s/${site.slug}` : null;

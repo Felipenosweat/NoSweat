@@ -1,5 +1,6 @@
 import type { ApiError } from "@nosweat/schema";
 import type { z } from "zod";
+import { errorDigest, errorMessage, reportError } from "./notify/alert";
 
 // Helpers das rotas: todo erro sai no formato único { error: { code, message } }.
 
@@ -59,22 +60,25 @@ export async function readJson<T>(
 
   const result = schema.safeParse(body);
   if (!result.success) {
-    const message = result.error.issues
-      .map((issue) =>
-        issue.path.length ? `${issue.path.join(".")}: ${issue.message}` : issue.message,
-      )
-      .join("; ");
+    // Só as mensagens, sem o caminho do campo na frente ("email: ..."): todas as mensagens dos
+    // schemas são escritas para pessoas e aparecem na tela como vieram. Repetidas saem uma vez.
+    const message = [...new Set(result.error.issues.map((issue) => issue.message))].join(" ");
     return { ok: false, response: errorResponse(400, "invalid_request", message) };
   }
   return { ok: true, data: result.data };
 }
 
-/** Envolve o handler: qualquer exceção inesperada vira 500 no formato padrão. */
-export async function handle(handler: () => Promise<Response>): Promise<Response> {
+/**
+ * Envolve o handler: qualquer exceção inesperada vira 500 no formato padrão e avisa a equipe
+ * (server/notify/alert.ts; só com ALERT_EMAIL configurado). `route` identifica a rota no alerta.
+ */
+export async function handle(handler: () => Promise<Response>, route = "/api"): Promise<Response> {
   try {
     return await handler();
   } catch (error) {
     console.error("[api] unexpected error", error);
+    // Nunca lança e responde rápido quando o alerta está desligado ou já saiu há pouco.
+    await reportError({ route, digest: errorDigest(error), message: errorMessage(error) });
     return errorResponse(500, "internal_error", "Something went wrong. Please try again.");
   }
 }

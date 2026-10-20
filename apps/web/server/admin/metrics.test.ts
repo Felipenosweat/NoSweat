@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AccessGrant } from "../billing/grants";
 import type { SubscriptionRecord } from "../billing/store";
-import { grantsExpiringSoon, summarizeActivePlans } from "./metrics";
+import { grantsExpiringSoon, ownersWithActivePlan, summarizeActivePlans } from "./metrics";
 
 const NOW = new Date("2026-10-16T12:00:00Z");
 const DAY = 24 * 60 * 60 * 1000;
@@ -54,5 +54,15 @@ describe("admin metrics", () => {
       grant("d", "starter", 1),
     ];
     expect(grantsExpiringSoon(grants, NOW, 7).map((g) => g.userId)).toEqual(["d", "a"]);
+  });
+
+  it("knows which owners keep their published sites live (card, manual access or admin)", () => {
+    const owners = ownersWithActivePlan(
+      [sub("a", "pro", "active"), sub("b", "starter", "canceled")],
+      [grant("c", "pro", 3), grant("d", "pro", -1)],
+      new Set(["admin"]),
+      NOW,
+    );
+    expect([...owners].sort()).toEqual(["a", "admin", "c"]);
   });
 });

@@ -9,5 +9,5 @@ export async function GET(): Promise<Response> {
     const user = await getCurrentUser();
     if (!user) return unauthorized();
     return jsonResponse(BillingStatusResponse, await getBillingStatus(user));
-  });
+  }, "/api/me/billing");
 }

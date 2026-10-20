@@ -162,7 +162,7 @@ export function ServiceLedComposition({
           </div>
         </Wrap>
       </header>
-      <main className="flex-1">
+      <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
         {!hasContact && <AreaBand model={model} />}
       </main>
