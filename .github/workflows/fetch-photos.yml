@@ -7,7 +7,7 @@ name: Fetch photos
 on:
   push:
     branches: ["claude/dreamy-maxwell-19fv98"]
-    paths: ["qa/photo-queries.json"]
+    paths: ["qa/photo-queries.json", "qa/fetch-photos.mjs", ".github/workflows/fetch-photos.yml"]
 
 permissions:
   contents: write
@@ -20,6 +20,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # O repositório usa pnpm, mas aqui só entra o sharp (npm, numa pasta à parte).
+          package-manager-cache: false
       - name: Install sharp
         run: |
           mkdir -p /tmp/photos && cp qa/fetch-photos.mjs qa/photo-queries.json /tmp/photos/
