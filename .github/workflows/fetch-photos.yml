@@ -1,0 +1,36 @@
+name: Fetch photos
+
+# Busca fotos grátis (licença Unsplash) para os sites-modelo, numa máquina do GitHub (a sessão do
+# Claude não tem internet aberta). Roda quando qa/photo-queries.json muda; o resultado (fotos em
+# webp + manifest.json com o crédito de cada uma + folhas de contato para escolher) vai para a
+# ref refs/qa/photos, fora da branch.
+on:
+  push:
+    branches: ["claude/dreamy-maxwell-19fv98"]
+    paths: ["qa/photo-queries.json", "qa/fetch-photos.mjs", ".github/workflows/fetch-photos.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          # O repositório usa pnpm, mas aqui só entra o sharp (npm, numa pasta à parte).
+          package-manager-cache: false
+      - name: Install sharp
+        run: |
+          mkdir -p /tmp/photos && cp qa/fetch-photos.mjs qa/photo-queries.json /tmp/photos/
+          cd /tmp/photos && npm init -y >/dev/null && npm install sharp@0.34.4
+      - name: Fetch
+        run: cd /tmp/photos && OUT_DIR="$GITHUB_WORKSPACE/qa/out-photos" node fetch-photos.mjs
+      - name: Publish results to refs/qa/photos
+        run: |
+          cd qa/out-photos
+          git init -q -b results && git add -A
+          git -c user.name="fetch-photos" -c user.email="fetch-photos@users.noreply.github.com" commit -qm "photos for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" results:refs/qa/photos

@@ -4,6 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SiteRenderer } from "../SiteRenderer";
 import { VISITOR_PRIVACY_URL } from "../sections/ContactForm";
+import { buildModel } from "./model";
+import { lowestPrice } from "./shared";
 
 const withComposition = (spec: SiteSpec, composition: Composition): SiteSpec => ({
   ...spec,
@@ -73,5 +75,28 @@ describe("site chrome", () => {
     };
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).not.toContain("Mystery role");
+  });
+});
+
+describe("lowest price fact", () => {
+  it("reads thousands separators ($3,200 is not $3)", () => {
+    const priced = (prices: string[]): SiteSpec => ({
+      ...fixtures["vega-photo"],
+      sections: fixtures["vega-photo"].sections.map((section) =>
+        section.type === "services"
+          ? {
+              ...section,
+              items: prices.map((price, index) => ({
+                name: `Service ${index}`,
+                description: "Something we do.",
+                price,
+              })),
+            }
+          : section,
+      ),
+    });
+    expect(lowestPrice(buildModel(priced(["from $3,200", "$18,000"])))).toBe("$3,200");
+    expect(lowestPrice(buildModel(priced(["from $1,800", "$450"])))).toBe("$450");
+    expect(lowestPrice(buildModel(priced(["$12.50"])))).toBe("$12.50");
   });
 });

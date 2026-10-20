@@ -106,7 +106,7 @@ export function PhotoFrame({
   /** Raio da moldura da foto (o mesmo da composição). */
   radius?: string;
 }) {
-  const hasCredit = Boolean(image.credit) && image.source !== "upload";
+  const hasCredit = Boolean(image.credit);
   return (
     <figure className={className}>
       <div
@@ -186,12 +186,19 @@ export function lowestPrice(model: SiteModel): string | undefined {
   for (const section of model.spec.sections) {
     if (section.type !== "services") continue;
     for (const item of section.items) {
-      const match = item.price ? /\$\s?(\d+(?:\.\d{1,2})?)/.exec(item.price) : null;
-      const value = match?.[1] ? Number(match[1]) : Number.NaN;
+      // Aceita separador de milhar: "$3,200" vale 3200 (não 3).
+      const match = item.price
+        ? /\$\s?(\d{1,3}(?:,\d{3})+|\d+)(\.\d{1,2})?/.exec(item.price)
+        : null;
+      const value = match?.[1]
+        ? Number(`${match[1].replace(/,/g, "")}${match[2] ?? ""}`)
+        : Number.NaN;
       if (Number.isFinite(value) && (lowest === undefined || value < lowest)) lowest = value;
     }
   }
-  return lowest === undefined ? undefined : `$${lowest}`;
+  if (lowest === undefined) return undefined;
+  const cents = Number.isInteger(lowest) ? 0 : 2;
+  return `$${lowest.toLocaleString("en-US", { minimumFractionDigits: cents, maximumFractionDigits: cents })}`;
 }
 
 /** Um fato como placa: micro-rótulo em caixa alta + o fato. */

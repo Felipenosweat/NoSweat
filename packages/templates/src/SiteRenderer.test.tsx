@@ -113,6 +113,18 @@ describe("photos", () => {
     expect(html).toContain('rel="noopener noreferrer"');
   });
 
+  it("credits licensed example photos even when they are local files", () => {
+    const image: SiteImage = {
+      ...scene,
+      url: "/photos/models/example-1.webp",
+      source: "upload",
+      credit: { name: "Ana Lee", url: "https://www.flickr.com/photos/ana/1" },
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={withHeroImage(image)} />);
+    expect(html).toContain("Ana Lee");
+    expect(html).toContain('href="https://www.flickr.com/photos/ana/1"');
+  });
+
   it("credits Unsplash photos the way Unsplash asks", () => {
     const image: SiteImage = {
       ...scene,
