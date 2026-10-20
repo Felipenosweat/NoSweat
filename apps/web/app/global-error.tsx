@@ -32,6 +32,9 @@ export default function GlobalError({
             >
               Try again
             </button>
+            {/* <a> de propósito: o global-error substitui o layout raiz, então recarregar a página
+                inteira é o jeito seguro de sair daqui. */}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/"
               className="rounded-full border border-slate-300 px-6 py-3 font-semibold text-slate-700 hover:border-slate-400"
