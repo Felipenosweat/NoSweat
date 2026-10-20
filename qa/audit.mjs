@@ -4,7 +4,42 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "https://nosweatfd.com";
-const PAGES = ["/", "/create", "/pricing", "/login", "/signup", "/terms", "/privacy", "/credits", "/examples/joes-plumbing", "/examples/glow-salon", "/examples/rosas-kitchen", "/examples/hale-ortiz", "/examples/sparkle-cleaning", "/examples/vega-photo", "/examples/bright-spark-electric", "/examples/greenline-landscaping", "/examples/true-coat-painting", "/examples/fade-and-co-barbers", "/examples/polished-nail-studio", "/examples/still-water-spa", "/examples/arch-and-lash", "/examples/north-loop-coffee", "/examples/brick-oven-pizza", "/examples/smoke-and-rail-bbq", "/examples/sunrise-bakery", "/examples/mercer-law", "/examples/bayside-family-dental", "/examples/keystone-insurance", "/examples/open-door-counseling", "/examples/hollis-interiors", "/examples/iron-lotus-tattoo", "/examples/reel-north-films", "/examples/fieldwork-studio", "/dashboard"];
+const PAGES = [
+  "/",
+  "/create",
+  "/pricing",
+  "/login",
+  "/signup",
+  "/terms",
+  "/privacy",
+  "/credits",
+  "/examples/joes-plumbing",
+  "/examples/glow-salon",
+  "/examples/rosas-kitchen",
+  "/examples/hale-ortiz",
+  "/examples/sparkle-cleaning",
+  "/examples/vega-photo",
+  "/examples/bright-spark-electric",
+  "/examples/greenline-landscaping",
+  "/examples/true-coat-painting",
+  "/examples/fade-and-co-barbers",
+  "/examples/polished-nail-studio",
+  "/examples/still-water-spa",
+  "/examples/arch-and-lash",
+  "/examples/north-loop-coffee",
+  "/examples/brick-oven-pizza",
+  "/examples/smoke-and-rail-bbq",
+  "/examples/sunrise-bakery",
+  "/examples/mercer-law",
+  "/examples/bayside-family-dental",
+  "/examples/keystone-insurance",
+  "/examples/open-door-counseling",
+  "/examples/hollis-interiors",
+  "/examples/iron-lotus-tattoo",
+  "/examples/reel-north-films",
+  "/examples/fieldwork-studio",
+  "/dashboard",
+];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1440, height: 900 },
@@ -30,7 +65,8 @@ if (process.env.SEED === "1") {
     }
   };
   const gen = await post("/api/sites/generate", {
-    brief: "Sparkle & Co. Cleaning: weekly and move-out house cleaning in Worcester, MA. Call (508) 555-0142.",
+    brief:
+      "Sparkle & Co. Cleaning: weekly and move-out house cleaning in Worcester, MA. Call (508) 555-0142.",
   });
   const id = gen.siteId;
   if (id) {
@@ -45,7 +81,15 @@ if (process.env.SEED === "1") {
     next.setUTCMonth(next.getUTCMonth() + 1, 1);
     const month = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
     await post("/api/social/plan", { month, postsPerWeek: 3 });
-    PAGES.push(`/sites/${id}`, `/sites/${id}/edit`, "/clients", "/social", "/social/review", "/billing", "/admin");
+    PAGES.push(
+      `/sites/${id}`,
+      `/sites/${id}/edit`,
+      "/clients",
+      "/social",
+      "/social/review",
+      "/billing",
+      "/admin",
+    );
   }
   await api.close();
 }
@@ -63,7 +107,9 @@ for (const vp of VIEWPORTS) {
       const res = await page.goto(BASE + path, { waitUntil: "networkidle", timeout: 45000 });
       status = res?.status() ?? 0;
       await page.waitForTimeout(1500);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
       if (overflow > 1) issues.push(`horizontal overflow: ${overflow}px`);
       const slug = path === "/" ? "-home" : path.replaceAll("/", "-");
       if (path === "/") {
@@ -73,7 +119,9 @@ for (const vp of VIEWPORTS) {
         for (let y = 0; y < total && shot < 60; y += vp.height) {
           await page.evaluate((top) => window.scrollTo(0, top), y);
           await page.waitForTimeout(900);
-          await page.screenshot({ path: `${OUT}/${vp.name}-home-scroll-${String(shot).padStart(2, "0")}.png` });
+          await page.screenshot({
+            path: `${OUT}/${vp.name}-home-scroll-${String(shot).padStart(2, "0")}.png`,
+          });
           shot += 1;
         }
         // Depois de rolar tudo: algo de tamanho razoável ainda invisível?
@@ -82,13 +130,24 @@ for (const vp of VIEWPORTS) {
             .filter((el) => {
               const r = el.getBoundingClientRect();
               const st = getComputedStyle(el);
-              return r.width > 120 && r.height > 40 && (st.opacity === "0" || st.visibility === "hidden");
+              return (
+                r.width > 120 && r.height > 40 && (st.opacity === "0" || st.visibility === "hidden")
+              );
             })
             .slice(0, 15)
             .map((el) => `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)}`),
         );
         if (hidden.length) issues.push(`still invisible after scrolling: ${hidden.join(" | ")}`);
       } else {
+        // Rola a página inteira antes do print: fotos com loading="lazy" só carregam perto da tela.
+        await page.evaluate(async () => {
+          for (let y = 0; y < document.body.scrollHeight; y += 600) {
+            window.scrollTo(0, y);
+            await new Promise((resolve) => setTimeout(resolve, 120));
+          }
+          window.scrollTo(0, 0);
+        });
+        await page.waitForLoadState("networkidle").catch(() => {});
         await page.screenshot({ path: `${OUT}/${vp.name}${slug}.png`, fullPage: true });
       }
     } catch (e) {
