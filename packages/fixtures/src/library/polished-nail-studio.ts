@@ -1,7 +1,8 @@
 import type { ModelEntry } from "./types";
 
 // Modelo de estúdio de unhas (beleza, composição modular): blocos lado a lado com cardápio,
-// horário e contato; foto de ambiente (esmalte, kind "scene") no bloco ao lado do título. Verde-azulado + pêssego (pêssego nunca como texto). Fatos: só os do `brief`.
+// horário e contato; foto de ambiente (esmalte, kind "scene") no bloco ao lado do título.
+// Verde-azulado + pêssego (pêssego nunca como texto). Fatos: só os do `brief`.
 export const polishedNailStudio: ModelEntry = {
   slug: "polished-nail-studio",
   category: "beauty",
