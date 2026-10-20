@@ -20,7 +20,9 @@ describe("contact form placeholders", () => {
   it("põe os serviços no campo de serviço em agendamento e consultoria", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={fixtures["hale-ortiz"]} />);
     expect(html).not.toContain("Monthly books, a tax return");
-    expect(html).toMatch(/name="x_topic"[^>]*placeholder="[^"]+\.\.\."/);
+    // A ordem dos atributos no HTML não é garantida: acha o <input> do campo e olha o placeholder.
+    const topic = html.match(/<input[^>]*name="x_topic"[^>]*>/)?.[0] ?? "";
+    expect(topic).toMatch(/placeholder="[^"]+\.\.\."/);
   });
 
   it("só pede os nomes do casal em negócios de casamento", () => {
