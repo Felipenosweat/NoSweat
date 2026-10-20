@@ -3,10 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { getAccount, requireAdmin } from "@/server/admin";
 import { VIEW_AS_COOKIE, signViewAsToken, viewAsCookieOptions } from "@/server/auth/view-as-token";
-import { extendExpiry, getGrantStore } from "@/server/billing";
+import { extendExpiry, getGrantStore, isGrantActive, PLANS } from "@/server/billing";
+import { sameInstant } from "@/server/billing/grants";
+import {
+  accessAppUrl,
+  accessEmailConfigured,
+  sendAccessEmail,
+  simpleHtml,
+} from "@/server/notify/access-email";
 import { getSocialStore } from "@/server/social/store";
 
 // Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp),
@@ -14,9 +22,18 @@ import { getSocialStore } from "@/server/social/store";
 
 const GrantForm = z.object({
   plan: z.enum(["starter", "pro", "premium"]),
-  days: z.coerce.number().int().min(1).max(3660),
+  // 0 dias só para trocar de plano sem mexer na data (conferido abaixo).
+  days: z.coerce.number().int().min(0).max(3660),
   note: z.string().trim().max(200).optional(),
+  // Data final que o admin estava vendo ("none" = sem acesso): evita somar os dias duas vezes.
+  expected: z.string().trim().min(1).max(64),
 });
+
+/** Resposta das ações de acesso para o formulário (GrantAccessForm.tsx). */
+export type GrantAccessState = { ok: boolean; message: string };
+
+const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
+const longDate = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" });
 
 async function requireClient(userId: string) {
   const admin = await requireAdmin();
@@ -29,32 +46,125 @@ function refresh(userId: string) {
   revalidatePath("/admin");
 }
 
-/** Libera o plano por N dias (somando ao que ainda falta, se o acesso estiver valendo). */
-export async function grantAccess(userId: string, formData: FormData): Promise<void> {
+/** Histórico de notas no próprio campo: a nova (com a data) na frente das antigas. */
+function withNote(entry: string, previous: string | null | undefined): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return `${today}: ${entry}${previous ? ` | ${previous}` : ""}`.slice(0, 1000);
+}
+
+/** Avisa o cliente por e-mail que o plano está ativo (depois da resposta; sem Resend, nada). */
+function emailPlanActive(email: string | null, planName: string, expiresAt: string): void {
+  if (!email || !accessEmailConfigured()) return;
+  const appUrl = accessAppUrl();
+  const paragraphs = [
+    `Your No Sweat ${planName} plan is active until ${longDate.format(new Date(expiresAt))}.`,
+    `Open your dashboard to publish your website: ${appUrl}/dashboard`,
+    "Questions? Just reply to this email.",
+    "No Sweat",
+  ];
+  const task = async () => {
+    await sendAccessEmail(
+      email,
+      `Your No Sweat ${planName} plan is active`,
+      paragraphs.join("\n\n"),
+      simpleHtml(paragraphs),
+    );
+  };
+  try {
+    after(task);
+  } catch {
+    void task();
+  }
+}
+
+/**
+ * Libera o plano por N dias (somando ao que ainda falta, se o acesso estiver valendo). Com 0 dias,
+ * só troca o plano e mantém a data. Recusa se o acesso mudou desde que a página abriu (clique
+ * duplo ou outra aba), para nunca somar os dias duas vezes.
+ */
+export async function grantAccess(
+  userId: string,
+  _prev: GrantAccessState,
+  formData: FormData,
+): Promise<GrantAccessState> {
   const admin = await requireClient(userId);
-  const input = GrantForm.parse({
+  const parsed = GrantForm.safeParse({
     plan: formData.get("plan"),
     days: formData.get("days"),
     note: formData.get("note") || undefined,
+    expected: formData.get("expected"),
   });
+  if (!parsed.success) {
+    return { ok: false, message: "Check the plan and the number of days (0 to 3660)." };
+  }
+  const input = parsed.data;
   const store = getGrantStore();
   const current = await store.get(userId);
+  const unchanged =
+    input.expected === "none" ? current === null : sameInstant(current?.expiresAt, input.expected);
+  if (!unchanged) return { ok: false, message: "This account changed. Reload the page." };
+
+  const activeGrant = isGrantActive(current) ? current : null;
+  if (input.days === 0 && (!activeGrant || activeGrant.plan === input.plan)) {
+    return {
+      ok: false,
+      message: activeGrant
+        ? "Pick another plan to switch, or add at least 1 day."
+        : "Add at least 1 day.",
+    };
+  }
+
+  const expiresAt =
+    input.days === 0 && activeGrant ? activeGrant.expiresAt : extendExpiry(current, input.days);
   await store.upsert({
     userId,
     plan: input.plan,
-    expiresAt: extendExpiry(current, input.days),
-    note: input.note ?? current?.note ?? null,
+    expiresAt,
+    note: input.note ? withNote(input.note, current?.note) : (current?.note ?? null),
     grantedBy: admin.id,
     updatedAt: new Date().toISOString(),
   });
   refresh(userId);
+
+  const planName = PLANS[input.plan].name;
+  const account = await getAccount(userId);
+  emailPlanActive(account?.email ?? null, planName, expiresAt);
+  return {
+    ok: true,
+    message: `${planName} access until ${dateFormat.format(new Date(expiresAt))}.${
+      account?.email && accessEmailConfigured()
+        ? " We're emailing them that the plan is active."
+        : ""
+    }`,
+  };
 }
 
-/** Corta o acesso manual na hora (o site sai do ar se não houver assinatura do Stripe). */
-export async function revokeAccess(userId: string): Promise<void> {
-  await requireClient(userId);
-  await getGrantStore().remove(userId);
+/**
+ * Corta o acesso manual na hora (o site sai do ar se não houver assinatura do Stripe). Não apaga
+ * a linha: a data final vira "agora", e o plano e as notas ficam como histórico.
+ */
+export async function revokeAccess(
+  userId: string,
+  _prev: GrantAccessState,
+  _formData: FormData,
+): Promise<GrantAccessState> {
+  const admin = await requireClient(userId);
+  const store = getGrantStore();
+  const current = await store.get(userId);
+  if (!isGrantActive(current)) {
+    return { ok: false, message: "There is no manual access to remove. Reload the page." };
+  }
+  const now = new Date().toISOString();
+  await store.upsert({
+    userId,
+    plan: current.plan,
+    expiresAt: now,
+    note: withNote("Access removed", current.note),
+    grantedBy: admin.id,
+    updatedAt: now,
+  });
   refresh(userId);
+  return { ok: true, message: "Manual access removed." };
 }
 
 /** Liga/desliga o "testador" do Instagram (pode conectar enquanto o app da Meta está em teste). */

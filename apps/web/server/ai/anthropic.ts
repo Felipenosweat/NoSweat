@@ -27,6 +27,14 @@ const DEFAULT_EDIT_MODEL = "claude-haiku-5-5";
 const MODEL_FIRST_MAX_TOKENS = 2000;
 /** Tempo máximo de cada chamada do caminho barato: sobra tempo para o caminho completo. */
 const MODEL_FIRST_TIMEOUT_MS = 30_000;
+/**
+ * Orçamento total de uma geração (caminho barato + completo). A rota tem maxDuration = 300 s na
+ * Vercel: terminando antes, a rota sempre devolve o próprio erro em JSON (502) em vez de a Vercel
+ * cortar a função com um 504 sem corpo.
+ */
+const GENERATION_BUDGET_MS = 270_000;
+/** Tempo mínimo dado ao caminho completo, mesmo que o barato tenha gastado quase tudo. */
+const FULL_MIN_TIMEOUT_MS = 20_000;
 
 export function modelFirstEnabled(value = process.env.AI_MODEL_FIRST): boolean {
   return value?.trim().toLowerCase() !== "false";
@@ -53,6 +61,7 @@ export class AnthropicGenerator implements SiteGenerator {
   lastPath: GenerationPath | null = null;
 
   async generateSite(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
+    const deadline = Date.now() + GENERATION_BUDGET_MS;
     if (this.modelFirst) {
       const spec = await this.generateFromModel(brief, plan);
       if (spec) {
@@ -62,7 +71,11 @@ export class AnthropicGenerator implements SiteGenerator {
     }
     this.lastPath = "full";
     console.info("[ai] generate path", { path: "full", model: this.model });
-    return this.generateFull(brief, plan);
+    // O que sobrou do orçamento, sem nova tentativa do SDK (que passaria do limite da função).
+    return this.generateFull(brief, plan, {
+      timeout: Math.max(FULL_MIN_TIMEOUT_MS, deadline - Date.now()),
+      maxRetries: 0,
+    });
   }
 
   /**
@@ -159,23 +172,30 @@ export class AnthropicGenerator implements SiteGenerator {
   }
 
   /** Caminho completo (o de sempre): o modelo principal escreve o SiteSpec inteiro. */
-  private async generateFull(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
-    const response = await this.client.messages.parse({
-      model: this.model,
-      max_tokens: 16000,
-      // Pensamento adaptativo é o padrão neste modelo; "medium" equilibra qualidade e tempo de espera.
-      output_config: {
-        effort: "medium",
-        format: zodOutputFormat(SiteSpec),
-      },
-      system: SITE_GENERATION_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: generationRequest(brief, plan),
+  private async generateFull(
+    brief: string,
+    plan?: DesignPlan,
+    options?: { timeout?: number; maxRetries?: number },
+  ): Promise<SiteSpec> {
+    const response = await this.client.messages.parse(
+      {
+        model: this.model,
+        max_tokens: 16000,
+        // Pensamento adaptativo é o padrão neste modelo; "medium" equilibra qualidade e tempo de espera.
+        output_config: {
+          effort: "medium",
+          format: zodOutputFormat(SiteSpec),
         },
-      ],
-    });
+        system: SITE_GENERATION_SYSTEM_PROMPT,
+        messages: [
+          {
+            role: "user",
+            content: generationRequest(brief, plan),
+          },
+        ],
+      },
+      options,
+    );
 
     if (response.stop_reason === "refusal") {
       throw new Error(

@@ -16,7 +16,8 @@ const MULTIPART_OVERHEAD = 64 * 1024;
 
 /**
  * POST /api/sites/[id]/images: o dono envia uma foto (multipart, campo "file"; "alt" opcional).
- * Aceita JPG, PNG e WebP até 8 MB (confere o MIME e os bytes). Grava no bucket `site-images`
+ * Aceita JPG, PNG e WebP até 4 MB (confere o MIME e os bytes; o editor reduz as fotos maiores
+ * no navegador antes de enviar, porque a Vercel recusa corpos acima de 4,5 MB). Grava no bucket `site-images`
  * do Supabase Storage e devolve a SiteImage (source "upload", kind "owner").
  * Só salva o arquivo: quem coloca a foto no site é o editor (PATCH do SiteSpec).
  */
@@ -34,7 +35,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 
     const declaredLength = Number(request.headers.get("content-length") ?? 0);
     if (declaredLength > MAX_IMAGE_BYTES + MULTIPART_OVERHEAD) {
-      return errorResponse(413, "invalid_request", "Photos can be up to 8 MB.");
+      return errorResponse(413, "invalid_request", "Photos can be up to 4 MB.");
     }
 
     let form: FormData;
@@ -49,7 +50,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       return errorResponse(400, "invalid_request", "Please choose a photo to upload.");
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      return errorResponse(413, "invalid_request", "Photos can be up to 8 MB.");
+      return errorResponse(413, "invalid_request", "Photos can be up to 4 MB.");
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer());

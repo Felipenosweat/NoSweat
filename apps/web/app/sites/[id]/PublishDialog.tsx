@@ -121,6 +121,8 @@ export function PublishDialog({
   pending = false,
   error = null,
   domain,
+  domainUrl = null,
+  needsPlan = false,
   returnFocusTo,
 }: {
   open: boolean;
@@ -138,6 +140,13 @@ export function PublishDialog({
    * senão é um link para a página do site. `connected` troca o texto para "Manage domain".
    */
   domain: { href: string; samePage: boolean; connected: boolean };
+  /**
+   * Domínio próprio JÁ FUNCIONANDO (https://dominio.com), ou `null`. Quando existe, é o link
+   * que vai nos compartilhamentos e no QR code; a caixa "Free address" continua com o grátis.
+   */
+  domainUrl?: string | null;
+  /** Publicar exige escolher um plano antes: mostra "Plan required" junto do botão. */
+  needsPlan?: boolean;
   /** Plano B para o foco ao fechar, se o botão que abriu sumiu. */
   returnFocusTo?: () => HTMLElement | null;
 }) {
@@ -145,10 +154,13 @@ export function PublishDialog({
   const openerRef = useRef<HTMLElement | null>(null);
   // "Connect domain" leva o foco para o campo de domínio; aí não devolvemos ao botão.
   const skipReturnFocus = useRef(false);
-  const [copied, setCopied] = useState(false);
+  /** Qual endereço acabou de ser copiado (o grátis ou o domínio próprio). */
+  const [copied, setCopied] = useState<"free" | "domain" | null>(null);
   const canShare = useCanWebShare();
   const live = state !== "draft";
   const { prefix, name } = splitSiteUrl(address);
+  // O que vai para as pessoas: o domínio próprio quando ele já funciona, senão o grátis.
+  const shareUrl = domainUrl ?? address;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -163,7 +175,7 @@ export function PublishDialog({
 
   useEffect(() => {
     if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 2000);
+    const timer = setTimeout(() => setCopied(null), 2000);
     return () => clearTimeout(timer);
   }, [copied]);
 
@@ -179,10 +191,11 @@ export function PublishDialog({
     target?.focus();
   }
 
-  async function copy() {
+  async function copy(which: "free" | "domain") {
+    const value = which === "domain" && domainUrl ? domainUrl : address;
     try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
+      await navigator.clipboard.writeText(value);
+      setCopied(which);
       markShared(siteId);
     } catch {
       // Sem permissão de área de transferência: o link continua visível para copiar na mão.
@@ -194,7 +207,7 @@ export function PublishDialog({
       await navigator.share({
         title: siteName,
         text: `${siteName}: our new website`,
-        url: address,
+        url: shareUrl,
       });
       markShared(siteId);
     } catch {
@@ -213,12 +226,12 @@ export function PublishDialog({
     (input ?? section)?.focus({ preventScroll: true });
   }
 
-  const message = `Our new website is live: ${address}`;
+  const message = `Our new website is live: ${shareUrl}`;
   const shares = [
     { label: "Text", href: `sms:?&body=${encodeURIComponent(message)}`, external: false },
     {
       label: "Facebook",
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(address)}`,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
       external: true,
     },
     {
@@ -293,7 +306,8 @@ export function PublishDialog({
                 <h3 id="free-address-title" className="text-[13px] font-semibold text-ink">
                   Free address
                 </h3>
-                <span className="text-[12px] text-slate-500">Free</span>
+                {/* Com plano obrigatório, "Free" confundiria: o endereço é grátis, publicar não. */}
+                {!needsPlan && <span className="text-[12px] text-slate-500">Free</span>}
               </div>
               <p className="mt-2 font-mono text-[14px] leading-6 break-all">
                 <span className="text-slate-500">{prefix}</span>
@@ -301,9 +315,9 @@ export function PublishDialog({
               </p>
               {live ? (
                 <div className="mt-2 -ml-2 flex flex-wrap items-center gap-1">
-                  <button type="button" onClick={copy} className={smallAction}>
-                    {copied ? <CheckIcon /> : <CopyIcon />}
-                    {copied ? "Copied" : "Copy"}
+                  <button type="button" onClick={() => copy("free")} className={smallAction}>
+                    {copied === "free" ? <CheckIcon /> : <CopyIcon />}
+                    {copied === "free" ? "Copied" : "Copy"}
                   </button>
                   <a href={address} target="_blank" rel="noreferrer" className={smallAction}>
                     <OpenIcon />
@@ -333,7 +347,7 @@ export function PublishDialog({
                 </summary>
                 <div className="mt-2 flex items-start gap-4">
                   <QrCode
-                    value={address}
+                    value={shareUrl}
                     className="size-24 shrink-0 rounded-xl ring-1 ring-slate-200"
                   />
                   <ul className="flex flex-wrap gap-2">
@@ -369,9 +383,29 @@ export function PublishDialog({
               <h3 id="own-domain-title" className="text-[13px] font-semibold text-ink">
                 Your own domain
               </h3>
-              <p className="mt-0.5 text-[13px] leading-snug text-slate-500">
-                Use your own address. We walk you through DNS and set up HTTPS for you.
-              </p>
+              {domainUrl ? (
+                <>
+                  <p className="mt-2 font-mono text-[14px] leading-6 font-semibold break-all text-ink">
+                    {domainUrl.replace(/^https?:\/\//, "")}
+                  </p>
+                  <div className="mt-1 -ml-2 flex flex-wrap items-center gap-1">
+                    <button type="button" onClick={() => copy("domain")} className={smallAction}>
+                      {copied === "domain" ? <CheckIcon /> : <CopyIcon />}
+                      {copied === "domain" ? "Copied" : "Copy"}
+                      <span className="sr-only"> your domain</span>
+                    </button>
+                    <a href={domainUrl} target="_blank" rel="noreferrer" className={smallAction}>
+                      <OpenIcon />
+                      Open
+                      <span className="sr-only"> your domain (opens in a new tab)</span>
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <p className="mt-0.5 text-[13px] leading-snug text-slate-500">
+                  Use your own address. We walk you through DNS and set up HTTPS for you.
+                </p>
+              )}
               <a
                 href={domain.href}
                 onClick={goToDomain}
@@ -396,11 +430,20 @@ export function PublishDialog({
                 {error}
               </p>
             )}
-            <p className="text-[13px] text-slate-500">
-              {state === "current"
-                ? "Your site already has the latest version."
-                : "Check the preview before publishing."}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <p id="publish-plan-note" className="text-[13px] text-slate-500">
+                {state === "current"
+                  ? "Your site already has the latest version."
+                  : needsPlan
+                    ? "Pick a plan to put it online. Building and previewing stay free."
+                    : "Check the preview before publishing."}
+              </p>
+              {needsPlan && state !== "current" && (
+                <span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[12px] font-semibold text-amber-800 ring-1 ring-amber-200">
+                  Plan required
+                </span>
+              )}
+            </div>
             {state === "current" ? (
               <button
                 type="button"
@@ -416,6 +459,7 @@ export function PublishDialog({
                 onClick={onPublish}
                 disabled={pending}
                 aria-busy={pending}
+                aria-describedby={needsPlan ? "publish-plan-note" : undefined}
                 className={`mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px disabled:cursor-wait disabled:opacity-80 motion-reduce:transition-none ${focusRing}`}
               >
                 <Svg className="size-4">

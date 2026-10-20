@@ -1,5 +1,5 @@
 import type { PlanId } from "@nosweat/schema";
-import { isActiveStatus } from "../billing";
+import { billingEnforced, isActiveStatus } from "../billing";
 import { getGrantStore, isGrantActive, type AccessGrant } from "../billing/grants";
 import { getBillingStore, type SubscriptionRecord } from "../billing/store";
 import { getClientStore } from "../clients/store";
@@ -52,6 +52,26 @@ export function summarizeActivePlans(
   return { byPlan, accounts: accounts.size };
 }
 
+/**
+ * Contas cujo site publicado fica no ar com os planos valendo (mesmo critério de
+ * ownerHasLiveAccess): admins, assinatura do Stripe ativa ou acesso manual valendo.
+ */
+export function ownersWithActivePlan(
+  subscriptions: SubscriptionRecord[],
+  grants: AccessGrant[],
+  adminIds: Set<string>,
+  now: Date = new Date(),
+): Set<string> {
+  const owners = new Set(adminIds);
+  for (const sub of subscriptions) {
+    if (sub.plan && isActiveStatus(sub.status)) owners.add(sub.userId);
+  }
+  for (const grant of grants) {
+    if (isGrantActive(grant, now)) owners.add(grant.userId);
+  }
+  return owners;
+}
+
 /** Acessos manuais que ainda valem e acabam nos próximos `days` dias (o que vence antes primeiro). */
 export function grantsExpiringSoon(
   grants: AccessGrant[],
@@ -88,6 +108,13 @@ export type Overview = {
   ai30d: UsageByKind | null;
   plans: { byPlan: PlanCount[]; accounts: number } | null;
   expiringGrants: AccessGrant[];
+  /**
+   * Donos com plano ativo (ou admins). `null` se as assinaturas não puderam ser lidas: aí a tela
+   * não marca nenhum site como "sem plano" (melhor não acusar errado).
+   */
+  ownersWithAccess: Set<string> | null;
+  /** Os planos valem (Stripe ou REQUIRE_PLAN): site de dono sem plano está fora do ar. */
+  enforced: boolean;
 };
 
 /** Tudo o que a página /admin mostra, lido de uma vez (fora do componente: usa o relógio). */
@@ -119,6 +146,10 @@ export async function loadOverview(): Promise<Overview> {
     ai30d,
     plans: subscriptions ? summarizeActivePlans(subscriptions, grants, now) : null,
     expiringGrants: grantsExpiringSoon(grants, now, 7),
+    ownersWithAccess: subscriptions
+      ? ownersWithActivePlan(subscriptions, grants, adminIds, now)
+      : null,
+    enforced: billingEnforced(),
   };
 }
 

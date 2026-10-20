@@ -24,6 +24,7 @@ export default async function EditSitePage({ params }: EditPageProps) {
   const aiEditsLeft = await remainingUses(actor, "ai_edit");
   const origin = await requestOrigin();
   // Endereço grátis: o atual, ou o que o site vai receber ao publicar (mesmo makeSlug da API).
+  // Antes da primeira publicação o editor recalcula com o nome digitado (origin + hasSlug).
   const freeAddress =
     freeUrl(site, origin) ?? `${origin}/s/${makeSlug(site.spec.business.name, site.id)}`;
   return (
@@ -33,6 +34,9 @@ export default async function EditSitePage({ params }: EditPageProps) {
       status={site.status === "published" ? "live" : "draft"}
       pendingChanges={hasUnpublishedChanges(site)}
       freeAddress={freeAddress}
+      origin={origin}
+      hasSlug={Boolean(site.slug)}
+      updatedAt={site.updatedAt}
       hasDomain={Boolean(site.customDomain)}
       aiEditsLeft={aiEditsLeft}
       isGuest={actor.kind === "guest"}

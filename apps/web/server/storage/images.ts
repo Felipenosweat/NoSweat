@@ -1,6 +1,10 @@
 // Validação das fotos enviadas pelo dono (sem dependências: só olha os bytes).
 
-export const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+/**
+ * 4 MB: abaixo do limite de 4,5 MB do corpo das funções da Vercel (acima dele a Vercel recusa o
+ * pedido antes da rota rodar). O editor reduz as fotos grandes no navegador antes de enviar.
+ */
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export type ImageFormat = { mime: "image/jpeg" | "image/png" | "image/webp"; ext: string };
 
@@ -43,7 +47,7 @@ export function checkImageUpload(declaredType: string, bytes: Uint8Array): Image
     return { ok: false, status: 400, message: "The file is empty." };
   }
   if (bytes.byteLength > MAX_IMAGE_BYTES) {
-    return { ok: false, status: 413, message: "Photos can be up to 8 MB." };
+    return { ok: false, status: 413, message: "Photos can be up to 4 MB." };
   }
   const notAnImage = "Please upload a JPG, PNG or WebP photo.";
   if (!(ALLOWED_IMAGE_TYPES as string[]).includes(declaredType)) {

@@ -5,7 +5,14 @@ import {
   UpdateSiteResponse,
 } from "@nosweat/schema";
 import { savesExceeded } from "@/server/quota";
-import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server/http";
+import {
+  errorResponse,
+  handle,
+  jsonResponse,
+  notFound,
+  readJson,
+  unauthorized,
+} from "@/server/http";
 import {
   deleteSiteForever,
   hasUnpublishedChanges,
@@ -34,7 +41,19 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
   });
 }
 
-/** PATCH /api/sites/[id]: { spec } → { siteId, spec }. Salva o RASCUNHO (o site no ar não muda). */
+/** Os dois horários são o mesmo instante? (O banco pode escrever o fuso de outro jeito.) */
+function sameInstant(a: string, b: string): boolean {
+  if (a === b) return true;
+  const left = Date.parse(a);
+  const right = Date.parse(b);
+  return Number.isFinite(left) && left === right;
+}
+
+/**
+ * PATCH /api/sites/[id]: { spec, baseUpdatedAt? } → { siteId, spec, updatedAt }. Salva o
+ * RASCUNHO (o site no ar não muda). Com `baseUpdatedAt` diferente do atual, o site mudou em
+ * outra aba ou aparelho: 409 "conflict" em vez de sobrescrever o trabalho mais novo.
+ */
 export async function PATCH(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
     const { id } = await params;
@@ -45,12 +64,25 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     const input = await readJson(request, UpdateSiteRequest);
     if (!input.ok) return input.response;
 
+    const base = input.data.baseUpdatedAt;
+    if (base && !sameInstant(base, current.updatedAt)) {
+      return errorResponse(
+        409,
+        "conflict",
+        "This site was changed in another tab or device. Reload to get the latest version.",
+      );
+    }
+
     const tooFast = await savesExceeded(current.id);
     if (tooFast) return tooFast;
 
     const site = await getSiteStore().update(id, input.data.spec, "edit");
     if (!site) return notFound();
-    return jsonResponse(UpdateSiteResponse, { siteId: site.id, spec: site.spec });
+    return jsonResponse(UpdateSiteResponse, {
+      siteId: site.id,
+      spec: site.spec,
+      updatedAt: site.updatedAt,
+    });
   });
 }
 

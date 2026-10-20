@@ -31,6 +31,50 @@ describe("readBrief", () => {
     expect(readBrief(exampleBriefs["joes-plumbing"]).primaryAction).toBe("call");
     expect(readBrief("We cater weddings").industry).toBe("food");
   });
+
+  // "kitchen" e "bar" são também serviços de casa (reforma, pia, limpeza, barra de apoio).
+  it.each([
+    ["Kitchen and bathroom remodeling in Dallas, TX.", "trades"],
+    ["Family-owned plumbing in Denver, CO. Kitchen sink clogs and leaks.", "trades"],
+    ["Kitchen sink clogs and garbage disposal installs in Austin, TX.", "trades"],
+    ["Handyman in Tampa, FL. Grab bar installs and shelves.", "trades"],
+    ["Kitchen and bathroom deep cleans for busy families in Austin, TX.", "cleaning"],
+    // O exemplo "Plumbing" do /create: "drain cleaning" de encanador é reparo, não limpeza.
+    [
+      "Family-owned plumbing in Denver, CO. Emergency repairs, drain cleaning and water heater installs. Open 7 days a week.",
+      "trades",
+    ],
+    ["Family Mexican restaurant in San Diego, CA.", "food"],
+    ["Cocktail bar in Austin, TX with live jazz.", "food"],
+    ["Neighborhood bar and kitchen in Austin, TX.", "food"],
+  ])("%s → %s", (brief, industry) => {
+    expect(readBrief(brief).industry).toBe(industry);
+  });
+
+  it("follows the business type picked in the wizard and leaves its line out of the description", () => {
+    const hint = "\n\nType of business: home services (repairs and contractor work).";
+    expect(readBrief(`Rosa's Kitchen in San Diego.${hint}`).industry).toBe("trades");
+    expect(readBrief(`Kitchen deep cleaning in Austin.${hint}`).industry).toBe("cleaning");
+    // A palavra "professional" da dica não vira tom "refined".
+    const pro = readBrief(
+      "Bookkeeping help.\n\nType of business: professional services (consulting, legal, financial).",
+    );
+    expect(pro.industry).toBe("professional");
+    expect(pro.tones).not.toContain("refined");
+    expect(
+      readBrief("Taco truck.\n\nType of business: restaurant or food business.").industry,
+    ).toBe("food");
+  });
+
+  it("reads the layout picked in the wizard", () => {
+    const s = readBrief(
+      "Hair salon in Miami, FL.\n\nType of business: beauty and personal care. Preferred layout: modular.\n\nStyle: elegant.",
+    );
+    expect(s.preferredComposition).toBe("modular");
+    expect(s.industry).toBe("beauty");
+    expect(s.style).toBe("elegant");
+    expect(readBrief("Hair salon in Miami, FL.").preferredComposition).toBeUndefined();
+  });
 });
 
 describe("planDesign", () => {
@@ -47,7 +91,9 @@ describe("planDesign", () => {
   });
 
   it("avoids repeating the layout this person just received", () => {
-    const brief = exampleBriefs["joes-plumbing"];
+    // Encanador com emergência fica no "service-led" mesmo assim (ramo e ação concordam muito);
+    // a variedade vale quando há outra opção perto.
+    const brief = exampleBriefs["hale-ortiz"];
     const first = planDesign(brief).composition;
     expect(planDesign(brief, { recent: [first, first] }).composition).not.toBe(first);
   });
@@ -58,6 +104,22 @@ describe("planDesign", () => {
     const plan = planDesign(brief, { photos: false });
     expect(plan.composition).not.toBe("immersive");
     expect(plan.allowed).not.toContain("immersive");
+  });
+
+  it("uses the layout the owner picked, and only that one", () => {
+    const brief = `${exampleBriefs["joes-plumbing"]}\n\nPreferred layout: editorial.`;
+    const plan = planDesign(brief);
+    expect(plan.composition).toBe("editorial");
+    expect(plan.allowed).toEqual(["editorial"]);
+    expect(plan.rationale).toContain("owner layout: editorial");
+    // A IA não pode trocar o layout escolhido.
+    expect(applyDesignPlan({ composition: "service-led" }, plan).composition).toBe("editorial");
+  });
+
+  it("ignores a picked immersive layout when there is no photo source", () => {
+    const brief = `${exampleBriefs["rosas-kitchen"]}\n\nPreferred layout: immersive.`;
+    expect(planDesign(brief).composition).toBe("immersive");
+    expect(planDesign(brief, { photos: false }).composition).not.toBe("immersive");
   });
 
   it("switches an immersive site without a hero photo to editorial", () => {

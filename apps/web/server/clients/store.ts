@@ -32,6 +32,11 @@ export interface ClientStore {
   insertActivity(activity: NewClientActivity): Promise<ClientActivityRecord | null>;
   /** Pedidos do site que o sync não deve importar: já importados ou descartados pelo dono. */
   handledLeadIds(ownerId: string): Promise<Set<string>>;
+  /**
+   * Põe um pedido do site na "lápide" sem criar cliente (ex.: o teste que o próprio dono mandou
+   * pelo formulário). Repetir não faz nada.
+   */
+  dismissLead(ownerId: string, leadId: string): Promise<void>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -322,6 +327,15 @@ export class SupabaseClientStore implements ClientStore {
     ]);
     return new Set([...imported, ...dismissed]);
   }
+
+  async dismissLead(ownerId: string, leadId: string) {
+    if (!isUuid(ownerId) || !isUuid(leadId)) return;
+    await this.call("/client_dismissed_leads", {
+      method: "POST",
+      prefer: "resolution=ignore-duplicates,return=minimal",
+      body: JSON.stringify([{ lead_id: leadId, owner_id: ownerId }]),
+    });
+  }
 }
 
 // ---------- memória ----------
@@ -442,6 +456,10 @@ export class MemoryClientStore implements ClientStore {
       if (owner === ownerId) ids.add(leadId);
     }
     return ids;
+  }
+
+  async dismissLead(ownerId: string, leadId: string) {
+    this.state.dismissedLeads.set(leadId, ownerId);
   }
 }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { makeSlug as sharedMakeSlug } from "@/lib/slug";
 import { isAppHost, isReservedDomain, makeSlug } from "./index";
 import { addDomain, isDomainConfigured, VercelDomainError } from "./vercel";
 
@@ -9,6 +10,10 @@ describe("makeSlug", () => {
     expect(makeSlug("Joe's Plumbing", "6f1c2a3b-4d5e")).toBe("joes-plumbing-6f1c2a");
     expect(makeSlug("Café São Paulo!", "abcdef12")).toBe("cafe-sao-paulo-abcdef");
     expect(makeSlug("!!!", "abcdef12")).toBe("site-abcdef");
+  });
+
+  it("is the same rule the editor uses in the browser", () => {
+    expect(makeSlug).toBe(sharedMakeSlug);
   });
 });
 

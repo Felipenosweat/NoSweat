@@ -2,18 +2,34 @@
 
 import { useActionState, useState } from "react";
 import { focusRing, panelText } from "@/components/DashboardUi";
-import { deleteTestAccountAction, type DeleteTestAccountState } from "../../actions";
+import { deleteAccountAction, type DeleteAccountState } from "../../actions";
 
-// "Danger zone" da conta de teste: só aparece para contas de teste (o servidor confere de novo).
-// Apagar exige digitar DELETE; vai embora tudo: sites (com os domínios liberados), clientes,
+// "Danger zone" da conta: aparece para toda conta que não é admin nem a própria (o servidor
+// confere de novo). Conta de teste: digitar DELETE. Conta de verdade (pedido de exclusão do
+// cliente): digitar o e-mail dela. Vai embora tudo: sites (com os domínios liberados), clientes,
 // posts, plano e a conta.
 
-const initialState: DeleteTestAccountState = { error: null };
+const initialState: DeleteAccountState = { error: null };
 
-export function DeleteTestAccount({ userId, sites }: { userId: string; sites: number }) {
+export function DeleteTestAccount({
+  userId,
+  sites,
+  testAccount,
+  email,
+}: {
+  userId: string;
+  sites: number;
+  testAccount: boolean;
+  /** E-mail da conta (para a confirmação de conta de verdade); sem e-mail, digita o id. */
+  email: string | null;
+}) {
   const [confirm, setConfirm] = useState("");
-  const [state, formAction, pending] = useActionState(deleteTestAccountAction, initialState);
-  const ready = confirm.trim() === "DELETE";
+  const [state, formAction, pending] = useActionState(deleteAccountAction, initialState);
+  const expected = testAccount ? "DELETE" : (email ?? userId);
+  const ready = testAccount
+    ? confirm.trim() === "DELETE"
+    : confirm.trim().toLowerCase() === expected.trim().toLowerCase();
+  const websites = `${sites} ${sites === 1 ? "website" : "websites"}`;
 
   return (
     <section
@@ -24,23 +40,32 @@ export function DeleteTestAccount({ userId, sites }: { userId: string; sites: nu
         id="danger-zone"
         className="font-display text-[15px] leading-6 font-semibold text-red-800"
       >
-        Delete this test account
+        {testAccount ? "Delete this test account" : "Delete this account"}
       </h2>
       <p className={`mt-1 ${panelText}`}>
-        Deletes the account for good, with its {sites} {sites === 1 ? "website" : "websites"} (taken
-        offline, domains released), clients, posts and plan. This can&rsquo;t be undone.
+        {testAccount
+          ? `Deletes the account for good, with its ${websites} (taken offline, domains released), clients, posts and plan. This can’t be undone.`
+          : `Only when the customer asked to delete their data. Deletes the account for good, with its ${websites} (taken offline, domains released), clients, posts and plan. This can’t be undone. A card subscription must be canceled in Stripe first.`}
       </p>
       <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
         <input type="hidden" name="userId" value={userId} />
-        <label className="text-sm font-medium text-slate-700">
-          Type DELETE to confirm
+        <input type="hidden" name="kind" value={testAccount ? "test" : "customer"} />
+        <label className="min-w-0 text-sm font-medium text-slate-700">
+          {testAccount
+            ? "Type DELETE to confirm"
+            : email
+              ? "Type the account’s email to confirm"
+              : "Type the account id to confirm"}
           <input
-            name="confirm"
+            name={testAccount ? "confirm" : "confirmEmail"}
             value={confirm}
             onChange={(event) => setConfirm(event.target.value)}
             autoComplete="off"
             spellCheck={false}
-            className={`mt-1.5 block h-11 w-48 rounded-lg border border-slate-300 bg-white px-3 font-mono text-[15px] text-ink sm:h-10 ${focusRing}`}
+            placeholder={testAccount ? undefined : expected}
+            className={`mt-1.5 block h-11 rounded-lg border border-slate-300 bg-white px-3 font-mono text-[15px] text-ink sm:h-10 ${
+              testAccount ? "w-48" : "w-full max-w-sm sm:w-80"
+            } ${focusRing}`}
           />
         </label>
         <button
@@ -48,7 +73,7 @@ export function DeleteTestAccount({ userId, sites }: { userId: string; sites: nu
           disabled={!ready || pending}
           className={`inline-flex min-h-11 items-center justify-center rounded-lg bg-red-700 px-4 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-red-800 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 sm:min-h-10 ${focusRing}`}
         >
-          {pending ? "Deleting…" : "Delete test account"}
+          {pending ? "Deleting…" : testAccount ? "Delete test account" : "Delete account"}
         </button>
       </form>
       {state.error && (

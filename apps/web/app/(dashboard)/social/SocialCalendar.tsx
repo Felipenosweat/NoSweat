@@ -171,8 +171,11 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
   }
 
   const loading = loadedKey !== postsKey;
-  const thisMonth = currentMonth(tz);
-  const todayKey = zonedDateKey(new Date(), tz);
+  // Um relógio só por render: "hoje" na grade e "já passou?" para aprovar.
+  const nowDate = new Date();
+  const nowMs = nowDate.getTime();
+  const thisMonth = currentMonth(tz, nowDate);
+  const todayKey = zonedDateKey(nowDate, tz);
   const sorted = [...posts].sort(byDate);
   const dated = sorted.filter(
     (post) => post.scheduledAt && zonedDateKey(new Date(post.scheduledAt), tz).startsWith(month),
@@ -184,7 +187,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     const key = zonedDateKey(new Date(post.scheduledAt), tz);
     byDay.set(key, [...(byDay.get(key) ?? []), post]);
   }
-  const reviewable = dated.filter((post) => post.status === "draft" && canApprove(post));
+  const reviewable = dated.filter((post) => post.status === "draft" && canApprove(post, nowMs));
   const { used, cap } = state.usage;
 
   const openPost = (post: SocialPost) => setComposer({ post, date: null });
@@ -216,11 +219,24 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
             <h2 id="month-plan-heading" className={panelTitle}>
               Your posting plan
             </h2>
-            <p className="text-[13px] font-medium text-slate-500 tabular-nums">
-              {cap === null
-                ? `${used} approved this month`
-                : `${used} of ${cap} posts used this month`}
-            </p>
+            {cap === 0 ? (
+              // Sem plano (cobrança ligada): "0 of 0" não diz nada; mostra onde liberar.
+              <p className="text-[13px] font-medium text-slate-500">
+                Posting is included in every plan ·{" "}
+                <Link
+                  href="/billing?from=social"
+                  className="font-semibold text-brand underline-offset-4 hover:underline"
+                >
+                  See plans
+                </Link>
+              </p>
+            ) : (
+              <p className="text-[13px] font-medium text-slate-500 tabular-nums">
+                {cap === null
+                  ? `${used} approved this month`
+                  : `${used} of ${cap} posts used this month`}
+              </p>
+            )}
           </div>
           <p className={`mt-2 ${panelText}`}>
             Let AI draft a month of posts from your website. You read, edit and approve each one.
@@ -255,6 +271,11 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                 );
               }}
             />
+            {cap === 0 && (
+              <p className="mt-2 text-[13px] text-slate-500">
+                You can try drafting now; approving needs a plan.
+              </p>
+            )}
           </div>
           <SettingsForm
             settings={state.settings}

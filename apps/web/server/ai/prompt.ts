@@ -71,7 +71,7 @@ export const SITE_EDIT_SYSTEM_PROMPT = `You help small business owners in the Un
 
 How to apply a request:
 - Change only what the owner asked for. Copy every other field exactly as it is, including text, colors, order of sections and items.
-- If the request is about business details, update the business fields: name, phone, email, city, state (two-letter code), serviceArea, hours (rows like { "days": "Mon–Sat", "time": "8 AM – 6 PM" }) and highlights.
+- If the request is about business details, update the business fields: name, phone, email, address (street and number only, like "2112 Logan Ave"), city, state (two-letter code), serviceArea, category (a few words a customer would search for, like "Plumber"), hours (rows like { "days": "Mon–Sat", "time": "8 AM – 6 PM" }), highlights and links. links holds full https:// URLs the owner gives: booking, order, menu, instagram, facebook, tiktok, google, yelp, linkedin. The main button opens links.booking (or links.order) when it is set. Never invent a link: add or change one only when the owner gives the address, and remove it when they ask.
 - If the owner asks for something the site specification can't represent (for example a new page or a booking system), leave the site unchanged and say so in the summary.
 
 Photos:

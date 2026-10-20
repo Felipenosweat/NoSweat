@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CheckIcon } from "./icons";
-import { primaryButton, secondaryButton } from "./styles";
+import { primaryButton, secondaryButton, textLink } from "./styles";
 
 // Tabela de planos da landing: três cartões rounded-xl com linhas de recibo; o recomendado tem
 // o anel azul (ring-2 ring-brand), o único destaque de cor da seção.
@@ -13,6 +13,10 @@ import { primaryButton, secondaryButton } from "./styles";
 // "Up to N websites" = sites publicados ao mesmo tempo (`publishedSitesLimit` em
 // server/billing/plans.ts). Sem números de edições da IA nem de posts por plano: o fundador
 // ainda não decidiu (créditos virão depois; ver o TODO em plans.ts).
+// `checkout`: o Stripe Checkout está ligado (`checkoutReady()` de server/billing, lido pela
+// página, que é server component). Sem ele a venda é manual (WhatsApp/e-mail + acesso liberado
+// pelo admin por X dias): pago adiantado e SEM renovação automática, então o texto muda.
+// Nenhum dos dois modos promete e-mail de lembrete: hoje nenhum código manda esse e-mail.
 
 type Billing = "monthly" | "annual";
 
@@ -82,7 +86,7 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
 
 const captionClass = "text-[13px] text-slate-500";
 
-export function PricingPlans() {
+export function PricingPlans({ checkout }: { checkout: boolean }) {
   // Anual por padrão: sem taxa de implantação e 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
@@ -178,13 +182,13 @@ export function PricingPlans() {
               Build my website<span className="sr-only">, {plan.name} plan</span>
             </Link>
             {/* Regras de renovação junto do botão (leis de renovação automática dos EUA, como a
-                da Califórnia, e a regra "click to cancel" da FTC): valor, frequência, que
+                da Califórnia, e a regra "click to cancel" da FTC): valor, frequência, se
                 renova sozinho e como cancelar, antes de qualquer cobrança. */}
             <p
               id={`renewal-${plan.id}`}
               className="mt-3 text-[13px] leading-relaxed text-pretty text-slate-500"
             >
-              {renewalTerms(plan, annual)}{" "}
+              {renewalTerms(plan, annual, checkout)}{" "}
               <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">
                 Renewal terms
               </Link>
@@ -192,17 +196,44 @@ export function PricingPlans() {
           </li>
         ))}
       </ul>
+
+      {/* Quem já criou o site e volta para comprar vai direto para /billing (pede login). */}
+      <p className="mt-8 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
+        Already built your site?{" "}
+        <Link href="/billing" className={textLink}>
+          Choose your plan
+        </Link>
+        .
+        {!checkout && (
+          <>
+            {" "}
+            When you’re ready to go live, we finish the payment with you by WhatsApp or email, and
+            your site goes live as soon as it’s confirmed.
+          </>
+        )}
+      </p>
     </div>
   );
 }
 
-/** Texto curto das regras de renovação, mostrado embaixo do botão de cada plano. */
+/**
+ * Texto curto das regras de renovação, mostrado embaixo do botão de cada plano.
+ * `checkout` = Stripe ligado (renova sozinho, cancela na conta). Sem ele (padrão seguro), a
+ * venda é manual: pago adiantado, sem renovação automática.
+ */
 export function renewalTerms(
   plan: Pick<Plan, "monthly" | "annual" | "setupMonthly">,
   annual: boolean,
+  checkout = false,
 ): string {
+  if (!checkout) {
+    const manual =
+      "Paid up front for the month or year you choose. It does not renew automatically; you can renew before it ends.";
+    if (annual || !plan.setupMonthly) return manual;
+    return `${manual} A one-time ${plan.setupMonthly} setup fee is added to the first payment.`;
+  }
   if (annual) {
-    return `Renews automatically every year at ${plan.annual} until you cancel. We email you a reminder before each renewal. Cancel anytime in your account; you keep your plan until the end of the year you paid for.`;
+    return `Renews automatically every year at ${plan.annual} until you cancel. Cancel anytime in your account; you keep your plan until the end of the year you paid for.`;
   }
   const setup = plan.setupMonthly
     ? ` A one-time ${plan.setupMonthly} setup fee is added to the first bill.`

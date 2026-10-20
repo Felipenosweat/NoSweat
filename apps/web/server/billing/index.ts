@@ -103,6 +103,55 @@ export async function ownerHasLiveAccess(ownerId: string | null): Promise<boolea
   }
 }
 
+/** Resumo do acesso da conta para o painel (aviso de plano acabando ou acabado). */
+export type AccessSummary = {
+  /** Planos valendo (Stripe ou REQUIRE_PLAN=true). Sem isso, nada de aviso. */
+  enforced: boolean;
+  /** O site publicado do dono pode ficar no ar agora (mesma regra de `ownerHasLiveAccess`). */
+  live: boolean;
+  /**
+   * Quando o acesso atual acaba (ISO): fim do acesso manual, ou fim do período do Stripe só se a
+   * assinatura NÃO renova sozinha. `null` = renova sozinha, sem data ou sem plano.
+   */
+  endsAt: string | null;
+  source: "stripe" | "manual" | null;
+};
+
+/**
+ * Acesso da conta `ownerId` (a conta mostrada no painel, que no "ver como" não é a do admin).
+ * Falha no banco = sem aviso (mesma regra de `ownerHasLiveAccess`: na dúvida, nada de alarme).
+ */
+export async function accessSummary(ownerId: string): Promise<AccessSummary> {
+  const enforced = billingEnforced();
+  const none: AccessSummary = { enforced, live: true, endsAt: null, source: null };
+  if (!enforced) return none;
+  try {
+    if (await isAdmin(ownerId)) return none;
+    const [sub, grant] = await Promise.all([
+      getBillingStore().get(ownerId),
+      getGrantStore().get(ownerId),
+    ]);
+    const subActive = Boolean(sub?.plan) && isActiveStatus(sub?.status ?? null);
+    const grantActive = isGrantActive(grant);
+    const live = subActive || grantActive;
+    // Vale a data que vem por último: com um Stripe que renova sozinho, não há fim à vista.
+    const ends: { at: string; source: "stripe" | "manual" }[] = [];
+    if (subActive && sub?.cancelAtPeriodEnd && sub.currentPeriodEnd) {
+      ends.push({ at: sub.currentPeriodEnd, source: "stripe" });
+    }
+    if (grant && grantActive) ends.push({ at: grant.expiresAt, source: "manual" });
+    if (subActive && !sub?.cancelAtPeriodEnd) {
+      return { enforced, live, endsAt: null, source: "stripe" };
+    }
+    const last = ends.sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+    if (last) return { enforced, live, endsAt: last.at, source: last.source };
+    return { enforced, live, endsAt: null, source: sub ? "stripe" : grant ? "manual" : null };
+  } catch (error) {
+    console.error("[billing] could not read the owner's access", error);
+    return none;
+  }
+}
+
 /**
  * `true` se o site do dono pode aparecer no domínio próprio. Quem desceu para um plano sem
  * domínio (ex.: Pro → Starter) continua no ar, mas só no endereço grátis.

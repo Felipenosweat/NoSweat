@@ -5,7 +5,7 @@ import { planDesign } from "../design";
 import { AnthropicGenerator, modelFirstEnabled } from "./anthropic";
 import { generateSiteSpec } from "./index";
 import { MockGenerator } from "./mock";
-import { applyModelFill, lintFill, verifyFacts, type ModelFill } from "./model-fill";
+import { applyModelFill, lintFill, STYLE_THEMES, verifyFacts, type ModelFill } from "./model-fill";
 import { CLEANING_MODEL, MODELS, modelFor, templateFor } from "./models";
 
 const SAMPLE_BRIEF =
@@ -107,6 +107,30 @@ describe("applyModelFill", () => {
       expect(types.at(-1)).toBe("contact");
     },
   );
+
+  it("uses the colors and fonts of the style the owner picked", () => {
+    const model = MODELS["home-services"];
+    const brief = `${SAMPLE_BRIEF}\n\nPreferred layout: modular.\n\nStyle: elegant.`;
+    const fill = sampleFill();
+    const spec = applyModelFill(model, fill, planDesign(brief), verifyFacts(fill.business, brief));
+    expect(spec.theme).toEqual(STYLE_THEMES.elegant);
+    expect(spec.theme.font).not.toBe(model.theme.font);
+    expect(spec.theme.primary).not.toBe(model.theme.primary);
+    // O layout escolhido também vale no caminho a partir do modelo.
+    expect(spec.design?.composition).toBe("modular");
+  });
+
+  it("has a theme for every style of the /create wizard", () => {
+    for (const style of [
+      "warm & friendly",
+      "clean & professional",
+      "bold & local",
+      "elegant",
+      "simple",
+    ]) {
+      expect(STYLE_THEMES[style], style).toBeDefined();
+    }
+  });
 
   it("never leaves the example's photos, people or quotes behind", () => {
     const spec = applyModelFill(

@@ -11,22 +11,39 @@ import {
   textButton,
 } from "@/components/DashboardUi";
 import { getViewer } from "@/server/auth/viewer";
-import { getBillingStatus, getStripeConfig, PLANS, syncCheckoutSession } from "@/server/billing";
+import {
+  getBillingStatus,
+  getGrantStore,
+  getStripeConfig,
+  isGrantActive,
+  PLANS,
+  syncCheckoutSession,
+  type AccessGrant,
+} from "@/server/billing";
+import { getOwnedSite } from "@/server/sites";
 import { BillingIcon } from "../NavIcons";
-import { BillingPlans, type PlanCard, type SalesContact } from "./BillingPlans";
+import { BillingPlans, type EndedPlan, type PlanCard, type SalesContact } from "./BillingPlans";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
 type BillingPageProps = {
-  searchParams: Promise<{ status?: string; site?: string; session_id?: string }>;
+  searchParams: Promise<{ status?: string; site?: string; session_id?: string; reason?: string }>;
 };
+
+/** Plano manual que já acabou (`null` se não há acesso manual ou se ele ainda vale). */
+function endedPlan(grant: AccessGrant | null): EndedPlan | null {
+  if (!grant) return null;
+  // Lido antes do `isGrantActive` (type guard: no "não", o tipo de `grant` vira `never`).
+  const ended = { name: PLANS[grant.plan].name, endedOn: grant.expiresAt };
+  return isGrantActive(grant) ? null : ended;
+}
 
 const usd = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: cents % 100 ? 2 : 0 })}`;
 
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
-  const { status, site, session_id: sessionId } = await searchParams;
+  const { status, site, session_id: sessionId, reason } = await searchParams;
   const viewer = await getViewer();
   if (!viewer) redirect(`/login?next=${encodeURIComponent("/billing")}`);
   // No modo "ver como" do admin, o plano da conta vista (comprar fica bloqueado pelo proxy.ts).
@@ -49,12 +66,28 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   // Só ids no formato esperado voltam para a página do site (nada de texto solto na URL).
   const siteId = site && /^[\w-]{1,64}$/.test(site) ? site : null;
 
+  // Veio do botão Publicar sem plano: diz qual site vai ao ar (só o nome; o site é dele ou 404).
+  const pendingSite =
+    billing.enabled && !billing.active && siteId
+      ? await getOwnedSite(user, siteId).catch(() => null)
+      : null;
+  // Plano manual que acabou: a página explica que o site saiu do ar e mostra como renovar.
+  const ended = endedPlan(
+    billing.enabled && !billing.active ? await getGrantStore().get(user.id) : null,
+  );
+  // Chegou ao limite de sites no ar do plano (402 plan_limit no Publicar).
+  const planLimit =
+    reason === "plan_limit" && billing.active && billing.plan
+      ? PLANS[billing.plan].publishedSitesLimit
+      : null;
+
   // Número do WhatsApp de vendas só com dígitos (ex.: 14075551234), como o wa.me pede.
   const whatsapp = process.env.SALES_WHATSAPP?.replace(/\D/g, "") || null;
   const contact: SalesContact = {
     whatsapp,
     email: process.env.SALES_EMAIL || "hello@nosweatfd.com",
     accountEmail: user.email,
+    accountId: user.id,
   };
 
   const plans: PlanCard[] = Object.values(PLANS).map((plan) => ({
@@ -64,6 +97,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     annual: usd(plan.annualCents),
     setup: plan.setupCents ? usd(plan.setupCents) : null,
     customDomain: plan.customDomain,
+    publishedSitesLimit: plan.publishedSitesLimit,
   }));
 
   return (
@@ -94,6 +128,20 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         </p>
       )}
 
+      {pendingSite && (
+        <p role="status" className="mt-6 rounded-xl bg-sky-50 px-4 py-3 text-sky-950">
+          Pick a plan to put{" "}
+          <strong className="font-semibold">{pendingSite.spec.business.name}</strong> live. Your
+          draft is saved; building and previewing stay free.
+        </p>
+      )}
+      {planLimit !== null && (
+        <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-amber-950">
+          Your plan allows {planLimit} live {planLimit === 1 ? "website" : "websites"}. Switch
+          plans, or take one site offline.
+        </p>
+      )}
+
       {!billing.enabled ? (
         <section className={`${panelClass} mt-8 flex items-start gap-4`}>
           <IconTile tone="emerald">
@@ -111,7 +159,13 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           </div>
         </section>
       ) : (
-        <BillingPlans plans={plans} current={billing} siteId={siteId} contact={contact} />
+        <BillingPlans
+          plans={plans}
+          current={billing}
+          siteId={siteId}
+          contact={contact}
+          ended={ended}
+        />
       )}
     </div>
   );

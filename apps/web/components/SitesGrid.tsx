@@ -112,6 +112,7 @@ export function SitesGrid({
   emptyState,
   leadCounts,
   headingLevel = 2,
+  offline = false,
 }: {
   sites: SiteRecord[];
   emptyState?: ReactNode;
@@ -119,6 +120,11 @@ export function SitesGrid({
   leadCounts?: Record<string, number>;
   /** Nível do título de cada card (3 quando a lista fica sob um título "Your sites"). */
   headingLevel?: 2 | 3;
+  /**
+   * O plano do dono acabou (planos valendo): os sites publicados mostram "temporarily
+   * unavailable" aos visitantes, então o selo diz "Offline" em vez de "Live".
+   */
+  offline?: boolean;
 }) {
   if (sites.length === 0) return emptyState ?? <DefaultEmptyState />;
   const CardHeading = headingLevel === 3 ? "h3" : "h2";
@@ -156,7 +162,9 @@ export function SitesGrid({
                   </CardHeading>
                   {where && <p className="mt-0.5 text-[15px] text-slate-500">{where}</p>}
                 </div>
-                <StatusBadge tone={live ? "live" : "draft"}>{live ? "Live" : "Draft"}</StatusBadge>
+                <StatusBadge tone={live && !offline ? "live" : "draft"}>
+                  {live ? (offline ? "Offline" : "Live") : "Draft"}
+                </StatusBadge>
               </div>
               <p className="mt-2 flex flex-wrap gap-x-2 text-[13px] text-slate-500 tabular-nums">
                 <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>

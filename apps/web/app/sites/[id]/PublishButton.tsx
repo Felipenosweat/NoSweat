@@ -13,6 +13,9 @@ import { PublishDialog, type PublishState } from "./PublishDialog";
  * - `label`: texto do botão de publicar; `null` = nada para publicar (site no ar e em dia).
  * - `liveUrl`: endereço grátis já no ar; mostra "Share your link" (abre o mesmo modal).
  * - `address`: endereço grátis (o atual ou o que o site vai ter ao publicar).
+ * - `domainUrl`: domínio próprio JÁ FUNCIONANDO (https://dominio.com); vira o link de
+ *   compartilhar e o QR code. Enquanto o DNS não fica pronto, `null` (compartilha o grátis).
+ * - `needsPlan`: publicar exige escolher um plano antes (o modal mostra "Plan required").
  */
 export function PublishButton({
   siteId,
@@ -22,6 +25,8 @@ export function PublishButton({
   address,
   state,
   hasDomain = false,
+  domainUrl = null,
+  needsPlan = false,
 }: {
   siteId: string;
   siteName: string;
@@ -30,6 +35,8 @@ export function PublishButton({
   address: string;
   state: PublishState;
   hasDomain?: boolean;
+  domainUrl?: string | null;
+  needsPlan?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -48,9 +55,15 @@ export function PublishButton({
       const body: unknown = await res.json().catch(() => null);
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
+        const code = apiError.success ? apiError.data.error.code : null;
         // Sem plano ativo: vai escolher um (e volta para este site depois de pagar).
-        if (apiError.success && apiError.data.error.code === "payment_required") {
+        if (code === "payment_required") {
           router.push(`/billing?site=${encodeURIComponent(siteId)}`);
+          return;
+        }
+        // Plano no limite de sites no ar: a tela de planos explica e oferece o próximo plano.
+        if (code === "plan_limit") {
+          router.push(`/billing?site=${encodeURIComponent(siteId)}&reason=plan_limit`);
           return;
         }
         setError(apiError.success ? apiError.data.error.message : "Something went wrong.");
@@ -95,6 +108,8 @@ export function PublishButton({
         siteName={siteName}
         state={justPublished ? "current" : state}
         address={publishedUrl ?? address}
+        domainUrl={domainUrl}
+        needsPlan={needsPlan && !justPublished}
         onPublish={() => void publish()}
         pending={pending}
         error={error}

@@ -129,16 +129,37 @@ function StatTile({ label, value, note }: { label: string; value: string; note: 
   );
 }
 
-function WebsiteRow({ site }: { site: SiteRecord }) {
+/**
+ * Selo do site como o público vê: publicado de dono sem plano fica "temporarily unavailable" com
+ * os planos valendo (ver ownerHasLiveAccess); com os planos desligados, avisa que sairia do ar.
+ */
+function siteBadge(
+  site: SiteRecord,
+  ownerHasPlan: boolean,
+  enforced: boolean,
+): { label: string; tone: Tone } {
+  if (site.status !== "published") return { label: "Draft", tone: "draft" };
+  if (ownerHasPlan) return { label: "Live", tone: "live" };
+  return { label: enforced ? "Offline · no plan" : "Live · no plan", tone: "pending" };
+}
+
+function WebsiteRow({
+  site,
+  ownerHasPlan,
+  enforced,
+}: {
+  site: SiteRecord;
+  ownerHasPlan: boolean;
+  enforced: boolean;
+}) {
   const live = liveHref(site);
+  const badge = siteBadge(site, ownerHasPlan, enforced);
   return (
     <li className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-semibold text-ink">{site.spec.business.name}</span>
-          <StatusBadge tone={site.status === "published" ? "live" : "draft"}>
-            {site.status === "published" ? "Live" : "Draft"}
-          </StatusBadge>
+          <StatusBadge tone={badge.tone}>{badge.label}</StatusBadge>
         </div>
         <p className="mt-0.5 text-[13px] text-slate-500">
           {site.spec.template} · created {formatDate(site.createdAt)}
@@ -224,7 +245,15 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const plan = planStatus(subscription, grant);
   const isSelf = account.id === admin.id;
   const liveCount = sites.filter((site) => site.status === "published").length;
-  const canDelete = account.testAccount && !targetIsAdmin && !isSelf;
+  // Qualquer conta que não seja admin nem a própria pode ser apagada (teste: DELETE; cliente de
+  // verdade: digitar o e-mail). O servidor confere tudo de novo.
+  const canDelete = !targetIsAdmin && !isSelf;
+  const enforced = billingEnforced();
+  // Mesmo critério do site público (ownerHasLiveAccess): admin, cartão ativo ou acesso manual.
+  const ownerHasPlan =
+    targetIsAdmin ||
+    (Boolean(subscription?.plan) && isActiveStatus(subscription?.status ?? null)) ||
+    isGrantActive(grant);
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -303,7 +332,12 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         ) : (
           <ul className="divide-y divide-slate-100">
             {sites.map((site) => (
-              <WebsiteRow key={site.id} site={site} />
+              <WebsiteRow
+                key={site.id}
+                site={site}
+                ownerHasPlan={ownerHasPlan}
+                enforced={enforced}
+              />
             ))}
           </ul>
         )}
@@ -317,7 +351,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
           userId={account.id}
           grant={grant}
           subscription={subscription}
-          enforced={billingEnforced()}
+          enforced={enforced}
         />
 
         <SocialPanel
@@ -328,7 +362,14 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         />
       </div>
 
-      {canDelete && <DeleteTestAccount userId={account.id} sites={sites.length} />}
+      {canDelete && (
+        <DeleteTestAccount
+          userId={account.id}
+          sites={sites.length}
+          testAccount={account.testAccount}
+          email={account.email}
+        />
+      )}
     </div>
   );
 }

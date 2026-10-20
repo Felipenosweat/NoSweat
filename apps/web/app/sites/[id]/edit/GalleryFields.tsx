@@ -2,12 +2,16 @@
 
 import type { SectionOf, SiteImage } from "@nosweat/schema";
 import { useId, useRef, useState } from "react";
+import { PHOTO_TYPES_NOTE, SignupLink } from "./HeroPhotoField";
 import { ACCEPT_ATTR, checkFile, MAX_ALT, MAX_GALLERY_IMAGES, uploadImage } from "./images";
 import { inputClass, secondaryButton, textButton, Thumb } from "./ui";
 
 type Gallery = SectionOf<"gallery">;
 
-/** Galeria de fotos do dono: título opcional, fotos com descrição, ordem e upload. */
+/** Limite da legenda (SiteImage.caption no schema). */
+const MAX_CAPTION = 100;
+
+/** Galeria de fotos do dono: título opcional, fotos com descrição e legenda, ordem e upload. */
 export function GalleryFields({
   siteId,
   section,
@@ -22,6 +26,8 @@ export function GalleryFields({
   const fileInput = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  /** Visitante sem conta: o upload pede uma conta grátis (mostra o link em vez do erro). */
+  const [signupMessage, setSignupMessage] = useState<string | null>(null);
 
   const count = section.images.length;
   const full = count >= MAX_GALLERY_IMAGES;
@@ -63,6 +69,7 @@ export function GalleryFields({
     };
 
     setErrors([...problems]);
+    setSignupMessage(null);
     setProgress({ done: 0, total: valid.length });
     for (const [i, file] of valid.entries()) {
       const result = await uploadImage(siteId, file);
@@ -71,6 +78,10 @@ export function GalleryFields({
         onChange((g) => {
           if (g.images.length < MAX_GALLERY_IMAGES) g.images.push(image);
         });
+      } else if (result.signup) {
+        // Sem conta, os outros arquivos falhariam do mesmo jeito.
+        setSignupMessage(result.message);
+        break;
       } else {
         report(result.message);
         // Upload desligado no servidor (501): os outros arquivos falhariam do mesmo jeito.
@@ -134,6 +145,27 @@ export function GalleryFields({
                       })
                     }
                   />
+                  <label
+                    htmlFor={`${ids}-caption-${index}`}
+                    className="block pt-1 text-xs font-medium text-slate-600"
+                  >
+                    Caption (optional)
+                  </label>
+                  <input
+                    id={`${ids}-caption-${index}`}
+                    maxLength={MAX_CAPTION}
+                    placeholder="e.g. Backyard deck, finished in May"
+                    className={inputClass}
+                    value={image.caption ?? ""}
+                    onChange={(e) =>
+                      onChange((g) => {
+                        const target = g.images[index];
+                        if (!target) return;
+                        if (e.target.value.trim()) target.caption = e.target.value;
+                        else delete target.caption;
+                      })
+                    }
+                  />
                   <div className="flex gap-3 pt-1">
                     <button
                       type="button"
@@ -193,12 +225,17 @@ export function GalleryFields({
           className="hidden"
         />
         <span className="text-xs text-slate-500">
-          {count} of {MAX_GALLERY_IMAGES} · JPG, PNG or WebP, up to 8 MB each
+          {count} of {MAX_GALLERY_IMAGES} · {PHOTO_TYPES_NOTE}
         </span>
       </div>
       <div aria-live="polite" className="sr-only">
         {progress ? `Uploading photo ${progress.done + 1} of ${progress.total}` : ""}
       </div>
+      {signupMessage && (
+        <p role="alert" className="text-xs text-slate-700">
+          <SignupLink siteId={siteId}>{signupMessage}</SignupLink>
+        </p>
+      )}
       {errors.length > 0 && (
         <ul role="alert" className="space-y-1 text-xs font-medium text-red-700">
           {errors.map((error, i) => (

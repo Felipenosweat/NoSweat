@@ -1,9 +1,10 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { freeSiteUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
+import { customDomainUrl, freeSiteUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { SiteUnavailable } from "@/components/SiteUnavailable";
-import { ownerHasLiveAccess } from "@/server/billing";
+import { ownerHasCustomDomainAccess, ownerHasLiveAccess } from "@/server/billing";
+import { isDomainLive } from "@/server/domains/configured";
 import { liveSpec } from "@/server/sites";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 
@@ -21,7 +22,20 @@ export async function generateMetadata({ params }: PublicSitePageProps): Promise
   const site = await getPublished(slug);
   if (!site) return {};
   if (!(await ownerHasLiveAccess(site.ownerId))) return { robots: { index: false } };
-  return siteMetadata(site, freeSiteUrl(slug));
+  return siteMetadata(site, await canonicalUrl(site, slug));
+}
+
+/**
+ * Endereço oficial para o Google: o domínio do cliente quando ele já funciona (e o plano inclui
+ * domínio), senão o grátis. Só o canonical muda; o endereço grátis continua abrindo (sem
+ * redirecionar, que o navegador guardaria e quebraria se o domínio fosse removido).
+ */
+async function canonicalUrl(site: SiteRecord, slug: string): Promise<string> {
+  const domain = site.customDomain;
+  if (domain && (await ownerHasCustomDomainAccess(site.ownerId)) && (await isDomainLive(domain))) {
+    return customDomainUrl(domain);
+  }
+  return freeSiteUrl(slug);
 }
 
 export default async function PublicSitePage({ params }: PublicSitePageProps) {

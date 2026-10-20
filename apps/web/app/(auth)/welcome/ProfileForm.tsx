@@ -70,7 +70,7 @@ export function ProfileForm({
 
       <div className="space-y-3 pt-1">
         <Checkbox name="marketing" defaultChecked={values.marketing ?? true}>
-          Email me about the No Sweat launch and product news. Unsubscribe anytime.
+          Email me product news and tips from No Sweat. Unsubscribe anytime.
         </Checkbox>
         <Checkbox name="terms" required defaultChecked={values.terms} error={errors.terms}>
           I’m 18 or older and I agree to the{" "}

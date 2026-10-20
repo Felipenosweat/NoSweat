@@ -21,6 +21,7 @@ import {
   type SignUpField,
 } from "@/lib/signup-rules";
 import { signUp, type AuthFormState } from "./actions";
+import { ResendConfirmationForm } from "./AuthForm";
 
 // Cadastro por e-mail (/signup). As regras são as do servidor (lib/signup-rules), checadas
 // também aqui: o erro de um campo só aparece depois que a pessoa mexeu nele e saiu, ou ao
@@ -179,6 +180,8 @@ export function SignUpForm({
           <li>The email can take a minute or two to arrive.</li>
           <li>Not there? Check your spam or promotions folder.</li>
         </ul>
+        {/* Sem o e-mail (envio sem JavaScript), o próprio formulário pede o endereço. */}
+        <ResendConfirmationForm email={sentTo} next={next} className="mt-6" />
         <button
           type="button"
           onClick={startOver}
@@ -294,7 +297,7 @@ export function SignUpForm({
             checked={draft.marketing}
             onChange={(v) => update("marketing", v)}
           >
-            Email me about the No Sweat launch and product news. Unsubscribe anytime.
+            Email me product news and tips from No Sweat. Unsubscribe anytime.
           </CheckRow>
           <CheckRow
             field="terms"
@@ -329,8 +332,7 @@ export function SignUpForm({
               <span>
                 {state.error}
                 {state.error.includes("already exists") && (
-                  <>
-                    {" "}
+                  <span className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
                     <Link
                       href={
                         next === "/dashboard" ? "/login" : `/login?next=${encodeURIComponent(next)}`
@@ -339,7 +341,10 @@ export function SignUpForm({
                     >
                       Log in instead
                     </Link>
-                  </>
+                    <Link href="/forgot-password" className={link}>
+                      Forgot password?
+                    </Link>
+                  </span>
                 )}
               </span>
             </p>

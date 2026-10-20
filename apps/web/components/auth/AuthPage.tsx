@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ForgotPasswordForm } from "@/app/(auth)/forgot-password/ForgotPasswordForm";
 import { AuthForm } from "@/app/(auth)/login/AuthForm";
 import { SignUpForm } from "@/app/(auth)/login/SignUpForm";
 import { Logo } from "@/components/Logo";
@@ -13,9 +14,13 @@ import { ProviderButtons } from "./ProviderButtons";
 export type AuthSearchParams = Promise<{ next?: string; error?: string }>;
 
 const ERRORS: Record<string, string> = {
-  confirm: "That confirmation link is invalid or has expired. Please log in or sign up again.",
+  confirm:
+    "That link is invalid or has expired. If you already confirmed your email, just log in below.",
   oauth: "We couldn't sign you in with that provider. Please try again.",
+  expired: "That reset link is invalid or has expired. Enter your email to get a new one.",
 };
+
+type AuthMode = "login" | "signup" | "forgot";
 
 const COPY = {
   signup: {
@@ -31,6 +36,13 @@ const COPY = {
     switchPrompt: "Don’t have an account?",
     switchLabel: "Sign up",
     switchPath: "/signup",
+  },
+  forgot: {
+    heading: "Reset your password",
+    intro: "Enter the email you use for No Sweat and we’ll send you a link to choose a new one.",
+    switchPrompt: "Remembered it?",
+    switchLabel: "Log in",
+    switchPath: "/login",
   },
 } as const;
 
@@ -49,23 +61,26 @@ function withNext(path: string, next: string): string {
 }
 
 /**
- * Tela inteira de /login e /signup. Se o login estiver desligado (dev local sem Supabase) ou a
- * pessoa já estiver logada, segue direto para `next`.
+ * Tela inteira de /login, /signup e /forgot-password. Se o login estiver desligado (dev local
+ * sem Supabase) ou a pessoa já estiver logada, segue direto para `next` (em /forgot-password,
+ * quem está logado também pode pedir o link).
  */
 export async function AuthPage({
   mode,
   searchParams,
 }: {
-  mode: "login" | "signup";
+  mode: AuthMode;
   searchParams: AuthSearchParams;
 }) {
   const params = await searchParams;
   const next = safeNextPath(params.next);
 
   const supabase = await createSupabaseServerClient();
-  if (!supabase || (await getCurrentUser())) redirect(next);
+  if (!supabase || (mode !== "forgot" && (await getCurrentUser()))) redirect(next);
 
-  const providers = await getEnabledProviders();
+  // Pedir nova senha não tem Google/Apple (quem entra por eles não tem senha aqui).
+  const providers =
+    mode === "forgot" ? { google: false, apple: false } : await getEnabledProviders();
   const hasProviders = providers.google || providers.apple;
   const copy = COPY[mode];
   // Object.hasOwn: "?error=constructor" não pode pegar coisas do protótipo do objeto.
@@ -78,7 +93,7 @@ export async function AuthPage({
         {copy.heading}
       </h1>
       <p className="mt-3 text-base leading-relaxed text-slate-600">{copy.intro}</p>
-      <ProviderButtons providers={providers} next={next} from={mode} />
+      {mode !== "forgot" && <ProviderButtons providers={providers} next={next} from={mode} />}
     </>
   );
 
@@ -124,6 +139,13 @@ export async function AuthPage({
                   )
                 }
               />
+            ) : mode === "forgot" ? (
+              <>
+                {heading}
+                <div className="mt-8">
+                  <ForgotPasswordForm initialError={initialError} />
+                </div>
+              </>
             ) : (
               <>
                 {heading}

@@ -7,11 +7,13 @@ import { Story } from "@/components/landing/story/Story";
 import { PlusIcon } from "@/components/marketing/icons";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { PromptForm } from "@/components/marketing/PromptForm";
+import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { container, focusRing } from "@/components/marketing/styles";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
+import { checkoutReady } from "@/server/billing";
 
 // Landing V7 (pedido do fundador: "moderna, super visual"): hero em tela cheia com fotos de
 // ofícios → tour em oito cenas que ensinam a usar tudo, cada uma sobre uma foto (#story, uma só
@@ -47,6 +49,8 @@ const h2Light =
   "font-display text-[clamp(2.25rem,5.2vw,4.25rem)] leading-[1] font-extrabold tracking-[-0.04em] text-balance text-ink";
 
 export default function LandingPage() {
+  // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
+  const whatsapp = salesWhatsappUrl();
   return (
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
@@ -87,7 +91,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="mt-10 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-[0_50px_120px_-50px_rgb(7_27_51/.35)] backdrop-blur-sm sm:p-8 lg:mt-14 lg:p-10">
-            <PricingPlans />
+            <PricingPlans checkout={checkoutReady()} />
           </div>
         </div>
       </section>
@@ -113,7 +117,21 @@ export default function LandingPage() {
                 className={`rounded-sm font-semibold text-ink underline decoration-brand underline-offset-4 hover:text-brand ${focusRing}`}
               >
                 hello@nosweatfd.com
-              </a>{" "}
+              </a>
+              {whatsapp && (
+                <>
+                  {" "}
+                  or{" "}
+                  <a
+                    href={whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`rounded-sm font-semibold text-ink underline decoration-brand underline-offset-4 hover:text-brand ${focusRing}`}
+                  >
+                    message us on WhatsApp
+                  </a>
+                </>
+              )}{" "}
               and a person on our team writes back.
             </p>
           </div>
@@ -164,7 +182,7 @@ export default function LandingPage() {
             <PromptForm
               tone="dark"
               examples={false}
-              caption="Free account. Create and preview free."
+              caption="No account needed. Create and preview free."
             />
             <p className="mt-6 text-sm text-slate-200">
               Prefer to look around first?{" "}

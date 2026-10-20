@@ -7,11 +7,13 @@ import { requireAdmin } from "@/server/admin";
 import {
   TestAccountError,
   createTestAccount,
+  deleteAccount,
   deleteTestAccount,
 } from "@/server/admin/test-accounts";
 
-// Ações do admin no /admin: criar e apagar contas de teste. Cada ação confere de novo se quem
-// chama é admin (Server Actions podem ser chamadas direto, sem passar pela página).
+// Ações do admin no /admin: criar contas de teste e apagar contas (de teste ou a pedido do
+// cliente). Cada ação confere de novo se quem chama é admin (Server Actions podem ser chamadas
+// direto, sem passar pela página).
 
 export type CreateTestAccountState =
   | { status: "idle" }
@@ -43,26 +45,37 @@ export async function createTestAccountAction(
   }
 }
 
-export type DeleteTestAccountState = { error: string | null };
+export type DeleteAccountState = { error: string | null };
 
-/** Apaga uma conta de teste (só depois de digitar DELETE). Contas de verdade e admins: recusa. */
-export async function deleteTestAccountAction(
-  _prev: DeleteTestAccountState,
+/**
+ * Apaga uma conta pelo painel: conta de teste (depois de digitar DELETE) ou conta de verdade que
+ * pediu a exclusão (depois de digitar o e-mail dela). Admins e a própria conta: recusa. Os sites
+ * saem antes, pelo mesmo caminho do DELETE /api/sites/[id] (domínios liberados na Vercel).
+ */
+export async function deleteAccountAction(
+  _prev: DeleteAccountState,
   formData: FormData,
-): Promise<DeleteTestAccountState> {
+): Promise<DeleteAccountState> {
   const admin = await requireAdmin();
   const userId = String(formData.get("userId") ?? "");
-  if (String(formData.get("confirm") ?? "").trim() !== "DELETE") {
+  const testAccount = formData.get("kind") === "test";
+  if (testAccount && String(formData.get("confirm") ?? "").trim() !== "DELETE") {
     return { error: "Type DELETE to confirm." };
   }
 
   let email: string | null = null;
   try {
-    const result = await deleteTestAccount(userId, admin.id);
+    // Conta de teste: só a de teste passa (o servidor confere a marca de novo). Conta de verdade:
+    // o e-mail digitado precisa bater com o da conta.
+    const result = testAccount
+      ? await deleteTestAccount(userId, admin.id)
+      : await deleteAccount(userId, admin.id, {
+          confirmEmail: String(formData.get("confirmEmail") ?? ""),
+        });
     if (!result.ok) return { error: result.error };
     email = result.email;
   } catch (error) {
-    console.error("[admin] could not delete the test account", error);
+    console.error("[admin] could not delete the account", error);
     return {
       error: error instanceof TestAccountError ? error.message : "Something went wrong. Try again.",
     };

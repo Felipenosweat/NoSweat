@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getCurrentUser } from "@/server/auth/session";
 import { CreateFlow } from "./CreateFlow";
 
 export const metadata: Metadata = { title: "Create your website" };
@@ -10,5 +11,7 @@ type CreatePageProps = { searchParams: Promise<{ brief?: string | string[] }> };
 export default async function CreatePage({ searchParams }: CreatePageProps) {
   const { brief } = await searchParams;
   const initialBrief = (Array.isArray(brief) ? brief[0] : brief)?.trim().slice(0, 2000) ?? "";
-  return <CreateFlow initialBrief={initialBrief} />;
+  // Visitante ou conta: muda a mensagem do limite diário e o aviso do rascunho no fim.
+  const signedIn = Boolean(await getCurrentUser());
+  return <CreateFlow initialBrief={initialBrief} signedIn={signedIn} />;
 }

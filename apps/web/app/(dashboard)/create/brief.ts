@@ -10,6 +10,7 @@ export const LIMITS = {
   what: 300,
   city: 60,
   serviceArea: 160,
+  phone: 20,
   details: 1200,
 } as const;
 
@@ -19,6 +20,8 @@ export type CreateFields = {
   city: string;
   state: string;
   serviceArea: string;
+  /** Telefone do negócio (vira o botão de ligar do site). */
+  phone: string;
   details: string;
   style: StyleId;
 };
@@ -29,6 +32,7 @@ export const EMPTY_FIELDS: CreateFields = {
   city: "",
   state: "",
   serviceArea: "",
+  phone: "",
   details: "",
   style: "auto",
 };
@@ -121,7 +125,7 @@ export const STYLE_OPTIONS: StyleOption[] = [
 ];
 
 /** Tamanho máximo do pedido único do /create (cabe nos 2.000 do schema com o resto). */
-export const PROMPT_LIMIT = 1500;
+export const PROMPT_LIMIT = 1450;
 
 /** Tipos de negócio do passo 1 (um por `TemplateId`), com a frase que vai no brief. */
 export const BUSINESS_KINDS = [
@@ -312,6 +316,7 @@ export function composeBrief(fields: CreateFields, choices: CreateChoices = EMPT
     sentence(fields.what),
     location ? sentence(`Based in ${location}`) : "",
     fields.serviceArea.trim() ? sentence(`Service area: ${fields.serviceArea.trim()}`) : "",
+    fields.phone.trim() ? sentence(`Phone: ${fields.phone.trim()}`) : "",
   ]
     .filter(Boolean)
     .join(" ");

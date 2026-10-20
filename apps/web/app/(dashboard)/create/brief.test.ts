@@ -25,6 +25,7 @@ describe("composeBrief", () => {
       city: "Worcester",
       state: "ma",
       serviceArea: "Shrewsbury and Auburn",
+      phone: "",
       details: "Eco-friendly products.",
       style: "warm",
     });
@@ -33,6 +34,17 @@ describe("composeBrief", () => {
         "Based in Worcester, MA. Service area: Shrewsbury and Auburn.\n\n" +
         "Eco-friendly products.\n\nStyle: warm & friendly.",
     );
+  });
+
+  it("adds the phone as its own sentence after the place", () => {
+    const brief = composeBrief({
+      ...EMPTY_FIELDS,
+      what: "Family-owned plumbing",
+      city: "Austin",
+      state: "TX",
+      phone: " (512) 555-0142 ",
+    });
+    expect(brief).toBe("Family-owned plumbing. Based in Austin, TX. Phone: (512) 555-0142.");
   });
 
   it("leaves out empty parts and the style when we pick it", () => {
@@ -47,6 +59,7 @@ describe("composeBrief", () => {
       city: "c".repeat(LIMITS.city),
       state: "TX",
       serviceArea: "s".repeat(LIMITS.serviceArea),
+      phone: "5".repeat(LIMITS.phone),
       details: "d".repeat(LIMITS.details),
       style: "professional",
     });
@@ -83,6 +96,7 @@ describe("composeBrief with wizard choices", () => {
         city: "c".repeat(LIMITS.city),
         state: "TX",
         serviceArea: "s".repeat(LIMITS.serviceArea),
+        phone: "5".repeat(LIMITS.phone),
         details: "",
         style: "professional",
       },

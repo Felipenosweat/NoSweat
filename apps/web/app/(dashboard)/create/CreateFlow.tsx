@@ -93,14 +93,27 @@ const PROMPT_EXAMPLES = [
 // Tempo de cada etapa da construção enquanto a resposta não chega (a última espera a API).
 const BUILD_STEP_DELAYS = [1400, 1800, 2200];
 
-type FormError = { title: string; body: string; loginLink?: boolean; signupLink?: boolean };
+/** Depois disto a tela de espera avisa que sites detalhados podem levar até 3 minutos. */
+const SLOW_BUILD_MS = 40_000;
+
+/** Frase final das mensagens de limite do visitante (server/quota.ts): aqui vira o link. */
+const SIGN_UP_HINT_RE = /\s*Create a free account to keep going\.?\s*$/;
+
+type FormError = {
+  title: string;
+  body: string;
+  loginLink?: boolean;
+  signupLink?: boolean;
+  /** Conta logada no limite do dia: o caminho é voltar aos sites dela, não criar conta. */
+  dashboardLink?: boolean;
+};
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
 type Generated = { siteId: string; spec: SiteSpec };
 type InitialState = StoredDraft & { choices: CreateChoices };
 
 /** Mensagens amigáveis para cada `error.code` da API. */
-function errorFor(code: string, fallback: string): FormError {
+function errorFor(code: string, fallback: string, signedIn = false): FormError {
   switch (code) {
     case "invalid_request":
       return {
@@ -114,10 +127,18 @@ function errorFor(code: string, fallback: string): FormError {
         loginLink: true,
       };
     case "quota_exceeded":
-      // Limite de uso da IA (visitante sem conta ou limite diário da conta).
+      // Limite diário da conta: criar conta não ajuda (o /signup só mandaria de volta para cá).
+      if (signedIn) {
+        return {
+          title: "You’ve reached today’s limit.",
+          body: "You can create more tomorrow, or change one of your sites with AI.",
+          dashboardLink: true,
+        };
+      }
+      // Visitante sem conta: o convite da mensagem do servidor vira o link logo depois.
       return {
         title: "You’ve reached today’s limit.",
-        body: fallback || "Please try again tomorrow.",
+        body: fallback.replace(SIGN_UP_HINT_RE, "") || "Please try again tomorrow.",
         signupLink: true,
       };
     case "generation_failed":
@@ -194,7 +215,14 @@ const noopSubscribe = () => () => {};
  * O servidor desenha o formulário só com o ?brief=. Depois da hidratação o fluxo é montado
  * de novo (key diferente) já lendo o sessionStorage, sem setState dentro de efeito.
  */
-export function CreateFlow({ initialBrief }: { initialBrief: string }) {
+export function CreateFlow({
+  initialBrief,
+  signedIn = false,
+}: {
+  initialBrief: string;
+  /** Há uma conta logada (muda as mensagens de limite e o aviso de rascunho de visitante). */
+  signedIn?: boolean;
+}) {
   const hydrated = useSyncExternalStore(
     noopSubscribe,
     () => true,
@@ -205,11 +233,20 @@ export function CreateFlow({ initialBrief }: { initialBrief: string }) {
       key={hydrated ? "client" : "server"}
       initialBrief={initialBrief}
       canReadStorage={hydrated}
+      signedIn={signedIn}
     />
   );
 }
 
-function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadStorage: boolean }) {
+function Flow({
+  initialBrief,
+  canReadStorage,
+  signedIn,
+}: {
+  initialBrief: string;
+  canReadStorage: boolean;
+  signedIn: boolean;
+}) {
   const [initial] = useState(() => initialState(initialBrief, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
   const [choices, setChoices] = useState<CreateChoices>(initial.choices);
@@ -222,13 +259,16 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
   const [phase, setPhase] = useState<Phase>("form");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<Generated | null>(null);
-  // A seção "nome e endereço" já começa aberta se o rascunho tinha algo nela.
+  // A geração passou do tempo normal (o caminho completo da IA pode levar alguns minutos).
+  const [slow, setSlow] = useState(false);
+  // A seção "dados do negócio" já começa aberta se o rascunho tinha algo nela.
   const [detailsInitiallyOpen] = useState(() =>
     Boolean(
       initial.fields.name ||
       initial.fields.city ||
       initial.fields.state ||
-      initial.fields.serviceArea,
+      initial.fields.serviceArea ||
+      initial.fields.phone,
     ),
   );
 
@@ -286,6 +326,19 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
     const timer = setTimeout(() => setProgress((value) => value + 1), delay);
     return () => clearTimeout(timer);
   }, [phase, progress, result]);
+
+  // Enquanto constrói: depois de um tempo, tranquiliza (pode levar alguns minutos) e avisa antes
+  // de sair da página (recarregar perde o resultado e tentar de novo gasta outro uso da IA).
+  useEffect(() => {
+    if (phase !== "building") return;
+    const timer = setTimeout(() => setSlow(true), SLOW_BUILD_MS);
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [phase]);
 
   function update<K extends keyof CreateFields>(key: K, value: CreateFields[K]) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -355,6 +408,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
     setFormError(null);
     setResult(null);
     setProgress(0);
+    setSlow(false);
     shouldFocusHeading.current = true;
     setWizardOpen(false);
     setPhase("building");
@@ -369,9 +423,15 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
 
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
-        const code = apiError.success ? apiError.data.error.code : "internal_error";
+        // Sem corpo JSON: 502/503/504 da plataforma (ex.: a função passou do tempo máximo).
+        const timedOut = res.status === 502 || res.status === 503 || res.status === 504;
+        const code = apiError.success
+          ? apiError.data.error.code
+          : timedOut
+            ? "generation_failed"
+            : "internal_error";
         const message = apiError.success ? apiError.data.error.message : "";
-        backToWizard(errorFor(code, message));
+        backToWizard(errorFor(code, message, signedIn));
         return;
       }
 
@@ -423,11 +483,18 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
 
   if (phase === "building") {
     const slug = slugBase(fields.name) || "your-business";
-    return <BuildingPanel progress={progress} slug={slug} headingRef={headingRef} />;
+    return <BuildingPanel progress={progress} slug={slug} slow={slow} headingRef={headingRef} />;
   }
 
   if (phase === "ready" && result) {
-    return <ReadyPanel siteId={result.siteId} spec={result.spec} headingRef={headingRef} />;
+    return (
+      <ReadyPanel
+        siteId={result.siteId}
+        spec={result.spec}
+        signedIn={signedIn}
+        headingRef={headingRef}
+      />
+    );
   }
 
   const meta = STEPS[step] ?? STEPS[0];
@@ -443,6 +510,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
     fields.name.trim(),
     location,
     fields.serviceArea.trim() && `serving ${fields.serviceArea.trim()}`,
+    fields.phone.trim(),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -693,7 +761,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                           className={`flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-xl px-4 text-[15px] font-medium text-ink [&::-webkit-details-marker]:hidden ${focusRing}`}
                         >
                           <span className="flex-1">
-                            Business name and location
+                            Business details
                             <span className="font-normal text-slate-500"> (optional)</span>
                           </span>
                           <ChevronIcon className="size-4 text-slate-500 transition-transform duration-150 group-open/more:rotate-180 motion-reduce:transition-none" />
@@ -714,6 +782,18 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                             fields={fields}
                             update={update}
                             stateError={fieldErrors.state}
+                          />
+                          <TextField
+                            id="create-phone"
+                            label="Phone"
+                            optional
+                            type="tel"
+                            hint="Shown as a tap-to-call button."
+                            value={fields.phone}
+                            maxLength={LIMITS.phone}
+                            autoComplete="tel"
+                            placeholder="(512) 555-0142"
+                            onChange={(value) => update("phone", value)}
                           />
                         </div>
                       </details>
@@ -747,6 +827,17 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                           <p>
                             <strong className="font-semibold">{formError.title}</strong>{" "}
                             {formError.body}
+                            {formError.dashboardLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href="/dashboard"
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  Go to your sites
+                                </Link>
+                              </>
+                            )}
                             {formError.signupLink && (
                               <>
                                 {" "}
@@ -779,7 +870,7 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                           </span>
                         </SummaryRow>
                         {nameAndPlace && (
-                          <SummaryRow label="Name and place" onChange={() => goTo(0)}>
+                          <SummaryRow label="Business details" onChange={() => goTo(0)}>
                             {nameAndPlace}
                           </SummaryRow>
                         )}
@@ -792,7 +883,6 @@ function Flow({ initialBrief, canReadStorage }: { initialBrief: string; canReadS
                         <SummaryRow label="Colors" onChange={() => goTo(2)}>
                           {colorLabel}
                         </SummaryRow>
-                        <SummaryRow label="Level of detail">Balanced</SummaryRow>
                       </dl>
                     </>
                   )}
@@ -898,6 +988,7 @@ function Field({ id, label, optional, hint, error, children }: FieldProps) {
 
 type TextFieldProps = Omit<FieldProps, "children"> & {
   value: string;
+  type?: "text" | "tel";
   maxLength: number;
   placeholder?: string;
   autoComplete?: string;
@@ -906,6 +997,7 @@ type TextFieldProps = Omit<FieldProps, "children"> & {
 
 function TextField({
   value,
+  type = "text",
   maxLength,
   placeholder,
   autoComplete,
@@ -917,7 +1009,7 @@ function TextField({
       {(describedBy) => (
         <input
           id={field.id}
-          type="text"
+          type={type}
           value={value}
           maxLength={maxLength}
           placeholder={placeholder}

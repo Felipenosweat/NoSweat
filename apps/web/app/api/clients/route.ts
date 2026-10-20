@@ -19,7 +19,8 @@ export async function GET(request: Request): Promise<Response> {
     }
     const q = params.get("q")?.slice(0, 200) || undefined;
 
-    const clients = await listClients(user.id, { stage, q });
+    // O e-mail da conta separa o pedido de teste do próprio dono (não vira cliente).
+    const clients = await listClients(user.id, { stage, q, ownerEmail: user.email });
     return jsonResponse(ClientsResponse, { clients });
   });
 }

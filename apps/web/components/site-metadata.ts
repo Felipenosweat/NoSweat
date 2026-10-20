@@ -10,6 +10,34 @@ export const freeSiteUrl = (slug: string) => `${SITE_ORIGIN}/s/${slug}`;
 /** Endereço no domínio próprio do cliente (raiz, sem "www"). */
 export const customDomainUrl = (domain: string) => `https://${domain}`;
 
+/** Tamanho da imagem de compartilhamento gerada (/api/sites/[id]/og). */
+export const SITE_OG_SIZE = { width: 1200, height: 630 };
+
+/**
+ * Letra do ícone (favicon) de um site: a primeira letra ou número do nome do negócio, em
+ * maiúscula. Nome sem letras (ou vazio): `null` (o ícone fica só com a cor do site).
+ */
+export function siteInitial(name: string): string | null {
+  const first = name.trim().match(/[\p{L}\p{N}]/u)?.[0];
+  return first ? first.toLocaleUpperCase("en-US") : null;
+}
+
+/** Cor de texto (branco ou quase preto) que mais contrasta com `hex` (#RRGGBB), pela WCAG. */
+export function textColorOn(hex: string): string {
+  if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) return "#FFFFFF";
+  const value = Number.parseInt(hex.replace(/^#/, ""), 16);
+  const linear = (channel: number) => {
+    const c = channel / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance =
+    0.2126 * linear((value >> 16) & 0xff) +
+    0.7152 * linear((value >> 8) & 0xff) +
+    0.0722 * linear(value & 0xff);
+  // Contraste com branco (luminância 1) x com #0B0F19 (luminância ~0,005).
+  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.055 ? "#FFFFFF" : "#0B0F19";
+}
+
 /**
  * Título e descrição que o Google e outros buscadores leem (as tags <title> e description).
  * A mesma regra aparece na demonstração da landing (components/landing/demos/SearchDemo.tsx).
@@ -34,15 +62,27 @@ export function siteMetadata(site: SiteRecord, url: string): Metadata {
   const { title, description } = searchSnippet(spec);
   const hero = spec.sections.find((s) => s.type === "hero");
   const image = hero?.type === "hero" ? hero.image : undefined;
+  // Sem foto no topo: a imagem gerada com o nome e a cor do site (para o link não ir "pelado"
+  // por SMS, Facebook ou Nextdoor). Endereço absoluto: os apps de mensagem exigem.
   const images = image
     ? [{ url: image.url, alt: image.alt, width: image.width, height: image.height }]
-    : undefined;
+    : [{ url: `${SITE_ORIGIN}/api/sites/${site.id}/og`, alt: business.name, ...SITE_OG_SIZE }];
+  // `v` muda quando a cor muda, para o navegador não ficar com o ícone antigo guardado.
+  const iconUrl = `/api/sites/${site.id}/icon?v=${spec.theme.primary.replace(/^#/, "").toLowerCase()}`;
 
   return {
     // `absolute` para não herdar o " · No Sweat" do layout: o site é do cliente.
     title: { absolute: title },
     description,
     alternates: { canonical: url },
+    // Ícone do próprio negócio (letra na cor do site), no lugar do da No Sweat do layout.
+    // /api passa direto pelo proxy também no domínio do cliente.
+    icons: {
+      icon: [{ url: iconUrl, type: "image/png", sizes: "64x64" }],
+      apple: [{ url: `${iconUrl}&size=180`, type: "image/png", sizes: "180x180" }],
+    },
+    // O manifesto "No Sweat" (adicionar à tela inicial) é da plataforma, não do site do cliente.
+    manifest: null,
     openGraph: {
       type: "website",
       url,
@@ -53,7 +93,7 @@ export function siteMetadata(site: SiteRecord, url: string): Metadata {
       images,
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title,
       description,
       images,

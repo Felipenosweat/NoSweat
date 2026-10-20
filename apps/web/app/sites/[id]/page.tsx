@@ -31,12 +31,13 @@ import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
-import { ownerHasLiveAccess } from "@/server/billing";
+import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
-import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec, publicUrl } from "@/server/sites";
+import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
+import { TakeOfflineButton } from "./TakeOfflineButton";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
@@ -82,7 +83,6 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   if (!site) notFound();
 
   const origin = await requestOrigin();
-  const live = publicUrl(site, origin);
   const free = freeUrl(site, origin);
   const [domain, leads] = await Promise.all([
     getDomainState(site),
@@ -93,6 +93,18 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const isPublished = site.status === "published";
   // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
   const offline = isPublished && !(await ownerHasLiveAccess(site.ownerId));
+  // Domínio próprio só vira o link principal quando JÁ funciona (DNS pronto e plano com domínio;
+  // sem isso o d/[host] manda de volta para o endereço grátis). Antes, o link é o grátis.
+  const domainUrl =
+    domain.status === "active" && domain.domain && (await ownerHasCustomDomainAccess(site.ownerId))
+      ? `https://${domain.domain}`
+      : null;
+  const live = isPublished ? (domainUrl ?? free) : null;
+  // Com os planos valendo e sem plano ativo, publicar leva para /billing: avisamos antes.
+  // (Quem está vendo é quem publicaria: admin nunca precisa de plano.)
+  const needsPlan = (!isPublished || offline) && (await publishBlocked(user)) !== null;
+  // Os pedidos também chegam por e-mail (server/notify) só com a Resend configurada.
+  const emailAlerts = Boolean(process.env.RESEND_API_KEY);
   // Publicar é a única ação azul da tela; sem nada para publicar, "Edit site" vira a principal.
   const publishLabel = !isPublished
     ? "Publish my website"
@@ -116,8 +128,8 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
           }
           title={business.name}
           badge={
-            <StatusBadge tone={isPublished ? "live" : "draft"}>
-              {isPublished ? "Live" : "Draft"}
+            <StatusBadge tone={isPublished && !offline ? "live" : "draft"}>
+              {offline ? "Offline" : isPublished ? "Live" : "Draft"}
             </StatusBadge>
           }
           description={where || undefined}
@@ -189,11 +201,26 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 Publish
               </PanelHeading>
               <p className={`mt-3 max-w-[60ch] ${panelText}`}>
-                {pendingChanges
-                  ? "You have saved changes that aren’t live yet. Publish them when you’re ready."
-                  : isPublished
-                    ? "Your website is live. Anyone with the link can see it."
-                    : "Happy with the preview? Put your website online in one click."}
+                {offline ? (
+                  <>
+                    Your website is offline because your plan ended.{" "}
+                    <Link
+                      href={`/billing?site=${encodeURIComponent(site.id)}`}
+                      className={linkClass}
+                    >
+                      Choose a plan to bring it back
+                    </Link>
+                    .
+                  </>
+                ) : pendingChanges ? (
+                  "You have saved changes that aren’t live yet. Publish them when you’re ready."
+                ) : isPublished ? (
+                  "Your website is live. Anyone with the link can see it."
+                ) : needsPlan ? (
+                  "Pick a plan to put it online. Building and previewing stay free."
+                ) : (
+                  "Happy with the preview? Put your website online in one click."
+                )}
               </p>
               {live && free && live !== free && (
                 <p className="mt-3 text-[13px] text-slate-500">
@@ -208,12 +235,19 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   siteId={site.id}
                   siteName={business.name}
                   label={publishLabel}
-                  liveUrl={isPublished ? free : null}
+                  liveUrl={isPublished && !offline ? free : null}
                   address={address}
                   state={publishState}
                   hasDomain={Boolean(domain.domain)}
+                  domainUrl={offline ? null : domainUrl}
+                  needsPlan={needsPlan}
                 />
               </div>
+              {isPublished && (
+                <div className="mt-4 border-t border-slate-200/70 pt-3">
+                  <TakeOfflineButton siteId={site.id} siteName={business.name} />
+                </div>
+              )}
             </section>
 
             <section
@@ -280,6 +314,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     </li>
                   ))}
                 </ul>
+              )}
+              {emailAlerts && (
+                <p className="mt-3 text-[13px] text-slate-500">
+                  We also email you every new message.
+                </p>
               )}
             </section>
 

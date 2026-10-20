@@ -2,7 +2,7 @@ import { joesPlumbing } from "@nosweat/fixtures";
 import type { SiteSpec } from "@nosweat/schema";
 import { describe, expect, it } from "vitest";
 import type { SiteRecord } from "@/server/store";
-import { siteJsonLd, siteMetadata } from "./site-metadata";
+import { siteInitial, siteJsonLd, siteMetadata, textColorOn } from "./site-metadata";
 
 const URL = "https://nosweatfd.com/s/joes-plumbing";
 
@@ -109,7 +109,7 @@ describe("siteMetadata", () => {
     expect(metadata.alternates?.canonical).toBe(URL);
   });
 
-  it("sem foto, não define og:image", () => {
+  it("sem foto, usa a imagem gerada com o nome e a cor do site", () => {
     const spec: SiteSpec = {
       ...joesPlumbing,
       sections: joesPlumbing.sections.map((section) =>
@@ -117,6 +117,50 @@ describe("siteMetadata", () => {
       ),
     };
     const metadata = siteMetadata(record(spec), URL);
-    expect(metadata.openGraph?.images).toBeUndefined();
+    expect(metadata.openGraph?.images).toEqual([
+      {
+        url: "https://www.nosweatfd.com/api/sites/site_1/og",
+        alt: "Joe's Plumbing",
+        width: 1200,
+        height: 630,
+      },
+    ]);
+  });
+
+  it("troca o ícone e o manifesto da No Sweat pelos do site", () => {
+    const metadata = siteMetadata(record(joesPlumbing), URL);
+    const version = joesPlumbing.theme.primary.slice(1).toLowerCase();
+    expect(metadata.icons).toEqual({
+      icon: [{ url: `/api/sites/site_1/icon?v=${version}`, type: "image/png", sizes: "64x64" }],
+      apple: [
+        {
+          url: `/api/sites/site_1/icon?v=${version}&size=180`,
+          type: "image/png",
+          sizes: "180x180",
+        },
+      ],
+    });
+    expect(metadata.manifest).toBeNull();
+  });
+});
+
+describe("siteInitial", () => {
+  it("usa a primeira letra ou número do nome, em maiúscula", () => {
+    expect(siteInitial("joe's plumbing")).toBe("J");
+    expect(siteInitial('  "123 Movers"')).toBe("1");
+    expect(siteInitial("Élan Salon")).toBe("É");
+  });
+
+  it("sem letras, não inventa nada", () => {
+    expect(siteInitial("")).toBeNull();
+    expect(siteInitial(" & ")).toBeNull();
+  });
+});
+
+describe("textColorOn", () => {
+  it("escolhe branco em cor escura e quase preto em cor clara", () => {
+    expect(textColorOn("#0B3D91")).toBe("#FFFFFF");
+    expect(textColorOn("#FDE68A")).toBe("#0B0F19");
+    expect(textColorOn("not-a-color")).toBe("#FFFFFF");
   });
 });

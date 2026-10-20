@@ -279,7 +279,23 @@ export function byDate(a: SocialPost, b: SocialPost): number {
   return b.createdAt.localeCompare(a.createdAt);
 }
 
-/** Pronto para aprovar: tem data e pelo menos uma foto (o Instagram exige foto). */
-export function canApprove(post: SocialPost): boolean {
-  return post.scheduledAt !== null && post.media.length > 0 && post.caption.trim().length > 0;
+/** O que falta para o post poder ser aprovado (`null` = nada, pode aprovar). */
+export type ApproveBlocker = "date" | "photo" | "caption" | "past";
+
+/**
+ * Por que o post ainda não pode ser aprovado. `nowMs` vem de fora (lido uma vez ao carregar os
+ * dados), para não chamar o relógio durante o render. A API recusa data no passado, e um post
+ * vencido no meio do lote derrubaria a aprovação de todos.
+ */
+export function approveBlocker(post: SocialPost, nowMs: number): ApproveBlocker | null {
+  if (post.scheduledAt === null) return "date";
+  if (post.media.length === 0) return "photo";
+  if (post.caption.trim().length === 0) return "caption";
+  if (Date.parse(post.scheduledAt) <= nowMs) return "past";
+  return null;
+}
+
+/** Pronto para aprovar: data no futuro, pelo menos uma foto (o Instagram exige) e legenda. */
+export function canApprove(post: SocialPost, nowMs: number): boolean {
+  return approveBlocker(post, nowMs) === null;
 }

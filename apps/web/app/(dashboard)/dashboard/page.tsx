@@ -23,14 +23,22 @@ import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { MODULES, type HubModule } from "@/lib/modules";
 import { getAccount } from "@/server/admin";
 import { createSupabaseServerClient } from "@/server/auth/session";
-import { getViewer, type ViewingAs } from "@/server/auth/viewer";
+import { getViewer, type Viewer, type ViewingAs } from "@/server/auth/viewer";
+import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
 import { clientsNeedingAttention, listClients } from "@/server/clients/service";
+import { socialCapability } from "@/server/social/config";
+import { isValidTimeZone, monthOf } from "@/server/social/service";
 import { getSocialStore } from "@/server/social/store";
-import type { SocialAccountRecord, SocialPostRecord } from "@/server/social/types";
+import type {
+  SocialAccountRecord,
+  SocialPostRecord,
+  SocialSettingsRecord,
+} from "@/server/social/types";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import {
   AlertIcon,
   ApproveIcon,
+  BillingIcon,
   CheckIcon,
   ClockIcon,
   ClientsIcon,
@@ -56,8 +64,11 @@ function hasPhotos(site: SiteRecord): boolean {
   );
 }
 
-/** Os 4 passos do checklist que o servidor sabe responder sobre o site (o último fica no cliente). */
-function checklistSteps(site: SiteRecord, leads: number): ChecklistStep[] {
+/**
+ * Os 4 passos do checklist que o servidor sabe responder sobre o site (o último fica no cliente).
+ * `domainIncluded = false`: o plano atual não tem domínio próprio, então o passo leva aos planos.
+ */
+function checklistSteps(site: SiteRecord, leads: number, domainIncluded: boolean): ChecklistStep[] {
   const live = site.status === "published";
   const liveHref = site.slug ? `/s/${site.slug}#contact` : null;
   return [
@@ -65,8 +76,8 @@ function checklistSteps(site: SiteRecord, leads: number): ChecklistStep[] {
     {
       label: "Connect domain",
       done: Boolean(site.customDomain),
-      href: `/sites/${site.id}#domain`,
-      hint: "Use yourbusiness.com",
+      href: domainIncluded ? `/sites/${site.id}#domain` : "/billing",
+      hint: domainIncluded ? "Use yourbusiness.com" : "Included in Pro",
     },
     {
       label: "Add photos",
@@ -126,6 +137,40 @@ async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot>
   }
 }
 
+/** Configurações de posts do dono (fuso da empresa e liberação de testador). Erro = `null`. */
+async function loadSettings(ownerId: string): Promise<SocialSettingsRecord | null> {
+  try {
+    return await getSocialStore().getSettings(ownerId);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * O dono consegue postar sozinho pelo Instagram? Usa a conta MOSTRADA (no "ver como", a conta
+ * vista: a do admin sempre daria "auto"). Erro = manual (o passo "Connect Instagram" some).
+ */
+async function loadAutoPublish(
+  account: { id: string; email: string | null },
+  settings: SocialSettingsRecord | null,
+): Promise<boolean> {
+  if (!settings) return false;
+  try {
+    return (await socialCapability(account, settings)).publishMode === "auto";
+  } catch {
+    return false;
+  }
+}
+
+/** Erro ao ler o plano = sem aviso e passo do domínio normal (como `ownerHasLiveAccess`). */
+async function loadAccess(ownerId: string): Promise<AccessSummary> {
+  try {
+    return await accessSummary(ownerId);
+  } catch {
+    return { enforced: false, live: true, endsAt: null, source: null };
+  }
+}
+
 type ClientsSnapshot = {
   total: number;
   newCount: number;
@@ -135,15 +180,21 @@ type ClientsSnapshot = {
 };
 
 /**
- * Resumo do módulo de clientes (o serviço já traz os pedidos novos do site antes de ler). `null` =
- * erro (a página volta a mostrar as mensagens do site por site, como antes).
+ * Resumo do módulo de clientes (o serviço já traz os pedidos novos do site antes de ler; o pedido
+ * de teste do próprio dono, achado por `ownerEmail`, não vira cliente). "Hoje" no fuso da empresa.
+ * `null` = erro (a página volta a mostrar as mensagens do site por site, como antes).
  */
-async function loadClients(ownerId: string, now: number): Promise<ClientsSnapshot | null> {
-  const today = dateKeyIn(CLIENTS_TIME_ZONE, new Date(now));
+async function loadClients(
+  ownerId: string,
+  ownerEmail: string | null,
+  now: number,
+  timeZone: string,
+): Promise<ClientsSnapshot | null> {
+  const today = dateKeyIn(timeZone, new Date(now));
   try {
     // Um depois do outro: os dois importam os pedidos do site, e em paralelo poderiam duplicar.
-    const clients = await listClients(ownerId);
-    const attention = await clientsNeedingAttention(ownerId, today);
+    const clients = await listClients(ownerId, { ownerEmail });
+    const attention = await clientsNeedingAttention(ownerId, today, ownerEmail);
     return {
       total: clients.length,
       newCount: attention.newCount,

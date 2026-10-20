@@ -1,4 +1,4 @@
-import { SiteSpec, type Business, type Section, type SectionOf } from "@nosweat/schema";
+import { SiteSpec, type Business, type Section, type SectionOf, type Theme } from "@nosweat/schema";
 import { z } from "zod";
 import { applyDesignPlan, readBrief, type DesignPlan } from "../design";
 
@@ -524,10 +524,54 @@ function buildBusiness(fill: ModelFill, facts: BriefFacts): Business {
 }
 
 /**
+ * Tema de cada estilo do passo "Colors" do /create (chave = nome do estilo na linha "Style: …",
+ * como em STYLE_OPTIONS de app/(dashboard)/create/brief.ts). As cores são as das amostras que o
+ * dono viu ao escolher; texto sobre o fundo e cor principal sobre o fundo passam no AA (4,5:1).
+ * Sem estilo escolhido, o site fica com o tema do modelo.
+ */
+export const STYLE_THEMES: Record<string, Theme> = {
+  "warm & friendly": {
+    primary: "#B4532A",
+    secondary: "#E3B448",
+    background: "#FBF6EE",
+    text: "#2B211B",
+    font: "fresh",
+  },
+  "clean & professional": {
+    primary: "#1E3A5F",
+    secondary: "#5B7A99",
+    background: "#F4F7FA",
+    text: "#0F1B2D",
+    font: "refined",
+  },
+  "bold & local": {
+    primary: "#C8102E",
+    secondary: "#FFB703",
+    background: "#FFFFFF",
+    text: "#111111",
+    font: "bold",
+  },
+  elegant: {
+    primary: "#3D2B3D",
+    secondary: "#C9A96E",
+    background: "#FAF7F2",
+    text: "#241A24",
+    font: "luxe",
+  },
+  simple: {
+    primary: "#2563EB",
+    secondary: "#111827",
+    background: "#FFFFFF",
+    text: "#111827",
+    font: "modern",
+  },
+};
+
+/**
  * Junta o fill da IA com o site-modelo. Do modelo ficam SÓ a estrutura (tipos e ordem das
- * seções, títulos, contato), o tema e a direção de arte (do plano). Todos os fatos do modelo
- * saem: nome, telefone, e-mail, endereço, horário, selos, links, preços, pessoas, depoimentos,
- * fotos (do topo, do "quem somos", da galeria) e legendas. Seção que fica vazia sai (about
+ * seções, títulos, contato), o tema (ou o do estilo escolhido pelo dono) e a direção de arte
+ * (do plano). Todos os fatos do modelo saem: nome, telefone, e-mail, endereço, horário, selos,
+ * links, preços, pessoas, depoimentos, fotos (do topo, do "quem somos", da galeria) e legendas. Seção que fica vazia sai (about
  * null, sem depoimentos, galeria sem fotos do dono). O resultado passa por SiteSpec.parse.
  */
 export function applyModelFill(
@@ -630,7 +674,8 @@ export function applyModelFill(
         ? { design: { ...model.design } }
         : {}),
     business: buildBusiness(fill, facts),
-    theme: { ...model.theme },
+    // Estilo escolhido pelo dono (passo "Colors") vale mais que o tema do modelo.
+    theme: { ...((plan?.signals.style && STYLE_THEMES[plan.signals.style]) || model.theme) },
     sections,
   });
 }

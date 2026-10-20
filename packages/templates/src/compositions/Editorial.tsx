@@ -149,7 +149,9 @@ export function EditorialComposition({
           </div>
         </Wrap>
       </header>
-      <main className="flex-1">{renderSections(spec, render, editable, selectedSection)}</main>
+      <main id={anchors ? "main" : undefined} className="flex-1">
+        {renderSections(spec, render, editable, selectedSection)}
+      </main>
       <SimpleFooter model={model} bigName className="border-t border-ns-border" />
       <MobileCallBar model={model} radius={RADIUS} />
     </div>

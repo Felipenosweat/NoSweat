@@ -1,6 +1,6 @@
 "use client";
 
-import { Composition, TemplateId, type SiteSpec, type Theme } from "@nosweat/schema";
+import { Composition, PrimaryAction, TemplateId, type SiteSpec, type Theme } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import { FONT_OPTIONS, FontPicker } from "./FontPicker";
 import { ChevronDownIcon, ShuffleIcon, UndoIcon } from "./icons";
@@ -32,6 +32,15 @@ const COMPOSITION_LABELS: Record<Composition, string> = {
   immersive: "Photo-first (full-width photo)",
   typographic: "Type-first (bold headline, no big photo)",
   modular: "Tiles (grid of blocks)",
+};
+
+// Ação principal do site (o botão grande do topo). "call" põe o telefone na frente.
+const PRIMARY_ACTION_LABELS: Record<PrimaryAction, string> = {
+  call: "Call (your phone number up front)",
+  quote: "Get a quote",
+  book: "Book an appointment",
+  visit: "Visit in person",
+  browse: "Browse your work",
 };
 
 function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -165,6 +174,30 @@ export function StylePanel({
             ))}
           </select>
         </Field>
+        {spec.design && (
+          <Field label="Main button">
+            <select
+              className={inputClass}
+              value={spec.design.primaryAction ?? ""}
+              onChange={(e) =>
+                update((d) => {
+                  if (!d.design) return;
+                  const value = e.target.value;
+                  // Vazio = automático (telefone se houver, senão o botão do topo).
+                  if (value) d.design.primaryAction = PrimaryAction.parse(value);
+                  else delete d.design.primaryAction;
+                })
+              }
+            >
+              <option value="">Automatic</option>
+              {PrimaryAction.options.map((action) => (
+                <option key={action} value={action}>
+                  {PRIMARY_ACTION_LABELS[action]}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         <Field label="Business type">
           <select
             className={inputClass}

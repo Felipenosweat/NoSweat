@@ -119,7 +119,13 @@ export async function findOwnerEmail(
   }
 }
 
-/** Envia o aviso. Sem chave ou sem destinatário, só pula. Nunca lança. */
+/** Já avisamos no log que os e-mails estão desligados? (uma vez por processo, sem encher o log) */
+let warnedNotConfigured = false;
+
+/**
+ * Envia o aviso. Sem chave ou sem destinatário, só pula (e deixa um aviso no log, para quem
+ * cuida do servidor perceber que os e-mails de pedidos estão desligados). Nunca lança.
+ */
 export async function sendLeadNotification(
   input: LeadEmailInput,
   env: NotifyEnv = process.env,
@@ -127,11 +133,20 @@ export async function sendLeadNotification(
 ): Promise<NotifyResult> {
   try {
     const apiKey = env.RESEND_API_KEY;
-    if (!apiKey) return { sent: false, reason: "not_configured" };
+    if (!apiKey) {
+      if (!warnedNotConfigured) {
+        warnedNotConfigured = true;
+        console.warn("[notify] RESEND_API_KEY not set: lead e-mails are off");
+      }
+      return { sent: false, reason: "not_configured" };
+    }
 
     const ownerEmail = input.ownerId ? await findOwnerEmail(input.ownerId, env, fetchImpl) : null;
     const to = ownerEmail ?? input.fallbackEmail ?? null;
-    if (!to) return { sent: false, reason: "no_recipient" };
+    if (!to) {
+      console.warn(`[notify] no recipient for the lead e-mail of site ${input.siteId}`);
+      return { sent: false, reason: "no_recipient" };
+    }
 
     const { subject, text, html } = buildLeadEmail(input);
     const res = await fetchImpl("https://api.resend.com/emails", {
