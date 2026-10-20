@@ -145,16 +145,6 @@ export const brickOvenPizza: ModelEntry = {
         ],
       },
       {
-        type: "about",
-        title: "Our story",
-        body: "Nicky Abate and his dad built the oven brick by brick in 2015. It burns oak at 900 degrees, which is why a pie takes about 90 seconds and comes out blistered and soft in the middle. Nicky stretches every pie, Lena runs the front and every catering order, and Omar keeps the slice counter going until close.",
-        people: [
-          { name: "Nicky Abate", role: "Owner & pizzaiolo" },
-          { name: "Lena Abate", role: "Front of house & catering" },
-          { name: "Omar Haddad", role: "Slice counter" },
-        ],
-      },
-      {
         type: "testimonials",
         title: "Heard at the counter",
         items: [
@@ -163,6 +153,16 @@ export const brickOvenPizza: ModelEntry = {
             quote: "Lena handled pizza for 60 at our block party and it showed up hot.",
             author: "Marcus D.",
           },
+        ],
+      },
+      {
+        type: "about",
+        title: "Our story",
+        body: "Nicky Abate and his dad built the oven brick by brick in 2015. It burns oak at 900 degrees, which is why a pie takes about 90 seconds and comes out blistered and soft in the middle. Nicky stretches every pie, Lena runs the front and every catering order, and Omar keeps the slice counter going until close.",
+        people: [
+          { name: "Nicky Abate", role: "Owner & pizzaiolo" },
+          { name: "Lena Abate", role: "Front of house & catering" },
+          { name: "Omar Haddad", role: "Slice counter" },
         ],
       },
       {

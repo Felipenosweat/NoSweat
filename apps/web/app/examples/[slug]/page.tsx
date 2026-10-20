@@ -1,4 +1,5 @@
-import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
+import { fixtures, MODEL_LIBRARY, type FixtureSlug } from "@nosweat/fixtures";
+import type { SiteSpec } from "@nosweat/schema";
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -14,19 +15,26 @@ type ExamplePageProps = {
 
 const isFixtureSlug = (slug: string): slug is FixtureSlug => slug in fixtures;
 
+/** Os 6 sites de exemplo originais e os da biblioteca de modelos (todos fictícios). */
+function exampleSpec(slug: string): SiteSpec | null {
+  if (isFixtureSlug(slug)) return fixtures[slug];
+  return MODEL_LIBRARY.find((entry) => entry.slug === slug)?.spec ?? null;
+}
+
 export async function generateMetadata({ params }: ExamplePageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (!isFixtureSlug(slug)) return {};
+  const spec = exampleSpec(slug);
+  if (!spec) return {};
   return {
-    title: `Example: ${fixtures[slug].business.name}`,
+    title: `Example: ${spec.business.name}`,
     robots: { index: false },
   };
 }
 
 export default async function ExamplePage({ params, searchParams }: ExamplePageProps) {
   const { slug } = await params;
-  if (!isFixtureSlug(slug)) notFound();
-  const spec = fixtures[slug];
+  const spec = exampleSpec(slug);
+  if (!spec) notFound();
   const embed = (await searchParams).embed === "1";
 
   return (

@@ -6,7 +6,7 @@ import { AnthropicGenerator, modelFirstEnabled } from "./anthropic";
 import { generateSiteSpec } from "./index";
 import { MockGenerator } from "./mock";
 import { applyModelFill, lintFill, STYLE_THEMES, verifyFacts, type ModelFill } from "./model-fill";
-import { CLEANING_MODEL, MODELS, modelFor, templateFor } from "./models";
+import { ALL_MODELS, CLEANING_MODEL, MODELS, modelFor, templateFor } from "./models";
 
 const SAMPLE_BRIEF =
   "Bright Path Services in Tulsa, OK. Drain cleaning from $275 and water heater repair. Call (918) 555-0100 or hello@brightpath.example.com.";
@@ -310,6 +310,28 @@ describe("models", () => {
   it("uses the cleaning model for cleaning briefs", () => {
     expect(modelFor("home-services", "House cleaning in Worcester")).toBe(CLEANING_MODEL);
     expect(modelFor("home-services", "Roofing contractor")).toBe(MODELS["home-services"]);
+  });
+
+  it("picks the closest model of the category by trade words", () => {
+    const pick = (template: Parameters<typeof modelFor>[0], brief: string) =>
+      modelFor(template, brief).business.name;
+    expect(pick("beauty", "Barbershop in Chicago, fades and beard trims")).toMatch(/fade/i);
+    expect(pick("restaurant", "Wood-fired pizza place in Brooklyn")).toMatch(/pizza/i);
+    expect(pick("professional", "Family dental office, cleanings and whitening")).toMatch(
+      /dental/i,
+    );
+    expect(pick("portfolio", "Tattoo studio, custom fine line work")).toMatch(/tattoo/i);
+    expect(pick("home-services", "Electrician for panel upgrades and EV chargers")).toMatch(
+      /electric/i,
+    );
+  });
+
+  it("has 5 or more models in every category", () => {
+    for (const template of Object.keys(MODELS) as (keyof typeof MODELS)[]) {
+      expect(
+        ALL_MODELS.filter((model) => model.category === template).length,
+      ).toBeGreaterThanOrEqual(5);
+    }
   });
 
   it.each(Object.keys(exampleBriefs) as FixtureSlug[])(

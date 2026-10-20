@@ -4,7 +4,7 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "https://nosweatfd.com";
-const PAGES = ["/", "/create", "/pricing", "/login", "/signup", "/terms", "/privacy", "/credits", "/examples/joes-plumbing", "/examples/glow-salon", "/examples/rosas-kitchen", "/examples/hale-ortiz", "/examples/sparkle-cleaning", "/examples/vega-photo", "/dashboard"];
+const PAGES = ["/", "/create", "/pricing", "/login", "/signup", "/terms", "/privacy", "/credits", "/examples/joes-plumbing", "/examples/glow-salon", "/examples/rosas-kitchen", "/examples/hale-ortiz", "/examples/sparkle-cleaning", "/examples/vega-photo", "/examples/bright-spark-electric", "/examples/greenline-landscaping", "/examples/true-coat-painting", "/examples/fade-and-co-barbers", "/examples/polished-nail-studio", "/examples/still-water-spa", "/examples/arch-and-lash", "/examples/north-loop-coffee", "/examples/brick-oven-pizza", "/examples/smoke-and-rail-bbq", "/examples/sunrise-bakery", "/examples/mercer-law", "/examples/bayside-family-dental", "/examples/keystone-insurance", "/examples/open-door-counseling", "/examples/hollis-interiors", "/examples/iron-lotus-tattoo", "/examples/reel-north-films", "/examples/fieldwork-studio", "/dashboard"];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1440, height: 900 },

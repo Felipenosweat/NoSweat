@@ -84,6 +84,28 @@ export const northLoopCoffee: ModelEntry = {
         },
       },
       {
+        type: "about",
+        title: "Our story",
+        body: "Theo and I opened North Loop Coffee in 2017 in an old printing warehouse, and the 12-kilo roaster went in the back before the espresso machine went in the front. I roast every Monday and Thursday, so the bag you take home was in the drum this week. Theo bakes the pastry case before we open, and Ramón makes sure every cortado tastes the same no matter who pulls it.",
+        people: [
+          {
+            name: "Hannah Lindqvist",
+            role: "Owner & roaster",
+            note: "Roasts every bean on the 12-kilo roaster in the back, Mondays and Thursdays.",
+          },
+          {
+            name: "Theo Lindqvist",
+            role: "Owner & kitchen",
+            note: "Runs the kitchen and bakes the pastry case every morning.",
+          },
+          {
+            name: "Ramón Ortiz",
+            role: "Head barista",
+            note: "Trains everyone who works the bar.",
+          },
+        ],
+      },
+      {
         type: "services",
         title: "On the counter",
         items: [
@@ -142,28 +164,6 @@ export const northLoopCoffee: ModelEntry = {
               "Roasted here Monday and Thursday. Ground free for your brewer. Office 5 lb bags $75.",
             price: "$17",
             detail: "5 lb bags: a week's notice",
-          },
-        ],
-      },
-      {
-        type: "about",
-        title: "Our story",
-        body: "Theo and I opened North Loop Coffee in 2017 in an old printing warehouse, and the 12-kilo roaster went in the back before the espresso machine went in the front. I roast every Monday and Thursday, so the bag you take home was in the drum this week. Theo bakes the pastry case before we open, and Ramón makes sure every cortado tastes the same no matter who pulls it.",
-        people: [
-          {
-            name: "Hannah Lindqvist",
-            role: "Owner & roaster",
-            note: "Roasts every bean on the 12-kilo roaster in the back, Mondays and Thursdays.",
-          },
-          {
-            name: "Theo Lindqvist",
-            role: "Owner & kitchen",
-            note: "Runs the kitchen and bakes the pastry case every morning.",
-          },
-          {
-            name: "Ramón Ortiz",
-            role: "Head barista",
-            note: "Trains everyone who works the bar.",
           },
         ],
       },
