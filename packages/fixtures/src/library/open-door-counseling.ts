@@ -67,16 +67,16 @@ export const openDoorCounseling: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "You don't have to have the words yet.",
+        title: "Therapy practice in Fremont, Seattle",
         subtitle:
-          "Therapy for anxiety, burnout, grief and couples, in Fremont or by telehealth anywhere in Washington. Start with a free 15-minute call.",
+          "Three licensed therapists who see individuals and couples on Fremont Ave N or by telehealth anywhere in Washington. You can start with a free 15-minute phone call.",
         ctaLabel: "Book a free consultation",
         imageQuery: "quiet room soft window light",
       },
       {
         type: "about",
-        title: "How it starts",
-        body: "First, a free 15-minute phone call to see if we're a fit, before you book anything. Then your first session, in person in Fremont or by telehealth. Nobody has to have the words ready; we start with what brought you in.\n\nMost people come weekly at first, then every other week.",
+        title: "Getting started",
+        body: "Before you book anything, we talk by phone for 15 minutes, free, to see if we're a fit. Your first session can be in person in Fremont or by telehealth, and we start with what brought you in.\n\nMost people come weekly at first and then every other week.",
       },
       {
         type: "services",
@@ -92,14 +92,14 @@ export const openDoorCounseling: ModelEntry = {
           {
             name: "Couples therapy",
             description:
-              "With David Okoro, LMFT, who has Gottman Method Level 2 training. For couples who keep having the same argument, or have stopped having any.",
+              "Couples sessions with David Okoro, LMFT, who has Gottman Method Level 2 training.",
             price: "$220",
             detail: "80 minutes",
           },
           {
             name: "Telehealth",
             description:
-              "The same sessions by video, for anyone located in Washington. Same fees, same therapists.",
+              "The same sessions by video for anyone located in Washington, at the same fees and with the same therapists.",
             detail: "Anywhere in Washington",
           },
           {
@@ -110,7 +110,7 @@ export const openDoorCounseling: ModelEntry = {
           },
           {
             name: "Sliding-scale spots",
-            description: "We keep a few reduced-fee spots. Ask on the consultation call.",
+            description: "We keep a few reduced-fee spots. Ask about them on the free call.",
             price: "from $90",
             detail: "Limited",
           },
@@ -118,8 +118,8 @@ export const openDoorCounseling: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who you'll work with",
-        body: "Three licensed therapists, each with a focus. On the free call we'll help you choose.",
+        title: "Our therapists",
+        body: "There are three licensed therapists in the practice, and on the free call we help you choose one.",
         people: [
           {
             name: "Hannah Sato, LMHC",
@@ -140,7 +140,7 @@ export const openDoorCounseling: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Questions people ask before the first call",
+        title: "Questions",
         items: [
           {
             q: "Do you take insurance?",
@@ -148,7 +148,7 @@ export const openDoorCounseling: ModelEntry = {
           },
           {
             q: "Can I do every session by telehealth?",
-            a: "Yes, if you're located in Washington during the session. Same fees and the same therapists as in person.",
+            a: "Yes, as long as you're located in Washington during the session. The fees and therapists are the same as in person.",
           },
           {
             q: "How often will we meet?",

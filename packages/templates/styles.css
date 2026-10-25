@@ -23,6 +23,12 @@
   --font-ns-body: var(--ns-font-body);
 }
 
+/* Peso dos títulos. Sites premiados usam títulos grandes e finos; o negrito pesado era o que
+   mais dava cara de modelo pronto. Serifas ficam no peso normal; as sem serifa, médio. */
+@utility font-ns-display {
+  font-weight: var(--ns-heading-weight);
+}
+
 @layer base {
   /* Cores derivadas, sempre calculadas a partir das 4 cores do tema. */
   .ns-site {
@@ -34,6 +40,21 @@
     font-synthesis-weight: none;
     /* Multiplicador do título principal (h1 do topo). Ver os pares de peso único abaixo. */
     --ns-display-scale: 1;
+    --ns-heading-weight: 500;
+  }
+
+  .ns-site:is(
+      [data-font="classic"],
+      [data-font="fresh"],
+      [data-font="editorial"],
+      [data-font="refined"],
+      [data-font="luxe"]
+    ) {
+    --ns-heading-weight: 400;
+  }
+
+  .ns-site[data-font="bold"] {
+    --ns-heading-weight: 600;
   }
 
   /* Títulos de peso único parecem mais leves que o botão em negrito ao lado: o h1 do topo

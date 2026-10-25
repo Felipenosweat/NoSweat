@@ -93,9 +93,9 @@ export const greenlineLandscaping: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "A Charlotte lawn that still looks good in August",
+        title: "Lawn care and landscaping in Charlotte",
         subtitle:
-          "Red clay, summer drought and fescue that browns out by July. We mow, plant and water around all three, with the same crew at your house every week.",
+          "Charlotte yards have red clay, dry summers and fescue that browns out by July, so we plan every yard around that. Weekly mowing comes with the same crew every week.",
         ctaLabel: "Get a yard quote",
         imageQuery: "landscaper trimming hedge",
         image: {
@@ -111,10 +111,10 @@ export const greenlineLandscaping: ModelEntry = {
       },
       {
         type: "services",
-        title: "Through the year",
+        title: "Lawn and landscaping services",
         items: [
           {
-            group: "Every week",
+            group: "Lawn care",
             name: "Weekly mowing",
             description:
               "Mow, edge, string-trim and blow off the driveway and walks. Clippings go back into the lawn.",
@@ -122,9 +122,9 @@ export const greenlineLandscaping: ModelEntry = {
             price: "from $45 a visit",
           },
           {
-            group: "Every week",
+            group: "Lawn care",
             name: "Shrub and hedge trimming",
-            description: "Shrubs and hedges shaped twice a year, clippings hauled away.",
+            description: "We trim shrubs and hedges in spring and again in late summer.",
             detail: "Spring and late summer",
             price: "from $120",
           },
@@ -138,33 +138,32 @@ export const greenlineLandscaping: ModelEntry = {
           {
             group: "Projects",
             name: "Sod and seeding",
-            description:
-              "Fescue in the fall, Bermuda and zoysia in late spring, laid when the grass will take.",
+            description: "We put fescue down in the fall and Bermuda or zoysia in late spring.",
           },
           {
             group: "Projects",
             name: "Pine straw and mulch",
-            description: "Spread and tucked along beds, trees and borders.",
+            description: "Pine straw or mulch, installed in your beds.",
             price: "from $8 a bale",
           },
           {
-            group: "Water and seasons",
+            group: "Irrigation and fall",
             name: "Irrigation repairs and start-ups",
             description:
               "Broken heads, leaking valves and zones that stopped running, checked by a licensed irrigation contractor.",
             price: "from $85",
           },
           {
-            group: "Water and seasons",
+            group: "Irrigation and fall",
             name: "Fall leaf cleanup",
-            description: "Leaves blown out of the beds and off the lawn, then hauled away.",
+            description: "We clear the leaves out of the beds and off the lawn in the fall.",
             price: "from $225",
           },
         ],
       },
       {
         type: "gallery",
-        title: "Yards we look after",
+        title: "Our work",
         images: [
           work(
             1,
@@ -205,8 +204,8 @@ export const greenlineLandscaping: ModelEntry = {
       },
       {
         type: "about",
-        title: "Two brothers and a borrowed trailer",
-        body: "Andre and Kevin Simmons started Greenline in 2015 with one mower and a borrowed trailer. Andre handles the water side as a North Carolina licensed irrigation contractor, Kevin draws the designs and runs the install crew, and Brenda keeps the schedule so your crew shows up on the same day every week.",
+        title: "About us",
+        body: "Andre and Kevin Simmons started Greenline in 2015 with one mower and a borrowed trailer. Andre handles the water side as a North Carolina licensed irrigation contractor, Kevin draws the designs and runs the install crew. Brenda Ortiz runs the schedule and the billing.",
         people: [
           {
             name: "Andre Simmons",
@@ -223,7 +222,7 @@ export const greenlineLandscaping: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From the neighborhood",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -239,7 +238,7 @@ export const greenlineLandscaping: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before your first mow",
+        title: "Questions",
         items: [
           {
             q: "Do I have to sign a contract?",
@@ -259,13 +258,13 @@ export const greenlineLandscaping: ModelEntry = {
           },
           {
             q: "Do you work outside Charlotte?",
-            a: "Yes: Matthews, Mint Hill, Huntersville, Pineville and Fort Mill.",
+            a: "Yes. We also work in Matthews, Mint Hill, Huntersville, Pineville and Fort Mill.",
           },
         ],
       },
       {
         type: "contact",
-        title: "Walk us through your yard",
+        title: "Contact us",
         showForm: true,
         showMap: false,
       },

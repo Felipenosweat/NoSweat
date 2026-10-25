@@ -62,9 +62,9 @@ export const fieldworkStudio: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Brands for Richmond businesses that make real things",
+        title: "Branding and graphic design in Richmond, VA",
         subtitle:
-          "Logos, identities and packaging for cideries, bakeries, bike shops and the people who run them. Same four steps every time, from kickoff to final files.",
+          "I'm Sam Okafor. I design logos, brand identities and packaging from a studio in Scott's Addition, for clients like Tidewater Cider and Carytown Bike Co.",
         ctaLabel: "Start a project",
         image: {
           url: "/photos/models/fieldwork-studio-16.webp",
@@ -82,12 +82,12 @@ export const fieldworkStudio: ModelEntry = {
       },
       {
         type: "services",
-        title: "What I make, and what it costs",
+        title: "Services and prices",
         items: [
           {
             name: "Full brand identity",
             description:
-              "Logo, type, color, a brand guide and your first business cards. Everything you need to look like yourself everywhere.",
+              "Logo, type, color, a brand guide and your first business cards.",
             price: "from $8,500",
             detail: "6–8 weeks",
           },
@@ -100,20 +100,20 @@ export const fieldworkStudio: ModelEntry = {
           {
             name: "Packaging & labels",
             description:
-              "Cans, bottles, bags and boxes, designed for the shelf and ready for print.",
+              "Labels and packaging for one product line, through to files ready for the printer.",
             price: "from $4,000",
             detail: "Per product line",
           },
           {
             name: "Brand refresh",
-            description: "Keep what customers already recognize, fix what's holding you back.",
+            description: "An update to the brand you already have, keeping what your customers recognize.",
             price: "from $5,500",
             detail: "4–6 weeks",
           },
           {
             name: "Design day",
             description:
-              "One day, one problem solved: a menu, a sign, a pitch deck, a trade show booth.",
+              "A full day on one job, like a menu, a sign, a pitch deck or a trade show booth.",
             price: "$950",
             detail: "1 day",
           },
@@ -121,7 +121,7 @@ export const fieldworkStudio: ModelEntry = {
       },
       {
         type: "about",
-        title: "How a project runs",
+        title: "About the studio",
         body: "Every project runs the same four steps: a 90-minute kickoff, two directions in week two, one direction refined over two rounds of changes, then final files and a brand guide.\n\nRecent work: labels for Tidewater Cider (2025), the identity for Carytown Bike Co. (2025) and packaging for Juniper & Pine Bakery (2024).",
         people: [
           {
@@ -132,13 +132,13 @@ export const fieldworkStudio: ModelEntry = {
           {
             name: "Ellie Park",
             role: "Packaging production & print",
-            note: "Joins part-time to take packaging from screen to press.",
+            note: "Works part-time on packaging production and print.",
           },
         ],
       },
       {
         type: "testimonials",
-        title: "From clients",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -153,7 +153,7 @@ export const fieldworkStudio: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Working together",
+        title: "Questions",
         items: [
           {
             q: "How does payment work?",

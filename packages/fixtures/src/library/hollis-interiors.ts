@@ -92,9 +92,9 @@ export const hollisInteriors: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Homes that feel collected, not ordered from a catalog",
+        title: "Interior design for Nashville homes",
         subtitle:
-          "Full-home design, kitchens and baths for old Nashville houses and new ones. About 10 projects a year, each one drawn around how the family actually lives.",
+          "Claire Hollis designs full homes, kitchens and baths from a studio on Woodland Street in East Nashville. We take on about 10 full projects a year.",
         ctaLabel: "Book a consultation",
         image: {
           url: "/photos/models/hollis-interiors-11.webp",
@@ -109,7 +109,7 @@ export const hollisInteriors: ModelEntry = {
       },
       {
         type: "gallery",
-        title: "Selected work",
+        title: "Recent projects",
         images: [
           room(
             9,
@@ -139,8 +139,8 @@ export const hollisInteriors: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who makes them",
-        body: "I opened the studio in 2017 after 8 years at an architecture firm, so we start with the floor plan and the light before we talk about pillows. Jess keeps the contractors, orders and install day on schedule.\n\nAlso lately: a lake house on Percy Priest Lake (2024) and a loft in Germantown (2024).",
+        title: "About the studio",
+        body: "I'm Claire Hollis. I opened the studio in 2017 after 8 years at an architecture firm. Jess Tran is our project manager, and she runs the contractors, the orders and install day.\n\nOther recent projects include a lake house on Percy Priest Lake (2024) and a loft in Germantown (2024).",
         people: [
           {
             name: "Claire Hollis",
@@ -156,12 +156,12 @@ export const hollisInteriors: ModelEntry = {
       },
       {
         type: "services",
-        title: "Ways to work with us",
+        title: "Services and fees",
         items: [
           {
             name: "In-home consultation",
             description:
-              "Two hours walking your house with a notebook. You leave with a plan and a flat quote for the design.",
+              "Two hours in your house talking through what you want. Afterward we send a flat quote for the design.",
             price: "$350",
             detail: "2 hours",
             group: "Start here",
@@ -169,7 +169,7 @@ export const hollisInteriors: ModelEntry = {
           {
             name: "Full-home design",
             description:
-              "Floor plans, finishes, lighting, furniture and art, through to the last picture hung on install day.",
+              "Floor plans, finishes, lighting, furniture and art, from the first drawings through install day.",
             price: "from $18,000",
             detail: "4–9 months",
             group: "Full projects",
@@ -195,13 +195,13 @@ export const hollisInteriors: ModelEntry = {
               "A floor plan, a shopping list with links and a call to walk through it. Anywhere in the US.",
             price: "$950",
             detail: "Per room · remote · 3 weeks",
-            group: "From afar",
+            group: "Remote",
           },
         ],
       },
       {
         type: "testimonials",
-        title: "From the people who live there",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -217,7 +217,7 @@ export const hollisInteriors: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Working together",
+        title: "Questions",
         items: [
           {
             q: "How do your fees work?",
@@ -243,7 +243,7 @@ export const hollisInteriors: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Tell us about the house",
+        title: "Book a consultation",
         showForm: true,
         showMap: false,
       },

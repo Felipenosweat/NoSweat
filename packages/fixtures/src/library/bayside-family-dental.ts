@@ -69,9 +69,9 @@ export const baysideFamilyDental: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "From first tooth to last checkup, one dental office for the whole family.",
+        title: "Family dentist in South Tampa",
         subtitle:
-          "Cleanings, fillings and whitening in South Tampa. Toothache? Call before noon and we try to see you that day. Open until 7 PM on Wednesdays.",
+          "Cleanings, fillings, whitening and emergency visits for adults and kids on W Bay to Bay Blvd. If you call before noon with a toothache, we try to see you that day, and we're open until 7 PM on Wednesdays.",
         ctaLabel: "Book a visit",
         imageQuery: "bright dental office chair",
         image: {
@@ -92,7 +92,7 @@ export const baysideFamilyDental: ModelEntry = {
           {
             name: "New patient exam, cleaning and x-rays",
             description:
-              "Your first visit with us: a full exam with Dr. Brooks, a cleaning with Tasha and the x-rays we need to see what's going on.",
+              "Your first visit, with a full exam, x-rays and a cleaning with Tasha Rivera, our hygienist.",
             price: "$189",
             detail: "Without insurance",
             group: "Checkups",
@@ -100,14 +100,14 @@ export const baysideFamilyDental: ModelEntry = {
           {
             name: "Kids' cleaning and exam",
             description:
-              "From the first tooth. Dr. Lee goes slowly, explains every tool and lets them hold the mirror.",
+              "For children from their first tooth. Early visits are short and mostly about getting comfortable with the chair, and Dr. Lee sees most of our kids.",
             price: "$95",
             detail: "Without insurance",
             group: "Checkups",
           },
           {
             name: "Tooth-colored fillings",
-            description: "Cavities filled with material matched to your tooth, not silver.",
+            description: "We fill cavities with a tooth-colored material matched to your tooth.",
             price: "from $160",
             detail: "Per tooth",
             group: "Repairs",
@@ -115,21 +115,22 @@ export const baysideFamilyDental: ModelEntry = {
           {
             name: "Emergency exam",
             description:
-              "Toothache, a broken or chipped tooth. Call before noon and we try to see you that day.",
+              "For a toothache or a broken tooth. If you call before noon, we try to see you that day.",
             price: "$125",
             detail: "Call before noon",
             group: "Repairs",
           },
           {
             name: "In-office whitening",
-            description: "One visit in the chair, with your teeth checked first.",
+            description:
+              "Whitening in one visit at the office. We check your teeth before we start.",
             price: "$395",
             detail: "90 minutes",
             group: "Whitening",
           },
           {
             name: "Take-home whitening trays",
-            description: "Trays made for your teeth, to whiten at home on your own schedule.",
+            description: "Whitening trays and gel to use at home, after we check your teeth.",
             price: "$250",
             detail: "Trays and gel",
             group: "Whitening",
@@ -138,8 +139,8 @@ export const baysideFamilyDental: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who you'll see",
-        body: "Bayside Family Dental opened in South Tampa in 2015. It's a small office, so you see the same faces every visit, and your kids get to know us by name.",
+        title: "About the office",
+        body: "Dr. Nadia Brooks opened Bayside Family Dental in South Tampa in 2015. We're a small office, so you see the same people at every visit.",
         people: [
           {
             name: "Dr. Nadia Brooks, DMD",
@@ -160,7 +161,7 @@ export const baysideFamilyDental: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From our patients",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -175,11 +176,11 @@ export const baysideFamilyDental: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Insurance and first visits",
+        title: "Questions",
         items: [
           {
             q: "Which insurance do you take?",
-            a: "We're in network with Delta Dental PPO, Cigna DPPO, MetLife, Aetna PPO, Guardian and United Concordia, and we file the claim for you. Not on the list? Call us and we'll check your plan.",
+            a: "We're in network with Delta Dental PPO, Cigna DPPO, MetLife, Aetna PPO, Guardian and United Concordia, and we file the claim for you. If your plan isn't on the list, call us and we'll check it.",
           },
           {
             q: "What if I don't have dental insurance?",
@@ -191,11 +192,11 @@ export const baysideFamilyDental: ModelEntry = {
           },
           {
             q: "I have a toothache. Can you see me today?",
-            a: "Call before noon and we try to see you that day. The emergency exam is $125.",
+            a: "If you call before noon, we try to see you that day. The emergency exam is $125.",
           },
           {
             q: "Do you have evening hours?",
-            a: "On Wednesdays we're open until 7 PM. The rest of the week: Mon, Tue and Thu 8 AM – 5 PM, Fri 8 AM – 2 PM.",
+            a: "Yes, until 7 PM on Wednesdays. Other days we're open Mon, Tue and Thu 8 AM – 5 PM and Fri 8 AM – 2 PM.",
           },
         ],
       },

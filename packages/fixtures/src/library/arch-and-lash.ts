@@ -72,33 +72,33 @@ export const archAndLash: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Lashes and brows mapped to your face, not a trend",
+        title: "Lash and brow studio in West Midtown",
         subtitle:
-          "Classic, hybrid and volume extensions, lash lifts and brow lamination in West Midtown. Patch test before your first set, and you'll know the price and the time before you sit down.",
-        ctaLabel: "Book your set",
+          "Lash extensions, lash lifts, brow lamination and waxing at 1050 Howell Mill Rd in Atlanta. If you're new to extensions, we do a patch test at least 48 hours before your first set.",
+        ctaLabel: "Book an appointment",
       },
       {
         type: "services",
-        title: "Sets and prices",
+        title: "Services and prices",
         items: [
           {
             group: "Lash extensions",
             name: "Classic full set",
-            description: "One extension per natural lash. Clean and defined, like mascara.",
+            description: "One extension on each natural lash.",
             price: "$140",
             detail: "2 hours",
           },
           {
             group: "Lash extensions",
             name: "Hybrid full set",
-            description: "A mix of classic and volume for texture and fullness.",
+            description: "A mix of classic and volume lashes.",
             price: "$175",
             detail: "2 hours",
           },
           {
             group: "Lash extensions",
             name: "Volume full set",
-            description: "Light, hand-made fans for a full, soft look.",
+            description: "Light fans we make by hand, for a fuller set.",
             price: "$210",
             detail: "2.5 hours",
           },
@@ -106,14 +106,14 @@ export const archAndLash: ModelEntry = {
             group: "Lash extensions",
             name: "Lash fill",
             description:
-              "Every 2 to 3 weeks, with at least 40% of your extensions still on. Less than that is a new set.",
+              "Every 2 to 3 weeks. You need at least 40% of your extensions still on, or we book a new set.",
             price: "from $65",
             detail: "60 min",
           },
           {
             group: "Lifts & brows",
             name: "Lash lift & tint",
-            description: "Your own lashes, curled and darkened. No extensions to maintain.",
+            description: "Your own lashes, curled and tinted, with no extensions to keep up.",
             price: "$95",
             detail: "Lasts 6 to 8 weeks",
           },
@@ -127,29 +127,29 @@ export const archAndLash: ModelEntry = {
           {
             group: "Waxing",
             name: "Brow wax & shape",
-            description: "Shaped to your face, not a stencil.",
+            description: "Brows waxed and shaped.",
             price: "$25",
             detail: "20 min",
           },
           {
             group: "Waxing",
             name: "Lip or chin wax",
-            description: "Quick and gentle.",
+            description: "A quick wax for the lip or chin.",
             price: "$12",
           },
         ],
       },
       {
         type: "faq",
-        title: "Prep and aftercare",
+        title: "Questions",
         items: [
           {
-            q: "Is this my first time with extensions?",
-            a: "Then we'll do a patch test at least 48 hours before your first set.",
+            q: "I've never had extensions. Is there anything first?",
+            a: "Yes, a patch test at least 48 hours before your first set.",
           },
           {
             q: "How should I come in?",
-            a: "With clean lashes and no mascara. Skip the caffeine before a full set, so you can relax with your eyes closed for two hours.",
+            a: "With clean lashes and no mascara. Skip caffeine before a full set, since you'll be lying with your eyes closed for about two hours.",
           },
           {
             q: "How do I take care of new lashes?",
@@ -171,8 +171,8 @@ export const archAndLash: ModelEntry = {
       },
       {
         type: "about",
-        title: "Your artists",
-        body: "Keisha Monroe is a licensed esthetician in Georgia and has been lashing since 2018. At Arch & Lash every set is mapped to your eye shape before the first extension goes on, and every brow is shaped to your face.",
+        title: "About us",
+        body: "Keisha Monroe is a licensed esthetician in Georgia and has been lashing since 2018. Jada Brooks does our volume sets and Simone Price does brows and waxing. We map every set to your eye shape before the first extension goes on.",
         people: [
           {
             name: "Keisha Monroe",
@@ -185,7 +185,7 @@ export const archAndLash: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From our clients",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -200,7 +200,7 @@ export const archAndLash: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Book your appointment",
+        title: "Book an appointment",
         showForm: true,
         showMap: true,
       },

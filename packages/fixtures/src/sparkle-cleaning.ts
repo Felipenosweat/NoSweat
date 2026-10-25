@@ -33,9 +33,9 @@ export const sparkleCleaning: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "House cleaning in Worcester, priced before the first visit",
+      title: "House cleaning in Worcester, Massachusetts",
       subtitle:
-        "Weekly, biweekly and one-time cleaning. Tell us about your home and we'll send a price by home size before we start.",
+        "We clean homes in Worcester and nearby towns every week, every two weeks or just once. Tell us the size of your home and we'll send a price before the first visit.",
       ctaLabel: "Get a cleaning quote",
       imageQuery: "cleaning crew bright kitchen",
       image: {
@@ -57,23 +57,24 @@ export const sparkleCleaning: SiteSpec = {
       items: [
         {
           name: "Recurring cleaning",
-          description: "Kitchens, bathrooms, floors and dusting, by the same team each visit.",
+          description: "Kitchens, bathrooms, floors and dusting, done by the same team each visit.",
           detail: "Weekly or every two weeks",
         },
         {
           name: "Deep cleaning",
           description:
-            "Baseboards, inside appliances, grout and the corners a regular clean doesn't reach.",
+            "A longer clean that gets the baseboards, the grout and the inside of the appliances.",
           detail: "One time",
         },
         {
           name: "Move-in / move-out",
-          description: "Empty-home cleaning so you can hand back the keys or move in fresh.",
+          description:
+            "We clean the empty house or apartment before you hand back the keys or move in.",
           detail: "One time",
         },
         {
           name: "Post-renovation",
-          description: "Dust and debris removal after contractors finish, top to bottom.",
+          description: "Cleanup of the dust and debris left behind when the contractors finish.",
           detail: "One time",
         },
       ],
@@ -86,12 +87,12 @@ export const sparkleCleaning: SiteSpec = {
       type: "faq",
       items: [
         {
-          q: "Do I need to be home during the cleaning?",
-          a: "No. Many clients leave a key or door code. We'll confirm the details when you book.",
+          q: "When do you clean?",
+          a: "Monday to Friday from 8 AM to 6 PM, and Saturday from 9 AM to 2 PM.",
         },
         {
           q: "Do you bring your own supplies?",
-          a: "Yes, we bring everything. If you prefer specific products, just let us know.",
+          a: "Yes, we bring all of our own supplies.",
         },
         {
           q: "How is the price set?",

@@ -69,33 +69,33 @@ export const fadeAndCoBarbers: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Clean fades on Milwaukee Ave since 2017",
+        title: "Barbershop on Milwaukee Ave since 2017",
         subtitle:
-          "Four chairs in Logan Square for fades, scissor cuts, beard work and straight-razor shaves. Every cut ends with a neck shave and a hot towel. Walk in, or book and the chair is yours.",
+          "Four chairs in Logan Square for fades, scissor cuts, beards and straight-razor shaves. Every cut ends with a neck shave and a hot towel. Walk-ins are welcome, and booking online guarantees your chair.",
         ctaLabel: "Book a chair",
       },
       {
         type: "services",
-        title: "The board",
+        title: "Prices",
         items: [
           {
             group: "Cuts",
             name: "Classic cut",
-            description: "Clippers and scissors, finished with a neck shave and a hot towel.",
+            description: "Clippers and scissors, with a neck shave and a hot towel at the end.",
             price: "$35",
             detail: "40 min",
           },
           {
             group: "Cuts",
             name: "Skin fade",
-            description: "Blended down to the skin, shaped to your head, not a guard number.",
+            description: "Faded down to the skin on the sides and back.",
             price: "$40",
             detail: "45 min",
           },
           {
             group: "Cuts",
             name: "Kids cut",
-            description: "Same care as the grown-ups, for 12 and under.",
+            description: "For kids 12 and under.",
             price: "$25",
           },
           {
@@ -108,21 +108,21 @@ export const fadeAndCoBarbers: ModelEntry = {
           {
             group: "Beard & shave",
             name: "Cut & beard",
-            description: "Any cut plus a beard shaped and lined to match.",
+            description: "Any cut, plus a beard trim and line-up.",
             price: "$55",
             detail: "60 min",
           },
           {
             group: "Beard & shave",
             name: "Beard trim & line-up",
-            description: "Length, shape and a sharp edge on the cheeks and neck.",
+            description: "We trim the length and line up the cheeks and neck.",
             price: "$25",
             detail: "20 min",
           },
           {
             group: "Beard & shave",
             name: "Hot towel shave",
-            description: "Straight razor, two hot towels and a cold finish.",
+            description: "A straight-razor shave with two hot towels and a cold finish.",
             price: "$45",
             detail: "45 min",
           },
@@ -130,8 +130,8 @@ export const fadeAndCoBarbers: ModelEntry = {
       },
       {
         type: "about",
-        title: "Behind the chairs",
-        body: "Darnell Hayes cut hair on the South Side for ten years before opening Fade & Co. on Milwaukee Ave in 2017. Four chairs, one barber per chair, no assembly line. Tell us once how you like it and we remember.",
+        title: "About the shop",
+        body: "Darnell Hayes cut hair on the South Side for ten years before he opened Fade & Co. on Milwaukee Ave in 2017. Tony Russo does scissor cuts and longer hair, and Kev Mitchell does beards and the straight-razor shaves.",
         people: [
           { name: "Darnell Hayes", role: "Owner, barber", note: "Fades and tapers." },
           { name: "Tony Russo", role: "Barber", note: "Scissor cuts and longer hair." },
@@ -140,7 +140,7 @@ export const fadeAndCoBarbers: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From the chair",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -155,11 +155,11 @@ export const fadeAndCoBarbers: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Good to know",
+        title: "Questions",
         items: [
           {
             q: "Do you take walk-ins?",
-            a: "Yes, every day we're open. Booking online guarantees your chair, so walk-ins wait for the next open barber.",
+            a: "Yes, every day we're open. Walk-ins wait for the next open barber, and booking online guarantees your chair.",
           },
           {
             q: "Can I book a specific barber?",
@@ -167,7 +167,7 @@ export const fadeAndCoBarbers: ModelEntry = {
           },
           {
             q: "Do you take cards?",
-            a: "Cash and cards, both fine.",
+            a: "Yes, we take cash and cards.",
           },
           {
             q: "What if I need to cancel?",
@@ -181,7 +181,7 @@ export const fadeAndCoBarbers: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Grab a chair",
+        title: "Book a chair",
         showForm: true,
         showMap: true,
       },

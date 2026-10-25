@@ -26,7 +26,7 @@ import {
 const RADIUS = "rounded-none";
 
 const h2 =
-  "font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl";
+  "font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl";
 
 /**
  * Composição EDITORIAL (revista): título enorme em largura total, texto e botões numa linha
@@ -107,7 +107,7 @@ export function EditorialComposition({
           <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
             <Wrap className="grid gap-12 @5xl:grid-cols-12">
               <div className="@5xl:col-span-5">
-                <h2 className="font-ns-heading text-4xl leading-[1.05] font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
+                <h2 className="font-ns-heading text-4xl leading-[1.05] font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
                   {model.titleOf(section)}
                 </h2>
                 <ContactLines model={model} className="mt-10" />
@@ -135,7 +135,7 @@ export function EditorialComposition({
         <Wrap className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
           <a
             href="#top"
-            className="min-w-0 font-ns-heading text-xl leading-tight font-bold tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
+            className="min-w-0 font-ns-heading text-xl leading-tight font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
           >
             {model.business.name}
           </a>
@@ -168,7 +168,7 @@ function EditorialHero({ model, data }: { model: SiteModel; data: SectionOf<"her
             {kicker}
           </p>
         )}
-        <h1 className="mt-5 max-w-[15ch] font-ns-heading text-[length:clamp(2.75rem,9cqw,7.5rem)] leading-[0.95] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
+        <h1 className="mt-5 max-w-[15ch] font-ns-heading text-[length:clamp(2.75rem,9cqw,7.5rem)] leading-[0.95] font-ns-display tracking-tight text-balance [overflow-wrap:anywhere]">
           {data.title}
         </h1>
         <div className="mt-10 grid gap-8 border-t border-ns-border pt-8 @5xl:grid-cols-12 @5xl:items-end">
@@ -229,7 +229,7 @@ function EditorialServices({
                 <span className="font-ns-heading text-sm font-semibold text-ns-primary tabular-nums @3xl:col-span-1 @3xl:pt-2">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <h3 className="font-ns-heading text-2xl leading-snug font-bold text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl @3xl:col-span-5">
+                <h3 className="font-ns-heading text-2xl leading-snug font-ns-display text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl @3xl:col-span-5">
                   {item.name}
                 </h3>
                 <div className="max-w-[52ch] @3xl:col-span-6 @3xl:pt-1.5">

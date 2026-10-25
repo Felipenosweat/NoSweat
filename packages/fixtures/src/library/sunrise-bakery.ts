@@ -67,9 +67,9 @@ export const sunriseBakery: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Two days of dough, out of the oven by seven",
+        title: "Sourdough bakery on J St in Midtown",
         subtitle:
-          "Sourdough fermented for 48 hours, laminated pastries and custom cakes on J St in Midtown. Weekend bread sells out by noon, so preorder the Saturday box or come early.",
+          "Our sourdough ferments for 48 hours and the first loaves are out at 7 AM. We also make pastries and custom cakes. Weekend bread usually sells out by noon, so come early or preorder.",
         ctaLabel: "Preorder for pickup",
         imageQuery: "butter croissant close up",
         image: {
@@ -88,38 +88,38 @@ export const sunriseBakery: ModelEntry = {
       },
       {
         type: "services",
-        title: "From the oven",
+        title: "Menu",
         items: [
           {
             group: "Bread",
             name: "Country sourdough",
-            description: "Our everyday loaf: 48-hour ferment, open crumb, a dark blistered crust.",
+            description: "Our everyday loaf, fermented for 48 hours.",
             price: "$9",
             detail: "Every day from 7 AM",
           },
           {
             group: "Bread",
             name: "Seeded rye",
-            description: "Dense rye packed with sunflower, flax and sesame. Slices thin.",
+            description: "A seeded rye loaf, baked for the weekend.",
             price: "$10",
             detail: "Fri–Sun",
           },
           {
             group: "Pastry",
             name: "Butter croissant",
-            description: "All butter, shatters when you bite it.",
+            description: "A plain butter croissant.",
             price: "$4.50",
           },
           {
             group: "Pastry",
             name: "Morning bun",
-            description: "Croissant dough rolled with orange zest and cinnamon sugar.",
+            description: "Rolled with orange zest and cinnamon sugar.",
             price: "$5",
           },
           {
             group: "Pastry",
             name: "Kouign-amann",
-            description: "Caramelized, salty-sweet and layered. Weekends only.",
+            description: "A Breton pastry we make on weekends.",
             price: "$5.50",
             detail: "Sat–Sun",
           },
@@ -127,21 +127,21 @@ export const sunriseBakery: ModelEntry = {
             group: "Cakes & preorders",
             name: "Custom cake",
             description:
-              "Designed with Elena for birthdays and celebrations. A 6-inch serves 8–10.",
+              "Elena designs and decorates every one. A 6-inch cake serves 8–10.",
             price: "from $55",
             detail: "Order 5 days ahead",
           },
           {
             group: "Cakes & preorders",
             name: "Tiered wedding cake",
-            description: "Built around your flavors after a tasting with Elena.",
+            description: "Tiered cakes, with a tasting by appointment.",
             price: "from $350",
             detail: "Tasting by appointment",
           },
           {
             group: "Cakes & preorders",
             name: "Saturday bread box",
-            description: "Two loaves and four pastries, packed and waiting for you.",
+            description: "Two loaves and four pastries, picked up on Saturday.",
             price: "$28",
             detail: "Order by Thursday noon",
           },
@@ -149,8 +149,8 @@ export const sunriseBakery: ModelEntry = {
       },
       {
         type: "about",
-        title: "Our story",
-        body: "Mai Tran started selling sourdough at the Midtown farmers market in 2016 and opened the shop on J St in 2020. Every loaf still ferments for 48 hours, and the first ones come out of the oven at 7 AM. Elena Ruiz joined to do the cakes, and every custom order starts with a conversation with her.",
+        title: "About us",
+        body: "Mai Tran started selling sourdough at the Midtown farmers market in 2016 and opened the shop on J St in 2020. The bread still ferments for 48 hours, and the first loaves come out at 7 AM. Elena Ruiz is our cake decorator and does every custom cake.",
         people: [
           {
             name: "Mai Tran",
@@ -166,25 +166,25 @@ export const sunriseBakery: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From our customers",
+        title: "Reviews",
         items: [
           {
             quote: "Mai's sourdough ruined grocery-store bread for my whole family.",
             author: "Kara L.",
           },
           {
-            quote: "Elena matched the cake to my daughter's drawing. She cried. I cried.",
+            quote: "Elena matched the cake to my daughter's drawing, and we both cried.",
             author: "Jamal W.",
           },
         ],
       },
       {
         type: "faq",
-        title: "Good to know",
+        title: "Questions",
         items: [
           {
             q: "When does the bread sell out?",
-            a: "Usually by noon on weekends. Preorder the Saturday bread box to be sure.",
+            a: "Usually by noon on weekends. If you want to be sure, preorder the Saturday bread box.",
           },
           {
             q: "How do preorders work?",

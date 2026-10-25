@@ -66,9 +66,9 @@ export const reelNorthFilms: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Wedding films with the sound left in",
+        title: "Wedding and brand films in Minneapolis",
         subtitle:
-          "We record the vows, the toasts and the speeches with real audio, so the film sounds like the day, not a music video. Weddings and brand films from Minneapolis.",
+          "We record the vows, the toasts and the speeches with real audio, so the film sounds like your day. Ingrid directs and edits, and Nate shoots and records sound.",
         ctaLabel: "Check your date",
         image: {
           url: "/photos/models/reel-north-films-2.webp",
@@ -105,7 +105,7 @@ export const reelNorthFilms: ModelEntry = {
           },
           {
             name: "Elopement film",
-            description: "Just the two of you, or a few guests. A 3–4 minute film.",
+            description: "For the two of you and a few guests, cut to a 3–4 minute film.",
             price: "$1,900",
             detail: "Up to 3 hours",
             group: "Weddings",
@@ -129,8 +129,8 @@ export const reelNorthFilms: ModelEntry = {
       },
       {
         type: "about",
-        title: "Ingrid and Nate",
-        body: "We're a husband-and-wife studio: weddings since 2018, brand videos since 2020, about 25 weddings a year.\n\nRecent work: Hannah & Ike at Mill City Museum (2025), Sofia & Dev at a cabin on Lake Vermilion (2025), a brand film for Northbound Coffee Roasters (2025) and a recruiting film for Halvorsen Builders (2024).",
+        title: "About us",
+        body: "We're Ingrid and Nate Solberg, a husband-and-wife film studio in Minneapolis. We've filmed weddings since 2018 and brand videos since 2020, and we take about 25 weddings a year.\n\nRecent work: Hannah & Ike at Mill City Museum (2025), Sofia & Dev at a cabin on Lake Vermilion (2025), a brand film for Northbound Coffee Roasters (2025) and a recruiting film for Halvorsen Builders (2024).",
         people: [
           { name: "Ingrid Solberg", role: "Director & editor" },
           { name: "Nate Solberg", role: "Camera & audio" },
@@ -138,7 +138,7 @@ export const reelNorthFilms: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "After the premiere",
+        title: "Reviews",
         items: [
           {
             quote: "We've watched it eleven times. My dad's toast still gets me every time.",
@@ -153,7 +153,7 @@ export const reelNorthFilms: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Working together",
+        title: "Questions",
         items: [
           {
             q: "When do we get our film?",

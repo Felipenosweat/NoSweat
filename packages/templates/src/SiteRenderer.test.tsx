@@ -322,7 +322,7 @@ describe("model sites", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).toContain('id="about"');
     expect(html).toContain('href="#about"');
-    expect(html).toContain(">Who picks up the phone</h2>");
+    expect(html).toContain(">About us</h2>");
     expect(html).toContain("Maria Ramirez");
   });
 

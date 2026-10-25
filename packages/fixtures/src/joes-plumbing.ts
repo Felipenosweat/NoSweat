@@ -34,9 +34,9 @@ export const joesPlumbing: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Austin plumbing repairs, priced before we start",
+      title: "Plumbing repairs in Austin since 2009",
       subtitle:
-        "Water heaters, drains, slab leaks and repipes for homes across the Austin metro. Call and you talk to Joe or Maria, not a call center.",
+        "We fix water heaters, drains, slab leaks and old pipes in homes around Austin. When you call, you talk to Joe or Maria.",
       ctaLabel: "Request an estimate",
       imageQuery: "plumber tools water heater",
       image: {
@@ -66,16 +66,17 @@ export const joesPlumbing: SiteSpec = {
         },
         {
           name: "Drain cleaning",
-          description: "Hydro-jetting and a camera inspection, so you see what was in the line.",
+          description:
+            "We clear the line and run a camera down it, so you can see what caused the clog.",
           price: "from $149",
         },
         {
           name: "Slab leak detection",
-          description: "We find the leak under the slab before anyone breaks up your floor.",
+          description: "We find the leak under the slab before anyone opens up your floor.",
         },
         {
           name: "Repiping",
-          description: "Whole-home PEX repiping for older houses with failing galvanized lines.",
+          description: "Whole-home repiping with PEX, usually in older houses.",
         },
         {
           name: "Fixture installs",
@@ -85,8 +86,8 @@ export const joesPlumbing: SiteSpec = {
     },
     {
       type: "about",
-      title: "Who picks up the phone",
-      body: "Joe Ramirez, a master plumber, started Joe's Plumbing in 2009. Maria runs the schedule and writes the estimates, so when you call, you talk to one of them.",
+      title: "About us",
+      body: "Joe Ramirez, a master plumber, started Joe's Plumbing in 2009. His wife Maria runs the schedule and writes the estimates, so when you call, you talk to one of them.",
       people: [
         { name: "Joe Ramirez", role: "Owner, master plumber" },
         { name: "Maria Ramirez", role: "Schedule and estimates" },
@@ -124,7 +125,7 @@ export const joesPlumbing: SiteSpec = {
         },
         {
           q: "Do you take emergency calls?",
-          a: "Yes. Emergencies are answered 24/7, including weekends and holidays.",
+          a: "Yes. We take emergency calls 24 hours a day, seven days a week.",
         },
       ],
     },

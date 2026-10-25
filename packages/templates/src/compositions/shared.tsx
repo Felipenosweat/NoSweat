@@ -2,7 +2,6 @@ import type { Business, SectionOf, SiteImage } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import {
   ArrowRightIcon,
-  CheckIcon,
   ChevronDownIcon,
   MailIcon,
   MapPinIcon,
@@ -31,7 +30,7 @@ const SECONDARY_BUTTON: Record<Surface, string> = {
   dark: "border border-ns-background/50 text-ns-background hover:border-ns-background",
 };
 
-const buttonBase = `inline-flex min-h-12 items-center justify-center gap-2 px-6 py-3 text-base font-semibold transition duration-150 motion-reduce:transition-none ${focus}`;
+const buttonBase = `inline-flex min-h-12 items-center justify-center gap-2.5 px-7 py-3 text-[0.9375rem] font-medium tracking-[0.01em] transition duration-200 motion-reduce:transition-none ${focus}`;
 
 /**
  * Botões do topo. A ordem segue a ação principal do plano de design: "call" põe o telefone
@@ -57,7 +56,6 @@ export function HeroActions({
       className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
     >
       {ctaLabel}
-      {primary && <ArrowRightIcon className="size-5 shrink-0" />}
     </a>
   );
   const call = (primary: boolean) =>
@@ -67,7 +65,6 @@ export function HeroActions({
         href={phoneHref}
         className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
       >
-        <PhoneIcon className="size-5 shrink-0" />
         <span className="whitespace-nowrap tabular-nums">
           {primary ? `Call ${business.phone}` : business.phone}
         </span>
@@ -144,10 +141,12 @@ export function HighlightList({
 }) {
   if (!highlights?.length) return null;
   return (
-    <ul className={`flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium ${className}`}>
+    <ul className={`flex flex-wrap gap-y-2 text-sm ${className}`}>
       {highlights.map((label, index) => (
-        <li key={index} className="flex items-center gap-2">
-          <CheckIcon className="size-4 shrink-0 opacity-70" />
+        <li
+          key={index}
+          className="border-current/25 not-last:mr-4 not-last:border-r not-last:pr-4"
+        >
           {label}
         </li>
       ))}
@@ -279,6 +278,24 @@ export function FactList({
   );
 }
 
+/**
+ * Fatos numa linha fina (rótulo pequeno + fato), como a ficha técnica de um site premiado.
+ * Substitui as faixas de quadros "Hours | Find us | Phone", que davam cara de modelo pronto.
+ */
+export function FactLine({ facts, className = "" }: { facts: Fact[]; className?: string }) {
+  if (facts.length === 0) return null;
+  return (
+    <dl className={`flex flex-wrap gap-x-10 gap-y-4 text-sm ${className}`}>
+      {facts.map((fact) => (
+        <div key={fact.label} className="min-w-0">
+          <dt className="text-[0.6875rem] tracking-[0.16em] uppercase opacity-70">{fact.label}</dt>
+          <dd className="mt-1.5 [&_address_a]:min-h-0 [&_address_a]:mt-1">{fact.content}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /** Endereço do dono (rua e cidade) com o link de rota. Sem rua, nada. */
 export function AddressBlock({
   model,
@@ -295,7 +312,7 @@ export function AddressBlock({
   const city = location(business);
   return (
     <address className={`not-italic ${className}`}>
-      <span className={`block ${large ? "font-ns-heading text-3xl leading-tight font-bold" : ""}`}>
+      <span className={`block ${large ? "font-ns-heading text-3xl leading-tight font-ns-display" : ""}`}>
         {street}
       </span>
       {city && <span className={`block ${large ? "mt-1 text-lg" : ""}`}>{city}</span>}
@@ -552,14 +569,14 @@ export function SimpleFooter({
         className={`mx-auto w-full ${wide ? "max-w-7xl" : "max-w-6xl"} px-4 py-14 @min-[40rem]:px-6 @5xl:px-8`}
       >
         {bigName && (
-          <p className="mb-12 font-ns-heading text-[length:clamp(2.5rem,9cqw,7rem)] leading-[0.95] font-bold tracking-tight [overflow-wrap:anywhere]">
+          <p className="mb-12 font-ns-heading text-[length:clamp(2.5rem,9cqw,7rem)] leading-[0.95] font-ns-display tracking-tight [overflow-wrap:anywhere]">
             {business.name}
           </p>
         )}
         <div className="grid gap-8 text-sm @min-[40rem]:grid-cols-2 @5xl:grid-cols-4">
           <div>
             {!bigName && (
-              <p className="font-ns-heading text-lg font-bold [overflow-wrap:anywhere]">
+              <p className="font-ns-heading text-lg font-ns-display [overflow-wrap:anywhere]">
                 {business.name}
               </p>
             )}
@@ -733,7 +750,7 @@ export function PeopleList({
             </div>
           )}
           <div className="min-w-0">
-            <h3 className="font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+            <h3 className="font-ns-heading text-xl leading-snug font-ns-display [overflow-wrap:anywhere]">
               {person.name}
             </h3>
             {person.role && (
@@ -796,7 +813,7 @@ export function ServiceAreaList({
   return (
     <div className={className}>
       <p className="text-xs font-semibold tracking-[0.18em] uppercase">Serving</p>
-      <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-ns-heading text-2xl leading-tight font-bold @min-[40rem]:text-3xl">
+      <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-ns-heading text-2xl leading-tight font-ns-display @min-[40rem]:text-3xl">
         {places.map((place) => (
           <li key={place}>{place}</li>
         ))}
@@ -857,7 +874,7 @@ export function PriceList({
               {group.items.map((item, index) => (
                 <li key={`${item.name}-${index}`} className="py-5">
                   <div className="flex items-baseline gap-3">
-                    <ItemHeading className="min-w-0 font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+                    <ItemHeading className="min-w-0 font-ns-heading text-xl leading-snug font-ns-display [overflow-wrap:anywhere]">
                       {item.name}
                     </ItemHeading>
                     {item.price && (

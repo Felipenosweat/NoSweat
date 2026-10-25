@@ -9,7 +9,7 @@ import {
   AddressBlock,
   ContactFormBlock,
   ContactLines,
-  FactList,
+  FactLine,
   FaqList,
   HeaderAction,
   HeroActions,
@@ -68,7 +68,7 @@ export function ImmersiveComposition({
             <Wrap wide className="grid gap-12 @5xl:grid-cols-12 @5xl:items-start">
               <div className="@5xl:col-span-5">
                 <p className={microLabel}>{model.words.about}</p>
-                <h2 className="mt-3 font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
+                <h2 className="mt-3 font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
                   {model.titleOf(section)}
                 </h2>
                 <AboutPhoto data={section} className="mt-10" />
@@ -87,7 +87,7 @@ export function ImmersiveComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-24 ${sectionY}`}>
             <Wrap wide>
-              <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
+              <h2 className="font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                 {model.titleOf(section)}
               </h2>
               <ul className="mt-12 grid gap-10 @3xl:grid-cols-2">
@@ -127,7 +127,7 @@ export function ImmersiveComposition({
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
             <Wrap className="max-w-3xl">
-              <h2 className="text-center font-ns-heading text-4xl font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
+              <h2 className="text-center font-ns-heading text-4xl font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                 {model.titleOf(section)}
               </h2>
               <FaqList data={section} className="mt-12" />
@@ -149,7 +149,7 @@ export function ImmersiveComposition({
                     : "mx-auto w-full max-w-7xl px-4 @min-[40rem]:px-6 @5xl:px-8"
                 }
               >
-                <h2 className="font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl">
+                <h2 className="font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                   {model.titleOf(section)}
                 </h2>
                 <SignBoard model={model} />
@@ -189,7 +189,7 @@ export function ImmersiveComposition({
         <Wrap wide className="flex h-20 items-center justify-between gap-6">
           <a
             href="#top"
-            className="min-w-0 font-ns-heading text-xl font-bold tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
+            className="min-w-0 font-ns-heading text-xl font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
           >
             {model.business.name}
           </a>
@@ -217,7 +217,7 @@ export function ImmersiveComposition({
 }
 
 const heroTitle =
-  "max-w-[16ch] font-ns-heading text-[length:clamp(2.75rem,7.5cqw,6.5rem)] leading-[0.98] font-bold tracking-tight text-balance [overflow-wrap:anywhere]";
+  "max-w-[16ch] font-ns-heading text-[length:clamp(2.75rem,7.5cqw,6.5rem)] leading-[0.98] font-ns-display tracking-tight text-balance [overflow-wrap:anywhere]";
 
 function ImmersiveHero({
   model,
@@ -282,26 +282,14 @@ function ImmersiveHero({
   );
 }
 
-const STRIP_COLUMNS: Record<number, string> = {
-  1: "",
-  2: "@3xl:grid-cols-2",
-  3: "@3xl:grid-cols-3",
-  4: "@3xl:grid-cols-2 @5xl:grid-cols-4",
-};
-
-/** Faixa logo abaixo do topo com o que a pessoa precisa saber antes de ir ou ligar. */
+/** Linha fina logo abaixo do topo com o que a pessoa precisa saber antes de ir ou ligar. */
 function InfoStrip({ model }: { model: SiteModel }) {
-  const facts = factsFor(model);
+  const facts = factsFor(model, { hours: "line" });
   if (facts.length === 0) return null;
   return (
     <div className="border-b border-ns-border bg-ns-background">
       <Wrap wide>
-        <FactList
-          facts={facts}
-          className={`grid gap-8 py-10 ${STRIP_COLUMNS[facts.length] ?? "@3xl:grid-cols-4"}`}
-          labelClassName={microLabel}
-          valueClassName="mt-3 text-lg font-medium"
-        />
+        <FactLine facts={facts} className="py-7 text-ns-muted [&_dd]:text-ns-text" />
       </Wrap>
     </div>
   );
@@ -316,7 +304,7 @@ function SignBoard({ model }: { model: SiteModel }) {
       {hours && (
         <div>
           <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">Hours</p>
-          <dl className="mt-3 space-y-2 font-ns-heading text-2xl leading-tight font-bold @min-[40rem]:text-3xl">
+          <dl className="mt-3 space-y-2 font-ns-heading text-2xl leading-tight font-ns-display @min-[40rem]:text-3xl">
             {hours.map((row, index) => (
               <div key={index} className="flex flex-wrap justify-between gap-x-6">
                 <dt>{row.days}</dt>
@@ -350,7 +338,7 @@ function ImmersiveServices({
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap wide>
         <p className={microLabel}>{model.words.services}</p>
-        <h2 className="mt-3 max-w-[18ch] font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
+        <h2 className="mt-3 max-w-[18ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
           {model.titleOf(data)}
         </h2>
         {hasPriceList(data) ? (
@@ -362,7 +350,7 @@ function ImmersiveServices({
                 key={`${item.name}-${index}`}
                 className={`border-t-2 border-ns-text pt-6 ${index % 2 === 1 ? "@3xl:mt-16" : ""}`}
               >
-                <h3 className="font-ns-heading text-2xl font-bold text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl">
+                <h3 className="font-ns-heading text-2xl font-ns-display text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl">
                   {item.name}
                 </h3>
                 <p className="mt-3 max-w-[48ch] leading-relaxed text-ns-muted">

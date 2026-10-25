@@ -68,9 +68,9 @@ export const brickOvenPizza: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Ninety seconds at 900 degrees",
+        title: "Wood-fired pizza on Graham Ave",
         subtitle:
-          "Wood-fired pies from an oak-burning oven we built by hand on Graham Ave. Grab a slice at the counter, order a pie for pickup or delivery, or have us bring the oven to your party.",
+          "Nicky Abate and his dad built our oak-burning oven by hand in 2015. Get a slice at the counter, order a pie for pickup or delivery, or book the mobile oven for your party.",
         ctaLabel: "Order pickup or delivery",
         imageQuery: "pizza baking in wood fired brick oven",
         image: {
@@ -89,45 +89,45 @@ export const brickOvenPizza: ModelEntry = {
       },
       {
         type: "services",
-        title: "Out of the oven",
+        title: "Menu",
         items: [
           {
             group: "16-inch pies",
             name: "Margherita",
-            description: "San Marzano tomato, fresh mozzarella, basil and olive oil.",
+            description: "Tomato, mozzarella and basil.",
             price: "$22",
           },
           {
             group: "16-inch pies",
             name: "The Graham",
-            description: "Hot soppressata, mozzarella, a drizzle of honey and chili flake.",
+            description: "Hot soppressata with honey and chili flake.",
             price: "$27",
           },
           {
             group: "16-inch pies",
             name: "White pie",
-            description: "Ricotta, mozzarella, roasted garlic and lemon zest. No sauce.",
+            description: "Ricotta, garlic and lemon zest, no tomato sauce.",
             price: "$25",
             detail: "Gluten-free crust +$3",
           },
           {
             group: "By the slice",
             name: "Cheese slice",
-            description: "Straight from the counter, reheated in the wood oven.",
+            description: "A plain cheese slice from the counter.",
             price: "$4",
             detail: "Until close",
           },
           {
             group: "By the slice",
             name: "Pepperoni slice",
-            description: "Cup-and-char pepperoni that curls and crisps at the edges.",
+            description: "Topped with cup-and-char pepperoni.",
             price: "$5",
             detail: "Until close",
           },
           {
             group: "On the side",
             name: "Garlic knots",
-            description: "Six knots tossed in garlic butter and parsley.",
+            description: "Six garlic knots to an order.",
             price: "$7",
             detail: "6 pieces",
           },
@@ -141,7 +141,7 @@ export const brickOvenPizza: ModelEntry = {
           {
             group: "Catering",
             name: "Mobile oven at your event",
-            description: "We tow the oven to you and bake on site. 50 guests minimum.",
+            description: "We bring our mobile oven to your event and bake there. 50 guests minimum.",
             price: "from $1,200",
             detail: "Book 3 weeks ahead",
           },
@@ -149,7 +149,7 @@ export const brickOvenPizza: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "Heard at the counter",
+        title: "Reviews",
         items: [
           { quote: "We drive in from Astoria for the white pie.", author: "Priya & Sam" },
           {
@@ -160,8 +160,8 @@ export const brickOvenPizza: ModelEntry = {
       },
       {
         type: "about",
-        title: "Our story",
-        body: "Nicky Abate and his dad built the oven brick by brick in 2015. It burns oak at 900 degrees, which is why a pie takes about 90 seconds and comes out blistered and soft in the middle. Nicky stretches every pie, Lena runs the front and every catering order, and Omar keeps the slice counter going until close.",
+        title: "About us",
+        body: "Nicky Abate and his dad built the oven by hand in 2015. It burns oak at 900 degrees, so a pie bakes in about 90 seconds. Nicky makes the pies, his wife Lena runs the front and all the catering, and Omar Haddad runs the slice counter.",
         people: [
           { name: "Nicky Abate", role: "Owner & pizzaiolo" },
           { name: "Lena Abate", role: "Front of house & catering" },
@@ -170,7 +170,7 @@ export const brickOvenPizza: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Good to know",
+        title: "Questions",
         items: [
           {
             q: "Do you deliver?",
@@ -186,7 +186,7 @@ export const brickOvenPizza: ModelEntry = {
           },
           {
             q: "Can I get half and half?",
-            a: "Sure, any two of our pies on one.",
+            a: "Yes, half-and-half pies are fine.",
           },
           {
             q: "How does the mobile oven work?",
@@ -196,7 +196,7 @@ export const brickOvenPizza: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Catering & big orders",
+        title: "Catering and large orders",
         showForm: true,
         showMap: true,
       },

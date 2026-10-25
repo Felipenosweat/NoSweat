@@ -65,9 +65,9 @@ export const keystoneInsurance: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Six insurance companies. One phone call. An agent who reads the fine print.",
+        title: "Independent insurance agency in Bloomfield",
         subtitle:
-          "Keystone is an independent agency in Bloomfield. We quote your home, car or business with six companies and show you the differences side by side.",
+          "Frank Kowalski started Keystone on Liberty Ave in 1998. We quote your home, car or business with six insurance companies and show you the quotes side by side.",
         ctaLabel: "Get a free quote",
         imageQuery: "pittsburgh row houses street",
       },
@@ -78,13 +78,13 @@ export const keystoneInsurance: ModelEntry = {
           {
             name: "Home and condo",
             description:
-              "Homeowners and condo policies, compared across six companies, with the deductibles and limits explained line by line.",
+              "Homeowners and condo policies, quoted with all six companies so you can compare them side by side.",
             detail: "Most quotes in one business day",
           },
           {
             name: "Auto",
             description:
-              "Cars, trucks and teen drivers. Bundle with your home and we show you the bundled price next to the separate ones.",
+              "Auto policies, including teen drivers. If you also insure your home with us, we show the bundled price next to separate policies.",
             detail: "Most quotes in one business day",
           },
           {
@@ -95,7 +95,7 @@ export const keystoneInsurance: ModelEntry = {
           {
             name: "Small business",
             description:
-              "Business owner's policies, general liability, workers' comp and commercial auto. Teresa handles these.",
+              "Business owner's policies, general liability, workers' comp and commercial auto, handled by Teresa Nguyen, CIC.",
             detail: "Free quote",
           },
           {
@@ -105,19 +105,18 @@ export const keystoneInsurance: ModelEntry = {
           },
           {
             name: "Term life",
-            description:
-              "Term life coverage sized to the mortgage, the kids and the income your family relies on.",
+            description: "Term life policies for individuals and families.",
             detail: "Free quote",
           },
         ],
       },
       {
         type: "faq",
-        title: "Straight answers about insurance",
+        title: "Questions",
         items: [
           {
             q: "What does independent mean?",
-            a: "We don't work for one insurance company. We quote the same coverage with Erie, Travelers, Progressive, Safeco, Nationwide and Westfield, and you pick.",
+            a: "We aren't tied to one insurance company. We quote the same coverage with Erie, Travelers, Progressive, Safeco, Nationwide and Westfield, and you choose the policy.",
           },
           {
             q: "How long does a quote take?",
@@ -129,7 +128,7 @@ export const keystoneInsurance: ModelEntry = {
           },
           {
             q: "Who do I call when I have a claim?",
-            a: "Us, first. Not an 800 number. We help you file it and stay on it with the insurance company.",
+            a: "Call us first. We help you file the claim and stay on it with the insurance company.",
           },
           {
             q: "Can I come by the office?",
@@ -139,8 +138,8 @@ export const keystoneInsurance: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who answers the phone",
-        body: "Frank Kowalski started Keystone in 1998. It's still a small office on Liberty Ave, and when you call, you get one of the three of us.",
+        title: "About the agency",
+        body: "Frank Kowalski started Keystone in 1998. We're a small office on Liberty Ave, and when you call, one of the three of us answers.",
         people: [
           {
             name: "Frank Kowalski",
@@ -161,7 +160,7 @@ export const keystoneInsurance: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From our clients",
+        title: "Reviews",
         items: [
           {
             quote:

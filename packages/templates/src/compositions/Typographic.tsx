@@ -7,7 +7,8 @@ import {
   AboutPhoto,
   ContactFormBlock,
   ContactLines,
-  FactList,
+  FactLine,
+  HighlightList,
   FaqList,
   HeaderAction,
   HeroActions,
@@ -27,7 +28,7 @@ import {
 const RADIUS = "rounded-md";
 
 const h2 =
-  "font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl";
+  "font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl";
 
 /**
  * Composição TIPOGRÁFICA: a frase do topo é a imagem principal, enorme, num bloco da cor da
@@ -60,13 +61,13 @@ export function TypographicComposition({
             id={id}
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
-            <Wrap className="grid gap-10 @5xl:grid-cols-12">
+            <Wrap wide className="grid gap-10 @5xl:grid-cols-12">
               <div className="@5xl:col-span-4">
                 <h2 className={h2}>{model.titleOf(section)}</h2>
                 <AboutPhoto data={section} radius={RADIUS} className="mt-10" />
               </div>
               <div className="@5xl:col-span-8">
-                <p className="max-w-[62ch] text-xl leading-relaxed text-pretty whitespace-pre-line">
+                <p className="max-w-[40ch] font-ns-heading text-[length:clamp(1.5rem,2.8cqw,2.25rem)] leading-[1.3] font-ns-display tracking-[-0.01em] text-pretty whitespace-pre-line">
                   {section.body}
                 </p>
                 {section.people && (
@@ -84,7 +85,7 @@ export function TypographicComposition({
         if (section.items.length === 0) return null;
         return (
           <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
-            <Wrap>
+            <Wrap wide>
               <h2 className={h2}>{model.titleOf(section)}</h2>
               <ul className="mt-12 grid gap-12 @3xl:grid-cols-2">
                 {section.items.map((item, i) => (
@@ -119,7 +120,7 @@ export function TypographicComposition({
             id={id}
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
-            <Wrap className="grid gap-10 @5xl:grid-cols-12">
+            <Wrap wide className="grid gap-10 @5xl:grid-cols-12">
               <h2 className={`${h2} @5xl:col-span-4`}>{model.titleOf(section)}</h2>
               <FaqList data={section} className="@5xl:col-span-8" />
             </Wrap>
@@ -145,10 +146,10 @@ export function TypographicComposition({
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
       <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
-        <Wrap className="flex h-16 items-center justify-between gap-6">
+        <Wrap wide className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
           <a
             href="#top"
-            className="min-w-0 font-ns-heading text-lg font-bold tracking-tight [overflow-wrap:anywhere]"
+            className="min-w-0 font-ns-heading text-lg font-ns-display tracking-tight [overflow-wrap:anywhere]"
           >
             {model.business.name}
           </a>
@@ -165,7 +166,7 @@ export function TypographicComposition({
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
-      <SimpleFooter model={model} bigName />
+      <SimpleFooter model={model} bigName wide />
       <MobileCallBar model={model} radius={RADIUS} />
     </div>
   );
@@ -173,51 +174,37 @@ export function TypographicComposition({
 
 function TypographicHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> }) {
   const { business } = model;
-  const glance: Fact[] = factsFor(model, { price: false });
-  if (business.highlights?.length) {
-    glance.push({
-      label: "Good to know",
-      content: (
-        <ul className="space-y-1">
-          {business.highlights.map((h, i) => (
-            <li key={i}>{h}</li>
-          ))}
-        </ul>
-      ),
-    });
-  }
+  const facts: Fact[] = factsFor(model, { price: false, hours: "line" });
+  const kicker = [business.category, model.where].filter(Boolean).join(", ");
 
+  // A frase do topo é a imagem: enorme, fina, sobre o próprio fundo da página (sem bloco de
+  // cor chapada). A cor da marca aparece só no botão e num fio curto.
   return (
     <section>
-      <div className="bg-ns-primary text-ns-on-primary">
-        <Wrap className="grid gap-12 py-16 @min-[40rem]:py-24 @5xl:grid-cols-12 @5xl:py-28">
-          <div className={glance.length ? "@5xl:col-span-9" : "@5xl:col-span-12"}>
-            <span aria-hidden="true" className="mb-10 block h-0.5 w-16 bg-ns-secondary" />
-            {business.category && (
-              <p className="mb-5 text-xs font-semibold tracking-[0.18em] uppercase">
-                {business.category}
-              </p>
-            )}
-            <h1 className="font-ns-heading text-[length:clamp(3rem,9.5cqw,8.25rem)] leading-[0.92] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
-              {data.title}
-            </h1>
-            <p className="mt-8 max-w-2xl text-lg leading-relaxed @min-[40rem]:text-xl">
-              {data.subtitle}
-            </p>
-            <HeroActions model={model} surface="primary" radius={RADIUS} className="mt-10" />
+      <Wrap wide className="pt-14 pb-16 @min-[40rem]:pt-20 @5xl:pt-28 @5xl:pb-24">
+        {kicker && (
+          <p className="text-[0.6875rem] tracking-[0.2em] text-ns-muted uppercase">{kicker}</p>
+        )}
+        <h1 className="mt-8 font-ns-heading text-[length:calc(clamp(3rem,10cqw,9.5rem)*var(--ns-display-scale))] leading-[0.9] font-ns-display tracking-[-0.035em] text-balance [overflow-wrap:anywhere]">
+          {data.title}
+        </h1>
+        <div className="mt-14 grid gap-10 border-t border-ns-border pt-8 @5xl:grid-cols-12 @5xl:gap-8">
+          <p className="max-w-xl text-lg leading-relaxed text-pretty @min-[40rem]:text-xl @5xl:col-span-5">
+            {data.subtitle}
+          </p>
+          <div className="@5xl:col-span-7 @5xl:justify-self-end">
+            <HeroActions model={model} radius={RADIUS} />
           </div>
-          <FactList
-            facts={glance}
-            className="grid content-start gap-6 border-t border-ns-on-primary/30 pt-8 @min-[40rem]:grid-cols-2 @5xl:col-span-3 @5xl:grid-cols-1 @5xl:border-t-0 @5xl:border-l @5xl:pt-2 @5xl:pl-8"
-          />
-        </Wrap>
-      </div>
+        </div>
+        <FactLine facts={facts} className="mt-12 text-ns-muted" />
+        <HighlightList highlights={business.highlights} className="mt-6 text-ns-muted" />
+      </Wrap>
       {data.image && (
         <PhotoFrame
           image={data.image}
           eager
           sizes="100vw"
-          className="relative aspect-[16/9] w-full @5xl:aspect-[3/1]"
+          className="relative aspect-[4/3] w-full @min-[40rem]:aspect-[16/9] @5xl:aspect-[21/9]"
         />
       )}
     </section>
@@ -238,8 +225,8 @@ function LedgerServices({
   const withMeta = data.items.some((item) => item.price || item.detail);
   return (
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
-      <Wrap>
-        <h2 className="max-w-[16ch] font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-6xl">
+      <Wrap wide>
+        <h2 className="max-w-[16ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
           {model.titleOf(data)}
         </h2>
         <ol className="mt-14 border-t-2 border-ns-text">
@@ -251,7 +238,7 @@ function LedgerServices({
               <span className="font-ns-heading text-sm font-semibold text-ns-primary tabular-nums @3xl:col-span-1 @3xl:pt-1">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="text-xl font-bold text-balance [overflow-wrap:anywhere] @3xl:col-span-3">
+              <h3 className="text-xl font-ns-display text-balance [overflow-wrap:anywhere] @3xl:col-span-3">
                 {item.name}
               </h3>
               <p
@@ -287,13 +274,13 @@ function TypographicContact({
   const { business, phoneHref } = model;
   return (
     <section id={id} className={`scroll-mt-24 bg-ns-text text-ns-background ${sectionY}`}>
-      <Wrap className="grid gap-12 @5xl:grid-cols-12">
+      <Wrap wide className="grid gap-12 @5xl:grid-cols-12">
         <div className="@5xl:col-span-6">
           <h2 className={h2}>{model.titleOf(data)}</h2>
           {business.phone && phoneHref && (
             <a
               href={phoneHref}
-              className={`mt-10 block font-ns-heading text-[length:clamp(2.25rem,6cqw,4.5rem)] leading-none font-bold whitespace-nowrap tabular-nums underline-offset-8 hover:underline ${focus}`}
+              className={`mt-10 block font-ns-heading text-[length:clamp(2.25rem,6cqw,4.5rem)] leading-none font-ns-display whitespace-nowrap tabular-nums underline-offset-8 hover:underline ${focus}`}
             >
               {business.phone}
             </a>

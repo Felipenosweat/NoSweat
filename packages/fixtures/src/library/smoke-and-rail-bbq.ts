@@ -69,14 +69,14 @@ export const smokeAndRailBbq: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Fourteen hours over hickory. Gone when it's gone.",
+        title: "Kansas City barbecue in the West Bottoms",
         subtitle:
-          "Kansas City brisket, burnt ends and ribs from a pit next to the West Bottoms rail yard, and a truck that comes to you twice a week. Get there early or preorder.",
+          "Brisket, burnt ends and ribs from our pit next to the rail yard, open Thursday to Saturday until we sell out. The truck is at the Crossroads on Tuesdays and River Market on Wednesdays.",
         ctaLabel: "Preorder for pickup",
       },
       {
         type: "services",
-        title: "Off the pit",
+        title: "Menu",
         items: [
           {
             name: "Brisket",
@@ -86,19 +86,19 @@ export const smokeAndRailBbq: ModelEntry = {
           },
           {
             name: "Burnt ends",
-            description: "Point-end cubes, re-smoked until the bark goes dark and sticky.",
+            description: "Cut from the point of the brisket.",
             price: "$15",
             detail: "Half pound · Thu & Sat only",
           },
           {
             name: "Spare ribs",
-            description: "Dry-rubbed and smoked until they pull clean. Sauce on the side.",
+            description: "Smoked spare ribs, sold by the half or full slab.",
             price: "$19 half / $34 full",
             detail: "Slab",
           },
           {
             name: "Pulled pork sandwich",
-            description: "Shoulder pulled by hand, piled on a toasted bun with vinegar slaw.",
+            description: "Pulled pork on a bun with vinegar slaw.",
             price: "$12",
           },
           {
@@ -109,19 +109,19 @@ export const smokeAndRailBbq: ModelEntry = {
           },
           {
             name: "Whole brisket to go",
-            description: "A full packer, smoked and wrapped, ready to slice at home.",
+            description: "A whole smoked brisket to take home.",
             price: "$95",
             detail: "48 hours notice",
           },
           {
             name: "Catering",
-            description: "Two meats, two sides, bread and sauce, set up for your crowd.",
+            description: "Two meats, two sides, bread and sauce.",
             price: "$22 per person",
             detail: "25 guests min · one week notice",
           },
           {
             name: "The truck at your event",
-            description: "We park the truck and serve on site for up to 100 guests.",
+            description: "We bring the truck to your event and serve up to 100 guests.",
             price: "from $1,500",
             detail: "Book a month ahead",
           },
@@ -129,8 +129,8 @@ export const smokeAndRailBbq: ModelEntry = {
       },
       {
         type: "about",
-        title: "Why Smoke & Rail",
-        body: "Darnell Hayes started smoking in his backyard in 2011. The truck hit the road in 2018, and in 2022 the pit opened at 1500 Genessee St, right next to the rail yard in the West Bottoms. Brisket smokes 14 hours over hickory, so there's only as much as the pit holds. Keisha runs catering and the truck.",
+        title: "About us",
+        body: "Darnell Hayes started smoking meat in his backyard in 2011. He put the truck on the road in 2018 and opened the pit at 1500 Genessee St in 2022, next to the West Bottoms rail yard, which is where the name comes from. His wife Keisha runs catering and the truck.",
         people: [
           { name: "Darnell Hayes", role: "Pitmaster & owner" },
           { name: "Keisha Hayes", role: "Catering & the truck" },
@@ -138,11 +138,11 @@ export const smokeAndRailBbq: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before you drive over",
+        title: "Questions",
         items: [
           {
-            q: "What does “sold out” mean?",
-            a: "The pit opens Thu–Sat at 11 AM and closes when the meat runs out. When it's gone, it's gone.",
+            q: "When do you close?",
+            a: "The pit opens Thu–Sat at 11 AM and stays open until we sell out. If you're coming later in the day, preorder.",
           },
           {
             q: "Where's the truck this week?",
@@ -150,25 +150,25 @@ export const smokeAndRailBbq: ModelEntry = {
           },
           {
             q: "Can I preorder so I don't miss out?",
-            a: "Yes. Preorder online for pickup at the pit. Whole briskets need 48 hours notice.",
+            a: "Yes, preorder online and pick up at the pit. Whole briskets need 48 hours notice.",
           },
           {
             q: "Is the sauce on everything?",
-            a: "Never. Sauce is always on the side.",
+            a: "No, the sauce always comes on the side.",
           },
           {
             q: "How much notice for catering?",
-            a: "One week, with a 25 guest minimum. For the truck at your event, book a month ahead.",
+            a: "One week, with a 25 guest minimum. If you want the truck at your event, book a month ahead.",
           },
         ],
       },
       {
         type: "testimonials",
-        title: "Worth the line",
+        title: "Reviews",
         items: [
           {
             quote:
-              "Got there at 1:30 and the burnt ends were gone. Came back Thursday at 11 sharp. Worth it.",
+              "Got there at 1:30 and the burnt ends were gone, so I came back Thursday at 11 sharp. It was worth it.",
             author: "Ray T.",
           },
           {

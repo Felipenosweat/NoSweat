@@ -7,7 +7,8 @@ import {
   AboutPhoto,
   ContactFormBlock,
   ContactLines,
-  FactList,
+  FactLine,
+  HighlightList,
   FaqList,
   HeaderAction,
   HeroActions,
@@ -31,7 +32,7 @@ import {
 const RADIUS = "rounded-md";
 
 const h2 =
-  "max-w-[20ch] font-ns-heading text-4xl leading-tight font-bold tracking-tight text-balance @min-[40rem]:text-5xl";
+  "max-w-[20ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl";
 
 /**
  * Composição SERVICE-LED (prestador de serviço: encanador, eletricista, limpeza...).
@@ -143,7 +144,7 @@ export function ServiceLedComposition({
       <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
         <Wrap className="flex h-16 items-center justify-between gap-4 @min-[40rem]:h-20">
           <a href="#top" className={`min-w-0 ${focus}`}>
-            <span className="line-clamp-2 block font-ns-heading text-lg leading-tight font-bold tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-xl">
+            <span className="line-clamp-2 block font-ns-heading text-lg leading-tight font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-xl">
               {model.business.name}
             </span>
             {model.business.category && (
@@ -176,9 +177,6 @@ function ServiceHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"
   const { business, where } = model;
   const kicker = [business.category, where].filter(Boolean).join(" · ");
   const facts: Fact[] = factsFor(model, { hours: "line", price: false });
-  if (business.highlights?.length) {
-    facts.push({ label: "Good to know", content: business.highlights.join(" · ") });
-  }
   return (
     <section>
       <Wrap className="grid gap-10 pt-10 pb-12 @5xl:grid-cols-12 @5xl:items-center @5xl:gap-12 @5xl:pt-16 @5xl:pb-16">
@@ -188,13 +186,14 @@ function ServiceHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"
               {kicker}
             </p>
           )}
-          <h1 className="mt-4 font-ns-heading text-[length:clamp(2.5rem,6.5cqw,4.75rem)] leading-[1.02] font-bold tracking-tight text-balance [overflow-wrap:anywhere]">
+          <h1 className="mt-4 font-ns-heading text-[length:clamp(2.5rem,6.5cqw,4.75rem)] leading-[1.02] font-ns-display tracking-tight text-balance [overflow-wrap:anywhere]">
             {data.title}
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-pretty text-ns-muted @min-[40rem]:text-xl">
             {data.subtitle}
           </p>
           <HeroActions model={model} radius={RADIUS} className="mt-8" />
+          <HighlightList highlights={business.highlights} className="mt-6 text-ns-muted" />
         </div>
         {data.image && (
           <PhotoFrame
@@ -207,15 +206,9 @@ function ServiceHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"
         )}
       </Wrap>
       {facts.length > 0 && (
-        <div className="border-y border-ns-border bg-ns-surface">
+        <div className="border-y border-ns-border">
           <Wrap>
-            <FactList
-              facts={facts}
-              className="grid divide-y divide-ns-border @min-[40rem]:grid-cols-2 @min-[40rem]:divide-y-0 @5xl:grid-cols-4"
-              itemClassName="py-5 @min-[40rem]:pr-6 @5xl:border-l @5xl:border-ns-border @5xl:pl-6 @5xl:first:border-l-0 @5xl:first:pl-0"
-              labelClassName="text-xs font-semibold tracking-[0.18em] text-ns-muted uppercase"
-              valueClassName="mt-1.5 font-semibold"
-            />
+            <FactLine facts={facts} className="py-6 text-ns-muted [&_dd]:text-ns-text" />
           </Wrap>
         </div>
       )}
@@ -249,7 +242,7 @@ function ServiceRows({
                   key={`${item.name}-${index}`}
                   className="grid gap-2 border-b border-ns-border py-6 @3xl:grid-cols-12 @3xl:gap-8"
                 >
-                  <h3 className="font-ns-heading text-xl leading-snug font-bold text-balance [overflow-wrap:anywhere] @3xl:col-span-4">
+                  <h3 className="font-ns-heading text-xl leading-snug font-ns-display text-balance [overflow-wrap:anywhere] @3xl:col-span-4">
                     {item.name}
                   </h3>
                   <p
@@ -304,7 +297,7 @@ function ServiceContact({
           {business.phone && phoneHref && (
             <a
               href={phoneHref}
-              className={`mt-8 inline-block font-ns-heading text-[length:clamp(2.25rem,6cqw,3.75rem)] leading-none font-bold whitespace-nowrap text-ns-primary tabular-nums underline-offset-8 hover:underline ${focus}`}
+              className={`mt-8 inline-block font-ns-heading text-[length:clamp(2.25rem,6cqw,3.75rem)] leading-none font-ns-display whitespace-nowrap text-ns-primary tabular-nums underline-offset-8 hover:underline ${focus}`}
             >
               {business.phone}
             </a>
