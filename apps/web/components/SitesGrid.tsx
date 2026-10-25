@@ -1,19 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SiteActionsMenu } from "@/app/sites/[id]/SiteActionsMenu";
+import { GlassBadge, GlassButton } from "@/components/glass";
 import { getPhoto } from "@/components/photos";
-import { liveSpec } from "@/server/sites";
+import { hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
-import {
-  StatusBadge,
-  cardClass,
-  cardShadow,
-  focusRing,
-  primaryButton,
-  secondaryButton,
-  textButton,
-} from "./DashboardUi";
-import { DeleteSiteButton } from "./DeleteSiteButton";
+import { cardClass, focusRing, primaryButton } from "./DashboardUi";
 import { SiteThumb } from "./SiteThumb";
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
@@ -76,10 +69,10 @@ function DefaultEmptyState() {
           </figcaption>
         </figure>
       ) : (
-        <ol className="border-t border-slate-200/70 bg-surface p-6 sm:p-10 lg:col-span-6 lg:border-t-0 lg:border-l lg:p-12">
+        <ol className="border-t border-(--glass-rim) p-6 sm:p-10 lg:col-span-6 lg:border-t-0 lg:border-l lg:p-12">
           {STEPS.map((step, index) => (
             <li key={step.title} className="flex gap-4 py-3 first:pt-0 last:pb-0">
-              <span className="font-display text-[15px] leading-6 font-semibold text-slate-400 tabular-nums">
+              <span className="font-display text-[15px] leading-6 font-semibold text-slate-500 tabular-nums">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>
@@ -94,7 +87,7 @@ function DefaultEmptyState() {
   );
 }
 
-/** Endereço público relativo ou do domínio do cliente (para "View site"). */
+/** Endereço público relativo ou do domínio do cliente (para "Share link" e "View site"). */
 function viewHref(site: SiteRecord): string | null {
   if (site.status !== "published") return null;
   if (site.customDomain) return `https://${site.customDomain}`;
@@ -106,7 +99,7 @@ function leadsLabel(count: number): string {
   return `${count} request${count === 1 ? "" : "s"}`;
 }
 
-/** Lista de sites de um cliente (painel do cliente e "ver como cliente" do admin). */
+/** Lista de sites do dono na página inicial do painel. */
 export function SitesGrid({
   sites,
   emptyState,
@@ -129,72 +122,78 @@ export function SitesGrid({
   if (sites.length === 0) return emptyState ?? <DefaultEmptyState />;
   const CardHeading = headingLevel === 3 ? "h3" : "h2";
 
-  // Cartões como os da App Store: miniatura grande arredondada com sombra leve, e embaixo o nome,
-  // o status e as ações. O card inteiro abre as configurações do site (link "esticado").
+  // Cartão de vidro: miniatura grande do site no topo; embaixo o nome, o selo de status, a linha
+  // de apoio, "Edit" e o menu "⋯" (Edit, Preview, Manage, Share link, Delete). O nome é um link
+  // "esticado": o cartão inteiro abre a página do site.
   return (
-    <ul className="mt-4 grid gap-x-6 gap-y-10 sm:grid-cols-2">
+    <ul className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-6">
       {sites.map((site) => {
         const { business } = site.spec;
         const where = [business.city, business.state].filter(Boolean).join(", ");
         const live = site.status === "published";
         const href = viewHref(site);
         const leads = leadCounts?.[site.id];
+        const pending = live && hasUnpublishedChanges(site);
         return (
           <li key={site.id}>
-            <article className="group relative flex h-full flex-col">
-              <div
-                className={`overflow-hidden rounded-2xl border border-slate-200/70 bg-white ${cardShadow} transition-shadow duration-200 group-hover:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_18px_40px_-18px_rgb(7_27_51/0.25)]`}
-              >
-                <div className="transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
+            <article
+              className={`group relative flex h-full flex-col overflow-hidden ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised`}
+            >
+              <div className="relative m-2 mb-0 overflow-hidden rounded-xl ring-1 ring-(--glass-rim)">
+                <div className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:scale-[1.015]">
                   <SiteThumb spec={liveSpec(site)} />
                 </div>
-              </div>
-              <div className="mt-4 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <CardHeading className="line-clamp-2 font-display text-lg leading-6 font-semibold tracking-[-0.012em] break-words text-ink">
-                    {/* Link "esticado": o card inteiro abre as configurações do site. */}
-                    <Link
-                      href={`/sites/${site.id}`}
-                      className="after:absolute after:-inset-1.5 after:rounded-[1.25rem] after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-brand"
-                    >
-                      {business.name}
-                    </Link>
-                  </CardHeading>
-                  {where && <p className="mt-0.5 text-[15px] text-slate-500">{where}</p>}
-                </div>
-                <StatusBadge tone={live && !offline ? "live" : "draft"}>
-                  {live ? (offline ? "Offline" : "Live") : "Draft"}
-                </StatusBadge>
-              </div>
-              <p className="mt-2 flex flex-wrap gap-x-2 text-[13px] text-slate-500 tabular-nums">
-                <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>
-                {leads !== undefined && (
-                  <>
-                    <span aria-hidden="true">·</span>
-                    <span className={leads > 0 ? "font-medium text-ink" : undefined}>
-                      {leadsLabel(leads)}
-                    </span>
-                  </>
-                )}
-              </p>
-              {/* Ações acima do link esticado (z-10) para continuarem clicáveis. */}
-              <div className="relative z-10 mt-3 flex items-center gap-2">
-                <Link href={`/sites/${site.id}/edit`} className={secondaryButton}>
-                  Edit
-                </Link>
-                {href ? (
-                  <a href={href} target="_blank" rel="noreferrer" className={textButton}>
-                    View site<span className="sr-only"> (opens in a new tab)</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                ) : (
-                  <Link href={`/sites/preview/${site.id}`} className={textButton}>
-                    Preview
-                  </Link>
-                )}
-                <span className="ml-auto">
-                  <DeleteSiteButton siteId={site.id} siteName={site.spec.business.name} compact />
+                <span className="absolute top-2.5 left-2.5">
+                  <GlassBadge tone={live ? (offline ? "pending" : "live") : "draft"}>
+                    {live ? (offline ? "Offline" : "Live") : "Draft"}
+                  </GlassBadge>
                 </span>
+              </div>
+              <div className="flex flex-1 flex-col px-4 pt-3.5 pb-3 sm:px-5">
+                <CardHeading className="line-clamp-2 font-display text-lg leading-6 font-semibold tracking-[-0.012em] break-words text-ink">
+                  <Link
+                    href={`/sites/${site.id}`}
+                    className="after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-brand"
+                  >
+                    {business.name}
+                  </Link>
+                </CardHeading>
+                <p className="mt-0.5 flex flex-wrap gap-x-2 text-[13px] leading-5 text-slate-500 tabular-nums">
+                  {where && (
+                    <>
+                      <span>{where}</span>
+                      <span aria-hidden="true">·</span>
+                    </>
+                  )}
+                  <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>
+                </p>
+                {(leads !== undefined || pending) && (
+                  <p className="mt-1 flex flex-wrap gap-x-2 text-[13px] leading-5 text-slate-500">
+                    {leads !== undefined && (
+                      <span className={leads > 0 ? "font-semibold text-ink" : undefined}>
+                        {leadsLabel(leads)}
+                      </span>
+                    )}
+                    {leads !== undefined && pending && <span aria-hidden="true">·</span>}
+                    {pending && <span className="text-amber-800">Unpublished changes</span>}
+                  </p>
+                )}
+                {/* Ações acima do link esticado (z-10) para continuarem clicáveis. */}
+                <div className="relative z-10 mt-auto flex items-center gap-2 pt-3">
+                  <GlassButton href={`/sites/${site.id}/edit`} variant="secondary">
+                    Edit
+                    <span className="sr-only"> {business.name}</span>
+                  </GlassButton>
+                  <span className="ml-auto">
+                    <SiteActionsMenu
+                      siteId={site.id}
+                      siteName={business.name}
+                      liveUrl={href}
+                      place="card"
+                      hasPendingChanges={pending}
+                    />
+                  </span>
+                </div>
               </div>
             </article>
           </li>

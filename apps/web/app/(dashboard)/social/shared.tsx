@@ -3,6 +3,7 @@
 import { ApiError, type SocialPost, type SocialPostStatus } from "@nosweat/schema";
 import Link from "next/link";
 import type { z } from "zod";
+import { GlassBadge, type GlassBadgeTone } from "@/components/glass";
 
 // Peças comuns da tela /social: chamada à API validada, fuso da empresa e selos de status.
 
@@ -67,7 +68,10 @@ export function ErrorNote({
   className?: string;
 }) {
   return (
-    <p role="alert" className={`rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ${className}`}>
+    <p
+      role="alert"
+      className={`glass-edge rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700 ${className}`}
+    >
       {error.message}
       {error.code === "payment_required" && (
         <>
@@ -221,7 +225,8 @@ export function zoneName(timeZone: string, at: Date = new Date()): string {
 
 // ---------- status dos posts ----------
 
-type Tone = "neutral" | "attention" | "queued" | "done" | "problem";
+export type StatusTone = "neutral" | "attention" | "queued" | "done" | "problem";
+type Tone = StatusTone;
 
 const DOT: Record<Tone, string> = {
   neutral: "bg-slate-400",
@@ -254,13 +259,36 @@ export function statusInfo(post: Pick<SocialPost, "status" | "scheduledAt">): {
   return map[post.status];
 }
 
-export function StatusChip({ post }: { post: Pick<SocialPost, "status" | "scheduledAt"> }) {
+/** Tom do selo de vidro de cada grupo de status. */
+const BADGE_TONE: Record<Tone, GlassBadgeTone> = {
+  neutral: "draft",
+  attention: "pending",
+  queued: "info",
+  done: "live",
+  problem: "danger",
+};
+
+/** Fundo e texto das "pílulas" de post na grade do mês (cor clara + texto escuro: AA). */
+export const CHIP_TONE: Record<Tone, string> = {
+  neutral: "bg-white/70 text-ink",
+  attention: "bg-amber-50/90 text-amber-950",
+  queued: "bg-blue-50/90 text-[#0b3a85]",
+  done: "bg-emerald-50/90 text-emerald-950",
+  problem: "bg-red-50/90 text-red-900",
+};
+
+export function StatusChip({
+  post,
+  size = "md",
+}: {
+  post: Pick<SocialPost, "status" | "scheduledAt">;
+  size?: "sm" | "md";
+}) {
   const info = statusInfo(post);
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-2 py-0.5 text-[13px] leading-5 font-medium text-ink ring-1 ring-slate-200">
-      <span aria-hidden="true" className={`size-1.5 rounded-full ${DOT[info.tone]}`} />
+    <GlassBadge tone={BADGE_TONE[info.tone]} dot size={size}>
       {info.label}
-    </span>
+    </GlassBadge>
   );
 }
 

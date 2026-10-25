@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
 import { focusRing } from "@/components/DashboardUi";
+import { GlassBackdrop, glassButtonClass } from "@/components/glass";
 import { Logo } from "@/components/Logo";
 import { LIVE_MODULES, SOON_MODULES } from "@/lib/modules";
 import {
@@ -20,9 +21,12 @@ import {
   PlusIcon,
 } from "./NavIcons";
 
-// Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral no computador, barra de
-// cima + abas embaixo no celular. Componente de cliente só para saber a rota atual (aria-current
-// e esconder a navegação no /create). Visitantes não passam por aqui (ver layout.tsx).
+// Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral de vidro flutuante no
+// computador; barra de cima de vidro + barra de abas flutuante (como a do iOS 26) no celular, com o
+// conteúdo passando por baixo. Componente de cliente só para saber a rota atual (aria-current e
+// esconder a navegação no /create). Visitantes não passam por aqui (ver layout.tsx).
+// O vidro vem das utilidades `glass*` de app/globals.css: com "reduzir transparência", "aumentar
+// contraste" ou navegador sem backdrop-filter, tudo vira fundo sólido sozinho.
 
 type ChromeProps = {
   admin: boolean;
@@ -40,21 +44,19 @@ type ChromeProps = {
   children: ReactNode;
 };
 
-// Visual "Apple": barra lateral clara e translúcida com linha fina; item ativo = cápsula cinza com
-// o ícone na cor da marca. No celular, barra de abas do iOS (translúcida, ícone sobre o rótulo,
-// ativo em azul).
-
-const newSiteButton = `inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold whitespace-nowrap text-ink shadow-xs transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 active:translate-y-px lg:min-h-10 ${focusRing}`;
-
-const sideItem = `group flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100/70 hover:text-ink aria-[current=page]:bg-slate-100 aria-[current=page]:text-ink ${focusRing}`;
+// Item da barra lateral: texto cinza AA sobre o vidro; ativo = cápsula clara de vidro (glass-pill)
+// com o ícone na cor da marca.
+const sideItem = `group flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-(--glass-fg-muted) transition-colors duration-150 hover:bg-(--glass-ghost-hover) hover:text-(--glass-fg) aria-[current=page]:glass-pill aria-[current=page]:text-(--glass-fg) lg:min-h-10 ${focusRing}`;
 
 /** Ícone do item da barra lateral: cinza; azul da marca no item ativo. */
 const sideIcon =
-  "size-[22px] shrink-0 text-slate-500 transition-colors duration-150 group-hover:text-ink group-aria-[current=page]:text-brand";
+  "size-[22px] shrink-0 text-slate-500 transition-colors duration-150 group-hover:text-(--glass-fg) group-aria-[current=page]:text-brand";
 
-const soonItem = "flex min-h-10 items-center gap-3 rounded-xl px-3 text-[15px] text-slate-500";
+const soonItem =
+  "flex min-h-10 items-center gap-3 rounded-2xl px-3 text-[15px] text-(--glass-fg-muted)";
 
-const tabItem = `flex h-full flex-col items-center justify-center gap-1 text-xs font-medium text-slate-600 transition-colors duration-150 hover:text-ink aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
+// Aba do celular: ícone sobre o rótulo; ativa = azul da marca numa cápsula clara.
+const tabItem = `mx-0.5 my-1.5 flex h-[calc(100%-0.75rem)] flex-col items-center justify-center gap-0.5 rounded-[22px] text-[11px] leading-4 font-semibold text-(--glass-fg-muted) transition-colors duration-150 hover:text-(--glass-fg) aria-[current=page]:bg-brand/10 aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
 
 // Colunas da barra de abas: Home + módulos ativos + More (classes inteiras para o Tailwind achar).
 const TAB_COLUMNS: Record<number, string> = {
@@ -64,7 +66,13 @@ const TAB_COLUMNS: Record<number, string> = {
   6: "grid-cols-6",
 };
 
-const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-ink transition-colors duration-150 hover:bg-slate-100/70 aria-[current=page]:bg-slate-100 ${focusRing}`;
+const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-(--glass-fg) transition-colors duration-150 hover:bg-(--glass-ghost-hover) aria-[current=page]:glass-pill ${focusRing}`;
+
+/**
+ * Onde a barra de abas flutua (acima da área segura do iPhone). Quem gruda embaixo da tela no
+ * celular (ex.: a barra de aprovar posts) soma a altura da barra (4rem) + um respiro.
+ */
+const TAB_BAR_BOTTOM = "bottom-[max(0.75rem,env(safe-area-inset-bottom))]";
 
 function useCurrent() {
   const pathname = usePathname();
@@ -92,12 +100,17 @@ function SidebarNav({
 }: Omit<ChromeProps, "children" | "banner">) {
   const { current } = useCurrent();
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-y-auto border-r border-slate-200/70 bg-white/80 px-3 pt-5 pb-4 backdrop-blur-xl lg:flex">
-      <div className="px-3 pb-6">
+    // Cartão de vidro flutuante (como a barra lateral do iPadOS 26): o fundo da marca aparece por
+    // trás, desfocado.
+    <aside className="glass-strong fixed inset-y-3 left-3 z-30 hidden w-60 flex-col overflow-y-auto overscroll-contain rounded-[28px] px-3 pt-5 pb-3 lg:flex">
+      <div className="px-3 pb-5">
         <Logo />
       </div>
       <div className="pb-5">
-        <Link href="/create" className={`${newSiteButton} w-full`}>
+        <Link
+          href="/create"
+          className={glassButtonClass({ variant: "secondary", fullWidth: true })}
+        >
           <PlusIcon className="size-4" />
           New site
         </Link>
@@ -138,7 +151,10 @@ function SidebarNav({
           })}
         </ul>
 
-        <p id="sidebar-soon" className="px-3 pt-6 pb-1.5 text-[13px] font-semibold text-slate-500">
+        <p
+          id="sidebar-soon"
+          className="px-3 pt-6 pb-1.5 text-[13px] font-semibold text-(--glass-fg-muted)"
+        >
           Coming soon
         </p>
         <ul aria-labelledby="sidebar-soon" className="grid gap-0.5">
@@ -155,7 +171,7 @@ function SidebarNav({
           })}
         </ul>
 
-        <div className="mt-auto grid gap-0.5 border-t border-slate-200/70 pt-3">
+        <div className="mt-auto grid gap-0.5 pt-6">
           {admin && (
             <Link href="/admin" className={sideItem}>
               <AdminIcon className={sideIcon} />
@@ -179,11 +195,11 @@ function SidebarNav({
             Billing
           </Link>
           {account && (
-            <>
-              <p className="mt-2 flex items-center gap-2.5 px-3 py-2 text-[13px] text-slate-500">
+            <div className="mt-3 grid gap-0.5 border-t border-(--glass-rim) pt-3">
+              <p className="flex items-center gap-2.5 px-3 py-1.5 text-[13px] text-(--glass-fg-muted)">
                 <span
                   aria-hidden="true"
-                  className="grid size-8 shrink-0 place-items-center rounded-full bg-slate-200/80 text-[13px] font-semibold text-slate-700"
+                  className="glass-edge grid size-8 shrink-0 place-items-center rounded-full bg-brand/10 text-[13px] font-semibold text-brand"
                 >
                   {initial(account.email)}
                 </span>
@@ -197,7 +213,7 @@ function SidebarNav({
                   Log out
                 </button>
               </form>
-            </>
+            </div>
           )}
         </div>
       </nav>
@@ -232,12 +248,12 @@ function TabBar({
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/70 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className={`fixed inset-x-3 z-40 h-16 rounded-[28px] lg:hidden ${TAB_BAR_BOTTOM}`}
     >
       {/* Vidro da barra numa camada à parte: `backdrop-filter` na própria <nav> viraria o bloco
           de referência dos filhos `fixed` (a folha "More" e o fundo dela ficariam presos aqui). */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-white/90 backdrop-blur-xl" />
-      <ul className={`grid h-16 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
+      <div aria-hidden="true" className="glass-strong absolute inset-0 -z-10 rounded-[28px]" />
+      <ul className={`grid h-full px-1 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
         <li>
           <Link
             href="/dashboard"
@@ -269,7 +285,7 @@ function TabBar({
           <details ref={moreRef} onKeyDown={onMoreKeyDown} className="group h-full">
             <summary
               aria-current={moreActive ? "page" : undefined}
-              className={`${tabItem} cursor-pointer list-none group-open:text-brand [&::-webkit-details-marker]:hidden`}
+              className={`${tabItem} cursor-pointer list-none group-open:bg-brand/10 group-open:text-brand [&::-webkit-details-marker]:hidden`}
             >
               <MoreIcon className="size-6" />
               More
@@ -280,14 +296,10 @@ function TabBar({
               tabIndex={-1}
               aria-label="Close menu"
               onClick={closeMore}
-              className="fixed inset-x-0 top-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] cursor-default bg-ink/20"
+              className="fixed inset-0 -z-20 cursor-default bg-ink/25"
             />
-            <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-slate-200/70 bg-white px-3 pt-2 pb-4 shadow-[0_-12px_32px_-16px_rgb(7_27_51/0.25)]">
-              {/* Alça da folha (só enfeite, como no iOS). */}
-              <span
-                aria-hidden="true"
-                className="mx-auto mb-2 block h-1 w-9 rounded-full bg-slate-300"
-              />
+            {/* Folha flutuante de vidro logo acima da barra de abas. */}
+            <div className="glass-strong glass-pop fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+4.5rem)] max-h-[70dvh] overflow-y-auto overscroll-contain rounded-[28px] px-2 pt-2 pb-3">
               <ul className="grid gap-0.5">
                 {latestSiteId && (
                   <li>
@@ -350,7 +362,7 @@ function TabBar({
 
               <p
                 id="sheet-soon"
-                className="px-3 pt-4 pb-1 text-[13px] font-semibold text-slate-500"
+                className="px-3 pt-4 pb-1 text-[13px] font-semibold text-(--glass-fg-muted)"
               >
                 Coming soon
               </p>
@@ -369,9 +381,11 @@ function TabBar({
               </ul>
 
               {account && (
-                <div className="mt-3 border-t border-slate-200/70 pt-3">
+                <div className="mt-3 border-t border-(--glass-rim) pt-3">
                   {account.email && (
-                    <p className="truncate px-3 pb-1 text-[13px] text-slate-500">{account.email}</p>
+                    <p className="truncate px-3 pb-1 text-[13px] text-(--glass-fg-muted)">
+                      {account.email}
+                    </p>
                   )}
                   <form action={signOut}>
                     <button type="submit" className={sheetItem}>
@@ -389,6 +403,9 @@ function TabBar({
   );
 }
 
+/** Link de texto da barra de cima (tela de foco do /create). */
+const topLink = `inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold whitespace-nowrap text-(--glass-fg-muted) transition-colors duration-150 hover:bg-(--glass-ghost-hover) hover:text-(--glass-fg) ${focusRing}`;
+
 export function DashboardChrome({
   admin,
   account,
@@ -404,22 +421,16 @@ export function DashboardChrome({
     return (
       <div className="min-h-screen bg-surface">
         {banner}
-        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
+        <header className="glass-bar sticky top-0 z-30">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
-            <div className="flex items-center gap-3 sm:gap-6">
-              <Link
-                href="/dashboard"
-                className={`inline-flex min-h-11 items-center text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
-              >
+            <div className="flex items-center gap-1 sm:gap-3">
+              <Link href="/dashboard" className={topLink}>
                 Dashboard
               </Link>
               {account && (
                 <form action={signOut}>
-                  <button
-                    type="submit"
-                    className={`min-h-11 text-sm font-semibold whitespace-nowrap text-slate-600 transition-colors duration-150 hover:text-ink ${focusRing}`}
-                  >
+                  <button type="submit" className={topLink}>
                     Log out
                   </button>
                 </form>
@@ -438,23 +449,29 @@ export function DashboardChrome({
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="relative isolate min-h-screen">
+      <GlassBackdrop />
       <SidebarNav
         admin={admin}
         account={account}
         latestSiteId={latestSiteId}
         supportHref={supportHref}
       />
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-slate-200/70 bg-white/85 px-5 backdrop-blur-xl sm:px-8 lg:hidden">
+      <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
         <Logo />
-        <Link href="/create" className={newSiteButton}>
+        <Link href="/create" className={glassButtonClass({ variant: "secondary", size: "md" })}>
           <PlusIcon className="size-4" />
           New site
         </Link>
       </header>
-      <main id="main" className="pb-24 lg:pb-0 lg:pl-60">
+      {/* No celular o conteúdo rola por baixo da barra de abas flutuante: o espaço embaixo deixa
+          o fim da página aparecer acima dela. */}
+      <main
+        id="main"
+        className="pb-[calc(max(0.75rem,env(safe-area-inset-bottom))+5.5rem)] lg:pb-0 lg:pl-[16.5rem]"
+      >
         {banner}
-        <div className="mx-auto max-w-[1080px] px-5 pt-8 pb-10 sm:px-8 lg:px-10 lg:pt-12 lg:pb-20">
+        <div className="mx-auto max-w-[1080px] px-4 pt-6 pb-10 sm:px-8 lg:px-10 lg:pt-12 lg:pb-20">
           {children}
         </div>
       </main>

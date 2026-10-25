@@ -1,17 +1,8 @@
 import type { SocialPostStatus } from "@nosweat/schema";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import type { ReactNode } from "react";
-import {
-  StatusBadge,
-  panelClass,
-  panelText,
-  panelTitle,
-  secondaryButton,
-  textButton,
-} from "@/components/DashboardUi";
+import { GlassBadge, GlassButton, GlassCard } from "@/components/glass";
 import { accountName, canManageAccounts, getAccount, isAdmin, requireAdmin } from "@/server/admin";
 import { loginDisabled, planStatus } from "@/server/admin/accounts";
 import {
@@ -28,21 +19,19 @@ import { getBillingStore } from "@/server/billing/store";
 import { getBalance } from "@/server/credits";
 import { getSocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
+import { AccountMenu } from "../../AccountActions";
+import { BackLink, Notice, StatTile, panelText, panelTitle } from "../../AdminUi";
 import { SitesTable } from "../../SitesTable";
+import { formatDate } from "../../admin-data";
 import { toSiteRow } from "../../site-rows";
 import { AccessPanel } from "./AccessPanel";
 import { CreditsPanel } from "./CreditsPanel";
-import { DeleteTestAccount } from "./DeleteTestAccount";
-import { LoginAccessPanel } from "./LoginAccessPanel";
 import { SocialPanel } from "./SocialPanel";
-import { adjustCreditsAction, setLoginDisabledAction, startViewAs } from "./actions";
+import { adjustCreditsAction, startViewAs } from "./actions";
 
-export const metadata: Metadata = { title: "Account" };
+export const metadata: Metadata = { title: "Account · Admin" };
 
 type ClientPageProps = { params: Promise<{ userId: string }> };
-
-const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
-const formatDate = (value: string | null) => (value ? dateFormat.format(new Date(value)) : "—");
 
 /** Tudo o que a página mostra (fora do componente: usa o relógio). `null` = conta não existe. */
 async function loadAccountPage(userId: string) {
@@ -91,57 +80,45 @@ async function loadAccountPage(userId: string) {
   };
 }
 
-function StatTile({ label, value, note }: { label: string; value: string; note: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-4">
-      <dt className="text-sm font-semibold text-slate-600">{label}</dt>
-      <dd className="mt-1 font-display text-[2rem] leading-none font-bold tracking-[-0.02em] text-ink tabular-nums">
-        {value}
-      </dd>
-      <dd className="text-[13px] text-slate-500">{note}</dd>
-    </div>
-  );
-}
-
 function AiUsagePanel({ usage }: { usage: UsageByKind | null }) {
   return (
-    <section aria-labelledby="ai-heading" className={panelClass}>
+    <GlassCard as="section" aria-labelledby="ai-heading">
       <h2 id="ai-heading" className={panelTitle}>
         AI usage · last 30 days
       </h2>
       {usage ? (
         <table className="mt-3 w-full text-left text-sm tabular-nums">
-          <thead className="text-slate-500">
+          <thead className="text-[13px] text-(--glass-fg-muted)">
             <tr>
-              <th className="py-1.5 font-medium">Feature</th>
-              <th className="py-1.5 text-right font-medium">Uses</th>
-              <th className="py-1.5 text-right font-medium">Est. cost</th>
+              <th className="py-2 font-semibold">Feature</th>
+              <th className="py-2 text-right font-semibold">Uses</th>
+              <th className="py-2 text-right font-semibold">Est. cost</th>
             </tr>
           </thead>
           <tbody>
             {AI_USAGE_KINDS.map((kind) => (
-              <tr key={kind} className="border-t border-slate-100">
-                <td className="py-1.5 text-ink">{AI_USAGE_LABELS[kind]}</td>
-                <td className="py-1.5 text-right">{usage[kind]}</td>
-                <td className="py-1.5 text-right">
+              <tr key={kind} className="border-t border-(--glass-rim)">
+                <td className="py-2 text-(--glass-fg)">{AI_USAGE_LABELS[kind]}</td>
+                <td className="py-2 text-right">{usage[kind]}</td>
+                <td className="py-2 text-right">
                   {formatUsd(estimateKindCostUsd(kind, usage[kind]))}
                 </td>
               </tr>
             ))}
-            <tr className="border-t border-slate-200 font-semibold text-ink">
-              <td className="py-1.5">Total</td>
-              <td className="py-1.5 text-right">{totalUses(usage)}</td>
-              <td className="py-1.5 text-right">{formatUsd(estimateAiCostUsd(usage))}</td>
+            <tr className="border-t border-(--glass-rim) font-semibold text-(--glass-fg)">
+              <td className="py-2">Total</td>
+              <td className="py-2 text-right">{totalUses(usage)}</td>
+              <td className="py-2 text-right">{formatUsd(estimateAiCostUsd(usage))}</td>
             </tr>
           </tbody>
         </table>
       ) : (
         <p className={`mt-2 ${panelText}`}>We couldn&rsquo;t load the AI usage.</p>
       )}
-      <p className="mt-3 text-[13px] text-slate-500">
+      <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
         Cost is an estimate (fixed price per use), not the AI provider&rsquo;s bill.
       </p>
-    </section>
+    </GlassCard>
   );
 }
 
@@ -166,9 +143,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const loginOff = loginDisabled(account);
   const isSelf = account.id === admin.id;
   const liveCount = sites.filter((site) => site.status === "published").length;
-  // Qualquer conta que não seja admin nem a própria pode ser apagada (teste: DELETE; cliente de
-  // verdade: digitar o e-mail). O servidor confere tudo de novo.
-  const canDelete = !targetIsAdmin && !isSelf;
+  const manageEnabled = canManageAccounts();
   const enforced = billingEnforced();
   // Mesmo critério do site público (ownerHasLiveAccess): admin, cartão ativo ou acesso manual.
   const ownerHasPlan =
@@ -178,48 +153,79 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
 
   return (
     <div className="grid grid-cols-1 gap-6">
-      <Link href="/admin#accounts" className={`${textButton} -ml-1 w-fit`}>
-        <span aria-hidden="true">&larr;</span> All accounts
-      </Link>
+      <BackLink href="/admin/accounts">All accounts</BackLink>
 
-      <section aria-labelledby="account-name" className={panelClass}>
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <GlassCard as="section" aria-labelledby="account-name" padding="lg">
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="min-w-0">
             <h1
               id="account-name"
-              className="font-display text-2xl leading-tight font-bold tracking-[-0.025em] break-words text-ink"
+              className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.022em] break-words text-(--glass-fg)"
             >
               {name ?? account.email ?? account.id}
             </h1>
             {name && account.email && (
-              <p className="mt-1 text-[15px] break-all text-slate-600">{account.email}</p>
+              <p className="mt-1 text-[15px] break-all text-(--glass-fg-muted)">
+                {account.email}
+              </p>
             )}
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {targetIsAdmin && <StatusBadge tone="info">Admin</StatusBadge>}
-              {account.testAccount && <StatusBadge tone="pending">Test account</StatusBadge>}
-              {loginOff && <StatusBadge tone="neutral">Login disabled</StatusBadge>}
-              <StatusBadge tone={plan.tone}>{plan.label}</StatusBadge>
+              <GlassBadge tone={plan.tone}>{plan.label}</GlassBadge>
+              {targetIsAdmin && <GlassBadge tone="info">Admin</GlassBadge>}
+              {account.testAccount && <GlassBadge tone="pending">Test account</GlassBadge>}
+              {loginOff && <GlassBadge tone="danger">Login disabled</GlassBadge>}
             </div>
-            <p className="mt-3 text-[13px] text-slate-500">
+            <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
               Signed up {formatDate(account.createdAt)} · Last login{" "}
               {formatDate(account.lastSignInAt)}
             </p>
-            <p className="mt-1 font-mono text-xs break-all text-slate-400">{account.id}</p>
+            <p className="mt-1 font-mono text-xs break-all text-(--glass-fg-muted)/80">
+              {account.id}
+            </p>
           </div>
-          {!isSelf && (
-            <form action={startViewAs.bind(null, account.id)} className="grid gap-1.5">
-              <button type="submit" className={secondaryButton}>
-                View as this account
-              </button>
-              <span className="max-w-[16rem] text-[13px] text-slate-500">
-                Opens their dashboard with their data. Read-only for 1 hour.
-              </span>
-            </form>
-          )}
-        </div>
-      </section>
 
-      <dl className="grid gap-3 sm:grid-cols-3">
+          <div className="flex max-w-sm flex-wrap items-center justify-end gap-2">
+            {!isSelf && (
+              <form action={startViewAs.bind(null, account.id)}>
+                <GlassButton
+                  type="submit"
+                  variant="primary"
+                  title="Opens their dashboard with their data. Read-only for 1 hour."
+                >
+                  View as this account
+                </GlassButton>
+              </form>
+            )}
+            <AccountMenu
+              manageEnabled={manageEnabled}
+              target={{
+                id: account.id,
+                email: account.email,
+                label: name ?? account.email ?? account.id,
+                testAccount: account.testAccount,
+                loginDisabled: loginOff,
+                canModify: !targetIsAdmin && !isSelf,
+                self: isSelf,
+                websites: sites.length,
+              }}
+            />
+          </div>
+        </div>
+        {!isSelf && (
+          <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
+            &ldquo;View as&rdquo; opens their dashboard with their data, read-only for 1 hour.
+            {loginOff && " Login is disabled: they can't log in. Re-enable it from the ⋯ menu."}
+          </p>
+        )}
+        {!targetIsAdmin && !isSelf && !manageEnabled && (
+          <Notice tone="warning" className="mt-4">
+            Disabling login and deleting need Supabase: set NEXT_PUBLIC_SUPABASE_URL and
+            SUPABASE_SERVICE_ROLE_KEY, then reload.
+          </Notice>
+        )}
+      </GlassCard>
+
+      <div className="grid gap-3 sm:grid-cols-3">
         <StatTile label="Websites" value={String(sites.length)} note={`${liveCount} live`} />
         <StatTile
           label="Clients"
@@ -235,17 +241,17 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
               : "Couldn't load the posts"
           }
         />
-      </dl>
+      </div>
 
-      <section
-        aria-labelledby="websites-heading"
-        className="rounded-xl border border-slate-200 bg-white"
-      >
-        <div className="border-b border-slate-200 px-5 py-4">
+      <section aria-labelledby="websites-heading" className="grid gap-3">
+        <div>
           <h2 id="websites-heading" className={panelTitle}>
-            Websites <span className="font-normal text-slate-500">· {sites.length}</span>
+            Websites{" "}
+            <span className="font-medium text-(--glass-fg-muted) tabular-nums">
+              · {sites.length}
+            </span>
           </h2>
-          <p className="mt-1 text-[13px] text-slate-500">
+          <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
             The editor opens their real website: changes you save there are theirs.
           </p>
         </div>
@@ -262,44 +268,24 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         />
       </section>
 
-      <AiUsagePanel usage={activity.ai30d} />
-
-      <CreditsPanel balance={credits} action={adjustCreditsAction.bind(null, account.id)} />
-
-      {/* Os dois painéis já trazem a margem de cima (mt-6); o primeiro dispensa, por causa do gap. */}
-      <div className="[&>section:first-child]:mt-0">
-        <AccessPanel
-          userId={account.id}
-          grant={grant}
-          subscription={subscription}
-          enforced={enforced}
-        />
-
-        <SocialPanel
-          userId={account.id}
-          account={socialAccount}
-          settings={socialSettings}
-          counts={postCounts}
-        />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <CreditsPanel balance={credits} action={adjustCreditsAction.bind(null, account.id)} />
+        <AiUsagePanel usage={activity.ai30d} />
       </div>
 
-      {canDelete && (
-        <LoginAccessPanel
-          action={setLoginDisabledAction.bind(null, account.id)}
-          disabled={loginOff}
-          email={account.email}
-          enabled={canManageAccounts()}
-        />
-      )}
+      <AccessPanel
+        userId={account.id}
+        grant={grant}
+        subscription={subscription}
+        enforced={enforced}
+      />
 
-      {canDelete && (
-        <DeleteTestAccount
-          userId={account.id}
-          sites={sites.length}
-          testAccount={account.testAccount}
-          email={account.email}
-        />
-      )}
+      <SocialPanel
+        userId={account.id}
+        account={socialAccount}
+        settings={socialSettings}
+        counts={postCounts}
+      />
     </div>
   );
 }

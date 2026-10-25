@@ -70,6 +70,7 @@ export function DashboardChecklist({
 
   return (
     <section aria-labelledby="checklist-heading" className={`${cardClass} p-5 sm:p-6`}>
+      {/* Cartão de vidro: anel de progresso + título, e os passos numa grade (4 colunas no computador). */}
       <div className="flex items-center gap-4">
         <ProgressRing percent={percent} />
         <div className="min-w-0">
@@ -77,18 +78,18 @@ export function DashboardChecklist({
             Get {siteName} ready for customers
           </h2>
           <p className="mt-0.5 text-[13px] leading-5 text-slate-500 tabular-nums">
-            {doneCount} of {all.length} done
+            {doneCount} of {all.length} done · {all.length - doneCount} to go
           </p>
         </div>
       </div>
 
-      <ol className="mt-5 grid gap-1 border-t border-slate-200/70 pt-4 sm:grid-cols-2 sm:gap-x-4 lg:grid-cols-4">
+      <ol className="mt-5 grid gap-1 border-t border-(--glass-rim) pt-4 sm:grid-cols-2 sm:gap-x-4 lg:grid-cols-4">
         {all.map((step) => {
           const marker = (
             <span
               aria-hidden="true"
               className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full ${
-                step.done ? "bg-brand text-white" : "ring-[1.5px] ring-slate-300 ring-inset"
+                step.done ? "bg-emerald-600 text-white" : "bg-white/60 ring-[1.5px] ring-slate-300 ring-inset"
               }`}
             >
               {step.done && (
@@ -118,10 +119,10 @@ export function DashboardChecklist({
               )}
             </span>
           );
-          const rowClass = "flex min-h-12 items-start gap-3 rounded-xl px-2.5 py-2.5 -mx-2.5";
-          const linkClass = `group ${rowClass} transition-colors duration-150 hover:bg-slate-50 ${focusRing}`;
+          const rowClass = "-mx-2.5 flex min-h-12 items-start gap-3 rounded-2xl px-2.5 py-2.5";
+          const linkClass = `group ${rowClass} transition-colors duration-150 hover:bg-(--glass-ghost-hover) ${focusRing}`;
           const chevron = (
-            <ChevronRightIcon className="mt-1 size-4 shrink-0 text-slate-300 transition-colors duration-150 group-hover:text-slate-500" />
+            <ChevronRightIcon className="mt-1 size-4 shrink-0 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
           );
           return (
             <li key={step.label}>
@@ -165,7 +166,7 @@ function ProgressRing({ percent }: { percent: number }) {
           r={radius}
           fill="none"
           strokeWidth={5}
-          className="stroke-slate-200"
+          className="stroke-slate-900/10"
         />
         {percent > 0 && (
           <circle

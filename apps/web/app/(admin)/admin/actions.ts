@@ -45,7 +45,7 @@ export async function createTestAccountAction(
       admin.id,
     );
     console.info(`[admin] ${admin.id} created test account ${created.userId}`);
-    revalidatePath("/admin");
+    revalidatePath("/admin", "layout");
     return { status: "created", ...created };
   } catch (error) {
     if (error instanceof TestAccountError) return { status: "error", message: error.message };
@@ -93,9 +93,9 @@ export async function deleteAccountAction(
     };
   }
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   // `redirect` fora do try (ele lança um erro de propósito para navegar).
-  redirect(`/admin?deleted=${encodeURIComponent(email ?? "account")}#accounts`);
+  redirect(`/admin/accounts?deleted=${encodeURIComponent(email ?? "account")}`);
 }
 
 // ---------- sites ----------
@@ -103,7 +103,7 @@ export async function deleteAccountAction(
 /** Resposta das ações de sites para a tela (SitesTable, GuestCleanup). */
 export type AdminActionResult = { ok: boolean; message: string };
 
-/** Recarrega o /admin e as fichas das contas (os sites aparecem nas duas). */
+/** Recarrega todas as páginas do /admin (os sites aparecem em várias) e o painel. */
 function refreshAdmin() {
   revalidatePath("/admin", "layout");
   revalidatePath("/dashboard");

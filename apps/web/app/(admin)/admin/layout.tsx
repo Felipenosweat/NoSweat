@@ -1,71 +1,60 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
-import { focusRing } from "@/components/DashboardUi";
+import { GlassBackdrop, GlassButton } from "@/components/glass";
 import { Logo } from "@/components/Logo";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { requireAdmin } from "@/server/admin";
 import { getViewer } from "@/server/auth/viewer";
+import { AdminNav } from "./AdminNav";
 
-// Seções do painel: quase todas na mesma página (/admin), com âncoras; Models é o Model studio.
-const SECTIONS = [
-  { href: "/admin", label: "Overview" },
-  { href: "/admin#accounts", label: "Accounts" },
-  { href: "/admin#websites", label: "Websites" },
-  { href: "/admin#usage", label: "Usage" },
-  { href: "/admin/models", label: "Models" },
-];
-
-const navItem = `inline-flex min-h-10 items-center rounded-lg px-2 text-sm sm:px-3 font-semibold whitespace-nowrap text-slate-300 transition-colors duration-150 hover:bg-white/10 hover:text-white ${focusRing}`;
-
-/** Painel principal da No Sweat. Só admins (public.platform_admins); para os outros, 404. */
+/**
+ * Painel principal da No Sweat. Só admins (public.platform_admins); para os outros, 404.
+ * Barra de vidro grudada no topo (o conteúdo passa por baixo, desfocado) com as abas do painel.
+ */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await requireAdmin();
   // Modo "ver como" ainda ligado: avisa aqui também (o /dashboard está mostrando a outra conta).
   const viewer = await getViewer();
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="relative isolate min-h-screen bg-surface text-(--glass-fg)">
+      <GlassBackdrop />
       {viewer?.viewingAs && <ViewAsBanner email={viewer.viewingAs.email} />}
-      <header className="bg-ink text-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-8">
+      <header className="glass-bar sticky top-0 z-30">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 md:flex-nowrap">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {/* Volta para o painel do cliente (a própria conta), sempre à vista na esquerda. */}
-            <Link
+            <GlassButton
               href="/dashboard"
-              className={`${navItem} gap-1.5 border border-white/15 bg-white/5`}
+              variant="secondary"
+              icon={<span className="text-[1.1em] leading-none">&larr;</span>}
+              className="px-3.5 sm:px-4"
             >
-              <span aria-hidden="true">&larr;</span>
-              <span className="max-[360px]:sr-only">Dashboard</span>
-            </Link>
-            <div className="hidden rounded-lg bg-white px-2 py-1 text-ink sm:block">
+              <span className="max-[359px]:sr-only">Dashboard</span>
+            </GlassButton>
+            <span className="hidden lg:inline-flex">
               <Logo />
-            </div>
-            <span className="hidden rounded-full bg-amber-400 px-2.5 py-0.5 text-xs font-bold text-ink min-[420px]:inline">
+            </span>
+            <span className="glass-edge rounded-full bg-amber-300/90 px-2.5 py-0.5 text-[11px] font-bold tracking-[0.06em] text-ink">
               ADMIN
             </span>
           </div>
-          <div className="flex items-center gap-1">
-            <form action={signOut}>
-              <button type="submit" className={navItem}>
-                Log out
-              </button>
-            </form>
+
+          {/* Celular: as abas descem para a segunda linha (order-last); computador: no meio. */}
+          <div className="order-last w-full md:order-none md:flex md:w-auto md:flex-1 md:justify-center">
+            <AdminNav />
           </div>
+
+          <form action={signOut} className="ml-auto md:ml-0">
+            <GlassButton type="submit" variant="ghost">
+              Log out
+            </GlassButton>
+          </form>
         </div>
-        <nav aria-label="Admin" className="mx-auto max-w-6xl overflow-x-auto px-3 pb-2 sm:px-6">
-          <ul className="flex gap-1">
-            {SECTIONS.map((section) => (
-              <li key={section.href}>
-                <Link href={section.href} className={navItem}>
-                  {section.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
       </header>
-      <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10">{children}</main>
+      <main id="main" className="mx-auto max-w-6xl px-4 pt-8 pb-28 sm:px-6 sm:pt-10 lg:px-8">
+        {children}
+      </main>
     </div>
   );
 }
