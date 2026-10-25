@@ -60,10 +60,10 @@ export const smokeAndRailBbq: ModelEntry = {
       },
     },
     theme: {
-      primary: "#6E1E12",
-      secondary: "#E3A857",
-      background: "#F2EBE0",
-      text: "#1B1512",
+      primary: "#E07A3F",
+      secondary: "#8C6A4A",
+      background: "#16110D",
+      text: "#F3EBDD",
       font: "technical",
     },
     sections: [

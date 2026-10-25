@@ -5,24 +5,21 @@ import type { TemplateProps } from "../types";
 import { buildModel, renderSections, type SiteModel } from "./model";
 import {
   AboutPhoto,
-  ContactFormBlock,
-  ContactLines,
   FactLine,
   HighlightList,
   FaqList,
-  HeaderAction,
   HeroActions,
   MobileCallBar,
-  NavLinks,
   PeopleList,
   PhotoFrame,
   PriceList,
   ServiceAreaList,
+  ContactSection,
   SimpleFooter,
+  SiteHeader,
   Wrap,
   areaPlaces,
   factsFor,
-  focus,
   hasPriceList,
   sectionY,
   type Fact,
@@ -129,7 +126,7 @@ export function ServiceLedComposition({
         return (
           <div key={key}>
             <AreaBand model={model} />
-            <ServiceContact id={id} model={model} data={section} endpoint={contactEndpoint} />
+            <ContactSection id={id} model={model} data={section} endpoint={contactEndpoint} />
           </div>
         );
       default: {
@@ -141,28 +138,7 @@ export function ServiceLedComposition({
 
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
-        <Wrap className="flex h-16 items-center justify-between gap-4 @min-[40rem]:h-20">
-          <a href="#top" className={`min-w-0 ${focus}`}>
-            <span className="line-clamp-2 block font-ns-heading text-lg leading-tight font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-xl">
-              {model.business.name}
-            </span>
-            {model.business.category && (
-              <span className="hidden truncate text-xs text-ns-muted @min-[40rem]:block">
-                {model.business.category}
-              </span>
-            )}
-          </a>
-          <div className="flex shrink-0 items-center gap-7">
-            <NavLinks
-              model={model}
-              className="hidden @5xl:block"
-              linkClassName="text-ns-muted hover:text-ns-text"
-            />
-            <HeaderAction model={model} radius={RADIUS} filled />
-          </div>
-        </Wrap>
-      </header>
+      <SiteHeader model={model} radius={RADIUS} />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
         {!hasContact && <AreaBand model={model} />}
@@ -274,44 +250,5 @@ function AreaBand({ model }: { model: SiteModel }) {
         <ServiceAreaList model={model} />
       </Wrap>
     </div>
-  );
-}
-
-function ServiceContact({
-  id,
-  model,
-  data,
-  endpoint,
-}: {
-  id?: string;
-  model: SiteModel;
-  data: SectionOf<"contact">;
-  endpoint?: string;
-}) {
-  const { business, phoneHref } = model;
-  return (
-    <section id={id} className={`scroll-mt-24 ${sectionY}`}>
-      <Wrap className={`grid gap-12 ${data.showForm ? "@5xl:grid-cols-12" : ""}`}>
-        <div className={data.showForm ? "@5xl:col-span-5" : ""}>
-          <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
-          {business.phone && phoneHref && (
-            <a
-              href={phoneHref}
-              className={`mt-8 inline-block font-ns-heading text-[length:clamp(2.25rem,6cqw,3.75rem)] leading-none font-ns-display whitespace-nowrap text-ns-primary tabular-nums underline-offset-8 hover:underline ${focus}`}
-            >
-              {business.phone}
-            </a>
-          )}
-          <ContactLines model={model} phone={false} className="mt-10" />
-        </div>
-        <ContactFormBlock
-          data={data}
-          model={model}
-          endpoint={endpoint}
-          radius="md"
-          className="@5xl:col-span-7"
-        />
-      </Wrap>
-    </section>
   );
 }

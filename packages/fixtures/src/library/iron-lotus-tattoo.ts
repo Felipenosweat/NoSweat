@@ -55,10 +55,10 @@ export const ironLotusTattoo: ModelEntry = {
       links: { booking: "https://ironlotus.example.com/book" },
     },
     theme: {
-      primary: "#14453D",
-      secondary: "#D98E48",
-      background: "#F2EEE6",
-      text: "#151515",
+      primary: "#C9A86A",
+      secondary: "#6B5B45",
+      background: "#0F0F0E",
+      text: "#EDEAE4",
       font: "bold",
     },
     sections: [

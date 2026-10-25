@@ -5,22 +5,19 @@ import type { TemplateProps } from "../types";
 import { buildModel, renderSections, type SiteModel } from "./model";
 import {
   AboutPhoto,
-  ContactFormBlock,
-  ContactLines,
   FactLine,
   HighlightList,
   FaqList,
-  HeaderAction,
   HeroActions,
   MobileCallBar,
-  NavLinks,
   PeopleList,
   PhotoFrame,
   ServiceMarquee,
+  ContactSection,
   SimpleFooter,
+  SiteHeader,
   Wrap,
   factsFor,
-  focus,
   sectionY,
   type Fact,
 } from "./shared";
@@ -129,7 +126,7 @@ export function TypographicComposition({
         );
       case "contact":
         return (
-          <TypographicContact
+          <ContactSection
             key={key}
             id={id}
             model={model}
@@ -146,24 +143,7 @@ export function TypographicComposition({
 
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
-        <Wrap wide className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
-          <a
-            href="#top"
-            className="min-w-0 font-ns-heading text-lg font-ns-display tracking-tight [overflow-wrap:anywhere]"
-          >
-            {model.business.name}
-          </a>
-          <div className="flex shrink-0 items-center gap-7">
-            <NavLinks
-              model={model}
-              className="hidden @5xl:block"
-              linkClassName="text-ns-muted hover:text-ns-text"
-            />
-            <HeaderAction model={model} radius={RADIUS} />
-          </div>
-        </Wrap>
-      </header>
+      <SiteHeader model={model} radius={RADIUS} wide />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
@@ -256,51 +236,6 @@ function LedgerServices({
             </li>
           ))}
         </ol>
-      </Wrap>
-    </section>
-  );
-}
-
-function TypographicContact({
-  id,
-  model,
-  data,
-  endpoint,
-}: {
-  id?: string;
-  model: SiteModel;
-  data: SectionOf<"contact">;
-  endpoint?: string;
-}) {
-  const { business, phoneHref } = model;
-  return (
-    <section id={id} className={`scroll-mt-24 bg-ns-text text-ns-background ${sectionY}`}>
-      <Wrap wide className="grid gap-12 @5xl:grid-cols-12">
-        <div className="@5xl:col-span-6">
-          <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
-          {business.phone && phoneHref && (
-            <a
-              href={phoneHref}
-              className={`mt-10 block font-ns-heading text-[length:clamp(2.25rem,6cqw,4.5rem)] leading-none font-ns-display whitespace-nowrap tabular-nums underline-offset-8 hover:underline ${focus}`}
-            >
-              {business.phone}
-            </a>
-          )}
-          <ContactLines model={model} phone={false} className="mt-10" />
-        </div>
-        {data.showForm && (
-          <div
-            className={`${RADIUS} bg-ns-background p-6 text-ns-text @min-[40rem]:p-8 @5xl:col-span-6`}
-          >
-            <ContactFormBlock
-              data={data}
-              model={model}
-              endpoint={endpoint}
-              radius="md"
-              framed={false}
-            />
-          </div>
-        )}
       </Wrap>
     </section>
   );

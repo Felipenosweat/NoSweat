@@ -5,17 +5,15 @@ import type { TemplateProps } from "../types";
 import { buildModel, isOwnerPhoto, renderSections, type SiteModel } from "./model";
 import {
   AddressBlock,
-  ContactFormBlock,
-  ContactLines,
   FaqList,
-  HeaderAction,
   HeroActions,
   HoursTable,
   MobileCallBar,
-  NavLinks,
   PeopleList,
   PhotoFrame,
+  ContactSection,
   SimpleFooter,
+  SiteHeader,
   Wrap,
   sectionY,
 } from "./shared";
@@ -122,25 +120,13 @@ export function ModularComposition({
         );
       case "contact":
         return (
-          <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
-            <Wrap className={`${grid} @5xl:grid-cols-5`}>
-              <div className={`${cell} @5xl:col-span-2`}>
-                <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
-                <ContactLines model={model} className="mt-10" />
-              </div>
-              {section.showForm && (
-                <div className={`${cell} @5xl:col-span-3`}>
-                  <ContactFormBlock
-                    data={section}
-                    model={model}
-                    endpoint={contactEndpoint}
-                    radius="md"
-                    framed={false}
-                  />
-                </div>
-              )}
-            </Wrap>
-          </section>
+          <ContactSection
+            key={key}
+            id={id}
+            model={model}
+            data={section}
+            endpoint={contactEndpoint}
+          />
         );
       default: {
         const unhandled: never = section;
@@ -151,24 +137,7 @@ export function ModularComposition({
 
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
-        <Wrap className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
-          <a
-            href="#top"
-            className="min-w-0 truncate font-ns-heading text-xl font-ns-display tracking-tight"
-          >
-            {model.business.name}
-          </a>
-          <div className="flex shrink-0 items-center gap-8">
-            <NavLinks
-              model={model}
-              className="hidden @5xl:block"
-              linkClassName="text-ns-muted hover:text-ns-text"
-            />
-            <HeaderAction model={model} radius={RADIUS} />
-          </div>
-        </Wrap>
-      </header>
+      <SiteHeader model={model} radius={RADIUS} />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>

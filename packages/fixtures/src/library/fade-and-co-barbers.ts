@@ -60,10 +60,10 @@ export const fadeAndCoBarbers: ModelEntry = {
       },
     },
     theme: {
-      primary: "#1F4D3A",
-      secondary: "#C9A15B",
-      background: "#F3F0E8",
-      text: "#171717",
+      primary: "#E2B65A",
+      secondary: "#4C7A62",
+      background: "#132820",
+      text: "#EFE9DD",
       font: "bold",
     },
     sections: [

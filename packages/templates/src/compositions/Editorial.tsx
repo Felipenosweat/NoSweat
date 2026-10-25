@@ -5,19 +5,17 @@ import type { TemplateProps } from "../types";
 import { buildModel, renderSections, type SiteModel } from "./model";
 import {
   AboutPhoto,
-  ContactFormBlock,
-  ContactLines,
   FaqList,
-  HeaderAction,
   HeroActions,
   HighlightList,
   MobileCallBar,
-  NavLinks,
   PeopleList,
   PhotoFrame,
   PriceList,
   ServiceMarquee,
+  ContactSection,
   SimpleFooter,
+  SiteHeader,
   Wrap,
   hasPriceList,
   sectionY,
@@ -112,23 +110,13 @@ export function EditorialComposition({
         );
       case "contact":
         return (
-          <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
-            <Wrap className="grid gap-12 @5xl:grid-cols-12">
-              <div className="@5xl:col-span-5">
-                <h2 className="ns-rise font-ns-heading text-4xl leading-[1.05] font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
-                  {model.titleOf(section)}
-                </h2>
-                <ContactLines model={model} className="mt-10" />
-              </div>
-              <ContactFormBlock
-                data={section}
-                model={model}
-                endpoint={contactEndpoint}
-                radius="none"
-                className="@5xl:col-span-6 @5xl:col-start-7"
-              />
-            </Wrap>
-          </section>
+          <ContactSection
+            key={key}
+            id={id}
+            model={model}
+            data={section}
+            endpoint={contactEndpoint}
+          />
         );
       default: {
         const unhandled: never = section;
@@ -139,24 +127,7 @@ export function EditorialComposition({
 
   return (
     <div id={anchors ? "top" : undefined} className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur">
-        <Wrap className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
-          <a
-            href="#top"
-            className="min-w-0 font-ns-heading text-xl leading-tight font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
-          >
-            {model.business.name}
-          </a>
-          <div className="flex shrink-0 items-center gap-8">
-            <NavLinks
-              model={model}
-              className="hidden @5xl:block"
-              linkClassName="text-ns-muted hover:text-ns-text"
-            />
-            <HeaderAction model={model} radius={RADIUS} />
-          </div>
-        </Wrap>
-      </header>
+      <SiteHeader model={model} radius={RADIUS} />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>

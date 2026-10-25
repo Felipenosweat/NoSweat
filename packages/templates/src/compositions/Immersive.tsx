@@ -6,20 +6,17 @@ import type { TemplateProps } from "../types";
 import { buildModel, renderSections, type SiteModel } from "./model";
 import {
   AboutPhoto,
-  AddressBlock,
-  ContactFormBlock,
-  ContactLines,
   FactLine,
   FaqList,
-  HeaderAction,
   HeroActions,
   HighlightList,
   MobileCallBar,
-  NavLinks,
   PeopleList,
   PriceList,
   ServiceMarquee,
+  ContactSection,
   SimpleFooter,
+  SiteHeader,
   Wrap,
   factsFor,
   hasPriceList,
@@ -142,39 +139,13 @@ export function ImmersiveComposition({
         );
       case "contact":
         return (
-          <section
+          <ContactSection
             key={key}
             id={id}
-            className={`scroll-mt-24 ${section.showForm ? "@5xl:grid @5xl:grid-cols-2" : ""}`}
-          >
-            <div className={`bg-ns-text text-ns-background ${sectionY}`}>
-              <div
-                className={
-                  section.showForm
-                    ? "mx-auto w-full max-w-xl px-4 @min-[40rem]:px-6 @5xl:mr-0 @5xl:ml-auto @5xl:px-12"
-                    : "mx-auto w-full max-w-7xl px-4 @min-[40rem]:px-6 @5xl:px-8"
-                }
-              >
-                <h2 className="ns-rise font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
-                  {model.titleOf(section)}
-                </h2>
-                <SignBoard model={model} />
-                <ContactLines model={model} place={false} className="mt-10" />
-              </div>
-            </div>
-            {section.showForm && (
-              <div className={`bg-ns-surface ${sectionY}`}>
-                <div className="mx-auto w-full max-w-xl px-4 @min-[40rem]:px-6 @5xl:mr-auto @5xl:ml-0 @5xl:px-12">
-                  <ContactFormBlock
-                    data={section}
-                    model={model}
-                    endpoint={contactEndpoint}
-                    radius="sm"
-                  />
-                </div>
-              </div>
-            )}
-          </section>
+            model={model}
+            data={section}
+            endpoint={contactEndpoint}
+          />
         );
       default: {
         const unhandled: never = section;
@@ -185,30 +156,7 @@ export function ImmersiveComposition({
 
   return (
     <div id={anchors ? "top" : undefined} className="relative flex min-h-full flex-col">
-      <header
-        className={
-          overlay
-            ? "absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-ns-text/70 to-transparent text-ns-background"
-            : "sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur"
-        }
-      >
-        <Wrap wide className="flex h-20 items-center justify-between gap-6">
-          <a
-            href="#top"
-            className="min-w-0 font-ns-heading text-xl font-ns-display tracking-tight [overflow-wrap:anywhere] @min-[40rem]:text-2xl"
-          >
-            {model.business.name}
-          </a>
-          <div className="flex shrink-0 items-center gap-8">
-            <NavLinks
-              model={model}
-              className="hidden @5xl:block"
-              linkClassName="opacity-85 hover:opacity-100"
-            />
-            <HeaderAction model={model} radius={RADIUS} />
-          </div>
-        </Wrap>
-      </header>
+      <SiteHeader model={model} radius={RADIUS} wide overlay={overlay} />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
@@ -312,35 +260,6 @@ function InfoStrip({ model }: { model: SiteModel }) {
       <Wrap wide>
         <FactLine facts={facts} className="py-7 text-ns-muted [&_dd]:text-ns-text" />
       </Wrap>
-    </div>
-  );
-}
-
-/** Placa de vitrine: horário e endereço grandes, como na porta. */
-function SignBoard({ model }: { model: SiteModel }) {
-  const hours = model.business.hours?.length ? model.business.hours : null;
-  if (!hours && !model.address) return null;
-  return (
-    <div className="mt-10 grid gap-10 border-y border-ns-background/20 py-10">
-      {hours && (
-        <div>
-          <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">Hours</p>
-          <dl className="mt-3 space-y-2 font-ns-heading text-2xl leading-tight font-ns-display @min-[40rem]:text-3xl">
-            {hours.map((row, index) => (
-              <div key={index} className="flex flex-wrap justify-between gap-x-6">
-                <dt>{row.days}</dt>
-                <dd className="tabular-nums">{row.time}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-      {model.address && (
-        <div>
-          <p className="text-xs font-semibold tracking-[0.18em] uppercase opacity-80">Find us</p>
-          <AddressBlock model={model} large className="mt-3" />
-        </div>
-      )}
     </div>
   );
 }

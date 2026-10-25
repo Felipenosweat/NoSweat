@@ -345,7 +345,7 @@ export function ContactForm({
       <button
         type="submit"
         disabled={!endpoint || status.state === "sending"}
-        className={`mt-6 min-h-12 w-full ${r.field} bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary disabled:cursor-not-allowed disabled:hover:brightness-100 aria-busy:opacity-70 motion-reduce:transition-none`}
+        className={`ns-btn mt-6 min-h-12 w-full ${r.field} bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary disabled:cursor-not-allowed disabled:hover:brightness-100 aria-busy:opacity-70 motion-reduce:transition-none`}
         aria-busy={status.state === "sending"}
       >
         {status.state === "sending" ? "Sending..." : submitLabel}
