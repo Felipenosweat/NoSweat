@@ -13,30 +13,27 @@ function isVercelProduction(): boolean {
   return process.env.VERCEL_ENV === "production";
 }
 
+/** Sem IA configurada: monta o site a partir do site-modelo mais parecido (sem chamar API). */
+function templateMode(reason: string): SiteGenerator {
+  console.warn(`[ai] template mode (no AI): ${reason}`);
+  return new MockGenerator({ delayMs: 800, templateMode: true });
+}
+
 /**
  * Escolhe o gerador pela variável AI_PROVIDER (padrão: mock, para o dev e os testes).
- * Erros de configuração aparecem AQUI, antes de a rota gastar um crédito do cliente:
- * - em produção, o mock nunca roda (ele devolve sites de exemplo, como o Joe's Plumbing);
- * - "anthropic" sem ANTHROPIC_API_KEY (nem ANTHROPIC_AUTH_TOKEN) falha na hora. A conferência
- *   fica aqui e não no construtor do AnthropicGenerator, porque os testes montam o gerador com
- *   um cliente de mentira e sem chave.
+ * Em produção sem IA configurada (mock, ou "anthropic" sem ANTHROPIC_API_KEY) o site continua
+ * funcionando no "modo modelo": parte do site-modelo mais parecido da biblioteca (25 modelos),
+ * com textos genéricos do ramo e só os fatos que estão no pedido. A IA de verdade entra quando a
+ * chave for configurada; até lá, mudanças pela IA respondem que ainda não estão ligadas.
  */
 export function getSiteGenerator(provider = process.env.AI_PROVIDER || "mock"): SiteGenerator {
   switch (provider) {
     case "mock":
-      if (isVercelProduction()) {
-        console.error(
-          "[ai] AI_PROVIDER is mock (or not set) in production. Set AI_PROVIDER=anthropic and ANTHROPIC_API_KEY in Vercel.",
-        );
-        throw new Error(
-          'The mock AI is not allowed in production. Set AI_PROVIDER="anthropic" and ANTHROPIC_API_KEY.',
-        );
-      }
+      if (isVercelProduction()) return templateMode("AI_PROVIDER is mock or not set");
       return new MockGenerator();
     case "anthropic":
       if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
-        console.error("[ai] AI_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set.");
-        throw new Error('AI_PROVIDER is "anthropic" but ANTHROPIC_API_KEY is not set.');
+        return templateMode("AI_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set");
       }
       return new AnthropicGenerator();
     case "openai":
