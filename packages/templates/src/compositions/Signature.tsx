@@ -1,5 +1,5 @@
 import type { Composition, Section, SectionOf, SiteImage } from "@nosweat/schema";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { PhoneIcon } from "../components/icons";
 import { Photo, PhotoCredit } from "../components/photo";
 import type { TemplateProps } from "../types";
@@ -55,6 +55,14 @@ function nameLines(name: string): [string, string] {
   if (words.length < 2) return [name, ""];
   const cut = words.length === 2 ? 1 : Math.ceil(words.length / 2) - (words.length > 3 ? 0 : 1);
   return [words.slice(0, Math.max(1, cut)).join(" "), words.slice(Math.max(1, cut)).join(" ")];
+}
+
+/** Nome comprido diminui no topo gigante (sem cobrir o texto embaixo). */
+function nameScale(name: string): number {
+  const length = name.trim().length;
+  if (length <= 14) return 1;
+  if (length <= 20) return 0.82;
+  return 0.66;
 }
 
 /** Fotos para a decoração (paralaxe, lista de serviços, fundo do agendamento). */
@@ -394,7 +402,8 @@ function SignatureHero({
         )}
         <div className={`${wrap} pb-8 pt-40`}>
           <h1
-            className={`${display} text-[length:clamp(4.25rem,16.5cqw,20rem)] leading-[0.8] tracking-[-0.05em]`}
+            style={{ "--ns-name-scale": nameScale(business.name) } as CSSProperties}
+            className={`${display} text-[length:calc(clamp(4.25rem,16.5cqw,20rem)*var(--ns-name-scale))] leading-[0.8] tracking-[-0.05em]`}
           >
             <BigName name={business.name} />
           </h1>
@@ -480,7 +489,8 @@ function SignatureHero({
           {[business.category, model.where].filter(Boolean).join(" · ")}
         </p>
         <h1
-          className={`mt-6 ${display} text-[length:clamp(3.75rem,13cqw,15rem)] leading-[0.82] tracking-[-0.05em]`}
+          style={{ "--ns-name-scale": nameScale(business.name) } as CSSProperties}
+          className={`mt-6 ${display} text-[length:calc(clamp(3.75rem,13cqw,15rem)*var(--ns-name-scale))] leading-[0.82] tracking-[-0.05em]`}
         >
           <BigName name={business.name} />
         </h1>
@@ -533,7 +543,8 @@ function SignatureHero({
           {[business.category, model.where].filter(Boolean).join(" · ")}
         </p>
         <h1
-          className={`mt-6 ${display} text-[length:clamp(4rem,15cqw,18rem)] leading-[0.8] tracking-[-0.05em]`}
+          style={{ "--ns-name-scale": nameScale(business.name) } as CSSProperties}
+          className={`mt-6 ${display} text-[length:calc(clamp(4rem,15cqw,18rem)*var(--ns-name-scale))] leading-[0.8] tracking-[-0.05em]`}
         >
           <BigName name={business.name} />
         </h1>
