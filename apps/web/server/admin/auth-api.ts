@@ -25,6 +25,8 @@ export const AuthUser = z.object({
   email: z.string().nullish(),
   created_at: z.string().nullish(),
   last_sign_in_at: z.string().nullish(),
+  /** Login desligado até esta data (ban do admin). */
+  banned_until: z.string().nullish(),
   user_metadata: z.record(z.string(), z.unknown()).nullish(),
   app_metadata: z.record(z.string(), z.unknown()).nullish(),
 });
@@ -186,6 +188,29 @@ export async function updateAuthUserAppMetadata(
     config,
     `/admin/users/${id}`,
     { method: "PUT", body: { app_metadata: patch } },
+    fetchImpl,
+  );
+}
+
+/** Duração do ban do Supabase Auth para "desligar o login" (100 anos; "none" religa). */
+export const LOGIN_DISABLED_DURATION = "876000h";
+
+/**
+ * Desliga (`disabled = true`) ou religa o login da conta pelo ban do Supabase Auth
+ * (`ban_duration`). Não apaga nada. Quem já está logado continua até o token de acesso vencer
+ * (até 1 hora); renovar a sessão e entrar de novo são recusados na hora.
+ */
+export async function setAuthUserLoginDisabled(
+  config: ServiceConfig,
+  id: string,
+  disabled: boolean,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  if (!UUID.test(id)) throw new Error(`Invalid user id: ${id}`);
+  await call(
+    config,
+    `/admin/users/${id}`,
+    { method: "PUT", body: { ban_duration: disabled ? LOGIN_DISABLED_DURATION : "none" } },
     fetchImpl,
   );
 }
