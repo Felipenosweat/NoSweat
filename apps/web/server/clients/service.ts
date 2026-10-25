@@ -6,7 +6,7 @@ import type {
   CreateClientRequest,
   UpdateClientRequest,
 } from "@nosweat/schema";
-import { CLIENTS_TIME_ZONE } from "@/lib/clients";
+import { CLIENTS_TIME_ZONE, dateKeyIn } from "@/lib/clients";
 import { isValidTimeZone } from "../social/service";
 import { getSocialStore } from "../social/store";
 import { getSiteStore, type LeadRecord } from "../store";
@@ -14,6 +14,7 @@ import { byLastActivityDesc, getClientStore, type ClientStore } from "./store";
 import {
   normalizeEmail,
   normalizePhone,
+  normalizeTags,
   type ClientActivityRecord,
   type ClientPatch,
   type ClientRecord,
@@ -40,6 +41,7 @@ export function toPublicClient(record: ClientRecord): Client {
     jobsCount: record.jobsCount,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+    tags: record.tags ?? [],
   };
 }
 
@@ -197,14 +199,29 @@ export async function syncLeadsToClients(
 
 // ---------- leitura ----------
 
-function matchesQuery(client: ClientRecord, q: string): boolean {
+type Searchable = Pick<Client, "name" | "email" | "phone" | "address"> & { tags?: string[] };
+
+function matchesQuery(client: Searchable, q: string): boolean {
   const needle = q.trim().toLowerCase();
   if (!needle) return true;
-  const text = [client.name, client.email ?? "", client.phone ?? ""].join(" ").toLowerCase();
+  const text = [
+    client.name,
+    client.email ?? "",
+    client.phone ?? "",
+    client.address ?? "",
+    ...(client.tags ?? []),
+  ]
+    .join(" ")
+    .toLowerCase();
   if (text.includes(needle)) return true;
   // "(512) 555" acha "512-555-0100": compara também só os dígitos.
   const digits = needle.replace(/\D/g, "");
   return digits.length >= 3 && (client.phone ?? "").replace(/\D/g, "").includes(digits);
+}
+
+/** Busca por nome, e-mail, telefone (também só os dígitos), endereço ou etiqueta. */
+export function searchClients<T extends Searchable>(clients: readonly T[], q: string): T[] {
+  return clients.filter((client) => matchesQuery(client, q));
 }
 
 /**
@@ -260,6 +277,105 @@ export async function clientsNeedingAttention(
   return { newCount, followUpsDue };
 }
 
+// ---------- resumo do mês ----------
+
+export type ClientsSummary = {
+  /** Clientes em "new" (ninguém respondeu ainda). */
+  newCount: number;
+  /** Retornos marcados para hoje / já vencidos (ganhos e perdidos não contam). */
+  followUpsToday: number;
+  followUpsOverdue: number;
+  /** Clientes que viraram "won" neste mês (e continuam "won"). */
+  wonThisMonth: number;
+  /** Soma dos serviços registrados neste mês, em centavos (só o que o dono informou). */
+  revenueThisMonthCents: number;
+  jobsThisMonth: number;
+  /** "AAAA-MM" do mês do resumo. */
+  month: string;
+};
+
+/** Retorno em aberto (cliente que ainda está no funil). */
+function isOpen(client: Pick<Client, "stage">): boolean {
+  return client.stage !== "won" && client.stage !== "lost";
+}
+
+/**
+ * Conta o resumo a partir dos clientes e do histórico (puro, para testar sem banco). `today` é
+ * "AAAA-MM-DD" no fuso da empresa; o mês do histórico também é contado nesse fuso.
+ */
+export function summarizeClients(input: {
+  clients: readonly Client[];
+  activities: readonly Pick<
+    ClientActivity,
+    "clientId" | "kind" | "body" | "amountCents" | "occurredAt"
+  >[];
+  today: string;
+  timeZone: string;
+}): ClientsSummary {
+  const { clients, activities, today, timeZone } = input;
+  const month = today.slice(0, 7);
+  const inMonth = (iso: string) => dateKeyIn(timeZone, new Date(iso)).slice(0, 7) === month;
+
+  let newCount = 0;
+  let followUpsToday = 0;
+  let followUpsOverdue = 0;
+  const wonNow = new Set<string>();
+  for (const client of clients) {
+    if (client.stage === "new") newCount += 1;
+    if (client.stage === "won") wonNow.add(client.id);
+    if (client.followUpOn && isOpen(client)) {
+      if (client.followUpOn === today) followUpsToday += 1;
+      else if (client.followUpOn < today) followUpsOverdue += 1;
+    }
+  }
+
+  const won = new Set<string>();
+  let revenueThisMonthCents = 0;
+  let jobsThisMonth = 0;
+  for (const activity of activities) {
+    if (!inMonth(activity.occurredAt)) continue;
+    if (activity.kind === "job") {
+      jobsThisMonth += 1;
+      revenueThisMonthCents += activity.amountCents ?? 0;
+    } else if (activity.kind === "stage" && activity.body.trim() === "won") {
+      if (wonNow.has(activity.clientId)) won.add(activity.clientId);
+    }
+  }
+  // Cadastrado à mão já como "won" neste mês: não tem item de etapa no histórico.
+  for (const client of clients) {
+    if (client.stage === "won" && client.source === "manual" && inMonth(client.createdAt)) {
+      won.add(client.id);
+    }
+  }
+
+  return {
+    newCount,
+    followUpsToday,
+    followUpsOverdue,
+    wonThisMonth: won.size,
+    revenueThisMonthCents,
+    jobsThisMonth,
+    month,
+  };
+}
+
+/**
+ * Resumo do topo da página de clientes. Lê o histórico do mês (serviços e mudanças de etapa) de
+ * todos os clientes do dono; `clients` é a lista já sincronizada (de `listClients`).
+ */
+export async function getClientsSummary(
+  ownerId: string,
+  clients: readonly Client[],
+  today: string,
+  timeZone: string,
+): Promise<ClientsSummary> {
+  const [y = 2000, m = 1] = today.split("-").map(Number);
+  // Um dia antes do dia 1 em UTC cobre qualquer fuso; o filtro fino é feito pela data no fuso.
+  const since = new Date(Date.UTC(y, m - 1, 0)).toISOString();
+  const activities = await getClientStore().listActivitiesSince(ownerId, since, ["job", "stage"]);
+  return summarizeClients({ clients, activities, today, timeZone });
+}
+
 // ---------- escrita ----------
 
 /** Cadastro manual. E-mail, telefone ou endereço vazios viram `null`. */
@@ -274,7 +390,8 @@ export async function createClient(ownerId: string, input: CreateClientRequest):
     source: "manual",
     siteId: null,
     notes: input.notes ?? "",
-    followUpOn: null,
+    followUpOn: input.followUpOn ?? null,
+    tags: normalizeTags(input.tags),
   });
   return toPublicClient(client);
 }
@@ -299,6 +416,7 @@ export async function updateClient(
     address: blankToNull(input.address),
     notes: input.notes,
     followUpOn: input.followUpOn,
+    tags: input.tags === undefined ? undefined : normalizeTags(input.tags),
   };
   if (input.stage !== undefined && input.stage !== current.stage) {
     patch.stage = input.stage;

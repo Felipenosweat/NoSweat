@@ -1,47 +1,37 @@
 import type { Client, ClientActivity } from "@nosweat/schema";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
-import {
-  cardClass,
-  focusRing,
-  panelClass,
-  secondaryButton,
-  textButton,
-} from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
+import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
 import {
   STAGE_LABELS,
   dateKeyIn,
+  directionsHref,
   formatCents,
   formatDateOnly,
   isClientStage,
-  mapsHref,
   phoneHref,
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
+import { ClientMenu } from "../ClientMenu";
 import {
+  Avatar,
+  DirectionsIcon,
   JobIcon,
   MailIcon,
   NoteIcon,
   PhoneIcon,
-  PinIcon,
   StageBadge,
   StageIcon,
+  TagList,
   TextIcon,
   sectionTitle,
 } from "../ui";
 import { ActivityComposer } from "./ActivityComposer";
-import {
-  ContactDetails,
-  DeleteClientButton,
-  FollowUpForm,
-  PinnedNotes,
-  StagePicker,
-} from "./ClientControls";
+import { ContactDetails, FollowUpForm, PinnedNotes, StagePicker } from "./ClientControls";
 
 export const metadata: Metadata = { title: "Client", robots: { index: false } };
 
@@ -61,43 +51,84 @@ async function loadClient(ownerId: string, id: string) {
   return { today, detail, since };
 }
 
-// ---------- contato ----------
+// ---------- ações de um toque ----------
 
+type QuickAction = {
+  key: string;
+  label: string;
+  /** `null` = falta o dado (o botão aparece apagado, com o motivo). */
+  href: string | null;
+  missing: string;
+  icon: ReactNode;
+  external?: boolean;
+};
+
+const actionTile =
+  "flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[13px] leading-4 font-semibold [&>svg]:size-[22px]";
+
+/** Ligar, SMS, e-mail e rota: sempre os quatro no mesmo lugar (memória do dedo). */
 function QuickActions({ client }: { client: Client }) {
-  const actions: { key: string; href: string; label: string; icon: ReactNode }[] = [];
-  if (client.phone) {
-    const tel = phoneHref(client.phone);
-    actions.push({
+  const tel = client.phone ? phoneHref(client.phone) : null;
+  const actions: QuickAction[] = [
+    {
       key: "call",
-      href: `tel:${tel}`,
       label: "Call",
-      icon: <PhoneIcon className="size-4" />,
-    });
-    actions.push({
+      href: tel ? `tel:${tel}` : null,
+      missing: "No phone number",
+      icon: <PhoneIcon />,
+    },
+    {
       key: "text",
-      href: `sms:${tel}`,
       label: "Text",
-      icon: <TextIcon className="size-4" />,
-    });
-  }
-  if (client.email) {
-    actions.push({
+      href: tel ? `sms:${tel}` : null,
+      missing: "No phone number",
+      icon: <TextIcon />,
+    },
+    {
       key: "email",
-      href: `mailto:${client.email}`,
       label: "Email",
-      icon: <MailIcon className="size-4" />,
-    });
-  }
-  if (actions.length === 0) return null;
+      href: client.email ? `mailto:${client.email}` : null,
+      missing: "No email",
+      icon: <MailIcon />,
+    },
+    {
+      key: "directions",
+      label: "Directions",
+      href: client.address ? directionsHref(client.address) : null,
+      missing: "No address",
+      icon: <DirectionsIcon />,
+      external: true,
+    },
+  ];
   return (
-    <ul className="mt-4 flex flex-wrap gap-2">
+    <ul aria-label={`Contact ${client.name}`} className="mt-5 grid grid-cols-4 gap-2">
       {actions.map((action) => (
         <li key={action.key}>
-          <a href={action.href} className={secondaryButton}>
-            {action.icon}
-            {action.label}
-            <span className="sr-only"> {client.name}</span>
-          </a>
+          {action.href ? (
+            <a
+              href={action.href}
+              {...(action.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={cx(
+                actionTile,
+                "glass glass-interactive text-brand motion-safe:transition-[background-color,scale] motion-safe:active:scale-[0.97]",
+                focusRing,
+              )}
+            >
+              {action.icon}
+              <span className="text-(--glass-fg)">{action.label}</span>
+              {action.external && <span className="sr-only"> (opens Google Maps)</span>}
+            </a>
+          ) : (
+            <span
+              aria-disabled="true"
+              title={action.missing}
+              className={cx(actionTile, "glass glass-flat text-(--glass-fg-muted) opacity-55")}
+            >
+              {action.icon}
+              <span>{action.label}</span>
+              <span className="sr-only">: {action.missing.toLowerCase()}</span>
+            </span>
+          )}
         </li>
       ))}
     </ul>
@@ -106,29 +137,32 @@ function QuickActions({ client }: { client: Client }) {
 
 function ContactView({ client }: { client: Client }) {
   const rows: { label: string; value: ReactNode }[] = [
-    { label: "Phone", value: client.phone },
-    { label: "Email", value: client.email },
     {
-      label: "Address",
-      value: client.address ? (
-        <>
-          {client.address}
-          <a
-            href={mapsHref(client.address)}
-            target="_blank"
-            rel="noreferrer"
-            className={`mt-0.5 flex w-fit items-center gap-1.5 font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
-          >
-            <PinIcon className="size-4" />
-            Open in Google Maps
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
-        </>
+      label: "Mobile phone",
+      value: client.phone ? (
+        <a
+          href={`tel:${phoneHref(client.phone)}`}
+          className={`font-medium text-brand underline-offset-4 hover:underline ${focusRing}`}
+        >
+          {client.phone}
+        </a>
       ) : null,
     },
+    {
+      label: "Email",
+      value: client.email ? (
+        <a
+          href={`mailto:${client.email}`}
+          className={`font-medium break-all text-brand underline-offset-4 hover:underline ${focusRing}`}
+        >
+          {client.email}
+        </a>
+      ) : null,
+    },
+    { label: "Service address", value: client.address },
   ];
   return (
-    <dl className="mt-5 grid gap-3 border-t border-slate-200/70 pt-4 text-[15px] leading-6">
+    <dl className="mt-5 grid gap-3 border-t border-(--glass-rim) pt-4 text-[15px] leading-6">
       {rows.map((row) => (
         <div key={row.label}>
           <dt className="text-[13px] font-medium text-slate-500">{row.label}</dt>
@@ -165,17 +199,32 @@ const ACTIVITY_ICONS: Record<ClientActivity["kind"], (props: { className?: strin
     stage: StageIcon,
   };
 
-function TimelineItem({ activity }: { activity: ClientActivity }) {
+const ACTIVITY_TONES: Record<ClientActivity["kind"], string> = {
+  lead: "bg-brand/10 text-brand",
+  note: "bg-slate-500/10 text-slate-600",
+  job: "bg-emerald-500/10 text-emerald-700",
+  stage: "bg-amber-500/15 text-amber-700",
+};
+
+function TimelineItem({ activity, last }: { activity: ClientActivity; last: boolean }) {
   const Icon = ACTIVITY_ICONS[activity.kind];
   // Na mudança de etapa o texto já está no título.
   const body = activity.kind === "stage" ? "" : activity.body.trim();
   return (
-    <li className="flex gap-3 px-4 py-4 sm:px-5">
+    <li className="relative flex gap-3 px-4 py-4 sm:px-5">
+      {/* Linha do tempo ligando os ícones. */}
+      {!last && (
+        <span
+          aria-hidden="true"
+          className="absolute top-12 bottom-0 left-[2rem] w-px bg-(--glass-rim) sm:left-[2.25rem]"
+        />
+      )}
       <span
         aria-hidden="true"
-        className={`grid size-8 shrink-0 place-items-center rounded-full ${
-          activity.kind === "lead" ? "bg-brand/10 text-brand" : "bg-slate-100 text-slate-600"
-        }`}
+        className={cx(
+          "glass-edge relative grid size-8 shrink-0 place-items-center rounded-full",
+          ACTIVITY_TONES[activity.kind],
+        )}
       >
         <Icon className="size-4" />
       </span>
@@ -199,11 +248,40 @@ function TimelineItem({ activity }: { activity: ClientActivity }) {
   );
 }
 
+/** Números da ficha: serviços, total e último contato. */
+function ClientStats({ client }: { client: Client }) {
+  const stats: { label: string; value: ReactNode }[] = [
+    { label: "Jobs", value: client.jobsCount },
+    { label: "Total billed", value: formatCents(client.totalJobsCents) },
+    {
+      label: "Last contact",
+      value: <LocalTime iso={client.lastActivityAt} className="tabular-nums" />,
+    },
+  ];
+  return (
+    <dl className="grid grid-cols-3 gap-2 sm:gap-3">
+      {stats.map((stat) => (
+        <GlassCard key={stat.label} padding="sm" className="min-w-0">
+          <dt className="text-[13px] font-medium text-slate-500">{stat.label}</dt>
+          <dd
+            className={cx(
+              "mt-1 font-semibold break-words text-ink tabular-nums",
+              stat.label === "Last contact" ? "text-[13px] leading-5" : "text-lg leading-6",
+            )}
+          >
+            {stat.value}
+          </dd>
+        </GlassCard>
+      ))}
+    </dl>
+  );
+}
+
 export default async function ClientPage({ params }: ClientPageProps) {
   // Sempre na hora do request (dados do dono).
   await connection();
   const { id } = await params;
-  // No modo "ver como" do admin, o cliente da conta vista (só leitura: sem anotar nem apagar).
+  // No modo "ver como" do admin, o cliente da conta vista (só leitura: nada muda).
   const viewer = await getViewer();
   if (!viewer) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
   const readOnly = viewer.viewingAs !== null;
@@ -212,113 +290,126 @@ export default async function ClientPage({ params }: ClientPageProps) {
   if (!detail) notFound();
   const { client, activities } = detail;
 
-  const contactKey = [client.name, client.phone, client.email, client.address].join("|");
+  const contactKey = [client.name, client.phone, client.email, client.address, ...client.tags].join(
+    "|",
+  );
 
   return (
     <div>
-      <Link href="/clients" className={`${textButton} -ml-1`}>
+      <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2">
         <span aria-hidden="true">‹</span> Clients
-      </Link>
+      </GlassButton>
 
-      <div className="mt-3 grid items-start gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
-        {/* ---------- coluna da esquerda: contato, etapa, retorno e anotação ---------- */}
+      <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-8">
+        {/* ---------- coluna da esquerda: cartão de contato, etapa, retorno e anotação ---------- */}
         <div className="grid gap-4">
-          <section aria-labelledby="client-name" className={panelClass}>
-            {/* Como um cartão de contato: avatar com a inicial, nome grande e a etapa (no HTML o
-                nome vem antes da etapa; a grade põe a etapa no canto de cima). */}
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3">
-              <span
-                aria-hidden="true"
-                className="col-start-1 row-start-1 grid size-14 place-items-center rounded-full bg-slate-100 font-display text-xl font-semibold text-slate-600"
-              >
-                {client.name.trim().charAt(0).toUpperCase() || "?"}
-              </span>
-              <h1
-                id="client-name"
-                className="col-span-2 row-start-2 mt-4 min-w-0 font-display text-2xl leading-tight font-bold tracking-[-0.02em] break-words text-ink"
-              >
-                {client.name}
-              </h1>
-              <span className="col-start-2 row-start-1">
+          <GlassCard as="section" aria-labelledby="client-name">
+            <div className="flex items-start justify-between gap-3">
+              <Avatar name={client.name} size="lg" />
+              <div className="flex items-center gap-1">
                 <StageBadge stage={client.stage} />
-              </span>
+                <ClientMenu
+                  context="detail"
+                  readOnly={readOnly}
+                  client={{
+                    id: client.id,
+                    name: client.name,
+                    phone: client.phone,
+                    email: client.email,
+                    address: client.address,
+                    stage: client.stage,
+                  }}
+                />
+              </div>
             </div>
+            <h1
+              id="client-name"
+              className="mt-4 min-w-0 font-display text-2xl leading-tight font-bold tracking-[-0.02em] break-words text-ink"
+            >
+              {client.name}
+            </h1>
             <p className="mt-1 text-[13px] text-slate-500">
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>
+            <TagList tags={client.tags} className="mt-3" />
             <QuickActions client={client} />
             <ContactDetails
               key={contactKey}
+              readOnly={readOnly}
               client={{
                 id: client.id,
                 name: client.name,
                 phone: client.phone,
                 email: client.email,
                 address: client.address,
+                tags: client.tags,
               }}
             >
               <ContactView client={client} />
             </ContactDetails>
-          </section>
+          </GlassCard>
 
-          <section aria-label="Stage and follow-up" className={`${panelClass} grid gap-5`}>
-            <StagePicker key={client.stage} clientId={client.id} stage={client.stage} />
+          <GlassCard as="section" aria-label="Stage and follow-up" className="grid gap-6">
+            <StagePicker
+              key={client.stage}
+              clientId={client.id}
+              stage={client.stage}
+              readOnly={readOnly}
+            />
             <FollowUpForm
               key={client.followUpOn ?? "none"}
               clientId={client.id}
               followUpOn={client.followUpOn}
               today={today}
+              readOnly={readOnly}
             />
-          </section>
+          </GlassCard>
 
-          <section aria-label="Pinned notes" className={panelClass}>
-            <PinnedNotes key={client.notes} clientId={client.id} notes={client.notes} />
-          </section>
+          <GlassCard as="section" aria-label="Pinned notes">
+            <PinnedNotes
+              key={client.notes}
+              clientId={client.id}
+              notes={client.notes}
+              readOnly={readOnly}
+            />
+          </GlassCard>
         </div>
 
-        {/* ---------- coluna da direita: histórico ---------- */}
-        <section aria-labelledby="history-heading" className="min-w-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        {/* ---------- coluna da direita: números, registrar e histórico ---------- */}
+        <section aria-labelledby="history-heading" className="grid min-w-0 gap-4">
+          <ClientStats client={client} />
+
+          {!readOnly && <ActivityComposer clientId={client.id} />}
+
+          <div>
             <h2 id="history-heading" className={sectionTitle}>
-              History
+              Activity
             </h2>
-            {client.jobsCount > 0 && (
-              <p className="text-[15px] text-slate-600 tabular-nums">
-                <span className="font-semibold text-ink">
-                  {client.jobsCount} {client.jobsCount === 1 ? "job" : "jobs"}
-                </span>
-                {client.totalJobsCents > 0 && <> · {formatCents(client.totalJobsCents)}</>}
-              </p>
+            {activities.length === 0 ? (
+              <EmptyState
+                className="mt-3"
+                headingLevel={3}
+                icon={<NoteIcon />}
+                title="No activity yet"
+                description="Add a note after you talk to them, or log a job when it’s done. Stage changes show up here too."
+              />
+            ) : (
+              <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">
+                <ol>
+                  {activities.map((activity, index) => (
+                    <TimelineItem
+                      key={activity.id}
+                      activity={activity}
+                      last={index === activities.length - 1}
+                    />
+                  ))}
+                </ol>
+              </GlassCard>
             )}
           </div>
-
-          {!readOnly && (
-            <div className="mt-3">
-              <ActivityComposer clientId={client.id} />
-            </div>
-          )}
-
-          {activities.length === 0 ? (
-            <p className={`mt-4 px-4 py-6 text-[15px] text-slate-600 sm:px-5 ${cardClass}`}>
-              Nothing here yet. Add a note after you talk to them, or log a job when it&rsquo;s
-              done.
-            </p>
-          ) : (
-            <ol className={`mt-4 divide-y divide-slate-200/70 overflow-hidden ${cardClass}`}>
-              {activities.map((activity) => (
-                <TimelineItem key={activity.id} activity={activity} />
-              ))}
-            </ol>
-          )}
         </section>
       </div>
-
-      {!readOnly && (
-        <div className="mt-12 border-t border-slate-200/70 pt-6">
-          <DeleteClientButton clientId={client.id} name={client.name} />
-        </div>
-      )}
     </div>
   );
 }

@@ -129,7 +129,9 @@ Como as peças se ligam:
   sites do dono em cliente, juntando pelo e-mail (minúsculas) ou telefone (só dígitos); cada pedido
   entra uma vez só (índice único em `client_activities.lead_id`). Histórico: pedidos, notas,
   serviços (somados em `total_jobs_cents`) e mudanças de etapa. Cliente apagado deixa os pedidos
-  em `client_dismissed_leads` para não voltar no próximo sync.
+  em `client_dismissed_leads` para não voltar no próximo sync. Etiquetas (`tags`, migration
+  0021, até 10), quadro por etapa, resumo do mês e exportação CSV (`GET /api/clients/export`,
+  só os clientes do dono).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

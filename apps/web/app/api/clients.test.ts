@@ -17,6 +17,7 @@ import {
   GET as getClient,
   PATCH as patchClient,
 } from "./clients/[id]/route";
+import { GET as exportRoute } from "./clients/export/route";
 import { GET as listRoute, POST as createRoute } from "./clients/route";
 
 // Sem Supabase: o usuário é o DEV_USER e tudo roda em memória. Os sites e pedidos (server/store)
@@ -243,5 +244,60 @@ describe("/api/clients", () => {
     const newClients = await listClients(DEV_USER.id, { stage: "new" });
     expect(summary.newCount).toBe(newClients.length);
     expect(newClients.some((c) => c.id === future.id)).toBe(true);
+  });
+  it("creates with tags and a follow-up date, and edits tags", async () => {
+    const kim = await create({
+      name: "Kim Tags",
+      phone: "512-555-0144",
+      tags: ["VIP", " vip ", "Referral"],
+      followUpOn: "2026-11-02",
+    });
+    expect(kim.tags).toEqual(["VIP", "Referral"]);
+    expect(kim.followUpOn).toBe("2026-11-02");
+    expect((await list("?q=referral")).map((c) => c.id)).toEqual([kim.id]);
+
+    const res = await patchClient(
+      jsonRequest(`/${kim.id}`, "PATCH", { tags: ["Commercial"] }),
+      ctx(kim.id),
+    );
+    expect(res.status).toBe(200);
+    expect(ClientResponse.parse(await res.json()).client.tags).toEqual(["Commercial"]);
+
+    const tooLong = await patchClient(
+      jsonRequest(`/${kim.id}`, "PATCH", { tags: ["x".repeat(31)] }),
+      ctx(kim.id),
+    );
+    expect(tooLong.status).toBe(400);
+  });
+
+  it("exports the owner's clients as CSV, filtered like the list", async () => {
+    const lia = await create({ name: "Lia Export", email: "lia@export.test", stage: "won" });
+    await create({ name: "Max Export", email: "max@export.test", stage: "new" });
+    const other = await getClientStore().insertClient({
+      ownerId: "someone-else",
+      name: "Hidden Export",
+      email: "hidden@export.test",
+      phone: null,
+      address: null,
+      stage: "won",
+      source: "manual",
+      siteId: null,
+      notes: "",
+      followUpOn: null,
+    });
+
+    const res = await exportRoute(new Request(`${BASE}/export?q=export&stage=won`));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/csv");
+    expect(res.headers.get("content-disposition")).toMatch(
+      /^attachment; filename="clients-\d{4}-\d{2}-\d{2}\.csv"$/,
+    );
+    const csv = await res.text();
+    expect(csv).toContain(lia.name);
+    expect(csv).not.toContain("Max Export");
+    expect(csv).not.toContain(other.name);
+
+    const bad = await exportRoute(new Request(`${BASE}/export?stage=nope`));
+    expect(bad.status).toBe(400);
   });
 });

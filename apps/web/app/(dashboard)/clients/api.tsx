@@ -84,7 +84,10 @@ export function ErrorNote({
   className?: string;
 }) {
   return (
-    <p role="alert" className={`rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ${className}`}>
+    <p
+      role="alert"
+      className={`glass-edge rounded-xl bg-red-50/90 px-3 py-2 text-sm text-red-700 ${className}`}
+    >
       {error.message}
       {error.code === "payment_required" && (
         <>

@@ -307,7 +307,11 @@ export class SupabaseClientStore implements ClientStore {
     );
   }
 
-  async listActivitiesSince(ownerId: string, sinceIso: string, kinds: readonly ClientActivityKind[]) {
+  async listActivitiesSince(
+    ownerId: string,
+    sinceIso: string,
+    kinds: readonly ClientActivityKind[],
+  ) {
     if (!isUuid(ownerId) || kinds.length === 0 || Number.isNaN(Date.parse(sinceIso))) return [];
     const since = encodeURIComponent(new Date(sinceIso).toISOString());
     const all: ClientActivityRecord[] = [];
@@ -455,13 +459,16 @@ export class MemoryClientStore implements ClientStore {
       .sort(byOccurredDesc);
   }
 
-  async listActivitiesSince(ownerId: string, sinceIso: string, kinds: readonly ClientActivityKind[]) {
+  async listActivitiesSince(
+    ownerId: string,
+    sinceIso: string,
+    kinds: readonly ClientActivityKind[],
+  ) {
     const since = Date.parse(sinceIso);
     if (Number.isNaN(since)) return [];
     return [...this.state.activities.values()]
       .filter(
-        (a) =>
-          a.ownerId === ownerId && kinds.includes(a.kind) && Date.parse(a.occurredAt) >= since,
+        (a) => a.ownerId === ownerId && kinds.includes(a.kind) && Date.parse(a.occurredAt) >= since,
       )
       .map((a) => ({ ...a }))
       .sort(byOccurredDesc);

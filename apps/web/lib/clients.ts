@@ -1,4 +1,4 @@
-import type { ClientStage } from "@nosweat/schema";
+import type { Client, ClientStage } from "@nosweat/schema";
 
 // Peças puras do módulo de clientes (sem React e sem servidor): rótulos das etapas, datas sem
 // hora e dinheiro. Servem para server e client components.
@@ -94,4 +94,63 @@ export function phoneHref(phone: string): string {
 /** Link de busca do Google Maps para um endereço. */
 export function mapsHref(address: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
+// ---------- ordem da lista ----------
+
+/** Ordens da lista de clientes (`?sort=` na URL). */
+export const CLIENT_SORTS = ["recent", "name", "value"] as const;
+export type ClientSort = (typeof CLIENT_SORTS)[number];
+
+export const SORT_LABELS: Record<ClientSort, string> = {
+  recent: "Recent activity",
+  name: "Name (A–Z)",
+  value: "Highest value",
+};
+
+export function isClientSort(value: string): value is ClientSort {
+  return (CLIENT_SORTS as readonly string[]).includes(value);
+}
+
+type Sortable = Pick<Client, "id" | "name" | "lastActivityAt" | "totalJobsCents">;
+
+const byRecent = (a: Sortable, b: Sortable) =>
+  Date.parse(b.lastActivityAt) - Date.parse(a.lastActivityAt) || a.id.localeCompare(b.id);
+
+/**
+ * Nova lista na ordem pedida: "recent" = último contato primeiro; "name" = A–Z sem diferença de
+ * maiúsculas e acentos; "value" = maior soma de serviços primeiro (empate: último contato).
+ */
+export function sortClients<T extends Sortable>(clients: readonly T[], sort: ClientSort): T[] {
+  const list = [...clients];
+  if (sort === "name") {
+    return list.sort(
+      (a, b) => a.name.localeCompare(b.name, "en-US", { sensitivity: "base" }) || byRecent(a, b),
+    );
+  }
+  if (sort === "value") {
+    return list.sort((a, b) => b.totalJobsCents - a.totalJobsCents || byRecent(a, b));
+  }
+  return list.sort(byRecent);
+}
+
+/** Letras do avatar: iniciais do primeiro e do último nome ("Ana Lima" → "AL"). */
+export function initialsOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const first = words[0]?.charAt(0) ?? "";
+  const last = words.length > 1 ? (words[words.length - 1]?.charAt(0) ?? "") : "";
+  return (first + last).toUpperCase() || "?";
+}
+
+/** Link do Google Maps com a rota até o endereço (abre o app de mapas no celular). */
+export function directionsHref(address: string): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+}
+
+/** Texto das etiquetas digitado com vírgulas → lista (a limpeza final é do servidor). */
+export function parseTagsInput(input: string): string[] {
+  return input
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
 }
