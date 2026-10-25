@@ -203,3 +203,224 @@
 .ns-site[data-buttons="line"] .ns-btn-secondary {
   border-bottom-color: color-mix(in srgb, currentColor 40%, transparent);
 }
+
+/* ------------------------------------------------------------------------------------------
+   Molde SIGNATURE (compositions/Signature.tsx): padrão de site premiado aprovado pelo dono.
+   Tudo aqui funciona sem JavaScript; Motion.tsx só acrescenta o movimento da rolagem. */
+
+/* Vidro líquido (menu e botão de agendar): translúcido, com brilho na borda. */
+.ns-site .ns-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ns-background) 70%, transparent),
+    color-mix(in srgb, var(--ns-background) 42%, transparent)
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--ns-background) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--ns-background) 25%, transparent),
+    0 12px 40px color-mix(in srgb, var(--ns-text) 18%, transparent);
+}
+.ns-site .ns-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 80% at 20% 0%,
+    color-mix(in srgb, var(--ns-background) 55%, transparent),
+    transparent 45%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.ns-site .ns-underline {
+  position: relative;
+}
+.ns-site .ns-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.7rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.ns-site .ns-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Véus das fotos (texto claro legível sobre qualquer foto). */
+.ns-site .ns-hero-veil {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ns-text) 40%, transparent) 0%,
+    color-mix(in srgb, var(--ns-text) 5%, transparent) 35%,
+    color-mix(in srgb, var(--ns-text) 18%, transparent) 60%,
+    color-mix(in srgb, var(--ns-text) 78%, transparent) 100%
+  );
+}
+.ns-site .ns-booking-veil {
+  background: color-mix(in srgb, var(--ns-text) 58%, transparent);
+}
+
+/* Lista de serviços: linha que se desenha ao passar o mouse; foto que segue o mouse. */
+.ns-site .ns-row {
+  position: relative;
+}
+.ns-site .ns-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.ns-site .ns-row:hover::before {
+  transform: scaleX(1);
+}
+.ns-site .ns-float {
+  will-change: transform;
+}
+.ns-site .ns-float .ns-float-inner {
+  translate: -50% -50%;
+  opacity: 0;
+  scale: 0.85;
+  transition:
+    opacity 0.35s,
+    scale 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.ns-site .ns-float[data-show] .ns-float-inner {
+  opacity: 1;
+  scale: 1;
+}
+.ns-site .ns-float [data-ns-float-img] {
+  transition: opacity 0.4s;
+}
+
+/* Galeria que corre de lado: a seção é alta e a faixa fica presa enquanto a rolagem passa. */
+.ns-site .ns-hscroll {
+  height: 300vh;
+}
+.ns-site .ns-hscroll-sticky {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Depoimentos: com o movimento ligado, um de cada vez trocando devagar. */
+.ns-site .ns-quotes[data-rotating] {
+  display: grid;
+}
+.ns-site .ns-quotes[data-rotating] .ns-quote {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+}
+.ns-site .ns-quotes[data-rotating] .ns-quote[data-on] {
+  opacity: 1;
+}
+.ns-site .ns-quotes:not([data-rotating]) .ns-quote + .ns-quote {
+  margin-top: 4rem;
+}
+
+/* Abertura: o nome sobe letra por letra, sai, e a cortina sobe. Só CSS e só na primeira tela
+   do site publicado; some sozinha mesmo sem JavaScript. */
+.ns-site .ns-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: ns-intro-out 1.1s cubic-bezier(0.87, 0, 0.13, 1) 1.6s both;
+}
+.ns-site .ns-intro-word {
+  display: flex;
+  overflow: hidden;
+}
+.ns-site .ns-intro-word span {
+  display: inline-block;
+  white-space: pre;
+  animation:
+    ns-intro-in 1s cubic-bezier(0.19, 1, 0.22, 1) both,
+    ns-intro-leave 0.7s cubic-bezier(0.7, 0, 0.84, 0) 1.2s forwards;
+}
+@keyframes ns-intro-in {
+  from {
+    transform: translateY(105%);
+  }
+}
+@keyframes ns-intro-leave {
+  to {
+    transform: translateY(-105%);
+  }
+}
+@keyframes ns-intro-out {
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+/* O topo entra depois da cortina. */
+.ns-site .ns-hero[data-intro] .ns-hero-line > span {
+  animation: ns-line-in 1.4s cubic-bezier(0.19, 1, 0.22, 1) 2s both;
+}
+.ns-site .ns-hero[data-intro] .ns-hero-line + .ns-hero-line > span {
+  animation-delay: 2.12s;
+}
+.ns-site .ns-hero[data-intro] .ns-hero-fade {
+  animation: ns-fade-up 1s cubic-bezier(0.19, 1, 0.22, 1) 2.35s both;
+}
+.ns-site .ns-hero[data-intro] .ns-hero-zoom img {
+  animation-delay: 1.8s;
+}
+.ns-site .ns-nav {
+  animation: ns-nav-in 1.2s cubic-bezier(0.19, 1, 0.22, 1) 2.2s both;
+}
+@keyframes ns-line-in {
+  from {
+    transform: translateY(110%);
+  }
+}
+@keyframes ns-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes ns-nav-in {
+  from {
+    transform: translateY(-140%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ns-site .ns-intro {
+    display: none;
+  }
+  .ns-site .ns-hero[data-intro] :is(.ns-hero-line > span, .ns-hero-fade),
+  .ns-site .ns-nav {
+    animation: none;
+  }
+}
+/* No editor e nas miniaturas nada se mexe. */
+.ns-site[data-editable] .ns-nav {
+  animation: none;
+  position: absolute;
+}
