@@ -8,6 +8,12 @@ import type { GalleryVariant } from "./sections/Gallery";
 import { FONT_CSS_VARIABLES, FONT_PAIRS } from "./fonts";
 import { readableTextOn, themeToCssVars } from "./theme";
 
+/** O modelo sem a galeria de fotos do Unsplash (os testes montam a galeria que precisam). */
+const withoutGallery = (spec: SiteSpec): SiteSpec => ({
+  ...spec,
+  sections: spec.sections.filter((section) => section.type !== "gallery"),
+});
+
 describe("SiteRenderer", () => {
   it.each(Object.entries(fixtures))("renders %s without errors", (_slug, spec) => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
@@ -34,7 +40,7 @@ describe("SiteRenderer", () => {
 });
 
 describe("honest by default", () => {
-  const base = fixtures["joes-plumbing"];
+  const base = withoutGallery(fixtures["joes-plumbing"]);
 
   it.each(Composition.options)(
     "shows no trust badges unless the owner confirmed them (%s)",
@@ -76,7 +82,7 @@ describe("readableTextOn", () => {
 });
 
 describe("photos", () => {
-  const base = fixtures["joes-plumbing"];
+  const base = withoutGallery(fixtures["joes-plumbing"]);
   const scene: SiteImage = {
     url: "https://images.pexels.com/photos/123/pexels-photo-123.jpeg",
     alt: "Plumber's tools on a kitchen counter",
@@ -230,7 +236,7 @@ describe("fonts", () => {
 });
 
 describe("compositions", () => {
-  const plumbing = fixtures["joes-plumbing"];
+  const plumbing = withoutGallery(fixtures["joes-plumbing"]);
 
   it("keeps the old layout for sites without a design plan", () => {
     const old: SiteSpec = { ...plumbing, design: undefined };
