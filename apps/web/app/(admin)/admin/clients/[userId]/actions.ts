@@ -16,6 +16,7 @@ import {
   sendAccessEmail,
   simpleHtml,
 } from "@/server/notify/access-email";
+import { adminAdjustCredits } from "@/server/credits";
 import { getSocialStore } from "@/server/social/store";
 
 // Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp),
@@ -236,4 +237,46 @@ export async function setLoginDisabledAction(
       ? "Login disabled. They can't log in anymore (an open session ends within an hour)."
       : "Login re-enabled. They can log in again.",
   };
+}
+
+const CreditForm = z.object({
+  delta: z.coerce
+    .number()
+    .int()
+    .min(-100_000)
+    .max(100_000)
+    .refine((value) => value !== 0),
+  note: z.string().trim().max(200).optional(),
+});
+
+/**
+ * Ajusta os créditos da IA da conta (bônus, cortesia, compra por Pix): positivo soma créditos
+ * comprados (não vencem), negativo tira (nunca abaixo de zero; ver adminAdjustCredits).
+ */
+export async function adjustCreditsAction(
+  userId: string,
+  _prev: GrantAccessState,
+  formData: FormData,
+): Promise<GrantAccessState> {
+  const admin = await requireClient(userId);
+  const parsed = CreditForm.safeParse({
+    delta: formData.get("delta"),
+    note: formData.get("note") || undefined,
+  });
+  if (!parsed.success) {
+    return { ok: false, message: "Enter a whole number of credits other than 0 (use - to remove)." };
+  }
+  const { delta, note } = parsed.data;
+  try {
+    const balance = await adminAdjustCredits(userId, delta, note ?? null, admin.id);
+    console.info(`[admin] ${admin.id} adjusted credits for ${userId} by ${delta}`);
+    refresh(userId);
+    return {
+      ok: true,
+      message: `${delta > 0 ? `Added ${delta}` : `Removed up to ${-delta}`} credits. Balance: ${balance.total} (${balance.monthlyLeft} monthly + ${balance.topup} purchased).`,
+    };
+  } catch (error) {
+    console.error("[admin] could not adjust credits", error);
+    return { ok: false, message: "We couldn't adjust the credits. Try again." };
+  }
 }

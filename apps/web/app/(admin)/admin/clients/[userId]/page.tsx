@@ -25,15 +25,17 @@ import {
 import { loadAccountActivity, type UsageByKind } from "@/server/admin/metrics";
 import { billingEnforced, getGrantStore, isActiveStatus, isGrantActive } from "@/server/billing";
 import { getBillingStore } from "@/server/billing/store";
+import { getBalance } from "@/server/credits";
 import { getSocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
 import { SitesTable } from "../../SitesTable";
 import { toSiteRow } from "../../site-rows";
 import { AccessPanel } from "./AccessPanel";
+import { CreditsPanel } from "./CreditsPanel";
 import { DeleteTestAccount } from "./DeleteTestAccount";
 import { LoginAccessPanel } from "./LoginAccessPanel";
 import { SocialPanel } from "./SocialPanel";
-import { setLoginDisabledAction, startViewAs } from "./actions";
+import { adjustCreditsAction, setLoginDisabledAction, startViewAs } from "./actions";
 
 export const metadata: Metadata = { title: "Account" };
 
@@ -56,6 +58,7 @@ async function loadAccountPage(userId: string) {
     socialPosts,
     targetIsAdmin,
     activity,
+    credits,
   ] = await Promise.all([
     getSiteStore().list(account.id),
     getGrantStore().get(account.id),
@@ -66,6 +69,11 @@ async function loadAccountPage(userId: string) {
     social.listPosts(account.id, "2000-01-01T00:00:00.000Z", "2100-01-01T00:00:00.000Z"),
     isAdmin(account.id),
     loadAccountActivity(account.id),
+    // Saldo de créditos: um erro (ex.: migration 0019 ainda não rodou) não derruba a página.
+    getBalance({ id: account.id }).catch((error: unknown) => {
+      console.error("[admin] could not load the credit balance", error);
+      return null;
+    }),
   ]);
   const postCounts: Partial<Record<SocialPostStatus, number>> = {};
   for (const post of socialPosts) postCounts[post.status] = (postCounts[post.status] ?? 0) + 1;
@@ -79,6 +87,7 @@ async function loadAccountPage(userId: string) {
     postCounts,
     targetIsAdmin,
     activity,
+    credits,
   };
 }
 
@@ -144,7 +153,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const data = await loadAccountPage(userId);
   if (!data) notFound();
   const { account, sites, grant, subscription, socialAccount, socialSettings, postCounts } = data;
-  const { targetIsAdmin, activity } = data;
+  const { targetIsAdmin, activity, credits } = data;
   // Registro de que um admin abriu os dados sociais da conta (sem detalhes sensíveis).
   await getSocialStore().logEvent({
     ownerId: account.id,
@@ -254,6 +263,8 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
       </section>
 
       <AiUsagePanel usage={activity.ai30d} />
+
+      <CreditsPanel balance={credits} action={adjustCreditsAction.bind(null, account.id)} />
 
       {/* Os dois painéis já trazem a margem de cima (mt-6); o primeiro dispensa, por causa do gap. */}
       <div className="[&>section:first-child]:mt-0">
