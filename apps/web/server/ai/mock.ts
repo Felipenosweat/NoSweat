@@ -2,6 +2,7 @@ import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import type { AiEditResult, SiteSpec, TemplateId } from "@nosweat/schema";
 import type { DesignPlan } from "../design";
 import { applyModelFill, verifyFacts, type ModelFill } from "./model-fill";
+import { modelFor, templateFor } from "./models";
 import type { SiteGenerator } from "./types";
 
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
@@ -159,7 +160,7 @@ function nameFromBrief(brief: string): string | undefined {
  * genéricos da categoria, nomes de serviço do modelo e fatos tirados do texto com expressões
  * simples. Passa pelo mesmo applyModelFill da IA de verdade.
  */
-export function mockFill(brief: string, model: SiteSpec, slug: FixtureSlug): ModelFill {
+export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): ModelFill {
   const copy = MOCK_COPY[model.template];
   const services = model.sections.flatMap((s) => (s.type === "services" ? s.items : []));
   const place = /\b([A-Z][a-z]+(?: [A-Z][a-z]+)*),\s([A-Z]{2})\b/.exec(brief);
@@ -168,7 +169,7 @@ export function mockFill(brief: string, model: SiteSpec, slug: FixtureSlug): Mod
   const testimonials = [...brief.matchAll(/"([^"]{10,300})"\s*\(([^)]{2,60})\)/g)].flatMap((m) =>
     m[1] && m[2] ? [{ quote: m[1], author: m[2] }] : [],
   );
-  const imageQuery = IMAGE_QUERIES[slug];
+  const imageQuery = slug ? IMAGE_QUERIES[slug] : undefined;
   const name = nameFromBrief(brief);
   const city = place?.[1];
   return {
@@ -201,30 +202,43 @@ export function selectFixture(brief: string): FixtureSlug {
   return RULES.find((rule) => rule.keywords.some((k) => text.includes(k)))?.slug ?? DEFAULT_SLUG;
 }
 
-/** Gerador falso: devolve uma fixture depois de um atraso, para simular a IA. Não usa rede nem chave. */
+/**
+ * Gerador sem IA (não usa rede nem chave).
+ * - Dev e testes: parte das 6 fixtures originais, com um atraso para simular a IA.
+ * - `templateMode` (produção sem chave de IA): parte do site-modelo mais parecido da biblioteca
+ *   inteira (server/ai/models.ts), e mudanças pela IA avisam que a IA ainda não está ligada.
+ */
 export class MockGenerator implements SiteGenerator {
-  constructor(private readonly options: { delayMs?: number } = {}) {}
+  constructor(private readonly options: { delayMs?: number; templateMode?: boolean } = {}) {}
 
   /**
-   * Como a geração a partir do modelo: parte da fixture da categoria e junta um ModelFill de
-   * mentira (mockFill) com applyModelFill, que apaga os fatos do modelo.
+   * Como a geração a partir do modelo: parte do site-modelo e junta um ModelFill de mentira
+   * (mockFill) com applyModelFill, que apaga os fatos do modelo.
    */
   async generateSite(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
+    if (this.options.templateMode) {
+      const template = templateFor(brief);
+      if (template) {
+        const model = modelFor(template, brief, plan);
+        const fill = mockFill(brief, model);
+        return applyModelFill(model, fill, plan, verifyFacts(fill.business, brief));
+      }
+    }
     const slug = selectFixture(brief);
     const model = fixtures[slug];
     const fill = mockFill(brief, model, slug);
     return applyModelFill(model, fill, plan, verifyFacts(fill.business, brief));
   }
 
-  /** O mock não entende pedidos: devolve o site igual, explicando como ligar a IA de verdade. */
+  /** Sem IA: devolve o site igual, explicando o que fazer. */
   async editSite(spec: SiteSpec, instruction: string): Promise<AiEditResult> {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
-    return {
-      spec: structuredClone(spec),
-      summary: `Demo mode: nothing was changed for "${instruction.slice(0, 80)}". Set AI_PROVIDER=anthropic to let the AI edit your site.`,
-    };
+    const summary = this.options.templateMode
+      ? "AI changes aren't switched on yet, so nothing was changed. You can edit every text, color and photo yourself in the Edit tab."
+      : `Demo mode: nothing was changed for "${instruction.slice(0, 80)}". Set AI_PROVIDER=anthropic to let the AI edit your site.`;
+    return { spec: structuredClone(spec), summary };
   }
 }
