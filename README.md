@@ -63,14 +63,14 @@ nosweat/
 
 ### API
 
-| Rota                                      | Entrada     | Saída                      |
-| ----------------------------------------- | ----------- | -------------------------- |
-| `POST /api/sites/generate`                | `{ brief }` | `{ siteId, spec }`         |
-| `GET /api/sites/[id]`                     |             | `{ siteId, spec, status }` |
-| `PATCH /api/sites/[id]`                   | `{ spec }`  | `{ siteId, spec }`         |
-| `POST /api/sites/[id]/regenerate-section` |             | 501 `not_implemented`      |
-| `POST /api/sites/[id]/publish`            |             | 501 `not_implemented`      |
-| `GET /api/me/credits`                     |             | `{ remaining, plan }`      |
+| Rota                                      | Entrada     | Saída                          |
+| ----------------------------------------- | ----------- | ------------------------------ |
+| `POST /api/sites/generate`                | `{ brief }` | `{ siteId, spec }`             |
+| `GET /api/sites/[id]`                     |             | `{ siteId, spec, status }`     |
+| `PATCH /api/sites/[id]`                   | `{ spec }`  | `{ siteId, spec }`             |
+| `POST /api/sites/[id]/regenerate-section` |             | 501 `not_implemented`          |
+| `POST /api/sites/[id]/publish`            |             | 501 `not_implemented`          |
+| `GET /api/me/credits`                     |             | `{ remaining, plan, credits }` |
 
 Todo erro sai como `{ "error": { "code": "...", "message": "..." } }`.
 Os schemas de entrada e saída estão em `packages/schema/src/api.ts`.

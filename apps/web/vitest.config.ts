@@ -17,6 +17,9 @@ export default defineConfig({
       AI_DAILY_EDITS: "1000",
       AI_DAILY_SOCIAL_PLANS: "1000",
       AI_DAILY_SOCIAL_CAPTIONS: "1000",
+      // Cota de créditos alta para a conta sem plano (DEV_USER); os testes de créditos usam
+      // contas próprias e baixam o valor quando precisam.
+      CREDITS_MONTHLY_NO_PLAN: "1000000",
     },
   },
 });

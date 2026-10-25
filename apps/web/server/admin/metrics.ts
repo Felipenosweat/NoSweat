@@ -7,6 +7,7 @@ import { getSocialStore } from "../social/store";
 import { getSiteStore, type AiUsageKind, type SiteRecord } from "../store";
 import { AI_USAGE_KINDS } from "./costs";
 import { listAdminIds, listClients, type ClientAccount } from "./index";
+import { countLeadsBySite } from "./leads";
 
 // Números do painel do admin. Tudo vem do banco (nada estimado, menos o custo da IA, que é
 // calculado em costs.ts). Uma leitura que falha vira `null` ("—" na tela) sem derrubar a página.
@@ -101,6 +102,10 @@ export type Overview = {
   adminIds: Set<string>;
   sites: SiteRecord[];
   grants: AccessGrant[];
+  /** Assinaturas do Stripe de todas as contas (`null` = erro ao ler). */
+  subscriptions: SubscriptionRecord[] | null;
+  /** Pedidos do formulário por site, desde sempre (`null` = erro ao ler). Só contagem. */
+  leadsBySite: Map<string, number> | null;
   /** Mensagens do formulário de todos os sites nos últimos 7 dias. */
   leads7d: number | null;
   /** Usos da IA de todo mundo (contas e visitantes). */
@@ -115,6 +120,8 @@ export type Overview = {
   ownersWithAccess: Set<string> | null;
   /** Os planos valem (Stripe ou REQUIRE_PLAN): site de dono sem plano está fora do ar. */
   enforced: boolean;
+  /** Relógio usado na leitura (a página usa o mesmo, fora do componente). */
+  now: Date;
 };
 
 /** Tudo o que a página /admin mostra, lido de uma vez (fora do componente: usa o relógio). */
@@ -136,11 +143,16 @@ export async function loadOverview(): Promise<Overview> {
       orNull("AI usage (30 days)", usageSince(since(30), count)),
     ]);
 
+  // Depende da lista de sites (no store em memória conta site por site).
+  const leadsBySite = await orNull("leads by site", countLeadsBySite(sites));
+
   return {
     accounts,
     adminIds,
     sites,
     grants,
+    subscriptions,
+    leadsBySite,
     leads7d,
     ai24h,
     ai30d,
@@ -150,6 +162,7 @@ export async function loadOverview(): Promise<Overview> {
       ? ownersWithActivePlan(subscriptions, grants, adminIds, now)
       : null,
     enforced: billingEnforced(),
+    now,
   };
 }
 

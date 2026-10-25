@@ -26,6 +26,7 @@ function account(overrides: Partial<ClientAccount> = {}): ClientAccount {
     firstName: "Test",
     lastName: "Client 1",
     testAccount: true,
+    bannedUntil: null,
     ...overrides,
   };
 }

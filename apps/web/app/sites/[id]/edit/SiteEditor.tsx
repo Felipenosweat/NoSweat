@@ -22,9 +22,10 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import { ModelResponse } from "@/lib/model-studio";
 import { makeSlug } from "@/lib/slug";
 import { PublishDialog, type PublishState } from "../PublishDialog";
-import { AskAiPanel, type ChatMessage } from "./AskAiPanel";
+import { AskAiPanel, type AiCredits, type ChatMessage } from "./AskAiPanel";
 import { CanvasFrame, DESKTOP_QUERY, useMediaQuery, type Device } from "./CanvasFrame";
 import {
   clean,
@@ -96,6 +97,7 @@ const PANEL_WIDTH = "lg:w-[380px]";
 
 const OUT_OF_EDITS = "You’ve used today’s AI changes. More tomorrow.";
 const GUEST_OUT_OF_EDITS = "You’ve used the free AI changes. Create a free account to keep going.";
+const OUT_OF_CREDITS = "You’re out of AI credits. Get more in Plans and billing.";
 const OFFLINE = "We couldn't reach our servers. Please try again.";
 const CONFLICT =
   "This site was changed in another tab or device. Reload to get the latest version.";
@@ -123,6 +125,24 @@ type SaveOptions = { quiet?: boolean; notify?: boolean };
 /** Omit que preserva cada variante de uma união (o Omit direto junta tudo numa só). */
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
+/**
+ * Modo "modelo" (estúdio de modelos, /admin/models/[slug]/edit): o mesmo editor, mas salva e
+ * pede mudanças à IA nas rotas do modelo (/api/admin/models/[slug]), sem publicar nem domínio;
+ * no lugar de "Publish" fica "Approve model". `siteId` recebe o slug do modelo.
+ */
+export type ModelEditorMode = {
+  /** Status salvo do modelo ao abrir o editor. */
+  status: "draft" | "approved";
+  /** Base da API do modelo: PATCH salva, POST `/ai-edit` e POST `/status`. */
+  apiUrl: string;
+  /** Prévia ao vivo (iframe) do modelo. */
+  canvasUrl: string;
+  /** Prévia da versão salva, em nova aba. */
+  previewUrl: string;
+  /** Volta para a lista de modelos. */
+  backHref: string;
+};
+
 /** Aviso flutuante; `undo` mostra o botão "Undo" (mudança da IA, seção removida). */
 type Toast = { id: number; kind: "ok" | "error"; text: string; undo?: () => void };
 
@@ -137,9 +157,11 @@ export function SiteEditor({
   updatedAt: initialUpdatedAt,
   hasDomain = false,
   aiEditsLeft: initialAiEditsLeft,
+  aiCredits: initialAiCredits = null,
   isGuest = false,
   needsPlan = false,
   domainUrl = null,
+  model = null,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
@@ -158,13 +180,32 @@ export function SiteEditor({
   hasDomain?: boolean;
   /** Pedidos à IA que ainda cabem hoje; `null` = sem limite. */
   aiEditsLeft: number | null;
+  /** Saldo de créditos da conta ao abrir (`null`: visitante ou admin, sem créditos). */
+  aiCredits?: AiCredits | null;
   /** Visitante sem conta: edita e usa a IA normalmente, mas publicar exige criar a conta. */
   isGuest?: boolean;
   /** Publicar exige escolher um plano antes (o modal mostra "Plan required"). */
   needsPlan?: boolean;
   /** Domínio próprio JÁ funcionando (https://dominio.com): vira o link de compartilhar. */
   domainUrl?: string | null;
+  /** Editando um site-modelo no estúdio (só admins); ver ModelEditorMode. */
+  model?: ModelEditorMode | null;
 }) {
+  // Endereços do site ou, no modo modelo, do modelo (cópia local separada por prefixo).
+  const draftKey = model ? `model-${siteId}` : siteId;
+  const saveUrl = model ? model.apiUrl : `/api/sites/${siteId}`;
+  const aiEditUrl = model ? `${model.apiUrl}/ai-edit` : `/api/sites/${siteId}/ai-edit`;
+  const previewHref = model ? model.previewUrl : `/sites/preview/${siteId}`;
+  const canvasSrc = model ? model.canvasUrl : `/sites/${siteId}/edit/canvas`;
+  // Visitante volta para a prévia (a página do site exige conta).
+  const backHref = model
+    ? model.backHref
+    : isGuest
+      ? `/sites/preview/${siteId}`
+      : `/sites/${siteId}`;
+  const [modelStatus, setModelStatus] = useState(model?.status ?? "draft");
+  const [approving, setApproving] = useState(false);
+
   const [spec, setSpec] = useState<SiteSpec>(initialSpec);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -188,6 +229,7 @@ export function SiteEditor({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const nextMessageId = useRef(1);
   const [aiEditsLeft, setAiEditsLeft] = useState(initialAiEditsLeft);
+  const [creditsLeft, setCreditsLeft] = useState<number | null>(initialAiCredits?.left ?? null);
   const [rewritingIndex, setRewritingIndex] = useState<number | null>(null);
   /** Versão anterior ao último pedido à IA, para o botão "Undo". */
   const [beforeAi, setBeforeAi] = useState<SiteSpec | null>(null);
@@ -374,28 +416,28 @@ export function SiteEditor({
   // aba fechar, a conexão cair ou o iPhone descartar a página.
   useEffect(() => {
     if (!dirty) return;
-    const timer = window.setTimeout(() => writeLocalDraft(siteId, spec), 1_000);
+    const timer = window.setTimeout(() => writeLocalDraft(draftKey, spec), 1_000);
     return () => window.clearTimeout(timer);
-  }, [dirty, spec, siteId]);
+  }, [dirty, spec, draftKey]);
 
   // Ao abrir: se ficou uma cópia local diferente do que está salvo, oferece restaurar.
   useEffect(() => {
     let stored: SiteSpec | null = null;
     try {
-      stored = parseLocalDraft(window.localStorage.getItem(localDraftKey(siteId)));
+      stored = parseLocalDraft(window.localStorage.getItem(localDraftKey(draftKey)));
     } catch {
       stored = null;
     }
     if (!stored) return;
     if (sameSpec(stored, initialSpec)) {
-      removeLocalDraft(siteId);
+      removeLocalDraft(draftKey);
       return;
     }
     const found = stored;
     // Fora do corpo do efeito (regra react-hooks/set-state-in-effect).
     const frame = requestAnimationFrame(() => setLocalDraft(found));
     return () => cancelAnimationFrame(frame);
-  }, [siteId, initialSpec]);
+  }, [draftKey, initialSpec]);
 
   function restoreLocalDraft() {
     if (!localDraft || saving || aiPending) return;
@@ -408,13 +450,13 @@ export function SiteEditor({
   }
 
   function discardLocalDraft() {
-    removeLocalDraft(siteId);
+    removeLocalDraft(draftKey);
     setLocalDraft(null);
   }
 
   /** Recarrega para pegar a versão mais nova (o que não foi salvo fica na cópia local). */
   function reloadLatest() {
-    if (dirty) writeLocalDraft(siteId, spec);
+    if (dirty) writeLocalDraft(draftKey, spec);
     leaving.current = true;
     window.location.reload();
   }
@@ -530,7 +572,7 @@ export function SiteEditor({
     setAiPending(true);
     setRewritingIndex(options.sectionIndex ?? null);
     try {
-      const res = await fetch(`/api/sites/${siteId}/ai-edit`, {
+      const res = await fetch(aiEditUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ instruction: text }),
@@ -539,6 +581,10 @@ export function SiteEditor({
       if (!res.ok) {
         const apiError = ApiError.safeParse(body);
         if (apiError.success && apiError.data.error.code === "quota_exceeded") setAiEditsLeft(0);
+        if (apiError.success && apiError.data.error.code === "out_of_credits") {
+          setAiEditsLeft(0);
+          setCreditsLeft(0);
+        }
         const message = apiError.success
           ? apiError.data.error.message
           : "The AI couldn't make that change.";
@@ -550,10 +596,15 @@ export function SiteEditor({
       if (result.updatedAt) baseUpdatedAt.current = result.updatedAt;
       setSpec(result.spec);
       setDirty(false);
-      removeLocalDraft(siteId);
+      removeLocalDraft(draftKey);
+      // Modelo: toda mudança salva volta para rascunho (precisa aprovar de novo).
+      if (model) setModelStatus("draft");
       setBeforeAi(previous);
       setThemeBeforeShuffle(null);
       setAiEditsLeft((left) => (left === null ? null : Math.max(0, left - 1)));
+      setCreditsLeft((left) =>
+        left === null ? null : Math.max(0, left - (initialAiCredits?.cost ?? 0)),
+      );
       // A IA salvou um rascunho novo: se o site está no ar, agora há mudanças para publicar.
       setPublishState((state) => (state === "draft" ? state : "outdated"));
       say({
@@ -645,7 +696,7 @@ export function SiteEditor({
     setSaving(true);
     setSaveError(null);
     try {
-      const res = await fetch(`/api/sites/${siteId}`, {
+      const res = await fetch(saveUrl, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ spec: result.data, baseUpdatedAt: baseUpdatedAt.current }),
@@ -655,7 +706,7 @@ export function SiteEditor({
         const apiError = ApiError.safeParse(body);
         // Outra aba ou aparelho salvou depois: não sobrescreve; o que está aqui fica na cópia local.
         if (apiError.success && apiError.data.error.code === "conflict") {
-          writeLocalDraft(siteId, spec);
+          writeLocalDraft(draftKey, spec);
           setConflict(true);
           return null;
         }
@@ -672,7 +723,8 @@ export function SiteEditor({
       setSpec(saved);
       setDirty(false);
       setShowRequired(false);
-      removeLocalDraft(siteId);
+      removeLocalDraft(draftKey);
+      if (model) setModelStatus("draft");
       setLocalDraft(null);
       setPublishState((state) => (state === "draft" ? state : "outdated"));
       // A galeria vazia saiu ao salvar: os índices mudaram, então nenhuma seção fica aberta.
@@ -758,6 +810,44 @@ export function SiteEditor({
     }
   }
 
+  // ---------- Aprovar (modo modelo) ----------
+
+  /** Aprova o modelo (salva antes o que estiver pendente) ou volta para rascunho. */
+  async function setModelApproval(next: "draft" | "approved") {
+    if (!model || approving || saving || aiPending) return;
+    if (dirty && !(await save({ notify: false }))) return;
+    setApproving(true);
+    try {
+      const res = await fetch(`${model.apiUrl}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      const body: unknown = await res.json().catch(() => null);
+      if (!res.ok) {
+        const apiError = ApiError.safeParse(body);
+        showToast({
+          kind: "error",
+          text: apiError.success ? apiError.data.error.message : "We couldn't update the model.",
+        });
+        return;
+      }
+      const result = ModelResponse.parse(body);
+      setModelStatus(result.model.status);
+      showToast({
+        kind: "ok",
+        text:
+          result.model.status === "approved"
+            ? "Model approved. New sites will start from this version within a minute."
+            : "Model moved back to draft.",
+      });
+    } catch {
+      showToast({ kind: "error", text: OFFLINE });
+    } finally {
+      setApproving(false);
+    }
+  }
+
   // ---------- Cadastro (visitante) ----------
 
   const signUpHref = `/signup?next=${encodeURIComponent(`/sites/${siteId}/edit`)}`;
@@ -798,15 +888,22 @@ export function SiteEditor({
       if (document.visibilityState !== "hidden") return;
       const current = latest.current;
       if (!current.dirty) return;
-      writeLocalDraft(siteId, current.spec);
+      writeLocalDraft(draftKey, current.spec);
       if (!current.busy) void saveRef.current({ quiet: true });
     }
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => document.removeEventListener("visibilitychange", onVisibilityChange);
-  }, [siteId]);
+  }, [draftKey]);
 
   const outOfEditsReason = isGuest ? GUEST_OUT_OF_EDITS : OUT_OF_EDITS;
-  const aiBlockedReason = aiEditsLeft === 0 ? outOfEditsReason : null;
+  const aiCredits: AiCredits | null =
+    initialAiCredits && creditsLeft !== null ? { ...initialAiCredits, left: creditsLeft } : null;
+  const outOfCredits = aiCredits !== null && aiCredits.left < aiCredits.cost;
+  const aiBlockedReason = outOfCredits
+    ? OUT_OF_CREDITS
+    : aiEditsLeft === 0
+      ? outOfEditsReason
+      : null;
 
   // ---------- Desenho ----------
 
@@ -867,10 +964,11 @@ export function SiteEditor({
         pending={aiPending}
         willSaveFirst={dirty}
         aiEditsLeft={aiEditsLeft}
+        aiCredits={aiCredits}
         canUndo={beforeAi !== null}
         onUndo={undoAi}
         onAddPhotos={openPhotos}
-        historyHref={isGuest ? null : `/sites/${siteId}`}
+        historyHref={isGuest || model ? null : `/sites/${siteId}`}
         isGuest={isGuest}
         signUpHref={isGuest ? signUpHref : null}
         onSignUp={onSignUpClick}
@@ -932,9 +1030,8 @@ export function SiteEditor({
         {/* Linha 1: marca e nome do site; estado, salvar e publicar. */}
         <div className="flex h-14 items-center gap-1.5 px-2 sm:gap-2 sm:px-3 lg:px-4">
           <Link
-            // Visitante volta para a prévia (a página do site exige conta).
-            href={isGuest ? `/sites/preview/${siteId}` : `/sites/${siteId}`}
-            title={isGuest ? "Back to preview" : "Back to site page"}
+            href={backHref}
+            title={model ? "Back to models" : isGuest ? "Back to preview" : "Back to site page"}
             onClick={(event) => {
               if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
                 event.preventDefault();
@@ -943,7 +1040,9 @@ export function SiteEditor({
             className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-sm font-semibold text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-ink motion-reduce:transition-none ${focusRing}`}
           >
             <ArrowLeftIcon className="size-[18px]" />
-            <span className="max-sm:sr-only">{isGuest ? "Preview" : "Back"}</span>
+            <span className="max-sm:sr-only">
+              {model ? "Models" : isGuest ? "Preview" : "Back"}
+            </span>
           </Link>
           <span aria-hidden="true" className="mx-0.5 hidden h-6 w-px bg-slate-200 sm:block" />
           <Image
@@ -959,15 +1058,22 @@ export function SiteEditor({
             </h1>
             {/* Celular: o estado de publicação numa linha pequena (telas maiores: à direita). */}
             <p className="flex min-w-0 items-center gap-1.5 text-[12px] leading-4 text-slate-500 md:hidden">
-              <StatusDot state={shownPublishState} />
-              <span className="truncate">{publishLabel(shownPublishState)}</span>
+              <StatusDot state={model ? modelDotState(modelStatus) : shownPublishState} />
+              <span className="truncate">
+                {model ? modelLabel(modelStatus) : publishLabel(shownPublishState)}
+              </span>
             </p>
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <EditorStatus saving={saving} dirty={dirty} publishState={shownPublishState} />
+            <EditorStatus
+              saving={saving}
+              dirty={dirty}
+              publishState={shownPublishState}
+              modelStatus={model ? modelStatus : null}
+            />
             <a
-              href={`/sites/preview/${siteId}`}
+              href={previewHref}
               target="_blank"
               rel="noopener"
               className={`inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 motion-reduce:transition-none lg:hidden ${focusRing}`}
@@ -984,7 +1090,35 @@ export function SiteEditor({
             >
               {saving ? "Saving…" : "Save"}
             </button>
-            {isGuest ? (
+            {model ? (
+              // Estúdio de modelos: sem publicar; aprovar faz a geração usar esta versão.
+              modelStatus === "approved" && !dirty ? (
+                <button
+                  type="button"
+                  onClick={() => void setModelApproval("draft")}
+                  disabled={approving || saving || aiPending}
+                  className={`${secondaryButton} lg:min-h-9`}
+                >
+                  {approving ? "Updating…" : "Unapprove"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void setModelApproval("approved")}
+                  disabled={approving || saving || aiPending}
+                  className={`${primaryButton} lg:min-h-9`}
+                >
+                  {approving ? (
+                    "Approving…"
+                  ) : (
+                    <>
+                      <span className="sm:hidden">Approve</span>
+                      <span className="hidden sm:inline">Approve model</span>
+                    </>
+                  )}
+                </button>
+              )
+            ) : isGuest ? (
               // Publicar exige conta: depois do cadastro o site passa para a conta e volta aqui.
               <Link
                 href={signUpHref}
@@ -1120,7 +1254,7 @@ export function SiteEditor({
               <span className="sr-only">Reload preview</span>
             </button>
             <a
-              href={`/sites/preview/${siteId}`}
+              href={previewHref}
               target="_blank"
               rel="noopener"
               title="Open saved draft in a new tab"
@@ -1133,7 +1267,7 @@ export function SiteEditor({
         </div>
       </header>
 
-      {!isGuest && (
+      {!isGuest && !model && (
         <PublishDialog
           open={publishOpen}
           onClose={() => setPublishOpen(false)}
@@ -1281,7 +1415,7 @@ export function SiteEditor({
               Exit full screen
             </button>
           )}
-          <CanvasFrame src={`/sites/${siteId}/edit/canvas`} device={device} iframeRef={iframe} />
+          <CanvasFrame src={canvasSrc} device={device} iframeRef={iframe} />
         </main>
       </div>
 
@@ -1376,6 +1510,15 @@ function publishLabel(state: PublishState): string {
       : "Published";
 }
 
+/** Estado do modelo no estúdio (no lugar do estado de publicação). */
+function modelLabel(status: "draft" | "approved"): string {
+  return status === "approved" ? "Approved model" : "Draft model";
+}
+
+function modelDotState(status: "draft" | "approved"): PublishState {
+  return status === "approved" ? "current" : "outdated";
+}
+
 function StatusDot({ state }: { state: PublishState | "saved" | "unsaved" | "saving" }) {
   const color =
     state === "current" || state === "saved"
@@ -1391,10 +1534,13 @@ function EditorStatus({
   saving,
   dirty,
   publishState,
+  modelStatus = null,
 }: {
   saving: boolean;
   dirty: boolean;
   publishState: PublishState;
+  /** Modo modelo: mostra o status do modelo em vez do estado de publicação. */
+  modelStatus?: "draft" | "approved" | null;
 }) {
   return (
     <p
@@ -1408,8 +1554,8 @@ function EditorStatus({
         </span>
       </span>
       <span className="inline-flex items-center gap-1.5">
-        <StatusDot state={publishState} />
-        {publishLabel(publishState)}
+        <StatusDot state={modelStatus ? modelDotState(modelStatus) : publishState} />
+        {modelStatus ? modelLabel(modelStatus) : publishLabel(publishState)}
       </span>
     </p>
   );

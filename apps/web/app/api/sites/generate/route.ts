@@ -4,7 +4,7 @@ import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
 import { hasImageProvider, resolveHeroImage } from "@/server/images";
-import { reserveUse } from "@/server/quota";
+import { refundUse, reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import type { Composition } from "@nosweat/schema";
@@ -37,6 +37,8 @@ export async function POST(request: Request): Promise<Response> {
       });
     } catch (error) {
       console.error("[api] site generation failed", error);
+      // A IA falhou: os créditos voltam para a conta.
+      await refundUse(actor, "generate");
       return errorResponse(
         502,
         "generation_failed",

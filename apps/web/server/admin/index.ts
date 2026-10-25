@@ -84,6 +84,11 @@ export type ClientAccount = {
    * painel.
    */
   testAccount: boolean;
+  /**
+   * Login desligado pelo admin até esta data (`banned_until` do Supabase Auth), ou `null`. Ver
+   * loginDisabled() em accounts.ts.
+   */
+  bannedUntil: string | null;
 };
 
 function metadataText(metadata: Record<string, unknown>, key: string): string | null {
@@ -102,6 +107,7 @@ function toAccount(user: AuthUser): ClientAccount {
     firstName: metadataText(metadata, "first_name"),
     lastName: metadataText(metadata, "last_name"),
     testAccount: metadata.test_account === true && appMetadata.test_account === true,
+    bannedUntil: user.banned_until ?? null,
   };
 }
 
@@ -115,6 +121,7 @@ function devAccount(): ClientAccount {
     firstName: null,
     lastName: null,
     testAccount: false,
+    bannedUntil: null,
   };
 }
 

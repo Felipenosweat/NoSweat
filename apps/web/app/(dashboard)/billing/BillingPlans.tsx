@@ -28,6 +28,8 @@ export type PlanCard = {
   customDomain: boolean;
   /** Sites no ar ao mesmo tempo (`publishedSitesLimit` em server/billing/plans.ts). */
   publishedSitesLimit: number;
+  /** Créditos da IA por mês (server/credits/pricing.ts). */
+  monthlyCredits: number;
 };
 
 /** Como falar com a No Sweat para pagar à mão (Pix/WhatsApp) quando não há checkout. */
@@ -62,7 +64,7 @@ function emailHref(contact: SalesContact, text: string): string {
 }
 
 /** Link do WhatsApp (se houver número) ou do e-mail, com a mensagem já escrita. */
-function contactHref(contact: SalesContact, text: string): string {
+export function contactHref(contact: SalesContact, text: string): string {
   return contact.whatsapp
     ? whatsappHref(contact.whatsapp, contact, text)
     : emailHref(contact, text);
@@ -72,7 +74,7 @@ function contactHref(contact: SalesContact, text: string): string {
  * Link de contato: o WhatsApp abre em outra aba; o e-mail (mailto:) não, porque sem programa de
  * e-mail no computador a aba nova fica em branco.
  */
-function ContactLink({
+export function ContactLink({
   href,
   className,
   children,
@@ -98,7 +100,7 @@ const inlineLink = `rounded-sm font-semibold text-brand underline-offset-4 hover
  * Os canais sempre à mostra, em texto: quem não tem WhatsApp (comum nos EUA) ainda vê o e-mail,
  * e quem não tem programa de e-mail pode copiar o endereço.
  */
-function ContactChannels({ contact, text }: { contact: SalesContact; text: string }) {
+export function ContactChannels({ contact, text }: { contact: SalesContact; text: string }) {
   return (
     <p className="mt-3 text-[13px] text-slate-500">
       {contact.whatsapp && (
@@ -312,6 +314,10 @@ export function BillingPlans({
                 <li className="flex gap-2">
                   <CheckIcon className="mt-0.5 size-4 shrink-0 text-brand" />
                   {plan.customDomain ? "Your own domain" : "Free nosweatfd.com address"}
+                </li>
+                <li className="flex gap-2">
+                  <CheckIcon className="mt-0.5 size-4 shrink-0 text-brand" />
+                  {plan.monthlyCredits.toLocaleString("en-US")} AI credits every month
                 </li>
               </ul>
               <div className="mt-auto pt-5">

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { ownerHasCustomDomainAccess, publishBlocked } from "@/server/billing";
+import { creditCost, getBalance } from "@/server/credits";
 import { getDomainState, makeSlug } from "@/server/domains";
 import { remainingUses } from "@/server/quota";
 import { freeUrl, hasUnpublishedChanges } from "@/server/sites";
+import type { AiCredits } from "./AskAiPanel";
 import { requireEditableSite } from "./guard";
 import { SiteEditor } from "./SiteEditor";
 
@@ -21,8 +23,14 @@ async function requestOrigin(): Promise<string> {
 export default async function EditSitePage({ params }: EditPageProps) {
   const { id } = await params;
   const { actor, site } = await requireEditableSite(id);
-  // Quantas mudanças por IA ainda cabem hoje (`null` = sem limite, ex.: admins).
+  // Quantas mudanças por IA ainda cabem agora (créditos e limite diário; `null` = sem limite,
+  // ex.: admins). Contas também veem o saldo de créditos (visitantes têm só o limite deles).
   const aiEditsLeft = await remainingUses(actor, "ai_edit");
+  const balance = actor.kind === "user" ? await getBalance(actor.user) : null;
+  const aiCredits: AiCredits | null =
+    balance && !balance.unlimited
+      ? { left: balance.total, cost: creditCost("ai_edit"), resetsAt: balance.resetsAt }
+      : null;
   const origin = await requestOrigin();
   // Endereço grátis: o atual, ou o que o site vai receber ao publicar (mesmo makeSlug da API).
   // Antes da primeira publicação o editor recalcula com o nome digitado (origin + hasSlug).
@@ -53,6 +61,7 @@ export default async function EditSitePage({ params }: EditPageProps) {
       updatedAt={site.updatedAt}
       hasDomain={Boolean(site.customDomain)}
       aiEditsLeft={aiEditsLeft}
+      aiCredits={aiCredits}
       isGuest={actor.kind === "guest"}
       needsPlan={needsPlan}
       domainUrl={domainUrl}

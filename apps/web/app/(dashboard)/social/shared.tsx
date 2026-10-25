@@ -77,6 +77,14 @@ export function ErrorNote({
           </Link>
         </>
       )}
+      {error.code === "out_of_credits" && (
+        <>
+          {" "}
+          <Link href="/billing#credits" className="font-semibold underline underline-offset-4">
+            Get more credits
+          </Link>
+        </>
+      )}
     </p>
   );
 }

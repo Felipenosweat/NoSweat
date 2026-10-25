@@ -11,6 +11,15 @@ import {
 } from "@/components/DashboardUi";
 import { accountName, canManageAccounts, requireAdmin, type ClientAccount } from "@/server/admin";
 import {
+  ACCOUNT_SORTS,
+  ACCOUNT_SORT_LABELS,
+  filterAccounts,
+  loginDisabled,
+  parseAccountSort,
+  planStatus,
+  sortAccounts,
+} from "@/server/admin/accounts";
+import {
   AI_COST_PER_USE_USD,
   AI_USAGE_KINDS,
   AI_USAGE_LABELS,
@@ -20,39 +29,55 @@ import {
   formatUsdPerUse,
   totalUses,
 } from "@/server/admin/costs";
+import { leadsByOwner } from "@/server/admin/leads";
 import { loadOverview, type UsageByKind } from "@/server/admin/metrics";
-import { isGrantActive, PLANS, type AccessGrant } from "@/server/billing";
+import {
+  SITE_FILTERS,
+  SITE_FILTER_LABELS,
+  SITES_PAGE_SIZE,
+  countSitesByFilter,
+  filterSites,
+  parseSiteFilter,
+  parseSiteLimit,
+  type SiteOwnerInfo,
+} from "@/server/admin/sites";
+import { PLANS } from "@/server/billing";
 import { getVercelConfig } from "@/server/domains/vercel";
 import type { SiteRecord } from "@/server/store";
 import { CreateTestAccount } from "./CreateTestAccount";
+import { GuestCleanup } from "./GuestCleanup";
+import { SitesTable } from "./SitesTable";
+import { toSiteRow } from "./site-rows";
 
 export const metadata: Metadata = { title: "Admin" };
 
+type Param = string | string[] | undefined;
+
 type AdminPageProps = {
-  searchParams: Promise<{ deleted?: string | string[]; q?: string | string[] }>;
+  searchParams: Promise<{
+    deleted?: Param;
+    /** Busca e ordem das contas. */
+    aq?: Param;
+    as?: Param;
+    /** Busca, filtro e limite ("Show more") dos sites. */
+    sq?: Param;
+    sf?: Param;
+    sl?: Param;
+  }>;
 };
 
+/** O estado das listas que vai na URL (para os links de filtro não perderem o resto). */
+type ListState = { aq: string; as: string; sq: string; sf: string; sl: number };
+
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
-const dateOnly = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 const formatDate = (value: string | null) => (value ? dateFormat.format(new Date(value)) : "—");
 const count = (value: number | null) => (value === null ? "—" : value.toLocaleString("en-US"));
 
 const linkClass = `rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`;
 const th = "px-5 py-3 font-medium whitespace-nowrap";
 const td = "px-5 py-3";
-
-function accessLabel(grant: AccessGrant | undefined): string {
-  if (!grant) return "—";
-  const date = dateOnly.format(new Date(grant.expiresAt));
-  return isGrantActive(grant) ? `${PLANS[grant.plan].name} until ${date}` : `Expired ${date}`;
-}
-
-/** Endereço do site no ar: domínio próprio ou /s/<slug>. `null` se não está publicado. */
-function liveHref(site: SiteRecord): string | null {
-  if (site.status !== "published") return null;
-  if (site.customDomain) return `https://${site.customDomain}`;
-  return site.slug ? `/s/${site.slug}` : null;
-}
+const fieldClass = `mt-1.5 block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink sm:h-10 ${focusRing}`;
+const searchButton = `inline-flex min-h-11 items-center rounded-lg bg-ink px-4 text-[15px] font-semibold text-white hover:bg-slate-800 sm:min-h-10 ${focusRing}`;
 
 function MetricTile({ label, value, note }: { label: string; value: string; note?: ReactNode }) {
   return (
@@ -66,12 +91,22 @@ function MetricTile({ label, value, note }: { label: string; value: string; note
   );
 }
 
-function AccountBadges({ account, admin }: { account: ClientAccount; admin: boolean }) {
-  if (!admin && !account.testAccount) return null;
+function AccountBadges({
+  account,
+  admin,
+  now,
+}: {
+  account: ClientAccount;
+  admin: boolean;
+  now: Date;
+}) {
+  const disabled = loginDisabled(account, now);
+  if (!admin && !account.testAccount && !disabled) return null;
   return (
     <span className="flex flex-wrap gap-1">
       {admin && <StatusBadge tone="info">Admin</StatusBadge>}
       {account.testAccount && <StatusBadge tone="pending">Test account</StatusBadge>}
+      {disabled && <StatusBadge tone="neutral">Login disabled</StatusBadge>}
     </span>
   );
 }
@@ -118,18 +153,89 @@ function UsageTable({ ai24h, ai30d }: { ai24h: UsageByKind | null; ai30d: UsageB
   );
 }
 
-function firstParam(value: string | string[] | undefined): string {
+function firstParam(value: Param): string {
   return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
-/** Busca simples (sem diferença de maiúsculas) em vários campos. */
-function matches(query: string, values: (string | null | undefined)[]): boolean {
-  return values.some((value) => value?.toLowerCase().includes(query));
+/** Link do /admin com o estado das listas trocado em `changes` (valores padrão saem da URL). */
+function adminHref(state: ListState, changes: Partial<ListState>, hash: string): string {
+  const next = { ...state, ...changes };
+  const params = new URLSearchParams();
+  if (next.aq) params.set("aq", next.aq);
+  if (next.as && next.as !== "signup") params.set("as", next.as);
+  if (next.sq) params.set("sq", next.sq);
+  if (next.sf && next.sf !== "all") params.set("sf", next.sf);
+  if (next.sl > SITES_PAGE_SIZE) params.set("sl", String(next.sl));
+  const query = params.toString();
+  return `/admin${query ? `?${query}` : ""}#${hash}`;
 }
 
-/** Mais nova primeiro; conta sem data vai para o fim. */
-function byNewest(a: ClientAccount, b: ClientAccount): number {
-  return (b.createdAt ? Date.parse(b.createdAt) : 0) - (a.createdAt ? Date.parse(a.createdAt) : 0);
+/** Campos escondidos para um formulário GET não apagar o estado da outra lista. */
+function Hidden({ values }: { values: Record<string, string> }) {
+  return (
+    <>
+      {Object.entries(values)
+        .filter(([, value]) => value !== "")
+        .map(([name, value]) => (
+          <input key={name} type="hidden" name={name} value={value} />
+        ))}
+    </>
+  );
+}
+
+function SearchForm({
+  label,
+  name,
+  value,
+  placeholder,
+  hidden,
+  hash,
+  clearHref,
+  children,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  placeholder: string;
+  hidden: Record<string, string>;
+  hash: string;
+  clearHref: string;
+  children?: ReactNode;
+}) {
+  return (
+    <form
+      role="search"
+      action={`/admin#${hash}`}
+      method="get"
+      className="flex flex-wrap items-end gap-3 border-b border-slate-200 px-5 py-4"
+    >
+      <Hidden values={hidden} />
+      <label className="min-w-0 flex-1 basis-56 text-sm font-medium text-slate-700 sm:max-w-md">
+        {label}
+        <input
+          type="search"
+          name={name}
+          defaultValue={value}
+          maxLength={100}
+          placeholder={placeholder}
+          autoComplete="off"
+          className={fieldClass}
+        />
+      </label>
+      {children}
+      <button type="submit" className={searchButton}>
+        Search
+      </button>
+      {value && (
+        <Link
+          href={clearHref}
+          className={`${linkClass} inline-flex min-h-11 items-center sm:min-h-10`}
+        >
+          Clear
+        </Link>
+      )}
+    </form>
+  );
 }
 
 export default async function AdminOverviewPage({ searchParams }: AdminPageProps) {
@@ -137,20 +243,39 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
   await requireAdmin();
   const params = await searchParams;
   const deleted = firstParam(params.deleted).slice(0, 254);
-  const query = firstParam(params.q).trim().slice(0, 100);
-  const needle = query.toLowerCase();
+  const accountQuery = firstParam(params.aq).trim().slice(0, 100);
+  const accountSort = parseAccountSort(firstParam(params.as));
+  const siteQuery = firstParam(params.sq).trim().slice(0, 100);
+  const siteFilter = parseSiteFilter(firstParam(params.sf));
+  const siteLimit = parseSiteLimit(firstParam(params.sl));
+  const state: ListState = {
+    aq: accountQuery,
+    as: accountSort,
+    sq: siteQuery,
+    sf: siteFilter,
+    sl: siteLimit,
+  };
+
   const overview = await loadOverview();
-  const { accounts, adminIds, sites, grants, leads7d, ai24h, ai30d, plans, expiringGrants } =
-    overview;
-  const { ownersWithAccess, enforced } = overview;
+  const { accounts, adminIds, sites, grants, subscriptions, leadsBySite } = overview;
+  const { leads7d, ai24h, ai30d, plans, expiringGrants, ownersWithAccess, enforced } = overview;
+  const { now } = overview;
 
   const grantByUser = new Map(grants.map((grant) => [grant.userId, grant]));
+  const subscriptionByUser = new Map((subscriptions ?? []).map((sub) => [sub.userId, sub]));
   const accountById = new Map(accounts.map((account) => [account.id, account]));
+  const owners = new Map<string, SiteOwnerInfo>(
+    accounts.map((account) => [
+      account.id,
+      { email: account.email, testAccount: account.testAccount },
+    ]),
+  );
   const sitesByOwner = new Map<string, SiteRecord[]>();
   for (const site of sites) {
     if (!site.ownerId) continue;
     sitesByOwner.set(site.ownerId, [...(sitesByOwner.get(site.ownerId) ?? []), site]);
   }
+  const leadsPerOwner = leadsBySite ? leadsByOwner(sites, leadsBySite) : null;
   const ownedSites = sites.filter((site) => site.ownerId).length;
   const liveSites = sites.filter((site) => site.status === "published").length;
   const customDomains = sites.filter((site) => site.customDomain).length;
@@ -165,24 +290,23 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
   const liveWithoutPlan = sites.filter(withoutPlan).length;
   // Sem VERCEL_TOKEN, domínio conectado fica "Being set up" até alguém pôr à mão na Vercel.
   const manualDomains = getVercelConfig() ? [] : sites.filter((site) => site.customDomain);
+  // Rascunhos de visitante (sem conta, nunca publicados): a faxina escolhe estes.
+  const guestCreatedAt = sites
+    .filter((site) => site.ownerId === null && site.guestId !== null)
+    .map((site) => Date.parse(site.createdAt));
 
-  const shownAccounts = (
-    needle
-      ? accounts.filter((account) =>
-          matches(needle, [account.email, accountName(account), account.id]),
-        )
-      : [...accounts]
-  ).sort(byNewest);
-  const shownSites = needle
-    ? sites.filter((site) =>
-        matches(needle, [
-          site.spec.business.name,
-          site.slug,
-          site.customDomain,
-          site.ownerId ? accountById.get(site.ownerId)?.email : null,
-        ]),
-      )
-    : sites;
+  const shownAccounts = sortAccounts(filterAccounts(accounts, accountQuery), accountSort);
+  const siteCounts = countSitesByFilter(sites, owners);
+  const matchingSites = filterSites(sites, { filter: siteFilter, query: siteQuery }, owners);
+  const shownSites = matchingSites.slice(0, siteLimit);
+  const siteRows = shownSites.map((site) => {
+    const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
+    return toSiteRow(site, {
+      owner: owner ? { label: owner.email ?? owner.id, test: owner.testAccount } : null,
+      withoutPlan: withoutPlan(site),
+      enforced,
+    });
+  });
   const planNote = plans
     ? plans.byPlan
         .map((entry) => `${PLANS[entry.plan].name} ${entry.stripe + entry.manual}`)
@@ -242,45 +366,6 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
             })}
           </ul>
         </section>
-      )}
-
-      <form role="search" action="/admin" method="get" className="flex flex-wrap items-end gap-3">
-        <label className="min-w-0 flex-1 text-sm font-medium text-slate-700 sm:max-w-md">
-          Find an account or website
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            maxLength={100}
-            placeholder="Email, name, business or domain"
-            autoComplete="off"
-            className={`mt-1.5 block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink sm:h-10 ${focusRing}`}
-          />
-        </label>
-        <button
-          type="submit"
-          className={`inline-flex min-h-11 items-center rounded-lg bg-ink px-4 text-[15px] font-semibold text-white hover:bg-slate-800 sm:min-h-10 ${focusRing}`}
-        >
-          Search
-        </button>
-        {query && (
-          <Link
-            href="/admin"
-            className={`${linkClass} inline-flex min-h-11 items-center sm:min-h-10`}
-          >
-            Clear
-          </Link>
-        )}
-      </form>
-      {query && (
-        <p role="status" className={`-mt-6 ${panelText}`}>
-          {shownAccounts.length} {shownAccounts.length === 1 ? "account" : "accounts"} and{" "}
-          {shownSites.length} {shownSites.length === 1 ? "website" : "websites"} match &ldquo;
-          {query}&rdquo;.{" "}
-          <a href="#accounts" className={linkClass}>
-            See results
-          </a>
-        </p>
       )}
 
       <section aria-labelledby="overview-heading">
@@ -394,158 +479,233 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         </section>
       </div>
 
-      <CreateTestAccount enabled={canManageAccounts()} />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <CreateTestAccount enabled={canManageAccounts()} />
+        <GuestCleanup guestCreatedAt={guestCreatedAt} now={now.getTime()} />
+      </div>
 
       <section
         id="accounts"
         aria-labelledby="accounts-heading"
-        className="rounded-xl border border-slate-200 bg-white"
+        className="scroll-mt-4 rounded-xl border border-slate-200 bg-white"
       >
         <h2 id="accounts-heading" className={`border-b border-slate-200 px-5 py-4 ${panelTitle}`}>
           Accounts{" "}
           <span className="font-normal text-slate-500">
-            · {query ? `${shownAccounts.length} of ${accounts.length}` : accounts.length}
+            · {accountQuery ? `${shownAccounts.length} of ${accounts.length}` : accounts.length}
           </span>
         </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className={th}>Account</th>
-                <th className={th}>Signed up</th>
-                <th className={th}>Last login</th>
-                <th className={th}>Websites</th>
-                <th className={th}>Live</th>
-                <th className={th}>Manual access</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
+        <SearchForm
+          label="Find an account"
+          name="aq"
+          value={accountQuery}
+          placeholder="Email or name"
+          hidden={{ sq: siteQuery, sf: siteFilter === "all" ? "" : siteFilter }}
+          hash="accounts"
+          clearHref={adminHref(state, { aq: "" }, "accounts")}
+        >
+          <label className="text-sm font-medium text-slate-700">
+            Sort by
+            <select name="as" defaultValue={accountSort} className={`${fieldClass} w-44`}>
+              {ACCOUNT_SORTS.map((sort) => (
+                <option key={sort} value={sort}>
+                  {ACCOUNT_SORT_LABELS[sort]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </SearchForm>
+        {shownAccounts.length === 0 ? (
+          <p className={`px-5 py-4 ${panelText}`}>No accounts match.</p>
+        ) : (
+          <>
+            {/* Computador: tabela. */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className={th}>Account</th>
+                    <th className={th}>Signed up</th>
+                    <th className={th}>Last login</th>
+                    <th className={th}>Plan</th>
+                    <th className={`${th} text-right`}>Websites</th>
+                    <th className={`${th} text-right`}>Live</th>
+                    <th className={`${th} text-right`}>Requests</th>
+                    <th className="px-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {shownAccounts.map((account) => {
+                    const own = sitesByOwner.get(account.id) ?? [];
+                    const name = accountName(account);
+                    const plan = planStatus(
+                      subscriptionByUser.get(account.id),
+                      grantByUser.get(account.id),
+                      now,
+                    );
+                    return (
+                      <tr key={account.id} className="border-t border-slate-100 align-top">
+                        <td className={td}>
+                          <Link
+                            href={`/admin/clients/${account.id}`}
+                            className={`${linkClass} block break-all`}
+                          >
+                            {account.email ?? account.id}
+                          </Link>
+                          {name && <span className="block text-slate-500">{name}</span>}
+                          <span className="mt-1 block">
+                            <AccountBadges
+                              account={account}
+                              admin={adminIds.has(account.id)}
+                              now={now}
+                            />
+                          </span>
+                        </td>
+                        <td className={`${td} whitespace-nowrap text-slate-600`}>
+                          {formatDate(account.createdAt)}
+                        </td>
+                        <td className={`${td} whitespace-nowrap text-slate-600`}>
+                          {formatDate(account.lastSignInAt)}
+                        </td>
+                        <td className={td}>
+                          <StatusBadge tone={plan.tone}>{plan.label}</StatusBadge>
+                        </td>
+                        <td className={`${td} text-right tabular-nums`}>{own.length}</td>
+                        <td className={`${td} text-right tabular-nums`}>
+                          {own.filter((site) => site.status === "published").length}
+                        </td>
+                        <td className={`${td} text-right tabular-nums`}>
+                          {leadsPerOwner ? (leadsPerOwner.get(account.id) ?? 0) : "—"}
+                        </td>
+                        <td className={`${td} text-right`}>
+                          <Link
+                            href={`/admin/clients/${account.id}`}
+                            className={`${linkClass} whitespace-nowrap`}
+                          >
+                            Manage &rarr;
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Celular: cartões. */}
+            <ul className="divide-y divide-slate-100 md:hidden">
               {shownAccounts.map((account) => {
                 const own = sitesByOwner.get(account.id) ?? [];
                 const name = accountName(account);
+                const plan = planStatus(
+                  subscriptionByUser.get(account.id),
+                  grantByUser.get(account.id),
+                  now,
+                );
+                const live = own.filter((site) => site.status === "published").length;
+                const requests = leadsPerOwner ? (leadsPerOwner.get(account.id) ?? 0) : null;
                 return (
-                  <tr key={account.id} className="border-t border-slate-100 align-top">
-                    <td className={td}>
-                      <Link
-                        href={`/admin/clients/${account.id}`}
-                        className={`${linkClass} block break-all`}
-                      >
-                        {account.email ?? account.id}
-                      </Link>
-                      {name && <span className="block text-slate-500">{name}</span>}
-                      <span className="mt-1 block">
-                        <AccountBadges account={account} admin={adminIds.has(account.id)} />
-                      </span>
-                    </td>
-                    <td className={`${td} whitespace-nowrap text-slate-600`}>
-                      {formatDate(account.createdAt)}
-                    </td>
-                    <td className={`${td} whitespace-nowrap text-slate-600`}>
+                  <li key={account.id} className="px-5 py-4">
+                    <Link
+                      href={`/admin/clients/${account.id}`}
+                      className={`${linkClass} block break-all`}
+                    >
+                      {account.email ?? account.id}
+                    </Link>
+                    {name && <span className="block text-sm text-slate-500">{name}</span>}
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      <StatusBadge tone={plan.tone}>{plan.label}</StatusBadge>
+                      <AccountBadges account={account} admin={adminIds.has(account.id)} now={now} />
+                    </div>
+                    <p className="mt-2 text-[13px] text-slate-500">
+                      {own.length} {own.length === 1 ? "website" : "websites"} · {live} live ·{" "}
+                      {requests === null ? "—" : requests} {requests === 1 ? "request" : "requests"}
+                    </p>
+                    <p className="mt-0.5 text-[13px] text-slate-500">
+                      Signed up {formatDate(account.createdAt)} · Last login{" "}
                       {formatDate(account.lastSignInAt)}
-                    </td>
-                    <td className={`${td} tabular-nums`}>{own.length}</td>
-                    <td className={`${td} tabular-nums`}>
-                      {own.filter((site) => site.status === "published").length}
-                    </td>
-                    <td className={`${td} whitespace-nowrap text-slate-600`}>
-                      {accessLabel(grantByUser.get(account.id))}
-                    </td>
-                    <td className={`${td} text-right`}>
-                      <Link
-                        href={`/admin/clients/${account.id}`}
-                        className={`${linkClass} whitespace-nowrap`}
-                      >
-                        Manage &rarr;
-                      </Link>
-                    </td>
-                  </tr>
+                    </p>
+                  </li>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          </>
+        )}
       </section>
 
       <section
         id="websites"
         aria-labelledby="websites-heading"
-        className="rounded-xl border border-slate-200 bg-white"
+        className="scroll-mt-4 rounded-xl border border-slate-200 bg-white"
       >
         <h2 id="websites-heading" className={`border-b border-slate-200 px-5 py-4 ${panelTitle}`}>
           All websites{" "}
           <span className="font-normal text-slate-500">
-            · {query ? `${shownSites.length} of ${sites.length}` : sites.length}
+            ·{" "}
+            {siteQuery || siteFilter !== "all"
+              ? `${matchingSites.length} of ${sites.length}`
+              : sites.length}
           </span>
         </h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                <th className={th}>Business</th>
-                <th className={th}>Owner</th>
-                <th className={th}>Template</th>
-                <th className={th}>Status</th>
-                <th className={th}>Address</th>
-                <th className={th}>Created</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {shownSites.map((site) => {
-                const live = liveHref(site);
-                const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
-                return (
-                  <tr key={site.id} className="border-t border-slate-100">
-                    <td className={td}>
-                      <Link href={`/sites/${site.id}`} className={linkClass}>
-                        {site.spec.business.name}
-                      </Link>
-                    </td>
-                    <td className={`${td} text-slate-600`}>
-                      {site.ownerId ? (
-                        <Link href={`/admin/clients/${site.ownerId}`} className={linkClass}>
-                          {owner?.email ?? site.ownerId}
-                        </Link>
-                      ) : (
-                        "Visitor (no account)"
-                      )}
-                    </td>
-                    <td className={`${td} text-slate-600`}>{site.spec.template}</td>
-                    <td className={td}>
-                      {withoutPlan(site) ? (
-                        <StatusBadge tone="pending">
-                          {enforced ? "Offline · no plan" : "Live · no plan"}
-                        </StatusBadge>
-                      ) : (
-                        <StatusBadge tone={site.status === "published" ? "live" : "draft"}>
-                          {site.status === "published" ? "Live" : "Draft"}
-                        </StatusBadge>
-                      )}
-                    </td>
-                    <td className={`${td} font-mono text-xs text-slate-600`}>
-                      {live ? (
-                        <a href={live} target="_blank" rel="noreferrer" className={linkClass}>
-                          {site.customDomain ?? `/s/${site.slug ?? ""}`}
-                        </a>
-                      ) : (
-                        (site.customDomain ?? (site.slug ? `/s/${site.slug}` : "—"))
-                      )}
-                    </td>
-                    <td className={`${td} whitespace-nowrap text-slate-600`}>
-                      {formatDate(site.createdAt)}
-                    </td>
-                    <td className={`${td} text-right whitespace-nowrap`}>
-                      <Link href={`/sites/${site.id}/edit`} className={linkClass}>
-                        Edit
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <nav
+          aria-label="Filter websites"
+          className="overflow-x-auto border-b border-slate-200 px-3"
+        >
+          <ul className="flex gap-1 py-2">
+            {SITE_FILTERS.map((filter) => {
+              const active = filter === siteFilter;
+              return (
+                <li key={filter}>
+                  <Link
+                    href={adminHref(state, { sf: filter, sl: SITES_PAGE_SIZE }, "websites")}
+                    aria-current={active ? "page" : undefined}
+                    className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap ${
+                      active
+                        ? "bg-ink text-white"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-ink"
+                    } ${focusRing}`}
+                  >
+                    {SITE_FILTER_LABELS[filter]}
+                    <span className={`tabular-nums ${active ? "text-white/70" : "text-slate-400"}`}>
+                      {siteCounts[filter]}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <SearchForm
+          label="Find a website"
+          name="sq"
+          value={siteQuery}
+          placeholder="Business, owner email, slug or domain"
+          hidden={{
+            sf: siteFilter === "all" ? "" : siteFilter,
+            aq: accountQuery,
+            as: accountSort === "signup" ? "" : accountSort,
+          }}
+          hash="websites"
+          clearHref={adminHref(state, { sq: "", sl: SITES_PAGE_SIZE }, "websites")}
+        />
+        <SitesTable
+          rows={siteRows}
+          emptyText={siteQuery || siteFilter !== "all" ? "No websites match." : "No websites yet."}
+        />
+        {matchingSites.length > shownSites.length && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-5 py-4 text-sm text-slate-500">
+            <span>
+              Showing {shownSites.length} of {matchingSites.length}
+            </span>
+            <Link
+              href={adminHref(state, { sl: siteLimit + SITES_PAGE_SIZE }, "websites")}
+              scroll={false}
+              className={linkClass}
+            >
+              Show more
+            </Link>
+          </div>
+        )}
       </section>
 
       <section

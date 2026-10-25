@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useEffect,
   useId,
@@ -14,8 +15,17 @@ import { ArrowUpIcon, CheckIcon, PlusIcon, UndoIcon } from "./icons";
 import { focusRing, panelTitle, primaryButton } from "./ui";
 
 // Painel "Build with No Sweat": a conversa desta sessão com a IA (pedidos e resultados) e o
-// campo "Ask for a change…". A lógica do pedido (POST /api/sites/[id]/ai-edit, limite diário,
-// salvar antes, desfazer) continua no SiteEditor; aqui só desenhamos.
+// campo "Ask for a change…". A lógica do pedido (POST /api/sites/[id]/ai-edit, créditos e
+// limites, salvar antes, desfazer) continua no SiteEditor; aqui só desenhamos.
+
+/** Saldo de créditos da conta (server/credits): quanto sobra e quanto custa cada mudança. */
+export type AiCredits = { left: number; cost: number; resetsAt: string };
+
+const refillDate = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
 
 /** Uma mensagem da conversa (só desta sessão; o servidor guarda as versões, não o texto). */
 export type ChatMessage =
@@ -53,6 +63,7 @@ export function AskAiPanel({
   pending,
   willSaveFirst = false,
   aiEditsLeft,
+  aiCredits = null,
   canUndo,
   onUndo,
   onAddPhotos,
@@ -68,8 +79,10 @@ export function AskAiPanel({
   pending: boolean;
   /** Há mudanças não salvas: o editor salva antes de mandar o pedido à IA. */
   willSaveFirst?: boolean;
-  /** Pedidos que ainda cabem hoje; `null` = sem limite. */
+  /** Pedidos que ainda cabem agora (créditos e limite diário); `null` = sem limite. */
   aiEditsLeft: number | null;
+  /** Saldo de créditos (contas); `null` = visitante ou admin. */
+  aiCredits?: AiCredits | null;
   canUndo: boolean;
   onUndo: () => void;
   /** Abre a galeria (ou cria uma) no painel de seções. */
@@ -89,7 +102,8 @@ export function AskAiPanel({
   const menuArea = useRef<HTMLFormElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const outOfEdits = aiEditsLeft === 0;
+  const outOfCredits = aiCredits !== null && aiCredits.left < aiCredits.cost;
+  const outOfEdits = aiEditsLeft === 0 || outOfCredits;
   const offerSignUp = isGuest && outOfEdits;
   const locked = pending || outOfEdits;
   const canSend = !locked && instruction.trim().length >= 3;
@@ -149,15 +163,20 @@ export function AskAiPanel({
     });
   }
 
-  const hint = outOfEdits
-    ? isGuest
-      ? "You’ve used the free AI changes."
-      : "You’ve used today’s AI changes. More tomorrow."
-    : willSaveFirst
-      ? "Your edits will be saved first, then the AI makes the change."
-      : aiEditsLeft === null
-        ? "Every change is saved as a draft you can undo."
-        : `${aiEditsLeft} AI ${aiEditsLeft === 1 ? "change" : "changes"} left today`;
+  const hint =
+    outOfCredits && aiCredits
+      ? `You’re out of AI credits. Your monthly credits refill on ${refillDate.format(new Date(aiCredits.resetsAt))}.`
+      : outOfEdits
+        ? isGuest
+          ? "You’ve used the free AI changes."
+          : "You’ve used today’s AI changes. More tomorrow."
+        : willSaveFirst
+          ? "Your edits will be saved first, then the AI makes the change."
+          : aiCredits
+            ? `${aiCredits.left} AI ${aiCredits.left === 1 ? "credit" : "credits"} left · each change uses ${aiCredits.cost}`
+            : aiEditsLeft === null
+              ? "Every change is saved as a draft you can undo."
+              : `${aiEditsLeft} AI ${aiEditsLeft === 1 ? "change" : "changes"} left today`;
 
   const suggestionButton = `inline-flex min-h-11 items-center rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 hover:text-ink disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:border-slate-200 disabled:hover:bg-white motion-reduce:transition-none lg:min-h-9 ${focusRing}`;
 
@@ -372,6 +391,11 @@ export function AskAiPanel({
         <p id={`${ids}-hint`} className="mt-2 px-1 text-[12px] text-slate-500">
           {hint}
         </p>
+        {outOfCredits && (
+          <Link href="/billing#credits" className={`${primaryButton} mt-2 w-full text-center`}>
+            Get more credits
+          </Link>
+        )}
         {offerSignUp && signUpHref && (
           <a
             href={signUpHref}

@@ -7,12 +7,13 @@ import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { requireAdmin } from "@/server/admin";
 import { getViewer } from "@/server/auth/viewer";
 
-// Seções do painel: todas na mesma página (/admin), com âncoras.
+// Seções do painel: quase todas na mesma página (/admin), com âncoras; Models é o Model studio.
 const SECTIONS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin#accounts", label: "Accounts" },
   { href: "/admin#websites", label: "Websites" },
   { href: "/admin#usage", label: "Usage" },
+  { href: "/admin/models", label: "Models" },
 ];
 
 const navItem = `inline-flex min-h-10 items-center rounded-lg px-2 text-sm sm:px-3 font-semibold whitespace-nowrap text-slate-300 transition-colors duration-150 hover:bg-white/10 hover:text-white ${focusRing}`;

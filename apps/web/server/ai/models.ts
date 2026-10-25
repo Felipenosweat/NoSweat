@@ -1,6 +1,7 @@
 import { fixtures, MODEL_LIBRARY, type ModelEntry } from "@nosweat/fixtures";
 import type { SiteSpec, TemplateId } from "@nosweat/schema";
 import { readBrief, type DesignPlan } from "../design";
+import { getModelStore, type ModelRecord } from "../models/store";
 
 // Sites-modelo de cada categoria (docs/design/model-sites.md). A geração "a partir do modelo"
 // parte de um destes: estrutura, tema, composição e ordem das seções vêm daqui; a IA só escreve
@@ -58,7 +59,7 @@ export function templateFor(brief: string): TemplateId | null {
 }
 
 /** Um site-modelo da biblioteca, sem o texto do dono (só o que a escolha usa). */
-type ModelChoice = Pick<ModelEntry, "slug" | "category" | "keywords" | "spec">;
+export type ModelChoice = Pick<ModelEntry, "slug" | "category" | "keywords" | "spec">;
 
 /**
  * Os modelos originais, com as palavras do ramo de cada um. O primeiro de cada categoria é o
@@ -112,14 +113,19 @@ function keywordHits(text: string, keywords: string[]): number {
 }
 
 /**
- * Site-modelo mais parecido com o pedido, dentro da categoria:
+ * Site-modelo mais parecido com o pedido, dentro da categoria, entre os modelos de `pool`:
  * 1. o ramo (palavras do pedido) pesa mais: uma barbearia parte da barbearia, não do salão;
  * 2. desempate pela composição que a direção de arte escolheu (o modelo já foi pensado para ela);
  * 3. sem nenhum sinal, o modelo padrão da categoria (o primeiro da lista).
  */
-export function modelFor(template: TemplateId, brief: string, plan?: DesignPlan): SiteSpec {
+export function pickModel(
+  pool: readonly ModelChoice[],
+  template: TemplateId,
+  brief: string,
+  plan?: DesignPlan,
+): SiteSpec {
   const text = normalize(brief);
-  const candidates = ALL_MODELS.filter((model) => model.category === template);
+  const candidates = pool.filter((model) => model.category === template);
   let best: ModelChoice | undefined;
   let bestScore = -1;
   for (const model of candidates) {
@@ -132,6 +138,66 @@ export function modelFor(template: TemplateId, brief: string, plan?: DesignPlan)
       bestScore = score;
     }
   }
-  if (!best || bestScore <= 0) return MODELS[template];
+  if (!best || bestScore <= 0) return candidates[0]?.spec ?? MODELS[template];
   return best.spec;
+}
+
+/** Igual a pickModel, só com os modelos do código (síncrono; usado nos testes). */
+export function modelFor(template: TemplateId, brief: string, plan?: DesignPlan): SiteSpec {
+  return pickModel(ALL_MODELS, template, brief, plan);
+}
+
+/**
+ * Junta os modelos do código com as versões do estúdio (/admin/models, tabela model_sites):
+ * - modelo do código com versão APROVADA: a versão do estúdio substitui o spec (mesmo lugar na
+ *   lista, então continua sendo o padrão da categoria se era); palavras do estúdio, se houver;
+ * - versão em rascunho: não muda nada (vale a do código);
+ * - modelo novo (só no estúdio): entra no fim da lista, e só quando aprovado.
+ */
+export function mergeModelPool(
+  base: readonly ModelChoice[],
+  overrides: readonly ModelRecord[],
+): ModelChoice[] {
+  const approved = new Map(
+    overrides.filter((row) => row.status === "approved").map((row) => [row.slug, row]),
+  );
+  const merged = base.map((model): ModelChoice => {
+    const row = approved.get(model.slug);
+    if (!row) return model;
+    approved.delete(model.slug);
+    return { ...model, spec: row.spec, keywords: row.keywords ?? model.keywords };
+  });
+  for (const row of approved.values()) {
+    const category = row.category ?? row.spec.template;
+    merged.push({ slug: row.slug, category, keywords: row.keywords ?? [], spec: row.spec });
+  }
+  return merged;
+}
+
+/** Quanto tempo a lista juntada fica em memória (cada instância do servidor tem a sua). */
+export const MODEL_POOL_TTL_MS = 60_000;
+
+let poolCache: { pool: ModelChoice[]; expiresAt: number } | null = null;
+
+/**
+ * Modelos que a geração usa agora: os do código + as versões aprovadas no estúdio (ver
+ * mergeModelPool). Fica 60 s em cache. Se o banco falhar (ou a tabela ainda não existir), usa
+ * só os do código: gerar o site nunca depende do estúdio.
+ */
+export async function loadModelPool(now = Date.now()): Promise<ModelChoice[]> {
+  if (poolCache && poolCache.expiresAt > now) return poolCache.pool;
+  let pool: ModelChoice[];
+  try {
+    pool = mergeModelPool(ALL_MODELS, await getModelStore().list());
+  } catch (error) {
+    console.error("[models] could not load studio models; using the code models", error);
+    pool = ALL_MODELS;
+  }
+  poolCache = { pool, expiresAt: now + MODEL_POOL_TTL_MS };
+  return pool;
+}
+
+/** Esquece a lista em cache (o estúdio chama ao salvar; os testes, entre um caso e outro). */
+export function clearModelPoolCache(): void {
+  poolCache = null;
 }

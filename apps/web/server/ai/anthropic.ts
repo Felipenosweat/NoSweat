@@ -3,7 +3,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { designBriefForPrompt, type DesignPlan } from "../design";
 import { applyModelFill, lintFill, ModelFill, modelCopyForPrompt, verifyFacts } from "./model-fill";
-import { modelFor, templateFor } from "./models";
+import { loadModelPool, pickModel, templateFor } from "./models";
 import {
   MODEL_FILL_SYSTEM_PROMPT,
   SITE_EDIT_SYSTEM_PROMPT,
@@ -90,7 +90,8 @@ export class AnthropicGenerator implements SiteGenerator {
       console.info("[ai] model-first skipped", { reason: "unsure_category" });
       return null;
     }
-    const model = modelFor(template, brief);
+    // Modelos do código + versões aprovadas no estúdio (/admin/models), com cache curto.
+    const model = pickModel(await loadModelPool(), template, brief);
     let problems: string[] = [];
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       let raw: unknown;
