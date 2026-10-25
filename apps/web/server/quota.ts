@@ -1,11 +1,15 @@
 import { isAdmin } from "./admin";
+import { refundCredits, spendCredits, usesLeft } from "./credits";
 import { errorResponse } from "./http";
 import { requestIpHash } from "./ip";
 import type { Actor } from "./sites";
 import { getSiteStore, type AiUsageKind } from "./store";
 
-// Limite diário de uso da IA (controle de custo). Admins não têm limite.
-// Valores padrão abaixo; dá para mudar sem deploy de código pelas variáveis de ambiente.
+// Limites de uso da IA (controle de custo). Admins não têm limite.
+//
+// Contas: o limite de verdade são os CRÉDITOS do mês (server/credits: cota do plano que zera
+// todo mês + créditos comprados que não vencem). O limite diário abaixo continua como trava
+// contra abuso (rajadas); valores padrão abaixo, ajustáveis pelas variáveis de ambiente.
 //
 // Visitantes sem conta têm três travas: por visitante (cookie), por IP (quem apaga o cookie
 // continua limitado) e um teto global por dia somando todos os visitantes (custo máximo).
@@ -118,8 +122,12 @@ export async function remainingUses(actor: Actor, kind: AiUsageKind): Promise<nu
     );
   }
   if (await isAdmin(actor.user.id)) return null;
-  const used = await getSiteStore().countAiUsage(actor.user.id, kind, since24h());
-  return Math.max(0, dailyLimit(kind) - used);
+  const [used, byCredits] = await Promise.all([
+    getSiteStore().countAiUsage(actor.user.id, kind, since24h()),
+    usesLeft(actor, kind),
+  ]);
+  const daily = Math.max(0, dailyLimit(kind) - used);
+  return byCredits === null ? daily : Math.min(daily, byCredits);
 }
 
 /**
@@ -162,15 +170,21 @@ function guestLimitResponse(
 }
 
 /**
- * Reserva um uso da IA ANTES de chamá-la. Devolve a resposta 429 pronta se passou do limite,
- * senão `null` (o uso já ficou registrado).
+ * Reserva um uso da IA ANTES de chamá-la. Devolve a resposta pronta se passou do limite (402
+ * `out_of_credits` sem créditos; 429 `quota_exceeded` no limite diário ou de visitante), senão
+ * `null` (o uso já ficou registrado e os créditos já foram descontados).
  *
  * Ordem: confere → registra → confere de novo. Registrar antes de chamar a IA (que demora
  * segundos) impede que vários pedidos ao mesmo tempo passem todos pelo limite; a primeira
  * conferência evita registrar pedidos de quem já estava no limite.
- * Se a IA falhar, o uso continua contado (custo: no máximo um crédito perdido por falha).
+ * Se a IA falhar, a rota chama `refundUse` (os créditos voltam; o uso continua no ai_usage, que
+ * alimenta o custo do /admin e o limite diário).
  */
-export async function reserveUse(actor: Actor, kind: AiUsageKind): Promise<Response | null> {
+export async function reserveUse(
+  actor: Actor,
+  kind: AiUsageKind,
+  siteId?: string | null,
+): Promise<Response | null> {
   const store = getSiteStore();
 
   if (actor.kind === "user") {
@@ -181,9 +195,13 @@ export async function reserveUse(actor: Actor, kind: AiUsageKind): Promise<Respo
     const limit = dailyLimit(kind);
     const before = await store.countAiUsage(actor.user.id, kind, since24h());
     if (before >= limit) return userLimitResponse(kind);
+    const noCredits = await spendCredits(actor, kind, siteId);
+    if (noCredits) return noCredits;
     await store.recordAiUsage(actor.user.id, kind);
     const after = await store.countAiUsage(actor.user.id, kind, since24h());
-    return after > limit ? userLimitResponse(kind) : null;
+    if (after <= limit) return null;
+    await refundCredits(actor, kind, "daily_limit");
+    return userLimitResponse(kind);
   }
 
   const ipHash = await requestIpHash();
@@ -191,6 +209,14 @@ export async function reserveUse(actor: Actor, kind: AiUsageKind): Promise<Respo
   if (before) return before;
   await store.recordGuestAiUsage({ guestId: actor.guestId, ipHash }, kind);
   return guestLimitResponse(kind, await guestCounts(actor, kind, ipHash), (n, l) => n > l);
+}
+
+/**
+ * A IA falhou depois de `reserveUse`: devolve os créditos da conta. Visitantes não usam créditos
+ * (o uso continua contado no limite deles). Nunca lança erro.
+ */
+export async function refundUse(actor: Actor, kind: AiUsageKind): Promise<void> {
+  await refundCredits(actor, kind);
 }
 
 /**

@@ -380,9 +380,12 @@ describe("/api/sites/[id]/domain", () => {
 });
 
 describe("GET /api/me/credits", () => {
-  it("returns the mock credits", async () => {
+  it("returns the account's credit balance", async () => {
     const res = await getCredits();
-    expect(CreditsResponse.parse(await res.json())).toMatchObject({ plan: "trial" });
+    const body = CreditsResponse.parse(await res.json());
+    expect(body).toMatchObject({ plan: "trial" });
+    expect(body.credits?.unlimited).toBe(false);
+    expect(body.credits?.total).toBeGreaterThan(0);
   });
 });
 

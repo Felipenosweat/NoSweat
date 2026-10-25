@@ -5,7 +5,7 @@ import {
   type SocialPlanItem,
 } from "@nosweat/schema";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
-import { reserveUse } from "@/server/quota";
+import { refundUse, reserveUse } from "@/server/quota";
 import { requireSocialUser } from "@/server/social/api";
 import { SocialAiError, getPostPlanner } from "@/server/social/ai";
 import { hasUnverifiedClaims } from "@/server/social/claims";
@@ -60,7 +60,8 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const limited = await reserveUse({ kind: "user", user }, "social_plan");
+    const actor = { kind: "user" as const, user };
+    const limited = await reserveUse(actor, "social_plan", ctx.siteId);
     if (limited) return limited;
 
     let items: SocialPlanItem[];
@@ -74,6 +75,8 @@ export async function POST(request: Request): Promise<Response> {
         maxPosts: 31,
       });
     } catch (error) {
+      // A IA falhou: os créditos voltam para a conta.
+      await refundUse(actor, "social_plan");
       if (error instanceof SocialAiError) {
         return errorResponse(
           502,

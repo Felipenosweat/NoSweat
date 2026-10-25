@@ -92,8 +92,8 @@ export function PlanMonthButton({
     remaining === null
       ? null
       : remaining === 0
-        ? "No AI month plans left today. Try again tomorrow."
-        : `${remaining} AI month plan${remaining === 1 ? "" : "s"} left today`;
+        ? "No AI month plans left. Check your AI credits in Plans and billing."
+        : `${remaining} AI month plan${remaining === 1 ? "" : "s"} left`;
 
   if (!open) {
     return (

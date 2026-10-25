@@ -106,6 +106,8 @@ type FormError = {
   signupLink?: boolean;
   /** Conta logada no limite do dia: o caminho é voltar aos sites dela, não criar conta. */
   dashboardLink?: boolean;
+  /** Conta sem créditos da IA: o caminho é /billing (mais créditos ou outro plano). */
+  billingLink?: boolean;
 };
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
@@ -140,6 +142,12 @@ function errorFor(code: string, fallback: string, signedIn = false): FormError {
         title: "You’ve reached today’s limit.",
         body: fallback.replace(SIGN_UP_HINT_RE, "") || "Please try again tomorrow.",
         signupLink: true,
+      };
+    case "out_of_credits":
+      return {
+        title: "You’re out of AI credits.",
+        body: fallback || "Your monthly credits refill at the start of next month.",
+        billingLink: true,
       };
     case "generation_failed":
       return {
@@ -835,6 +843,17 @@ function Flow({
                                   className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
                                 >
                                   Go to your sites
+                                </Link>
+                              </>
+                            )}
+                            {formError.billingLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href="/billing#credits"
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  Get more credits
                                 </Link>
                               </>
                             )}

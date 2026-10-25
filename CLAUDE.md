@@ -86,8 +86,14 @@ Como as peças se ligam:
   muda ao publicar. Páginas públicas usam `liveSpec(site)`. Restaurar versão = novo rascunho.
 - IA editando o site: `POST /api/sites/[id]/ai-edit` recebe um pedido em linguagem natural,
   a IA devolve o SiteSpec inteiro alterado + um resumo (`AiEditResult`), e isso vira um novo
-  RASCUNHO (versão `ai_edit`). Limite diário por conta em `server/quota.ts`
-  (`AI_DAILY_GENERATIONS`, `AI_DAILY_EDITS`; admins sem limite), registrado em `ai_usage`.
+  RASCUNHO (versão `ai_edit`). Toda ação da IA de uma conta gasta CRÉDITOS (`server/credits`,
+  migration 0019 `credit_ledger`; preços e cotas só em `server/credits/pricing.ts`): cota mensal
+  do plano (zera no dia 1, UTC, sem acumular) + créditos comprados (não vencem, usados depois da
+  cota). `reserveUse` (`server/quota.ts`) desconta antes da IA (402 `out_of_credits`) e a rota
+  chama `refundUse` se a IA falhar. O limite diário (`AI_DAILY_*`) continua como trava contra
+  abuso; visitantes não usam créditos (limites `GUEST_*`); admins sem limite. Todo uso continua
+  em `ai_usage` (custo do /admin). Ajuste manual do admin: `adminAdjustCredits`. Editar à mão é
+  grátis.
 - Formulário de contato: sites publicados enviam para `POST /api/sites/[id]/leads` (público, com
   campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
   `proxy.ts` deixa `/api/*` passar sem reescrever.

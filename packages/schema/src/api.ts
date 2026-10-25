@@ -23,6 +23,7 @@ export const ERROR_CODES = [
   "social_error",
   "internal_error",
   "conflict",
+  "out_of_credits",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 
@@ -287,10 +288,29 @@ export type LeadsResponse = z.infer<typeof LeadsResponse>;
 
 // ---------- GET /api/me/credits ----------
 
+/**
+ * Saldo de créditos da IA de uma conta (apps/web/server/credits). A cota do mês zera em
+ * `resetsAt`; os créditos comprados (`topup`) não vencem e são usados depois da cota.
+ * `unlimited`: admins (os números aparecem só como referência).
+ */
+export const CreditBalance = z.object({
+  unlimited: z.boolean(),
+  monthlyAllowance: z.number().int().nonnegative(),
+  monthlyUsed: z.number().int().nonnegative(),
+  monthlyLeft: z.number().int().nonnegative(),
+  topup: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  resetsAt: z.string(),
+});
+export type CreditBalance = z.infer<typeof CreditBalance>;
+
 export const CreditsResponse = z.object({
+  /** Mudanças por IA que ainda cabem agora (créditos e limite diário; visitante: limite GUEST_*). */
   remaining: z.number().int().nonnegative(),
-  // Por enquanto só existe o plano de teste; novos planos entram aqui.
-  plan: z.enum(["trial"]),
+  /** "trial" = sem plano pago (ou visitante). */
+  plan: z.enum(["trial", "starter", "pro", "premium"]),
+  /** Saldo de créditos da conta; `null` para visitantes (eles não usam créditos). */
+  credits: CreditBalance.nullable().optional(),
 });
 export type CreditsResponse = z.infer<typeof CreditsResponse>;
 

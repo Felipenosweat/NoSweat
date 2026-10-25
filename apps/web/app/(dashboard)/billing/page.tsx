@@ -20,9 +20,19 @@ import {
   syncCheckoutSession,
   type AccessGrant,
 } from "@/server/billing";
+import {
+  CREDIT_ACTION_LABELS,
+  CREDIT_ACTIONS,
+  creditCost,
+  creditPlan,
+  getBalance,
+  monthlyAllowance,
+  TOPUP_PACKS,
+} from "@/server/credits";
 import { getOwnedSite } from "@/server/sites";
 import { BillingIcon } from "../NavIcons";
 import { BillingPlans, type EndedPlan, type PlanCard, type SalesContact } from "./BillingPlans";
+import { CreditsPanel } from "./CreditsPanel";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
@@ -100,6 +110,18 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     setup: plan.setupCents ? usd(plan.setupCents) : null,
     customDomain: plan.customDomain,
     publishedSitesLimit: plan.publishedSitesLimit,
+    monthlyCredits: monthlyAllowance(plan.id),
+  }));
+
+  // Créditos da IA da conta (a vista, no "ver como"). Comprar é manual por enquanto.
+  const [credits, creditsPlan] = await Promise.all([getBalance(user), creditPlan(user)]);
+  const creditCosts = CREDIT_ACTIONS.map((action) => ({
+    label: CREDIT_ACTION_LABELS[action],
+    credits: creditCost(action),
+  }));
+  const creditPacks = TOPUP_PACKS.map((pack) => ({
+    credits: pack.credits,
+    price: usd(pack.priceCents),
   }));
 
   return (
@@ -155,6 +177,14 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           and choose &ldquo;Take website offline&rdquo;.
         </p>
       )}
+
+      <CreditsPanel
+        balance={credits}
+        costs={creditCosts}
+        packs={creditPacks}
+        contact={contact}
+        planName={creditsPlan ? PLANS[creditsPlan].name : null}
+      />
 
       {!billing.enabled ? (
         <section className={`${panelClass} mt-8 flex items-start gap-4`}>

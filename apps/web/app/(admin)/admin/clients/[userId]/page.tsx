@@ -6,14 +6,14 @@ import { connection } from "next/server";
 import type { ReactNode } from "react";
 import {
   StatusBadge,
-  focusRing,
   panelClass,
   panelText,
   panelTitle,
   secondaryButton,
   textButton,
 } from "@/components/DashboardUi";
-import { accountName, getAccount, isAdmin, requireAdmin } from "@/server/admin";
+import { accountName, canManageAccounts, getAccount, isAdmin, requireAdmin } from "@/server/admin";
+import { loginDisabled, planStatus } from "@/server/admin/accounts";
 import {
   AI_USAGE_KINDS,
   AI_USAGE_LABELS,
@@ -23,59 +23,24 @@ import {
   totalUses,
 } from "@/server/admin/costs";
 import { loadAccountActivity, type UsageByKind } from "@/server/admin/metrics";
-import {
-  billingEnforced,
-  getGrantStore,
-  isActiveStatus,
-  isGrantActive,
-  PLANS,
-  type AccessGrant,
-} from "@/server/billing";
-import { getBillingStore, type SubscriptionRecord } from "@/server/billing/store";
+import { billingEnforced, getGrantStore, isActiveStatus, isGrantActive } from "@/server/billing";
+import { getBillingStore } from "@/server/billing/store";
 import { getSocialStore } from "@/server/social/store";
-import { getSiteStore, type SiteRecord } from "@/server/store";
+import { getSiteStore } from "@/server/store";
+import { SitesTable } from "../../SitesTable";
+import { toSiteRow } from "../../site-rows";
 import { AccessPanel } from "./AccessPanel";
 import { DeleteTestAccount } from "./DeleteTestAccount";
+import { LoginAccessPanel } from "./LoginAccessPanel";
 import { SocialPanel } from "./SocialPanel";
-import { startViewAs } from "./actions";
+import { setLoginDisabledAction, startViewAs } from "./actions";
 
 export const metadata: Metadata = { title: "Account" };
 
 type ClientPageProps = { params: Promise<{ userId: string }> };
 
-type Tone = "live" | "draft" | "pending" | "info" | "neutral";
-
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
-const dateOnly = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 const formatDate = (value: string | null) => (value ? dateFormat.format(new Date(value)) : "—");
-
-const linkClass = `rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`;
-
-/** Selo do plano: assinatura do Stripe ativa, acesso manual valendo, ou "No plan". */
-function planStatus(
-  subscription: SubscriptionRecord | null,
-  grant: AccessGrant | null,
-): { label: string; tone: Tone } {
-  if (subscription && isActiveStatus(subscription.status)) {
-    const plan = subscription.plan ? PLANS[subscription.plan].name : "Plan";
-    return { label: `${plan} · card · ${subscription.status}`, tone: "live" };
-  }
-  // A data vem antes do `isGrantActive` (ele é type guard: no "não", `grant` vira `null`).
-  const grantEnd = grant ? dateOnly.format(new Date(grant.expiresAt)) : null;
-  if (grant && isGrantActive(grant)) {
-    return { label: `${PLANS[grant.plan].name} until ${grantEnd}`, tone: "live" };
-  }
-  if (subscription?.status) return { label: `Card: ${subscription.status}`, tone: "pending" };
-  if (grantEnd) return { label: `Access ended ${grantEnd}`, tone: "pending" };
-  return { label: "No plan", tone: "neutral" };
-}
-
-/** Endereço do site no ar: domínio próprio ou /s/<slug>. `null` se não está publicado. */
-function liveHref(site: SiteRecord): string | null {
-  if (site.status !== "published") return null;
-  if (site.customDomain) return `https://${site.customDomain}`;
-  return site.slug ? `/s/${site.slug}` : null;
-}
 
 /** Tudo o que a página mostra (fora do componente: usa o relógio). `null` = conta não existe. */
 async function loadAccountPage(userId: string) {
@@ -126,60 +91,6 @@ function StatTile({ label, value, note }: { label: string; value: string; note: 
       </dd>
       <dd className="text-[13px] text-slate-500">{note}</dd>
     </div>
-  );
-}
-
-/**
- * Selo do site como o público vê: publicado de dono sem plano fica "temporarily unavailable" com
- * os planos valendo (ver ownerHasLiveAccess); com os planos desligados, avisa que sairia do ar.
- */
-function siteBadge(
-  site: SiteRecord,
-  ownerHasPlan: boolean,
-  enforced: boolean,
-): { label: string; tone: Tone } {
-  if (site.status !== "published") return { label: "Draft", tone: "draft" };
-  if (ownerHasPlan) return { label: "Live", tone: "live" };
-  return { label: enforced ? "Offline · no plan" : "Live · no plan", tone: "pending" };
-}
-
-function WebsiteRow({
-  site,
-  ownerHasPlan,
-  enforced,
-}: {
-  site: SiteRecord;
-  ownerHasPlan: boolean;
-  enforced: boolean;
-}) {
-  const live = liveHref(site);
-  const badge = siteBadge(site, ownerHasPlan, enforced);
-  return (
-    <li className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-ink">{site.spec.business.name}</span>
-          <StatusBadge tone={badge.tone}>{badge.label}</StatusBadge>
-        </div>
-        <p className="mt-0.5 text-[13px] text-slate-500">
-          {site.spec.template} · created {formatDate(site.createdAt)}
-          {site.customDomain ? ` · ${site.customDomain}` : ""}
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <Link href={`/sites/${site.id}/edit`} className={linkClass}>
-          Open editor
-        </Link>
-        <Link href={`/sites/${site.id}`} className={linkClass}>
-          Manage
-        </Link>
-        {live && (
-          <a href={live} target="_blank" rel="noreferrer" className={linkClass}>
-            Live site<span className="sr-only"> (opens in a new tab)</span> ↗
-          </a>
-        )}
-      </div>
-    </li>
   );
 }
 
@@ -243,6 +154,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
 
   const name = accountName(account);
   const plan = planStatus(subscription, grant);
+  const loginOff = loginDisabled(account);
   const isSelf = account.id === admin.id;
   const liveCount = sites.filter((site) => site.status === "published").length;
   // Qualquer conta que não seja admin nem a própria pode ser apagada (teste: DELETE; cliente de
@@ -276,6 +188,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
             <div className="mt-3 flex flex-wrap gap-1.5">
               {targetIsAdmin && <StatusBadge tone="info">Admin</StatusBadge>}
               {account.testAccount && <StatusBadge tone="pending">Test account</StatusBadge>}
+              {loginOff && <StatusBadge tone="neutral">Login disabled</StatusBadge>}
               <StatusBadge tone={plan.tone}>{plan.label}</StatusBadge>
             </div>
             <p className="mt-3 text-[13px] text-slate-500">
@@ -327,20 +240,17 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
             The editor opens their real website: changes you save there are theirs.
           </p>
         </div>
-        {sites.length === 0 ? (
-          <p className={`px-5 py-4 ${panelText}`}>No websites yet.</p>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {sites.map((site) => (
-              <WebsiteRow
-                key={site.id}
-                site={site}
-                ownerHasPlan={ownerHasPlan}
-                enforced={enforced}
-              />
-            ))}
-          </ul>
-        )}
+        <SitesTable
+          rows={sites.map((site) =>
+            toSiteRow(site, {
+              owner: { label: account.email ?? account.id, test: account.testAccount },
+              withoutPlan: !ownerHasPlan,
+              enforced,
+            }),
+          )}
+          showOwner={false}
+          emptyText="No websites yet."
+        />
       </section>
 
       <AiUsagePanel usage={activity.ai30d} />
@@ -361,6 +271,15 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
           counts={postCounts}
         />
       </div>
+
+      {canDelete && (
+        <LoginAccessPanel
+          action={setLoginDisabledAction.bind(null, account.id)}
+          disabled={loginOff}
+          email={account.email}
+          enabled={canManageAccounts()}
+        />
+      )}
 
       {canDelete && (
         <DeleteTestAccount

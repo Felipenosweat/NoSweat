@@ -1,6 +1,6 @@
 import { CaptionRequest, CaptionResponse } from "@nosweat/schema";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
-import { reserveUse } from "@/server/quota";
+import { refundUse, reserveUse } from "@/server/quota";
 import { requireSocialUser } from "@/server/social/api";
 import { SocialAiError, getPostPlanner } from "@/server/social/ai";
 import { buildBusinessContext } from "@/server/social/context";
@@ -33,12 +33,15 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const limited = await reserveUse({ kind: "user", user }, "social_caption");
+    const actor = { kind: "user" as const, user };
+    const limited = await reserveUse(actor, "social_caption", ctx.siteId);
     if (limited) return limited;
 
     try {
       return jsonResponse(CaptionResponse, await getPostPlanner().writeCaption(ctx, req));
     } catch (error) {
+      // A IA falhou: os créditos voltam para a conta.
+      await refundUse(actor, "social_caption");
       if (error instanceof SocialAiError) {
         return errorResponse(
           502,

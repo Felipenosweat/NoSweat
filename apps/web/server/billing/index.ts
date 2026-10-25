@@ -75,8 +75,11 @@ export async function getBillingStatus(user: CurrentUser): Promise<BillingStatus
 
 const RANK: Record<PlanId, number> = { starter: 1, pro: 2, premium: 3 };
 
-/** Plano ativo da conta: o maior entre Stripe e acesso manual (`null` sem nenhum ativo). */
-async function activePlan(userId: string): Promise<PlanId | null> {
+/**
+ * Plano ativo da conta: o maior entre Stripe e acesso manual (`null` sem nenhum ativo). Também
+ * define a cota mensal de créditos da IA (server/credits).
+ */
+export async function activePlan(userId: string): Promise<PlanId | null> {
   const [sub, grant] = await Promise.all([
     getBillingStore().get(userId),
     getGrantStore().get(userId),

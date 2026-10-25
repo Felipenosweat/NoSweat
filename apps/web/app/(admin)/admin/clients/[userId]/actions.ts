@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
 import { getAccount, requireAdmin } from "@/server/admin";
+import { AccountAccessError, setLoginDisabled } from "@/server/admin/account-access";
 import { VIEW_AS_COOKIE, signViewAsToken, viewAsCookieOptions } from "@/server/auth/view-as-token";
 import { extendExpiry, getGrantStore, isGrantActive, PLANS } from "@/server/billing";
 import { sameInstant } from "@/server/billing/grants";
@@ -125,6 +126,9 @@ export async function grantAccess(
     updatedAt: new Date().toISOString(),
   });
   refresh(userId);
+  console.info(
+    `[admin] ${admin.id} granted ${input.plan} to ${userId} until ${expiresAt} (${input.days} day(s))`,
+  );
 
   const planName = PLANS[input.plan].name;
   const account = await getAccount(userId);
@@ -164,6 +168,7 @@ export async function revokeAccess(
     updatedAt: now,
   });
   refresh(userId);
+  console.info(`[admin] ${admin.id} removed manual access from ${userId}`);
   return { ok: true, message: "Manual access removed." };
 }
 
@@ -180,6 +185,7 @@ export async function toggleSocialTester(userId: string): Promise<void> {
     action: "admin_set_tester",
     detail: { tester },
   });
+  console.info(`[admin] ${admin.id} set Instagram tester=${tester} for ${userId}`);
   refresh(userId);
 }
 
@@ -192,5 +198,42 @@ export async function startViewAs(userId: string): Promise<void> {
   if (userId === admin.id) redirect("/dashboard");
   const token = await signViewAsToken(admin.id, userId);
   (await cookies()).set(VIEW_AS_COOKIE, token, viewAsCookieOptions());
+  console.info(`[admin] ${admin.id} started view-as for ${userId}`);
   redirect("/dashboard");
+}
+
+const LoginForm = z.object({ disabled: z.enum(["true", "false"]) });
+
+/**
+ * Desliga ou religa o login da conta (ban do Supabase Auth). Para contas de verdade é o jeito de
+ * bloquear sem apagar dados. Nunca admins, nunca a própria conta (o servidor confere).
+ */
+export async function setLoginDisabledAction(
+  userId: string,
+  _prev: GrantAccessState,
+  formData: FormData,
+): Promise<GrantAccessState> {
+  const admin = await requireAdmin();
+  const parsed = LoginForm.safeParse({ disabled: formData.get("disabled") });
+  if (!parsed.success) return { ok: false, message: "Invalid request. Reload the page." };
+  const disabled = parsed.data.disabled === "true";
+  try {
+    const result = await setLoginDisabled(userId, admin.id, disabled);
+    if (!result.ok) return { ok: false, message: result.error };
+  } catch (error) {
+    console.error("[admin] could not change the login", error);
+    return {
+      ok: false,
+      message:
+        error instanceof AccountAccessError ? error.message : "Something went wrong. Try again.",
+    };
+  }
+  console.info(`[admin] ${admin.id} ${disabled ? "disabled" : "re-enabled"} login for ${userId}`);
+  refresh(userId);
+  return {
+    ok: true,
+    message: disabled
+      ? "Login disabled. They can't log in anymore (an open session ends within an hour)."
+      : "Login re-enabled. They can log in again.",
+  };
 }
