@@ -25,10 +25,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               >
                 Log in
               </Link>
-              <Link
-                href="/signup"
-                className={glassButtonClass({ variant: "primary" })}
-              >
+              <Link href="/signup" className={glassButtonClass({ variant: "primary" })}>
                 Sign up
               </Link>
             </nav>

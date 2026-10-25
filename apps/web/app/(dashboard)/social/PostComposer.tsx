@@ -18,6 +18,7 @@ import {
 import { useEffect, useId, useRef, useState, type SyntheticEvent } from "react";
 import { z } from "zod";
 import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
+import { glassButtonClass } from "@/components/glass";
 import { prepareSocialImage, ratioOf, type SocialRatio } from "@/lib/social-image";
 import { ManualPostButton } from "./ManualPostButton";
 import {
@@ -382,10 +383,10 @@ export function PostComposer({
       aria-labelledby={`${ids}-title`}
       onClose={handleClose}
       onCancel={onCancel}
-      className="m-0 h-dvh max-h-none w-full max-w-none bg-white p-0 text-ink backdrop:bg-ink/40 md:ml-auto md:w-[min(100%,1000px)] md:border-l md:border-slate-200"
+      className="glass-strong m-0 h-dvh max-h-none w-full max-w-none border-0 p-0 text-ink backdrop:bg-ink/40 md:ml-auto md:w-[min(100%,1000px)]"
     >
       <div className="flex h-full flex-col">
-        <header className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 sm:px-6">
+        <header className="glass-bar flex items-center justify-between gap-3 px-5 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <h2
               id={`${ids}-title`}
@@ -400,7 +401,7 @@ export function PostComposer({
             onClick={requestClose}
             disabled={isBusy}
             aria-label="Close"
-            className={`-mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+            className={`-mr-2 ${glassButtonClass({ variant: "ghost", iconOnly: true })}`}
           >
             <svg
               viewBox="0 0 24 24"
@@ -790,7 +791,7 @@ export function PostComposer({
           </div>
         </div>
 
-        <footer className="border-t border-slate-200 bg-white px-5 py-3 sm:px-6">
+        <footer className="glass-bar px-5 py-3 sm:px-6">
           <div aria-live="polite" className="text-[13px] text-slate-600">
             {discardAsk ? (
               <p className="mb-2 font-medium text-amber-900">

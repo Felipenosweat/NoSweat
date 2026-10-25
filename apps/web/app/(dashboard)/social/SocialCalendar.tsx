@@ -685,7 +685,10 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                       </span>
                       <span aria-hidden="true" className="flex h-1.5 gap-0.5">
                         {dayPosts.slice(0, 3).map((post) => (
-                          <span key={post.id} className={`size-1.5 rounded-full ${statusDot(post)}`} />
+                          <span
+                            key={post.id}
+                            className={`size-1.5 rounded-full ${statusDot(post)}`}
+                          />
                         ))}
                       </span>
                     </button>
@@ -706,7 +709,11 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                 }
                 actions={
                   filter === "all" ? (
-                    <GlassButton variant="secondary" icon={<PlusIcon />} onClick={() => openNew(null)}>
+                    <GlassButton
+                      variant="secondary"
+                      icon={<PlusIcon />}
+                      onClick={() => openNew(null)}
+                    >
                       New post
                     </GlassButton>
                   ) : (
@@ -794,7 +801,10 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
         }
         footer={
           <>
-            <GlassButton variant="secondary" onClick={() => setSheet((s) => ({ ...s, open: false }))}>
+            <GlassButton
+              variant="secondary"
+              onClick={() => setSheet((s) => ({ ...s, open: false }))}
+            >
               Close
             </GlassButton>
             {!sheetPast && sheet.day && (

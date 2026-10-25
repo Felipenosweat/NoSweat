@@ -8,6 +8,18 @@ import { ErrorNote, socialApi, toApiError, type SocialApiError } from "./shared"
 // Postar à mão (antes da publicação automática): copia a legenda, abre as fotos e o Instagram,
 // e o dono marca "I posted it" (vira manual_published).
 
+/** Número do passo num círculo (decorativo: a ordem da lista já diz o passo). */
+function StepNumber({ n }: { n: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="glass-edge grid size-6 shrink-0 place-items-center rounded-full bg-brand/10 text-[12px] font-semibold text-brand tabular-nums"
+    >
+      {n}
+    </span>
+  );
+}
+
 export function ManualPostButton({
   post,
   onPosted,
@@ -55,11 +67,11 @@ export function ManualPostButton({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-surface p-4">
+    <div className="glass-edge rounded-2xl bg-white/50 p-4">
       <p className="text-[15px] font-semibold text-ink">Post it yourself in three taps</p>
       <ol className="mt-3 grid gap-3">
         <li className="flex flex-wrap items-center gap-3">
-          <span className="w-5 text-sm font-semibold text-slate-500 tabular-nums">1</span>
+          <StepNumber n={1} />
           <button type="button" onClick={() => void copy()} className={secondaryButton}>
             {copied ? "Caption copied" : "Copy caption"}
           </button>
@@ -73,7 +85,7 @@ export function ManualPostButton({
           )}
         </li>
         <li className="flex flex-wrap items-center gap-3">
-          <span className="w-5 text-sm font-semibold text-slate-500 tabular-nums">2</span>
+          <StepNumber n={2} />
           {post.media.length === 0 ? (
             <span className="text-[13px] text-slate-500">This post has no photo yet.</span>
           ) : (
@@ -92,7 +104,7 @@ export function ManualPostButton({
           )}
         </li>
         <li className="flex flex-wrap items-center gap-3">
-          <span className="w-5 text-sm font-semibold text-slate-500 tabular-nums">3</span>
+          <StepNumber n={3} />
           <a
             href="https://www.instagram.com/"
             target="_blank"
@@ -104,7 +116,7 @@ export function ManualPostButton({
           </a>
         </li>
       </ol>
-      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-(--glass-rim) pt-4">
         <button
           type="button"
           onClick={() => void markPosted()}

@@ -132,7 +132,10 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
       />
 
       {status === "success" && (
-        <p role="status" className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-emerald-800">
+        <p
+          role="status"
+          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-900"
+        >
           {billing.active
             ? "Payment received. Your plan is active."
             : "Payment received. It can take a few seconds to show here."}
@@ -147,20 +150,29 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         </p>
       )}
       {status === "cancelled" && (
-        <p role="status" className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-slate-700">
+        <p
+          role="status"
+          className="glass glass-flat mt-6 rounded-2xl px-4 py-3 text-[15px] text-slate-700"
+        >
           No payment was made. You can pick a plan whenever you&rsquo;re ready.
         </p>
       )}
 
       {pendingSite && (
-        <p role="status" className="mt-6 rounded-xl bg-sky-50 px-4 py-3 text-sky-950">
+        <p
+          role="status"
+          className="glass-edge mt-6 rounded-2xl bg-sky-50/85 px-4 py-3 text-[15px] text-sky-950"
+        >
           Pick a plan to put{" "}
           <strong className="font-semibold">{pendingSite.spec.business.name}</strong> live. Your
           draft is saved; building and previewing stay free.
         </p>
       )}
       {planLimit !== null && (
-        <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-amber-950">
+        <p
+          role="status"
+          className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
+        >
           Your plan allows {planLimit} live {planLimit === 1 ? "website" : "websites"}.{" "}
           {bannerSite ? (
             <>

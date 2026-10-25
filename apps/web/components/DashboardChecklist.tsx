@@ -89,7 +89,9 @@ export function DashboardChecklist({
             <span
               aria-hidden="true"
               className={`mt-0.5 flex size-[22px] shrink-0 items-center justify-center rounded-full ${
-                step.done ? "bg-emerald-600 text-white" : "bg-white/60 ring-[1.5px] ring-slate-300 ring-inset"
+                step.done
+                  ? "bg-emerald-600 text-white"
+                  : "bg-white/60 ring-[1.5px] ring-slate-300 ring-inset"
               }`}
             >
               {step.done && (

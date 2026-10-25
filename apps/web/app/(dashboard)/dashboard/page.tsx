@@ -831,7 +831,12 @@ export default async function DashboardPage() {
       value: followUps,
       // O serviço manda no máximo 5 retornos.
       capped: followUps !== null && followUps >= 5,
-      hint: followUps === null ? "Open clients" : followUps > 0 ? "Due today or earlier" : "Nothing due",
+      hint:
+        followUps === null
+          ? "Open clients"
+          : followUps > 0
+            ? "Due today or earlier"
+            : "Nothing due",
       href: "/clients",
       tone: "sky",
       Icon: ClockIcon,
@@ -842,10 +847,9 @@ export default async function DashboardPage() {
       label: "Posts to approve",
       value: drafts.length,
       hint: drafts.length > 0 ? "Read and approve" : "Nothing waiting",
-      href:
-        firstDraft?.scheduledAt
-          ? `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`
-          : "/social",
+      href: firstDraft?.scheduledAt
+        ? `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`
+        : "/social",
       tone: "amber",
       Icon: ApproveIcon,
       attention: drafts.length > 0,

@@ -274,7 +274,10 @@ export function DomainPanel({
               </thead>
               <tbody>
                 {state.records.map((record) => (
-                  <tr key={`${record.type}-${record.name}`} className="border-t border-(--glass-rim)">
+                  <tr
+                    key={`${record.type}-${record.name}`}
+                    className="border-t border-(--glass-rim)"
+                  >
                     <td className="px-4 py-3 font-semibold text-ink">{record.type}</td>
                     <td className="px-4 py-3 font-mono text-ink">{record.name}</td>
                     <td className="px-4 py-2">

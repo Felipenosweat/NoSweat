@@ -64,7 +64,7 @@ export function CreditsPanel({
           {low && (
             <p
               role="status"
-              className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-[15px] text-amber-950"
+              className="glass-edge mt-3 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
             >
               {balance.total === 0
                 ? "You’re out of AI credits."
@@ -74,7 +74,7 @@ export function CreditsPanel({
           )}
 
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200/70 p-4">
+            <div className="glass-edge rounded-2xl bg-white/40 p-4">
               <dt className="text-[13px] font-medium text-slate-500">
                 Monthly credits{planName ? ` (${planName})` : ""}
               </dt>
@@ -88,13 +88,13 @@ export function CreditsPanel({
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={usedShare}
-                className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100"
+                className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[0.08]"
               >
                 <div className="h-full rounded-full bg-brand" style={{ width: `${usedShare}%` }} />
               </div>
               <p className="mt-2 text-[13px] text-slate-500">Refills on {refill}.</p>
             </div>
-            <div className="rounded-xl border border-slate-200/70 p-4">
+            <div className="glass-edge rounded-2xl bg-white/40 p-4">
               <dt className="text-[13px] font-medium text-slate-500">Extra credits</dt>
               <dd className="mt-1 text-[15px] text-ink">
                 <span className="font-semibold tabular-nums">{number(balance.topup)}</span>{" "}
@@ -115,7 +115,7 @@ export function CreditsPanel({
       </p>
 
       <h3 className="mt-5 text-[13px] font-semibold text-slate-500">What uses credits</h3>
-      <ul className="mt-2 divide-y divide-slate-100 text-[15px]">
+      <ul className="mt-2 divide-y divide-(--glass-rim) text-[15px]">
         {costs.map((cost) => (
           <li key={cost.label} className="flex items-center justify-between gap-4 py-2">
             <span className="text-slate-700">{cost.label}</span>

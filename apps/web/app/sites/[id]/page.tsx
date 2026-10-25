@@ -369,7 +369,6 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 }))}
               />
             </section>
-
           </div>
         </div>
       </div>

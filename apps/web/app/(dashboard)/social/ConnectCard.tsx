@@ -136,8 +136,8 @@ export function ConnectCard({
             role="status"
             className="glass-edge mt-4 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
           >
-            Instagram stopped letting us post for you, so your scheduled posts are paused.
-            Reconnect to pick up where you left off.
+            Instagram stopped letting us post for you, so your scheduled posts are paused. Reconnect
+            to pick up where you left off.
           </p>
           <div className="mt-4">
             {/* <a> e não <Link>: a rota da API redireciona para o login do Instagram. */}
@@ -149,8 +149,8 @@ export function ConnectCard({
         </>
       ) : live?.status === "active" ? (
         <p className={`mt-4 ${panelText}`}>
-          Approved posts go out automatically at their scheduled time. You don&rsquo;t need to
-          open the app.
+          Approved posts go out automatically at their scheduled time. You don&rsquo;t need to open
+          the app.
         </p>
       ) : manual ? (
         <>

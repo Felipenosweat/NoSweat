@@ -3,6 +3,7 @@
 import { PlanMonthResponse, type PlanMonthRequest, type SocialPost } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { primaryButton, textButton } from "@/components/DashboardUi";
+import { GlassSegmented } from "@/components/glass";
 import { SparklesIcon } from "@/components/marketing/icons";
 import {
   ErrorNote,
@@ -113,7 +114,7 @@ export function PlanMonthButton({
     );
   }
 
-  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none`;
+  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none`;
 
   return (
     <form
@@ -123,7 +124,7 @@ export function PlanMonthButton({
         if (event.key === "Escape" && !pending) setOpen(false);
       }}
       aria-label="Fill my month with AI"
-      className="w-full rounded-xl border border-slate-200/70 bg-slate-50/70 p-4 sm:p-5"
+      className="glass-edge w-full rounded-2xl bg-white/50 p-4 sm:p-5"
     >
       <div className="grid gap-4 sm:grid-cols-[minmax(0,14rem)_1fr]">
         <label className="block text-[13px] font-medium text-ink">
@@ -144,26 +145,14 @@ export function PlanMonthButton({
         </label>
         <fieldset disabled={pending}>
           <legend className="text-[13px] font-medium text-ink">Posts per week</legend>
-          <div className="mt-1.5 flex gap-2">
-            {PER_WEEK.map((value) => (
-              <label
-                key={value}
-                className={`flex h-11 min-w-14 cursor-pointer items-center justify-center rounded-xl border px-4 text-[15px] font-semibold tabular-nums transition-colors duration-150 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand ${
-                  perWeek === value ? "" : "border-slate-300 text-ink hover:border-slate-400"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={`${formId}-per-week`}
-                  value={value}
-                  checked={perWeek === value}
-                  onChange={() => setPerWeek(value)}
-                  className="sr-only"
-                />
-                {value}
-              </label>
-            ))}
-          </div>
+          <GlassSegmented
+            aria-label="Posts per week"
+            options={PER_WEEK.map((value) => ({ value: String(value), label: String(value) }))}
+            value={String(perWeek)}
+            onChange={(value) => setPerWeek(PER_WEEK.find((n) => String(n) === value) ?? 3)}
+            fullWidth
+            className="mt-1.5 sm:max-w-[14rem]"
+          />
         </fieldset>
       </div>
 
@@ -180,7 +169,7 @@ export function PlanMonthButton({
               Writing your posts… this usually takes about a minute.
             </p>
             <div
-              className="mt-2 h-1 overflow-hidden rounded-full bg-slate-200"
+              className="mt-2 h-1 overflow-hidden rounded-full bg-slate-900/[0.08]"
               role="progressbar"
               aria-label="Writing your posts"
               aria-valuemin={0}
