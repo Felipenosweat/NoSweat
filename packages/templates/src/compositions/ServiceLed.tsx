@@ -68,7 +68,7 @@ export function ServiceLedComposition({
           >
             <Wrap className="grid gap-10 @5xl:grid-cols-12 @5xl:gap-12">
               <div className="@5xl:col-span-5">
-                <h2 className={h2}>{model.titleOf(section)}</h2>
+                <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
                 <AboutPhoto data={section} radius={RADIUS} className="mt-8" />
               </div>
               <div className="@5xl:col-span-7">
@@ -96,7 +96,7 @@ export function ServiceLedComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-24 ${sectionY}`}>
             <Wrap>
-              <h2 className={h2}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
               <ul className="mt-10 grid gap-x-12 gap-y-10 @3xl:grid-cols-2">
                 {section.items.map((item, i) => (
                   <li key={`${item.author}-${i}`}>
@@ -120,7 +120,7 @@ export function ServiceLedComposition({
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
             <Wrap className="grid gap-10 @5xl:grid-cols-12">
-              <h2 className={`${h2} @5xl:col-span-4`}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2} @5xl:col-span-4`}>{model.titleOf(section)}</h2>
               <FaqList data={section} className="@5xl:col-span-8" />
             </Wrap>
           </section>
@@ -186,7 +186,7 @@ function ServiceHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"
               {kicker}
             </p>
           )}
-          <h1 className="mt-4 font-ns-heading text-[length:clamp(2.5rem,6.5cqw,4.75rem)] leading-[1.02] font-ns-display tracking-tight text-balance [overflow-wrap:anywhere]">
+          <h1 className="mt-4 font-ns-heading text-[length:calc(clamp(2.75rem,7cqw,6rem)*var(--ns-display-scale))] leading-[0.95] font-ns-display tracking-[-0.03em] text-balance [overflow-wrap:anywhere]">
             {data.title}
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-pretty text-ns-muted @min-[40rem]:text-xl">
@@ -230,7 +230,7 @@ function ServiceRows({
   return (
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap>
-        <h2 className={h2}>{model.titleOf(data)}</h2>
+        <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
         {grouped && hasPriceList(data) ? (
           <PriceList data={data} className="mt-10" />
         ) : (
@@ -293,7 +293,7 @@ function ServiceContact({
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap className={`grid gap-12 ${data.showForm ? "@5xl:grid-cols-12" : ""}`}>
         <div className={data.showForm ? "@5xl:col-span-5" : ""}>
-          <h2 className={h2}>{model.titleOf(data)}</h2>
+          <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
           {business.phone && phoneHref && (
             <a
               href={phoneHref}

@@ -108,7 +108,7 @@ export function PhotoFrame({
     <figure className={className}>
       <div
         data-kind={image.kind}
-        className={`ns-photo relative size-full overflow-hidden bg-ns-border ${radius}`}
+        className={`ns-photo relative size-full overflow-hidden bg-ns-border ${eager ? "ns-hero-zoom" : "ns-unclip"} ${radius}`}
       >
         <Photo
           image={image}
@@ -143,10 +143,7 @@ export function HighlightList({
   return (
     <ul className={`flex flex-wrap gap-y-2 text-sm ${className}`}>
       {highlights.map((label, index) => (
-        <li
-          key={index}
-          className="border-current/25 not-last:mr-4 not-last:border-r not-last:pr-4"
-        >
+        <li key={index} className="border-current/25 not-last:mr-4 not-last:border-r not-last:pr-4">
           {label}
         </li>
       ))}
@@ -312,7 +309,9 @@ export function AddressBlock({
   const city = location(business);
   return (
     <address className={`not-italic ${className}`}>
-      <span className={`block ${large ? "font-ns-heading text-3xl leading-tight font-ns-display" : ""}`}>
+      <span
+        className={`block ${large ? "font-ns-heading text-3xl leading-tight font-ns-display" : ""}`}
+      >
         {street}
       </span>
       {city && <span className={`block ${large ? "mt-1 text-lg" : ""}`}>{city}</span>}
@@ -569,7 +568,7 @@ export function SimpleFooter({
         className={`mx-auto w-full ${wide ? "max-w-7xl" : "max-w-6xl"} px-4 py-14 @min-[40rem]:px-6 @5xl:px-8`}
       >
         {bigName && (
-          <p className="mb-12 font-ns-heading text-[length:clamp(2.5rem,9cqw,7rem)] leading-[0.95] font-ns-display tracking-tight [overflow-wrap:anywhere]">
+          <p className="ns-rise mb-14 font-ns-heading text-[length:clamp(3rem,11.5cqw,12rem)] leading-[0.85] font-ns-display tracking-[-0.045em] [overflow-wrap:anywhere]">
             {business.name}
           </p>
         )}
@@ -975,6 +974,51 @@ export function MobileCallBar({
       {wide}
       {square}
     </nav>
+  );
+}
+
+/** Nomes dos serviços do próprio site (para a faixa corrida). */
+export function serviceNames(model: SiteModel, max = 8): string[] {
+  const services = model.spec.sections.find(
+    (section): section is SectionOf<"services"> => section.type === "services",
+  );
+  return (services?.items ?? [])
+    .map((item) => item.name.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+/**
+ * Faixa corrida com os serviços em letra enorme, como nos sites premiados. Decorativa: os
+ * mesmos serviços aparecem na lista logo abaixo, então a faixa inteira fica fora do leitor de
+ * tela. Com "reduzir movimento", fica parada.
+ */
+export function ServiceMarquee({
+  model,
+  className = "",
+}: {
+  model: SiteModel;
+  className?: string;
+}) {
+  const names = serviceNames(model);
+  if (names.length < 3) return null;
+  const row = (copy: number) =>
+    names.map((name, index) => (
+      <span key={`${copy}-${index}`} className="flex items-center">
+        <span className="px-[0.35em]">{name}</span>
+        <span className="size-[0.14em] rounded-full bg-current opacity-60" />
+      </span>
+    ));
+  return (
+    <div
+      aria-hidden="true"
+      className={`ns-marquee py-[clamp(1.25rem,3cqw,2.5rem)] font-ns-heading text-[length:clamp(2.75rem,7.5cqw,7.5rem)] leading-none font-ns-display tracking-[-0.03em] ${className}`}
+    >
+      <div className="ns-marquee-track">
+        {row(0)}
+        {row(1)}
+      </div>
+    </div>
   );
 }
 

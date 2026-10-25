@@ -16,6 +16,7 @@ import {
   NavLinks,
   PeopleList,
   PhotoFrame,
+  ServiceMarquee,
   SimpleFooter,
   Wrap,
   factsFor,
@@ -63,7 +64,7 @@ export function TypographicComposition({
           >
             <Wrap wide className="grid gap-10 @5xl:grid-cols-12">
               <div className="@5xl:col-span-4">
-                <h2 className={h2}>{model.titleOf(section)}</h2>
+                <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
                 <AboutPhoto data={section} radius={RADIUS} className="mt-10" />
               </div>
               <div className="@5xl:col-span-8">
@@ -86,7 +87,7 @@ export function TypographicComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
             <Wrap wide>
-              <h2 className={h2}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
               <ul className="mt-12 grid gap-12 @3xl:grid-cols-2">
                 {section.items.map((item, i) => (
                   <li key={`${item.author}-${i}`}>
@@ -121,7 +122,7 @@ export function TypographicComposition({
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
             <Wrap wide className="grid gap-10 @5xl:grid-cols-12">
-              <h2 className={`${h2} @5xl:col-span-4`}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2} @5xl:col-span-4`}>{model.titleOf(section)}</h2>
               <FaqList data={section} className="@5xl:col-span-8" />
             </Wrap>
           </section>
@@ -185,7 +186,7 @@ function TypographicHero({ model, data }: { model: SiteModel; data: SectionOf<"h
         {kicker && (
           <p className="text-[0.6875rem] tracking-[0.2em] text-ns-muted uppercase">{kicker}</p>
         )}
-        <h1 className="mt-8 font-ns-heading text-[length:calc(clamp(3rem,10cqw,9.5rem)*var(--ns-display-scale))] leading-[0.9] font-ns-display tracking-[-0.035em] text-balance [overflow-wrap:anywhere]">
+        <h1 className="mt-8 font-ns-heading text-[length:calc(clamp(3.25rem,10.5cqw,11.5rem)*var(--ns-display-scale))] leading-[0.86] font-ns-display tracking-[-0.045em] text-balance [overflow-wrap:anywhere]">
           {data.title}
         </h1>
         <div className="mt-14 grid gap-10 border-t border-ns-border pt-8 @5xl:grid-cols-12 @5xl:gap-8">
@@ -199,10 +200,10 @@ function TypographicHero({ model, data }: { model: SiteModel; data: SectionOf<"h
         <FactLine facts={facts} className="mt-12 text-ns-muted" />
         <HighlightList highlights={business.highlights} className="mt-6 text-ns-muted" />
       </Wrap>
+      <ServiceMarquee model={model} className="bg-ns-primary text-ns-on-primary" />
       {data.image && (
         <PhotoFrame
           image={data.image}
-          eager
           sizes="100vw"
           className="relative aspect-[4/3] w-full @min-[40rem]:aspect-[16/9] @5xl:aspect-[21/9]"
         />
@@ -226,7 +227,7 @@ function LedgerServices({
   return (
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap wide>
-        <h2 className="max-w-[16ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
+        <h2 className="ns-rise max-w-[16ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
           {model.titleOf(data)}
         </h2>
         <ol className="mt-14 border-t-2 border-ns-text">
@@ -276,7 +277,7 @@ function TypographicContact({
     <section id={id} className={`scroll-mt-24 bg-ns-text text-ns-background ${sectionY}`}>
       <Wrap wide className="grid gap-12 @5xl:grid-cols-12">
         <div className="@5xl:col-span-6">
-          <h2 className={h2}>{model.titleOf(data)}</h2>
+          <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
           {business.phone && phoneHref && (
             <a
               href={phoneHref}

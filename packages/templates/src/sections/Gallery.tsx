@@ -102,7 +102,7 @@ export function Gallery({
       <div
         className={`mx-auto w-full ${wide ? "max-w-7xl" : "max-w-6xl"} px-4 @min-[40rem]:px-6 @5xl:px-8`}
       >
-        <h2 className="max-w-[20ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
+        <h2 className="ns-rise max-w-[20ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
           {data.title?.trim() || defaultTitle}
         </h2>
         <ul className={`mt-10 @min-[40rem]:mt-14 ${layout.list}`}>

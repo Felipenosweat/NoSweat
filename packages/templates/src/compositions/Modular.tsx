@@ -52,7 +52,7 @@ export function ModularComposition({
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
             <Wrap className={`${grid} @5xl:grid-cols-5`}>
               <div className={`${cell} @5xl:col-span-3`}>
-                <h2 className={h2}>{model.titleOf(section)}</h2>
+                <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
                 <p className="mt-8 max-w-[44ch] font-ns-heading text-[length:clamp(1.375rem,2.4cqw,1.875rem)] leading-[1.35] font-ns-display text-pretty whitespace-pre-line">
                   {section.body}
                 </p>
@@ -77,7 +77,7 @@ export function ModularComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
             <Wrap>
-              <h2 className={h2}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
               <ul
                 className={`mt-12 ${grid} @3xl:grid-cols-2 ${section.items.length % 3 === 0 ? "@5xl:grid-cols-3" : ""}`}
               >
@@ -115,7 +115,7 @@ export function ModularComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
             <Wrap>
-              <h2 className={h2}>{model.titleOf(section)}</h2>
+              <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
               <FaqList data={section} className="mt-12" />
             </Wrap>
           </section>
@@ -125,9 +125,7 @@ export function ModularComposition({
           <section key={key} id={id} className={`scroll-mt-28 ${sectionY}`}>
             <Wrap className={`${grid} @5xl:grid-cols-5`}>
               <div className={`${cell} @5xl:col-span-2`}>
-                <h2 className={h2}>
-                  {model.titleOf(section)}
-                </h2>
+                <h2 className={`ns-rise ${h2}`}>{model.titleOf(section)}</h2>
                 <ContactLines model={model} className="mt-10" />
               </div>
               {section.showForm && (
@@ -174,7 +172,11 @@ export function ModularComposition({
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
-      <SimpleFooter model={model} bigName className="mt-(--ns-section-y) border-t border-ns-border" />
+      <SimpleFooter
+        model={model}
+        bigName
+        className="mt-(--ns-section-y) border-t border-ns-border"
+      />
       <MobileCallBar model={model} radius={RADIUS} />
     </div>
   );
@@ -238,24 +240,28 @@ function BentoHero({ model, data }: { model: SiteModel; data: SectionOf<"hero"> 
     <section className="pt-8 @min-[40rem]:pt-12">
       <Wrap>
         <div className={`${grid} @3xl:grid-cols-2 @5xl:grid-cols-6`}>
-          <div
-            className={`${cell} flex flex-col justify-end @3xl:col-span-2 @5xl:min-h-[34rem] ${data.image ? "@5xl:col-span-3" : "@5xl:col-span-6"}`}
-          >
-            {where && <p className={label}>{[business.category, where].filter(Boolean).join(", ")}</p>}
-            <h1 className="mt-6 max-w-[14ch] font-ns-heading text-[length:calc(clamp(2.5rem,4.2cqw,4rem)*var(--ns-display-scale))] leading-[1] font-ns-display tracking-[-0.03em] text-balance [overflow-wrap:break-word] hyphens-auto">
+          <div className={`${cell} @3xl:col-span-2 @5xl:col-span-6`}>
+            {where && (
+              <p className={label}>{[business.category, where].filter(Boolean).join(", ")}</p>
+            )}
+            <h1 className="mt-8 font-ns-heading text-[length:calc(clamp(3rem,9cqw,9.5rem)*var(--ns-display-scale))] leading-[0.88] font-ns-display tracking-[-0.04em] text-balance [overflow-wrap:break-word]">
               {data.title}
             </h1>
-            <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty text-ns-muted">
+          </div>
+          <div
+            className={`${cell} flex flex-col justify-between gap-10 @3xl:col-span-2 ${data.image ? "@5xl:col-span-2" : "@5xl:col-span-6"}`}
+          >
+            <p className="max-w-md text-lg leading-relaxed text-pretty text-ns-muted">
               {data.subtitle}
             </p>
-            <HeroActions model={model} radius={RADIUS} className="mt-10" />
+            <HeroActions model={model} radius={RADIUS} />
           </div>
           {data.image && (
             <PhotoFrame
               image={data.image}
               eager
-              sizes="(min-width: 1152px) 576px, (min-width: 1024px) 50vw, 100vw"
-              className="relative aspect-[4/3] bg-ns-background @3xl:col-span-2 @3xl:aspect-[16/9] @5xl:col-span-3 @5xl:aspect-auto"
+              sizes="(min-width: 1152px) 768px, (min-width: 1024px) 66vw, 100vw"
+              className="relative aspect-[4/3] bg-ns-background @3xl:col-span-2 @3xl:aspect-[16/9] @5xl:col-span-4 @5xl:aspect-[16/10]"
             />
           )}
           {bottom.map((item, i) => (
@@ -307,7 +313,7 @@ function BentoServices({
   return (
     <section id={id} className={`scroll-mt-28 ${sectionY}`}>
       <Wrap>
-        <h2 className={h2}>{model.titleOf(data)}</h2>
+        <h2 className={`ns-rise ${h2}`}>{model.titleOf(data)}</h2>
         <ul className={`mt-12 ${grid} @3xl:grid-cols-2 @5xl:grid-cols-3`}>
           {data.items.map((item, index) => (
             <li

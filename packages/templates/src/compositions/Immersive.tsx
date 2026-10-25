@@ -18,6 +18,7 @@ import {
   NavLinks,
   PeopleList,
   PriceList,
+  ServiceMarquee,
   SimpleFooter,
   Wrap,
   factsFor,
@@ -61,20 +62,25 @@ export function ImmersiveComposition({
           </div>
         );
       case "services":
-        return <ImmersiveServices key={key} id={id} model={model} data={section} />;
+        return (
+          <div key={key}>
+            <ServiceMarquee model={model} className="border-b border-ns-border" />
+            <ImmersiveServices id={id} model={model} data={section} />
+          </div>
+        );
       case "about":
         return (
           <section key={key} id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
             <Wrap wide className="grid gap-12 @5xl:grid-cols-12 @5xl:items-start">
               <div className="@5xl:col-span-5">
                 <p className={microLabel}>{model.words.about}</p>
-                <h2 className="mt-3 font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
+                <h2 className="ns-rise mt-3 font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
                   {model.titleOf(section)}
                 </h2>
                 <AboutPhoto data={section} className="mt-10" />
               </div>
               <div className="@5xl:col-span-6 @5xl:col-start-7 @5xl:pt-10">
-                <p className="text-xl leading-relaxed text-pretty whitespace-pre-line">
+                <p className="ns-rise font-ns-heading text-[length:clamp(1.625rem,2.9cqw,2.75rem)] leading-[1.25] font-ns-display tracking-[-0.015em] text-pretty whitespace-pre-line">
                   {section.body}
                 </p>
                 {section.people && <PeopleList people={section.people} className="mt-12" />}
@@ -87,7 +93,7 @@ export function ImmersiveComposition({
         return (
           <section key={key} id={id} className={`scroll-mt-24 ${sectionY}`}>
             <Wrap wide>
-              <h2 className="font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
+              <h2 className="ns-rise font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                 {model.titleOf(section)}
               </h2>
               <ul className="mt-12 grid gap-10 @3xl:grid-cols-2">
@@ -127,7 +133,7 @@ export function ImmersiveComposition({
             className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}
           >
             <Wrap className="max-w-3xl">
-              <h2 className="text-center font-ns-heading text-4xl font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
+              <h2 className="ns-rise text-center font-ns-heading text-4xl font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                 {model.titleOf(section)}
               </h2>
               <FaqList data={section} className="mt-12" />
@@ -149,7 +155,7 @@ export function ImmersiveComposition({
                     : "mx-auto w-full max-w-7xl px-4 @min-[40rem]:px-6 @5xl:px-8"
                 }
               >
-                <h2 className="font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
+                <h2 className="ns-rise font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
                   {model.titleOf(section)}
                 </h2>
                 <SignBoard model={model} />
@@ -209,6 +215,7 @@ export function ImmersiveComposition({
       <SimpleFooter
         model={model}
         wide
+        bigName
         className="border-t border-ns-background/15 bg-ns-text text-ns-background"
       />
       <MobileCallBar model={model} radius="rounded-md" />
@@ -217,7 +224,7 @@ export function ImmersiveComposition({
 }
 
 const heroTitle =
-  "max-w-[16ch] font-ns-heading text-[length:clamp(2.75rem,7.5cqw,6.5rem)] leading-[0.98] font-ns-display tracking-tight text-balance [overflow-wrap:anywhere]";
+  "max-w-[14ch] font-ns-heading text-[length:calc(clamp(3rem,9cqw,9rem)*var(--ns-display-scale))] leading-[0.9] font-ns-display tracking-[-0.035em] text-balance [overflow-wrap:anywhere]";
 
 function ImmersiveHero({
   model,
@@ -251,8 +258,11 @@ function ImmersiveHero({
   }
   const image = data.image;
   return (
-    <section className="relative isolate flex min-h-[38rem] items-end overflow-hidden text-ns-background @5xl:min-h-[46rem]">
-      <div data-kind={image.kind} className="ns-photo absolute inset-0 -z-10 bg-ns-text">
+    <section className="relative isolate flex min-h-[max(40rem,100svh)] items-end overflow-hidden text-ns-background">
+      <div
+        data-kind={image.kind}
+        className="ns-photo ns-hero-zoom absolute inset-0 -z-10 overflow-hidden bg-ns-text"
+      >
         <Photo
           image={image}
           loading="eager"
@@ -263,18 +273,29 @@ function ImmersiveHero({
       {/* Véu escuro: o texto fica legível sobre qualquer foto. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-ns-text/90 via-ns-text/55 to-ns-text/10"
+        className="absolute inset-0 -z-10 bg-gradient-to-t from-ns-text/90 via-ns-text/35 to-ns-text/25"
       />
-      <Wrap wide className={`pb-14 @5xl:pb-20 ${padTop ? "pt-32" : "pt-16"}`}>
-        <h1 className={heroTitle}>{data.title}</h1>
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed opacity-90 @min-[40rem]:text-xl">
-          {data.subtitle}
-        </p>
-        <HeroActions model={model} surface="dark" radius={RADIUS} className="mt-10" />
-        <HighlightList highlights={model.business.highlights} className="mt-8 opacity-90" />
+      <Wrap wide className={`pb-12 @5xl:pb-16 ${padTop ? "pt-36" : "pt-20"}`}>
+        {model.business.category && (
+          <p className="text-[0.6875rem] tracking-[0.22em] uppercase opacity-85">
+            {[model.business.category, model.where].filter(Boolean).join(", ")}
+          </p>
+        )}
+        <h1 className="mt-6 font-ns-heading text-[length:calc(clamp(3.25rem,10.5cqw,11rem)*var(--ns-display-scale))] leading-[0.88] font-ns-display tracking-[-0.04em] text-balance [overflow-wrap:anywhere]">
+          {data.title}
+        </h1>
+        <div className="mt-10 grid gap-8 border-t border-ns-background/30 pt-8 @5xl:grid-cols-12 @5xl:items-end">
+          <p className="max-w-xl text-lg leading-relaxed opacity-90 @min-[40rem]:text-xl @5xl:col-span-6">
+            {data.subtitle}
+          </p>
+          <div className="@5xl:col-span-6 @5xl:justify-self-end">
+            <HeroActions model={model} surface="dark" radius={RADIUS} />
+          </div>
+        </div>
+        <HighlightList highlights={model.business.highlights} className="mt-8 opacity-85" />
       </Wrap>
       {image.credit && (
-        <div className="absolute right-3 bottom-3 max-w-[calc(100%-1.5rem)] rounded-md bg-ns-background/90 px-2 py-1 text-[0.6875rem] leading-tight text-ns-text">
+        <div className="absolute top-24 right-3 max-w-[calc(100%-1.5rem)] text-[0.6875rem] leading-tight opacity-80 @5xl:right-8 [&_a]:underline">
           <PhotoCredit image={image} />
         </div>
       )}
@@ -338,7 +359,7 @@ function ImmersiveServices({
     <section id={id} className={`scroll-mt-24 ${sectionY}`}>
       <Wrap wide>
         <p className={microLabel}>{model.words.services}</p>
-        <h2 className="mt-3 max-w-[18ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
+        <h2 className="ns-rise mt-3 max-w-[18ch] font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-6xl">
           {model.titleOf(data)}
         </h2>
         {hasPriceList(data) ? (
@@ -350,7 +371,7 @@ function ImmersiveServices({
                 key={`${item.name}-${index}`}
                 className={`border-t-2 border-ns-text pt-6 ${index % 2 === 1 ? "@3xl:mt-16" : ""}`}
               >
-                <h3 className="font-ns-heading text-2xl font-ns-display text-balance [overflow-wrap:anywhere] @min-[40rem]:text-3xl">
+                <h3 className="font-ns-heading text-3xl font-ns-display tracking-[-0.02em] text-balance [overflow-wrap:anywhere] @min-[40rem]:text-5xl">
                   {item.name}
                 </h3>
                 <p className="mt-3 max-w-[48ch] leading-relaxed text-ns-muted">

@@ -44,12 +44,12 @@
   }
 
   .ns-site:is(
-      [data-font="classic"],
-      [data-font="fresh"],
-      [data-font="editorial"],
-      [data-font="refined"],
-      [data-font="luxe"]
-    ) {
+    [data-font="classic"],
+    [data-font="fresh"],
+    [data-font="editorial"],
+    [data-font="refined"],
+    [data-font="luxe"]
+  ) {
     --ns-heading-weight: 400;
   }
 
@@ -95,4 +95,77 @@
   background: var(--ns-primary);
   mix-blend-mode: multiply;
   opacity: 0.22;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Assinatura de site premiado (Awwwards): movimento ligado à rolagem, sem sequestrar a rolagem.
+   - .ns-rise: o bloco sobe quando entra na tela (nunca fica invisível).
+   - .ns-unclip: a foto se abre de dentro para fora quando entra na tela.
+   - .ns-hero-zoom: a foto do topo assenta devagar (zoom de 1,1 para 1) ao abrir a página.
+   - .ns-marquee: faixa corrida com os serviços (o conteúdo vem duplicado, a cópia é aria-hidden).
+   Só com "reduzir movimento" desligado; sem suporte a animation-timeline, tudo fica parado e
+   visível (nada some). */
+/* Só movimento, sem sumir: o texto fica visível mesmo onde a rolagem não anima (robôs de
+   busca, prints de página inteira, miniaturas). */
+@keyframes ns-rise {
+  from {
+    transform: translateY(3rem);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ns-unclip {
+  from {
+    clip-path: inset(14% 10% 14% 10%);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes ns-settle {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes ns-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .ns-site .ns-rise {
+      animation: ns-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    .ns-site .ns-unclip {
+      animation: ns-unclip linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+  .ns-site .ns-hero-zoom img {
+    animation: ns-settle 2.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .ns-site .ns-marquee-track {
+    animation: ns-marquee 48s linear infinite;
+  }
+}
+
+.ns-site .ns-marquee {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ns-site .ns-marquee-track {
+  display: inline-flex;
+  width: max-content;
 }
