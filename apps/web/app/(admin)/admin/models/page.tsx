@@ -1,24 +1,17 @@
 import { TemplateId } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  PageHeader,
-  StatusBadge,
-  cardClass,
-  focusRing,
-  panelText,
-  sectionTitle,
-} from "@/components/DashboardUi";
+import { GlassBadge, GlassCard, cx, focusRing } from "@/components/glass";
 import { SiteThumb } from "@/components/SiteThumb";
 import { CATEGORY_LABELS } from "@/lib/model-studio";
 import { requireAdmin } from "@/server/admin";
 import { listModels, summarize, type StudioModel } from "@/server/models";
+import { AdminPageHeader, panelText } from "../AdminUi";
 import { ModelActions } from "./ModelActions";
 
 export const metadata: Metadata = { title: "Model studio", robots: { index: false } };
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
-const linkClass = `inline-flex min-h-10 items-center rounded-lg px-1 text-[15px] font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`;
 
 /** O que a geração usa deste modelo hoje, em uma linha. */
 function usageNote(model: StudioModel): string {
@@ -34,50 +27,54 @@ function usageNote(model: StudioModel): string {
 function ModelCard({ model }: { model: StudioModel }) {
   const slug = encodeURIComponent(model.slug);
   return (
-    <li className={`${cardClass} flex flex-col overflow-hidden`}>
+    <GlassCard as="li" padding="none" className="flex flex-col overflow-hidden">
       <Link
         href={`/admin/models/${slug}/preview`}
-        className={`block border-b border-slate-200/70 ${focusRing}`}
+        className={cx("block border-b border-(--glass-rim)", focusRing)}
       >
         <SiteThumb spec={model.spec} />
         <span className="sr-only">Preview {model.name}</span>
       </Link>
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div>
-          <h3 className="font-display text-[17px] leading-6 font-semibold text-ink">
-            {model.name}
-          </h3>
-          <p className="text-[13px] text-slate-500">
+      <div className="flex flex-1 flex-col gap-4 p-4 sm:p-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="min-w-0 font-display text-[17px] leading-6 font-semibold break-words text-(--glass-fg)">
+              {model.name}
+            </h3>
+            {model.status === "approved" ? (
+              <GlassBadge tone="live" size="sm">
+                Approved
+              </GlassBadge>
+            ) : (
+              <GlassBadge tone="draft" size="sm">
+                Draft
+              </GlassBadge>
+            )}
+          </div>
+          <p className="mt-0.5 text-[13px] break-all text-(--glass-fg-muted)">
             {model.slug}
             {model.spec.design?.composition ? ` · ${model.spec.design.composition}` : ""}
           </p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <StatusBadge tone="neutral">{model.source === "code" ? "Code" : "Studio"}</StatusBadge>
-            {model.edited && <StatusBadge tone="info">Edited</StatusBadge>}
-            {model.status === "approved" ? (
-              <StatusBadge tone="live">Approved</StatusBadge>
-            ) : (
-              <StatusBadge tone="draft">Draft</StatusBadge>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <GlassBadge tone="neutral" size="sm">
+              {model.source === "code" ? "Code" : "Studio"}
+            </GlassBadge>
+            {model.edited && (
+              <GlassBadge tone="info" size="sm">
+                Edited
+              </GlassBadge>
             )}
           </div>
-          <p className="mt-2 text-[13px] text-slate-600">{usageNote(model)}</p>
+          <p className="mt-2.5 text-[13px] text-(--glass-fg)">{usageNote(model)}</p>
           {model.updatedAt && (
-            <p className="text-[13px] text-slate-500">
+            <p className="text-[13px] text-(--glass-fg-muted)">
               Saved {dateFormat.format(new Date(model.updatedAt))}
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-x-4">
-          <Link href={`/admin/models/${slug}/edit`} className={linkClass}>
-            Edit
-          </Link>
-          <Link href={`/admin/models/${slug}/preview`} className={linkClass}>
-            Preview
-          </Link>
-        </div>
         <ModelActions model={summarize(model)} />
       </div>
-    </li>
+    </GlassCard>
   );
 }
 
@@ -92,18 +89,24 @@ export default async function ModelsPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <PageHeader
+      <AdminPageHeader
         title="Model studio"
-        description={`New customer sites start from these models. Edit a model, then approve it: approved versions replace the original for new sites. ${approved} of ${models.length} approved.`}
+        count={`${approved} of ${models.length} approved`}
+        description="New customer sites start from these models. Edit a model, then approve it: approved versions replace the original for new sites."
       />
       {TemplateId.options.map((category) => {
         const group = models.filter((model) => model.category === category);
         if (group.length === 0) return null;
         return (
           <section key={category} aria-labelledby={`models-${category}`}>
-            <h2 id={`models-${category}`} className={sectionTitle}>
+            <h2
+              id={`models-${category}`}
+              className="font-display text-xl leading-7 font-semibold tracking-[-0.012em] text-(--glass-fg)"
+            >
               {CATEGORY_LABELS[category]}{" "}
-              <span className="text-base font-medium text-slate-500">({group.length})</span>
+              <span className="text-base font-medium text-(--glass-fg-muted) tabular-nums">
+                ({group.length})
+              </span>
             </h2>
             <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {group.map((model) => (

@@ -129,10 +129,7 @@ export default async function AdminWebsitesPage({ searchParams }: WebsitesPagePr
         <p className="-mt-2 text-[15px] text-(--glass-fg-muted)">
           Results for &ldquo;<span className="font-semibold text-(--glass-fg)">{state.sq}</span>
           &rdquo; ·{" "}
-          <Link
-            href={websitesHref(state, { sq: "", sl: SITES_PAGE_SIZE })}
-            className={linkClass}
-          >
+          <Link href={websitesHref(state, { sq: "", sl: SITES_PAGE_SIZE })} className={linkClass}>
             Clear search
           </Link>
         </p>

@@ -16,12 +16,24 @@ import {
   panelText,
   panelTitle,
   secondaryButton,
-  textButton,
 } from "@/components/DashboardUi";
+import {
+  CloseIcon,
+  EmptyState,
+  GlassBadge,
+  GlassButton,
+  GlassIconButton,
+  GlassSegmented,
+  GlassSheet,
+  GlassToolbar,
+  cx,
+  type GlassSegmentOption,
+} from "@/components/glass";
 import { ConnectCard } from "./ConnectCard";
 import { PlanMonthButton } from "./PlanMonthButton";
 import { PostComposer } from "./PostComposer";
 import {
+  CHIP_TONE,
   ErrorNote,
   StatusChip,
   byDate,
@@ -37,12 +49,19 @@ import {
   toApiError,
   zonedDateKey,
   type SocialApiError,
+  type StatusTone,
 } from "./shared";
 
-// Tela principal do /social: conta do Instagram, "preencher o mês com IA", calendário do mês
-// (grade a partir de md, lista no celular) e a gaveta de edição. Tudo no fuso da empresa.
+// Tela principal do /social: conta do Instagram, "preencher o mês com IA" e o calendário do mês,
+// tudo no fuso da empresa. Calendário: barra de vidro grudada (mês, "Today", revisar, novo post)
+// + filtro segmentado; no computador, grade do mês com "pílulas" de post; no celular, um mini
+// calendário com bolinhas + a lista do mês. Tocar num dia abre a folha do dia (GlassSheet), com os
+// posts dele e "New post". Tocar numa pílula abre a gaveta de edição (PostComposer).
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** Pílulas por dia na grade; o resto vira "+N more" (abre a folha do dia). */
+const MAX_CHIPS = 3;
 
 const US_TIME_ZONES: { value: string; label: string }[] = [
   { value: "America/New_York", label: "Eastern" },
@@ -55,6 +74,20 @@ const US_TIME_ZONES: { value: string; label: string }[] = [
 ];
 
 type ComposerState = { post: SocialPost | null; date: string | null };
+
+/** Filtro do calendário (por grupo de status). */
+type Filter = "all" | "todo" | "scheduled" | "issues";
+
+const FILTER_TONES: Record<Exclude<Filter, "all">, StatusTone[]> = {
+  todo: ["attention", "neutral"],
+  scheduled: ["queued", "done"],
+  issues: ["problem"],
+};
+
+function matches(post: SocialPost, filter: Filter): boolean {
+  if (filter === "all") return true;
+  return FILTER_TONES[filter].includes(statusInfo(post).tone);
+}
 
 /** Dias do mês com espaços antes do dia 1 (a semana começa no domingo). */
 function monthCells(month: string): (string | null)[] {
@@ -82,6 +115,59 @@ function shortCaption(post: SocialPost): string {
   return text || "No caption yet";
 }
 
+function plural(count: number, one: string, many: string): string {
+  return count === 1 ? one : many;
+}
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={direction === "left" ? "m15 18-6-6 6-6" : "m9 6 6 6-6 6"} />
+    </svg>
+  );
+}
+
+function PlusIcon({ className = "size-4" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  );
+}
+
 export function SocialCalendar({ initialMonth }: { initialMonth: string | null }) {
   const [state, setState] = useState<SocialStateResponse | null>(null);
   const [stateError, setStateError] = useState<SocialApiError | null>(null);
@@ -91,6 +177,9 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
   const [postsError, setPostsError] = useState<SocialApiError | null>(null);
   const [composer, setComposer] = useState<ComposerState | null>(null);
   const [message, setMessage] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  // Folha do dia: o dia fica guardado enquanto ela fecha (o conteúdo não some na animação).
+  const [sheet, setSheet] = useState<{ day: string; open: boolean }>({ day: "", open: false });
 
   const loadState = useCallback(async () => {
     try {
@@ -154,18 +243,22 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     return (
       <div className="mt-8">
         <ErrorNote error={stateError} />
-        <button type="button" onClick={() => void loadState()} className={`${textButton} mt-3`}>
+        <GlassButton variant="secondary" onClick={() => void loadState()} className="mt-3">
           Try again
-        </button>
+        </GlassButton>
       </div>
     );
   }
 
   if (!state || !month || !tz) {
     return (
-      <div className="mt-8 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
-        <div className="h-36 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
-        <div className="h-96 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
+      <div className="mt-6 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="glass h-44 rounded-2xl motion-safe:animate-pulse" />
+          <div className="glass h-44 rounded-2xl motion-safe:animate-pulse" />
+        </div>
+        <div className="glass h-14 rounded-[26px] motion-safe:animate-pulse" />
+        <div className="glass h-96 rounded-2xl motion-safe:animate-pulse" />
       </div>
     );
   }
@@ -181,17 +274,68 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     (post) => post.scheduledAt && zonedDateKey(new Date(post.scheduledAt), tz).startsWith(month),
   );
   const undated = sorted.filter((post) => !post.scheduledAt && post.status === "draft");
+  const shown = dated.filter((post) => matches(post, filter));
   const byDay = new Map<string, SocialPost[]>();
-  for (const post of dated) {
+  for (const post of shown) {
     if (!post.scheduledAt) continue;
     const key = zonedDateKey(new Date(post.scheduledAt), tz);
     byDay.set(key, [...(byDay.get(key) ?? []), post]);
   }
+  // A folha do dia mostra todos os posts do dia (sem filtro).
+  const sheetPosts = sheet.day
+    ? dated.filter(
+        (post) => post.scheduledAt && zonedDateKey(new Date(post.scheduledAt), tz) === sheet.day,
+      )
+    : [];
+  const sheetPast = sheet.day !== "" && sheet.day < todayKey;
   const reviewable = dated.filter((post) => post.status === "draft" && canApprove(post, nowMs));
   const { used, cap } = state.usage;
+  const counts: Record<Filter, number> = {
+    all: dated.length,
+    todo: dated.filter((post) => matches(post, "todo")).length,
+    scheduled: dated.filter((post) => matches(post, "scheduled")).length,
+    issues: dated.filter((post) => matches(post, "issues")).length,
+  };
+  const filterOptions: GlassSegmentOption<Filter>[] = (
+    [
+      ["all", "All"],
+      ["todo", "To do"],
+      ["scheduled", "Scheduled"],
+      ["issues", "Issues"],
+    ] as const
+  ).map(([value, label]) => ({
+    value,
+    label: (
+      <>
+        {label}
+        {counts[value] > 0 && (
+          <span className="ml-1 font-medium text-(--glass-fg-muted) tabular-nums">
+            {counts[value]}
+          </span>
+        )}
+      </>
+    ),
+    ariaLabel: `${label}, ${counts[value]} ${plural(counts[value], "post", "posts")}`,
+  }));
 
-  const openPost = (post: SocialPost) => setComposer({ post, date: null });
-  const openNew = (date: string | null) => setComposer({ post: null, date });
+  const openPost = (post: SocialPost) => {
+    setSheet((s) => ({ ...s, open: false }));
+    setComposer({ post, date: null });
+  };
+  const openNew = (date: string | null) => {
+    setSheet((s) => ({ ...s, open: false }));
+    setComposer({ post: null, date });
+  };
+  const openDay = (day: string) => setSheet({ day, open: true });
+
+  const emptyText =
+    filter === "all"
+      ? `Nothing planned for ${monthLabel(month)} yet.`
+      : filter === "todo"
+        ? "Nothing waiting for you this month."
+        : filter === "scheduled"
+          ? "No scheduled or posted posts this month."
+          : "No problems this month.";
 
   return (
     <div>
@@ -199,15 +343,17 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
         {message}
       </div>
       {message && (
-        <p className="mt-6 flex items-start justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
-          <span>{message}</span>
-          <button
-            type="button"
+        <p className="glass-edge mt-6 flex items-start justify-between gap-3 rounded-2xl bg-emerald-50/85 py-2 pr-2 pl-4 text-[15px] text-emerald-950">
+          <span className="py-1.5">{message}</span>
+          <GlassIconButton
+            label="Dismiss message"
+            variant="ghost"
+            size="sm"
             onClick={() => setMessage("")}
-            className={`shrink-0 text-sm font-semibold underline-offset-4 hover:underline ${focusRing}`}
+            className="max-sm:size-11"
           >
-            Dismiss
-          </button>
+            <CloseIcon />
+          </GlassIconButton>
         </p>
       )}
 
@@ -225,7 +371,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                 Posting is included in every plan ·{" "}
                 <Link
                   href="/billing?from=social"
-                  className="font-semibold text-brand underline-offset-4 hover:underline"
+                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
                 >
                   See plans
                 </Link>
@@ -238,7 +384,22 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
               </p>
             )}
           </div>
-          <p className={`mt-2 ${panelText}`}>
+          {cap !== null && cap > 0 && (
+            <div
+              role="progressbar"
+              aria-label="Posts used this month"
+              aria-valuemin={0}
+              aria-valuemax={cap}
+              aria-valuenow={Math.min(used, cap)}
+              className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[0.08]"
+            >
+              <div
+                className="h-full rounded-full bg-brand"
+                style={{ width: `${Math.min(100, Math.round((used / cap) * 100))}%` }}
+              />
+            </div>
+          )}
+          <p className={`mt-3 ${panelText}`}>
             Let AI draft a month of posts from your website. You read, edit and approve each one.
           </p>
           <div className="mt-4">
@@ -266,6 +427,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                 } else {
                   setMonth(plannedMonth);
                 }
+                setFilter("all");
                 setMessage(
                   `${created.length} draft${created.length === 1 ? "" : "s"} added to ${monthLabel(plannedMonth)}. Read each one, add photos where needed, then approve.`,
                 );
@@ -288,83 +450,94 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
       </div>
 
       <section aria-labelledby="calendar-heading" className="mt-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setMonth(shiftMonth(month, -1))}
-              aria-label="Previous month"
-              className={`inline-flex size-11 items-center justify-center rounded-xl text-slate-600 transition-colors duration-150 hover:bg-slate-200/50 hover:text-ink sm:size-10 ${focusRing}`}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.75}
-                aria-hidden="true"
+        {/* Barra de vidro grudada: no celular, logo abaixo da barra de cima (3.5rem). */}
+        <GlassToolbar
+          sticky={false}
+          className="sticky top-[4.25rem] z-20 lg:top-3"
+          actions={
+            <>
+              {reviewable.length > 0 && (
+                <GlassButton
+                  href={`/social/review?month=${month}`}
+                  variant="secondary"
+                  trailingIcon={
+                    <span className="rounded-full bg-amber-500 px-1.5 text-[12px] leading-5 font-bold text-white tabular-nums">
+                      {reviewable.length}
+                    </span>
+                  }
+                >
+                  Review
+                  <span className="sr-only">
+                    {" "}
+                    {reviewable.length} {plural(reviewable.length, "draft", "drafts")}
+                  </span>
+                </GlassButton>
+              )}
+              <GlassButton
+                variant="secondary"
+                icon={<PlusIcon />}
+                onClick={() => openNew(null)}
+                className="max-sm:px-3.5"
               >
-                <path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <h2
-              id="calendar-heading"
-              className="min-w-[11ch] text-center font-display text-xl font-semibold tracking-[-0.012em] text-ink tabular-nums"
-            >
-              {monthLabel(month)}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setMonth(shiftMonth(month, 1))}
-              aria-label="Next month"
-              className={`inline-flex size-11 items-center justify-center rounded-xl text-slate-600 transition-colors duration-150 hover:bg-slate-200/50 hover:text-ink sm:size-10 ${focusRing}`}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="size-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.75}
-                aria-hidden="true"
-              >
-                <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            {month !== thisMonth && (
-              <button
-                type="button"
-                onClick={() => setMonth(thisMonth)}
-                className={`${textButton} ml-2 text-sm`}
-              >
-                Today
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {reviewable.length > 0 && (
-              <Link href={`/social/review?month=${month}`} className={secondaryButton}>
-                Review {reviewable.length} draft{reviewable.length === 1 ? "" : "s"}
-              </Link>
-            )}
-            <button type="button" onClick={() => openNew(null)} className={secondaryButton}>
-              New post
-            </button>
-          </div>
+                <span className="max-sm:sr-only">New post</span>
+                <span className="sm:hidden" aria-hidden="true">
+                  New
+                </span>
+              </GlassButton>
+            </>
+          }
+        >
+          <GlassIconButton
+            label="Previous month"
+            variant="ghost"
+            onClick={() => setMonth(shiftMonth(month, -1))}
+          >
+            <ChevronIcon direction="left" />
+          </GlassIconButton>
+          <h2
+            id="calendar-heading"
+            className="min-w-0 text-center font-display text-[17px] font-semibold tracking-[-0.012em] whitespace-nowrap text-(--glass-fg) tabular-nums sm:min-w-[9.5rem] sm:text-lg"
+          >
+            {monthLabel(month)}
+          </h2>
+          <GlassIconButton
+            label="Next month"
+            variant="ghost"
+            onClick={() => setMonth(shiftMonth(month, 1))}
+          >
+            <ChevronIcon direction="right" />
+          </GlassIconButton>
+          {month !== thisMonth && (
+            <GlassButton variant="ghost" size="sm" onClick={() => setMonth(thisMonth)}>
+              Today
+            </GlassButton>
+          )}
+        </GlassToolbar>
+
+        <div className="mt-4 overflow-x-auto pb-1">
+          <GlassSegmented
+            aria-label="Show posts"
+            options={filterOptions}
+            value={filter}
+            onChange={setFilter}
+            size="sm"
+            className="min-w-full sm:min-w-0"
+          />
         </div>
 
         {postsError && <ErrorNote error={postsError} className="mt-4" />}
 
-        <div aria-busy={loading} className={loading ? "opacity-60 transition-opacity" : undefined}>
+        <div
+          aria-busy={loading}
+          className={loading ? "opacity-60 motion-safe:transition-opacity" : undefined}
+        >
           {/* ---------- grade do mês (md+) ---------- */}
           <div className={`mt-4 hidden overflow-hidden md:block ${cardClass}`}>
-            <div
-              className="grid grid-cols-7 border-b border-slate-200/70 bg-slate-50/70"
-              aria-hidden="true"
-            >
+            <div className="grid grid-cols-7 border-b border-(--glass-rim)" aria-hidden="true">
               {WEEKDAYS.map((day) => (
                 <div
                   key={day}
-                  className="px-3 py-2 text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                  className="px-3 py-2.5 text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
                 >
                   {day}
                 </div>
@@ -377,7 +550,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                     <li
                       key={`blank-${index}`}
                       aria-hidden="true"
-                      className="min-h-32 border-r border-b border-slate-100 bg-surface/60 [&:nth-child(7n)]:border-r-0"
+                      className="min-h-32 border-r border-b border-(--glass-rim) bg-slate-900/[0.02] [&:nth-child(7n)]:border-r-0"
                     />
                   );
                 }
@@ -385,82 +558,164 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
                 const past = dateKey < todayKey;
                 const isToday = dateKey === todayKey;
                 const day = Number(dateKey.slice(8));
+                const extra = dayPosts.length - MAX_CHIPS;
                 return (
                   <li
                     key={dateKey}
-                    className={`group flex min-h-32 flex-col gap-1 border-r border-b border-slate-100 p-1.5 [&:nth-child(7n)]:border-r-0 ${past ? "bg-surface/60" : ""}`}
+                    className={cx(
+                      "group flex min-h-32 flex-col gap-1 border-r border-b border-(--glass-rim) p-1.5 [&:nth-child(7n)]:border-r-0",
+                      past && "bg-slate-900/[0.02]",
+                    )}
                   >
                     <div className="flex items-center justify-between">
-                      <span
-                        className={`inline-flex size-7 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums ${
-                          isToday ? "bg-brand text-white" : past ? "text-slate-400" : "text-ink"
-                        }`}
+                      <button
+                        type="button"
+                        onClick={() => openDay(dateKey)}
+                        aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}. Open day`}
+                        className={cx(
+                          "inline-flex size-8 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums transition-colors duration-150",
+                          isToday
+                            ? "bg-brand text-white hover:bg-brand-dark"
+                            : past
+                              ? "text-slate-500 hover:bg-(--glass-ghost-hover)"
+                              : "text-ink hover:bg-(--glass-ghost-hover)",
+                          focusRing,
+                        )}
                       >
-                        <span className="sr-only">{dayHeading(dateKey)}</span>
-                        <span aria-hidden="true">{day}</span>
-                      </span>
+                        {day}
+                      </button>
                       {!past && (
                         <button
                           type="button"
                           onClick={() => openNew(dateKey)}
                           aria-label={`New post on ${dayHeading(dateKey)}`}
-                          className={`inline-flex size-7 items-center justify-center rounded-md text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-slate-100 hover:text-ink focus-visible:opacity-100 ${focusRing}`}
+                          className={`inline-flex size-8 items-center justify-center rounded-full text-slate-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-(--glass-ghost-hover) hover:text-ink focus-visible:opacity-100 ${focusRing}`}
                         >
-                          <svg
-                            viewBox="0 0 24 24"
-                            className="size-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            aria-hidden="true"
-                          >
-                            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-                          </svg>
+                          <PlusIcon />
                         </button>
                       )}
                     </div>
                     <ul className="flex flex-col gap-1">
-                      {dayPosts.map((post) => (
-                        <li key={post.id}>
-                          <button
-                            type="button"
-                            onClick={() => openPost(post)}
-                            className={`flex w-full items-start gap-1.5 rounded-md bg-surface px-1.5 py-1 text-left ring-1 ring-slate-200 transition-colors duration-150 hover:bg-white hover:ring-slate-300 ${focusRing}`}
-                          >
-                            <span
-                              aria-hidden="true"
-                              className={`mt-1.5 size-1.5 shrink-0 rounded-full ${statusDot(post)}`}
-                            />
-                            <span className="min-w-0">
-                              <span className="block text-[12px] leading-4 font-semibold text-ink tabular-nums">
-                                {post.scheduledAt ? formatTime(post.scheduledAt, tz) : ""}
-                                <span className="sr-only">, {statusInfo(post).label}: </span>
+                      {dayPosts.slice(0, MAX_CHIPS).map((post) => {
+                        const info = statusInfo(post);
+                        return (
+                          <li key={post.id}>
+                            <button
+                              type="button"
+                              onClick={() => openPost(post)}
+                              className={cx(
+                                "glass-edge flex w-full items-start gap-1.5 rounded-lg px-1.5 py-1 text-left transition-[filter] duration-150 hover:brightness-[0.97]",
+                                CHIP_TONE[info.tone],
+                                focusRing,
+                              )}
+                            >
+                              <span
+                                aria-hidden="true"
+                                className={`mt-1.5 size-1.5 shrink-0 rounded-full ${statusDot(post)}`}
+                              />
+                              <span className="min-w-0">
+                                <span className="block text-[12px] leading-4 font-semibold tabular-nums">
+                                  {post.scheduledAt ? formatTime(post.scheduledAt, tz) : ""}
+                                  <span className="sr-only">, {info.label}: </span>
+                                </span>
+                                <span className="line-clamp-2 text-[12px] leading-4 opacity-90">
+                                  {shortCaption(post)}
+                                </span>
                               </span>
-                              <span className="line-clamp-2 text-[12px] leading-4 text-slate-600">
-                                {shortCaption(post)}
-                              </span>
-                            </span>
-                          </button>
-                        </li>
-                      ))}
+                            </button>
+                          </li>
+                        );
+                      })}
                     </ul>
+                    {extra > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openDay(dateKey)}
+                        className={`self-start rounded-md px-1.5 text-[12px] leading-5 font-semibold text-slate-600 hover:bg-(--glass-ghost-hover) hover:text-ink ${focusRing}`}
+                      >
+                        +{extra} more
+                      </button>
+                    )}
                   </li>
                 );
               })}
             </ol>
           </div>
 
-          {/* ---------- lista (celular) ---------- */}
-          <div className="mt-4 md:hidden">
-            {dated.length === 0 ? (
-              <div className={`px-5 py-10 text-center ${cardClass}`}>
-                <p className="text-[15px] font-medium text-ink">
-                  Nothing planned for {monthLabel(month)}.
-                </p>
-                <p className="mt-1 text-[13px] text-slate-500">
-                  Fill the month with AI or add a post.
-                </p>
-              </div>
+          {/* ---------- mini calendário (celular) ---------- */}
+          <div className={`mt-4 p-2 md:hidden ${cardClass}`}>
+            <div className="grid grid-cols-7" aria-hidden="true">
+              {WEEKDAYS.map((day) => (
+                <div
+                  key={day}
+                  className="py-1.5 text-center text-[11px] font-semibold tracking-wide text-slate-500 uppercase"
+                >
+                  {day.charAt(0)}
+                </div>
+              ))}
+            </div>
+            <ol className="grid grid-cols-7">
+              {monthCells(month).map((dateKey, index) => {
+                if (!dateKey) return <li key={`blank-${index}`} aria-hidden="true" />;
+                const dayPosts = byDay.get(dateKey) ?? [];
+                const past = dateKey < todayKey;
+                const isToday = dateKey === todayKey;
+                return (
+                  <li key={dateKey}>
+                    <button
+                      type="button"
+                      onClick={() => openDay(dateKey)}
+                      aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}`}
+                      className={cx(
+                        "flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-xl transition-colors duration-150 hover:bg-(--glass-ghost-hover)",
+                        focusRing,
+                      )}
+                    >
+                      <span
+                        className={cx(
+                          "inline-flex size-7 items-center justify-center rounded-full text-[15px] tabular-nums",
+                          isToday
+                            ? "bg-brand font-semibold text-white"
+                            : past
+                              ? "text-slate-500"
+                              : "font-medium text-ink",
+                        )}
+                      >
+                        {Number(dateKey.slice(8))}
+                      </span>
+                      <span aria-hidden="true" className="flex h-1.5 gap-0.5">
+                        {dayPosts.slice(0, 3).map((post) => (
+                          <span key={post.id} className={`size-1.5 rounded-full ${statusDot(post)}`} />
+                        ))}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+
+          {/* ---------- lista do mês (celular) ---------- */}
+          <div className="mt-6 md:hidden">
+            {shown.length === 0 ? (
+              <EmptyState
+                icon={<CalendarIcon />}
+                title={emptyText}
+                description={
+                  filter === "all" ? "Fill the month with AI or add a post yourself." : undefined
+                }
+                actions={
+                  filter === "all" ? (
+                    <GlassButton variant="secondary" icon={<PlusIcon />} onClick={() => openNew(null)}>
+                      New post
+                    </GlassButton>
+                  ) : (
+                    <GlassButton variant="ghost" onClick={() => setFilter("all")}>
+                      Show all posts
+                    </GlassButton>
+                  )
+                }
+              />
             ) : (
               <ol className="grid gap-5">
                 {[...byDay.entries()].map(([dateKey, dayPosts]) => (
@@ -485,8 +740,32 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
             )}
           </div>
 
+          {/* Mês vazio no computador: a grade fica, com uma linha de apoio embaixo. */}
+          {shown.length === 0 && (
+            <p className="mt-4 hidden text-center text-[15px] text-slate-600 md:block">
+              {emptyText}{" "}
+              {filter === "all" ? (
+                <button
+                  type="button"
+                  onClick={() => openNew(null)}
+                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+                >
+                  Add a post
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setFilter("all")}
+                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+                >
+                  Show all posts
+                </button>
+              )}
+            </p>
+          )}
+
           {/* ---------- rascunhos sem data ---------- */}
-          {undated.length > 0 && (
+          {undated.length > 0 && (filter === "all" || filter === "todo") && (
             <div className="mt-8">
               <h3 className="text-[13px] font-semibold text-slate-500">Drafts without a date</h3>
               <ul className="mt-2 grid gap-2 md:grid-cols-2">
@@ -500,6 +779,42 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
           )}
         </div>
       </section>
+
+      {/* ---------- folha do dia ---------- */}
+      <GlassSheet
+        open={sheet.open}
+        onClose={() => setSheet((s) => ({ ...s, open: false }))}
+        title={sheet.day ? dayHeading(sheet.day) : "Day"}
+        description={
+          sheetPosts.length === 0
+            ? sheetPast
+              ? "Nothing was planned for this day."
+              : "Nothing planned yet."
+            : `${sheetPosts.length} ${plural(sheetPosts.length, "post", "posts")}`
+        }
+        footer={
+          <>
+            <GlassButton variant="secondary" onClick={() => setSheet((s) => ({ ...s, open: false }))}>
+              Close
+            </GlassButton>
+            {!sheetPast && sheet.day && (
+              <GlassButton variant="primary" icon={<PlusIcon />} onClick={() => openNew(sheet.day)}>
+                New post on this day
+              </GlassButton>
+            )}
+          </>
+        }
+      >
+        {sheetPosts.length > 0 && (
+          <ul className="grid gap-2">
+            {sheetPosts.map((post) => (
+              <li key={post.id}>
+                <AgendaRow post={post} tz={tz} onOpen={openPost} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </GlassSheet>
 
       {composer && (
         <PostComposer
@@ -539,6 +854,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
   );
 }
 
+/** Linha de um post (lista do celular, folha do dia, rascunhos sem data): foto, hora, selo, texto. */
 function AgendaRow({
   post,
   tz,
@@ -553,28 +869,28 @@ function AgendaRow({
     <button
       type="button"
       onClick={() => onOpen(post)}
-      className={`flex w-full items-start gap-3 p-3 text-left transition-[border-color,box-shadow] duration-150 hover:border-slate-300/80 ${cardClass} ${focusRing}`}
+      className={`flex w-full items-start gap-3 p-2.5 text-left glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-150 ${cardClass} ${focusRing}`}
     >
       {photo ? (
         // eslint-disable-next-line @next/next/no-img-element -- foto no storage (host externo)
         <img
           src={photo.url}
           alt=""
-          className="size-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200"
+          className="size-16 shrink-0 rounded-xl object-cover ring-1 ring-(--glass-rim)"
         />
       ) : (
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-lg bg-surface text-center text-[11px] leading-4 text-slate-500 ring-1 ring-slate-200">
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-slate-900/[0.04] text-center text-[11px] leading-4 text-slate-500 ring-1 ring-(--glass-rim)">
           No photo
         </span>
       )}
-      <span className="min-w-0 flex-1">
+      <span className="min-w-0 flex-1 py-0.5">
         <span className="flex flex-wrap items-center gap-2">
           {post.scheduledAt && (
             <span className="text-[13px] font-semibold text-ink tabular-nums">
               {formatTime(post.scheduledAt, tz)}
             </span>
           )}
-          <StatusChip post={post} />
+          <StatusChip post={post} size="sm" />
         </span>
         <span className="mt-1 line-clamp-2 block text-[14px] leading-5 text-slate-600">
           {shortCaption(post)}
@@ -600,6 +916,7 @@ function SettingsForm({
     ? US_TIME_ZONES
     : [...US_TIME_ZONES, { value: settings.timezone, label: settings.timezone }];
   const changed = timezone !== settings.timezone || postTime !== settings.postTime;
+  const zoneLabel = zones.find((z) => z.value === settings.timezone)?.label ?? settings.timezone;
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -620,16 +937,16 @@ function SettingsForm({
   }
 
   const field =
-    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
+    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
 
   return (
-    <details className="group mt-5 border-t border-slate-200/70 pt-4">
+    <details className="group mt-5 border-t border-(--glass-rim) pt-3">
       <summary
-        className={`inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-ink sm:min-h-10 [&::-webkit-details-marker]:hidden ${focusRing}`}
+        className={`inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-full pr-2 text-sm font-semibold text-slate-600 hover:text-ink sm:min-h-10 [&::-webkit-details-marker]:hidden ${focusRing}`}
       >
         <svg
           viewBox="0 0 24 24"
-          className="size-4 transition-transform group-open:rotate-90"
+          className="size-4 motion-safe:transition-transform group-open:rotate-90"
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -638,6 +955,9 @@ function SettingsForm({
           <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         Time zone and posting time
+        <GlassBadge tone="neutral" size="sm" className="ml-1 font-normal">
+          {zoneLabel} · {settings.postTime}
+        </GlassBadge>
       </summary>
       <form
         onSubmit={(event) => void save(event)}

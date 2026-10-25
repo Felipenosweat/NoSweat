@@ -2,13 +2,8 @@
 
 import type { CreditBalance } from "@nosweat/schema";
 import { useActionState } from "react";
-import {
-  focusRing,
-  panelClass,
-  panelText,
-  panelTitle,
-  secondaryButton,
-} from "@/components/DashboardUi";
+import { GlassButton, GlassCard } from "@/components/glass";
+import { Notice, fieldClass, labelClass, panelText, panelTitle } from "../../AdminUi";
 import type { GrantAccessState } from "./actions";
 
 // Créditos da IA da conta: saldo (cota do mês + comprados) e o ajuste manual do admin (bônus,
@@ -20,7 +15,16 @@ const initialState: GrantAccessState = { ok: true, message: "" };
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" });
 
-const field = `mt-1.5 block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink sm:h-10 ${focusRing}`;
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="glass glass-flat rounded-xl px-3.5 py-3">
+      <dt className={labelClass}>{label}</dt>
+      <dd className="mt-1 font-display text-lg leading-6 font-semibold text-(--glass-fg) tabular-nums">
+        {value}
+      </dd>
+    </div>
+  );
+}
 
 export function CreditsPanel({
   balance,
@@ -33,7 +37,7 @@ export function CreditsPanel({
   const [state, formAction, pending] = useActionState(action, initialState);
 
   return (
-    <section aria-labelledby="credits-heading" className={panelClass}>
+    <GlassCard as="section" aria-labelledby="credits-heading">
       <h2 id="credits-heading" className={panelTitle}>
         AI credits
       </h2>
@@ -41,27 +45,14 @@ export function CreditsPanel({
         balance.unlimited ? (
           <p className={`mt-1 ${panelText}`}>Unlimited (admin account).</p>
         ) : (
-          <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-            <div>
-              <dt className="text-slate-500">Total</dt>
-              <dd className="font-semibold text-ink tabular-nums">{balance.total}</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Monthly left</dt>
-              <dd className="font-semibold text-ink tabular-nums">
-                {balance.monthlyLeft} / {balance.monthlyAllowance}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Purchased</dt>
-              <dd className="font-semibold text-ink tabular-nums">{balance.topup}</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Monthly resets</dt>
-              <dd className="font-semibold text-ink">
-                {dateFormat.format(new Date(balance.resetsAt))}
-              </dd>
-            </div>
+          <dl className="mt-3 grid grid-cols-2 gap-2">
+            <Figure label="Total" value={String(balance.total)} />
+            <Figure
+              label="Monthly left"
+              value={`${balance.monthlyLeft} / ${balance.monthlyAllowance}`}
+            />
+            <Figure label="Purchased" value={String(balance.topup)} />
+            <Figure label="Monthly resets" value={dateFormat.format(new Date(balance.resetsAt))} />
           </dl>
         )
       ) : (
@@ -70,9 +61,9 @@ export function CreditsPanel({
 
       <form
         action={formAction}
-        className="mt-5 grid gap-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-end"
+        className="mt-5 grid gap-3 border-t border-(--glass-rim) pt-5 sm:grid-cols-[8rem_minmax(0,1fr)]"
       >
-        <label className="text-sm font-medium text-slate-700">
+        <label className={labelClass}>
           Credits (+/−)
           <input
             name="delta"
@@ -83,36 +74,33 @@ export function CreditsPanel({
             max={100000}
             required
             placeholder="e.g. 50"
-            className={field}
+            className={fieldClass}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className={labelClass}>
           Note (optional)
           <input
             name="note"
             maxLength={200}
             placeholder="e.g. Pix received Oct 25"
-            className={field}
+            className={fieldClass}
           />
         </label>
-        <button type="submit" disabled={pending} className={secondaryButton}>
-          {pending ? "Saving…" : "Adjust credits"}
-        </button>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-span-2">
+          <GlassButton type="submit" variant="secondary" loading={pending}>
+            {pending ? "Saving…" : "Adjust credits"}
+          </GlassButton>
+          <p className="min-w-0 flex-1 basis-56 text-[13px] text-(--glass-fg-muted)">
+            Positive adds purchased credits (they don&rsquo;t expire). Negative removes purchased
+            credits, never below zero.
+          </p>
+        </div>
       </form>
-      <p className="mt-2 text-[13px] text-slate-500">
-        Positive adds purchased credits (they don&rsquo;t expire). Negative removes purchased
-        credits, never below zero.
-      </p>
       {state.message && (
-        <p
-          role={state.ok ? "status" : "alert"}
-          className={`mt-3 rounded-lg px-3 py-2 text-sm ${
-            state.ok ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-700"
-          }`}
-        >
+        <Notice tone={state.ok ? "success" : "error"} className="mt-4">
           {state.message}
-        </p>
+        </Notice>
       )}
-    </section>
+    </GlassCard>
   );
 }

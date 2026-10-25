@@ -165,9 +165,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
               {name ?? account.email ?? account.id}
             </h1>
             {name && account.email && (
-              <p className="mt-1 text-[15px] break-all text-(--glass-fg-muted)">
-                {account.email}
-              </p>
+              <p className="mt-1 text-[15px] break-all text-(--glass-fg-muted)">{account.email}</p>
             )}
             <div className="mt-3 flex flex-wrap gap-1.5">
               <GlassBadge tone={plan.tone}>{plan.label}</GlassBadge>
@@ -179,19 +177,13 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
               Signed up {formatDate(account.createdAt)} · Last login{" "}
               {formatDate(account.lastSignInAt)}
             </p>
-            <p className="mt-1 font-mono text-xs break-all text-(--glass-fg-muted)/80">
-              {account.id}
-            </p>
+            <p className="mt-1 font-mono text-xs break-all text-(--glass-fg-muted)">{account.id}</p>
           </div>
 
           <div className="flex max-w-sm flex-wrap items-center justify-end gap-2">
             {!isSelf && (
               <form action={startViewAs.bind(null, account.id)}>
-                <GlassButton
-                  type="submit"
-                  variant="primary"
-                  title="Opens their dashboard with their data. Read-only for 1 hour."
-                >
+                <GlassButton type="submit" variant="primary">
                   View as this account
                 </GlassButton>
               </form>

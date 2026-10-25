@@ -61,9 +61,7 @@ export default async function AdminUsagePage() {
           <tbody className="tabular-nums">
             {AI_USAGE_KINDS.map((kind) => (
               <tr key={kind} className={rowClass}>
-                <td className={cx(td, "font-medium text-(--glass-fg)")}>
-                  {AI_USAGE_LABELS[kind]}
-                </td>
+                <td className={cx(td, "font-medium text-(--glass-fg)")}>{AI_USAGE_LABELS[kind]}</td>
                 <td className={cx(td, "text-right")}>{formatCount(ai24h?.[kind] ?? null)}</td>
                 <td className={cx(td, "text-right")}>{formatCount(ai30d?.[kind] ?? null)}</td>
                 <td className={cx(td, "text-right text-(--glass-fg-muted)")}>

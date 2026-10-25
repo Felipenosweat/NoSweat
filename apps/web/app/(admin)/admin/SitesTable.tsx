@@ -89,9 +89,7 @@ function Owner({ owner }: { owner: AdminSiteRow["owner"] }) {
 
 function Address({ row }: { row: AdminSiteRow }) {
   if (!row.address) return <span className="text-(--glass-fg-muted)">—</span>;
-  return (
-    <span className="font-mono text-xs break-all text-(--glass-fg-muted)">{row.address}</span>
-  );
+  return <span className="font-mono text-xs break-all text-(--glass-fg-muted)">{row.address}</span>;
 }
 
 export function SitesTable({

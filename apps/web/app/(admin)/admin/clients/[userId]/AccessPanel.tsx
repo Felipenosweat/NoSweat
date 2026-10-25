@@ -1,6 +1,8 @@
+import { GlassBadge, GlassCard } from "@/components/glass";
 import { isGrantActive, PLANS, type AccessGrant } from "@/server/billing";
 import type { SubscriptionRecord } from "@/server/billing/store";
 import { accessEmailConfigured } from "@/server/notify/access-email";
+import { Notice, labelClass, panelText, panelTitle } from "../../AdminUi";
 import { grantAccess, revokeAccess } from "./actions";
 import { GrantAccessForm } from "./GrantAccessForm";
 
@@ -31,35 +33,54 @@ export function AccessPanel({
   const history = noteHistory(grant?.note ?? null);
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 className="font-display text-lg font-bold">Access</h2>
+    <GlassCard as="section" aria-labelledby="access-heading">
+      <h2 id="access-heading" className={panelTitle}>
+        Plan access
+      </h2>
+      <p className={`mt-1 ${panelText}`}>
+        Give a plan for a number of days when a client pays by Pix or WhatsApp.
+      </p>
       {!enforced && (
-        <p className="mt-1 text-sm text-amber-800">
+        <Notice tone="warning" className="mt-3">
           Plans are off right now (no REQUIRE_PLAN or Stripe key), so everyone can publish.
-        </p>
+        </Notice>
       )}
 
-      <div className="mt-3 space-y-1 text-sm text-slate-700">
-        <p>
-          <span className="font-semibold">Manual access: </span>
-          {grant
-            ? `${PLANS[grant.plan].name} · ${active ? "until" : "expired on"} ${dateFormat.format(new Date(grant.expiresAt))}`
-            : "none"}
-        </p>
-        <p>
-          <span className="font-semibold">Card subscription (Stripe): </span>
-          {subscription?.status
-            ? `${subscription.plan ? PLANS[subscription.plan].name : "—"} · ${subscription.status}`
-            : "none"}
-        </p>
-      </div>
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="glass glass-flat rounded-xl px-4 py-3">
+          <dt className={labelClass}>Manual access</dt>
+          <dd className="mt-1.5 flex flex-wrap items-center gap-2 text-[15px] text-(--glass-fg)">
+            {grant ? (
+              <>
+                <GlassBadge tone={active ? "live" : "neutral"} size="sm">
+                  {PLANS[grant.plan].name}
+                </GlassBadge>
+                {active ? "until" : "expired on"} {dateFormat.format(new Date(grant.expiresAt))}
+              </>
+            ) : (
+              "None"
+            )}
+          </dd>
+        </div>
+        <div className="glass glass-flat rounded-xl px-4 py-3">
+          <dt className={labelClass}>Card subscription (Stripe)</dt>
+          <dd className="mt-1.5 text-[15px] text-(--glass-fg)">
+            {subscription?.status
+              ? `${subscription.plan ? PLANS[subscription.plan].name : "—"} · ${subscription.status}`
+              : "None"}
+          </dd>
+        </div>
+      </dl>
 
       {history.length > 0 && (
-        <details className="mt-3 text-sm text-slate-700" open={history.length <= 3}>
-          <summary className="cursor-pointer font-semibold">
-            Notes <span className="font-normal text-slate-500">· {history.length}</span>
+        <details className="group mt-4 text-sm" open={history.length <= 3}>
+          <summary className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg font-semibold text-(--glass-fg) sm:min-h-9">
+            Notes{" "}
+            <span className="font-normal text-(--glass-fg-muted) tabular-nums">
+              · {history.length}
+            </span>
           </summary>
-          <ul className="mt-2 space-y-1 border-l-2 border-slate-100 pl-3 text-slate-600">
+          <ul className="mt-1 space-y-1 border-l-2 border-(--glass-rim) pl-3 text-(--glass-fg-muted)">
             {history.map((entry, index) => (
               <li key={`${index}-${entry}`} className="break-words">
                 {entry}
@@ -79,6 +100,6 @@ export function AccessPanel({
         enforced={enforced}
         emailOn={accessEmailConfigured()}
       />
-    </section>
+    </GlassCard>
   );
 }

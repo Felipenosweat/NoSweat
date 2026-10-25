@@ -59,8 +59,8 @@ function CreateForm({ enabled, onReset }: { enabled: boolean; onReset: () => voi
       <div className="grid gap-4">
         <Notice tone="success">
           Test account created
-          {state.plan ? ` with ${PLAN_NAMES[state.plan] ?? state.plan} for 30 days` : ""}. Save
-          this password now: it won&rsquo;t be shown again.
+          {state.plan ? ` with ${PLAN_NAMES[state.plan] ?? state.plan} for 30 days` : ""}. Save this
+          password now: it won&rsquo;t be shown again.
         </Notice>
         <dl className="grid gap-3">
           <SecretRow label="Email" value={state.email} />

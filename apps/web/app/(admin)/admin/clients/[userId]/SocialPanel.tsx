@@ -1,5 +1,8 @@
 import type { SocialPostStatus } from "@nosweat/schema";
+import type { ReactNode } from "react";
+import { GlassBadge, GlassButton, GlassCard } from "@/components/glass";
 import type { SocialAccountRecord, SocialSettingsRecord } from "@/server/social/types";
+import { labelClass, panelTitle } from "../../AdminUi";
 import { toggleSocialTester } from "./actions";
 
 // Caixa do admin com o Instagram do cliente: só leitura (nunca mostra token nem botão de publicar).
@@ -21,6 +24,15 @@ const STATUS_LABELS: Record<SocialPostStatus, string> = {
   canceled: "Canceled",
 };
 
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="grid gap-0.5 border-t border-(--glass-rim) py-2.5 first:border-t-0 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4">
+      <dt className={labelClass}>{label}</dt>
+      <dd className="text-[15px] break-words text-(--glass-fg)">{children}</dd>
+    </div>
+  );
+}
+
 export function SocialPanel({
   userId,
   account,
@@ -37,54 +49,51 @@ export function SocialPanel({
   );
 
   return (
-    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 className="font-display text-lg font-bold">Social (Instagram)</h2>
+    <GlassCard as="section" aria-labelledby="social-heading">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="social-heading" className={panelTitle}>
+          Social (Instagram)
+        </h2>
+        <GlassBadge tone={settings.tester ? "info" : "neutral"}>
+          {settings.tester ? "Instagram tester" : "Not a tester"}
+        </GlassBadge>
+      </div>
 
-      <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm text-slate-700 sm:grid-cols-[max-content_1fr]">
-        <dt className="font-semibold">Account</dt>
-        <dd>
+      <dl className="mt-3">
+        <Row label="Account">
           {account
             ? `@${account.username} · ${account.status}${account.accountType ? ` · ${account.accountType}` : ""}`
-            : "not connected"}
-        </dd>
+            : "Not connected"}
+        </Row>
         {account?.tokenExpiresAt && (
-          <>
-            <dt className="font-semibold">Access expires</dt>
-            <dd>{dateFormat.format(new Date(account.tokenExpiresAt))}</dd>
-          </>
+          <Row label="Access expires">{dateFormat.format(new Date(account.tokenExpiresAt))}</Row>
         )}
         {account?.lastError && (
-          <>
-            <dt className="font-semibold">Last error</dt>
-            <dd className="text-red-700">{account.lastError}</dd>
-          </>
+          <Row label="Last error">
+            <span className="text-red-700">{account.lastError}</span>
+          </Row>
         )}
-        <dt className="font-semibold">Time zone</dt>
-        <dd>{settings.timezone}</dd>
-        <dt className="font-semibold">Posts</dt>
-        <dd>
+        <Row label="Time zone">{settings.timezone}</Row>
+        <Row label="Posts">
           {rows.length === 0
-            ? "none"
+            ? "None"
             : rows.map((status) => `${STATUS_LABELS[status]}: ${counts[status]}`).join(" · ")}
-        </dd>
+        </Row>
       </dl>
 
       <form
         action={toggleSocialTester.bind(null, userId)}
-        className="mt-5 flex flex-wrap items-center gap-3"
+        className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-(--glass-rim) pt-4"
       >
-        <button
-          type="submit"
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
-        >
+        <GlassButton type="submit" variant="secondary">
           {settings.tester ? "Remove Instagram tester" : "Make Instagram tester"}
-        </button>
-        <span className="text-xs text-slate-500">
+        </GlassButton>
+        <span className="min-w-0 flex-1 basis-56 text-[13px] text-(--glass-fg-muted)">
           {settings.tester
-            ? "Tester: can connect and auto-post while the Meta app is in testing."
-            : "Not a tester. Add their Instagram as a tester in the Meta app too."}
+            ? "Can connect and auto-post while the Meta app is in testing."
+            : "Add their Instagram as a tester in the Meta app too."}
         </span>
       </form>
-    </section>
+    </GlassCard>
   );
 }

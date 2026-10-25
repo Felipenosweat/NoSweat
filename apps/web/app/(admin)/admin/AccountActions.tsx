@@ -194,8 +194,7 @@ export function useAccountActions({ manageEnabled }: { manageEnabled: boolean })
       >
         <p>
           They can&rsquo;t log in or refresh their session anymore (an open session ends within an
-          hour). Nothing is deleted and their live websites stay live. You can re-enable it
-          anytime.
+          hour). Nothing is deleted and their live websites stay live. You can re-enable it anytime.
         </p>
       </ConfirmDialog>
 
