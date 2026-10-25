@@ -126,8 +126,7 @@ export const sunriseBakery: ModelEntry = {
           {
             group: "Cakes & preorders",
             name: "Custom cake",
-            description:
-              "Elena designs and decorates every one. A 6-inch cake serves 8–10.",
+            description: "Elena designs and decorates every one. A 6-inch cake serves 8–10.",
             price: "from $55",
             detail: "Order 5 days ahead",
           },

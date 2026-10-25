@@ -86,8 +86,7 @@ export const fieldworkStudio: ModelEntry = {
         items: [
           {
             name: "Full brand identity",
-            description:
-              "Logo, type, color, a brand guide and your first business cards.",
+            description: "Logo, type, color, a brand guide and your first business cards.",
             price: "from $8,500",
             detail: "6–8 weeks",
           },
@@ -106,7 +105,8 @@ export const fieldworkStudio: ModelEntry = {
           },
           {
             name: "Brand refresh",
-            description: "An update to the brand you already have, keeping what your customers recognize.",
+            description:
+              "An update to the brand you already have, keeping what your customers recognize.",
             price: "from $5,500",
             detail: "4–6 weeks",
           },

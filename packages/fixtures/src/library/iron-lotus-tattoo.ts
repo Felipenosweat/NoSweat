@@ -95,7 +95,8 @@ export const ironLotusTattoo: ModelEntry = {
           },
           {
             name: "Fine line & script",
-            description: "Theo does small, precise work like names, dates and single-needle detail.",
+            description:
+              "Theo does small, precise work like names, dates and single-needle detail.",
             price: "from $150",
             detail: "Most pieces 1–2 hours",
           },
@@ -108,8 +109,7 @@ export const ironLotusTattoo: ModelEntry = {
           },
           {
             name: "Full-day sessions",
-            description:
-              "Up to 6 hours in one sitting, for sleeves and back pieces.",
+            description: "Up to 6 hours in one sitting, for sleeves and back pieces.",
             price: "$1,100",
             detail: "Up to 6 hours",
           },

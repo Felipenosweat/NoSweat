@@ -149,8 +149,7 @@ export const northLoopCoffee: ModelEntry = {
           {
             group: "Breakfast",
             name: "Egg & cheddar",
-            description:
-              "Egg, cheddar and chive butter on an English muffin. Add bacon for $2.",
+            description: "Egg, cheddar and chive butter on an English muffin. Add bacon for $2.",
             price: "$8.50",
             detail: "Until 1 PM",
           },

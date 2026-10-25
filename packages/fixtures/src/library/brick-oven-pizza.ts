@@ -141,7 +141,8 @@ export const brickOvenPizza: ModelEntry = {
           {
             group: "Catering",
             name: "Mobile oven at your event",
-            description: "We bring our mobile oven to your event and bake there. 50 guests minimum.",
+            description:
+              "We bring our mobile oven to your event and bake there. 50 guests minimum.",
             price: "from $1,200",
             detail: "Book 3 weeks ahead",
           },
