@@ -72,7 +72,9 @@ export function planStatus(
 ): { label: string; tone: PlanTone } {
   if (subscription && isActiveStatus(subscription.status)) {
     const plan = subscription.plan ? PLANS[subscription.plan].name : "Plan";
-    return { label: `${plan} · card · ${subscription.status}`, tone: "live" };
+    // past_due: o site segue no ar, mas o cartão falhou; o admin precisa ver isso em destaque.
+    const tone: PlanTone = subscription.status === "past_due" ? "pending" : "live";
+    return { label: `${plan} · card · ${subscription.status}`, tone };
   }
   const current = grant ?? null;
   if (isGrantActive(current, now)) {

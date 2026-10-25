@@ -91,10 +91,10 @@ describe("account list", () => {
   it("summarizes the plan", () => {
     expect(planStatus(sub("active"), null, NOW)).toMatchObject({ tone: "live" });
     expect(planStatus(null, grant("starter", 5), NOW).label).toMatch(/^Starter until/);
-    expect(planStatus(sub("past_due"), null, NOW)).toEqual({
-      label: "Card: past_due",
-      tone: "pending",
-    });
+    // Cartão falhando: o plano continua valendo (site no ar), mas aparece como pendente.
+    const pastDue = planStatus(sub("past_due"), null, NOW);
+    expect(pastDue.tone).toBe("pending");
+    expect(pastDue.label).toMatch(/card · past_due$/);
     expect(planStatus(null, grant("pro", -1), NOW).label).toMatch(/^Access ended/);
     expect(planStatus(null, null, NOW)).toEqual({ label: "No plan", tone: "neutral" });
   });
