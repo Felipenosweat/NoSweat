@@ -227,7 +227,10 @@ function SearchForm({
         Search
       </button>
       {value && (
-        <Link href={clearHref} className={`${linkClass} inline-flex min-h-11 items-center sm:min-h-10`}>
+        <Link
+          href={clearHref}
+          className={`${linkClass} inline-flex min-h-11 items-center sm:min-h-10`}
+        >
           Clear
         </Link>
       )}
@@ -489,8 +492,7 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         <h2 id="accounts-heading" className={`border-b border-slate-200 px-5 py-4 ${panelTitle}`}>
           Accounts{" "}
           <span className="font-normal text-slate-500">
-            ·{" "}
-            {accountQuery ? `${shownAccounts.length} of ${accounts.length}` : accounts.length}
+            · {accountQuery ? `${shownAccounts.length} of ${accounts.length}` : accounts.length}
           </span>
         </h2>
         <SearchForm
@@ -613,16 +615,11 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
                     {name && <span className="block text-sm text-slate-500">{name}</span>}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <StatusBadge tone={plan.tone}>{plan.label}</StatusBadge>
-                      <AccountBadges
-                        account={account}
-                        admin={adminIds.has(account.id)}
-                        now={now}
-                      />
+                      <AccountBadges account={account} admin={adminIds.has(account.id)} now={now} />
                     </div>
                     <p className="mt-2 text-[13px] text-slate-500">
                       {own.length} {own.length === 1 ? "website" : "websites"} · {live} live ·{" "}
-                      {requests === null ? "—" : requests}{" "}
-                      {requests === 1 ? "request" : "requests"}
+                      {requests === null ? "—" : requests} {requests === 1 ? "request" : "requests"}
                     </p>
                     <p className="mt-0.5 text-[13px] text-slate-500">
                       Signed up {formatDate(account.createdAt)} · Last login{" "}
@@ -650,7 +647,10 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
               : sites.length}
           </span>
         </h2>
-        <nav aria-label="Filter websites" className="overflow-x-auto border-b border-slate-200 px-3">
+        <nav
+          aria-label="Filter websites"
+          className="overflow-x-auto border-b border-slate-200 px-3"
+        >
           <ul className="flex gap-1 py-2">
             {SITE_FILTERS.map((filter) => {
               const active = filter === siteFilter;
@@ -660,7 +660,9 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
                     href={adminHref(state, { sf: filter, sl: SITES_PAGE_SIZE }, "websites")}
                     aria-current={active ? "page" : undefined}
                     className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold whitespace-nowrap ${
-                      active ? "bg-ink text-white" : "text-slate-600 hover:bg-slate-100 hover:text-ink"
+                      active
+                        ? "bg-ink text-white"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-ink"
                     } ${focusRing}`}
                   >
                     {SITE_FILTER_LABELS[filter]}
@@ -688,9 +690,7 @@ export default async function AdminOverviewPage({ searchParams }: AdminPageProps
         />
         <SitesTable
           rows={siteRows}
-          emptyText={
-            siteQuery || siteFilter !== "all" ? "No websites match." : "No websites yet."
-          }
+          emptyText={siteQuery || siteFilter !== "all" ? "No websites match." : "No websites yet."}
         />
         {matchingSites.length > shownSites.length && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 px-5 py-4 text-sm text-slate-500">

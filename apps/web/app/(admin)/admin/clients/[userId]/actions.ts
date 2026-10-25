@@ -264,7 +264,10 @@ export async function adjustCreditsAction(
     note: formData.get("note") || undefined,
   });
   if (!parsed.success) {
-    return { ok: false, message: "Enter a whole number of credits other than 0 (use - to remove)." };
+    return {
+      ok: false,
+      message: "Enter a whole number of credits other than 0 (use - to remove).",
+    };
   }
   const { delta, note } = parsed.data;
   try {

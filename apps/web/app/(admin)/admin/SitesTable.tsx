@@ -115,8 +115,7 @@ export function SitesTable({
       else next.add(id);
       return next;
     });
-  const toggleAll = () =>
-    setSelected(allSelected ? new Set() : new Set(rows.map((row) => row.id)));
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(rows.map((row) => row.id)));
 
   const open = (next: Pending) => {
     setDialogError(null);

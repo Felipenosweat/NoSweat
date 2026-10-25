@@ -183,9 +183,7 @@ export async function deleteGuestDraftsAction(input: unknown): Promise<AdminActi
   const { days } = parsed.data;
   try {
     const deleted = await adminDeleteGuestDrafts(days);
-    console.info(
-      `[admin] ${admin.id} deleted ${deleted} guest draft(s) older than ${days} day(s)`,
-    );
+    console.info(`[admin] ${admin.id} deleted ${deleted} guest draft(s) older than ${days} day(s)`);
     refreshAdmin();
     return {
       ok: true,

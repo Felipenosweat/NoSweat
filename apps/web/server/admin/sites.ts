@@ -44,7 +44,9 @@ export function parseSiteLimit(value: string | null | undefined): number {
 export type SiteOwnerInfo = { email: string | null; testAccount: boolean };
 
 /** Endereço do site no ar: domínio próprio ou /s/<slug>. `null` se não está publicado. */
-export function liveHref(site: Pick<SiteRecord, "status" | "customDomain" | "slug">): string | null {
+export function liveHref(
+  site: Pick<SiteRecord, "status" | "customDomain" | "slug">,
+): string | null {
   if (site.status !== "published") return null;
   if (site.customDomain) return `https://${site.customDomain}`;
   return site.slug ? `/s/${site.slug}` : null;

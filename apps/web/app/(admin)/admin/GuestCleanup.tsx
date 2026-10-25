@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { focusRing, panelClass, panelText, panelTitle, secondaryButton } from "@/components/DashboardUi";
+import {
+  focusRing,
+  panelClass,
+  panelText,
+  panelTitle,
+  secondaryButton,
+} from "@/components/DashboardUi";
 import { deleteGuestDraftsAction, type AdminActionResult } from "./actions";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -55,8 +61,8 @@ export function GuestCleanup({
         Guest drafts
       </h2>
       <p className={`mt-1 ${panelText}`}>
-        Websites made without an account that never moved to one: {guestCreatedAt.length} right
-        now. They are never live. The daily cleanup already deletes the ones older than 30 days.
+        Websites made without an account that never moved to one: {guestCreatedAt.length} right now.
+        They are never live. The daily cleanup already deletes the ones older than 30 days.
       </p>
       <form
         className="mt-4 flex flex-wrap items-end gap-3"

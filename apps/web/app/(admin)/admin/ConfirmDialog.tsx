@@ -67,7 +67,9 @@ export function ConfirmDialog({
           >
             {title}
           </h2>
-          {children && <div className="mt-2 text-[15px] leading-[1.6] text-slate-600">{children}</div>}
+          {children && (
+            <div className="mt-2 text-[15px] leading-[1.6] text-slate-600">{children}</div>
+          )}
           {error && (
             <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
