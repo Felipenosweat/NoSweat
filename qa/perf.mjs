@@ -52,8 +52,8 @@ for (const target of TARGETS) {
             .filter((item) => item.resourceType === "Script")
             .reduce((sum, item) => sum + (item.transferSize ?? 0), 0) / 1024,
         ),
-        lcpElement: audit("largest-contentful-paint-element")?.details?.items?.[0]?.items?.[0]
-          ?.node?.snippet,
+        lcpElement: audit("largest-contentful-paint-element")?.details?.items?.[0]?.items?.[0]?.node
+          ?.snippet,
         opportunities: Object.values(lhr.audits)
           .filter((a) => a.details?.type === "opportunity" && (a.numericValue ?? 0) > 100)
           .map((a) => ({ id: a.id, savingsMs: Math.round(a.numericValue) })),
