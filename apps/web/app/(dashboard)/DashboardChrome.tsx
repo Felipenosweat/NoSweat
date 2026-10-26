@@ -29,7 +29,6 @@ import {
   InvoicesIcon,
   LogOutIcon,
   MODULE_ICONS,
-  MessagesIcon,
   MoreIcon,
   PlusIcon,
   ScheduleIcon,
