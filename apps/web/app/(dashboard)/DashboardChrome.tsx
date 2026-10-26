@@ -2,23 +2,38 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  type KeyboardEvent,
+  type ReactElement,
+  type ReactNode,
+  type SVGProps,
+} from "react";
 import { signOut } from "@/app/(auth)/login/actions";
 import { focusRing } from "@/components/DashboardUi";
 import { GlassBackdrop, glassButtonClass } from "@/components/glass";
 import { Logo } from "@/components/Logo";
-import { LIVE_MODULES, SOON_MODULES } from "@/lib/modules";
+import { SOON_MODULES } from "@/lib/modules";
 import {
   AccountIcon,
   AdminIcon,
   BillingIcon,
+  ClientsIcon,
+  EstimatesIcon,
   HelpIcon,
   HomeIcon,
+  InvoicesIcon,
   LogOutIcon,
   MODULE_ICONS,
   MessagesIcon,
   MoreIcon,
   PlusIcon,
+  ScheduleIcon,
+  SettingsIcon,
+  SocialIcon,
+  TeamIcon,
+  WebsiteIcon,
 } from "./NavIcons";
 
 // Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral de vidro flutuante no
@@ -58,14 +73,6 @@ const soonItem =
 // Aba do celular: ícone sobre o rótulo; ativa = azul da marca numa cápsula clara.
 const tabItem = `mx-0.5 my-1.5 flex h-[calc(100%-0.75rem)] flex-col items-center justify-center gap-0.5 rounded-[22px] text-[11px] leading-4 font-semibold text-(--glass-fg-muted) transition-colors duration-150 hover:text-(--glass-fg) aria-[current=page]:bg-brand/10 aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
 
-// Colunas da barra de abas: Home + módulos ativos + More (classes inteiras para o Tailwind achar).
-const TAB_COLUMNS: Record<number, string> = {
-  3: "grid-cols-3",
-  4: "grid-cols-4",
-  5: "grid-cols-5",
-  6: "grid-cols-6",
-};
-
 const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-(--glass-fg) transition-colors duration-150 hover:bg-(--glass-ghost-hover) aria-[current=page]:glass-pill ${focusRing}`;
 
 /**
@@ -74,12 +81,148 @@ const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text
  */
 const TAB_BAR_BOTTOM = "bottom-[max(0.75rem,env(safe-area-inset-bottom))]";
 
+// ---------- itens da navegação ----------
+// Ordem pensada para o dia a dia de quem presta serviço: primeiro a agenda e os clientes, depois o
+// dinheiro (orçamentos e faturas) e por fim o site e as redes. "Business" junta o que se mexe pouco.
+
+type NavItem = {
+  key: string;
+  label: string;
+  href: string;
+  Icon: (props: SVGProps<SVGSVGElement>) => ReactElement;
+  /** Prefixo da rota que marca o item como atual (padrão: o próprio `href`). `null` = nunca. */
+  match?: string | null;
+  /** Link de fora (Help): `<a>` com os atributos de `supportLinkProps`. */
+  external?: boolean;
+};
+
+const HOME_ITEM: NavItem = { key: "home", label: "Home", href: "/dashboard", Icon: HomeIcon };
+const SCHEDULE_ITEM: NavItem = {
+  key: "schedule",
+  label: "Schedule",
+  href: "/schedule",
+  Icon: ScheduleIcon,
+};
+const CLIENTS_ITEM: NavItem = {
+  key: "clients",
+  label: "Clients",
+  href: "/clients",
+  Icon: ClientsIcon,
+};
+const ESTIMATES_ITEM: NavItem = {
+  key: "estimates",
+  label: "Estimates",
+  href: "/estimates",
+  Icon: EstimatesIcon,
+};
+const INVOICES_ITEM: NavItem = {
+  key: "invoices",
+  label: "Invoices",
+  href: "/invoices",
+  Icon: InvoicesIcon,
+};
+const WEBSITE_ITEM: NavItem = {
+  key: "website",
+  label: "Website",
+  href: "/dashboard#sites",
+  Icon: WebsiteIcon,
+  match: "/sites",
+};
+const SOCIAL_ITEM: NavItem = { key: "social", label: "Social", href: "/social", Icon: SocialIcon };
+const TEAM_ITEM: NavItem = { key: "team", label: "Team", href: "/team", Icon: TeamIcon };
+const SETTINGS_ITEM: NavItem = {
+  key: "settings",
+  label: "Settings",
+  href: "/office/settings",
+  Icon: SettingsIcon,
+  match: "/office",
+};
+const BILLING_ITEM: NavItem = {
+  key: "billing",
+  label: "Billing",
+  href: "/billing",
+  Icon: BillingIcon,
+};
+
+/** "Messages": a caixa do site mais recente (some sem site). */
+function messagesItem(latestSiteId: string | null): NavItem[] {
+  return latestSiteId
+    ? [
+        {
+          key: "messages",
+          label: "Messages",
+          href: `/sites/${latestSiteId}#messages`,
+          Icon: MessagesIcon,
+          match: null,
+        },
+      ]
+    : [];
+}
+
+/** Grupo "Business" (embaixo da barra lateral): equipe, configurações, cobrança, ajuda, admin. */
+function businessItems({
+  admin,
+  account,
+  supportHref,
+}: Pick<ChromeProps, "admin" | "account" | "supportHref">): NavItem[] {
+  return [
+    TEAM_ITEM,
+    SETTINGS_ITEM,
+    BILLING_ITEM,
+    ...(supportHref
+      ? [{ key: "help", label: "Help", href: supportHref, Icon: HelpIcon, external: true }]
+      : []),
+    ...(admin
+      ? [{ key: "admin", label: "Admin", href: "/admin", Icon: AdminIcon, match: null }]
+      : []),
+    ...(account
+      ? [{ key: "account", label: "Account", href: "/account", Icon: AccountIcon }]
+      : []),
+  ];
+}
+
 function useCurrent() {
   const pathname = usePathname();
   const current = (href: string): "page" | undefined =>
     pathname === href || pathname.startsWith(`${href}/`) ? "page" : undefined;
   const isCreate = current("/create") === "page";
-  return { pathname, current, isCreate };
+  const currentItem = (item: NavItem): "page" | undefined =>
+    item.match === null || item.external ? undefined : current(item.match ?? item.href);
+  return { pathname, current, currentItem, isCreate };
+}
+
+/** Um item como link (ou `<a>` para o link de fora). */
+function NavLink({
+  item,
+  className,
+  iconClassName,
+  current,
+  onClick,
+}: {
+  item: NavItem;
+  className: string;
+  iconClassName: string;
+  current: "page" | undefined;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <item.Icon className={iconClassName} />
+      {item.label}
+    </>
+  );
+  if (item.external) {
+    return (
+      <a href={item.href} {...supportLinkProps(item.href)} onClick={onClick} className={className}>
+        {content}
+      </a>
+    );
+  }
+  return (
+    <Link href={item.href} aria-current={current} onClick={onClick} className={className}>
+      {content}
+    </Link>
+  );
 }
 
 /** Letra do avatar: primeira letra do e-mail (ou "?" sem e-mail). */
@@ -98,7 +241,18 @@ function SidebarNav({
   latestSiteId,
   supportHref,
 }: Omit<ChromeProps, "children" | "banner">) {
-  const { current } = useCurrent();
+  const { currentItem } = useCurrent();
+  const main: NavItem[] = [
+    HOME_ITEM,
+    SCHEDULE_ITEM,
+    CLIENTS_ITEM,
+    ESTIMATES_ITEM,
+    INVOICES_ITEM,
+    WEBSITE_ITEM,
+    ...messagesItem(latestSiteId),
+    SOCIAL_ITEM,
+  ];
+  const business = businessItems({ admin, account, supportHref });
   return (
     // Cartão de vidro flutuante (como a barra lateral do iPadOS 26): o fundo da marca aparece por
     // trás, desfocado.
@@ -117,83 +271,61 @@ function SidebarNav({
       </div>
       <nav aria-label="Main" className="flex flex-1 flex-col">
         <ul className="grid gap-0.5">
-          <li>
-            <Link href="/dashboard" aria-current={current("/dashboard")} className={sideItem}>
-              <HomeIcon className={sideIcon} />
-              Home
-            </Link>
-          </li>
-          {LIVE_MODULES.map((hub) => {
-            const ModuleIcon = MODULE_ICONS[hub.key];
-            return (
-              <Fragment key={hub.key}>
-                <li>
-                  <Link
-                    href={hub.href}
-                    aria-current={hub.key === "website" ? current("/sites") : current(hub.href)}
-                    className={sideItem}
-                  >
-                    <ModuleIcon className={sideIcon} />
-                    {hub.label}
-                  </Link>
-                </li>
-                {/* "Messages" vem logo depois de "Website": mensagens do site mais recente. */}
-                {hub.key === "website" && latestSiteId && (
-                  <li>
-                    <Link href={`/sites/${latestSiteId}#messages`} className={sideItem}>
-                      <MessagesIcon className={sideIcon} />
-                      Messages
-                    </Link>
+          {main.map((item) => (
+            <li key={item.key}>
+              <NavLink
+                item={item}
+                current={currentItem(item)}
+                className={sideItem}
+                iconClassName={sideIcon}
+              />
+            </li>
+          ))}
+        </ul>
+
+        {SOON_MODULES.length > 0 && (
+          <>
+            <p
+              id="sidebar-soon"
+              className="px-3 pt-6 pb-1.5 text-[13px] font-semibold text-(--glass-fg-muted)"
+            >
+              Coming soon
+            </p>
+            <ul aria-labelledby="sidebar-soon" className="grid gap-0.5">
+              {SOON_MODULES.map((hub) => {
+                const ModuleIcon = MODULE_ICONS[hub.key];
+                return (
+                  <li key={hub.key}>
+                    <span className={soonItem}>
+                      <ModuleIcon className="size-[22px] shrink-0 text-slate-400" />
+                      {hub.label}
+                    </span>
                   </li>
-                )}
-              </Fragment>
-            );
-          })}
-        </ul>
+                );
+              })}
+            </ul>
+          </>
+        )}
 
-        <p
-          id="sidebar-soon"
-          className="px-3 pt-6 pb-1.5 text-[13px] font-semibold text-(--glass-fg-muted)"
-        >
-          Coming soon
-        </p>
-        <ul aria-labelledby="sidebar-soon" className="grid gap-0.5">
-          {SOON_MODULES.map((hub) => {
-            const ModuleIcon = MODULE_ICONS[hub.key];
-            return (
-              <li key={hub.key}>
-                <span className={soonItem}>
-                  <ModuleIcon className="size-[22px] shrink-0 text-slate-400" />
-                  {hub.label}
-                </span>
+        <div className="mt-auto pt-6">
+          <p
+            id="sidebar-business"
+            className="px-3 pb-1.5 text-[13px] font-semibold text-(--glass-fg-muted)"
+          >
+            Business
+          </p>
+          <ul aria-labelledby="sidebar-business" className="grid gap-0.5">
+            {business.map((item) => (
+              <li key={item.key}>
+                <NavLink
+                  item={item}
+                  current={currentItem(item)}
+                  className={sideItem}
+                  iconClassName={sideIcon}
+                />
               </li>
-            );
-          })}
-        </ul>
-
-        <div className="mt-auto grid gap-0.5 pt-6">
-          {admin && (
-            <Link href="/admin" className={sideItem}>
-              <AdminIcon className={sideIcon} />
-              Admin
-            </Link>
-          )}
-          {supportHref && (
-            <a href={supportHref} {...supportLinkProps(supportHref)} className={sideItem}>
-              <HelpIcon className={sideIcon} />
-              Help
-            </a>
-          )}
-          {account && (
-            <Link href="/account" aria-current={current("/account")} className={sideItem}>
-              <AccountIcon className={sideIcon} />
-              Account
-            </Link>
-          )}
-          <Link href="/billing" aria-current={current("/billing")} className={sideItem}>
-            <BillingIcon className={sideIcon} />
-            Billing
-          </Link>
+            ))}
+          </ul>
           {account && (
             <div className="mt-3 grid gap-0.5 border-t border-(--glass-rim) pt-3">
               <p className="flex items-center gap-2.5 px-3 py-1.5 text-[13px] text-(--glass-fg-muted)">
@@ -227,9 +359,18 @@ function TabBar({
   latestSiteId,
   supportHref,
 }: Omit<ChromeProps, "children" | "banner">) {
-  const { current, pathname } = useCurrent();
+  const { currentItem, pathname } = useCurrent();
   const moreRef = useRef<HTMLDetailsElement>(null);
-  const moreActive = current("/billing") === "page" || current("/account") === "page";
+  // Abas fixas (o que se usa na rua) e o resto na folha "More".
+  const tabs: NavItem[] = [HOME_ITEM, SCHEDULE_ITEM, CLIENTS_ITEM, WEBSITE_ITEM];
+  const more: NavItem[] = [
+    ESTIMATES_ITEM,
+    INVOICES_ITEM,
+    ...messagesItem(latestSiteId),
+    SOCIAL_ITEM,
+    ...businessItems({ admin, account, supportHref }),
+  ];
+  const moreActive = more.some((item) => currentItem(item) === "page");
 
   // Fecha a folha "More" mexendo direto no <details> (sem estado do React).
   const closeMore = () => {
@@ -253,34 +394,18 @@ function TabBar({
       {/* Vidro da barra numa camada à parte: `backdrop-filter` na própria <nav> viraria o bloco
           de referência dos filhos `fixed` (a folha "More" e o fundo dela ficariam presos aqui). */}
       <div aria-hidden="true" className="glass-strong absolute inset-0 -z-10 rounded-[28px]" />
-      <ul className={`grid h-full px-1 ${TAB_COLUMNS[LIVE_MODULES.length + 2] ?? "grid-cols-5"}`}>
-        <li>
-          <Link
-            href="/dashboard"
-            aria-current={current("/dashboard")}
-            onClick={closeMore}
-            className={tabItem}
-          >
-            <HomeIcon className="size-6" />
-            Home
-          </Link>
-        </li>
-        {LIVE_MODULES.map((hub) => {
-          const ModuleIcon = MODULE_ICONS[hub.key];
-          return (
-            <li key={hub.key}>
-              <Link
-                href={hub.href}
-                aria-current={hub.key === "website" ? current("/sites") : current(hub.href)}
-                onClick={closeMore}
-                className={tabItem}
-              >
-                <ModuleIcon className="size-6" />
-                {hub.label}
-              </Link>
-            </li>
-          );
-        })}
+      <ul className="grid h-full grid-cols-5 px-1">
+        {tabs.map((item) => (
+          <li key={item.key}>
+            <NavLink
+              item={item}
+              current={currentItem(item)}
+              onClick={closeMore}
+              className={tabItem}
+              iconClassName="size-6"
+            />
+          </li>
+        ))}
         <li>
           <details ref={moreRef} onKeyDown={onMoreKeyDown} className="group h-full">
             <summary
@@ -301,84 +426,42 @@ function TabBar({
             {/* Folha flutuante de vidro logo acima da barra de abas. */}
             <div className="glass-strong glass-pop fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+4.5rem)] max-h-[70dvh] overflow-y-auto overscroll-contain rounded-[28px] px-2 pt-2 pb-3">
               <ul className="grid gap-0.5">
-                {latestSiteId && (
-                  <li>
-                    <Link
-                      href={`/sites/${latestSiteId}#messages`}
+                {more.map((item) => (
+                  <li key={item.key}>
+                    <NavLink
+                      item={item}
+                      current={currentItem(item)}
                       onClick={closeMore}
                       className={sheetItem}
-                    >
-                      <MessagesIcon className="size-[22px] shrink-0 text-slate-500" />
-                      Messages
-                    </Link>
+                      iconClassName="size-[22px] shrink-0 text-slate-500"
+                    />
                   </li>
-                )}
-                {supportHref && (
-                  <li>
-                    <a
-                      href={supportHref}
-                      {...supportLinkProps(supportHref)}
-                      onClick={closeMore}
-                      className={sheetItem}
-                    >
-                      <HelpIcon className="size-[22px] shrink-0 text-slate-500" />
-                      Help
-                    </a>
-                  </li>
-                )}
-                {account && (
-                  <li>
-                    <Link
-                      href="/account"
-                      aria-current={current("/account")}
-                      onClick={closeMore}
-                      className={sheetItem}
-                    >
-                      <AccountIcon className="size-[22px] shrink-0 text-slate-500" />
-                      Account
-                    </Link>
-                  </li>
-                )}
-                <li>
-                  <Link
-                    href="/billing"
-                    aria-current={current("/billing")}
-                    onClick={closeMore}
-                    className={sheetItem}
-                  >
-                    <BillingIcon className="size-[22px] shrink-0 text-slate-500" />
-                    Billing
-                  </Link>
-                </li>
-                {admin && (
-                  <li>
-                    <Link href="/admin" onClick={closeMore} className={sheetItem}>
-                      <AdminIcon className="size-[22px] shrink-0 text-slate-500" />
-                      Admin
-                    </Link>
-                  </li>
-                )}
+                ))}
               </ul>
 
-              <p
-                id="sheet-soon"
-                className="px-3 pt-4 pb-1 text-[13px] font-semibold text-(--glass-fg-muted)"
-              >
-                Coming soon
-              </p>
-              <ul aria-labelledby="sheet-soon" className="grid gap-0.5">
-                {SOON_MODULES.map((hub) => {
-                  const ModuleIcon = MODULE_ICONS[hub.key];
-                  return (
-                    <li key={hub.key}>
-                      <span className={`${soonItem} min-h-12`}>
-                        <ModuleIcon className="size-[22px] shrink-0 text-slate-400" />
-                        {hub.label}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              {SOON_MODULES.length > 0 && (
+                <>
+                  <p
+                    id="sheet-soon"
+                    className="px-3 pt-4 pb-1 text-[13px] font-semibold text-(--glass-fg-muted)"
+                  >
+                    Coming soon
+                  </p>
+                  <ul aria-labelledby="sheet-soon" className="grid gap-0.5">
+                    {SOON_MODULES.map((hub) => {
+                      const ModuleIcon = MODULE_ICONS[hub.key];
+                      return (
+                        <li key={hub.key}>
+                          <span className={`${soonItem} min-h-12`}>
+                            <ModuleIcon className="size-[22px] shrink-0 text-slate-400" />
+                            {hub.label}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
 
               {account && (
                 <div className="mt-3 border-t border-(--glass-rim) pt-3">

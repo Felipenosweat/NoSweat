@@ -51,6 +51,51 @@ export const SocialIcon = (props: IconProps) => (
   </Icon>
 );
 
+// Calendário com blocos de horário: a agenda de serviços.
+export const ScheduleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3" y="4.5" width="18" height="16.5" rx="2" />
+    <path d="M3 9.5h18M8 2.5v4M16 2.5v4M7 13h4M7 16.5h7" />
+  </Icon>
+);
+
+// Folha com canto dobrado: orçamentos.
+export const EstimatesIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" />
+    <path d="M14 3v5h5M8.5 12.5h7M8.5 16h4.5" />
+  </Icon>
+);
+
+// Recibo com o fundo picotado: faturas.
+export const InvoicesIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 3h14v18l-2.33-1.5L14.33 21 12 19.5 9.67 21 7.33 19.5 5 21z" />
+    <path d="M9 8h6M9 11.5h6M9 15h3.5" />
+  </Icon>
+);
+
+// Três cabeças: a equipe (diferente das duas pessoas de "Clients").
+export const TeamIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="7.5" r="3" />
+    <path d="M6.5 20a5.5 5.5 0 0 1 11 0" />
+    <circle cx="5" cy="10" r="2.25" />
+    <circle cx="19" cy="10" r="2.25" />
+    <path d="M1.75 18.5A4 4 0 0 1 5 14.6M22.25 18.5A4 4 0 0 0 19 14.6" />
+  </Icon>
+);
+
+// Controles deslizantes: configurações da empresa.
+export const SettingsIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1" />
+    <circle cx="15" cy="6.5" r="2" />
+    <circle cx="9" cy="12" r="2" />
+    <circle cx="17" cy="17.5" r="2" />
+  </Icon>
+);
+
 export const ClientsIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="9" cy="8" r="3.5" />

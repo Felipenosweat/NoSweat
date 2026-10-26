@@ -67,9 +67,12 @@ export function matchesEstimateFilter(status: EstimateStatus, filter: EstimateFi
   }
 }
 
-/** Itens só mudam em rascunho e enviado (regra do contrato). */
+/**
+ * Itens só mudam em rascunho e enviado (regra do contrato). "Vencido" é um enviado que passou da
+ * validade (calculado na leitura): editar deixa o dono dar mais prazo.
+ */
 export function estimateItemsEditable(status: EstimateStatus): boolean {
-  return status === "draft" || status === "sent";
+  return status === "draft" || status === "sent" || status === "expired";
 }
 
 // ---------- faturas ----------
@@ -251,6 +254,22 @@ export function addDays(date: string, days: number): string {
   const [y = 2000, m = 1, d = 1] = date.split("-").map(Number);
   const next = new Date(Date.UTC(y, m - 1, d + days));
   return next.toISOString().slice(0, 10);
+}
+
+// ---------- listas ----------
+
+/** Endereço da lista com os filtros (o padrão "all" e a busca vazia saem da URL). */
+export function officeListHref(base: string, params: { status: string; q: string }): string {
+  const search = new URLSearchParams();
+  if (params.status !== "all") search.set("status", params.status);
+  if (params.q) search.set("q", params.q);
+  const query = search.toString();
+  return query ? `${base}?${query}` : base;
+}
+
+/** Primeiro valor de um parâmetro da URL (`?q=a&q=b` → "a"). */
+export function firstParam(value: string | string[] | undefined): string {
+  return (Array.isArray(value) ? value[0] : value) ?? "";
 }
 
 // ---------- números e busca ----------
