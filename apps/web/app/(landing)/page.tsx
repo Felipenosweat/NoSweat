@@ -226,7 +226,7 @@ export default function LandingPage() {
       {/* As redes da No Sweat logo abaixo do nome gigante, antes do rodapé (pedido do fundador). */}
       <section aria-labelledby="follow-title" className="bg-ink pt-6 pb-14 text-center">
         <h2 id="follow-title" className="lp-eyebrow text-white/60">
-          Follow No Sweat
+          Follow @nosweatfd
         </h2>
         <SocialLinks tone="dark" className="mt-5 justify-center" />
       </section>

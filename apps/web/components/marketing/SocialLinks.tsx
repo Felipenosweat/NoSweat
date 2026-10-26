@@ -18,18 +18,6 @@ const ICONS: Record<SocialNetwork, ReactNode> = {
   facebook: (
     <path d="M14 21v-8h3l.5-3.5H14V7.8c0-1 .3-1.8 1.8-1.8H18V3h-2.8C12.6 3 11 4.6 11 7.4v2.1H8V13h3v8" />
   ),
-  youtube: (
-    <>
-      <rect x="2.5" y="5.5" width="19" height="13" rx="4" />
-      <path d="M10.5 9.5v5l4.5-2.5z" fill="currentColor" stroke="none" />
-    </>
-  ),
-  linkedin: (
-    <>
-      <rect x="3" y="3" width="18" height="18" rx="3" />
-      <path d="M8 10.5V16M8 7.5v.01M12 16v-5.5M12 13c0-1.7 1-2.6 2.3-2.6S16 11.3 16 13v3" />
-    </>
-  ),
 };
 
 export function SocialLinks({

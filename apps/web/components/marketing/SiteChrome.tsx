@@ -183,7 +183,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
             Websites for small businesses, built from a sentence and easy to keep up to date.
           </p>
           <p className={`mt-6 text-sm font-semibold ${dark ? "text-white" : "text-ink"}`}>
-            Follow us
+            Follow @nosweatfd
           </p>
           <SocialLinks tone={dark ? "dark" : "light"} className="mt-3" />
         </div>
