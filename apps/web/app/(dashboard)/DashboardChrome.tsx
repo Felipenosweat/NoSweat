@@ -142,7 +142,7 @@ const SOON_ITEMS = SOON_MODULES.filter((hub) => hub.key !== "reviews");
 const TEAM_ITEM: NavItem = { key: "team", label: "Team", href: "/team", Icon: TeamIcon };
 const SETTINGS_ITEM: NavItem = {
   key: "settings",
-  label: "Settings",
+  label: "Business settings",
   href: "/office/settings",
   Icon: SettingsIcon,
   match: "/office",

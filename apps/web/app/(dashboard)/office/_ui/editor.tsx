@@ -7,7 +7,30 @@ import { GlassButton } from "@/components/glass";
 // (salvar é sempre explícito: nada vai para o cliente sem o dono apertar Save ou Send) e o aviso
 // do navegador ao sair com mudanças sem salvar.
 
-/** Aviso nativo do navegador ao fechar/recarregar a aba com mudanças sem salvar. */
+const LEAVE_MESSAGE = "You have unsaved changes. Leave without saving?";
+
+/** Link que troca de tela dentro do app (não abre aba nova, não é âncora, tel:, sms:...). */
+function inAppLeaveTarget(event: MouseEvent): HTMLAnchorElement | null {
+  if (event.defaultPrevented || event.button !== 0) return null;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
+  const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
+  if (!(target instanceof HTMLAnchorElement)) return null;
+  if (target.target && target.target !== "_self") return null;
+  if (target.hasAttribute("download")) return null;
+  const url = new URL(target.href, window.location.href);
+  if (url.origin !== window.location.origin) return null;
+  // Mesmo endereço (só muda o #): não sai da tela.
+  if (url.pathname === window.location.pathname && url.search === window.location.search) {
+    return null;
+  }
+  return target;
+}
+
+/**
+ * Mudanças sem salvar: aviso nativo do navegador ao fechar/recarregar a aba e um `confirm()` ao
+ * tocar num link do app (barra lateral, "‹ Estimates", "Open client"...). O clique é pego na fase
+ * de captura do `document`, antes do <Link> do Next, que então nem chega a navegar.
+ */
 export function useUnsavedWarning(dirty: boolean) {
   useEffect(() => {
     if (!dirty) return;
@@ -16,8 +39,18 @@ export function useUnsavedWarning(dirty: boolean) {
       // Navegadores antigos pedem o returnValue.
       event.returnValue = "";
     }
+    function onClick(event: MouseEvent) {
+      if (!inAppLeaveTarget(event)) return;
+      if (window.confirm(LEAVE_MESSAGE)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", onClick, true);
+    };
   }, [dirty]);
 }
 

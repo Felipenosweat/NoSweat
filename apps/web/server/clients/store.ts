@@ -39,6 +39,11 @@ export interface ClientStore {
   ): Promise<ClientActivityRecord[]>;
   /** Grava um item do histórico. `null` se for um pedido do site (`leadId`) já importado. */
   insertActivity(activity: NewClientActivity): Promise<ClientActivityRecord | null>;
+  /**
+   * Apaga os itens `payment` de um pagamento do escritório (pagamento apagado). Devolve os ids dos
+   * clientes afetados (para recalcular os totais). Nada a apagar: lista vazia.
+   */
+  deletePaymentActivities(ownerId: string, paymentId: string): Promise<string[]>;
   /** Pedidos do site que o sync não deve importar: já importados ou descartados pelo dono. */
   handledLeadIds(ownerId: string): Promise<Set<string>>;
   /**
@@ -121,6 +126,8 @@ const ActivityRow = z.object({
   site_id: z.string().nullable(),
   occurred_at: z.string(),
   created_at: z.string(),
+  // Coluna da migration 0023 (antes dela, a linha vem sem o campo).
+  payment_id: z.string().nullish(),
 });
 
 function toActivity(row: z.infer<typeof ActivityRow>): ClientActivityRecord {
@@ -135,6 +142,7 @@ function toActivity(row: z.infer<typeof ActivityRow>): ClientActivityRecord {
     siteId: row.site_id,
     occurredAt: row.occurred_at,
     createdAt: row.created_at,
+    paymentId: row.payment_id ?? null,
   };
 }
 
@@ -337,6 +345,8 @@ export class SupabaseClientStore implements ClientStore {
       lead_id: activity.leadId,
       site_id: activity.siteId,
       occurred_at: activity.occurredAt ?? nowIso(),
+      // Só manda a coluna quando há pagamento (as outras gravações funcionam antes da 0023).
+      ...(activity.paymentId ? { payment_id: activity.paymentId } : {}),
     });
     // Pedido do site: o índice único em lead_id garante uma importação só. Se outro sync chegou
     // antes, o PostgREST ignora a linha e devolve a lista vazia.
@@ -350,6 +360,15 @@ export class SupabaseClientStore implements ClientStore {
     if (row) return row;
     if (activity.leadId) return null;
     throw new Error("Supabase did not return the new activity.");
+  }
+
+  async deletePaymentActivities(ownerId: string, paymentId: string) {
+    if (!isUuid(ownerId) || !isUuid(paymentId)) return [];
+    const deleted = await this.activities(
+      `/client_activities?owner_id=eq.${ownerId}&payment_id=eq.${paymentId}`,
+      { method: "DELETE" },
+    );
+    return [...new Set(deleted.map((a) => a.clientId))];
   }
 
   async handledLeadIds(ownerId: string) {
@@ -491,9 +510,20 @@ export class MemoryClientStore implements ClientStore {
       siteId: activity.siteId,
       occurredAt: activity.occurredAt ?? now,
       createdAt: now,
+      paymentId: activity.paymentId ?? null,
     };
     this.state.activities.set(record.id, record);
     return { ...record };
+  }
+
+  async deletePaymentActivities(ownerId: string, paymentId: string) {
+    const clientIds = new Set<string>();
+    for (const activity of [...this.state.activities.values()]) {
+      if (activity.ownerId !== ownerId || activity.paymentId !== paymentId) continue;
+      clientIds.add(activity.clientId);
+      this.state.activities.delete(activity.id);
+    }
+    return [...clientIds];
   }
 
   async handledLeadIds(ownerId: string) {

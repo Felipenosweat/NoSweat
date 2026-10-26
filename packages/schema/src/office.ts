@@ -27,8 +27,27 @@ import { z } from "zod";
 //              GET /api/public/invoices/[token]
 // Páginas públicas: /q/[token] (orçamento) e /i/[token] (fatura).
 
-/** Data sem hora "AAAA-MM-DD" (no fuso da empresa). */
-const DateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use the YYYY-MM-DD format.");
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * A data existe no calendário? (2026-02-30 não.) Ida e volta por Date.UTC: um dia fora do mês
+ * "transborda" para o mês seguinte e o texto muda. Formato errado fica para a mensagem do regex.
+ */
+export function isCalendarDate(value: string): boolean {
+  if (!DATE_ONLY.test(value)) return true;
+  const [y = 0, m = 0, d = 0] = value.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).toISOString().slice(0, 10) === value;
+}
+
+/** Data sem hora "AAAA-MM-DD" (no fuso da empresa), que existe no calendário. */
+const DateOnly = z
+  .string()
+  .regex(DATE_ONLY, "Use the YYYY-MM-DD format.")
+  .refine(isCalendarDate, "That date doesn't exist.");
+/** Pedido de mudança vazio ({}): 400 com esta mensagem. */
+const hasSomeField = <T extends object>(value: T): boolean =>
+  Object.values(value).some((v) => v !== undefined);
+const NOTHING_TO_UPDATE = { message: "Nothing to update." };
 const Money = z.number().int().nonnegative().max(100_000_000);
 const OptionalText = (max: number) => z.string().trim().max(max).nullable().optional();
 /** Imposto em pontos-base: 825 = 8.25%. Máximo 30%. */
@@ -103,9 +122,9 @@ export const CreatePriceItemRequest = z.object({
 });
 export type CreatePriceItemRequest = z.infer<typeof CreatePriceItemRequest>;
 
-export const UpdatePriceItemRequest = CreatePriceItemRequest.partial().extend({
-  active: z.boolean().optional(),
-});
+export const UpdatePriceItemRequest = CreatePriceItemRequest.partial()
+  .extend({ active: z.boolean().optional() })
+  .refine(hasSomeField, NOTHING_TO_UPDATE);
 export type UpdatePriceItemRequest = z.infer<typeof UpdatePriceItemRequest>;
 
 export const PriceItemsResponse = z.object({ items: z.array(PriceItem) });
@@ -154,9 +173,9 @@ export const CreateTeamMemberRequest = z.object({
 });
 export type CreateTeamMemberRequest = z.infer<typeof CreateTeamMemberRequest>;
 
-export const UpdateTeamMemberRequest = CreateTeamMemberRequest.partial().extend({
-  active: z.boolean().optional(),
-});
+export const UpdateTeamMemberRequest = CreateTeamMemberRequest.partial()
+  .extend({ active: z.boolean().optional() })
+  .refine(hasSomeField, NOTHING_TO_UPDATE);
 export type UpdateTeamMemberRequest = z.infer<typeof UpdateTeamMemberRequest>;
 
 export const TeamResponse = z.object({ members: z.array(TeamMember) });
@@ -187,6 +206,9 @@ export const DocumentTotals = z.object({
   totalCents: z.number().int().nonnegative(),
 });
 export type DocumentTotals = z.infer<typeof DocumentTotals>;
+
+/** Maior total de documento aceito (US$ 1.000.000,00). Acima disso o servidor responde 400. */
+export const MAX_TOTAL_CENTS = 100_000_000;
 
 /**
  * Totais de um documento. Linha = round(quantidade × preço). O desconto sai do subtotal (nunca
@@ -281,7 +303,8 @@ export const CreateJobRequest = z
     notes: z.string().trim().max(4000).optional(),
     valueCents: Money.nullable().optional(),
   })
-  .refine((j) => !j.startAt || !j.endAt || j.endAt > j.startAt, {
+  // Compara instantes (Date.parse), não texto: "-05:00" e "Z" no mesmo pedido.
+  .refine((j) => !j.startAt || !j.endAt || Date.parse(j.endAt) > Date.parse(j.startAt), {
     message: "The end time must be after the start time.",
     path: ["endAt"],
   });
@@ -298,7 +321,7 @@ export const UpdateJobRequest = z
     notes: z.string().trim().max(4000).optional(),
     valueCents: Money.nullable().optional(),
   })
-  .refine((j) => Object.values(j).some((v) => v !== undefined), { message: "Nothing to update." });
+  .refine(hasSomeField, NOTHING_TO_UPDATE);
 export type UpdateJobRequest = z.infer<typeof UpdateJobRequest>;
 
 export const JobsResponse = z.object({ jobs: z.array(Job) });
@@ -337,6 +360,8 @@ export const Estimate = z.object({
   respondedAt: z.string().nullable(),
   /** Nome que o cliente digitou ao aprovar (assinatura simples). */
   approvedByName: z.string().nullable(),
+  /** Motivo que o cliente escreveu ao recusar (só o dono vê). Campo novo: pode faltar. */
+  declineReason: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -365,7 +390,7 @@ export const UpdateEstimateRequest = z
     validUntil: DateOnly.nullable().optional(),
     status: z.enum(["approved", "declined"]).optional(),
   })
-  .refine((e) => Object.values(e).some((v) => v !== undefined), { message: "Nothing to update." });
+  .refine(hasSomeField, NOTHING_TO_UPDATE);
 export type UpdateEstimateRequest = z.infer<typeof UpdateEstimateRequest>;
 
 export const EstimatesResponse = z.object({ estimates: z.array(Estimate) });
@@ -449,7 +474,7 @@ export const UpdateInvoiceRequest = z
     dueOn: DateOnly.nullable().optional(),
     status: z.literal("void").optional(),
   })
-  .refine((i) => Object.values(i).some((v) => v !== undefined), { message: "Nothing to update." });
+  .refine(hasSomeField, NOTHING_TO_UPDATE);
 export type UpdateInvoiceRequest = z.infer<typeof UpdateInvoiceRequest>;
 
 export const RecordPaymentRequest = z.object({
@@ -522,18 +547,33 @@ export const PublicEstimate = z.object({
   sentAt: z.string().nullable(),
   respondedAt: z.string().nullable(),
   approvedByName: z.string().nullable(),
+  /**
+   * Versão que o cliente está vendo: a página manda de volta em `RespondEstimateRequest.updatedAt`
+   * (o dono mudou o orçamento depois → 409, e a página recarrega).
+   */
+  updatedAt: z.string().optional(),
+  /** Fuso da empresa (IANA), para mostrar as datas como o dono vê. */
+  timeZone: z.string().optional(),
 });
 export type PublicEstimate = z.infer<typeof PublicEstimate>;
 
 export const PublicEstimateResponse = z.object({ estimate: PublicEstimate });
 export type PublicEstimateResponse = z.infer<typeof PublicEstimateResponse>;
 
+/** `PublicEstimate.updatedAt` que o cliente viu. Diferente do guardado → 409 (mudou depois). */
+const SeenVersion = { updatedAt: z.string().max(64).optional() };
+
 export const RespondEstimateRequest = z.discriminatedUnion("decision", [
   z.object({
     decision: z.literal("approve"),
     name: z.string().trim().min(2, "Type your full name to approve.").max(120),
+    ...SeenVersion,
   }),
-  z.object({ decision: z.literal("decline"), reason: z.string().trim().max(1000).optional() }),
+  z.object({
+    decision: z.literal("decline"),
+    reason: z.string().trim().max(1000).optional(),
+    ...SeenVersion,
+  }),
 ]);
 export type RespondEstimateRequest = z.infer<typeof RespondEstimateRequest>;
 
@@ -553,6 +593,8 @@ export const PublicInvoice = z.object({
   issuedOn: DateOnly,
   dueOn: DateOnly.nullable(),
   paidAt: z.string().nullable(),
+  /** Fuso da empresa (IANA), para mostrar as datas como o dono vê. */
+  timeZone: z.string().optional(),
 });
 export type PublicInvoice = z.infer<typeof PublicInvoice>;
 

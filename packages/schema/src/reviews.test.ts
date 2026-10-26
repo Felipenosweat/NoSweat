@@ -35,6 +35,7 @@ describe("isGoogleReviewUrl", () => {
     "https://maps.app.goo.gl/AbCdEf123",
     "https://goo.gl/maps/AbCdEf123",
     "https://G.PAGE/r/abc/review",
+    "https://g.co/kgs/AbC123x",
   ])("aceita %s", (url) => {
     expect(isGoogleReviewUrl(url)).toBe(true);
   });
@@ -47,6 +48,8 @@ describe("isGoogleReviewUrl", () => {
     ["google.com fora do Maps/busca", "https://www.google.com/url?q=https://evil.com"],
     ["prefixo de caminho parecido", "https://www.google.com/mapsfoo"],
     ["goo.gl fora do Maps", "https://goo.gl/AbCdEf"],
+    ["g.co fora do /kgs/", "https://g.co/AbCdEf"],
+    ["g.co /kgs/ sem código", "https://g.co/kgs/"],
     ["usuário e senha", "https://user:pass@g.page/r/abc/review"],
     ["porta", "https://g.page:8443/r/abc/review"],
     ["javascript:", "javascript:alert(1)"],

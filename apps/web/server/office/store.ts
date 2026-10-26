@@ -9,6 +9,7 @@ import {
   PaymentRecord,
   PriceItemRecord,
   TeamMemberRecord,
+  type EstimateGuard,
   type EstimatePatch,
   type InvoicePatch,
   type JobPatch,
@@ -20,17 +21,18 @@ import {
   type NewTeamMember,
   type NumberKind,
   type PriceItemPatch,
+  type RecordPaymentResult,
   type SettingsPatch,
   type StoredEstimateStatus,
   type TeamMemberPatch,
 } from "./types";
 
-// Persistência do escritório (tabelas da migration 0022). Supabase em produção, memória no
+// Persistência do escritório (tabelas das migrations 0022 e 0023). Supabase em produção, memória no
 // dev/testes (mesma regra de server/clients/store.ts). Toda leitura e escrita recebe o dono:
 // registro de outra pessoa simplesmente não existe aqui. As únicas buscas sem dono são as do
 // link público (pelo token), usadas só pelas rotas /api/public/*.
 
-export type JobFilter = { status?: JobStatus; clientId?: string };
+export type JobFilter = { status?: JobStatus; clientId?: string; invoiceId?: string };
 export type EstimateFilter = { clientId?: string; jobId?: string };
 export type InvoiceFilter = { clientId?: string; jobId?: string; estimateId?: string };
 export type PaymentFilter = {
@@ -80,14 +82,15 @@ export interface OfficeStore {
   getEstimateByToken(token: string): Promise<EstimateRecord | null>;
   insertEstimate(estimate: NewEstimate): Promise<EstimateRecord>;
   /**
-   * Muda o orçamento. Com `expectedStatus`, só muda se o status guardado ainda for esse (resposta
-   * do cliente sem corrida: a segunda resposta não acha a linha e recebe `null`).
+   * Muda o orçamento. Com `guard` (ou só o status esperado), só muda se as condições ainda valerem
+   * (ver `EstimateGuard`): resposta do cliente sem corrida, preço que o cliente viu, um job só ao
+   * converter. Condição falhou (ou não existe): `null`.
    */
   updateEstimate(
     ownerId: string,
     id: string,
     patch: EstimatePatch,
-    expectedStatus?: StoredEstimateStatus,
+    guard?: StoredEstimateStatus | EstimateGuard,
   ): Promise<EstimateRecord | null>;
   /** Jobs e faturas ligados ficam sem o orçamento (on delete set null). */
   deleteEstimate(ownerId: string, id: string): Promise<boolean>;
@@ -95,20 +98,57 @@ export interface OfficeStore {
   listInvoices(ownerId: string, filter?: InvoiceFilter): Promise<InvoiceRecord[]>;
   getInvoice(ownerId: string, id: string): Promise<InvoiceRecord | null>;
   getInvoiceByToken(token: string): Promise<InvoiceRecord | null>;
+  /**
+   * Fatura nova. Só UMA fatura não anulada por orçamento (índice único parcial da 0023): a segunda
+   * gravação falha com erro (quem chama devolve a que já existe).
+   */
   insertInvoice(invoice: NewInvoice): Promise<InvoiceRecord>;
   updateInvoice(ownerId: string, id: string, patch: InvoicePatch): Promise<InvoiceRecord | null>;
   /** Apaga a fatura e os pagamentos dela (cascade); o job ligado fica sem fatura. */
   deleteInvoice(ownerId: string, id: string): Promise<boolean>;
+  /** O cliente tem orçamento, job ou fatura não anulada? (Apagar o cliente é recusado.) */
+  clientHasDocuments(ownerId: string, clientId: string): Promise<boolean>;
 
   /** Pagamentos do dono, mais antigos primeiro. */
   listPayments(ownerId: string, filter?: PaymentFilter): Promise<PaymentRecord[]>;
   insertPayment(payment: NewPayment): Promise<PaymentRecord>;
+  /**
+   * Registra o pagamento de forma atômica: confere que a fatura existe, não está anulada e tem
+   * saldo, grava o pagamento e atualiza `amountPaidCents`, status (`paid` / rascunho → `sent`) e
+   * `paidAt`. No Supabase é a RPC `office_record_payment` (trava a linha da fatura): dois
+   * pagamentos ao mesmo tempo nunca passam do total.
+   */
+  recordPayment(payment: NewPayment): Promise<RecordPaymentResult>;
   deletePayment(ownerId: string, invoiceId: string, paymentId: string): Promise<boolean>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUuid = (value: string) => UUID.test(value);
 const nowIso = () => new Date().toISOString();
+
+/** Status esperado (forma antiga) ou condições completas → condições. */
+function toGuard(guard: StoredEstimateStatus | EstimateGuard | undefined): EstimateGuard {
+  if (guard === undefined) return {};
+  return typeof guard === "string" ? { status: guard } : guard;
+}
+
+/** Mensagens que a RPC `office_record_payment` usa nos erros (migration 0023). */
+const RPC_ERRORS = {
+  notFound: "office_invoice_not_found",
+  void: "office_invoice_void",
+  overBalance: "office_payment_over_balance",
+} as const;
+
+/** Corpo de erro do PostgREST (`{ code, message, details, hint }`). */
+const PostgrestError = z.object({
+  message: z.string().optional(),
+  details: z.string().nullable().optional(),
+});
+
+/** Resposta da RPC `office_record_payment`: as duas linhas como jsonb. */
+const RecordPaymentRpc = z.object({ payment: z.unknown(), invoice: z.unknown() });
+
+const IdRow = z.object({ id: z.string() });
 
 // ---------- Supabase ----------
 
@@ -159,17 +199,21 @@ export class SupabaseOfficeStore implements OfficeStore {
     this.base = `${normalizeSupabaseUrl(config.url)}/rest/v1`;
   }
 
+  private headers(prefer?: string): Record<string, string> {
+    return {
+      apikey: this.config.serviceKey,
+      Authorization: `Bearer ${this.config.serviceKey}`,
+      "Content-Type": "application/json",
+      Prefer: prefer ?? "return=representation",
+    };
+  }
+
   private async call(path: string, init: RequestInit & { prefer?: string } = {}): Promise<unknown> {
     const { prefer, ...rest } = init;
     const res = await this.fetchImpl(`${this.base}${path}`, {
       ...rest,
       cache: "no-store",
-      headers: {
-        apikey: this.config.serviceKey,
-        Authorization: `Bearer ${this.config.serviceKey}`,
-        "Content-Type": "application/json",
-        Prefer: prefer ?? "return=representation",
-      },
+      headers: this.headers(prefer),
     });
     if (!res.ok) throw new Error(`Supabase request failed (${res.status}): ${await res.text()}`);
     if (res.status === 204) return null;
@@ -329,11 +373,13 @@ export class SupabaseOfficeStore implements OfficeStore {
   async listJobs(ownerId: string, filter: JobFilter = {}) {
     if (!isUuid(ownerId)) return [];
     if (filter.clientId !== undefined && !isUuid(filter.clientId)) return [];
+    if (filter.invoiceId !== undefined && !isUuid(filter.invoiceId)) return [];
     const status = filter.status ? `&status=eq.${filter.status}` : "";
     const client = filter.clientId ? `&client_id=eq.${filter.clientId}` : "";
+    const invoice = filter.invoiceId ? `&invoice_id=eq.${filter.invoiceId}` : "";
     return this.all(
       JobRecord,
-      `/jobs?owner_id=eq.${ownerId}${status}${client}&select=*&order=created_at.desc,id.asc`,
+      `/jobs?owner_id=eq.${ownerId}${status}${client}${invoice}&select=*&order=created_at.desc,id.asc`,
     );
   }
 
@@ -392,13 +438,23 @@ export class SupabaseOfficeStore implements OfficeStore {
     ownerId: string,
     id: string,
     patch: EstimatePatch,
-    expectedStatus?: StoredEstimateStatus,
+    guard?: StoredEstimateStatus | EstimateGuard,
   ) {
     if (!isUuid(ownerId) || !isUuid(id)) return null;
-    const guard = expectedStatus ? `&status=eq.${expectedStatus}` : "";
+    const g = toGuard(guard);
+    let filters = g.status ? `&status=eq.${g.status}` : "";
+    if (g.updatedAt !== undefined) {
+      // Texto que não é data nunca bate (e o Postgres recusaria o filtro com 400).
+      if (Number.isNaN(Date.parse(g.updatedAt))) return null;
+      filters += `&updated_at=eq.${encodeURIComponent(g.updatedAt)}`;
+    }
+    if (g.jobId !== undefined) {
+      if (g.jobId !== null && !isUuid(g.jobId)) return null;
+      filters += g.jobId === null ? "&job_id=is.null" : `&job_id=eq.${g.jobId}`;
+    }
     return this.patch(
       EstimateRecord,
-      `/estimates?id=eq.${id}&owner_id=eq.${ownerId}${guard}`,
+      `/estimates?id=eq.${id}&owner_id=eq.${ownerId}${filters}`,
       patch,
     );
   }
@@ -456,6 +512,17 @@ export class SupabaseOfficeStore implements OfficeStore {
     return this.remove(`/invoices?id=eq.${id}&owner_id=eq.${ownerId}`);
   }
 
+  async clientHasDocuments(ownerId: string, clientId: string) {
+    if (!isUuid(ownerId) || !isUuid(clientId)) return false;
+    const base = `owner_id=eq.${ownerId}&client_id=eq.${clientId}&select=id&limit=1`;
+    const [estimates, jobs, invoices] = await Promise.all([
+      this.rows(IdRow, `/estimates?${base}`),
+      this.rows(IdRow, `/jobs?${base}`),
+      this.rows(IdRow, `/invoices?${base}&status=neq.void`),
+    ]);
+    return estimates.length + jobs.length + invoices.length > 0;
+  }
+
   // --- pagamentos ---
 
   async listPayments(ownerId: string, filter: PaymentFilter = {}) {
@@ -479,6 +546,51 @@ export class SupabaseOfficeStore implements OfficeStore {
   async insertPayment(payment: NewPayment) {
     if (!isUuid(payment.ownerId) || !isUuid(payment.invoiceId)) throw new Error("Invalid id.");
     return this.insert(PaymentRecord, "invoice_payments", payment);
+  }
+
+  async recordPayment(payment: NewPayment): Promise<RecordPaymentResult> {
+    if (!isUuid(payment.ownerId) || !isUuid(payment.invoiceId)) {
+      return { ok: false, reason: "not_found" };
+    }
+    const res = await this.fetchImpl(`${this.base}/rpc/office_record_payment`, {
+      method: "POST",
+      cache: "no-store",
+      headers: this.headers(),
+      body: JSON.stringify({
+        p_owner: payment.ownerId,
+        p_invoice: payment.invoiceId,
+        p_amount: payment.amountCents,
+        p_method: payment.method,
+        p_reference: payment.reference,
+        p_received_on: payment.receivedOn,
+      }),
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      let parsed: z.infer<typeof PostgrestError> = {};
+      try {
+        parsed = PostgrestError.parse(JSON.parse(text));
+      } catch {
+        // Corpo que não é o erro do PostgREST: cai no erro genérico abaixo.
+      }
+      if (parsed.message === RPC_ERRORS.notFound) return { ok: false, reason: "not_found" };
+      if (parsed.message === RPC_ERRORS.void) return { ok: false, reason: "void" };
+      if (parsed.message === RPC_ERRORS.overBalance) {
+        const balance = Number(parsed.details);
+        return {
+          ok: false,
+          reason: "over_balance",
+          balanceCents: Number.isFinite(balance) ? Math.max(0, balance) : 0,
+        };
+      }
+      throw new Error(`Supabase request failed (${res.status}): ${text}`);
+    }
+    const data = RecordPaymentRpc.parse(JSON.parse(text));
+    return {
+      ok: true,
+      payment: PaymentRecord.parse(fromRow(data.payment)),
+      invoice: InvoiceRecord.parse(fromRow(data.invoice)),
+    };
   }
 
   async deletePayment(ownerId: string, invoiceId: string, paymentId: string) {
@@ -533,6 +645,16 @@ const FIRST_NUMBER = 1001;
 /** Cópia funda: quem lê nunca mexe no que está guardado. */
 const clone = <T>(value: T): T => structuredClone(value);
 
+let lastStamp = 0;
+/**
+ * Agora em ISO, sempre maior que o anterior: duas mudanças no mesmo milissegundo ganham
+ * `updatedAt` diferentes (a conferência de versão do orçamento depende disso).
+ */
+function stamp(): string {
+  lastStamp = Math.max(Date.now(), lastStamp + 1);
+  return new Date(lastStamp).toISOString();
+}
+
 function listOwned<T extends Owned>(map: Map<string, T>, ownerId: string): T[] {
   return [...map.values()].filter((r) => r.ownerId === ownerId).map(clone);
 }
@@ -547,7 +669,7 @@ function insertOwned<T extends Owned & { createdAt: string }>(
   values: Omit<T, "id" | "createdAt" | "updatedAt">,
   withUpdatedAt: boolean,
 ): T {
-  const now = nowIso();
+  const now = stamp();
   const record = {
     ...clone(values),
     id: crypto.randomUUID(),
@@ -566,7 +688,7 @@ function patchOwned<T extends Owned>(
 ): T | null {
   const current = map.get(id);
   if (!current || current.ownerId !== ownerId) return null;
-  const updated: T = { ...current, updatedAt: nowIso() };
+  const updated: T = { ...current, updatedAt: stamp() };
   for (const [key, value] of Object.entries(patch)) {
     if (value !== undefined) Object.assign(updated, { [key]: clone(value) });
   }
@@ -660,6 +782,7 @@ export class MemoryOfficeStore implements OfficeStore {
     return listOwned(this.state.jobs, ownerId)
       .filter((j) => !filter.status || j.status === filter.status)
       .filter((j) => filter.clientId === undefined || j.clientId === filter.clientId)
+      .filter((j) => filter.invoiceId === undefined || j.invoiceId === filter.invoiceId)
       .sort(byCreatedDesc);
   }
   async getJob(ownerId: string, id: string) {
@@ -699,10 +822,15 @@ export class MemoryOfficeStore implements OfficeStore {
     ownerId: string,
     id: string,
     patch: EstimatePatch,
-    expectedStatus?: StoredEstimateStatus,
+    guard?: StoredEstimateStatus | EstimateGuard,
   ) {
     const current = this.state.estimates.get(id);
-    if (expectedStatus && current && current.status !== expectedStatus) return null;
+    const g = toGuard(guard);
+    if (current) {
+      if (g.status !== undefined && current.status !== g.status) return null;
+      if (g.updatedAt !== undefined && current.updatedAt !== g.updatedAt) return null;
+      if (g.jobId !== undefined && current.jobId !== g.jobId) return null;
+    }
     return patchOwned<EstimateRecord>(this.state.estimates, ownerId, id, patch);
   }
   async deleteEstimate(ownerId: string, id: string) {
@@ -727,6 +855,17 @@ export class MemoryOfficeStore implements OfficeStore {
     return found ? clone(found) : null;
   }
   async insertInvoice(invoice: NewInvoice) {
+    // Como o índice único parcial da 0023: uma fatura não anulada por orçamento.
+    const estimateId = invoice.estimateId;
+    if (
+      estimateId !== null &&
+      invoice.status !== "void" &&
+      [...this.state.invoices.values()].some(
+        (i) => i.estimateId === estimateId && i.status !== "void",
+      )
+    ) {
+      throw new Error("duplicate key value violates unique constraint invoices_estimate_active_idx");
+    }
     return insertOwned<InvoiceRecord>(this.state.invoices, invoice, true);
   }
   async updateInvoice(ownerId: string, id: string, patch: InvoicePatch) {
@@ -741,6 +880,16 @@ export class MemoryOfficeStore implements OfficeStore {
     return true;
   }
 
+  async clientHasDocuments(ownerId: string, clientId: string) {
+    const owned = <T extends Owned & { clientId: string }>(r: T) =>
+      r.ownerId === ownerId && r.clientId === clientId;
+    return (
+      [...this.state.estimates.values()].some(owned) ||
+      [...this.state.jobs.values()].some(owned) ||
+      [...this.state.invoices.values()].some((i) => owned(i) && i.status !== "void")
+    );
+  }
+
   async listPayments(ownerId: string, filter: PaymentFilter = {}) {
     const ids = filter.invoiceIds ? new Set(filter.invoiceIds) : null;
     const since = filter.receivedSince;
@@ -752,6 +901,32 @@ export class MemoryOfficeStore implements OfficeStore {
   async insertPayment(payment: NewPayment) {
     return insertOwned<PaymentRecord>(this.state.payments, payment, false);
   }
+  async recordPayment(payment: NewPayment): Promise<RecordPaymentResult> {
+    // Tudo síncrono daqui até o fim (sem await): nada roda no meio, como a trava da RPC.
+    const invoice = this.state.invoices.get(payment.invoiceId);
+    if (!invoice || invoice.ownerId !== payment.ownerId) return { ok: false, reason: "not_found" };
+    if (invoice.status === "void") return { ok: false, reason: "void" };
+    const paid = [...this.state.payments.values()]
+      .filter((p) => p.invoiceId === invoice.id)
+      .reduce((sum, p) => sum + p.amountCents, 0);
+    const balance = invoice.totalCents - paid;
+    if (payment.amountCents <= 0 || payment.amountCents > balance) {
+      return { ok: false, reason: "over_balance", balanceCents: Math.max(0, balance) };
+    }
+    const record = insertOwned<PaymentRecord>(this.state.payments, payment, false);
+    const newPaid = paid + payment.amountCents;
+    const patch: InvoicePatch = { amountPaidCents: newPaid };
+    if (newPaid >= invoice.totalCents) {
+      patch.status = "paid";
+      patch.paidAt = nowIso();
+    } else if (invoice.status === "draft") {
+      patch.status = "sent";
+    }
+    const updated = patchOwned<InvoiceRecord>(this.state.invoices, invoice.ownerId, invoice.id, patch);
+    if (!updated) return { ok: false, reason: "not_found" };
+    return { ok: true, payment: record, invoice: updated };
+  }
+
   async deletePayment(ownerId: string, invoiceId: string, paymentId: string) {
     const current = this.state.payments.get(paymentId);
     if (!current || current.invoiceId !== invoiceId) return false;

@@ -15,7 +15,7 @@ import {
   focusRing,
   type GlassMenuItem,
 } from "@/components/glass";
-import { centsToInput, formatCents, parseDollars } from "@/lib/office";
+import { centsToInput, formatCents, parseDollars, unitLabel } from "@/lib/office";
 import { ErrorNote, officeApi, priceItemUrl, toOfficeError, type OfficeApiError } from "../_ui/api";
 import {
   BookIcon,
@@ -196,7 +196,7 @@ function PriceRow({
               key: "deactivate",
             }
           : {
-              label: "Make active again",
+              label: "Reactivate",
               icon: <CheckIcon />,
               onSelect: () => void setActive(true),
               disabled: busy,
@@ -229,7 +229,9 @@ function PriceRow({
         <span className="block text-[15px] font-semibold text-ink">
           {formatCents(item.unitPriceCents)}
         </span>
-        {item.unit && <span className="block text-[12px] text-slate-500">per {item.unit}</span>}
+        {item.unit && (
+          <span className="block text-[12px] text-slate-500">{unitLabel(item.unit)}</span>
+        )}
       </span>
     </>
   );

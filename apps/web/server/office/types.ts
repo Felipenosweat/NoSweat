@@ -36,7 +36,7 @@ export type StoredEstimateStatus = z.infer<typeof StoredEstimateStatus>;
 export const EstimateRecord = Estimate.omit({ clientName: true, status: true }).extend({
   ...OwnerId,
   status: StoredEstimateStatus,
-  /** Motivo que o cliente escreveu ao recusar (só o dono vê; não está no contrato público). */
+  /** Motivo que o cliente escreveu ao recusar (o dono vê em `Estimate.declineReason`). */
   declineReason: z.string().nullable(),
 });
 export type EstimateRecord = z.infer<typeof EstimateRecord>;
@@ -80,6 +80,24 @@ export type TeamMemberPatch = Partial<Omit<TeamMemberRecord, Fixed>>;
 export type JobPatch = Partial<Omit<JobRecord, Fixed>>;
 export type EstimatePatch = Partial<Omit<EstimateRecord, Fixed>>;
 export type InvoicePatch = Partial<Omit<InvoiceRecord, Fixed>>;
+
+/**
+ * Condições de `updateEstimate` (a mudança só acontece se TODAS valerem; senão `null`):
+ * - status: o status guardado ainda é este (resposta do cliente / do dono sem corrida);
+ * - updatedAt: ninguém mudou o orçamento desde esta versão (o cliente aprova o preço que viu);
+ * - jobId: o job ligado ainda é este (`null` = ainda sem job: dois "converter" ao mesmo tempo).
+ */
+export type EstimateGuard = {
+  status?: StoredEstimateStatus;
+  updatedAt?: string;
+  jobId?: string | null;
+};
+
+/** Resultado de registrar um pagamento (atômico: confere o saldo e grava de uma vez). */
+export type RecordPaymentResult =
+  | { ok: true; payment: PaymentRecord; invoice: InvoiceRecord }
+  | { ok: false; reason: "not_found" | "void" }
+  | { ok: false; reason: "over_balance"; balanceCents: number };
 
 /** Tipos de documento com número sequencial (`office_next_number`). */
 export type NumberKind = "job" | "estimate" | "invoice";

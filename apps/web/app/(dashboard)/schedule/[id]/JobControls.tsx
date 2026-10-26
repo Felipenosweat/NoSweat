@@ -390,7 +390,12 @@ export function JobHero({
           )}
         </p>
         {!readOnly && !canceled && job.startAt && (
-          <GlassButton variant="ghost" size="sm" onClick={() => setRescheduleOpen(true)}>
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setRescheduleOpen(true)}
+            className="max-sm:min-h-11"
+          >
             Reschedule
           </GlassButton>
         )}
@@ -399,6 +404,7 @@ export function JobHero({
             href={scheduleHref({ view: "day", date: day, team: null })}
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
           >
             See day
           </GlassButton>
@@ -737,6 +743,20 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
             className={`${fieldClass} mt-1.5 h-11`}
           />
         </div>
+        <div>
+          <label htmlFor={`${ids}-description`} className={labelClass}>
+            Details
+          </label>
+          <textarea
+            id={`${ids}-description`}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={4000}
+            rows={3}
+            placeholder="What the job is about"
+            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+          />
+        </div>
         <div className="max-w-[12rem]">
           <label htmlFor={`${ids}-value`} className={labelClass}>
             Value
@@ -810,6 +830,7 @@ export function AssigneesCard({
           <GlassButton
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
             onClick={() => {
               setValue(job.assigneeIds);
               setOpen(true);

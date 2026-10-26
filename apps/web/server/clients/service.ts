@@ -7,6 +7,8 @@ import type {
   UpdateClientRequest,
 } from "@nosweat/schema";
 import { CLIENTS_TIME_ZONE, dateKeyIn } from "@/lib/clients";
+import { getOfficeStore } from "../office/store";
+import { OfficeError } from "../office/types";
 import { isValidTimeZone } from "../social/service";
 import { getSocialStore } from "../social/store";
 import { getSiteStore, type LeadRecord } from "../store";
@@ -287,8 +289,11 @@ export type ClientsSummary = {
   followUpsOverdue: number;
   /** Clientes que viraram "won" neste mês (e continuam "won"). */
   wonThisMonth: number;
-  /** Soma dos serviços registrados neste mês, em centavos (só o que o dono informou). */
+  /**
+   * Soma dos serviços e pagamentos registrados neste mês, em centavos (só o que o dono informou).
+   */
   revenueThisMonthCents: number;
+  /** Serviços (`job`) do mês; pagamentos não contam aqui. */
   jobsThisMonth: number;
   /** "AAAA-MM" do mês do resumo. */
   month: string;
@@ -337,6 +342,8 @@ export function summarizeClients(input: {
     if (activity.kind === "job") {
       jobsThisMonth += 1;
       revenueThisMonthCents += activity.amountCents ?? 0;
+    } else if (activity.kind === "payment") {
+      revenueThisMonthCents += activity.amountCents ?? 0;
     } else if (activity.kind === "stage" && activity.body.trim() === "won") {
       if (wonNow.has(activity.clientId)) won.add(activity.clientId);
     }
@@ -360,8 +367,8 @@ export function summarizeClients(input: {
 }
 
 /**
- * Resumo do topo da página de clientes. Lê o histórico do mês (serviços e mudanças de etapa) de
- * todos os clientes do dono; `clients` é a lista já sincronizada (de `listClients`).
+ * Resumo do topo da página de clientes. Lê o histórico do mês (serviços, pagamentos e mudanças de
+ * etapa) de todos os clientes do dono; `clients` é a lista já sincronizada (de `listClients`).
  */
 export async function getClientsSummary(
   ownerId: string,
@@ -372,7 +379,11 @@ export async function getClientsSummary(
   const [y = 2000, m = 1] = today.split("-").map(Number);
   // Um dia antes do dia 1 em UTC cobre qualquer fuso; o filtro fino é feito pela data no fuso.
   const since = new Date(Date.UTC(y, m - 1, 0)).toISOString();
-  const activities = await getClientStore().listActivitiesSince(ownerId, since, ["job", "stage"]);
+  const activities = await getClientStore().listActivitiesSince(ownerId, since, [
+    "job",
+    "payment",
+    "stage",
+  ]);
   return summarizeClients({ clients, activities, today, timeZone });
 }
 
@@ -436,9 +447,39 @@ export async function updateClient(
   return updated ? toPublicClient(updated) : null;
 }
 
+/** Itens que somam no total do cliente (`totalJobsCents`). */
+const COUNTS_AS_REVENUE = new Set<ClientActivity["kind"]>(["job", "payment"]);
+
 /**
- * Nota ou serviço no histórico. O valor só vale para `job`; os totais de serviços são recalculados
- * a partir do histórico (sem somar em cima do valor antigo). `null` se o cliente não for do dono.
+ * Totais do cliente a partir do histórico (sem somar em cima do valor antigo): `jobsCount` conta só
+ * os serviços (`job`); `totalJobsCents` soma serviços e pagamentos do escritório (`payment`).
+ */
+export function clientTotals(
+  activities: readonly Pick<ClientActivity, "kind" | "amountCents">[],
+): { jobsCount: number; totalJobsCents: number } {
+  let jobsCount = 0;
+  let totalJobsCents = 0;
+  for (const activity of activities) {
+    if (activity.kind === "job") jobsCount += 1;
+    if (COUNTS_AS_REVENUE.has(activity.kind)) totalJobsCents += activity.amountCents ?? 0;
+  }
+  return { jobsCount, totalJobsCents };
+}
+
+/** Recalcula e grava os totais do cliente (depois de entrar ou sair um serviço/pagamento). */
+async function refreshClientTotals(
+  store: ClientStore,
+  ownerId: string,
+  clientId: string,
+  extra: ClientPatch = {},
+): Promise<ClientRecord | null> {
+  const totals = clientTotals(await store.listActivities(ownerId, clientId));
+  return store.updateClient(ownerId, clientId, { ...extra, ...totals });
+}
+
+/**
+ * Nota ou serviço no histórico. O valor só vale para `job`; os totais são recalculados a partir do
+ * histórico (`clientTotals`). `null` se o cliente não for do dono.
  */
 export async function addClientActivity(
   ownerId: string,
@@ -464,17 +505,81 @@ export async function addClientActivity(
   const patch: ClientPatch = {
     lastActivityAt: laterOf(client.lastActivityAt, activity.occurredAt),
   };
-  if (activity.kind === "job") {
-    const jobs = (await store.listActivities(ownerId, client.id)).filter((a) => a.kind === "job");
-    patch.jobsCount = jobs.length;
-    patch.totalJobsCents = jobs.reduce((sum, job) => sum + (job.amountCents ?? 0), 0);
-  }
-  const updated = await store.updateClient(ownerId, client.id, patch);
+  const updated =
+    activity.kind === "job"
+      ? await refreshClientTotals(store, ownerId, client.id, patch)
+      : await store.updateClient(ownerId, client.id, patch);
   if (!updated) return null;
   return { activity: toPublicActivity(activity), client: toPublicClient(updated) };
 }
 
-/** Apaga o cliente e o histórico. Os pedidos do site dele não voltam no próximo sync. */
+/**
+ * Pagamento do escritório no histórico do cliente (item `payment`, com o id do pagamento). Soma no
+ * total do cliente, mas não conta como serviço. `null` se o cliente não for do dono.
+ */
+export async function addClientPayment(
+  ownerId: string,
+  clientId: string,
+  input: { paymentId: string; amountCents: number; body: string },
+): Promise<ClientActivity | null> {
+  const store = getClientStore();
+  const client = await store.getClient(ownerId, clientId);
+  if (!client) return null;
+  const activity = await store.insertActivity({
+    ownerId,
+    clientId: client.id,
+    kind: "payment",
+    body: input.body.trim(),
+    amountCents: input.amountCents,
+    leadId: null,
+    siteId: null,
+    paymentId: input.paymentId,
+  });
+  if (!activity) throw new Error("The payment activity was not saved.");
+  await refreshClientTotals(store, ownerId, client.id, {
+    lastActivityAt: laterOf(client.lastActivityAt, activity.occurredAt),
+  });
+  return toPublicActivity(activity);
+}
+
+/**
+ * Pagamento apagado no escritório: o item dele sai do histórico e os totais são recalculados.
+ * `clientId` (o cliente da fatura) é recalculado mesmo sem item encontrado: no Supabase o item já
+ * pode ter saído pelo `on delete cascade` de `payment_id`.
+ */
+export async function removeClientPayment(
+  ownerId: string,
+  paymentId: string,
+  clientId?: string,
+): Promise<void> {
+  const store = getClientStore();
+  const affected = new Set(await store.deletePaymentActivities(ownerId, paymentId));
+  if (clientId) affected.add(clientId);
+  for (const id of affected) {
+    if (await store.getClient(ownerId, id)) await refreshClientTotals(store, ownerId, id);
+  }
+}
+
+/** Mensagem do 409 ao apagar um cliente com documentos do escritório. */
+export const CLIENT_HAS_DOCUMENTS =
+  "This client has estimates, jobs or invoices. Delete or void those first.";
+
+/**
+ * Apaga o cliente e o histórico. Os pedidos do site dele não voltam no próximo sync. Cliente com
+ * orçamento, job ou fatura (não anulada) no escritório: 409 (`OfficeError`), para não apagar
+ * documentos de dinheiro junto (o banco também recusa: chave estrangeira sem cascade, migration
+ * 0023). Faturas anuladas (nunca têm pagamento) são apagadas antes, como o 409 promete.
+ */
 export async function deleteClient(ownerId: string, id: string): Promise<boolean> {
-  return getClientStore().deleteClient(ownerId, id);
+  const store = getClientStore();
+  const client = await store.getClient(ownerId, id);
+  if (!client) return false;
+  const office = getOfficeStore();
+  if (await office.clientHasDocuments(ownerId, client.id)) {
+    throw new OfficeError(409, "conflict", CLIENT_HAS_DOCUMENTS);
+  }
+  for (const invoice of await office.listInvoices(ownerId, { clientId: client.id })) {
+    if (invoice.status === "void") await office.deleteInvoice(ownerId, invoice.id);
+  }
+  return store.deleteClient(ownerId, client.id);
 }

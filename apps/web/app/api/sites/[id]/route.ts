@@ -5,6 +5,7 @@ import {
   UpdateSiteResponse,
 } from "@nosweat/schema";
 import { savesExceeded } from "@/server/quota";
+import { keepReviewUrl } from "@/server/reviews";
 import {
   errorResponse,
   handle,
@@ -76,7 +77,10 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     const tooFast = await savesExceeded(current.id);
     if (tooFast) return tooFast;
 
-    const site = await getSiteStore().update(id, input.data.spec, "edit");
+    // O link de avaliações do Google só muda pela página /reviews: um rascunho antigo aberto no
+    // editor (de antes do dono colar o link) não pode apagar nem trocar o link atual.
+    const spec = keepReviewUrl(input.data.spec, current.spec);
+    const site = await getSiteStore().update(id, spec, "edit");
     if (!site) return notFound();
     return jsonResponse(UpdateSiteResponse, {
       siteId: site.id,

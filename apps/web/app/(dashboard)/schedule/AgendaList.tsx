@@ -9,8 +9,9 @@ import type { PlacedJob } from "./layout-jobs";
 import { formatDateKey, formatTime, relativeDayLabel } from "./time";
 import { JobStatusBadge, TEAM_COLOR_STYLES, assigneeNames } from "./ui";
 
-// Lista (agenda) da semana: o padrão no celular. Um grupo por dia, do domingo ao sábado; dia sem
-// serviço vira uma linha curta com "Add" (fora do modo "ver como").
+// Lista (agenda) da semana: o padrão no celular. Um grupo por dia; dia sem serviço vira uma linha
+// curta com "Add" (fora do modo "ver como" e só de hoje em diante). Na semana de hoje a lista
+// começa em hoje: os dias que já passaram (com serviço) ficam fechados em "Earlier this week".
 
 export function AgendaList({
   days,
@@ -27,9 +28,15 @@ export function AgendaList({
   today: string;
   onAdd?: (date: string) => void;
 }) {
-  return (
+  const startsToday = days.includes(today);
+  const upcoming = startsToday ? days.filter((day) => day >= today) : days;
+  const earlier = startsToday
+    ? days.filter((day) => day < today && jobs.some((placed) => placed.dateKey === day))
+    : [];
+  const earlierCount = jobs.filter((placed) => earlier.includes(placed.dateKey)).length;
+  const list = (listDays: string[]) => (
     <ol className="grid gap-4">
-      {days.map((day) => {
+      {listDays.map((day) => {
         const dayJobs = jobs.filter((placed) => placed.dateKey === day);
         const isToday = day === today;
         const heading = relativeDayLabel(day, today);
@@ -49,7 +56,7 @@ export function AgendaList({
                 {heading}
                 {named && <span className="font-normal text-slate-500"> · {full}</span>}
               </h3>
-              {onAdd && (
+              {onAdd && day >= today && (
                 <GlassButton
                   variant="ghost"
                   size="sm"
@@ -127,5 +134,28 @@ export function AgendaList({
         );
       })}
     </ol>
+  );
+
+  return (
+    <div className="grid gap-4">
+      {earlier.length > 0 && (
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-1 text-[15px] font-semibold text-slate-600 [&::-webkit-details-marker]:hidden">
+            <span
+              aria-hidden="true"
+              className="inline-block transition-transform group-open:rotate-90"
+            >
+              ›
+            </span>
+            Earlier this week
+            <span className="font-normal text-slate-500 tabular-nums">
+              · {earlierCount} {earlierCount === 1 ? "job" : "jobs"}
+            </span>
+          </summary>
+          <div className="mt-2">{list(earlier)}</div>
+        </details>
+      )}
+      {list(upcoming)}
+    </div>
   );
 }

@@ -124,6 +124,10 @@ export function ScheduleBoard({
 
   const title = view === "day" ? longDay(date) : weekRangeLabel(rangeStart);
   const showingToday = days.includes(today);
+  // "New job" começa no dia que está na tela: o dia aberto, hoje (se a semana mostrada tem hoje)
+  // ou o dia de referência da semana vista.
+  const newJobDate =
+    view === "day" ? date : showingToday ? today : days.includes(date) ? date : (days[0] ?? null);
 
   const viewLinks = (current: ScheduleView): GlassSegmentLink[] => [
     {
@@ -179,7 +183,7 @@ export function ScheduleBoard({
             <GlassButton
               variant="primary"
               icon={<PlusIcon />}
-              onClick={() => openSheet({ date: view === "day" ? date : null, time: null })}
+              onClick={() => openSheet({ date: newJobDate, time: null })}
             >
               New job
             </GlassButton>
@@ -187,8 +191,10 @@ export function ScheduleBoard({
         }
       />
 
-      {/* ---------- barra: período, visão e equipe ---------- */}
-      <div className="mt-6 grid gap-3">
+      {/* ---------- barra: período, visão e equipe ----------
+          scroll-mt: no celular a barra de cima é fixa (h-14); ao voltar a rolagem para a barra
+          (foco, troca de filtro) ela não fica escondida embaixo. */}
+      <div className="mt-6 grid scroll-mt-20 gap-3 lg:scroll-mt-6">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1">
             <GlassIconButton
@@ -325,7 +331,7 @@ function TeamChips({
   return (
     <nav
       aria-label="Filter by team member"
-      className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+      className="-mx-4 scroll-mt-20 overflow-x-auto px-4 lg:scroll-mt-6 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
     >
       <ul className="flex min-w-max gap-1.5 py-0.5">
         {items.map((item) => {

@@ -18,12 +18,14 @@ import { getViewer } from "@/server/auth/viewer";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
 import { accountReviewLink } from "@/server/reviews";
 import { getSiteStore } from "@/server/store";
+import { EstimateIcon, InvoiceIcon } from "../../office/_ui/ui";
 import { ClientMenu } from "../ClientMenu";
 import {
   Avatar,
   DirectionsIcon,
   JobIcon,
   MailIcon,
+  MoneyIcon,
   NoteIcon,
   PhoneIcon,
   StageBadge,
@@ -200,26 +202,35 @@ function activityTitle(activity: ClientActivity): string {
     const stage = activity.body.trim();
     return `Moved to ${isClientStage(stage) ? STAGE_LABELS[stage] : stage}`;
   }
+  // Pagamento registrado numa fatura (tipo novo do servidor; comparação por texto até o contrato
+  // ter o tipo).
+  if ((activity.kind as string) === "payment") {
+    return activity.amountCents !== null && activity.amountCents > 0
+      ? `Payment · ${formatCents(activity.amountCents)}`
+      : "Payment";
+  }
   return "Note";
 }
 
-const ACTIVITY_ICONS: Record<ClientActivity["kind"], (props: { className?: string }) => ReactNode> =
-  {
-    lead: MailIcon,
-    note: NoteIcon,
-    job: JobIcon,
-    stage: StageIcon,
-  };
+// Por texto (não `Record<kind>`): um tipo novo do servidor cai no ícone e na cor da nota.
+const ACTIVITY_ICONS: Partial<Record<string, (props: { className?: string }) => ReactNode>> = {
+  lead: MailIcon,
+  note: NoteIcon,
+  job: JobIcon,
+  stage: StageIcon,
+  payment: MoneyIcon,
+};
 
-const ACTIVITY_TONES: Record<ClientActivity["kind"], string> = {
+const ACTIVITY_TONES: Partial<Record<string, string>> = {
   lead: "bg-brand/10 text-brand",
   note: "bg-slate-500/10 text-slate-600",
   job: "bg-emerald-500/10 text-emerald-700",
   stage: "bg-amber-500/15 text-amber-700",
+  payment: "bg-emerald-500/10 text-emerald-700",
 };
 
 function TimelineItem({ activity, last }: { activity: ClientActivity; last: boolean }) {
-  const Icon = ACTIVITY_ICONS[activity.kind];
+  const Icon = ACTIVITY_ICONS[activity.kind] ?? NoteIcon;
   // Na mudança de etapa o texto já está no título.
   const body = activity.kind === "stage" ? "" : activity.body.trim();
   return (
@@ -235,7 +246,7 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
         aria-hidden="true"
         className={cx(
           "glass-edge relative grid size-8 shrink-0 place-items-center rounded-full",
-          ACTIVITY_TONES[activity.kind],
+          ACTIVITY_TONES[activity.kind] ?? ACTIVITY_TONES.note,
         )}
       >
         <Icon className="size-4" />
@@ -350,6 +361,26 @@ export default async function ClientPage({ params }: ClientPageProps) {
             </p>
             <TagList tags={client.tags} className="mt-3" />
             <QuickActions client={client} />
+            {!readOnly && (
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <GlassButton
+                  href={`/estimates/new?clientId=${encodeURIComponent(client.id)}`}
+                  variant="secondary"
+                  icon={<EstimateIcon />}
+                  fullWidth
+                >
+                  New estimate
+                </GlassButton>
+                <GlassButton
+                  href={`/invoices/new?clientId=${encodeURIComponent(client.id)}`}
+                  variant="secondary"
+                  icon={<InvoiceIcon />}
+                  fullWidth
+                >
+                  New invoice
+                </GlassButton>
+              </div>
+            )}
             <ContactDetails
               key={contactKey}
               readOnly={readOnly}

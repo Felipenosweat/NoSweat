@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   bpsToPercentInput,
+  companyLabel,
   formatTaxRate,
   invoiceBalances,
   invoiceItemsEditable,
+  isoDateIn,
   matchesEstimateFilter,
   matchesInvoiceFilter,
   mailtoHref,
@@ -15,6 +17,7 @@ import {
   searchDocuments,
   shareMessage,
   smsHref,
+  unitLabel,
 } from "./office";
 
 describe("imposto em % e pontos-base", () => {
@@ -37,6 +40,15 @@ describe("imposto em % e pontos-base", () => {
   });
 });
 
+describe("unitLabel", () => {
+  it("nunca escreve “per each”", () => {
+    expect(unitLabel("each")).toBe("each");
+    expect(unitLabel("Each")).toBe("each");
+    expect(unitLabel("hour")).toBe("per hour");
+    expect(unitLabel(" ")).toBe("");
+  });
+});
+
 describe("parseQuantity", () => {
   it("aceita até 2 casas e recusa zero", () => {
     expect(parseQuantity("1.5")).toBe(1.5);
@@ -48,9 +60,12 @@ describe("parseQuantity", () => {
 });
 
 describe("filtros", () => {
-  it("orçamentos: Waiting = enviado; Declined junta recusado e vencido", () => {
+  it("orçamentos: Waiting = enviado; Declined e Expired separados", () => {
     expect(matchesEstimateFilter("sent", "waiting")).toBe(true);
-    expect(matchesEstimateFilter("expired", "declined")).toBe(true);
+    expect(matchesEstimateFilter("expired", "declined")).toBe(false);
+    expect(matchesEstimateFilter("expired", "expired")).toBe(true);
+    expect(matchesEstimateFilter("declined", "declined")).toBe(true);
+    expect(matchesEstimateFilter("declined", "expired")).toBe(false);
     expect(matchesEstimateFilter("draft", "waiting")).toBe(false);
     expect(matchesEstimateFilter("approved", "all")).toBe(true);
   });
@@ -67,13 +82,14 @@ describe("filtros", () => {
 describe("filtros da URL", () => {
   it("aceita os status do contrato que o painel inicial usa", () => {
     expect(parseEstimateFilter("sent")).toBe("waiting");
-    expect(parseEstimateFilter("expired")).toBe("declined");
+    expect(parseEstimateFilter("expired")).toBe("expired");
     expect(parseEstimateFilter("approved")).toBe("approved");
     expect(parseEstimateFilter("bogus")).toBe("all");
     expect(parseInvoiceFilter("overdue")).toBe("overdue");
     expect(parseInvoiceFilter("paid")).toBe("paid");
     expect(parseInvoiceFilter("partial")).toBe("unpaid");
     expect(parseInvoiceFilter("void")).toBe("all");
+    expect(parseInvoiceFilter("unpaid")).toBe("unpaid");
   });
 });
 
@@ -123,6 +139,21 @@ describe("datas e busca", () => {
   it("addDays atravessa meses e anos", () => {
     expect(addDays("2026-10-26", 30)).toBe("2026-11-25");
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("isoDateIn usa o dia no fuso da empresa (não o de UTC)", () => {
+    // 01:30 UTC do dia 27 = noite do dia 26 em Nova York e em Los Angeles.
+    expect(isoDateIn("2026-10-27T01:30:00.000Z", "America/New_York")).toBe("2026-10-26");
+    expect(isoDateIn("2026-10-27T01:30:00.000Z", "America/Los_Angeles")).toBe("2026-10-26");
+    expect(isoDateIn("2026-10-27T01:30:00.000Z", "Not/AZone")).toBe("2026-10-26");
+    expect(isoDateIn("2026-10-27T01:30:00.000Z")).toBe("2026-10-26");
+    expect(isoDateIn("2026-10-26")).toBe("2026-10-26");
+  });
+
+  it("companyLabel troca nome vazio por “the business”", () => {
+    expect(companyLabel("Joe's Plumbing")).toBe("Joe's Plumbing");
+    expect(companyLabel("  ")).toBe("the business");
+    expect(companyLabel(null, true)).toBe("The business");
   });
 
   it("acha por cliente, título ou número", () => {

@@ -48,6 +48,8 @@ export type GenerationPath = "model-first" | "full";
  * formato do SiteSpec (o SDK valida com o Zod). Precisa de ANTHROPIC_API_KEY no servidor.
  */
 export class AnthropicGenerator implements SiteGenerator {
+  readonly usesAi = true;
+
   constructor(
     // Tempo máximo de cada chamada abaixo do limite da função (maxDuration = 300 s nas rotas) e
     // no máximo 1 nova tentativa: sem isso o SDK espera até 10 min e tenta 3 vezes.

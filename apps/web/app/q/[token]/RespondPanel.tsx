@@ -10,10 +10,12 @@ import {
   toOfficeError,
   type OfficeApiError,
 } from "@/app/(dashboard)/office/_ui/api";
+import { companyLabel } from "@/lib/office";
 
 // Resposta do cliente final ao orçamento (sem conta): aprovar digitando o nome completo (vale como
 // assinatura simples) ou recusar com um motivo opcional. Depois a página relê o orçamento e mostra
-// o resultado.
+// o resultado. Vai junto o `updatedAt` da versão que o cliente está vendo: se o dono mudou o
+// orçamento nesse meio-tempo, o servidor responde 409 e a tela pede para recarregar.
 
 const input =
   "w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-ink placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none aria-invalid:border-red-500 sm:text-[15px]";
@@ -22,11 +24,14 @@ export function RespondPanel({
   token,
   companyName,
   total,
+  updatedAt = null,
 }: {
   token: string;
   companyName: string;
   /** Total já formatado ("$1,250.00"). */
   total: string;
+  /** Versão do orçamento na tela (campo novo do contrato; `null` = servidor ainda não manda). */
+  updatedAt?: string | null;
 }) {
   const router = useRouter();
   const ids = useId();
@@ -36,6 +41,28 @@ export function RespondPanel({
   const [nameError, setNameError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<OfficeApiError | null>(null);
+  const company = companyLabel(companyName);
+  const companyStart = companyLabel(companyName, true);
+  // 409: o orçamento mudou (ou já foi respondido) depois que a página abriu.
+  const stale = error?.status === 409;
+
+  const errorBlock = error ? (
+    <div className="mt-4">
+      <ErrorNote error={error} />
+      {stale && (
+        <GlassButton
+          variant="secondary"
+          className="mt-2 min-h-11"
+          onClick={() => {
+            setError(null);
+            router.refresh();
+          }}
+        >
+          Refresh
+        </GlassButton>
+      )}
+    </div>
+  ) : null;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +86,8 @@ export function RespondPanel({
         PublicEstimateResponse,
         {
           method: "POST",
-          body: parsed.data,
+          // `updatedAt` fica fora do schema de validação local (campo novo): vai junto do corpo.
+          body: updatedAt ? { ...parsed.data, updatedAt } : parsed.data,
         },
       );
       router.refresh();
@@ -83,8 +111,8 @@ export function RespondPanel({
             Ready to go ahead?
           </h2>
           <p className="mt-1 text-[15px] leading-[1.6] text-slate-600">
-            Type your full name to approve this estimate for {total}. {companyName} will get a
-            notice and reach out to schedule.
+            Type your full name to approve this estimate for {total}. {companyStart} will see your
+            approval right away.
           </p>
           <label htmlFor={`${ids}-name`} className="mt-5 block text-[13px] font-medium text-ink">
             Your full name
@@ -106,9 +134,15 @@ export function RespondPanel({
               {nameError}
             </p>
           )}
-          {error && <ErrorNote error={error} className="mt-4" />}
+          {errorBlock}
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <GlassButton type="submit" variant="primary" loading={pending} className="sm:min-w-56">
+            <GlassButton
+              type="submit"
+              variant="primary"
+              loading={pending}
+              disabled={stale}
+              className="sm:min-w-56"
+            >
               {pending ? "Approving…" : "Approve estimate"}
             </GlassButton>
             <GlassButton
@@ -135,8 +169,7 @@ export function RespondPanel({
             Decline this estimate?
           </h2>
           <p className="mt-1 text-[15px] leading-[1.6] text-slate-600">
-            {companyName} will see that you passed. A short reason helps them, but it&rsquo;s
-            optional.
+            Let {company} know you&rsquo;re passing. A short reason helps them (optional).
           </p>
           <label htmlFor={`${ids}-reason`} className="mt-5 block text-[13px] font-medium text-ink">
             Reason <span className="font-normal text-slate-500">(optional)</span>
@@ -151,9 +184,9 @@ export function RespondPanel({
             placeholder="Went with another company, price, timing…"
             className={`${input} mt-1.5 resize-y py-2.5 leading-[1.55]`}
           />
-          {error && <ErrorNote error={error} className="mt-4" />}
+          {errorBlock}
           <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <GlassButton type="submit" variant="secondary" loading={pending}>
+            <GlassButton type="submit" variant="secondary" loading={pending} disabled={stale}>
               {pending ? "Sending…" : "Decline estimate"}
             </GlassButton>
             <GlassButton variant="ghost" disabled={pending} onClick={() => setMode("approve")}>
