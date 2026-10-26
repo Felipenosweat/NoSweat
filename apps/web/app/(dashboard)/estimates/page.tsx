@@ -12,9 +12,9 @@ import {
   firstParam,
   formatCents,
   formatDateOnly,
-  isEstimateFilter,
   matchesEstimateFilter,
   officeListHref,
+  parseEstimateFilter,
   searchDocuments,
   sumTotals,
   type EstimateFilter,
@@ -63,7 +63,7 @@ export default async function EstimatesPage({ searchParams }: EstimatesPageProps
 
   const raw = await searchParams;
   const statusParam = firstParam(raw.status);
-  const status: EstimateFilter = isEstimateFilter(statusParam) ? statusParam : "all";
+  const status: EstimateFilter = parseEstimateFilter(statusParam);
   const q = firstParam(raw.q).trim().slice(0, 100);
 
   const { estimates, today } = await loadEstimates(viewer.ownerId);

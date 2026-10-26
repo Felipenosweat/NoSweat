@@ -8,6 +8,8 @@ import {
   matchesEstimateFilter,
   matchesInvoiceFilter,
   mailtoHref,
+  parseEstimateFilter,
+  parseInvoiceFilter,
   parsePercentToBps,
   parseQuantity,
   searchDocuments,
@@ -59,6 +61,19 @@ describe("filtros", () => {
     expect(matchesInvoiceFilter("draft", "unpaid")).toBe(false);
     expect(matchesInvoiceFilter("void", "unpaid")).toBe(false);
     expect(matchesInvoiceFilter("overdue", "overdue")).toBe(true);
+  });
+});
+
+describe("filtros da URL", () => {
+  it("aceita os status do contrato que o painel inicial usa", () => {
+    expect(parseEstimateFilter("sent")).toBe("waiting");
+    expect(parseEstimateFilter("expired")).toBe("declined");
+    expect(parseEstimateFilter("approved")).toBe("approved");
+    expect(parseEstimateFilter("bogus")).toBe("all");
+    expect(parseInvoiceFilter("overdue")).toBe("overdue");
+    expect(parseInvoiceFilter("paid")).toBe("paid");
+    expect(parseInvoiceFilter("partial")).toBe("unpaid");
+    expect(parseInvoiceFilter("void")).toBe("all");
   });
 });
 

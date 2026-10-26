@@ -51,6 +51,17 @@ export function isEstimateFilter(value: string): value is EstimateFilter {
   return (ESTIMATE_FILTERS as readonly string[]).includes(value);
 }
 
+/**
+ * `?status=` da URL → filtro. Aceita também os status do contrato (o painel inicial linka
+ * `?status=sent`): sent → Waiting, expired → Declined. Desconhecido = "all".
+ */
+export function parseEstimateFilter(value: string): EstimateFilter {
+  if (isEstimateFilter(value)) return value;
+  if (value === "sent") return "waiting";
+  if (value === "expired") return "declined";
+  return "all";
+}
+
 /** O orçamento entra no filtro? "Declined" junta recusados e vencidos (não viraram serviço). */
 export function matchesEstimateFilter(status: EstimateStatus, filter: EstimateFilter): boolean {
   switch (filter) {
@@ -109,6 +120,16 @@ export const INVOICE_FILTER_LABELS: Record<InvoiceFilter, string> = {
 
 export function isInvoiceFilter(value: string): value is InvoiceFilter {
   return (INVOICE_FILTERS as readonly string[]).includes(value);
+}
+
+/**
+ * `?status=` da URL → filtro. Aceita também os status do contrato: sent/partial → Unpaid.
+ * Desconhecido (inclusive "void") = "all".
+ */
+export function parseInvoiceFilter(value: string): InvoiceFilter {
+  if (isInvoiceFilter(value)) return value;
+  if (value === "sent" || value === "partial") return "unpaid";
+  return "all";
 }
 
 /** Fatura enviada que ainda tem saldo (inclui as vencidas e as pagas em parte). */

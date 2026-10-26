@@ -13,10 +13,10 @@ import {
   formatCents,
   formatDateOnly,
   invoiceBalances,
-  isInvoiceFilter,
   isUnpaidStatus,
   matchesInvoiceFilter,
   officeListHref,
+  parseInvoiceFilter,
   searchDocuments,
   type InvoiceFilter,
 } from "@/lib/office";
@@ -64,7 +64,7 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
 
   const raw = await searchParams;
   const statusParam = firstParam(raw.status);
-  const status: InvoiceFilter = isInvoiceFilter(statusParam) ? statusParam : "all";
+  const status: InvoiceFilter = parseInvoiceFilter(statusParam);
   const q = firstParam(raw.q).trim().slice(0, 100);
 
   const { invoices, today } = await loadInvoices(viewer.ownerId);
