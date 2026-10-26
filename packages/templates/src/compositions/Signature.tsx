@@ -1109,8 +1109,8 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
         {credits.length > 0 && (
           <span>Photos: {Array.from(new Set(credits.map((i) => i.credit?.name))).join(", ")}</span>
         )}
+        {/* O crédito da No Sweat é o selo (NoSweatBadge) logo abaixo, desenhado pelo SiteRenderer. */}
         <span className="flex gap-4">
-          <span>Website by No Sweat</span>
           <a
             href={VISITOR_PRIVACY_URL}
             target="_blank"

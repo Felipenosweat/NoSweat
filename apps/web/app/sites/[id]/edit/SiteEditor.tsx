@@ -758,6 +758,9 @@ export function SiteEditor({
   const [publishError, setPublishError] = useState<string | null>(null);
   /** Publicou neste editor: o plano existe, o aviso "Plan required" não vale mais. */
   const [publishedHere, setPublishedHere] = useState(false);
+  const [searchEngines, setSearchEngines] = useState<PublishSiteResponse["searchEngines"] | null>(
+    null,
+  );
   const [address, setAddress] = useState(freeAddress);
   /** O endereço já está definido (publicado)? Antes disso ele acompanha o nome digitado. */
   const [slugFixed, setSlugFixed] = useState(hasSlug);
@@ -800,6 +803,7 @@ export function SiteEditor({
       // Publicar também muda o `updatedAt`: sem isto, o próximo Save daria conflito falso.
       if (published.updatedAt) baseUpdatedAt.current = published.updatedAt;
       setAddress(published.url);
+      setSearchEngines(published.searchEngines ?? null);
       setSlugFixed(true);
       setPublishState("current");
       setPublishedHere(true);
@@ -1282,6 +1286,7 @@ export function SiteEditor({
           error={publishError}
           domain={{ href: `/sites/${siteId}#domain`, samePage: false, connected: hasDomain }}
           returnFocusTo={() => publishRef.current}
+          searchEngines={searchEngines}
         />
       )}
 

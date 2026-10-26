@@ -94,6 +94,12 @@ Como as peças se ligam:
   abuso; visitantes não usam créditos (limites `GUEST_*`); admins sem limite. Todo uso continua
   em `ai_usage` (custo do /admin). Ajuste manual do admin: `adminAdjustCredits`. Editar à mão é
   grátis.
+- Selo da No Sweat: o `<SiteRenderer>` sempre desenha o `NoSweatBadge` ("Website by nosweatfd",
+  link para nosweatfd.com) depois do rodapé. Fica fora do SiteSpec: nem o editor nem a IA tiram.
+- SEO dos sites publicados: no domínio do cliente, `robots.txt` (proxy.ts) e `sitemap.xml`
+  (`/d/[host]/sitemap.xml`, com a data); no endereço grátis, os sites no ar entram no sitemap da
+  plataforma. Ao publicar, `server/seo` avisa o IndexNow (Bing, Yandex...; o Google não usa) do
+  endereço oficial; a chave pública fica em `/<chave>.txt` em todo host. Só sai em produção.
 - Formulário de contato: sites publicados enviam para `POST /api/sites/[id]/leads` (público, com
   campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
   `proxy.ts` deixa `/api/*` passar sem reescrever.

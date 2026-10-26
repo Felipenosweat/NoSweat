@@ -1,27 +1,47 @@
+import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { PLANS } from "@/server/billing/plans";
+import { getSiteStore } from "@/server/store";
 import { llmsText } from "./llms";
 import { SITE_ORIGIN } from "./site";
 import { faqPage, jsonLd, organization, product, website } from "./structured-data";
 
 describe("SEO do nosweatfd.com", () => {
-  it("usa o endereço final (com www) em todo lugar", () => {
+  it("usa o endereço final (com www) em todo lugar", async () => {
     expect(SITE_ORIGIN).toBe("https://www.nosweatfd.com");
-    for (const entry of sitemap()) expect(entry.url.startsWith(SITE_ORIGIN)).toBe(true);
+    for (const entry of await sitemap()) expect(entry.url.startsWith(SITE_ORIGIN)).toBe(true);
     expect(robots().sitemap).toBe(`${SITE_ORIGIN}/sitemap.xml`);
   });
 
-  it("lista as páginas públicas no sitemap e esconde as áreas logadas no robots", () => {
-    const urls = sitemap().map((e) => e.url);
+  it("lista as páginas públicas no sitemap e esconde as áreas logadas no robots", async () => {
+    const urls = (await sitemap()).map((e) => e.url);
     expect(urls).toEqual(expect.arrayContaining([`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/pricing`]));
     const rules = robots().rules;
     const disallow = Array.isArray(rules) ? [] : [rules.disallow].flat();
     expect(disallow).toEqual(expect.arrayContaining(["/api/", "/dashboard", "/sites"]));
     // Os sites dos clientes continuam abertos para buscadores.
     expect(disallow).not.toContain("/s/");
+  });
+
+  it("põe no sitemap os sites no ar no endereço grátis (e só eles)", async () => {
+    const store = getSiteStore();
+    const live = await store.create(fixtures["joes-plumbing"], "seo-owner");
+    await store.updateMeta(live.id, { status: "published", slug: "seo-live-joe" });
+    const draft = await store.create(fixtures["glow-salon"], "seo-owner");
+    await store.updateMeta(draft.id, { slug: "seo-draft-glow" });
+    const own = await store.create(fixtures["rosas-kitchen"], "seo-owner");
+    await store.updateMeta(own.id, {
+      status: "published",
+      slug: "seo-domain-rosa",
+      customDomain: "rosas-seo-test.com",
+    });
+    const urls = (await sitemap()).map((e) => e.url);
+    expect(urls).toContain(`${SITE_ORIGIN}/s/seo-live-joe`);
+    expect(urls).not.toContain(`${SITE_ORIGIN}/s/seo-draft-glow`);
+    expect(urls).not.toContain(`${SITE_ORIGIN}/s/seo-domain-rosa`);
   });
 
   it("monta um JSON-LD válido, sem notas nem avaliações inventadas", () => {
