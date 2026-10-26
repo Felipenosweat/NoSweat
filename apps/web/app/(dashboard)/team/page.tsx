@@ -16,7 +16,9 @@ export const metadata: Metadata = { title: "Team", robots: { index: false } };
 async function loadTeam(ownerId: string): Promise<TeamMember[] | null> {
   try {
     const members = await listTeam(ownerId);
-    return [...members].sort((a, b) => a.name.localeCompare(b.name, "en-US", { sensitivity: "base" }));
+    return [...members].sort((a, b) =>
+      a.name.localeCompare(b.name, "en-US", { sensitivity: "base" }),
+    );
   } catch (error) {
     console.error("[team] could not list the team", error);
     return null;
@@ -109,7 +111,10 @@ export default async function TeamPage() {
           <section aria-labelledby="team-active">
             <h2 id="team-active" className={sectionTitle}>
               Active
-              <span className="font-sans font-normal text-slate-500 tabular-nums"> · {active.length}</span>
+              <span className="font-sans font-normal text-slate-500 tabular-nums">
+                {" "}
+                · {active.length}
+              </span>
             </h2>
             {active.length === 0 ? (
               <p className="mt-3 text-[15px] text-slate-500">

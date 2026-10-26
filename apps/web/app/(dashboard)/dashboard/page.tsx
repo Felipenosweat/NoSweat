@@ -759,9 +759,7 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
       value: summary.overdueInvoices,
       display: money(summary.overdueCents),
       hint:
-        summary.overdueInvoices > 0
-          ? `${summary.overdueInvoices} past due`
-          : "Nothing past due",
+        summary.overdueInvoices > 0 ? `${summary.overdueInvoices} past due` : "Nothing past due",
       href: "/invoices?status=overdue",
       tone: "red",
       Icon: AlertIcon,
@@ -860,10 +858,7 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
             </IconTile>
             <p className="text-[15px] font-semibold text-ink">Nothing scheduled today</p>
             {!readOnly && (
-              <Link
-                href="/schedule?new=1"
-                className={glassButtonClass({ variant: "secondary" })}
-              >
+              <Link href="/schedule?new=1" className={glassButtonClass({ variant: "secondary" })}>
                 <PlusIcon className="-ml-0.5 size-[1.15em]" />
                 New job
               </Link>
@@ -1110,9 +1105,12 @@ export default async function DashboardPage() {
   const quickStats = <QuickStats stats={stats} />;
   // O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro.
   const officeSection = office ? <OfficeSection office={office} readOnly={readOnly} /> : null;
-  const todayCount = office?.summary.todayJobs.filter((job) => job.status !== "canceled").length ?? 0;
+  const todayCount =
+    office?.summary.todayJobs.filter((job) => job.status !== "canceled").length ?? 0;
   const jobsToday =
-    todayCount > 0 ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. ` : "";
+    todayCount > 0
+      ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
+      : "";
 
   const yourSites = (
     <section id="sites" aria-labelledby="sites-heading">

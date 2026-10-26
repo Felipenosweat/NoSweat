@@ -53,7 +53,10 @@ export function scheduleHref(params: Omit<ScheduleParams, "openNew"> & { openNew
  * Dias mostrados: um na visão "Dia", a semana (domingo a sábado) nas outras. A lista do celular
  * usa a mesma semana da grade, então trocar de visão não muda o período.
  */
-export function visibleRange(view: ScheduleView | null, date: string): { start: string; end: string } {
+export function visibleRange(
+  view: ScheduleView | null,
+  date: string,
+): { start: string; end: string } {
   if (view === "day") return { start: date, end: addDays(date, 1) };
   const start = startOfWeek(date);
   return { start, end: addDays(start, 7) };

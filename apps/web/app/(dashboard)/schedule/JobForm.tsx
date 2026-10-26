@@ -14,7 +14,14 @@ import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent
 import { GlassButton, GlassSearchField, GlassSheet, SpinnerIcon, cx } from "@/components/glass";
 import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientsApi, toClientsError, type ClientsApiError } from "../clients/api";
-import { Avatar, PlusIcon, fieldClass, fieldErrorClass, hintClass, labelClass } from "../clients/ui";
+import {
+  Avatar,
+  PlusIcon,
+  fieldClass,
+  fieldErrorClass,
+  hintClass,
+  labelClass,
+} from "../clients/ui";
 import { addMinutesToTime, zonedToUtc } from "./time";
 import { TeamDot } from "./ui";
 
@@ -139,7 +146,9 @@ function JobForm({
   function pickClient(next: PickedClient | null) {
     // Endereço do serviço = o do cliente, a não ser que o dono já tenha digitado outro.
     setAddress((current) =>
-      current.trim() === "" || current === (client?.address ?? "") ? (next?.address ?? "") : current,
+      current.trim() === "" || current === (client?.address ?? "")
+        ? (next?.address ?? "")
+        : current,
     );
     setClient(next);
     setErrors((e) => ({ ...e, clientId: undefined }));
@@ -655,7 +664,11 @@ function QuickClientForm({
   };
 
   return (
-    <div role="group" aria-labelledby={`${ids}-legend`} className="glass glass-flat rounded-2xl p-4">
+    <div
+      role="group"
+      aria-labelledby={`${ids}-legend`}
+      className="glass glass-flat rounded-2xl p-4"
+    >
       <p id={`${ids}-legend`} className="text-[15px] font-semibold text-ink">
         New client
       </p>

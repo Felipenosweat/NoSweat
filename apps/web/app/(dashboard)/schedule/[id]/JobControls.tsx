@@ -48,14 +48,7 @@ import {
   timeValueOf,
   zonedToUtc,
 } from "../time";
-import {
-  CancelIcon,
-  EditIcon,
-  InvoiceIcon,
-  JobStatusBadge,
-  RestoreIcon,
-  TeamDot,
-} from "../ui";
+import { CancelIcon, EditIcon, InvoiceIcon, JobStatusBadge, RestoreIcon, TeamDot } from "../ui";
 
 // Controles da ficha do serviço (/schedule/[id]). Cada um salva sozinho (PATCH/POST) e depois
 // `router.refresh()`; a página passa uma `key` com os dados salvos, então o componente recomeça
@@ -401,7 +394,12 @@ export function JobHero({
                 >
                   {done ? "✓" : index + 1}
                 </span>
-                <span className={cx("text-[13px] leading-4 font-semibold", done ? "text-ink" : "text-slate-500")}>
+                <span
+                  className={cx(
+                    "text-[13px] leading-4 font-semibold",
+                    done ? "text-ink" : "text-slate-500",
+                  )}
+                >
                   {step.label}
                 </span>
               </>
@@ -627,7 +625,15 @@ function RescheduleForm({
 
 // ---------- editar dados ----------
 
-function EditDetailsSheet({ open, onClose, job }: { open: boolean; onClose: () => void; job: Job }) {
+function EditDetailsSheet({
+  open,
+  onClose,
+  job,
+}: {
+  open: boolean;
+  onClose: () => void;
+  job: Job;
+}) {
   return (
     <GlassSheet open={open} onClose={onClose} title="Edit job" size="md">
       {open && <EditDetailsForm job={job} onDone={onClose} />}
@@ -640,7 +646,9 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
   const { save, pending, error } = useJobPatch(job.id);
   const [title, setTitle] = useState(job.title);
   const [address, setAddress] = useState(job.address ?? "");
-  const [value, setValue] = useState(job.valueCents !== null ? (job.valueCents / 100).toFixed(2) : "");
+  const [value, setValue] = useState(
+    job.valueCents !== null ? (job.valueCents / 100).toFixed(2) : "",
+  );
   const [errors, setErrors] = useState<{ title?: string; value?: string }>({});
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -651,7 +659,11 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
     if (cents === undefined) next.value = "Enter an amount like 150 or 150.00.";
     setErrors(next);
     if (next.title || next.value || cents === undefined) return;
-    const ok = await save({ title: title.trim(), address: address.trim() || null, valueCents: cents });
+    const ok = await save({
+      title: title.trim(),
+      address: address.trim() || null,
+      valueCents: cents,
+    });
     if (ok) onDone();
   }
 
@@ -788,7 +800,10 @@ export function AssigneesCard({
       )}
       {team.length === 0 && !readOnly && (
         <p className={hintClass}>
-          <Link href="/team" className={`font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}>
+          <Link
+            href="/team"
+            className={`font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+          >
             Add your team
           </Link>{" "}
           to assign jobs and color your calendar.
@@ -845,7 +860,11 @@ export function JobNotes({ job, readOnly }: { job: Job; readOnly: boolean }) {
 
   return (
     <form onSubmit={(event) => void submit(event)} aria-labelledby={`${ids}-label`}>
-      <label id={`${ids}-label`} htmlFor={`${ids}-notes`} className="text-[15px] font-semibold text-ink">
+      <label
+        id={`${ids}-label`}
+        htmlFor={`${ids}-notes`}
+        className="text-[15px] font-semibold text-ink"
+      >
         Notes for the team
       </label>
       <p id={`${ids}-hint`} className={hintClass}>

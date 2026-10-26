@@ -177,7 +177,9 @@ export function MemberMenu({ member, readOnly }: { member: TeamMember; readOnly:
           </GlassSheet>
           <ConfirmDialog
             open={confirmOpen}
-            title={member.active ? `Deactivate ${member.name}?` : `Couldn’t reactivate ${member.name}`}
+            title={
+              member.active ? `Deactivate ${member.name}?` : `Couldn’t reactivate ${member.name}`
+            }
             confirmLabel={member.active ? "Deactivate" : "Try again"}
             pendingLabel={member.active ? "Deactivating…" : "Saving…"}
             tone={member.active ? "destructive" : "primary"}
@@ -242,7 +244,10 @@ function MemberForm({
       const next: Partial<Record<Field, string>> = {};
       for (const issue of parsed.error.issues) {
         const key = issue.path[0];
-        if ((key === "name" || key === "role" || key === "phone" || key === "email") && !next[key]) {
+        if (
+          (key === "name" || key === "role" || key === "phone" || key === "email") &&
+          !next[key]
+        ) {
           next[key] = issue.message;
         }
       }
@@ -257,11 +262,10 @@ function MemberForm({
     setPending(true);
     onBusy(true);
     try {
-      await clientsApi(
-        member ? memberUrl(member.id) : "/api/office/team",
-        TeamMemberResponse,
-        { method: member ? "PATCH" : "POST", body: parsed.data },
-      );
+      await clientsApi(member ? memberUrl(member.id) : "/api/office/team", TeamMemberResponse, {
+        method: member ? "PATCH" : "POST",
+        body: parsed.data,
+      });
       onBusy(false);
       onSaved();
     } catch (err) {
@@ -284,7 +288,11 @@ function MemberForm({
     ) : null;
 
   return (
-    <form onSubmit={(event) => void submit(event)} noValidate aria-label={member ? "Edit team member" : "Add team member"}>
+    <form
+      onSubmit={(event) => void submit(event)}
+      noValidate
+      aria-label={member ? "Edit team member" : "Add team member"}
+    >
       <fieldset disabled={pending} className="grid gap-5">
         <div>
           <label htmlFor={`${ids}-name`} className={labelClass}>
@@ -322,7 +330,11 @@ function MemberForm({
           <div className="mt-2 flex flex-wrap gap-1.5">
             {SUGGESTED_ROLES.filter((r) => r.toLowerCase() !== role.trim().toLowerCase()).map(
               (suggestion) => (
-                <GlassButton key={suggestion} variant="secondary" onClick={() => setRole(suggestion)}>
+                <GlassButton
+                  key={suggestion}
+                  variant="secondary"
+                  onClick={() => setRole(suggestion)}
+                >
                   {suggestion}
                 </GlassButton>
               ),

@@ -82,7 +82,9 @@ export function AgendaList({
                               {formatTime(job.startAt, timeZone)}
                             </span>
                           )}
-                          {job.endAt && <span className="block">{formatTime(job.endAt, timeZone)}</span>}
+                          {job.endAt && (
+                            <span className="block">{formatTime(job.endAt, timeZone)}</span>
+                          )}
                         </span>
                         <span
                           aria-hidden="true"

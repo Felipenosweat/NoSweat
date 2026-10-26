@@ -24,6 +24,7 @@ const PROTECTED_PATHS = [
   "/estimates",
   "/invoices",
   "/office",
+  "/reviews",
 ];
 
 // Exceções: visitantes sem conta criam (/create, público), editam e veem a prévia do próprio

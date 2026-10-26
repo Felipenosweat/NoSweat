@@ -32,6 +32,7 @@ import {
   ScheduleIcon,
   SettingsIcon,
   SocialIcon,
+  StarIcon,
   TeamIcon,
   WebsiteIcon,
 } from "./NavIcons";
@@ -129,6 +130,15 @@ const WEBSITE_ITEM: NavItem = {
   match: "/sites",
 };
 const SOCIAL_ITEM: NavItem = { key: "social", label: "Social", href: "/social", Icon: SocialIcon };
+const REVIEWS_ITEM: NavItem = {
+  key: "reviews",
+  label: "Google reviews",
+  href: "/reviews",
+  Icon: StarIcon,
+};
+// "Google reviews" já é item normal da navegação: não aparece mais em "Coming soon" (mesmo que
+// lib/modules.ts ainda o marque como em breve).
+const SOON_ITEMS = SOON_MODULES.filter((hub) => hub.key !== "reviews");
 const TEAM_ITEM: NavItem = { key: "team", label: "Team", href: "/team", Icon: TeamIcon };
 const SETTINGS_ITEM: NavItem = {
   key: "settings",
@@ -175,9 +185,7 @@ function businessItems({
     ...(admin
       ? [{ key: "admin", label: "Admin", href: "/admin", Icon: AdminIcon, match: null }]
       : []),
-    ...(account
-      ? [{ key: "account", label: "Account", href: "/account", Icon: AccountIcon }]
-      : []),
+    ...(account ? [{ key: "account", label: "Account", href: "/account", Icon: AccountIcon }] : []),
   ];
 }
 
@@ -251,6 +259,7 @@ function SidebarNav({
     WEBSITE_ITEM,
     ...messagesItem(latestSiteId),
     SOCIAL_ITEM,
+    REVIEWS_ITEM,
   ];
   const business = businessItems({ admin, account, supportHref });
   return (
@@ -283,7 +292,7 @@ function SidebarNav({
           ))}
         </ul>
 
-        {SOON_MODULES.length > 0 && (
+        {SOON_ITEMS.length > 0 && (
           <>
             <p
               id="sidebar-soon"
@@ -292,7 +301,7 @@ function SidebarNav({
               Coming soon
             </p>
             <ul aria-labelledby="sidebar-soon" className="grid gap-0.5">
-              {SOON_MODULES.map((hub) => {
+              {SOON_ITEMS.map((hub) => {
                 const ModuleIcon = MODULE_ICONS[hub.key];
                 return (
                   <li key={hub.key}>
@@ -368,6 +377,7 @@ function TabBar({
     INVOICES_ITEM,
     ...messagesItem(latestSiteId),
     SOCIAL_ITEM,
+    REVIEWS_ITEM,
     ...businessItems({ admin, account, supportHref }),
   ];
   const moreActive = more.some((item) => currentItem(item) === "page");
@@ -439,7 +449,7 @@ function TabBar({
                 ))}
               </ul>
 
-              {SOON_MODULES.length > 0 && (
+              {SOON_ITEMS.length > 0 && (
                 <>
                   <p
                     id="sheet-soon"
@@ -448,7 +458,7 @@ function TabBar({
                     Coming soon
                   </p>
                   <ul aria-labelledby="sheet-soon" className="grid gap-0.5">
-                    {SOON_MODULES.map((hub) => {
+                    {SOON_ITEMS.map((hub) => {
                       const ModuleIcon = MODULE_ICONS[hub.key];
                       return (
                         <li key={hub.key}>

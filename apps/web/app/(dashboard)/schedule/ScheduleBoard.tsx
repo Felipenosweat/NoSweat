@@ -27,14 +27,7 @@ import {
 } from "./params";
 import { TimeGrid } from "./TimeGrid";
 import { dateKeyOf, longDay, weekDays, weekRangeLabel } from "./time";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  DayIcon,
-  TeamDot,
-  WeekIcon,
-  assigneeNames,
-} from "./ui";
+import { ChevronLeftIcon, ChevronRightIcon, DayIcon, TeamDot, WeekIcon, assigneeNames } from "./ui";
 
 // Agenda (/schedule): barra (hoje, anterior/próximo, visão, filtro de equipe), bandeja dos
 // serviços sem data e a semana/dia/lista. Os dados vêm da página (server component); aqui só a
@@ -124,7 +117,9 @@ export function ScheduleBoard({
     }
   }
 
-  const onSlot = readOnly ? undefined : (day: string, time: string) => openSheet({ date: day, time });
+  const onSlot = readOnly
+    ? undefined
+    : (day: string, time: string) => openSheet({ date: day, time });
   const onAdd = readOnly ? undefined : (day: string) => openSheet({ date: day, time: null });
 
   const title = view === "day" ? longDay(date) : weekRangeLabel(rangeStart);
@@ -250,9 +245,7 @@ export function ScheduleBoard({
           )}
         </div>
 
-        {activeTeam.length > 0 && (
-          <TeamChips team={activeTeam} params={params} hasUnassigned />
-        )}
+        {activeTeam.length > 0 && <TeamChips team={activeTeam} params={params} hasUnassigned />}
       </div>
 
       {/* ---------- serviços sem data ---------- */}
@@ -312,17 +305,23 @@ function TeamChips({
       current ? "bg-ink text-white" : "glass glass-flat glass-interactive text-(--glass-fg)",
       focusRing,
     );
-  const items: { key: string; label: string; team: string | null; dot?: TeamMember["color"] | null }[] =
-    [
-      { key: "all", label: "Everyone", team: null },
-      ...team.map((member) => ({
-        key: member.id,
-        label: member.name,
-        team: member.id,
-        dot: member.color,
-      })),
-      ...(hasUnassigned ? [{ key: UNASSIGNED, label: "Unassigned", team: UNASSIGNED, dot: null }] : []),
-    ];
+  const items: {
+    key: string;
+    label: string;
+    team: string | null;
+    dot?: TeamMember["color"] | null;
+  }[] = [
+    { key: "all", label: "Everyone", team: null },
+    ...team.map((member) => ({
+      key: member.id,
+      label: member.name,
+      team: member.id,
+      dot: member.color,
+    })),
+    ...(hasUnassigned
+      ? [{ key: UNASSIGNED, label: "Unassigned", team: UNASSIGNED, dot: null }]
+      : []),
+  ];
   return (
     <nav
       aria-label="Filter by team member"
@@ -351,13 +350,7 @@ function TeamChips({
 }
 
 /** Bandeja "Unscheduled": fechada por padrão para não empurrar o calendário. */
-function UnscheduledTray({
-  jobs,
-  team,
-}: {
-  jobs: Job[];
-  team: ReadonlyMap<string, TeamMember>;
-}) {
+function UnscheduledTray({ jobs, team }: { jobs: Job[]; team: ReadonlyMap<string, TeamMember> }) {
   return (
     <details className="group mt-4">
       <summary

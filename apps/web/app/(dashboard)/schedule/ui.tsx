@@ -1,4 +1,10 @@
-import { TEAM_COLORS, type Job, type JobStatus, type TeamColor, type TeamMember } from "@nosweat/schema";
+import {
+  TEAM_COLORS,
+  type Job,
+  type JobStatus,
+  type TeamColor,
+  type TeamMember,
+} from "@nosweat/schema";
 import type { ReactNode, SVGProps } from "react";
 import { GlassBadge, cx, type GlassBadgeTone } from "@/components/glass";
 
@@ -60,7 +66,11 @@ export const TEAM_COLOR_STYLES: Record<TeamColor, ColorStyle> = {
   pink: { dot: "bg-pink-500", block: "border-pink-500 bg-pink-50 text-pink-950", label: "Pink" },
   teal: { dot: "bg-teal-500", block: "border-teal-500 bg-teal-50 text-teal-950", label: "Teal" },
   red: { dot: "bg-red-500", block: "border-red-500 bg-red-50 text-red-950", label: "Red" },
-  gray: { dot: "bg-slate-400", block: "border-slate-400 bg-slate-100 text-slate-900", label: "Gray" },
+  gray: {
+    dot: "bg-slate-400",
+    block: "border-slate-400 bg-slate-100 text-slate-900",
+    label: "Gray",
+  },
 };
 
 /** Primeira cor ainda sem dono entre os ativos (cada pessoa com a sua, quando dá). */
@@ -73,7 +83,10 @@ export function nextFreeColor(members: readonly Pick<TeamMember, "color" | "acti
 export const UNASSIGNED_BLOCK = "border-dashed border-slate-400 bg-white/85 text-slate-700";
 
 /** Cor do serviço: a do primeiro responsável (sem ninguém = cinza tracejado). */
-export function jobBlockClass(job: Pick<Job, "assigneeIds">, team: ReadonlyMap<string, TeamMember>) {
+export function jobBlockClass(
+  job: Pick<Job, "assigneeIds">,
+  team: ReadonlyMap<string, TeamMember>,
+) {
   const first = job.assigneeIds.map((id) => team.get(id)).find(Boolean);
   return first ? TEAM_COLOR_STYLES[first.color].block : UNASSIGNED_BLOCK;
 }
@@ -92,7 +105,10 @@ export function TeamDot({ color, className }: { color: TeamColor | null; classNa
 }
 
 /** Nomes dos responsáveis ("Mike, Ana" / "No one assigned"). */
-export function assigneeNames(job: Pick<Job, "assigneeIds">, team: ReadonlyMap<string, TeamMember>) {
+export function assigneeNames(
+  job: Pick<Job, "assigneeIds">,
+  team: ReadonlyMap<string, TeamMember>,
+) {
   const names = job.assigneeIds.map((id) => team.get(id)?.name).filter(Boolean);
   return names.length > 0 ? names.join(", ") : "No one assigned";
 }
