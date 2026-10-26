@@ -11,7 +11,7 @@ import {
   type SVGProps,
 } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
-import { focusRing } from "@/components/DashboardUi";
+import { ChevronRightIcon, focusRing } from "@/components/DashboardUi";
 import { GlassBackdrop, glassButtonClass } from "@/components/glass";
 import { Logo } from "@/components/Logo";
 import { SOON_MODULES } from "@/lib/modules";
@@ -213,14 +213,13 @@ const TOUR_ITEM: NavItem = {
 };
 
 /**
- * Grupo "Business" (embaixo da barra lateral): equipe, configurações, cobrança, ajuda, tour,
- * admin.
+ * Grupo "Business" (embaixo da barra lateral): equipe, configurações, cobrança, ajuda e tour.
+ * O admin não mora aqui: tem o botão de destaque (`AdminButton`) no topo.
  */
 function businessItems({
-  admin,
   account,
   supportHref,
-}: Pick<ChromeProps, "admin" | "account" | "supportHref">): NavItem[] {
+}: Pick<ChromeProps, "account" | "supportHref">): NavItem[] {
   return [
     TEAM_ITEM,
     SETTINGS_ITEM,
@@ -229,9 +228,6 @@ function businessItems({
       ? [{ key: "help", label: "Help", href: supportHref, Icon: HelpIcon, external: true }]
       : []),
     TOUR_ITEM,
-    ...(admin
-      ? [{ key: "admin", label: "Admin", href: "/admin", Icon: AdminIcon, match: null }]
-      : []),
     ...(account ? [{ key: "account", label: "Account", href: "/account", Icon: AccountIcon }] : []),
   ];
 }
@@ -321,6 +317,62 @@ function supportLinkProps(href: string): { target?: "_blank"; rel?: string } {
   return href.startsWith("mailto:") ? {} : { target: "_blank", rel: "noreferrer" };
 }
 
+/**
+ * Botão do painel da No Sweat (só admins), na frente de tudo: vidro escuro da marca com brilhos
+ * desfocados por trás. `compact` = a cápsula da barra de cima do celular.
+ */
+function AdminButton({ compact = false }: { compact?: boolean }) {
+  return (
+    <Link
+      href="/admin"
+      data-tour="nav-admin"
+      className={`group relative isolate flex items-center overflow-hidden text-white ring-1 ring-white/15 ring-inset backdrop-blur-xl motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 ${
+        compact
+          ? "min-h-10 gap-2 rounded-full pr-3.5 pl-2 text-[15px] font-semibold shadow-[0_8px_20px_-8px_rgb(0_102_255/0.7)]"
+          : "min-h-[4.25rem] w-full gap-3 rounded-[22px] px-3 py-3 shadow-[0_14px_32px_-12px_rgb(0_102_255/0.75)] hover:shadow-[0_18px_40px_-12px_rgb(0_102_255/0.85)]"
+      } ${focusRing}`}
+    >
+      {/* Fundo: degradê da marca e dois brilhos desfocados (o "blur" que dá profundidade). */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 bg-linear-135 from-ink via-[#0b3a7a] to-brand"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -top-8 -right-6 -z-10 size-24 rounded-full bg-sky-300/50 blur-2xl motion-safe:transition-transform motion-safe:duration-500 group-hover:scale-125"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-10 -left-4 -z-10 size-20 rounded-full bg-indigo-400/40 blur-2xl"
+      />
+      {/* Reflexo de vidro em cima. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 -z-10 h-1/2 bg-linear-to-b from-white/20 to-transparent"
+      />
+      <span
+        aria-hidden="true"
+        className={`grid shrink-0 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 ring-inset backdrop-blur-md ${
+          compact ? "size-7" : "size-10"
+        }`}
+      >
+        <AdminIcon className={compact ? "size-4" : "size-5"} />
+      </span>
+      {compact ? (
+        "Admin"
+      ) : (
+        <>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] leading-5 font-semibold">Admin</span>
+            <span className="block text-[13px] leading-5 text-white/70">Command center</span>
+          </span>
+          <ChevronRightIcon className="size-4 shrink-0 text-white/70 motion-safe:transition-transform motion-safe:duration-200 group-hover:translate-x-0.5" />
+        </>
+      )}
+    </Link>
+  );
+}
+
 function SidebarNav({
   admin,
   account,
@@ -338,7 +390,7 @@ function SidebarNav({
     SOCIAL_ITEM,
     REVIEWS_ITEM,
   ];
-  const business = businessItems({ admin, account, supportHref });
+  const business = businessItems({ account, supportHref });
   return (
     // Cartão de vidro flutuante (como a barra lateral do iPadOS 26): o fundo da marca aparece por
     // trás, desfocado.
@@ -346,6 +398,11 @@ function SidebarNav({
       <div className="px-3 pb-5">
         <Logo />
       </div>
+      {admin && (
+        <div className="pb-3">
+          <AdminButton />
+        </div>
+      )}
       <details ref={create.ref} onKeyDown={create.onKeyDown} className="group relative z-10 pb-5">
         <summary
           data-tour="nav-new"
@@ -457,10 +514,9 @@ function SidebarNav({
 }
 
 function TabBar({
-  admin,
   account,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId">) {
+}: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId" | "admin">) {
   const { currentItem, pathname } = useCurrent();
   const moreMenu = useDetailsMenu(pathname);
   const createMenu = useDetailsMenu(pathname);
@@ -476,7 +532,7 @@ function TabBar({
     INVOICES_ITEM,
     SOCIAL_ITEM,
     REVIEWS_ITEM,
-    ...businessItems({ admin, account, supportHref }),
+    ...businessItems({ account, supportHref }),
   ];
   const moreActive = more.some((item) => currentItem(item) === "page");
   // Só uma folha aberta por vez.
@@ -695,8 +751,9 @@ export function DashboardChrome({
       <GlassBackdrop />
       <SidebarNav admin={admin} account={account} supportHref={supportHref} />
       {/* Criar fica no "+" da barra de abas. */}
-      <header className="glass-bar sticky top-0 z-30 flex h-14 items-center gap-3 px-4 sm:px-6 lg:hidden">
+      <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
         <Logo />
+        {admin && <AdminButton compact />}
       </header>
       {/* No celular o conteúdo rola por baixo da barra de abas flutuante: o espaço embaixo deixa
           o fim da página aparecer acima dela. */}
@@ -709,7 +766,7 @@ export function DashboardChrome({
           {children}
         </div>
       </main>
-      <TabBar admin={admin} account={account} supportHref={supportHref} />
+      <TabBar account={account} supportHref={supportHref} />
       <WelcomeTour config={tour} latestSiteId={latestSiteId} />
     </div>
   );
