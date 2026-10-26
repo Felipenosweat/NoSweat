@@ -4,7 +4,7 @@ import type { Job, TeamMember } from "@nosweat/schema";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/DashboardUi";
 import {
   GlassButton,
@@ -17,13 +17,13 @@ import {
 import { formatCents } from "@/lib/clients";
 import { ListIcon, PlusIcon } from "../clients/ui";
 import { AgendaList } from "./AgendaList";
-import type { NewJobDefaults } from "./JobForm";
+import type { NewJobClient, NewJobDefaults } from "./JobForm";
 import { placeJobs } from "./layout-jobs";
 import {
   UNASSIGNED,
   scheduleHref,
   stepDate,
-  type ScheduleParams,
+  type ScheduleLinkParams,
   type ScheduleView,
 } from "./params";
 import { TimeGrid } from "./TimeGrid";
@@ -51,8 +51,10 @@ export function ScheduleBoard({
   teamFilter,
   jobs,
   unscheduled,
+  toInvoice,
   readOnly,
   openNew,
+  newJobClient,
 }: {
   /** `null` = automático (semana no computador, lista no celular). */
   view: ScheduleView | null;
@@ -69,20 +71,26 @@ export function ScheduleBoard({
   /** Serviços com data no período mostrado. */
   jobs: Job[];
   unscheduled: Job[];
+  /** Serviços feitos que ainda não viraram fatura (dinheiro esquecido). */
+  toInvoice: Job[];
   readOnly: boolean;
   openNew: boolean;
+  /** Cliente que a folha aberta na chegada já traz escolhido (vem da ficha do cliente). */
+  newJobClient: NewJobClient | null;
 }) {
   const router = useRouter();
   const [sheet, setSheet] = useState<NewJobDefaults | null>(
-    openNew && !readOnly ? { date: null, time: null } : null,
+    openNew && !readOnly ? { date: null, time: null, client: newJobClient } : null,
   );
   // Guarda os padrões da última abertura enquanto a folha fecha (sem pular para vazio).
-  const [lastDefaults, setLastDefaults] = useState<NewJobDefaults>({ date: null, time: null });
+  const [lastDefaults, setLastDefaults] = useState<NewJobDefaults>(
+    sheet ?? { date: null, time: null },
+  );
 
   const teamMap = useMemo(() => new Map(team.map((member) => [member.id, member])), [team]);
   const activeTeam = useMemo(() => team.filter((member) => member.active), [team]);
 
-  const params: Omit<ScheduleParams, "openNew"> = { view, date, team: teamFilter };
+  const params: ScheduleLinkParams = { view, date, team: teamFilter };
   // Estáveis entre renders (a grade é `memo`): abrir a folha não redesenha a semana.
   const days = useMemo(
     () => (view === "day" ? [date] : weekDays(rangeStart)),
@@ -99,8 +107,9 @@ export function ScheduleBoard({
     return {
       placed: placeJobs(jobs.filter(byTeam), timeZone),
       unscheduled: unscheduled.filter(byTeam),
+      toInvoice: toInvoice.filter(byTeam),
     };
-  }, [jobs, unscheduled, teamFilter, timeZone]);
+  }, [jobs, unscheduled, toInvoice, teamFilter, timeZone]);
 
   function openSheet(defaults: NewJobDefaults) {
     if (readOnly) return;
@@ -271,12 +280,37 @@ export function ScheduleBoard({
           )}
         </div>
 
-        {activeTeam.length > 0 && <TeamChips team={activeTeam} params={params} hasUnassigned />}
+        {/* Dono sozinho (ou com uma pessoa só) não precisa de filtro por pessoa. Com um filtro já na
+            URL as cápsulas ficam, para dar como voltar a "Everyone". */}
+        {(activeTeam.length > 1 || teamFilter !== null) && (
+          <TeamChips team={activeTeam} params={params} hasUnassigned />
+        )}
       </div>
 
       {/* ---------- serviços sem data ---------- */}
-      {filtered.unscheduled.length > 0 && (
-        <UnscheduledTray jobs={filtered.unscheduled} team={teamMap} />
+      {(filtered.toInvoice.length > 0 || filtered.unscheduled.length > 0) && (
+        <div className="flex flex-wrap items-start gap-x-3">
+          {filtered.toInvoice.length > 0 && (
+            <JobTray
+              id="to-invoice"
+              jobs={filtered.toInvoice}
+              team={teamMap}
+              label="Ready to bill"
+              hint="These jobs are done but don’t have an invoice yet. Open one and tap Create invoice."
+              tone="emerald"
+            />
+          )}
+          {filtered.unscheduled.length > 0 && (
+            <JobTray
+              id="unscheduled"
+              jobs={filtered.unscheduled}
+              team={teamMap}
+              label="Unscheduled"
+              hint="Jobs without a date wait here. Open one to pick a time."
+              tone="amber"
+            />
+          )}
+        </div>
       )}
 
       {/* ---------- calendário ---------- */}
@@ -322,7 +356,7 @@ function TeamChips({
   hasUnassigned,
 }: {
   team: TeamMember[];
-  params: Omit<ScheduleParams, "openNew">;
+  params: ScheduleLinkParams;
   hasUnassigned: boolean;
 }) {
   const chip = (current: boolean) =>
@@ -375,26 +409,55 @@ function TeamChips({
   );
 }
 
-/** Bandeja "Unscheduled": fechada por padrão para não empurrar o calendário. */
-function UnscheduledTray({ jobs, team }: { jobs: Job[]; team: ReadonlyMap<string, TeamMember> }) {
+const TRAY_BADGE = {
+  amber: "bg-amber-500/15 text-amber-800",
+  emerald: "bg-emerald-500/15 text-emerald-800",
+} as const;
+
+/**
+ * Bandeja de serviços fora do calendário ("Ready to bill", "Unscheduled"): fechada por padrão
+ * para não empurrar o calendário; abre sozinha quando o link chega com `#<id>`.
+ */
+function JobTray({
+  id,
+  jobs,
+  team,
+  label,
+  hint,
+  tone,
+}: {
+  id: string;
+  jobs: Job[];
+  team: ReadonlyMap<string, TeamMember>;
+  label: string;
+  hint: string;
+  tone: keyof typeof TRAY_BADGE;
+}) {
+  useEffect(() => {
+    const tray = document.getElementById(id);
+    if (tray instanceof HTMLDetailsElement && window.location.hash === `#${id}`) tray.open = true;
+  }, [id]);
   return (
-    <details className="group mt-4">
+    <details id={id} className="group mt-4 open:basis-full">
       <summary
         className={cx(
           "glass glass-interactive inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-4 text-[15px] font-semibold text-(--glass-fg) sm:min-h-10 [&::-webkit-details-marker]:hidden",
           focusRing,
         )}
       >
-        <span className="grid size-6 place-items-center rounded-full bg-amber-500/15 text-[13px] text-amber-800 tabular-nums">
+        <span
+          className={cx(
+            "grid size-6 place-items-center rounded-full text-[13px] tabular-nums",
+            TRAY_BADGE[tone],
+          )}
+        >
           {jobs.length}
         </span>
-        Unscheduled
+        {label}
         <ChevronRightIcon className="size-4 text-(--glass-fg-muted) transition-transform group-open:rotate-90" />
       </summary>
       <div className="mt-3">
-        <p className="px-1 text-[13px] text-slate-500">
-          Jobs without a date wait here. Open one to pick a time.
-        </p>
+        <p className="px-1 text-[13px] text-slate-500">{hint}</p>
         <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {jobs.map((job) => (
             <li key={job.id}>

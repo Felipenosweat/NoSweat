@@ -11,7 +11,14 @@ import {
   type TeamMember,
 } from "@nosweat/schema";
 import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
-import { GlassButton, GlassSearchField, GlassSheet, SpinnerIcon, cx } from "@/components/glass";
+import {
+  GlassButton,
+  GlassSearchField,
+  GlassSheet,
+  SpinnerIcon,
+  cx,
+  focusRing,
+} from "@/components/glass";
 import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientsApi, toClientsError, type ClientsApiError } from "../clients/api";
 import {
@@ -23,13 +30,17 @@ import {
   labelClass,
 } from "../clients/ui";
 import { addMinutesToTime, zonedToUtc } from "./time";
-import { TeamDot } from "./ui";
+import { ChevronRightIcon, TeamDot } from "./ui";
 
 // Folha "New job": escolher (ou cadastrar rápido) o cliente, título, dia e horário (1 hora por
-// padrão), endereço (vem do cliente), quem vai, valor e notas. Valida com o contrato antes de
-// enviar. As horas digitadas são do fuso da empresa (settings.timeZone).
+// padrão), endereço (vem do cliente) e quem vai (só com 2+ pessoas na equipe). Detalhes, preço e
+// notas ficam em "Add details (optional)", fechado. Valida com o contrato antes de enviar. As
+// horas digitadas são do fuso da empresa (settings.timeZone).
 
 type PickedClient = Pick<Client, "id" | "name" | "phone" | "address">;
+
+/** Cliente que a folha já traz escolhido (ex.: "Book a job" da ficha do cliente). */
+export type NewJobClient = PickedClient;
 
 type Field =
   | "clientId"
@@ -52,6 +63,9 @@ const FIELDS: readonly Field[] = [
   "notes",
 ];
 
+/** Campos dentro de "Add details (optional)": com erro em um deles, a seção abre sozinha. */
+const DETAIL_FIELDS: readonly Field[] = ["description", "valueCents", "notes"];
+
 /** Quantos clientes a busca mostra de uma vez. */
 const MAX_MATCHES = 6;
 
@@ -71,6 +85,8 @@ export type NewJobDefaults = {
   date: string | null;
   /** Início "HH:MM"; `null` = 9h. */
   time: string | null;
+  /** Cliente já escolhido; sem ele (ou `null`) o dono escolhe na folha. */
+  client?: NewJobClient | null;
 };
 
 /** Folha com o formulário (monta o formulário de novo a cada abertura: começa vazio). */
@@ -135,14 +151,14 @@ function JobForm({
   onCreated: (job: Job) => void;
 }) {
   const ids = useId();
-  const [client, setClient] = useState<PickedClient | null>(null);
+  const [client, setClient] = useState<PickedClient | null>(defaults.client ?? null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [later, setLater] = useState(false);
   const [date, setDate] = useState(defaults.date ?? today);
   const [start, setStart] = useState(defaults.time ?? "09:00");
   const [end, setEnd] = useState(addMinutesToTime(defaults.time ?? "09:00", 60));
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(defaults.client?.address ?? "");
   const [assignees, setAssignees] = useState<string[]>(
     // Equipe de uma pessoa só: já vem marcada.
     team.length === 1 && team[0] ? [team[0].id] : [],
@@ -208,6 +224,11 @@ function JobForm({
     setErrors(next);
     const firstField = Object.keys(next)[0];
     if (!parsed.success || firstField) {
+      // Erro num campo da seção fechada: abre antes de levar o foco (nada de erro escondido).
+      if (DETAIL_FIELDS.some((field) => next[field])) {
+        const more = document.getElementById(`${ids}-more`);
+        if (more instanceof HTMLDetailsElement) more.open = true;
+      }
       document.getElementById(`${ids}-${firstField ?? "title"}`)?.focus();
       return;
     }
@@ -268,23 +289,6 @@ function JobForm({
           {errorText("title")}
         </div>
 
-        <div>
-          <label htmlFor={`${ids}-description`} className={labelClass}>
-            Details <span className="font-normal text-slate-500">(optional)</span>
-          </label>
-          <textarea
-            id={`${ids}-description`}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={2}
-            maxLength={4000}
-            placeholder="What needs to be done"
-            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
-            {...errorProps("description")}
-          />
-          {errorText("description")}
-        </div>
-
         <fieldset>
           <legend className={labelClass}>When</legend>
           {!later && (
@@ -341,7 +345,7 @@ function JobForm({
               onChange={(event) => setLater(event.target.checked)}
               className="size-5 accent-brand"
             />
-            No date yet (keep it in Unscheduled)
+            I&rsquo;ll pick a time later
           </label>
         </fieldset>
 
@@ -365,53 +369,84 @@ function JobForm({
           )}
         </div>
 
-        {team.length > 0 && (
+        {/* Uma pessoa só: já vai marcada (estado inicial), sem perguntar. */}
+        {team.length > 1 && (
           <AssigneePicker team={team} value={assignees} onChange={setAssignees} />
         )}
 
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
-          <div>
-            <label htmlFor={`${ids}-valueCents`} className={labelClass}>
-              Value <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <div className="relative mt-1.5">
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
-              >
-                $
-              </span>
-              <input
-                id={`${ids}-valueCents`}
-                inputMode="decimal"
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-                autoComplete="off"
-                placeholder="0.00"
-                maxLength={12}
-                className={`${fieldClass} h-11 pl-7 tabular-nums`}
-                {...errorProps("valueCents")}
+        <details id={`${ids}-more`} className="group/more">
+          <summary
+            className={cx(
+              "-mx-1 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl px-1 text-[15px] font-semibold text-brand [&::-webkit-details-marker]:hidden",
+              focusRing,
+            )}
+          >
+            <ChevronRightIcon className="size-4 motion-safe:transition-transform group-open/more:rotate-90" />
+            Add details <span className="font-normal text-slate-500">(optional)</span>
+          </summary>
+          <div className="mt-3 grid gap-5">
+            <div>
+              <label htmlFor={`${ids}-description`} className={labelClass}>
+                Details
+              </label>
+              <textarea
+                id={`${ids}-description`}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                rows={2}
+                maxLength={4000}
+                placeholder="What needs to be done"
+                className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+                {...errorProps("description")}
               />
+              {errorText("description")}
             </div>
-            {errorText("valueCents")}
+
+            <div className="grid gap-5 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
+              <div>
+                <label htmlFor={`${ids}-valueCents`} className={labelClass}>
+                  Price
+                </label>
+                <div className="relative mt-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                  >
+                    $
+                  </span>
+                  <input
+                    id={`${ids}-valueCents`}
+                    inputMode="decimal"
+                    value={value}
+                    onChange={(event) => setValue(event.target.value)}
+                    autoComplete="off"
+                    placeholder="0.00"
+                    maxLength={12}
+                    className={`${fieldClass} h-11 pl-7 tabular-nums`}
+                    {...errorProps("valueCents")}
+                  />
+                </div>
+                {errorText("valueCents")}
+              </div>
+              <div>
+                <label htmlFor={`${ids}-notes`} className={labelClass}>
+                  Notes for the team
+                </label>
+                <textarea
+                  id={`${ids}-notes`}
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  rows={2}
+                  maxLength={4000}
+                  placeholder="Gate code, parts to bring…"
+                  className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+                  {...errorProps("notes")}
+                />
+                {errorText("notes")}
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor={`${ids}-notes`} className={labelClass}>
-              Notes for the team <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <textarea
-              id={`${ids}-notes`}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={2}
-              maxLength={4000}
-              placeholder="Gate code, parts to bring…"
-              className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
-              {...errorProps("notes")}
-            />
-            {errorText("notes")}
-          </div>
-        </div>
+        </details>
       </fieldset>
 
       {error && <ErrorNote error={error} className="mt-5" />}

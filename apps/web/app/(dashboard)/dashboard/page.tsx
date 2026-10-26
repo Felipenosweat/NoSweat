@@ -238,6 +238,7 @@ type NeedKind =
   | "messages"
   | "overdue"
   | "approved"
+  | "to-bill"
   | "next";
 
 type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; action: string };
@@ -257,6 +258,7 @@ const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconC
   messages: { tone: "brand", label: "Website messages", Icon: MessagesIcon },
   overdue: { tone: "red", label: "Invoices", Icon: InvoicesIcon },
   approved: { tone: "emerald", label: "Estimates", Icon: EstimatesIcon },
+  "to-bill": { tone: "emerald", label: "Ready to bill", Icon: InvoicesIcon },
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
 
@@ -364,6 +366,22 @@ function needsRows({
         </>
       ),
       action: "Open",
+    });
+  }
+  // Serviço feito sem fatura: dinheiro que ninguém cobrou ainda.
+  if (office && office.summary.jobsToInvoice > 0) {
+    const count = office.summary.jobsToInvoice;
+    rows.push({
+      key: "jobs-to-invoice",
+      kind: "to-bill",
+      href: "/schedule#to-invoice",
+      text: (
+        <>
+          <Count value={count} /> finished {plural(count, "job hasn’t", "jobs haven’t")} been
+          invoiced yet.
+        </>
+      ),
+      action: "Bill",
     });
   }
   const toConvert = office?.toConvert ?? [];

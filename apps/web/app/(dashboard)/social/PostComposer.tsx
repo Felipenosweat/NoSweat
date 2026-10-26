@@ -56,7 +56,7 @@ const dangerTextButton = textButton
   .replace("hover:text-ink", "hover:text-red-800");
 
 const fieldClass =
-  "w-full rounded-xl border border-slate-300 bg-white px-3 text-[15px] text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500";
+  "w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-ink placeholder:text-slate-500 sm:text-[15px] focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500";
 
 function sameMedia(a: SocialMedia[], b: SocialMedia[]): boolean {
   return a.length === b.length && a.every((item, i) => item.path === b[i]?.path);
@@ -703,7 +703,7 @@ export function PostComposer({
                         onClick={() => setSlide(Math.max(0, shownSlide - 1))}
                         disabled={shownSlide === 0}
                         aria-label="Previous photo"
-                        className={`absolute top-1/2 left-2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow disabled:hidden ${focusRing}`}
+                        className={`absolute top-1/2 left-2 inline-flex size-11 -translate-y-1/2 sm:size-8 items-center justify-center rounded-full bg-white/90 text-ink shadow disabled:hidden ${focusRing}`}
                       >
                         <span aria-hidden="true">&lsaquo;</span>
                       </button>
@@ -712,7 +712,7 @@ export function PostComposer({
                         onClick={() => setSlide(Math.min(media.length - 1, shownSlide + 1))}
                         disabled={shownSlide === media.length - 1}
                         aria-label="Next photo"
-                        className={`absolute top-1/2 right-2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-ink shadow disabled:hidden ${focusRing}`}
+                        className={`absolute top-1/2 right-2 inline-flex size-11 -translate-y-1/2 sm:size-8 items-center justify-center rounded-full bg-white/90 text-ink shadow disabled:hidden ${focusRing}`}
                       >
                         <span aria-hidden="true">&rsaquo;</span>
                       </button>

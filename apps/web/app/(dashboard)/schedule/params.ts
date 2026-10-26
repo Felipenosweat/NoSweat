@@ -1,6 +1,6 @@
 import { addDays, isDateKey, startOfWeek } from "./time";
 
-// Filtros da agenda na URL (?view=&date=&team=&new=1). Puro: serve para a página (server
+// Filtros da agenda na URL (?view=&date=&team=&new=1&client=). Puro: serve para a página (server
 // component) e para a barra da agenda (client component).
 
 export type ScheduleView = "week" | "day" | "list";
@@ -16,9 +16,14 @@ export type ScheduleParams = {
   /** Dia de referência ("AAAA-MM-DD"); `null` = hoje. */
   date: string | null;
   team: string | null;
-  /** Abre a folha "New job" ao chegar (atalho da página inicial). */
+  /** Abre a folha "New job" ao chegar (atalho da página inicial e da ficha do cliente). */
   openNew: boolean;
+  /** Cliente já escolhido na folha "New job" (vem da ficha do cliente); `null` = escolher. */
+  clientId: string | null;
 };
+
+/** O que fica na URL ao navegar pela agenda (abrir a folha é só na chegada). */
+export type ScheduleLinkParams = Omit<ScheduleParams, "openNew" | "clientId">;
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
@@ -30,21 +35,29 @@ export function parseScheduleParams(raw: RawSearchParams): ScheduleParams {
   const view = first(raw.view);
   const date = first(raw.date);
   const team = first(raw.team).trim().slice(0, 64);
+  const clientId = first(raw.client).trim().slice(0, 64);
   return {
     view: (SCHEDULE_VIEWS as readonly string[]).includes(view) ? (view as ScheduleView) : null,
     date: isDateKey(date) ? date : null,
     team: team || null,
     openNew: first(raw.new) === "1",
+    clientId: clientId || null,
   };
 }
 
-/** URL da agenda (os padrões não entram, para o link ficar curto). */
-export function scheduleHref(params: Omit<ScheduleParams, "openNew"> & { openNew?: boolean }) {
+/**
+ * URL da agenda (os padrões não entram, para o link ficar curto). O cliente só entra junto com
+ * `openNew` (sem a folha aberta ele não serve para nada).
+ */
+export function scheduleHref(
+  params: ScheduleLinkParams & { openNew?: boolean; clientId?: string | null },
+) {
   const search = new URLSearchParams();
   if (params.view) search.set("view", params.view);
   if (params.date) search.set("date", params.date);
   if (params.team) search.set("team", params.team);
   if (params.openNew) search.set("new", "1");
+  if (params.openNew && params.clientId) search.set("client", params.clientId);
   const query = search.toString();
   return query ? `/schedule?${query}` : "/schedule";
 }

@@ -47,7 +47,8 @@ export const pageTitle =
   "font-display text-[2rem] leading-[1.15] font-bold tracking-[-0.022em] text-ink lg:text-[2.5rem]";
 
 /** Linha de apoio embaixo do título da página: texto secundário calmo. */
-export const pageLead = "text-[15px] leading-[1.6] text-slate-500 lg:text-base";
+// Cinza do vidro (`--glass-fg-muted`): o slate-500 fica abaixo de 4.5:1 em cima do fundo azul.
+export const pageLead = "text-[15px] leading-[1.6] text-(--glass-fg-muted) lg:text-base";
 
 /** Título de seção dentro da página ("Needs you", "Your office"...). */
 export const sectionTitle =

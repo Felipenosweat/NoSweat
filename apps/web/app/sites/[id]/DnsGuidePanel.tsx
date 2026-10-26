@@ -1,24 +1,34 @@
 "use client";
 
 import type { DnsProvider, DnsRecord } from "@nosweat/schema";
-import { useState } from "react";
 import { focusRing, secondaryButton } from "@/components/DashboardUi";
+import { glassButtonClass } from "@/components/glass";
 import { DNS_GUIDES, guideById, type DnsGuideId } from "./dnsGuides";
 
 /**
  * "Onde você comprou seu domínio?": o cliente escolhe a empresa (ou já vem marcada, descoberta
  * pelos nameservers) e vê o passo a passo dela, com um desenho do formulário já preenchido.
+ * A escolha fica no DomainPanel (com o passo a passo aberto, ele esconde a tabela de registros),
+ * e por isso os valores também podem ser copiados daqui.
  */
 export function DnsGuidePanel({
   domain,
   records,
   detected,
+  selected,
+  onSelect,
+  copied,
+  onCopy,
 }: {
   domain: string;
   records: DnsRecord[];
   detected: DnsProvider | null;
+  selected: DnsGuideId | null;
+  onSelect: (id: DnsGuideId) => void;
+  /** Valor copiado agora há pouco (mostra "Copied" no botão dele). */
+  copied: string | null;
+  onCopy: (value: string) => void;
 }) {
-  const [selected, setSelected] = useState<DnsGuideId | null>(detected);
   const guide = selected ? guideById(selected) : null;
   const dnsUrl = guide?.dnsUrl(domain) ?? null;
 
@@ -42,7 +52,7 @@ export function DnsGuidePanel({
             key={option.id}
             type="button"
             aria-pressed={selected === option.id}
-            onClick={() => setSelected(option.id)}
+            onClick={() => onSelect(option.id)}
             className={`min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
               selected === option.id
                 ? "border-ink bg-ink text-white"
@@ -62,6 +72,33 @@ export function DnsGuidePanel({
             </a>
           )}
 
+          {/* Os registros vêm antes dos passos: os passos falam da "table above". */}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500">
+              What to type in {guide.id === "other" ? "the form" : `${guide.name}'s form`}:
+            </p>
+            <div className="mt-2 space-y-3">
+              {records.map((record) => (
+                <div key={`${record.type}-${record.name}`}>
+                  <FormPreview
+                    record={record}
+                    nameLabel={guide.fields.name}
+                    valueLabel={guide.fields.value}
+                    blankRoot={guide.rootName === "blank"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onCopy(record.value)}
+                    className={`mt-2 ${glassButtonClass({ variant: "secondary", size: "sm" })}`}
+                  >
+                    {copied === record.value ? "Copied" : "Copy"}
+                    <span className="sr-only"> {record.type} value</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <ol className="space-y-2.5">
             {guide.steps.map((step, index) => (
               <li key={step} className="flex gap-3 text-[15px] leading-[1.55] text-slate-700">
@@ -75,23 +112,6 @@ export function DnsGuidePanel({
               </li>
             ))}
           </ol>
-
-          <div>
-            <p className="text-[13px] font-medium text-slate-500">
-              What to type in {guide.id === "other" ? "the form" : `${guide.name}'s form`}:
-            </p>
-            <div className="mt-2 space-y-2">
-              {records.map((record) => (
-                <FormPreview
-                  key={`${record.type}-${record.name}`}
-                  record={record}
-                  nameLabel={guide.fields.name}
-                  valueLabel={guide.fields.value}
-                  blankRoot={guide.rootName === "blank"}
-                />
-              ))}
-            </div>
-          </div>
 
           {guide.tips.length > 0 && (
             <ul className="space-y-1.5 rounded-lg bg-amber-50 px-4 py-3 text-[13px] leading-normal text-amber-900">

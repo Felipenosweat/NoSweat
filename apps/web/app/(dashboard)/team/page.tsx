@@ -7,6 +7,7 @@ import { EmptyState, GlassCard, cx, focusRing } from "@/components/glass";
 import { initialsOf, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { listTeam } from "@/server/office/service";
+import { OfficeTabs } from "../office/_ui/ui";
 import { PersonIcon, TEAM_COLOR_STYLES, nextFreeColor } from "../schedule/ui";
 import { AddMemberButton, MemberMenu } from "./TeamControls";
 import { GuideHint } from "../GuideHint";
@@ -77,7 +78,8 @@ export default async function TeamPage() {
   const defaultColor = nextFreeColor(members ?? []);
 
   return (
-    <div>
+    // Mesma largura e abas das outras telas do escritório (Settings, Price book).
+    <div className="max-w-3xl">
       <PageHeader
         title="Team"
         description="Team members don’t log in yet. Add them here so you can assign them to jobs and see who’s where on your schedule."
@@ -87,6 +89,9 @@ export default async function TeamPage() {
           ) : undefined
         }
       />
+      <div className="mt-6 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+        <OfficeTabs current="team" />
+      </div>
 
       {members === null ? (
         <p
@@ -119,9 +124,18 @@ export default async function TeamPage() {
               </span>
             </h2>
             {active.length === 0 ? (
-              <p className="mt-3 text-[15px] text-slate-500">
-                No one is active. Reactivate someone below or add a new person.
-              </p>
+              <EmptyState
+                framed={false}
+                headingLevel={3}
+                className="mt-3"
+                icon={<PersonIcon />}
+                title="No one is active"
+                description={
+                  readOnly
+                    ? "Everyone on this team is inactive."
+                    : "Reactivate someone below or add a new person."
+                }
+              />
             ) : (
               <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">
                 <ul>

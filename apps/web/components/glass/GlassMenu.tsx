@@ -222,7 +222,7 @@ export function GlassMenu({
   }
 
   const itemBase =
-    "flex min-h-10 w-full items-center gap-2.5 rounded-xl px-3 text-left text-[15px] font-medium outline-none select-none";
+    "flex min-h-11 w-full items-center sm:min-h-10 gap-2.5 rounded-xl px-3 text-left text-[15px] font-medium outline-none select-none";
 
   function itemClass(destructive = false, disabled = false) {
     if (disabled) return cx(itemBase, "cursor-not-allowed text-(--glass-fg-muted) opacity-60");

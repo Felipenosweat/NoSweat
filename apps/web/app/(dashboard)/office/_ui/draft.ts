@@ -99,6 +99,24 @@ export function toLineItems(lines: readonly DraftLine[]): {
   return { items, errors };
 }
 
+/**
+ * Linha sem preço: campo vazio ou $0. Salvar o rascunho assim pode (só avisa); mandar para o
+ * cliente não. Preço inválido ("12,3,4") não entra aqui: já é erro de validação.
+ */
+export function isUnpricedLine(line: DraftLine): boolean {
+  const price = parseDollars(line.unitPrice);
+  return price === null || price === 0;
+}
+
+/** Aviso das linhas sem preço (`null` = todas têm preço). */
+export function unpricedWarning(lines: readonly DraftLine[]): string | null {
+  const count = lines.filter(isUnpricedLine).length;
+  if (count === 0) return null;
+  return count === 1
+    ? "One line has no price ($0). Add a price or remove the line."
+    : `${count} lines have no price ($0). Add a price or remove them.`;
+}
+
 /** Totais ao vivo (campos inválidos contam como zero). */
 export function draftTotals(
   lines: readonly DraftLine[],

@@ -18,7 +18,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  BUSINESS_KINDS,
   CHOICES_KEY,
   DRAFT_KEY,
   EMPTY_CHOICES,
@@ -34,7 +33,6 @@ import {
   parseChoices,
   parseDraft,
   slugBase,
-  type BusinessKind,
   type CreateChoices,
   type CreateFields,
   type StoredDraft,
@@ -45,9 +43,11 @@ import { LocationFields } from "./LocationFields";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
-// Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um assistente
-// de 4 passos num <dialog> (pedido → layout → cores → revisão). O pedido vai no campo `what`
-// do CreateFields (o `details` fica vazio); tudo vira UM texto para POST /api/sites/generate.
+// Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um <dialog> que
+// já abre na revisão (layout e cores automáticos, como "Let AI decide the rest"). Os links
+// "Change" da revisão levam aos passos do assistente (pedido → layout → cores → revisão).
+// O pedido vai no campo `what` do CreateFields (o `details` fica vazio); tudo vira UM texto
+// para POST /api/sites/generate.
 
 const STEPS = [
   {
@@ -69,6 +69,10 @@ const STEPS = [
 ] as const;
 
 const LAST_STEP = STEPS.length - 1;
+
+/** Linha de apoio da revisão no atalho (layout e cores ficam com a No Sweat). */
+const QUICK_REVIEW_LEAD =
+  "We’ll pick the style and colors. Change anything below, or create it now.";
 
 // Exemplos de pedido (limpeza primeiro, nicho inicial). Sem telefone nem nota inventados.
 const PROMPT_EXAMPLES = [
@@ -199,7 +203,9 @@ function initialState(initialBrief: string, canReadStorage: boolean): InitialSta
   try {
     if (!source) source = sessionStorage.getItem(LANDING_BRIEF_KEY)?.trim().slice(0, 2000) ?? "";
     draft = parseDraft(sessionStorage.getItem(DRAFT_KEY));
-    choices = parseChoices(sessionStorage.getItem(CHOICES_KEY));
+    // O tipo de negócio não é mais perguntado (a IA deduz pelo pedido): um valor antigo da aba
+    // não pode entrar escondido no brief.
+    choices = { ...parseChoices(sessionStorage.getItem(CHOICES_KEY)), kind: "auto" };
   } catch {
     // Armazenamento bloqueado (modo privado restrito): segue sem rascunho.
   }
@@ -267,6 +273,9 @@ function Flow({
   const [cardError, setCardError] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [step, setStep] = useState(0);
+  // Atalho do cartão / "Let AI decide the rest": a revisão sem "Step X of 4" e com a frase própria.
+  // Vira `false` quando a pessoa abre um dos passos (aí ela está percorrendo o assistente).
+  const [quick, setQuick] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<FormError | null>(null);
@@ -365,6 +374,7 @@ function Flow({
   }
 
   function goTo(next: number) {
+    if (next !== LAST_STEP) setQuick(false);
     setDirection(next > step ? "forward" : "back");
     setFieldErrors({});
     shouldFocusHeading.current = true;
@@ -387,6 +397,10 @@ function Flow({
     return true;
   }
 
+  /**
+   * "Create website" do cartão: como o "Let AI decide the rest", vai direto à revisão. Layout e
+   * cores já começam em "auto"; se a pessoa escolheu algum antes (nesta aba), a escolha fica.
+   */
   function openWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const error = promptError(fields, choices);
@@ -397,8 +411,9 @@ function Flow({
     }
     setCardError(null);
     setFieldErrors({});
+    setQuick(true);
     setDirection("forward");
-    setStep(0);
+    setStep(LAST_STEP);
     shouldFocusHeading.current = true;
     setWizardOpen(true);
   }
@@ -467,6 +482,8 @@ function Flow({
     const errors = validateFirstStep(fields, choices);
     if (errors.what || errors.state) {
       goTo(0);
+      // O atalho do cartão chega aqui sem passar pelo passo 1: mostra o erro no campo.
+      setFieldErrors(errors);
       return;
     }
     void generate();
@@ -477,6 +494,7 @@ function Flow({
     if (!firstStepIsValid()) return;
     setChoices((current) => ({ ...current, layout: "auto" }));
     update("style", "auto");
+    setQuick(true);
     goTo(LAST_STEP);
   }
 
@@ -533,9 +551,12 @@ function Flow({
   }
 
   const meta = STEPS[step] ?? STEPS[0];
-  const kindLabel =
-    BUSINESS_KINDS.find((option) => option.id === choices.kind)?.label ??
-    "No Sweat detects it from your description";
+  // Revisão aberta pelo atalho: sem "Step X of 4" (a pessoa não passou pelos passos).
+  const quickReview = quick && step === LAST_STEP;
+  const lead =
+    quickReview && choices.layout === "auto" && fields.style === "auto"
+      ? QUICK_REVIEW_LEAD
+      : meta.lead;
   const layoutLabel =
     LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
   const colorLabel =
@@ -661,9 +682,11 @@ function Flow({
                   />
                   Create website
                 </p>
-                <p className="text-[13px] text-slate-500 tabular-nums">
-                  Step {step + 1} of {STEPS.length}
-                </p>
+                {!quickReview && (
+                  <p className="text-[13px] text-slate-500 tabular-nums">
+                    Step {step + 1} of {STEPS.length}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={() => setWizardOpen(false)}
@@ -673,16 +696,18 @@ function Flow({
                   <CloseIcon />
                 </button>
               </div>
-              <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
-                {STEPS.map((item, index) => (
-                  <li
-                    key={item.title}
-                    className={`h-1 rounded-full transition-colors duration-200 motion-reduce:transition-none ${
-                      index <= step ? "bg-brand" : "bg-slate-200"
-                    }`}
-                  />
-                ))}
-              </ol>
+              {!quickReview && (
+                <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
+                  {STEPS.map((item, index) => (
+                    <li
+                      key={item.title}
+                      className={`h-1 rounded-full transition-colors duration-200 motion-reduce:transition-none ${
+                        index <= step ? "bg-brand" : "bg-slate-200"
+                      }`}
+                    />
+                  ))}
+                </ol>
+              )}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-6 pb-6 sm:px-8">
@@ -699,7 +724,7 @@ function Flow({
                   {meta.title}
                 </h2>
                 <p className="mt-1.5 text-[15px] leading-[1.6] text-pretty text-slate-600">
-                  {meta.lead}
+                  {lead}
                 </p>
 
                 <div className="mt-6 space-y-5">
@@ -723,32 +748,6 @@ function Flow({
                             aria-invalid={fieldErrors.what ? true : undefined}
                             className={`${inputClass(Boolean(fieldErrors.what))} max-h-64 min-h-28 resize-none py-3 leading-[1.55] [field-sizing:content]`}
                           />
-                        )}
-                      </Field>
-
-                      <Field id="wizard-kind" label="Type of business" optional>
-                        {(describedBy) => (
-                          <div className="relative">
-                            <select
-                              id="wizard-kind"
-                              value={choices.kind}
-                              onChange={(event) =>
-                                choose("kind", event.target.value as BusinessKind)
-                              }
-                              aria-describedby={describedBy}
-                              className={`${inputClass(false)} h-12 cursor-pointer appearance-none pr-11`}
-                            >
-                              <option value="auto">
-                                No Sweat detects it from your description
-                              </option>
-                              {BUSINESS_KINDS.map((option) => (
-                                <option key={option.id} value={option.id}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronIcon className="pointer-events-none absolute top-1/2 right-4 mt-1 size-4 -translate-y-1/2 text-slate-500" />
-                          </div>
                         )}
                       </Field>
 
@@ -920,9 +919,6 @@ function Flow({
                             {nameAndPlace}
                           </SummaryRow>
                         )}
-                        <SummaryRow label="Business type" onChange={() => goTo(0)}>
-                          {kindLabel}
-                        </SummaryRow>
                         <SummaryRow label="Style" onChange={() => goTo(1)}>
                           {layoutLabel}
                         </SummaryRow>
@@ -950,7 +946,8 @@ function Flow({
               ) : (
                 <button
                   type="button"
-                  onClick={() => goTo(step - 1)}
+                  // Na revisão do atalho, "Back" volta ao cartão (a pessoa não viu os passos).
+                  onClick={() => (quickReview ? setWizardOpen(false) : goTo(step - 1))}
                   className={secondaryButtonCompact}
                 >
                   Back

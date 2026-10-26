@@ -99,6 +99,15 @@ export function addDays(date: string, days: number): string {
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
 }
 
+/** Dias de `from` até `to` (datas sem hora; negativo se `to` vem antes). */
+export function daysBetween(from: string, to: string): number {
+  const utc = (date: string) => {
+    const [y = 1970, m = 1, d = 1] = date.split("-").map(Number);
+    return Date.UTC(y, m - 1, d);
+  };
+  return Math.round((utc(to) - utc(from)) / 86_400_000);
+}
+
 /** Meia-noite do dia no fuso → instante (ms). */
 function startOfDay(date: string, timeZone: string): number {
   return Date.parse(zonedTimeToUtc(date, "00:00", timeZone));
@@ -884,6 +893,11 @@ export async function sendEstimate(
   if (current.status === "draft") patch.status = "sent";
   if (open && (current.validUntil === null || current.validUntil < today)) {
     patch.validUntil = addDays(today, settings.estimateValidDays);
+  } else if (current.status === "draft" && current.validUntil !== null) {
+    // Rascunho guardado por dias: a validade conta a partir do envio (não chega ao cliente com
+    // poucos dias sobrando).
+    const waited = daysBetween(todayIn(settings.timeZone, new Date(current.createdAt)), today);
+    if (waited > 0) patch.validUntil = addDays(current.validUntil, waited);
   }
   const updated = await store().updateEstimate(ownerId, id, patch);
   if (!updated) return null;
@@ -1167,7 +1181,18 @@ export async function sendInvoice(
     throw new OfficeError(400, "invalid_request", "Add at least one line before sending.");
   }
   const patch: InvoicePatch = { sentAt: nowIso() };
-  if (current.status === "draft") patch.status = "sent";
+  if (current.status === "draft") {
+    patch.status = "sent";
+    // Rascunho antigo (ex.: criado quando o orçamento foi aprovado, semanas antes do serviço): a
+    // data da fatura vira hoje e o vencimento anda junto, para não chegar ao cliente já vencida.
+    const { today } = await context(ownerId);
+    if (current.issuedOn < today) {
+      patch.issuedOn = today;
+      if (current.dueOn !== null) {
+        patch.dueOn = addDays(current.dueOn, daysBetween(current.issuedOn, today));
+      }
+    }
+  }
   const updated = await store().updateInvoice(ownerId, id, patch);
   if (!updated) return null;
   return {
@@ -1492,6 +1517,19 @@ function toPublicEstimate(
 async function publicEstimateRecord(token: string): Promise<EstimateRecord | null> {
   const record = await store().getEstimateByToken(token);
   return record && record.status !== "draft" ? record : null;
+}
+
+/**
+ * Dono e id do orçamento do link (para o aviso por e-mail depois da resposta) e o e-mail da
+ * empresa (destino reserva). `null` = rascunho ou token desconhecido.
+ */
+export async function estimateOwnerByToken(
+  token: string,
+): Promise<{ ownerId: string; estimateId: string; companyEmail: string | null } | null> {
+  const record = await publicEstimateRecord(token);
+  if (!record) return null;
+  const { settings } = await context(record.ownerId);
+  return { ownerId: record.ownerId, estimateId: record.id, companyEmail: settings.email || null };
 }
 
 async function publicEstimateView(record: EstimateRecord): Promise<PublicEstimate> {

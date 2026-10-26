@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import { isAppHost } from "../domains/hosts";
+import { sendEstimateAnswerNotification, type EstimateAnswerInput } from "./estimate-email";
 import { sendLeadNotification, type LeadEmailInput } from "./lead-email";
 
 export {
@@ -11,6 +12,11 @@ export {
   type NotifyEnv,
   type NotifyResult,
 } from "./lead-email";
+export {
+  buildEstimateAnswerEmail,
+  sendEstimateAnswerNotification,
+  type EstimateAnswerInput,
+} from "./estimate-email";
 export { RateLimiter, clientIp } from "./rate-limit";
 
 /** Endereço padrão do painel quando o pedido chega pelo domínio do cliente. */
@@ -30,6 +36,18 @@ export function appOrigin(requestUrl: string): string {
 export function notifyOwnerOfLead(input: LeadEmailInput): void {
   const task = async () => {
     await sendLeadNotification(input);
+  };
+  try {
+    after(task);
+  } catch {
+    void task();
+  }
+}
+
+/** Aviso ao dono de que o cliente aprovou ou recusou um orçamento (depois da resposta, como acima). */
+export function notifyOwnerOfEstimateAnswer(input: EstimateAnswerInput): void {
+  const task = async () => {
+    await sendEstimateAnswerNotification(input);
   };
   try {
     after(task);
