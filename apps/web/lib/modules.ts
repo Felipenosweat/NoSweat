@@ -15,13 +15,7 @@ export const MODULES: readonly HubModule[] = [
   { key: "website", label: "Website", href: "/dashboard#sites" },
   { key: "clients", label: "Clients", href: "/clients" },
   { key: "social", label: "Social", href: "/social" },
-  {
-    key: "reviews",
-    label: "Google reviews",
-    href: "/reviews",
-    comingSoon: true,
-    soonText: "Read and answer your Google reviews from here.",
-  },
+  { key: "reviews", label: "Google reviews", href: "/reviews" },
 ];
 
 /** Módulos que já funcionam (os que aparecem como link). */

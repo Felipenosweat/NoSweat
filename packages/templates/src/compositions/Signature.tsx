@@ -4,6 +4,7 @@ import { PhoneIcon } from "../components/icons";
 import { Photo, PhotoCredit } from "../components/photo";
 import type { TemplateProps } from "../types";
 import { Motion } from "./Motion";
+import { ReviewUsLink } from "./ReviewLink";
 import {
   buildModel,
   externalProps,
@@ -1052,6 +1053,7 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
               {business.email}
             </a>
           )}
+          <ReviewUsLink business={business} className="mt-4" />
         </div>
         {(links.length > 0 || socials.length > 0) && (
           <div>

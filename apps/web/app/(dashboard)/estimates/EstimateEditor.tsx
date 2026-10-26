@@ -23,7 +23,7 @@ import {
   formatDateOnly,
   parsePercentToBps,
 } from "@/lib/office";
-import { Avatar } from "../../clients/ui";
+import { Avatar } from "../clients/ui";
 import {
   ErrorNote,
   OfficeApiError,

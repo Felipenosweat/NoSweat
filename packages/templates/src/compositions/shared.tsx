@@ -10,6 +10,7 @@ import {
 import { Photo, PhotoCredit } from "../components/photo";
 import { ContactForm, VISITOR_PRIVACY_URL, type ContactFormRadius } from "../sections/ContactForm";
 import { externalProps, isOwnerPhoto, location, type SiteModel } from "./model";
+import { ReviewUsEntry } from "./ReviewLink";
 
 // Peças pequenas que as composições combinam de jeitos diferentes. Só utilidades ns-*.
 
@@ -432,6 +433,7 @@ export function ContactLines({
           </dd>
         </div>
       )}
+      <ReviewUsEntry business={business} />
     </dl>
   );
 }

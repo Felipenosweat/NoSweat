@@ -1,12 +1,12 @@
 "use client";
 
-import { RespondEstimateRequest } from "@nosweat/schema";
+import { PublicEstimateResponse, RespondEstimateRequest } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { GlassButton } from "@/components/glass";
 import {
   ErrorNote,
-  officeApiNoContent,
+  officeApi,
   toOfficeError,
   type OfficeApiError,
 } from "@/app/(dashboard)/office/_ui/api";
@@ -54,10 +54,14 @@ export function RespondPanel({
     setNameError(null);
     setPending(true);
     try {
-      await officeApiNoContent(`/api/public/estimates/${encodeURIComponent(token)}/respond`, {
-        method: "POST",
-        body: parsed.data,
-      });
+      await officeApi(
+        `/api/public/estimates/${encodeURIComponent(token)}/respond`,
+        PublicEstimateResponse,
+        {
+          method: "POST",
+          body: parsed.data,
+        },
+      );
       router.refresh();
     } catch (err) {
       setError(toOfficeError(err));

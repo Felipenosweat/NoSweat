@@ -1,6 +1,11 @@
 "use client";
 
-import { RecordPaymentRequest, type Payment, type PaymentMethod } from "@nosweat/schema";
+import {
+  InvoiceResponse,
+  RecordPaymentRequest,
+  type Payment,
+  type PaymentMethod,
+} from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { ConfirmDialog, GlassButton, GlassIconButton, GlassSheet } from "@/components/glass";
@@ -16,6 +21,7 @@ import {
 import {
   ErrorNote,
   invoiceUrl,
+  officeApi,
   officeApiNoContent,
   toOfficeError,
   type OfficeApiError,
@@ -86,7 +92,7 @@ export function RecordPaymentSheet({
     setAmountError(null);
     setPending(true);
     try {
-      await officeApiNoContent(invoiceUrl(invoiceId, "/payments"), {
+      await officeApi(invoiceUrl(invoiceId, "/payments"), InvoiceResponse, {
         method: "POST",
         body: parsed.data,
       });
