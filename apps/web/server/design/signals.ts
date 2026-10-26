@@ -42,7 +42,7 @@ function normalize(text: string): string {
 
 /** Comida "forte": estas palavras sozinhas já dizem que é restaurante, café, bar etc. */
 const FOOD_WORDS =
-  /\b(restaurant|cafe|coffee|bakery|bakeries|pizza|taco|taqueria|food truck|diner|bistro|brewery|deli|eatery|ice cream|donut|cocktail|cocktails|tavern|pub|wine bar|sports bar|rooftop bar|juice bar|bbq|barbecue|barbeque)\b/;
+  /\b(restaurant|cafe|coffee|bakery|bakeries|pizza|taco|taqueria|food truck|diner|bistro|brewery|deli|eatery|ice cream|donut|cocktail|cocktails|tavern|pub|wine bar|sports bar|rooftop bar|juice bar)\b/;
 /**
  * "Cater" sozinho é fraco: "we cater to busy families" é um jeito de falar, não um bufê. Só
  * conta como comida com palavras de comida ou de evento por perto e nunca em "cater(s) to".
