@@ -172,8 +172,8 @@ export async function AuthPage({
           <figure className="flex min-h-0 max-w-[34rem] flex-1 flex-col">
             <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
               <Image
-                src="/landing/wall/joes-plumbing-top.webp"
-                alt="Example website for Joe’s Plumbing, showing a headline, a call button and services."
+                src="/landing/signature/still-water-spa-d.webp"
+                alt="Example website for Still Water Spa, with a full-width photo and the spa’s name in large type."
                 fill
                 sizes="(min-width: 1280px) 34rem, 40vw"
                 className="object-cover object-top"

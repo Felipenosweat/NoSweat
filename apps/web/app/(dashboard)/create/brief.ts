@@ -148,39 +148,40 @@ export const BUSINESS_KINDS = [
 export type BusinessKind = TemplateId | "auto";
 
 /**
- * Layouts do passo 2 (um por `Composition` do renderer). A captura é o topo de um site de
- * exemplo feito com aquela composição (ver packages/fixtures).
+ * Layouts do passo 2 (um por `Composition` do renderer). Todos usam o molde Signature; o layout
+ * muda o topo do site. A captura é um site de exemplo com aquele topo (public/landing/signature,
+ * tiradas de /examples/[slug]).
  */
 export const LAYOUT_OPTIONS = [
   {
     id: "service-led",
     label: "Classic",
-    note: "Phone up top, photo beside the headline, service cards.",
-    image: "/landing/wall/joes-plumbing-top.webp",
+    note: "Your photo across the top with your name on it.",
+    image: "/landing/signature/sunrise-bakery-d.webp",
   },
   {
     id: "editorial",
     label: "Editorial",
-    note: "Magazine headline, a wide photo, numbered services.",
-    image: "/landing/wall/glow-salon-top.webp",
+    note: "A magazine headline beside a tall photo.",
+    image: "/landing/signature/mercer-law-d.webp",
   },
   {
     id: "immersive",
     label: "Immersive",
-    note: "Full-width photo with the headline on top of it.",
-    image: "/landing/wall/rosas-kitchen-top.webp",
+    note: "A full-screen photo with your name in giant type.",
+    image: "/landing/signature/still-water-spa-d.webp",
   },
   {
     id: "typographic",
     label: "Typographic",
-    note: "Big type as the main image, a bold block of color.",
-    image: "/landing/wall/hale-ortiz-top.webp",
+    note: "Your name in giant type. Photos come further down.",
+    image: "/landing/signature/iron-lotus-tattoo-d.webp",
   },
   {
     id: "modular",
     label: "Modular",
-    note: "A grid of blocks: headline, photo, hours and contact.",
-    image: "/landing/wall/sparkle-cleaning-top.webp",
+    note: "Your name across the page, a wide photo under it.",
+    image: "/landing/signature/brick-oven-pizza-d.webp",
   },
 ] as const satisfies readonly { id: Composition; label: string; note: string; image: string }[];
 

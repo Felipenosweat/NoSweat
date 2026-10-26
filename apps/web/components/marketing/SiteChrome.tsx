@@ -65,9 +65,12 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
 
 export function MarketingHeader({
   tone = "light",
+  float = false,
   actions,
 }: {
   tone?: Tone;
+  /** Landing: menu de vidro flutuando sobre a página (fixo, em pílula), em vez da barra. */
+  float?: boolean;
   /** Botões extras antes do "Log in" (ex.: o som da landing). */
   actions?: ReactNode;
 }) {
@@ -78,14 +81,22 @@ export function MarketingHeader({
     : focusRing;
   return (
     <header
-      className={`sticky top-0 z-30 border-b backdrop-blur-md ${
-        dark ? "border-white/10 bg-ink/75" : "border-slate-200/80 bg-white/90"
-      }`}
+      className={
+        float
+          ? "lp-nav fixed inset-x-3 top-3 z-40 sm:inset-x-5 sm:top-4"
+          : `sticky top-0 z-30 border-b backdrop-blur-md ${
+              dark ? "border-white/10 bg-ink/75" : "border-slate-200/80 bg-white/90"
+            }`
+      }
     >
       {/* min-h + flex-wrap: com o texto aumentado (zoom 200%), os itens descem de linha em vez
           de sair da tela. No tamanho normal fica uma linha só de 64px. */}
       <div
-        className={`${container} flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5`}
+        className={
+          float
+            ? "lp-glass mx-auto flex min-h-14 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[1.75rem] py-1.5 pr-1.5 pl-4 sm:pl-5"
+            : `${container} flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5`
+        }
       >
         <Logo tone={tone} />
         <nav aria-label="Main" className="hidden flex-wrap items-center gap-x-8 text-sm lg:flex">
@@ -119,9 +130,11 @@ export function MarketingHeader({
           <Link
             href="/create"
             className={`inline-flex h-10 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-4 ${ring} ${
-              dark
-                ? "bg-white text-ink hover:bg-slate-200"
-                : "bg-brand text-white hover:bg-brand-dark"
+              float
+                ? "rounded-full bg-white text-ink hover:bg-slate-200"
+                : dark
+                  ? "bg-white text-ink hover:bg-slate-200"
+                  : "bg-brand text-white hover:bg-brand-dark"
             }`}
           >
             <span className="sm:hidden">Start free</span>
