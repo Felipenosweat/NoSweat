@@ -169,9 +169,7 @@ export function AfterLaunch() {
                 Requests turn into <em>clients</em>
               </h3>
               <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-white/70">
-                When someone fills out your contact form, they show up in Clients with their
-                message, phone and email. Move each one from new to quoted to won, and keep notes as
-                you go.
+                Every contact form request lands in one list, ready to follow up.
               </p>
             </div>
             <div data-lp-rise className="mt-8">
@@ -185,8 +183,7 @@ export function AfterLaunch() {
                 Posts that wait for your <em>OK</em>
               </h3>
               <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-white/70">
-                We draft Instagram posts from your site and your photos and put them on a calendar.
-                Nothing is posted until you approve it. Needs an Instagram professional account.
+                We draft them, you approve them. Needs an Instagram professional account.
               </p>
             </div>
             <div data-lp-rise className="mt-8">

@@ -226,10 +226,13 @@ const noopSubscribe = () => () => {};
 export function CreateFlow({
   initialBrief,
   signedIn = false,
+  autoStart = false,
 }: {
   initialBrief: string;
   /** Há uma conta logada (muda as mensagens de limite e o aviso de rascunho de visitante). */
   signedIn?: boolean;
+  /** Veio da landing com `start=1`: monta o site na hora, sem o assistente. */
+  autoStart?: boolean;
 }) {
   const hydrated = useSyncExternalStore(
     noopSubscribe,
@@ -242,6 +245,7 @@ export function CreateFlow({
       initialBrief={initialBrief}
       canReadStorage={hydrated}
       signedIn={signedIn}
+      autoStart={hydrated && autoStart}
     />
   );
 }
@@ -250,10 +254,12 @@ function Flow({
   initialBrief,
   canReadStorage,
   signedIn,
+  autoStart,
 }: {
   initialBrief: string;
   canReadStorage: boolean;
   signedIn: boolean;
+  autoStart: boolean;
 }) {
   const [initial] = useState(() => initialState(initialBrief, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
@@ -488,6 +494,27 @@ function Flow({
       event.currentTarget.form?.requestSubmit();
     }
   }
+
+  // Um clique da landing: com `start=1` e um pedido válido, monta o site direto (layout e cores
+  // "auto", como no "Let AI decide the rest"). Tira o `start` da URL antes, para recarregar a
+  // página não montar outro site. Pedido inválido: segue o fluxo normal, com o cartão aberto.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!autoStart || autoStarted.current) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("start");
+    window.history.replaceState(null, "", url);
+    if (promptError(fields, choices)) return;
+    // A marca fica no quadro seguinte: o StrictMode do dev monta, desmonta e monta de novo.
+    const frame = requestAnimationFrame(() => {
+      if (autoStarted.current) return;
+      autoStarted.current = true;
+      void generate();
+    });
+    return () => cancelAnimationFrame(frame);
+    // Só na montagem: `fields`/`choices` são os do pedido que veio da landing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   if (phase === "building") {
     const slug = slugBase(fields.name) || "your-business";

@@ -43,14 +43,16 @@ export function Hero() {
               className="lp-fade-up max-w-[40ch] text-lg leading-[1.6] text-pretty text-white/75 lg:col-span-5 lg:text-xl"
               style={{ "--i": 1 } as CSSProperties}
             >
-              Write one sentence about what you do and where. No Sweat builds the website with your
-              call button and contact form, and keeps every request in one list.
+              Tell us what you do and where. We build the website for you.
             </p>
             <div
               className="lp-fade-up lg:col-span-6 lg:col-start-7"
               style={{ "--i": 2 } as CSSProperties}
             >
-              <PromptForm tone="glass" />
+              <PromptForm
+                tone="glass"
+                caption="Free to create. No account or credit card needed."
+              />
             </div>
           </div>
         </div>

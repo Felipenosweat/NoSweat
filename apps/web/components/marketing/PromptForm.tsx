@@ -6,6 +6,7 @@ import { focusRing, primaryButton } from "./styles";
 
 // Campo de descrição REAL da landing. Envia para /create?brief=… (GET nativo, funciona sem JS)
 // e também guarda o texto em sessionStorage `ns-brief`, que o /create usa para preencher o passo 1.
+// Com `start=1` o /create monta o site na hora (um clique da landing até o site pronto).
 
 const STORAGE_KEY = "ns-brief";
 const MIN_LENGTH = 10;
@@ -121,7 +122,7 @@ export function PromptForm({
     } catch {
       // Modo privado/armazenamento cheio: o parâmetro da URL já basta.
     }
-    router.push(`/create?brief=${encodeURIComponent(brief)}`);
+    router.push(`/create?brief=${encodeURIComponent(brief)}&start=1`);
   };
 
   return (
@@ -138,6 +139,8 @@ export function PromptForm({
               : "border-slate-300 bg-white focus-within:border-brand focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
         }`}
       >
+        {/* Um clique: o /create já começa a montar o site (layout e cores pela No Sweat). */}
+        <input type="hidden" name="start" value="1" />
         <label htmlFor={`${id}-brief`} className="sr-only">
           Describe your business
         </label>

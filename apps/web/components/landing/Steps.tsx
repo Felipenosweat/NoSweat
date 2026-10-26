@@ -143,7 +143,7 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
         Describe your <em>business</em>
       </>
     ),
-    body: "One or two sentences, the way you would say it to a customer. We pull out the facts that go on the site: trade, town, hours and phone.",
+    body: "One or two sentences, like you’d tell a customer.",
     visual: <DescribeMock />,
   },
   {
@@ -152,7 +152,7 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
         Get a finished <em>site</em>
       </>
     ),
-    body: "Your services, photos picked for your trade, your hours and a contact form. On phones there is always a button that calls you.",
+    body: "Photos, services, hours, contact form and a call button.",
     visual: <PhoneMock />,
   },
   {
@@ -161,7 +161,7 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
         Change <em>anything</em>
       </>
     ),
-    body: "Click any part to edit it, or ask in plain words. Each change comes back as a draft you look at before anyone else sees it.",
+    body: "Click to edit, or just ask the AI in plain words.",
     visual: <EditMock />,
   },
   {
@@ -170,7 +170,7 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
         Go <em>live</em>
       </>
     ),
-    body: "Publish at your free nosweatfd.com address, or connect a domain you own on the Pro and Premium plans.",
+    body: "Free nosweatfd.com address, or your own domain on Pro.",
     visual: <LiveMock />,
   },
 ];
@@ -188,7 +188,7 @@ export function Steps() {
             How it <em>works</em>
           </h2>
           <p className="max-w-[38ch] text-lg leading-relaxed text-[#071b33]/70 lg:col-span-4">
-            Free to create and preview. You pick a plan when you want the site online.
+            Free to create. Pay only to publish.
           </p>
         </div>
 
