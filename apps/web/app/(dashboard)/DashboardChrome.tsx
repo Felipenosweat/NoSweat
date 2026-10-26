@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   useEffect,
-  useRef,
+  useId,
+  useState,
   type KeyboardEvent,
+  type SyntheticEvent,
   type ReactElement,
   type ReactNode,
   type SVGProps,
@@ -172,34 +174,37 @@ const CREATE_ITEMS: NavItem[] = [
 ];
 
 /**
- * Um <details> que funciona como folha/menu: fecha ao mudar de tela, com Esc (o foco volta ao
- * botão) e por `close()`. Sem estado do React: mexe direto no `open` do elemento.
+ * Um <details> que funciona como folha/menu, controlado pelo React. Fecha ao mudar de tela (o
+ * estado guarda a rota onde abriu), com Esc (o foco volta ao botão), tocando fora (inclui o botão
+ * do outro menu, então só um fica aberto) e por `close()`.
  */
 function useDetailsMenu(pathname: string) {
-  const ref = useRef<HTMLDetailsElement>(null);
-  const close = () => {
-    if (ref.current) ref.current.open = false;
-  };
+  const id = useId();
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const close = () => setOpenOn(null);
   useEffect(() => {
-    if (ref.current) ref.current.open = false;
-  }, [pathname]);
-  // Tocar fora fecha (no celular o fundo escuro, que fica dentro do <details>, já fecha sozinho).
-  useEffect(() => {
+    if (!open) return;
     const onPointerDown = (event: PointerEvent) => {
-      const menu = ref.current;
-      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) {
-        menu.open = false;
-      }
+      const inside =
+        event.target instanceof Element && event.target.closest(`[data-menu="${id}"]`) !== null;
+      if (!inside) setOpenOn(null);
     };
     document.addEventListener("pointerdown", onPointerDown);
     return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, []);
-  const onKeyDown = (event: KeyboardEvent<HTMLDetailsElement>) => {
-    if (event.key !== "Escape" || !ref.current?.open) return;
-    close();
-    ref.current.querySelector("summary")?.focus();
+  }, [open, id]);
+  const detailsProps = {
+    open,
+    "data-menu": id,
+    onToggle: (event: SyntheticEvent<HTMLDetailsElement>) =>
+      setOpenOn(event.currentTarget.open ? pathname : null),
+    onKeyDown: (event: KeyboardEvent<HTMLDetailsElement>) => {
+      if (event.key !== "Escape" || !open) return;
+      setOpenOn(null);
+      event.currentTarget.querySelector("summary")?.focus();
+    },
   };
-  return { ref, close, onKeyDown };
+  return { open, close, detailsProps };
 }
 
 /** "Take the tour": abre o tour de boas-vindas de novo (botão, não muda de página). */
@@ -403,7 +408,7 @@ function SidebarNav({
           <AdminButton />
         </div>
       )}
-      <details ref={create.ref} onKeyDown={create.onKeyDown} className="group relative z-10 pb-5">
+      <details {...create.detailsProps} className="group relative z-10 pb-5">
         <summary
           data-tour="nav-new"
           className={`${glassButtonClass({ variant: "primary", fullWidth: true })} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
@@ -520,9 +525,7 @@ function TabBar({
   const { currentItem, pathname } = useCurrent();
   const moreMenu = useDetailsMenu(pathname);
   const createMenu = useDetailsMenu(pathname);
-  const moreRef = moreMenu.ref;
   const closeMore = moreMenu.close;
-  const onMoreKeyDown = moreMenu.onKeyDown;
   // Abas fixas (o que se usa na rua), o "+" no meio e o resto na folha "More".
   const left: NavItem[] = [HOME_ITEM, SCHEDULE_ITEM];
   const right: NavItem[] = [CLIENTS_ITEM];
@@ -564,14 +567,7 @@ function TabBar({
       <ul className="grid h-full grid-cols-5 px-1">
         {left.map(tabLink)}
         <li>
-          <details
-            ref={createMenu.ref}
-            onKeyDown={createMenu.onKeyDown}
-            onToggle={(event) => {
-              if (event.currentTarget.open) moreMenu.close();
-            }}
-            className="group h-full"
-          >
+          <details {...createMenu.detailsProps} className="group h-full">
             <summary
               aria-label="New"
               data-tour="tab-new"
@@ -613,14 +609,7 @@ function TabBar({
         </li>
         {right.map(tabLink)}
         <li>
-          <details
-            ref={moreRef}
-            onKeyDown={onMoreKeyDown}
-            onToggle={(event) => {
-              if (event.currentTarget.open) createMenu.close();
-            }}
-            className="group h-full"
-          >
+          <details {...moreMenu.detailsProps} className="group h-full">
             <summary
               aria-current={moreActive ? "page" : undefined}
               data-tour="tab-more"
