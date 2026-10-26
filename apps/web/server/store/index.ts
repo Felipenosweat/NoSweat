@@ -14,6 +14,7 @@ export type {
   SiteRecord,
   SiteRef,
   SiteStore,
+  SiteSummary,
   VersionRecord,
 } from "./types";
 

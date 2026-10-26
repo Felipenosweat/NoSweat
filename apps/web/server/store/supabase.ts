@@ -12,6 +12,7 @@ import {
   type GuestUsage,
   type GuestUsageFilter,
   type SiteStore,
+  type SiteSummary,
   type VersionRecord,
 } from "./types";
 
@@ -44,6 +45,38 @@ const PublishedRow = z.object({
   slug: z.string().nullable().optional(),
   custom_domain: z.string().nullable().optional(),
   published_spec: SiteSpec.nullable().optional(),
+});
+
+/**
+ * Colunas das listas do admin: o nome e o template saem de dentro do JSON (`->>`), sem baixar
+ * nem validar `spec` e `published_spec` inteiros (o que deixava o /admin lento).
+ */
+const SUMMARY_COLUMNS = [
+  "id",
+  "owner_id",
+  "guest_id",
+  "status",
+  "slug",
+  "custom_domain",
+  "published_at",
+  "created_at",
+  "updated_at",
+  "name:spec->business->>name",
+  "template:spec->>template",
+].join(",");
+
+const SummaryRow = z.object({
+  id: z.string(),
+  owner_id: z.string().nullable().optional(),
+  guest_id: z.string().nullable().optional(),
+  status: SiteStatus,
+  slug: z.string().nullable().optional(),
+  custom_domain: z.string().nullable().optional(),
+  published_at: z.string().nullable().optional(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  name: z.string().nullable().optional(),
+  template: z.string().nullable().optional(),
 });
 
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/;
@@ -430,6 +463,45 @@ export class SupabaseSiteStore implements SiteStore {
     // TODO: paginar quando houver mais de 1000 sites.
     const rows = await this.request("?select=*&order=created_at.desc&limit=1000");
     return rows.map(toRecord);
+  }
+
+  async listAllSummaries(): Promise<SiteSummary[]> {
+    // Mesmo teto do listAll. TODO: paginar quando houver mais de 1000 sites.
+    const rows = z
+      .array(z.unknown())
+      .parse(
+        await this.raw(
+          this.endpoint,
+          `?select=${SUMMARY_COLUMNS}&order=created_at.desc&limit=1000`,
+          {},
+        ),
+      );
+    return rows.flatMap((raw): SiteSummary[] => {
+      const parsed = SummaryRow.safeParse(raw);
+      if (!parsed.success) {
+        const id = (raw as { id?: unknown } | null)?.id;
+        console.error("[store] skipping a site summary row", id, parsed.error.issues);
+        return [];
+      }
+      const row = parsed.data;
+      return [
+        {
+          id: row.id,
+          ownerId: row.owner_id ?? null,
+          guestId: row.guest_id ?? null,
+          status: row.status,
+          slug: row.slug ?? null,
+          customDomain: row.custom_domain ?? null,
+          publishedAt: row.published_at ?? null,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          spec: {
+            business: { name: row.name?.trim() || "Untitled website" },
+            template: row.template ?? "unknown",
+          },
+        },
+      ];
+    });
   }
 
   async getBySlug(slug: string): Promise<SiteRecord | null> {

@@ -68,6 +68,24 @@ export type PublishedSiteRecord = Pick<SiteRecord, "id" | "ownerId" | "slug" | "
   liveSpec: SiteSpec;
 };
 
+/**
+ * Linha leve de um site para as listas do painel do admin: sem `spec` e `published_spec`
+ * inteiros. `spec` aqui tem só o nome do negócio e o template, na mesma forma do SiteRecord,
+ * para as funções das listas aceitarem os dois (um SiteRecord também é um SiteSummary).
+ */
+export type SiteSummary = Pick<
+  SiteRecord,
+  | "id"
+  | "ownerId"
+  | "guestId"
+  | "status"
+  | "slug"
+  | "customDomain"
+  | "publishedAt"
+  | "createdAt"
+  | "updatedAt"
+> & { spec: { business: { name: string }; template: string } };
+
 export class DomainTakenError extends Error {
   constructor(domain: string) {
     super(`Domain ${domain} is already connected to another site.`);
@@ -97,6 +115,8 @@ export interface SiteStore {
   list(ownerId: string): Promise<SiteRecord[]>;
   /** Todos os sites de todos os clientes (só para o painel do admin). */
   listAll(): Promise<SiteRecord[]>;
+  /** Todos os sites, só com as colunas das listas do admin (mais novos primeiro). */
+  listAllSummaries(): Promise<SiteSummary[]>;
   getBySlug(slug: string): Promise<SiteRecord | null>;
   getByDomain(domain: string): Promise<SiteRecord | null>;
   /** Id e dono do site com este endereço grátis ou domínio (consulta leve, sem as specs). */

@@ -11,6 +11,7 @@ import {
   type GuestUsage,
   type GuestUsageFilter,
   type SiteStore,
+  type SiteSummary,
   type VersionRecord,
 } from "./types";
 
@@ -175,6 +176,21 @@ export class MemorySiteStore implements SiteStore {
 
   async listAll(): Promise<SiteRecord[]> {
     return [...sites().values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(clone);
+  }
+
+  async listAllSummaries(): Promise<SiteSummary[]> {
+    return (await this.listAll()).map((site) => ({
+      id: site.id,
+      ownerId: site.ownerId,
+      guestId: site.guestId,
+      status: site.status,
+      slug: site.slug,
+      customDomain: site.customDomain,
+      publishedAt: site.publishedAt,
+      createdAt: site.createdAt,
+      updatedAt: site.updatedAt,
+      spec: { business: { name: site.spec.business.name }, template: site.spec.template },
+    }));
   }
 
   async getBySlug(slug: string): Promise<SiteRecord | null> {
