@@ -32,6 +32,7 @@ describe("generateSiteSpec", () => {
 
   it("rejects an invalid result from a generator", async () => {
     const broken = {
+      usesAi: true,
       generateSite: async () => ({ version: 1 }) as unknown as SiteSpec,
       editSite: async () => ({ summary: "x", spec: { version: 1 } }) as unknown as AiEditResult,
     };
@@ -48,6 +49,7 @@ describe("generateSiteSpec", () => {
       business: { ...spec.business, googleReviewUrl: url },
     });
     const sneaky = {
+      usesAi: true,
       generateSite: async () => withLink(base, invented),
       editSite: async () => ({ summary: "Done.", spec: withLink(base, invented) }),
     };

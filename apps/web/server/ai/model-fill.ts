@@ -218,10 +218,26 @@ const STATE_NAMES: Record<string, string> = {
   WY: "wyoming",
 };
 
-/** Telefones escritos no pedido (só os dígitos, os 10 últimos). */
-function phonesIn(brief: string): string[] {
+/** A sigla é de um estado dos EUA (ou DC)? */
+export function isUsStateCode(code: string): boolean {
+  return Object.hasOwn(STATE_NAMES, code);
+}
+
+/**
+ * Telefones escritos no pedido (só os dígitos, os 10 últimos). Aceita (512) 555-0142,
+ * 512-555-0142, 512.555.0142, 5125550142, +1 512 555 0142 e (512)555-0142.
+ */
+export function phonesIn(brief: string): string[] {
   const matches = brief.match(/\+?1?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g) ?? [];
   return matches.map((m) => digits(m).slice(-10));
+}
+
+/** "5125550142" (ou com +1) → "(512) 555-0142". `undefined` se não for um número dos EUA. */
+export function formatUsPhone(raw: string): string | undefined {
+  const all = digits(raw);
+  const ten = all.length === 11 && all.startsWith("1") ? all.slice(1) : all;
+  if (ten.length !== 10 || !/^[2-9]/.test(ten)) return undefined;
+  return `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}`;
 }
 
 /** Valores em dólar de um texto, sem vírgulas ("$1,800" → "$1800"). */

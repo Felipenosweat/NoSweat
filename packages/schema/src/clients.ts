@@ -49,7 +49,7 @@ export const Client = z.object({
   followUpOn: DateOnly.nullable(),
   /** Último contato (mensagem do site, nota ou serviço). */
   lastActivityAt: z.string(),
-  /** Soma dos serviços registrados, em centavos (só o que o dono informou). */
+  /** Soma dos serviços e pagamentos registrados, em centavos (só o que o dono informou). */
   totalJobsCents: z.number().int().nonnegative(),
   jobsCount: z.number().int().nonnegative(),
   createdAt: z.string(),
@@ -64,9 +64,11 @@ export type Client = z.infer<typeof Client>;
  * - lead: mensagem enviada pelo formulário do site (texto = a mensagem);
  * - note: anotação do dono;
  * - job: serviço feito (com valor opcional);
- * - stage: mudança de etapa (texto = a etapa nova).
+ * - stage: mudança de etapa (texto = a etapa nova);
+ * - payment: pagamento registrado numa fatura do escritório (migration 0023). Soma no total do
+ *   cliente (`totalJobsCents`) e na receita do mês, mas não conta como serviço (`jobsCount`).
  */
-export const ClientActivityKind = z.enum(["lead", "note", "job", "stage"]);
+export const ClientActivityKind = z.enum(["lead", "note", "job", "stage", "payment"]);
 export type ClientActivityKind = z.infer<typeof ClientActivityKind>;
 
 export const ClientActivity = z.object({
@@ -74,6 +76,7 @@ export const ClientActivity = z.object({
   clientId: z.string(),
   kind: ClientActivityKind,
   body: z.string(),
+  /** Valor em `job` e `payment` (centavos). */
   amountCents: z.number().int().nonnegative().nullable(),
   /** Pedido do site que gerou este item (só em `lead`). */
   leadId: z.string().nullable(),

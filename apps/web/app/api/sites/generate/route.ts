@@ -4,6 +4,7 @@ import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
 import { hasImageProvider, resolveHeroImage } from "@/server/images";
+import { RateLimiter, clientIp } from "@/server/notify";
 import { refundUse, reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -11,6 +12,9 @@ import type { Composition } from "@nosweat/schema";
 
 // A IA de verdade leva alguns segundos (às vezes dezenas) para montar o site.
 export const maxDuration = 300;
+
+// Modo modelo (sem IA): até 20 sites por hora por IP (melhor esforço, em memória por instância).
+const templateLimiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
  * POST /api/sites/generate: { brief } → { siteId, spec }
@@ -26,8 +30,19 @@ export async function POST(request: Request): Promise<Response> {
     // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
     // IA) vira 500 sem descontar nada do cliente.
     const generator = getSiteGenerator();
-    const overLimit = await reserveUse(actor, "generate");
-    if (overLimit) return overLimit;
+    // Modo modelo (sem IA de verdade): não desconta créditos nem conta no ai_usage (o custo
+    // do /admin e o limite diário são da IA).
+    if (generator.usesAi) {
+      const overLimit = await reserveUse(actor, "generate");
+      if (overLimit) return overLimit;
+    } else if (!templateLimiter.take(clientIp(request))) {
+      // Sem IA não custa crédito, mas cada site é uma linha no banco: trava contra robôs.
+      return errorResponse(
+        429,
+        "quota_exceeded",
+        "You've created a lot of sites in a short time. Please try again in a little while.",
+      );
+    }
 
     let spec: SiteSpec;
     try {
@@ -38,7 +53,7 @@ export async function POST(request: Request): Promise<Response> {
     } catch (error) {
       console.error("[api] site generation failed", error);
       // A IA falhou: os créditos voltam para a conta.
-      await refundUse(actor, "generate");
+      if (generator.usesAi) await refundUse(actor, "generate");
       return errorResponse(
         502,
         "generation_failed",

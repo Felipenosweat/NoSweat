@@ -19,8 +19,17 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 import { createClient } from "@/server/clients/service";
 import { resetMemoryClientStore } from "@/server/clients/store";
-import { createEstimate, createInvoice, createJob } from "@/server/office/service";
+import {
+  createEstimate,
+  createInvoice,
+  createJob,
+  sendEstimate,
+  sendInvoice,
+  updateEstimate,
+  updateInvoice,
+} from "@/server/office/service";
 import { resetMemoryOfficeStore } from "@/server/office/store";
+import { DELETE as deleteClientRoute } from "./clients/[id]/route";
 import { POST as convertRoute } from "./office/estimates/[id]/convert/route";
 import {
   DELETE as deleteEstimateRoute,
@@ -358,5 +367,80 @@ describe("/api/office invoices, payments and summary", () => {
     );
     expect(createWithTheirClient.status).toBe(404);
     expect(await errorCode(createWithTheirClient)).toBe("not_found");
+  });
+});
+
+describe("/api/office fixes (0023)", () => {
+  it("rejects empty PATCH bodies for price items and team", async () => {
+    const res = await patchPriceItemRoute(jsonRequest("/price-items/x", "PATCH", {}), ctx("x"));
+    expect(res.status).toBe(400);
+    expect(ApiError.parse(await res.json()).error.message).toBe("Nothing to update.");
+    const team = await patchTeamRoute(jsonRequest("/team/x", "PATCH", {}), ctx("x"));
+    expect(team.status).toBe(400);
+  });
+
+  it("refuses to schedule a job without a start time", async () => {
+    const client = await newClient();
+    const job = await createJob("local-dev", { clientId: client.id, title: "Fix" });
+    const res = await patchJobRoute(
+      jsonRequest(`/jobs/${job.id}`, "PATCH", { status: "scheduled" }),
+      ctx(job.id),
+    );
+    expect(res.status).toBe(400);
+    expect(await errorCode(res)).toBe("invalid_request");
+  });
+
+  it("answers 409 when the customer approves a version that changed", async () => {
+    const client = await newClient();
+    const draft = await createEstimate("local-dev", { clientId: client.id, items: [fullLine] });
+    await sendEstimate("local-dev", draft.id, "http://localhost");
+    const view = PublicEstimateResponse.parse(
+      await (await publicEstimateRoute(new Request(BASE), tokenCtx(draft.publicToken))).json(),
+    ).estimate;
+    expect(view.updatedAt).toBeDefined();
+    expect(view.timeZone).toBe("America/New_York");
+
+    await updateEstimate("local-dev", draft.id, { items: [{ ...fullLine, quantity: 5 }] });
+    const stale = await respondRoute(
+      jsonRequest(`/public/${draft.publicToken}/respond`, "POST", {
+        decision: "approve",
+        name: "Ana Lima",
+        updatedAt: view.updatedAt,
+      }),
+      tokenCtx(draft.publicToken),
+    );
+    expect(stale.status).toBe(409);
+    expect(ApiError.parse(await stale.json()).error.message).toBe(
+      "This estimate was changed. Refresh to see the latest version.",
+    );
+  });
+
+  it("shows void invoices on the public link but still hides drafts", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice("local-dev", { clientId: client.id, items: [fullLine] });
+    expect(
+      (await publicInvoiceRoute(new Request(BASE), tokenCtx(invoice.publicToken))).status,
+    ).toBe(404);
+    await sendInvoice("local-dev", invoice.id, "http://localhost");
+    await updateInvoice("local-dev", invoice.id, { status: "void" });
+    const res = await publicInvoiceRoute(new Request(BASE), tokenCtx(invoice.publicToken));
+    expect(res.status).toBe(200);
+    expect(PublicInvoiceResponse.parse(await res.json()).invoice.status).toBe("void");
+  });
+
+  it("refuses to delete a client that has office documents", async () => {
+    const client = await newClient();
+    await createJob("local-dev", { clientId: client.id, title: "Fix" });
+    const res = await deleteClientRoute(new Request(BASE, { method: "DELETE" }), ctx(client.id));
+    expect(res.status).toBe(409);
+    const body = ApiError.parse(await res.json());
+    expect(body.error.code).toBe("conflict");
+    expect(body.error.message).toBe(
+      "This client has estimates, jobs or invoices. Delete or void those first.",
+    );
+
+    const empty = await newClient("Bob Stone");
+    const ok = await deleteClientRoute(new Request(BASE, { method: "DELETE" }), ctx(empty.id));
+    expect(ok.status).toBe(200);
   });
 });

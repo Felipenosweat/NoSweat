@@ -5,7 +5,8 @@ import { cache } from "react";
 import { DocumentPaper } from "@/app/(dashboard)/office/_ui/DocumentPaper";
 import { PrintButton } from "@/app/(dashboard)/office/_ui/PrintButton";
 import { PublicShell, StatusBanner } from "@/app/(dashboard)/office/_ui/PublicShell";
-import { formatCents, formatDateOnly } from "@/lib/office";
+import type { PublicInvoice } from "@nosweat/schema";
+import { formatCents, formatDateOnly, isoDateIn } from "@/lib/office";
 import { getPublicInvoice } from "@/server/office/service";
 
 // Fatura que o cliente final abre pelo link (sem conta): itens, totais, quanto já pagou, saldo,
@@ -26,7 +27,11 @@ export async function generateMetadata({ params }: PublicInvoicePageProps): Prom
   const invoice = await load(token);
   return {
     title: invoice
-      ? { absolute: `Invoice #${invoice.number} · ${invoice.company.companyName}` }
+      ? {
+          absolute: invoice.company.companyName.trim()
+            ? `Invoice #${invoice.number} · ${invoice.company.companyName.trim()}`
+            : `Invoice #${invoice.number}`,
+        }
       : "Invoice",
     robots: {
       index: false,
@@ -39,9 +44,6 @@ export async function generateMetadata({ params }: PublicInvoicePageProps): Prom
   };
 }
 
-/** "2026-10-26T15:00:00Z" → "Oct 26, 2026". */
-const day = (iso: string) => formatDateOnly(iso.slice(0, 10));
-
 export default async function PublicInvoicePage({ params }: PublicInvoicePageProps) {
   // Sempre na hora do request (um pagamento pode ter acabado de entrar).
   await connection();
@@ -49,6 +51,10 @@ export default async function PublicInvoicePage({ params }: PublicInvoicePagePro
   const invoice = await load(token);
   // Rascunho (ainda não enviado) também não abre.
   if (!invoice || invoice.status === "draft") notFound();
+  // `timeZone` é campo novo do contrato (pode ainda não vir): sem ele, America/New_York.
+  const timeZone = (invoice as PublicInvoice & { timeZone?: string | null }).timeZone;
+  /** "2026-10-27T01:30:00Z" → "Oct 26, 2026" (o dia no fuso da empresa, não o de UTC). */
+  const day = (iso: string) => formatDateOnly(isoDateIn(iso, timeZone));
 
   const balance = Math.max(0, invoice.balanceCents);
   const open =

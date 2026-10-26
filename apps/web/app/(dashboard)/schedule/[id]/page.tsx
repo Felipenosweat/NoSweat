@@ -7,7 +7,7 @@ import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
 import { directionsHref, formatCents, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { getClientDetail } from "@/server/clients/service";
-import { getJob, getOfficeSettings, listTeam } from "@/server/office/service";
+import { getInvoice, getJob, getOfficeSettings, listTeam } from "@/server/office/service";
 import { DirectionsIcon, PhoneIcon, TextIcon } from "../../clients/ui";
 import { scheduleHref } from "../params";
 import { dateKeyOf, safeTimeZone, zonedParts } from "../time";
@@ -25,9 +25,9 @@ type ClientContact = Pick<Client, "phone" | "address">;
  * cliente com erro = sem cores / sem atalhos (a ficha continua).
  */
 async function loadJob(ownerId: string, id: string) {
-  const job = await getJob(ownerId, id);
-  if (!job) return null;
-  const [settings, team, contact] = await Promise.all([
+  const found = await getJob(ownerId, id);
+  if (!found) return null;
+  const [settings, team, contact, invoice] = await Promise.all([
     getOfficeSettings(ownerId).catch((error: unknown) => {
       console.error("[schedule] could not read office settings", error);
       return null;
@@ -36,7 +36,7 @@ async function loadJob(ownerId: string, id: string) {
       console.error("[schedule] could not list the team", error);
       return [];
     }),
-    getClientDetail(ownerId, job.clientId)
+    getClientDetail(ownerId, found.clientId)
       .then((detail): ClientContact | null =>
         detail ? { phone: detail.client.phone, address: detail.client.address } : null,
       )
@@ -44,7 +44,16 @@ async function loadJob(ownerId: string, id: string) {
         console.error("[schedule] could not read the client", error);
         return null;
       }),
+    found.invoiceId
+      ? getInvoice(ownerId, found.invoiceId).catch((error: unknown) => {
+          console.error("[schedule] could not read the invoice", error);
+          return undefined;
+        })
+      : Promise.resolve(undefined),
   ]);
+  // Fatura anulada (ou apagada) não conta: a ficha mostra "Create invoice" de novo.
+  const invoiceGone = found.invoiceId !== null && (invoice === null || invoice?.status === "void");
+  const job: Job = invoiceGone ? { ...found, invoiceId: null } : found;
   const timeZone = safeTimeZone(settings?.timeZone);
   const today = zonedParts(new Date(), timeZone).dateKey;
   return { job, team, contact, timeZone, today };
@@ -189,6 +198,7 @@ export default async function JobPage({ params }: JobPageProps) {
     job.startAt,
     job.endAt,
     job.title,
+    job.description,
     job.address,
     job.valueCents,
     job.invoiceId,
@@ -201,7 +211,7 @@ export default async function JobPage({ params }: JobPageProps) {
         href={scheduleHref({ view: null, date: day, team: null })}
         variant="ghost"
         size="sm"
-        className="-ml-2"
+        className="-ml-2 max-sm:min-h-11"
       >
         <span aria-hidden="true">‹</span> Schedule
       </GlassButton>

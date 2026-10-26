@@ -9,7 +9,7 @@ import {
   type Invoice,
 } from "@nosweat/schema";
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
@@ -74,6 +74,8 @@ export type InvoiceEditorProps = {
   };
   paymentInstructions: string;
   today: string;
+  /** Fuso da empresa. A fatura hoje só mostra datas sem hora (emissão, vencimento). */
+  timeZone?: string;
   readOnly: boolean;
 };
 
@@ -133,6 +135,8 @@ export function InvoiceEditor({
   const [shareOpen, setShareOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentKey, setPaymentKey] = useState(0);
+  // Trava contra dois pedidos ao mesmo tempo (ex.: "Send" e "Save" juntos criariam 2 faturas).
+  const savingRef = useRef(false);
 
   const signature = formSignature(form);
   const dirty = signature !== baseline;
@@ -196,6 +200,16 @@ export function InvoiceEditor({
   }
 
   async function save(): Promise<Invoice | null> {
+    if (savingRef.current) return null;
+    savingRef.current = true;
+    try {
+      return await saveOnce();
+    } finally {
+      savingRef.current = false;
+    }
+  }
+
+  async function saveOnce(): Promise<Invoice | null> {
     setError(null);
     if (!doc && !client) {
       setClientError("Choose a client.");
@@ -255,12 +269,19 @@ export function InvoiceEditor({
   }
 
   async function onSave() {
+    if (busy !== null || savingRef.current) return;
     setBusy("save");
     await save();
     setBusy(null);
   }
 
   async function onSend() {
+    if (busy !== null || savingRef.current) return;
+    // Fatura sem nenhuma linha não vai para o cliente (nem chega a ser salva).
+    if (itemsEditable && form.lines.length === 0) {
+      setError(validationError("Add at least one line first."));
+      return;
+    }
     setBusy("send");
     try {
       const saved = dirty || !doc ? await save() : doc;
@@ -306,19 +327,28 @@ export function InvoiceEditor({
       {status === "draft" ? "Send invoice" : "Send again"}
     </GlassButton>
   ) : null;
+  // Com mudanças sem salvar, o pagamento espera: o saldo da tela ainda não é o do servidor.
   const paymentButton =
     !readOnly && doc && unpaid ? (
-      <GlassButton
-        variant={dirty ? "secondary" : "primary"}
-        icon={<CashIcon />}
-        onClick={() => {
-          setPaymentKey((key) => key + 1);
-          setPaymentOpen(true);
-        }}
-        disabled={busy !== null}
-      >
-        Record payment
-      </GlassButton>
+      <span className="inline-flex flex-col items-end gap-1">
+        <GlassButton
+          variant={dirty ? "secondary" : "primary"}
+          icon={<CashIcon />}
+          onClick={() => {
+            setPaymentKey((key) => key + 1);
+            setPaymentOpen(true);
+          }}
+          disabled={busy !== null || dirty}
+          aria-describedby={dirty ? `${ids}-payment-hint` : undefined}
+        >
+          Record payment
+        </GlassButton>
+        {dirty && (
+          <span id={`${ids}-payment-hint`} className="text-[13px] text-slate-600">
+            Save your changes first.
+          </span>
+        )}
+      </span>
     ) : null;
 
   return (
@@ -326,7 +356,7 @@ export function InvoiceEditor({
       <PrintStyles />
       <PageHeader
         back={
-          <GlassButton href="/invoices" variant="ghost" size="sm" className="-ml-2">
+          <GlassButton href="/invoices" variant="ghost" size="sm" className="-ml-2 max-sm:min-h-11">
             <span aria-hidden="true">‹</span> Invoices
           </GlassButton>
         }
@@ -486,7 +516,7 @@ export function InvoiceEditor({
                       href="/office/settings"
                       className="font-semibold text-brand underline-offset-4 hover:underline"
                     >
-                      Office settings
+                      Business settings
                     </Link>{" "}
                     show at the bottom.
                   </p>
@@ -575,7 +605,7 @@ export function InvoiceEditor({
       {detailsEditable && (
         <SaveBar
           show={doc ? dirty : true}
-          saving={busy === "save"}
+          saving={busy !== null}
           onSave={() => void onSave()}
           onDiscard={doc ? discard : undefined}
           label={doc ? "Save" : "Save draft"}

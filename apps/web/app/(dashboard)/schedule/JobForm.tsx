@@ -31,11 +31,20 @@ import { TeamDot } from "./ui";
 
 type PickedClient = Pick<Client, "id" | "name" | "phone" | "address">;
 
-type Field = "clientId" | "title" | "startAt" | "endAt" | "address" | "valueCents" | "notes";
+type Field =
+  | "clientId"
+  | "title"
+  | "description"
+  | "startAt"
+  | "endAt"
+  | "address"
+  | "valueCents"
+  | "notes";
 
 const FIELDS: readonly Field[] = [
   "clientId",
   "title",
+  "description",
   "startAt",
   "endAt",
   "address",
@@ -128,6 +137,7 @@ function JobForm({
   const ids = useId();
   const [client, setClient] = useState<PickedClient | null>(null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [later, setLater] = useState(false);
   const [date, setDate] = useState(defaults.date ?? today);
   const [start, setStart] = useState(defaults.time ?? "09:00");
@@ -177,6 +187,7 @@ function JobForm({
     const body = {
       clientId: client?.id ?? "",
       title,
+      description: description.trim() || undefined,
       startAt: later || next.startAt ? null : zonedToUtc(date, start, timeZone).toISOString(),
       endAt: later || next.startAt ? null : zonedToUtc(date, end, timeZone).toISOString(),
       address: address.trim() || null,
@@ -255,6 +266,23 @@ function JobForm({
             {...errorProps("title")}
           />
           {errorText("title")}
+        </div>
+
+        <div>
+          <label htmlFor={`${ids}-description`} className={labelClass}>
+            Details <span className="font-normal text-slate-500">(optional)</span>
+          </label>
+          <textarea
+            id={`${ids}-description`}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={2}
+            maxLength={4000}
+            placeholder="What needs to be done"
+            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+            {...errorProps("description")}
+          />
+          {errorText("description")}
         </div>
 
         <fieldset>
@@ -501,7 +529,12 @@ function ClientPicker({
               </span>
             )}
           </span>
-          <GlassButton variant="ghost" size="sm" onClick={() => onChange(null)}>
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange(null)}
+            className="max-sm:min-h-11"
+          >
             Change
           </GlassButton>
         </div>
@@ -534,6 +567,15 @@ function ClientPicker({
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onClear={() => setQuery("")}
+        onKeyDown={(event) => {
+          // Enter na busca não envia o formulário do serviço: com um só resultado, escolhe ele.
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          const only = found.length === 1 ? found[0] : undefined;
+          if (only) {
+            onChange({ id: only.id, name: only.name, phone: only.phone, address: only.address });
+          }
+        }}
         placeholder="Search name or phone"
         autoComplete="off"
         className="mt-1.5"

@@ -11,7 +11,7 @@ import {
 } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import { GlassButton, GlassCard, GlassSheet, cx, focusRing } from "@/components/glass";
@@ -21,6 +21,7 @@ import {
   estimateItemsEditable,
   estimateLabel,
   formatDateOnly,
+  isoDateIn,
   parsePercentToBps,
 } from "@/lib/office";
 import {
@@ -80,8 +81,16 @@ export type EstimateEditorProps = {
   };
   terms: string;
   today: string;
+  /** Fuso da empresa (datas da impressão). Sem ele: America/New_York. */
+  timeZone?: string;
   readOnly: boolean;
 };
+
+/** Motivo da recusa (campo novo do contrato; pode não existir ainda). */
+function declineReasonOf(estimate: Estimate): string | null {
+  const value = (estimate as Estimate & { declineReason?: string | null }).declineReason;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
 
 function formFromEstimate(estimate: Estimate): DocumentForm {
   return formFromDocument({
@@ -124,6 +133,7 @@ export function EstimateEditor({
   company,
   terms,
   today,
+  timeZone,
   readOnly,
 }: EstimateEditorProps) {
   const router = useRouter();
@@ -145,6 +155,8 @@ export function EstimateEditor({
   const [createInvoice, setCreateInvoice] = useState(true);
   const [convertError, setConvertError] = useState<OfficeApiError | null>(null);
   const [jobCreated, setJobCreated] = useState(false);
+  // Trava contra dois pedidos ao mesmo tempo (ex.: "Send" e "Save" juntos criariam 2 orçamentos).
+  const savingRef = useRef(false);
 
   // O servidor mandou uma versão nova (ex.: "Mark approved" no menu ⋯ + router.refresh()).
   const [seenUpdatedAt, setSeenUpdatedAt] = useState(estimate?.updatedAt ?? null);
@@ -189,6 +201,16 @@ export function EstimateEditor({
   }
 
   async function save(): Promise<Estimate | null> {
+    if (savingRef.current) return null;
+    savingRef.current = true;
+    try {
+      return await saveOnce();
+    } finally {
+      savingRef.current = false;
+    }
+  }
+
+  async function saveOnce(): Promise<Estimate | null> {
     setError(null);
     if (!doc && !client) {
       setClientError("Choose a client.");
@@ -243,12 +265,19 @@ export function EstimateEditor({
   }
 
   async function onSave() {
+    if (busy !== null || savingRef.current) return;
     setBusy("save");
     await save();
     setBusy(null);
   }
 
   async function onSend() {
+    if (busy !== null || savingRef.current) return;
+    // Orçamento sem nenhuma linha não vai para o cliente (nem chega a ser salvo).
+    if (editable && form.lines.length === 0) {
+      setError(validationError("Add at least one line first."));
+      return;
+    }
     setBusy("send");
     try {
       const saved = dirty || !doc ? await save() : doc;
@@ -337,7 +366,12 @@ export function EstimateEditor({
       <PrintStyles />
       <PageHeader
         back={
-          <GlassButton href="/estimates" variant="ghost" size="sm" className="-ml-2">
+          <GlassButton
+            href="/estimates"
+            variant="ghost"
+            size="sm"
+            className="-ml-2 max-sm:min-h-11"
+          >
             <span aria-hidden="true">‹</span> Estimates
           </GlassButton>
         }
@@ -484,7 +518,7 @@ export function EstimateEditor({
                       href="/office/settings"
                       className="font-semibold text-brand underline-offset-4 hover:underline"
                     >
-                      Office settings
+                      Business settings
                     </Link>{" "}
                     show at the bottom.
                   </p>
@@ -547,7 +581,7 @@ export function EstimateEditor({
       {editable && (
         <SaveBar
           show={doc ? dirty : true}
-          saving={busy === "save"}
+          saving={busy !== null}
           onSave={() => void onSave()}
           onDiscard={doc ? discard : undefined}
           label={doc ? "Save" : "Save draft"}
@@ -577,7 +611,7 @@ export function EstimateEditor({
           facts={[
             {
               label: "Date",
-              value: formatDateOnly((doc?.sentAt ?? doc?.createdAt ?? today).slice(0, 10)),
+              value: formatDateOnly(isoDateIn(doc?.sentAt ?? doc?.createdAt ?? today, timeZone)),
             },
             ...(form.date ? [{ label: "Valid until", value: formatDateOnly(form.date) }] : []),
           ]}
@@ -714,6 +748,7 @@ function StatusCard({
     );
   }
   const status = estimate.status;
+  const declineReason = declineReasonOf(estimate);
   const tone =
     status === "approved"
       ? "bg-emerald-50/85 text-emerald-900"
@@ -772,16 +807,23 @@ function StatusCard({
           </>
         )}
         {status === "declined" && (
-          <p>
-            {estimate.clientName} declined
-            {estimate.respondedAt ? (
-              <>
-                {" "}
-                · <LocalTime iso={estimate.respondedAt} />
-              </>
-            ) : null}
-            .
-          </p>
+          <>
+            <p>
+              {estimate.clientName} declined
+              {estimate.respondedAt ? (
+                <>
+                  {" "}
+                  · <LocalTime iso={estimate.respondedAt} />
+                </>
+              ) : null}
+              .
+            </p>
+            {declineReason && (
+              <blockquote className="mt-2 border-l-2 border-red-900/25 pl-3 whitespace-pre-line break-words">
+                <span className="sr-only">Their reason: </span>&ldquo;{declineReason}&rdquo;
+              </blockquote>
+            )}
+          </>
         )}
       </div>
     </div>

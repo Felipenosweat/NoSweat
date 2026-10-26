@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { aiEnabled } from "@/server/ai";
 import { ownerHasCustomDomainAccess, publishBlocked } from "@/server/billing";
 import { creditCost, getBalance } from "@/server/credits";
 import { getDomainState, makeSlug } from "@/server/domains";
@@ -65,6 +66,8 @@ export default async function EditSitePage({ params }: EditPageProps) {
       isGuest={actor.kind === "guest"}
       needsPlan={needsPlan}
       domainUrl={domainUrl}
+      // Sem IA (produção sem chave): o editor esconde o pedido à IA e o "Rewrite with AI".
+      aiEnabled={aiEnabled()}
     />
   );
 }

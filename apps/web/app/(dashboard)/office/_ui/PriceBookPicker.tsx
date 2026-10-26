@@ -11,7 +11,7 @@ import {
   cx,
   focusRing,
 } from "@/components/glass";
-import { formatCents } from "@/lib/office";
+import { formatCents, unitLabel } from "@/lib/office";
 import { ErrorNote, officeApi, toOfficeError, type OfficeApiError } from "./api";
 import { BookIcon } from "./ui";
 
@@ -132,7 +132,7 @@ export function PriceBookPicker({
                     {formatCents(item.unitPriceCents)}
                     {item.unit && (
                       <span className="block text-[12px] font-normal text-slate-500">
-                        per {item.unit}
+                        {unitLabel(item.unit)}
                       </span>
                     )}
                   </span>

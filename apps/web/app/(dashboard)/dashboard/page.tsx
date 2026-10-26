@@ -1,4 +1,4 @@
-import type { Client, CreditBalance, Job, OfficeSummary } from "@nosweat/schema";
+import type { Client, CreditBalance, Estimate, Job, OfficeSummary } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -33,7 +33,12 @@ import type {
   SocialPostRecord,
   SocialSettingsRecord,
 } from "@/server/social/types";
-import { getOfficeSettings, getOfficeSummary } from "@/server/office/service";
+import {
+  getOfficeSettings,
+  getOfficeSummary,
+  listEstimates,
+  listInvoices,
+} from "@/server/office/service";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import {
   AlertIcon,
@@ -225,6 +230,8 @@ type NeedKind =
   | "clients"
   | "problem"
   | "messages"
+  | "overdue"
+  | "approved"
   | "next";
 
 type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; action: string };
@@ -242,6 +249,8 @@ const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconC
   clients: { tone: "brand", label: "Clients", Icon: ClientsIcon },
   problem: { tone: "red", label: "Social posts", Icon: AlertIcon },
   messages: { tone: "brand", label: "Website messages", Icon: MessagesIcon },
+  overdue: { tone: "red", label: "Invoices", Icon: InvoicesIcon },
+  approved: { tone: "emerald", label: "Estimates", Icon: EstimatesIcon },
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
 
@@ -296,6 +305,7 @@ function needsRows({
   social,
   clients,
   access,
+  office,
   timeZone,
   now,
 }: {
@@ -304,6 +314,8 @@ function needsRows({
   social: SocialSnapshot;
   clients: ClientsSnapshot | null;
   access: AccessSummary;
+  /** Escritório (faturas vencidas e orçamentos aprovados); `null` = erro ao ler. */
+  office: OfficeSnapshot | null;
   /** Fuso da empresa (meses do calendário e datas do plano). */
   timeZone: string;
   now: number;
@@ -347,6 +359,55 @@ function needsRows({
         action: "Renew",
       });
     }
+  }
+
+  // Dinheiro parado: faturas vencidas e orçamentos aprovados que ainda não viraram serviço/fatura.
+  if (office && office.summary.overdueInvoices > 0) {
+    const count = office.summary.overdueInvoices;
+    rows.push({
+      key: "overdue-invoices",
+      kind: "overdue",
+      href: "/invoices?status=overdue",
+      text: (
+        <>
+          <Count value={count} /> {plural(count, "invoice is", "invoices are")} past due (
+          <span className="font-medium tabular-nums">{money(office.summary.overdueCents)}</span>).
+          Send a reminder.
+        </>
+      ),
+      action: "Open",
+    });
+  }
+  const toConvert = office?.toConvert ?? [];
+  const firstToConvert = toConvert[0];
+  if (firstToConvert) {
+    rows.push(
+      toConvert.length === 1
+        ? {
+            key: "approved-estimates",
+            kind: "approved",
+            href: `/estimates/${encodeURIComponent(firstToConvert.id)}`,
+            text: (
+              <>
+                <span className="font-medium">{firstToConvert.clientName}</span> approved estimate #
+                {firstToConvert.number}. Create the job or invoice.
+              </>
+            ),
+            action: "Open",
+          }
+        : {
+            key: "approved-estimates",
+            kind: "approved",
+            href: "/estimates?status=approved",
+            text: (
+              <>
+                <Count value={toConvert.length} /> approved estimates are waiting to become jobs or
+                invoices.
+              </>
+            ),
+            action: "Open",
+          },
+    );
   }
 
   // Só rascunhos com data ainda no futuro: a revisão não mostra (nem aprova) os outros.
@@ -616,7 +677,8 @@ type Stat = {
   value: StatValue;
   /** Linha de apoio embaixo do número (o que fazer ou de onde vem). */
   hint: string;
-  href: string;
+  /** `null` = quadro só informativo (sem link nem seta). */
+  href: string | null;
   tone: IconTone;
   Icon: IconComponent;
   /** Pede atenção (número > 0): o número fica na cor do tom. */
@@ -642,34 +704,46 @@ function StatTile({ stat }: { stat: Stat }) {
   const shown =
     stat.display ??
     (value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`);
+  const content = (
+    <>
+      <span className="flex items-start justify-between gap-2">
+        <IconTile tone={stat.tone}>
+          <stat.Icon className="size-[18px]" />
+        </IconTile>
+        {stat.href && (
+          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
+        )}
+      </span>
+      {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
+            fica em cima (ordem visual com `order`). */}
+      <span className="mt-auto flex flex-col pt-4">
+        <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
+        <span
+          className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
+            stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
+          }`}
+        >
+          {shown}
+          {value === null && <span className="sr-only">not available</span>}
+          {value === "unlimited" && <span className="sr-only">unlimited</span>}
+        </span>
+        <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
+      </span>
+    </>
+  );
+  const tile = `flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass}`;
   return (
     <li>
-      <Link
-        href={stat.href}
-        className={`group flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
-      >
-        <span className="flex items-start justify-between gap-2">
-          <IconTile tone={stat.tone}>
-            <stat.Icon className="size-[18px]" />
-          </IconTile>
-          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
-        </span>
-        {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
-            fica em cima (ordem visual com `order`). */}
-        <span className="mt-auto flex flex-col pt-4">
-          <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
-          <span
-            className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
-              stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
-            }`}
-          >
-            {shown}
-            {value === null && <span className="sr-only">not available</span>}
-            {value === "unlimited" && <span className="sr-only">unlimited</span>}
-          </span>
-          <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
-        </span>
-      </Link>
+      {stat.href ? (
+        <Link
+          href={stat.href}
+          className={`group ${tile} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+        >
+          {content}
+        </Link>
+      ) : (
+        <div className={tile}>{content}</div>
+      )}
     </li>
   );
 }
@@ -693,6 +767,8 @@ function QuickStats({ stats }: { stats: Stat[] }) {
 
 type OfficeSnapshot = {
   summary: OfficeSummary;
+  /** Orçamentos aprovados sem serviço nem fatura (mais novos primeiro). */
+  toConvert: Estimate[];
   /** Fuso da agenda (configurações do escritório). */
   timeZone: string;
   /** "Hoje" e o mês corrente no fuso da agenda. */
@@ -705,15 +781,39 @@ type OfficeSnapshot = {
  */
 async function loadOffice(ownerId: string, now: number): Promise<OfficeSnapshot | null> {
   try {
-    const [summary, settings] = await Promise.all([
+    const [summary, settings, toConvert] = await Promise.all([
       getOfficeSummary(ownerId),
       getOfficeSettings(ownerId).catch(() => null),
+      loadEstimatesToConvert(ownerId),
     ]);
     const timeZone = safeTimeZone(settings?.timeZone);
-    return { summary, timeZone, today: zonedParts(new Date(now), timeZone).dateKey };
+    return { summary, toConvert, timeZone, today: zonedParts(new Date(now), timeZone).dateKey };
   } catch (error) {
     console.error("[dashboard] could not load the office summary", error);
     return null;
+  }
+}
+
+/**
+ * Orçamentos aprovados que ainda não viraram serviço nem fatura. Barato: as faturas só são lidas
+ * quando há aprovado sem serviço. Erro = lista vazia (a linha "Needs you" só não aparece).
+ */
+async function loadEstimatesToConvert(ownerId: string): Promise<Estimate[]> {
+  try {
+    const approved = (await listEstimates(ownerId, { status: "approved" })).filter(
+      (estimate) => estimate.jobId === null,
+    );
+    if (approved.length === 0) return [];
+    const invoices = await listInvoices(ownerId, {});
+    const invoiced = new Set(
+      invoices
+        .filter((invoice) => invoice.status !== "void" && invoice.estimateId !== null)
+        .map((invoice) => invoice.estimateId),
+    );
+    return approved.filter((estimate) => !invoiced.has(estimate.id));
+  } catch (error) {
+    console.error("[dashboard] could not list approved estimates", error);
+    return [];
   }
 }
 
@@ -748,7 +848,7 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
         summary.unpaidInvoices > 0
           ? `${summary.unpaidInvoices} ${plural(summary.unpaidInvoices, "invoice", "invoices")} out`
           : "All paid up",
-      href: "/invoices",
+      href: "/invoices?status=unpaid",
       tone: "brand",
       Icon: InvoicesIcon,
       attention: summary.unpaidCents > 0,
@@ -784,7 +884,8 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
       value: summary.collectedThisMonthCents,
       display: money(summary.collectedThisMonthCents),
       hint: `In ${monthLong(today)}`,
-      href: "/invoices?status=paid",
+      // Pagamentos do mês (inclui parciais): a lista "Paid" não é o mesmo número, então sem link.
+      href: null,
       tone: "emerald",
       Icon: MoneyIcon,
       attention: summary.collectedThisMonthCents > 0,
@@ -1028,7 +1129,16 @@ export default async function DashboardPage() {
     },
   ];
 
-  const needRows = needsRows({ sites, weekLeads, social, clients, access, timeZone, now });
+  const needRows = needsRows({
+    sites,
+    weekLeads,
+    social,
+    clients,
+    access,
+    office,
+    timeZone,
+    now,
+  });
   const needs = <NeedsYou rows={needRows} />;
 
   // Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos.

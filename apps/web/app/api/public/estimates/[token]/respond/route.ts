@@ -13,9 +13,10 @@ type Context = { params: Promise<{ token: string }> };
 const limiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
- * POST /api/public/estimates/[token]/respond { decision: "approve", name } |
- * { decision: "decline", reason? }: resposta do cliente final pelo link. Público, sem conta.
- * Já respondido ou vencido → 409; rascunho ou token desconhecido → 404.
+ * POST /api/public/estimates/[token]/respond { decision: "approve", name, updatedAt? } |
+ * { decision: "decline", reason?, updatedAt? }: resposta do cliente final pelo link. Público, sem
+ * conta. `updatedAt` = o `PublicEstimate.updatedAt` que a página mostrou. Já respondido, vencido
+ * ou mudado depois da versão vista → 409; rascunho ou token desconhecido → 404.
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return officeHandle("/api/public/estimates/[token]/respond", async () => {

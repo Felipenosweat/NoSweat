@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ConvertEstimateResponse,
   CreateInvoiceRequest,
   InvoiceResponse,
   JobResponse,
@@ -11,7 +12,7 @@ import {
 } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ConfirmDialog,
   GlassButton,
@@ -128,6 +129,7 @@ export function JobHero({
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [invoicing, setInvoicing] = useState(false);
   const [invoiceError, setInvoiceError] = useState<ClientsApiError | null>(null);
+  const invoicingRef = useRef(false);
 
   const canceled = job.status === "canceled";
   const current = stepIndex(job.status);
@@ -144,13 +146,41 @@ export function JobHero({
   }
 
   async function createInvoice() {
+    if (invoicingRef.current) return;
+    invoicingRef.current = true;
     setInvoicing(true);
     setInvoiceError(null);
-    // Uma linha com o título e o valor do serviço (o dono ajusta na fatura).
+    // Serviço que veio de um orçamento: a fatura sai do orçamento (mesmos itens, imposto e
+    // desconto), sem somar imposto de novo em cima do valor que já tem imposto.
+    if (job.estimateId) {
+      try {
+        const result = await clientsApi(
+          `/api/office/estimates/${encodeURIComponent(job.estimateId)}/convert`,
+          ConvertEstimateResponse,
+          { method: "POST", body: { createJob: false, createInvoice: true } },
+        );
+        if (result.invoice) {
+          router.push(`/invoices/${encodeURIComponent(result.invoice.id)}`);
+          return;
+        }
+      } catch (err) {
+        const apiError = toClientsError(err);
+        // 409 = o orçamento não está aprovado: cai na fatura de uma linha abaixo.
+        if (apiError.status !== 409) {
+          setInvoiceError(apiError);
+          setInvoicing(false);
+          invoicingRef.current = false;
+          return;
+        }
+      }
+    }
+    // Uma linha com o título e o valor do serviço (o dono ajusta na fatura). O valor do serviço
+    // já é o final (pode vir de um orçamento com imposto): a linha não recebe imposto.
     const parsed = CreateInvoiceRequest.safeParse({
       clientId: job.clientId,
       jobId: job.id,
       title: job.title,
+      taxRateBps: 0,
       items: [
         {
           priceItemId: null,
@@ -158,13 +188,14 @@ export function JobHero({
           description: "",
           quantity: 1,
           unitPriceCents: job.valueCents ?? 0,
-          taxable: true,
+          taxable: false,
         },
       ],
     });
     if (!parsed.success) {
       setInvoiceError(toClientsError(null));
       setInvoicing(false);
+      invoicingRef.current = false;
       return;
     }
     try {
@@ -176,6 +207,7 @@ export function JobHero({
     } catch (err) {
       setInvoiceError(toClientsError(err));
       setInvoicing(false);
+      invoicingRef.current = false;
     }
   }
 
@@ -358,7 +390,12 @@ export function JobHero({
           )}
         </p>
         {!readOnly && !canceled && job.startAt && (
-          <GlassButton variant="ghost" size="sm" onClick={() => setRescheduleOpen(true)}>
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setRescheduleOpen(true)}
+            className="max-sm:min-h-11"
+          >
             Reschedule
           </GlassButton>
         )}
@@ -367,6 +404,7 @@ export function JobHero({
             href={scheduleHref({ view: "day", date: day, team: null })}
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
           >
             See day
           </GlassButton>
@@ -646,6 +684,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
   const { save, pending, error } = useJobPatch(job.id);
   const [title, setTitle] = useState(job.title);
   const [address, setAddress] = useState(job.address ?? "");
+  const [description, setDescription] = useState(job.description);
   const [value, setValue] = useState(
     job.valueCents !== null ? (job.valueCents / 100).toFixed(2) : "",
   );
@@ -662,6 +701,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
     const ok = await save({
       title: title.trim(),
       address: address.trim() || null,
+      description: description.trim(),
       valueCents: cents,
     });
     if (ok) onDone();
@@ -701,6 +741,20 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
             maxLength={300}
             autoComplete="off"
             className={`${fieldClass} mt-1.5 h-11`}
+          />
+        </div>
+        <div>
+          <label htmlFor={`${ids}-description`} className={labelClass}>
+            Details
+          </label>
+          <textarea
+            id={`${ids}-description`}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={4000}
+            rows={3}
+            placeholder="What the job is about"
+            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
           />
         </div>
         <div className="max-w-[12rem]">
@@ -776,6 +830,7 @@ export function AssigneesCard({
           <GlassButton
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
             onClick={() => {
               setValue(job.assigneeIds);
               setOpen(true);

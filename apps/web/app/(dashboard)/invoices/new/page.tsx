@@ -44,6 +44,7 @@ export default async function NewInvoicePage({ searchParams }: NewInvoicePagePro
       company={office.company}
       paymentInstructions={office.settings.paymentInstructions}
       today={office.today}
+      timeZone={office.settings.timeZone}
       readOnly={false}
     />
   );

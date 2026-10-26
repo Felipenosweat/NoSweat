@@ -58,7 +58,7 @@ export default async function ReviewsPage() {
         It takes about a minute. You only do this once.
       </p>
       <div className="mt-4">
-        <GuideSteps headingId="how-to-heading" />
+        <GuideSteps headingId="how-to-heading" collapsed={hasLink} />
       </div>
     </section>
   );

@@ -41,6 +41,7 @@ export default async function NewEstimatePage({ searchParams }: NewEstimatePageP
       company={office.company}
       terms={office.settings.estimateTerms}
       today={office.today}
+      timeZone={office.settings.timeZone}
       readOnly={false}
     />
   );

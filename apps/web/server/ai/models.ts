@@ -47,10 +47,16 @@ export function templateFor(brief: string): TemplateId | null {
       return "portfolio";
     case "wellness": {
       // Spa e massagem ficam com beleza; clínicas e terapias, com profissionais (como no
-      // prompt do caminho completo). Academia, ioga etc.: caminho completo.
+      // prompt do caminho completo). Academia, ioga, pilates e personal: beleza também, pelo
+      // vocabulário (aula marcada, "Book your visit", formulário de horário, endereço para ir),
+      // que combina mais com um estúdio do que o de profissionais ("Book a consultation").
       const text = normalize(brief);
-      if (/\b(spa|massage|facial|esthetic)/.test(text)) return "beauty";
+      if (/\b(spas?|massages?|facials?|esthetics?|esthetician|estheticians)\b/.test(text)) {
+        return "beauty";
+      }
       if (/\b(dentist|dental|clinic|therap|chiropract|acupunct)/.test(text)) return "professional";
+      if (/\b(yoga|pilates|fitness|gyms?|trainers?|personal training)\b/.test(text))
+        return "beauty";
       return null;
     }
     case "other":
@@ -116,7 +122,9 @@ function keywordHits(text: string, keywords: string[]): number {
  * Site-modelo mais parecido com o pedido, dentro da categoria, entre os modelos de `pool`:
  * 1. o ramo (palavras do pedido) pesa mais: uma barbearia parte da barbearia, não do salão;
  * 2. desempate pela composição que a direção de arte escolheu (o modelo já foi pensado para ela);
- * 3. sem nenhum sinal, o modelo padrão da categoria (o primeiro da lista).
+ * 3. nenhuma palavra do ramo no pedido: o modelo padrão da categoria (o primeiro da lista, o
+ *    mais genérico), sem olhar a composição. Senão um telhadista partia, por exemplo, do
+ *    paisagismo só porque o layout combinava (a composição vem do plano de qualquer jeito).
  */
 export function pickModel(
   pool: readonly ModelChoice[],
@@ -128,18 +136,24 @@ export function pickModel(
   const candidates = pool.filter((model) => model.category === template);
   let best: ModelChoice | undefined;
   let bestScore = -1;
+  let bestHits = 0;
   for (const model of candidates) {
-    const score =
-      keywordHits(text, model.keywords) * 10 +
-      (plan && model.spec.design?.composition === plan.composition ? 1 : 0);
+    const hits = keywordHits(text, model.keywords);
+    const score = hits * 10 + (plan && model.spec.design?.composition === plan.composition ? 1 : 0);
     // Empate: fica o que veio antes (os modelos originais vêm primeiro).
     if (score > bestScore) {
       best = model;
       bestScore = score;
     }
+    bestHits = Math.max(bestHits, hits);
   }
-  if (!best || bestScore <= 0) return candidates[0]?.spec ?? MODELS[template];
+  if (!best || bestHits === 0) return candidates[0]?.spec ?? MODELS[template];
   return best.spec;
+}
+
+/** Site-modelo do código pelo slug (ex.: o preferido de um tipo de negócio no modo modelo). */
+export function modelBySlug(slug: string): ModelChoice | undefined {
+  return ALL_MODELS.find((model) => model.slug === slug);
 }
 
 /** Igual a pickModel, só com os modelos do código (síncrono; usado nos testes). */

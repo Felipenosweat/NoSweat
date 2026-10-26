@@ -1,10 +1,12 @@
 import {
   computeTotals,
+  MAX_TOTAL_CENTS,
   TEAM_COLORS,
   type ClientStage,
   type ConvertEstimateRequest,
   type ConvertEstimateResponse,
   type CreateEstimateRequest,
+  type DocumentTotals,
   type CreateInvoiceRequest,
   type CreateJobRequest,
   type CreatePriceItemRequest,
@@ -35,7 +37,12 @@ import {
   type UpdateTeamMemberRequest,
 } from "@nosweat/schema";
 import { dateKeyIn, formatCents } from "@/lib/clients";
-import { addClientActivity, clientsTimeZone, updateClient } from "../clients/service";
+import {
+  addClientPayment,
+  clientsTimeZone,
+  removeClientPayment,
+  updateClient,
+} from "../clients/service";
 import { getClientStore } from "../clients/store";
 import type { ClientRecord } from "../clients/types";
 import { isValidTimeZone, zonedTimeToUtc } from "../social/service";
@@ -66,7 +73,10 @@ import {
 const DEFAULT_TIME_ZONE = "America/New_York";
 /** Teto do valor previsto de um job (o mesmo `Money` do contrato). */
 const MAX_MONEY = 100_000_000;
-/** Nome mostrado quando o cliente do documento foi apagado (no banco, o documento vai junto). */
+/**
+ * Nome mostrado quando o cliente do documento não existe mais (desde a 0023 o banco não deixa
+ * apagar cliente com documentos; fica para dados antigos e corridas).
+ */
 const MISSING_CLIENT = "Deleted client";
 
 const store = (): OfficeStore => getOfficeStore();
@@ -217,20 +227,24 @@ async function defaultSettings(ownerId: string): Promise<OfficeSettingsRecord> {
 }
 
 /**
- * Configurações do dono, criadas na primeira leitura. Toda criação de documento passa por aqui
- * ANTES de pedir o número: a RPC criaria a linha com os padrões vazios do banco.
+ * Configurações do dono. Leitura pura (`persist` falso): sem linha salva, devolve os padrões SEM
+ * gravar (páginas lidas no "ver como" do admin não criam nada na conta vista). Escrita (`persist`):
+ * grava os padrões na primeira vez. Toda criação de documento passa por aqui com `persist` ANTES
+ * de pedir o número: a RPC criaria a linha com os padrões vazios do banco.
  */
-async function settingsRecord(ownerId: string): Promise<OfficeSettingsRecord> {
+async function settingsRecord(ownerId: string, persist = false): Promise<OfficeSettingsRecord> {
   const found = await store().getSettings(ownerId);
   if (found) return found;
-  return store().ensureSettings(await defaultSettings(ownerId));
+  const defaults = await defaultSettings(ownerId);
+  return persist ? store().ensureSettings(defaults) : defaults;
 }
 
-/** Configurações + "hoje" no fuso da empresa. */
+/** Configurações + "hoje" no fuso da empresa (`persist`: ver `settingsRecord`). */
 async function context(
   ownerId: string,
+  persist = false,
 ): Promise<{ settings: OfficeSettingsRecord; today: string }> {
-  const settings = await settingsRecord(ownerId);
+  const settings = await settingsRecord(ownerId, persist);
   return { settings, today: todayIn(settings.timeZone) };
 }
 
@@ -245,7 +259,7 @@ export async function updateSettings(
   ownerId: string,
   input: UpdateOfficeSettingsRequest,
 ): Promise<OfficeSettings> {
-  await settingsRecord(ownerId);
+  await settingsRecord(ownerId, true);
   if (input.timeZone !== undefined && !isValidTimeZone(input.timeZone)) {
     throw new OfficeError(400, "invalid_request", "Please choose a valid time zone.");
   }
@@ -517,7 +531,7 @@ export async function getJob(ownerId: string, id: string): Promise<Job | null> {
 
 export async function createJob(ownerId: string, input: CreateJobRequest): Promise<Job> {
   const client = await requireClient(ownerId, input.clientId);
-  await settingsRecord(ownerId);
+  await settingsRecord(ownerId, true);
   const team = await store().listTeam(ownerId);
   const startAt = toInstant(input.startAt) ?? null;
   const endAt = toInstant(input.endAt) ?? null;
@@ -544,9 +558,13 @@ export async function createJob(ownerId: string, input: CreateJobRequest): Promi
   return toJob(record, clientMap(client), new Set(team.map((m) => m.id)));
 }
 
+/** Status que precisam de horário de início. */
+const NEEDS_START = new Set<JobStatus>(["scheduled", "in_progress"]);
+
 /**
  * Muda o job. Sem `status` no pedido: ganhar horário leva "unscheduled" → "scheduled" e perder o
- * horário volta "scheduled" → "unscheduled". `done` marca `completedAt` (sair de `done` limpa).
+ * horário volta "scheduled" → "unscheduled". "scheduled"/"in_progress" sem início: 400. `done`
+ * marca `completedAt` (sair de `done` limpa).
  */
 export async function updateJob(
   ownerId: string,
@@ -581,6 +599,9 @@ export async function updateJob(
   }
   if (status !== undefined && status !== current.status) patch.status = status;
   const finalStatus = status ?? current.status;
+  if (NEEDS_START.has(finalStatus) && !startAt) {
+    throw new OfficeError(400, "invalid_request", "Pick a start time to schedule this job.");
+  }
   if (finalStatus === "done" && !current.completedAt) patch.completedAt = nowIso();
   if (finalStatus !== "done" && current.completedAt) patch.completedAt = null;
 
@@ -612,6 +633,41 @@ async function cleanItems(ownerId: string, items: readonly LineItem[]): Promise<
     unitPriceCents: item.unitPriceCents,
     taxable: item.taxable,
   }));
+}
+
+/** Totais pelo `computeTotals`, com teto: acima de US$ 1.000.000 o documento é recusado (400). */
+function documentTotals(
+  items: readonly LineItem[],
+  taxRateBps: number,
+  discountCents: number,
+): DocumentTotals {
+  const totals = computeTotals(items, taxRateBps, discountCents);
+  if (totals.totalCents > MAX_TOTAL_CENTS) {
+    throw new OfficeError(400, "invalid_request", "Totals over $1,000,000 aren't supported yet.");
+  }
+  return totals;
+}
+
+/** O job existe, é do dono e é do mesmo cliente do documento (senão 404 / 400). */
+async function requireJobFor(
+  ownerId: string,
+  jobId: string | null | undefined,
+  clientId: string,
+): Promise<JobRecord | null> {
+  if (!jobId) return null;
+  const job = await store().getJob(ownerId, jobId);
+  if (!job) throw notFound("Job");
+  if (job.clientId !== clientId) {
+    throw new OfficeError(400, "invalid_request", "That job is for a different client.");
+  }
+  return job;
+}
+
+/** O job pode apontar para uma fatura nova? (Sem fatura, ou a dele sumiu ou foi anulada.) */
+async function jobInvoiceSlotFree(ownerId: string, job: JobRecord): Promise<boolean> {
+  if (!job.invoiceId) return true;
+  const linked = await store().getInvoice(ownerId, job.invoiceId);
+  return !linked || linked.status === "void";
 }
 
 /** Linha do link público: sem o id interno da tabela de preços. */
@@ -659,6 +715,7 @@ function toEstimate(record: EstimateRecord, clientName: string, today: string): 
     sentAt: record.sentAt,
     respondedAt: record.respondedAt,
     approvedByName: record.approvedByName,
+    declineReason: record.declineReason,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
@@ -700,13 +757,12 @@ export async function createEstimate(
   input: CreateEstimateRequest,
 ): Promise<Estimate> {
   const client = await requireClient(ownerId, input.clientId);
-  const { settings, today } = await context(ownerId);
-  const job = input.jobId ? await store().getJob(ownerId, input.jobId) : null;
-  if (input.jobId && !job) throw notFound("Job");
+  const { settings, today } = await context(ownerId, true);
+  const job = await requireJobFor(ownerId, input.jobId, client.id);
 
   const items = await cleanItems(ownerId, input.items ?? []);
   const taxRateBps = input.taxRateBps ?? settings.defaultTaxRateBps;
-  const totals = computeTotals(items, taxRateBps, input.discountCents ?? 0);
+  const totals = documentTotals(items, taxRateBps, input.discountCents ?? 0);
   const number = await store().nextNumber(ownerId, "estimate");
   const record = await store().insertEstimate({
     ownerId,
@@ -738,7 +794,9 @@ function isOpenEstimate(record: EstimateRecord): boolean {
 /**
  * Muda o orçamento. Linhas, imposto, desconto, textos e validade só em rascunho/enviado (409 nos
  * outros). `status` = o dono marca a resposta que recebeu por fora (aprovar leva o cliente a
- * "won"). `null` se não existir ou for de outro dono.
+ * "won"). A gravação só acontece se o status guardado ainda for o lido (o cliente respondeu no
+ * meio: 409). Mudar um orçamento enviado o mantém enviado; o `updatedAt` novo faz o cliente que
+ * estava com a versão antiga aberta receber 409 ao responder. `null` se não existir.
  */
 export async function updateEstimate(
   ownerId: string,
@@ -771,7 +829,7 @@ export async function updateEstimate(
     const items = input.items ? await cleanItems(ownerId, input.items) : current.items;
     const taxRateBps = input.taxRateBps ?? current.taxRateBps;
     const discount = input.discountCents ?? current.discountCents;
-    Object.assign(patch, { items, taxRateBps, ...computeTotals(items, taxRateBps, discount) });
+    Object.assign(patch, { items, taxRateBps, ...documentTotals(items, taxRateBps, discount) });
   }
 
   const approving = input.status === "approved" && current.status !== "approved";
@@ -781,8 +839,15 @@ export async function updateEstimate(
     patch.respondedAt = nowIso();
   }
 
-  const updated = await store().updateEstimate(ownerId, id, patch);
-  if (!updated) return null;
+  const updated = await store().updateEstimate(ownerId, id, patch, current.status);
+  if (!updated) {
+    if (!(await store().getEstimate(ownerId, id))) return null;
+    throw new OfficeError(
+      409,
+      "conflict",
+      "This estimate was answered or changed meanwhile. Refresh and try again.",
+    );
+  }
   if (approving) await advanceClientStage(ownerId, updated.clientId, "any", "won");
   return estimateView(ownerId, updated);
 }
@@ -966,6 +1031,8 @@ async function insertInvoice(
     dueOn: string | null;
   },
 ): Promise<InvoiceRecord> {
+  // Confere o teto antes de gastar um número.
+  documentTotals(fields.items, fields.taxRateBps, fields.discountCents);
   const number = await store().nextNumber(ownerId, "invoice");
   return store().insertInvoice({
     ownerId,
@@ -977,7 +1044,7 @@ async function insertInvoice(
     status: "draft",
     items: fields.items,
     taxRateBps: fields.taxRateBps,
-    ...computeTotals(fields.items, fields.taxRateBps, fields.discountCents),
+    ...documentTotals(fields.items, fields.taxRateBps, fields.discountCents),
     amountPaidCents: 0,
     message: fields.message,
     issuedOn: fields.issuedOn,
@@ -990,16 +1057,16 @@ async function insertInvoice(
 
 /**
  * Fatura nova (rascunho). Emissão padrão: hoje; vencimento padrão: emissão + `invoiceDueDays`.
- * Com `jobId`, o job passa a apontar para ela (se ainda não tiver fatura).
+ * Com `jobId` (do mesmo cliente; senão 400), o job passa a apontar para ela se ainda não tiver
+ * fatura ou se a dele foi anulada.
  */
 export async function createInvoice(
   ownerId: string,
   input: CreateInvoiceRequest,
 ): Promise<Invoice> {
   const client = await requireClient(ownerId, input.clientId);
-  const { settings, today } = await context(ownerId);
-  const job = input.jobId ? await store().getJob(ownerId, input.jobId) : null;
-  if (input.jobId && !job) throw notFound("Job");
+  const { settings, today } = await context(ownerId, true);
+  const job = await requireJobFor(ownerId, input.jobId, client.id);
 
   const issuedOn = input.issuedOn ?? today;
   const record = await insertInvoice(ownerId, {
@@ -1014,13 +1081,16 @@ export async function createInvoice(
     issuedOn,
     dueOn: input.dueOn !== undefined ? input.dueOn : addDays(issuedOn, settings.invoiceDueDays),
   });
-  if (job && !job.invoiceId) await store().updateJob(ownerId, job.id, { invoiceId: record.id });
+  if (job && (await jobInvoiceSlotFree(ownerId, job))) {
+    await store().updateJob(ownerId, job.id, { invoiceId: record.id });
+  }
   return toInvoice(record, [], client.name, today);
 }
 
 /**
  * Muda a fatura. Linhas/imposto/desconto só sem pagamento registrado; anulada não muda mais.
- * `status: "void"` anula (só sem pagamento: apague os pagamentos antes). `null` se não existir.
+ * `status: "void"` anula (só sem pagamento: apague os pagamentos antes) e solta os jobs que
+ * apontavam para ela (voltam a "para faturar"). `null` se não existir.
  */
 export async function updateInvoice(
   ownerId: string,
@@ -1065,12 +1135,21 @@ export async function updateInvoice(
     const items = input.items ? await cleanItems(ownerId, input.items) : current.items;
     const taxRateBps = input.taxRateBps ?? current.taxRateBps;
     const discount = input.discountCents ?? current.discountCents;
-    Object.assign(patch, { items, taxRateBps, ...computeTotals(items, taxRateBps, discount) });
+    Object.assign(patch, { items, taxRateBps, ...documentTotals(items, taxRateBps, discount) });
   }
   if (input.status === "void") patch.status = "void";
 
   const updated = await store().updateInvoice(ownerId, id, patch);
-  return updated ? invoiceView(ownerId, updated) : null;
+  if (!updated) return null;
+  if (updated.status === "void") await releaseJobs(ownerId, updated.id);
+  return invoiceView(ownerId, updated);
+}
+
+/** Jobs que apontavam para a fatura (anulada) ficam sem fatura. */
+async function releaseJobs(ownerId: string, invoiceId: string): Promise<void> {
+  for (const job of await store().listJobs(ownerId, { invoiceId })) {
+    await store().updateJob(ownerId, job.id, { invoiceId: null });
+  }
 }
 
 /** Envia (gera o link) da fatura: rascunho vira enviada e `sentAt` = agora. */
@@ -1119,8 +1198,10 @@ export async function deleteInvoice(ownerId: string, id: string): Promise<boolea
 /**
  * Registra um pagamento recebido. Não pode passar do saldo (400). Saldo zerado → `paid` e
  * `paidAt`; pagamento numa fatura em rascunho a dá como enviada (`sent`, sem `sentAt`: o dono
- * entregou em mãos). Cada pagamento entra no histórico do cliente como serviço (`job`) com o
- * valor, para o total do cliente e a receita do mês ficarem certos.
+ * entregou em mãos). A conferência do saldo e a gravação são atômicas (`store.recordPayment`; no
+ * Supabase a RPC trava a fatura): dois pagamentos ao mesmo tempo nunca passam do total. Cada
+ * pagamento entra no histórico do cliente como `payment` (soma no total do cliente e na receita
+ * do mês, sem contar como serviço).
  */
 export async function recordPayment(
   ownerId: string,
@@ -1133,19 +1214,7 @@ export async function recordPayment(
     throw new OfficeError(409, "conflict", "This invoice is void.");
   }
   const { today } = await context(ownerId);
-  const paid = sumPayments(await paymentsOf(ownerId, invoiceId));
-  const balance = current.totalCents - paid;
-  if (input.amountCents > balance) {
-    throw new OfficeError(
-      400,
-      "invalid_request",
-      balance <= 0
-        ? "This invoice is already paid in full."
-        : `The payment can't be more than the balance (${formatCents(balance)}).`,
-    );
-  }
-
-  await store().insertPayment({
+  const result = await store().recordPayment({
     ownerId,
     invoiceId,
     amountCents: input.amountCents,
@@ -1153,34 +1222,35 @@ export async function recordPayment(
     reference: input.reference ?? "",
     receivedOn: input.receivedOn ?? today,
   });
-  const newPaid = paid + input.amountCents;
-  const patch: InvoicePatch = { amountPaidCents: newPaid };
-  if (newPaid >= current.totalCents) {
-    patch.status = "paid";
-    patch.paidAt = nowIso();
-  } else if (current.status === "draft") {
-    patch.status = "sent";
+  if (!result.ok) {
+    if (result.reason === "not_found") return null;
+    if (result.reason === "void") throw new OfficeError(409, "conflict", "This invoice is void.");
+    throw new OfficeError(
+      400,
+      "invalid_request",
+      result.balanceCents <= 0
+        ? "This invoice is already paid in full."
+        : `The payment can't be more than the balance (${formatCents(result.balanceCents)}).`,
+    );
   }
-  const updated = await store().updateInvoice(ownerId, invoiceId, patch);
 
   try {
-    await addClientActivity(ownerId, current.clientId, {
-      kind: "job",
+    await addClientPayment(ownerId, current.clientId, {
+      paymentId: result.payment.id,
+      amountCents: result.payment.amountCents,
       body: `Payment for invoice #${current.number}`,
-      amountCents: input.amountCents,
     });
   } catch (error) {
     // O pagamento já está salvo; o histórico do cliente é extra.
     console.error("[office] could not add the payment to the client history", error);
   }
-  return invoiceView(ownerId, updated ?? current);
+  return invoiceView(ownerId, result.invoice);
 }
 
 /**
  * Apaga um pagamento (lançado errado). Se a fatura estava paga e voltou a ter saldo, volta a
- * `sent`. O item que o pagamento criou no histórico do cliente FICA (o histórico é um registro do
- * que aconteceu; o dono pode lançar a correção lá). `null` se a fatura não existir; 404 se o
- * pagamento não for dela.
+ * `sent`. O item `payment` do histórico do cliente sai junto e os totais do cliente são
+ * recalculados. `null` se a fatura não existir; 404 se o pagamento não for dela.
  */
 export async function deletePayment(
   ownerId: string,
@@ -1198,16 +1268,30 @@ export async function deletePayment(
     patch.paidAt = null;
   }
   const updated = await store().updateInvoice(ownerId, invoiceId, patch);
+
+  try {
+    await removeClientPayment(ownerId, paymentId, current.clientId);
+  } catch (error) {
+    console.error("[office] could not remove the payment from the client history", error);
+  }
   return invoiceView(ownerId, updated ?? current);
 }
 
 // ---------- orçamento → job / fatura ----------
 
+/** Fatura não anulada criada a partir do orçamento (no máximo uma: índice único da 0023). */
+async function activeInvoiceOf(ownerId: string, estimateId: string): Promise<InvoiceRecord | null> {
+  const invoices = await store().listInvoices(ownerId, { estimateId });
+  return invoices.find((i) => i.status !== "void") ?? null;
+}
+
 /**
  * Converte um orçamento aprovado (409 nos outros). `createJob`: job sem data com o valor do
  * orçamento e o endereço do cliente. `createInvoice`: fatura em rascunho com as mesmas linhas.
- * Nunca duplica: job já ligado ou fatura (não anulada) já criada a partir dele são devolvidos
- * como estão. A resposta traz o job e a fatura ligados (ou `null`).
+ * Nunca duplica, nem com dois pedidos ao mesmo tempo: o job só é ligado se o orçamento ainda
+ * estiver sem job (quem perde apaga o seu e usa o do vencedor) e a fatura tem índice único por
+ * orçamento (quem perde usa a que já existe). Job ligado a uma fatura anulada passa a apontar para
+ * a nova. A resposta traz o job e a fatura ligados (ou `null`).
  */
 export async function convertEstimate(
   ownerId: string,
@@ -1219,13 +1303,13 @@ export async function convertEstimate(
   if (estimate.status !== "approved") {
     throw new OfficeError(409, "conflict", "Only approved estimates can be converted.");
   }
-  const { settings, today } = await context(ownerId);
+  const { settings, today } = await context(ownerId, true);
   const client = await getClientStore().getClient(ownerId, estimate.clientId);
 
   let job = estimate.jobId ? await store().getJob(ownerId, estimate.jobId) : null;
   if (input.createJob && !job) {
     const number = await store().nextNumber(ownerId, "job");
-    job = await store().insertJob({
+    const created = await store().insertJob({
       ownerId,
       number,
       clientId: estimate.clientId,
@@ -1242,27 +1326,48 @@ export async function convertEstimate(
       valueCents: Math.min(estimate.totalCents, MAX_MONEY),
       completedAt: null,
     });
-    estimate = (await store().updateEstimate(ownerId, id, { jobId: job.id })) ?? estimate;
+    // Só liga se ninguém ligou outro job no meio (o job lido continua o guardado).
+    const linked = await store().updateEstimate(
+      ownerId,
+      id,
+      { jobId: created.id },
+      { status: "approved", jobId: estimate.jobId },
+    );
+    if (linked) {
+      estimate = linked;
+      job = created;
+    } else {
+      // Outro pedido chegou antes: o job dele vale (o número deste fica sem uso).
+      await store().deleteJob(ownerId, created.id);
+      estimate = (await store().getEstimate(ownerId, id)) ?? estimate;
+      job = estimate.jobId ? await store().getJob(ownerId, estimate.jobId) : null;
+    }
   }
 
-  const existing = await store().listInvoices(ownerId, { estimateId: estimate.id });
-  let invoice = existing.find((i) => i.status !== "void") ?? null;
+  let invoice = await activeInvoiceOf(ownerId, estimate.id);
   if (input.createInvoice && !invoice) {
-    invoice = await insertInvoice(ownerId, {
-      clientId: estimate.clientId,
-      jobId: job?.id ?? null,
-      estimateId: estimate.id,
-      title: estimate.title,
-      items: estimate.items,
-      taxRateBps: estimate.taxRateBps,
-      discountCents: estimate.discountCents,
-      message: "",
-      issuedOn: today,
-      dueOn: addDays(today, settings.invoiceDueDays),
-    });
+    try {
+      invoice = await insertInvoice(ownerId, {
+        clientId: estimate.clientId,
+        jobId: job?.id ?? null,
+        estimateId: estimate.id,
+        title: estimate.title,
+        items: estimate.items,
+        taxRateBps: estimate.taxRateBps,
+        discountCents: estimate.discountCents,
+        message: "",
+        issuedOn: today,
+        dueOn: addDays(today, settings.invoiceDueDays),
+      });
+    } catch (error) {
+      // Índice único: outro pedido criou a fatura deste orçamento no meio. Usa a dele.
+      const winner = await activeInvoiceOf(ownerId, estimate.id);
+      if (!winner) throw error;
+      invoice = winner;
+    }
   }
   if (invoice && job) {
-    if (!job.invoiceId) {
+    if (job.invoiceId !== invoice.id && (await jobInvoiceSlotFree(ownerId, job))) {
       job = (await store().updateJob(ownerId, job.id, { invoiceId: invoice.id })) ?? job;
     }
     if (!invoice.jobId) {
@@ -1378,6 +1483,8 @@ function toPublicEstimate(
     sentAt: record.sentAt,
     respondedAt: record.respondedAt,
     approvedByName: record.approvedByName,
+    updatedAt: record.updatedAt,
+    timeZone: settings.timeZone,
   };
 }
 
@@ -1400,10 +1507,15 @@ export async function getPublicEstimate(token: string): Promise<PublicEstimate |
   return record ? publicEstimateView(record) : null;
 }
 
+const ESTIMATE_CHANGED = "This estimate was changed. Refresh to see the latest version.";
+const ESTIMATE_ANSWERED = "This estimate was already answered.";
+
 /**
  * Resposta do cliente pelo link: só com o orçamento enviado e dentro da validade (409 se já
- * respondido ou vencido). A gravação só acontece se o status ainda for `sent` (duas respostas ao
- * mesmo tempo: a segunda recebe 409). Aprovar leva o cliente a "won". `null` = link não existe.
+ * respondido ou vencido). Com `updatedAt` (a versão que o cliente viu), o dono não pode ter mudado
+ * o orçamento depois (409 "changed": o cliente nunca aprova um preço que não viu). A gravação só
+ * acontece se o status ainda for `sent` e a versão ainda for a vista (duas respostas ao mesmo
+ * tempo: a segunda recebe 409). Aprovar leva o cliente a "won". `null` = link não existe.
  */
 export async function respondToEstimate(
   token: string,
@@ -1420,26 +1532,38 @@ export async function respondToEstimate(
       "This estimate has expired. Please contact the business for a new one.",
     );
   }
-  if (status !== "sent") {
-    throw new OfficeError(409, "conflict", "This estimate was already answered.");
+  if (status !== "sent") throw new OfficeError(409, "conflict", ESTIMATE_ANSWERED);
+  if (input.updatedAt !== undefined && input.updatedAt !== record.updatedAt) {
+    throw new OfficeError(409, "conflict", ESTIMATE_CHANGED);
   }
 
   const patch: EstimatePatch =
     input.decision === "approve"
       ? { status: "approved", approvedByName: input.name.trim(), respondedAt: nowIso() }
       : { status: "declined", declineReason: input.reason?.trim() || null, respondedAt: nowIso() };
-  const updated = await store().updateEstimate(record.ownerId, record.id, patch, "sent");
-  if (!updated) throw new OfficeError(409, "conflict", "This estimate was already answered.");
+  const updated = await store().updateEstimate(record.ownerId, record.id, patch, {
+    status: "sent",
+    updatedAt: input.updatedAt,
+  });
+  if (!updated) {
+    // Mudou no meio: ainda enviado = o dono editou; senão alguém já respondeu.
+    const fresh = await store().getEstimate(record.ownerId, record.id);
+    const changed = fresh?.status === "sent";
+    throw new OfficeError(409, "conflict", changed ? ESTIMATE_CHANGED : ESTIMATE_ANSWERED);
+  }
   if (input.decision === "approve") {
     await advanceClientStage(updated.ownerId, updated.clientId, "any", "won");
   }
   return publicEstimateView(updated);
 }
 
-/** Fatura pelo link (rascunho e anulada = não existem). Sem conta. */
+/**
+ * Fatura pelo link (rascunho = não existe). Anulada continua visível com status `void` (a página
+ * mostra o aviso de cancelada, em vez de "não encontrada"). Sem conta.
+ */
 export async function getPublicInvoice(token: string): Promise<PublicInvoice | null> {
   const record = await store().getInvoiceByToken(token);
-  if (!record || record.status === "draft" || record.status === "void") return null;
+  if (!record || record.status === "draft") return null;
   const [{ settings, today }, client, payments] = await Promise.all([
     context(record.ownerId),
     getClientStore().getClient(record.ownerId, record.clientId),
@@ -1465,5 +1589,6 @@ export async function getPublicInvoice(token: string): Promise<PublicInvoice | n
     issuedOn: record.issuedOn,
     dueOn: record.dueOn,
     paidAt: record.paidAt,
+    timeZone: settings.timeZone,
   };
 }
