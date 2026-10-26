@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
 // - data-ns-magnetic: o botão puxa na direção do mouse;
 // - data-ns-quotes (com [data-ns-quote]): depoimentos que trocam sozinhos.
 
-export function Motion({ smooth = true }: { smooth?: boolean }) {
+export function Motion() {
   const anchor = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -31,11 +31,18 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
       ]);
       if (disposed) return;
       gsap.registerPlugin(ScrollTrigger);
+      // Máquina fraca (até 4 núcleos ou 4 GB): só as entradas de uma vez (revelar, subir). Os
+      // efeitos presos à rolagem recalculam a cada quadro e travam a rolagem nesses aparelhos.
+      // Sem os dados no navegador, conta como máquina boa.
+      const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+      const lite = (navigator.hardwareConcurrency || 8) <= 4 || memory <= 4;
       const ctx = gsap.context(() => {
         const all = <T extends Element = HTMLElement>(selector: string) =>
           Array.from(root.querySelectorAll<T & HTMLElement>(selector));
+        const heavy = <T extends Element = HTMLElement>(selector: string) =>
+          lite ? [] : all<T>(selector);
 
-        for (const el of all("[data-ns-parallax]")) {
+        for (const el of heavy("[data-ns-parallax]")) {
           const speed = Number(el.dataset.nsParallax) || 0.2;
           gsap.fromTo(
             el,
@@ -76,7 +83,7 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
           });
         }
 
-        for (const p of all("[data-ns-words]")) {
+        for (const p of heavy("[data-ns-words]")) {
           const words: HTMLElement[] = [];
           const walk = (node: Node) => {
             for (const child of Array.from(node.childNodes)) {
@@ -109,6 +116,8 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
           );
         }
 
+        // A galeria fica presa mesmo em máquina fraca: o CSS já deixa a seção alta (um só
+        // transform por quadro).
         for (const section of all("[data-ns-hscroll]")) {
           const rail = section.querySelector<HTMLElement>(".ns-rail");
           if (!rail) continue;
@@ -125,7 +134,7 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
           });
         }
 
-        for (const el of all("footer [data-ns-giant]")) {
+        for (const el of heavy("footer [data-ns-giant]")) {
           gsap.from(el, {
             yPercent: 55,
             ease: "none",
@@ -218,20 +227,6 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
         cleanups.push(() => window.clearInterval(timer));
       }
 
-      // Rolagem suave (a roda do mouse e o toque continuam mandando; links #âncora também).
-      if (smooth && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        const { default: Lenis } = await import("lenis");
-        if (disposed) return;
-        const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
-        lenis.on("scroll", ScrollTrigger.update);
-        const raf = (time: number) => lenis.raf(time * 1000);
-        gsap.ticker.add(raf);
-        cleanups.push(() => {
-          gsap.ticker.remove(raf);
-          lenis.destroy();
-        });
-      }
-
       ScrollTrigger.refresh();
     })();
 
@@ -239,7 +234,7 @@ export function Motion({ smooth = true }: { smooth?: boolean }) {
       disposed = true;
       for (const cleanup of cleanups) cleanup();
     };
-  }, [smooth]);
+  }, []);
 
   return <span ref={anchor} hidden />;
 }
