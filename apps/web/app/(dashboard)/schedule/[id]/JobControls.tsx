@@ -250,6 +250,21 @@ export function JobHero({
           Restore job
         </GlassButton>
       );
+    } else if (job.status === "done") {
+      // Feito (mesmo sem data): o próximo passo é cobrar, nunca "Pick a time".
+      if (!job.invoiceId) {
+        next = (
+          <GlassButton
+            variant="primary"
+            icon={<InvoiceIcon />}
+            loading={invoicing}
+            onClick={() => void createInvoice()}
+            fullWidth
+          >
+            {invoicing ? "Creating invoice…" : "Create invoice"}
+          </GlassButton>
+        );
+      }
     } else if (job.status === "unscheduled" || !job.startAt) {
       next = (
         <GlassButton
@@ -281,18 +296,6 @@ export function JobHero({
           fullWidth
         >
           Mark as done
-        </GlassButton>
-      );
-    } else if (job.status === "done" && !job.invoiceId) {
-      next = (
-        <GlassButton
-          variant="primary"
-          icon={<InvoiceIcon />}
-          loading={invoicing}
-          onClick={() => void createInvoice()}
-          fullWidth
-        >
-          {invoicing ? "Creating invoice…" : "Create invoice"}
         </GlassButton>
       );
     }

@@ -8,13 +8,14 @@ import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientUrl, clientsApi, toClientsError, type ClientsApiError } from "../api";
 import { fieldClass, fieldErrorClass, labelClass } from "../ui";
 
-// Caixa para registrar no histórico: uma nota ou um serviço feito (com valor e data opcionais).
+// Caixa para registrar no histórico: uma nota ou um serviço já feito, fora da agenda ("Log past
+// work", com valor e data opcionais). Serviço novo se marca pela agenda ("Book a job").
 
 type Kind = "note" | "job";
 
 const KINDS: { value: Kind; label: string }[] = [
   { value: "note", label: "Add note" },
-  { value: "job", label: "Log a job" },
+  { value: "job", label: "Log past work" },
 ];
 
 /** "AAAA-MM-DD" de hoje no relógio de quem está usando. */
@@ -71,7 +72,7 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
       setBody("");
       setAmount("");
       setDate("");
-      setSavedText(kind === "job" ? "Job saved." : "Note saved.");
+      setSavedText(kind === "job" ? "Work saved." : "Note saved.");
       router.refresh();
     } catch (err) {
       setError(toClientsError(err));
@@ -183,7 +184,7 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <GlassButton type="submit" variant="primary" loading={pending}>
-          {pending ? "Saving…" : kind === "job" ? "Save job" : "Save note"}
+          {pending ? "Saving…" : kind === "job" ? "Save work" : "Save note"}
         </GlassButton>
         <p aria-live="polite" className="text-[13px] text-slate-500">
           {savedText}

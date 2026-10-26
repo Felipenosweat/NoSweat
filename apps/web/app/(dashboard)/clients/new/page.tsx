@@ -23,7 +23,7 @@ export default async function NewClientPage() {
     <div className="max-w-2xl">
       <PageHeader
         back={
-          <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2">
+          <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2 max-sm:min-h-11">
             <span aria-hidden="true">‹</span> Clients
           </GlassButton>
         }

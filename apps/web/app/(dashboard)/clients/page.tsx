@@ -72,6 +72,8 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 
 type Tile = {
   key: string;
+  /** Só a partir do `sm`: no celular ficam os dois que pedem ação (pedidos e retornos). */
+  desktopOnly?: boolean;
   label: string;
   value: string;
   hint: string;
@@ -121,6 +123,7 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
     {
       key: "won",
       label: "Won this month",
+      desktopOnly: true,
       value: String(summary.wonThisMonth),
       hint: monthName(summary.month),
       href: clientsHref({ ...DEFAULTS, stage: "won" }),
@@ -130,6 +133,7 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
     {
       key: "revenue",
       label: "Revenue logged",
+      desktopOnly: true,
       value: money(summary.revenueThisMonthCents),
       hint: `${plural(summary.jobsThisMonth, "job", "jobs")} in ${monthName(summary.month)}`,
       href: clientsHref({ ...DEFAULTS, sort: "value" }),
@@ -144,7 +148,7 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
       </h2>
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((tile) => (
-          <li key={tile.key}>
+          <li key={tile.key} className={tile.desktopOnly ? "max-sm:hidden" : undefined}>
             <Link
               href={tile.href}
               className={cx(
@@ -194,7 +198,10 @@ function monthName(month: string): string {
   );
 }
 
-/** Link "Export CSV" com os mesmos filtros da tela (é um download: <a> comum, não <Link>). */
+/**
+ * Link "Export CSV" com os mesmos filtros da tela (é um download: <a> comum, não <Link>). Só a
+ * partir do `sm`: planilha não é coisa de celular.
+ */
 function ExportLink({ params }: { params: ClientsParams }) {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
@@ -205,7 +212,7 @@ function ExportLink({ params }: { params: ClientsParams }) {
     <a
       href={`/api/clients/export${query ? `?${query}` : ""}`}
       download
-      className={glassButtonClass({ variant: "secondary" })}
+      className={cx(glassButtonClass({ variant: "secondary" }), "max-sm:hidden")}
     >
       <span aria-hidden="true" className="-ml-0.5 inline-flex [&>svg]:size-[1.15em]">
         <DownloadIcon />

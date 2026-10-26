@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { getViewer } from "@/server/auth/viewer";
+import { getClientDetail } from "@/server/clients/service";
 import { getOfficeSettings, listJobs, listTeam } from "@/server/office/service";
+import type { NewJobClient } from "./JobForm";
 import {
   parseScheduleParams,
   visibleRange,
@@ -28,6 +30,26 @@ async function companyTimeZone(ownerId: string): Promise<string> {
 }
 
 /**
+ * Cliente que a folha "New job" já traz escolhido (link "Book a job" da ficha do cliente). Cliente
+ * de outro dono, apagado ou erro = `null` (o dono escolhe na folha, como sempre).
+ */
+async function preselectedClient(
+  ownerId: string,
+  clientId: string | null,
+): Promise<NewJobClient | null> {
+  if (!clientId) return null;
+  try {
+    const detail = await getClientDetail(ownerId, clientId);
+    if (!detail) return null;
+    const { id, name, phone, address } = detail.client;
+    return { id, name, phone, address };
+  } catch (error) {
+    console.error("[schedule] could not read the client for the new job", error);
+    return null;
+  }
+}
+
+/**
  * Tudo o que a agenda mostra (fora do componente: usa o relógio). "Hoje" e o período no fuso da
  * empresa. `jobs: null` = erro ao ler (a página avisa); equipe com erro = sem cores nem filtro.
  */
@@ -40,7 +62,7 @@ async function loadSchedule(ownerId: string, params: ScheduleParams) {
   const from = zonedToUtc(range.start, "00:00", timeZone);
   const to = zonedToUtc(range.end, "00:00", timeZone);
 
-  const [jobs, unscheduled, team] = await Promise.all([
+  const [jobs, unscheduled, done, team] = await Promise.all([
     listJobs(ownerId, { from: from.toISOString(), to: to.toISOString() }).catch(
       (error: unknown): Job[] | null => {
         console.error("[schedule] could not list jobs", error);
@@ -49,6 +71,10 @@ async function loadSchedule(ownerId: string, params: ScheduleParams) {
     ),
     listJobs(ownerId, { status: "unscheduled" }).catch((error: unknown): Job[] => {
       console.error("[schedule] could not list unscheduled jobs", error);
+      return [];
+    }),
+    listJobs(ownerId, { status: "done" }).catch((error: unknown): Job[] => {
+      console.error("[schedule] could not list done jobs", error);
       return [];
     }),
     listTeam(ownerId).catch((error: unknown): TeamMember[] => {
@@ -76,6 +102,7 @@ async function loadSchedule(ownerId: string, params: ScheduleParams) {
     rangeStart: range.start,
     jobs: inRange ?? null,
     unscheduled: waiting,
+    toInvoice: done.filter((job) => !job.invoiceId),
     team,
   };
 }
@@ -88,7 +115,11 @@ export default async function SchedulePage({ searchParams }: SchedulePageProps) 
   if (!viewer) redirect("/login?next=/schedule");
   const readOnly = viewer.viewingAs !== null;
   const params = parseScheduleParams(await searchParams);
-  const data = await loadSchedule(viewer.ownerId, params);
+  const [data, newJobClient] = await Promise.all([
+    loadSchedule(viewer.ownerId, params),
+    // Só quando a folha abre (no "ver como" ela nunca abre).
+    preselectedClient(viewer.ownerId, params.openNew && !readOnly ? params.clientId : null),
+  ]);
 
   if (data.jobs === null) {
     return (
@@ -120,8 +151,10 @@ export default async function SchedulePage({ searchParams }: SchedulePageProps) 
       teamFilter={params.team}
       jobs={data.jobs}
       unscheduled={data.unscheduled}
+      toInvoice={data.toInvoice}
       readOnly={readOnly}
       openNew={params.openNew}
+      newJobClient={newJobClient}
     />
   );
 }
