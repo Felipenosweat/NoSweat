@@ -4,6 +4,7 @@ import { MODEL_UNSPLASH_PHOTOS } from "@nosweat/fixtures";
 import { AfterLaunch } from "@/components/landing/AfterLaunch";
 import { Hero } from "@/components/landing/Hero";
 import { LandingMotion } from "@/components/landing/LandingMotion";
+import { PhoneWall } from "@/components/landing/PhoneWall";
 import { Showcase } from "@/components/landing/Showcase";
 import { Steps } from "@/components/landing/Steps";
 import { PlusIcon } from "@/components/marketing/icons";
@@ -17,7 +18,7 @@ import { checkoutReady } from "@/server/billing";
 
 // Landing V8 ("Signature", pedido do fundador: "de realeza, que nem os templates premium", sem
 // degradê "cara de IA"): hero com título gigante em serifa e o site de exemplo que cresce →
-// parágrafo que acende → galeria de sites de exemplo (#looks) → como funciona (#story) →
+// parede de celulares com sites de exemplo → galeria de sites de exemplo (#looks) → como funciona (#story) →
 // depois de publicado (#clients, #social) → preço → dúvidas → CTA final
 // sobre foto e o nome gigante. Um só exemplo do começo ao fim: a Still Water Spa (fictícia).
 // Só afirmações que o produto cumpre hoje. Nada de números, logos ou depoimentos inventados.
@@ -62,20 +63,7 @@ export default function LandingPage() {
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
       <Hero />
 
-      {/* O QUE VEM: o parágrafo acende palavra por palavra com a rolagem. */}
-      <section aria-label="What you get" className="lp-paper py-16 lg:py-24">
-        <div className={`${wrap} grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8`}>
-          <p className="lp-eyebrow text-[#071b33]/55 lg:col-span-3 lg:pt-4">What you get</p>
-          <p
-            data-lp-words
-            className="lp-serif text-[clamp(1.7rem,3.4vw,3rem)] leading-[1.14] text-balance lg:col-span-9"
-          >
-            You tell us what you do and where. We write the site, choose photos that fit your trade,
-            add a call button for phones and a contact form, and put it online at a free address or
-            your own domain. Nothing goes live until you say so.
-          </p>
-        </div>
-      </section>
+      <PhoneWall />
 
       <Showcase />
       <Steps />

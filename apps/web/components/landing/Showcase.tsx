@@ -54,8 +54,7 @@ export function Showcase() {
             Open any of them <em>and scroll.</em>
           </h2>
           <p className="max-w-[42ch] text-base leading-relaxed text-white/65 lg:col-span-4 lg:col-start-9">
-            These businesses are made up. The sites are real No Sweat sites, built from the same
-            pieces yours will use.
+            Made-up businesses, real No Sweat sites. Tap one to look around.
           </p>
         </div>
 

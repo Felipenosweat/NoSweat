@@ -198,6 +198,22 @@
   will-change: transform;
 }
 
+/* ---------- Parede de celulares (PhoneWall): fileiras correndo devagar ---------- */
+
+.lp-drift {
+  animation: lp-drift 70s linear infinite;
+}
+
+.lp-drift-reverse {
+  animation-direction: reverse;
+}
+
+@keyframes lp-drift {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* ---------- Fotos que se revelam / zoom no hover ---------- */
 
 .lp-zoom img {
@@ -213,7 +229,8 @@
 @media (prefers-reduced-motion: reduce) {
   .lp-line > span,
   .lp-fade-up,
-  .lp-nav {
+  .lp-nav,
+  .lp-drift {
     animation: none;
   }
 
