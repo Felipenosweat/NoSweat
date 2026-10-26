@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { pageTitle } from "@/components/DashboardUi";
+import { pageLead, pageTitle } from "@/components/DashboardUi";
 
 const subscribe = () => () => {};
 
@@ -16,8 +16,17 @@ function partOfDay(hour: number): "morning" | "afternoon" | "evening" {
   return "evening";
 }
 
-/** "Good morning, Maria." + a data de hoje. */
-export function Greeting({ firstName, nowIso }: { firstName: string | null; nowIso: string }) {
+/** "Good morning, Maria." + a data de hoje + uma linha de resumo ("2 things need you today."). */
+export function Greeting({
+  firstName,
+  nowIso,
+  summary,
+}: {
+  firstName: string | null;
+  nowIso: string;
+  /** Resumo do dia embaixo da saudação (montado no servidor). */
+  summary?: string;
+}) {
   const onClient = useSyncExternalStore(
     subscribe,
     () => true,
@@ -45,6 +54,7 @@ export function Greeting({ firstName, nowIso }: { firstName: string | null; nowI
         Good {partOfDay(hour)}
         {firstName ? `, ${firstName}` : ""}.
       </h1>
+      {summary && <p className={`mt-1.5 ${pageLead}`}>{summary}</p>}
     </div>
   );
 }

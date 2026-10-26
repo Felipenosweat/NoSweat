@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import { focusRing, primaryButton } from "@/components/DashboardUi";
+import { focusRing, primaryButton, secondaryButton } from "@/components/DashboardUi";
 import { PASSWORD_MAX, PASSWORD_RULES } from "@/lib/signup-rules";
 import { changePassword, updateProfile, type PasswordState, type ProfileState } from "./actions";
 
 // Formulários da página /account (nome e senha). Com JavaScript, o envio passa pelo onSubmit
 // (sem o reset automático do <form>), então nada do que foi digitado se perde num erro.
 
-const inputClass = `mt-1.5 block h-12 w-full rounded-xl border border-slate-300 bg-white px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:border-red-400`;
+const inputClass = `mt-1.5 block h-12 w-full rounded-xl border border-slate-300 bg-white/80 px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:border-red-400`;
 
 const labelClass = "block text-sm font-semibold text-ink";
 
@@ -28,7 +28,7 @@ function FormStatus({ error, saved }: { error?: string; saved?: string }) {
     return (
       <p
         role="alert"
-        className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        className="glass-edge rounded-2xl bg-red-50/85 px-4 py-3 text-sm text-red-700"
       >
         {error}
       </p>
@@ -36,7 +36,10 @@ function FormStatus({ error, saved }: { error?: string; saved?: string }) {
   }
   if (saved) {
     return (
-      <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+      <p
+        role="status"
+        className="glass-edge rounded-2xl bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800"
+      >
         {saved}
       </p>
     );
@@ -242,7 +245,7 @@ export function PasswordForm({ readOnly }: { readOnly: boolean }) {
         readOnly={readOnly}
       />
       <div>
-        <button type="submit" disabled={pending || readOnly} className={primaryButton}>
+        <button type="submit" disabled={pending || readOnly} className={secondaryButton}>
           {pending ? "Saving…" : "Change password"}
         </button>
       </div>

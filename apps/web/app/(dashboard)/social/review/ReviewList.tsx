@@ -9,13 +9,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  cardClass,
-  cardShadow,
-  focusRing,
-  primaryButton,
-  textButton,
-} from "@/components/DashboardUi";
+import { focusRing, textButton } from "@/components/DashboardUi";
+import { EmptyState, GlassBadge, GlassButton, cx } from "@/components/glass";
 import {
   ErrorNote,
   approveBlocker,
@@ -33,8 +28,59 @@ import {
   type SocialApiError,
 } from "../shared";
 
-// Lista de revisão: todos os rascunhos do mês com a legenda inteira. Aprovar exige marcar
-// "li todas as legendas" (regra: a IA nunca aprova; o dono confirma o que vai ao ar).
+// Lista de revisão: todos os rascunhos do mês com a legenda inteira. Cada post tem "Approve" e
+// "Skip" (botões de vidro com estado ligado/desligado); a barra de vidro embaixo aprova os
+// escolhidos de uma vez e exige marcar "li todas as legendas" (regra: a IA nunca aprova; o dono
+// confirma o que vai ao ar).
+
+function CheckGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m5 12.5 4.5 4.5L19 7" />
+    </svg>
+  );
+}
+
+function SkipGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function InboxGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 13.5 6.5 5h11l2.5 8.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
+      <path d="M4 13.5h4.5l1 2h5l1-2H20" />
+    </svg>
+  );
+}
 
 type Loaded = {
   state: SocialStateResponse;
@@ -136,8 +182,8 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   if (!data) {
     return (
       <div className="mt-8 grid gap-4" aria-busy="true" aria-label="Loading your drafts">
-        <div className="h-48 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
-        <div className="h-48 animate-pulse rounded-2xl bg-slate-200/60 motion-reduce:animate-none" />
+        <div className="glass h-48 rounded-2xl motion-safe:animate-pulse" />
+        <div className="glass h-48 rounded-2xl motion-safe:animate-pulse" />
       </div>
     );
   }
@@ -153,10 +199,11 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   const auto =
     data.state.capability.publishMode === "auto" && data.state.account?.status === "active";
 
-  function toggle(id: string) {
+  /** Liga/desliga um post da aprovação em lote. */
+  function choose(id: string, include: boolean) {
     setSkipped((current) => {
       const next = new Set(current);
-      if (next.has(id)) next.delete(id);
+      if (include) next.delete(id);
       else next.add(id);
       return next;
     });
@@ -188,24 +235,32 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
 
   if (data.posts.length === 0) {
     return (
-      <div className={`mt-8 px-5 py-10 text-center ${cardClass}`}>
-        <p className="text-[15px] font-medium text-ink">
-          No drafts waiting in {monthLabel(data.month)}.
-        </p>
-        <div className="mt-2 flex flex-col items-center gap-1">
-          {laterLink}
-          <Link href={`/social?month=${data.month}`} className={textButton}>
-            Back to calendar
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        className="mt-8"
+        icon={<InboxGlyph />}
+        title={`No drafts waiting in ${monthLabel(data.month)}`}
+        description="When AI drafts your posts, they show up here for you to read and approve."
+        actions={
+          <>
+            {later && (
+              <GlassButton href={`/social/review?month=${later.month}`} variant="primary">
+                Review {later.count} in {monthLabel(later.month)}
+              </GlassButton>
+            )}
+            <GlassButton href={`/social?month=${data.month}`} variant="secondary">
+              Back to calendar
+            </GlassButton>
+          </>
+        }
+      />
     );
   }
 
   return (
     <div className="mt-8">
-      <p className="text-[13px] font-semibold text-slate-500">
+      <p className="text-[13px] font-semibold text-slate-500 tabular-nums">
         {monthLabel(data.month)} · {data.posts.length} draft{data.posts.length === 1 ? "" : "s"}
+        {ready.length > 0 && ` · ${selected.length} of ${ready.length} selected`}
       </p>
       {laterLink && <p className="mt-1">{laterLink}</p>}
 
@@ -214,40 +269,62 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
           const blocker = approveBlocker(post, nowMs);
           const approvable = blocker === null;
           const checked = approvable && !skipped.has(post.id);
-          const checkboxId = `review-${post.id}`;
+          const headingId = `review-${post.id}`;
           return (
             <li
               key={post.id}
-              className={`rounded-2xl border bg-white p-4 sm:p-5 ${cardShadow} ${
-                checked ? "border-slate-300" : "border-slate-200/70"
-              }`}
+              aria-labelledby={headingId}
+              className={cx(
+                "glass rounded-2xl p-4 motion-safe:transition-[box-shadow,opacity] motion-safe:duration-200 sm:p-5",
+                checked && "ring-2 ring-emerald-500/60",
+                approvable && !checked && "opacity-75",
+              )}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <label
-                  htmlFor={checkboxId}
-                  className={`flex min-h-11 items-center gap-3 ${approvable ? "cursor-pointer" : ""}`}
-                >
-                  <input
-                    id={checkboxId}
-                    type="checkbox"
-                    checked={checked}
-                    disabled={!approvable || pending}
-                    onChange={() => toggle(post.id)}
-                    className={`size-5 rounded accent-brand ${focusRing}`}
-                  />
-                  <span>
-                    <span className="block text-[15px] font-semibold text-ink tabular-nums">
-                      {post.scheduledAt ? formatWhen(post.scheduledAt, tz) : ""}
-                    </span>
-                    <span className="block text-[13px] text-slate-500">
-                      Post {index + 1} of {data.posts.length}
-                    </span>
-                  </span>
-                </label>
-                {blocker && (
-                  <span className="rounded-lg bg-amber-50 px-2 py-1 text-[13px] font-medium text-amber-900">
-                    {BLOCKER_BADGE[blocker]}
-                  </span>
+                <div className="min-h-11">
+                  <h2
+                    id={headingId}
+                    className="text-[15px] leading-6 font-semibold text-ink tabular-nums"
+                  >
+                    {post.scheduledAt ? formatWhen(post.scheduledAt, tz) : ""}
+                  </h2>
+                  <p className="text-[13px] text-slate-500">
+                    Post {index + 1} of {data.posts.length}
+                  </p>
+                </div>
+                {blocker ? (
+                  <GlassBadge tone="pending">{BLOCKER_BADGE[blocker]}</GlassBadge>
+                ) : (
+                  // Aprovar / pular: dois botões de vidro com estado (aria-pressed).
+                  <div
+                    role="group"
+                    aria-label={`Post ${index + 1}`}
+                    className="flex items-center gap-2"
+                  >
+                    <GlassButton
+                      variant="secondary"
+                      icon={<CheckGlyph />}
+                      aria-pressed={checked}
+                      disabled={pending}
+                      onClick={() => choose(post.id, true)}
+                      className={
+                        checked
+                          ? "bg-emerald-700! text-white! [--glass-specular:rgb(255_255_255/0.35)] hover:bg-emerald-800!"
+                          : undefined
+                      }
+                    >
+                      Approve
+                    </GlassButton>
+                    <GlassButton
+                      variant={checked ? "ghost" : "secondary"}
+                      icon={<SkipGlyph />}
+                      aria-pressed={!checked}
+                      disabled={pending}
+                      onClick={() => choose(post.id, false)}
+                    >
+                      Skip
+                    </GlassButton>
+                  </div>
                 )}
               </div>
 
@@ -259,7 +336,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                       <img
                         src={media.url}
                         alt={media.alt ?? ""}
-                        className="size-24 rounded-lg object-cover ring-1 ring-slate-200"
+                        className="size-24 rounded-xl object-cover ring-1 ring-(--glass-rim)"
                       />
                     </li>
                   ))}
@@ -278,7 +355,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
               {post.claimsFlagged && (
                 <p
                   role="note"
-                  className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"
+                  className="glass-edge mt-3 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
                 >
                   This caption mentions things like reviews, ratings, guarantees or licenses. Keep
                   them only if they&rsquo;re true for your business.
@@ -307,15 +384,16 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
         </p>
       )}
 
-      <div className="sticky bottom-0 mt-6 -mx-5 max-lg:bottom-[calc(4rem+env(safe-area-inset-bottom))] border-t border-slate-200/70 bg-white/85 px-5 py-4 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border sm:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_12px_28px_-12px_rgb(7_27_51/0.16)]">
-        <label className="flex cursor-pointer items-start gap-3">
+      {/* Barra de vidro grudada embaixo; no celular, logo acima da barra de abas flutuante. */}
+      <div className="glass-strong sticky bottom-3 z-20 mt-6 rounded-[26px] px-4 py-4 max-lg:bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+4.75rem)] sm:px-5">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3">
           <input
             type="checkbox"
             checked={confirmed}
             onChange={(event) => setConfirmedFor(event.target.checked ? data.month : null)}
             disabled={pending || selected.length === 0}
             required
-            className={`mt-0.5 size-5 shrink-0 rounded accent-brand ${focusRing}`}
+            className={`size-5 shrink-0 rounded accent-brand ${focusRing}`}
           />
           <span className="text-[15px] leading-6 text-ink">
             I read every caption and these posts are true for my business
@@ -336,16 +414,17 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
         )}
         {error && <ErrorNote error={error} className="mt-3" />}
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
+          <GlassButton
+            variant="primary"
             onClick={() => void approve()}
-            disabled={!confirmed || selected.length === 0 || pending}
-            className={primaryButton}
+            disabled={!confirmed || selected.length === 0}
+            loading={pending}
+            icon={<CheckGlyph />}
           >
             {pending
               ? "Approving…"
               : `Approve ${selected.length} post${selected.length === 1 ? "" : "s"}`}
-          </button>
+          </GlassButton>
           <span aria-live="polite" className="text-[13px] text-slate-500">
             {auto
               ? "They'll go out on Instagram at the times shown."

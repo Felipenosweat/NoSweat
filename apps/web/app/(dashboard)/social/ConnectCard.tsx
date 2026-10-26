@@ -2,18 +2,15 @@
 
 import { SocialStateResponse } from "@nosweat/schema";
 import { useState } from "react";
-import {
-  StatusBadge,
-  panelClass,
-  panelText,
-  panelTitle,
-  primaryButton,
-  secondaryButton,
-  textButton,
-} from "@/components/DashboardUi";
+import { panelClass, panelText, panelTitle } from "@/components/DashboardUi";
+import { ConfirmDialog, GlassBadge, GlassMenu, glassButtonClass } from "@/components/glass";
 import { ErrorNote, socialApi, toApiError, type SocialApiError } from "./shared";
 
-// Cartão do Instagram: conectar, conta conectada, reconectar ou desconectar.
+// Cartão do Instagram. Quatro estados, cada um com o selo e a próxima ação bem claros:
+// - postagem automática ainda não liberada (modo manual): como funciona postar à mão;
+// - liberada e sem conta: "Connect Instagram";
+// - conta pedindo reconexão: aviso + "Reconnect Instagram";
+// - conectada: tudo certo; "Disconnect" fica no menu "⋯" (com confirmação).
 // "Connect" é navegação de página inteira (a rota manda para o login do Instagram).
 
 const CONNECT_URL = "/api/social/instagram/connect";
@@ -34,6 +31,13 @@ function InstagramGlyph({ className = "size-5" }: { className?: string }) {
     </svg>
   );
 }
+
+/** Passos do modo manual (sem postagem automática). */
+const MANUAL_STEPS = [
+  "Plan and approve your posts here.",
+  "On the day, open the post from your calendar.",
+  "Copy the caption, save the photo and share it on Instagram.",
+];
 
 export function ConnectCard({
   state,
@@ -68,9 +72,20 @@ export function ConnectCard({
     }
   }
 
+  const badge =
+    live?.status === "active" ? (
+      <GlassBadge tone="live">Connected</GlassBadge>
+    ) : live?.status === "needs_reconnect" ? (
+      <GlassBadge tone="pending">Needs reconnect</GlassBadge>
+    ) : manual ? (
+      <GlassBadge tone="neutral">Auto-posting soon</GlassBadge>
+    ) : (
+      <GlassBadge tone="draft">Not connected</GlassBadge>
+    );
+
   return (
     <section aria-labelledby="instagram-heading" className={panelClass}>
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {live?.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- foto de perfil do Instagram (host externo)
@@ -79,10 +94,10 @@ export function ConnectCard({
               alt=""
               width={40}
               height={40}
-              className="size-10 shrink-0 rounded-full object-cover ring-1 ring-slate-200"
+              className="size-10 shrink-0 rounded-full object-cover ring-1 ring-(--glass-rim)"
             />
           ) : (
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-ink ring-1 ring-slate-200">
+            <span className="glass-edge flex size-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-ink">
               <InstagramGlyph />
             </span>
           )}
@@ -91,81 +106,104 @@ export function ConnectCard({
               Instagram
             </h2>
             <p className="truncate text-[13px] leading-5 text-slate-500">
-              {live ? `@${live.username}` : "Not connected"}
+              {live ? `@${live.username}` : manual ? "You post, we plan" : "Not connected"}
             </p>
           </div>
         </div>
-        {live?.status === "active" && <StatusBadge tone="live">Connected</StatusBadge>}
-        {live?.status === "needs_reconnect" && (
-          <StatusBadge tone="pending">Needs reconnect</StatusBadge>
-        )}
+        <div className="flex shrink-0 items-center gap-1">
+          {badge}
+          {live && (
+            <GlassMenu
+              label={`More actions for @${live.username}`}
+              items={[
+                {
+                  label: "Disconnect Instagram",
+                  destructive: true,
+                  onSelect: () => {
+                    setError(null);
+                    setConfirming(true);
+                  },
+                },
+              ]}
+            />
+          )}
+        </div>
       </div>
 
-      {live?.status === "needs_reconnect" && (
-        <div role="status" className="mt-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Instagram stopped letting us post for you, so your scheduled posts are paused. Reconnect
-          to pick up where you left off.
-        </div>
+      {live?.status === "needs_reconnect" ? (
+        <>
+          <p
+            role="status"
+            className="glass-edge mt-4 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
+          >
+            Instagram stopped letting us post for you, so your scheduled posts are paused. Reconnect
+            to pick up where you left off.
+          </p>
+          <div className="mt-4">
+            {/* <a> e não <Link>: a rota da API redireciona para o login do Instagram. */}
+            <a href={CONNECT_URL} className={glassButtonClass({ variant: "primary" })}>
+              <InstagramGlyph className="size-4" />
+              Reconnect Instagram
+            </a>
+          </div>
+        </>
+      ) : live?.status === "active" ? (
+        <p className={`mt-4 ${panelText}`}>
+          Approved posts go out automatically at their scheduled time. You don&rsquo;t need to open
+          the app.
+        </p>
+      ) : manual ? (
+        <>
+          <p className={`mt-4 ${panelText}`}>
+            Automatic posting isn&rsquo;t on for your account yet. Until then, you share each post
+            yourself in a few taps:
+          </p>
+          <ol className="mt-3 grid gap-2">
+            {MANUAL_STEPS.map((step, index) => (
+              <li key={step} className="flex items-start gap-3 text-[15px] leading-6 text-ink">
+                <span
+                  aria-hidden="true"
+                  className="glass-edge grid size-6 shrink-0 place-items-center rounded-full bg-brand/10 text-[12px] font-semibold text-brand tabular-nums"
+                >
+                  {index + 1}
+                </span>
+                {step}
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : (
+        <>
+          <p className={`mt-4 ${panelText}`}>
+            Connect a Business or Creator account and approved posts go out on time, without you
+            opening the app.
+          </p>
+          <div className="mt-4">
+            <a href={CONNECT_URL} className={glassButtonClass({ variant: "secondary" })}>
+              <InstagramGlyph className="size-4" />
+              Connect Instagram
+            </a>
+          </div>
+        </>
       )}
 
-      {manual ? (
-        <p className={`mt-4 ${panelText}`}>
-          Auto-posting opens soon. For now, plan and approve your posts here; on the day, open the
-          post, copy the caption, save the photo and share it on Instagram.
-        </p>
-      ) : !live ? (
-        <p className={`mt-4 ${panelText}`}>
-          Connect a Business or Creator account and approved posts go out on time, without you
-          opening the app.
-        </p>
-      ) : live.status === "active" ? (
-        <p className={`mt-4 ${panelText}`}>
-          Approved posts go out automatically at their scheduled time.
-        </p>
-      ) : null}
+      {error && !confirming && <ErrorNote error={error} className="mt-3" />}
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        {!manual && !live && (
-          <a href={CONNECT_URL} className={primaryButton}>
-            <InstagramGlyph className="size-4" />
-            Connect Instagram
-          </a>
-        )}
-        {live?.status === "needs_reconnect" && (
-          <a href={CONNECT_URL} className={primaryButton}>
-            Reconnect Instagram
-          </a>
-        )}
-        {live && !confirming && (
-          <button type="button" onClick={() => setConfirming(true)} className={textButton}>
-            Disconnect
-          </button>
-        )}
-        {live && confirming && (
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-sm text-slate-600">
-              Disconnect @{live.username}? Scheduled posts will pause.
-            </span>
-            <button
-              type="button"
-              onClick={() => void disconnect()}
-              disabled={pending}
-              className={secondaryButton}
-            >
-              {pending ? "Disconnecting…" : "Yes, disconnect"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirming(false)}
-              disabled={pending}
-              className={textButton}
-            >
-              Keep it
-            </button>
-          </div>
-        )}
-      </div>
-      {error && <ErrorNote error={error} className="mt-3" />}
+      {live && (
+        <ConfirmDialog
+          open={confirming}
+          title={`Disconnect @${live.username}?`}
+          confirmLabel="Disconnect"
+          pendingLabel="Disconnecting…"
+          pending={pending}
+          error={confirming ? (error?.message ?? null) : null}
+          onConfirm={() => void disconnect()}
+          onCancel={() => setConfirming(false)}
+        >
+          Scheduled posts will pause until you connect again. Your drafts and calendar stay as they
+          are.
+        </ConfirmDialog>
+      )}
     </section>
   );
 }

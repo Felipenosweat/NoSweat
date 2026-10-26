@@ -23,11 +23,12 @@ import { markShared, splitSiteUrl } from "@/components/DashboardUi";
  */
 export type PublishState = "draft" | "outdated" | "current";
 
-// Classes locais (o visual do painel muda em outro trabalho; este modal não depende dele).
+// Classes locais (o modal também abre no editor). Superfície de vidro (glass-strong, de
+// app/globals.css): com "reduzir transparência" vira fundo sólido.
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
-const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-white hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
-const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
+const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
+const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
 
 /** QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem. */
 function QrCode({ value, className = "" }: { value: string; className?: string }) {
@@ -262,7 +263,7 @@ export function PublishDialog({
         // Clique no fundo escuro (fora da caixa) fecha.
         if (event.target === event.currentTarget) dialogRef.current?.close();
       }}
-      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white p-0 text-ink shadow-[0_1px_2px_rgb(7_27_51/.06),0_24px_48px_-12px_rgb(7_27_51/.25)] backdrop:bg-ink/30 open:flex sm:m-auto sm:w-[calc(100%-3rem)] sm:max-w-[30rem] sm:rounded-2xl motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(.2,.8,.2,1)] motion-safe:starting:open:translate-y-3 motion-safe:starting:open:opacity-0"
+      className="glass-strong m-0 mt-auto max-h-[92dvh] w-full max-w-none flex-col overflow-hidden rounded-t-[28px] border-0 p-0 text-ink backdrop:bg-ink/30 open:flex sm:m-auto sm:w-[calc(100%-3rem)] sm:max-w-[30rem] sm:rounded-[28px] motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-[cubic-bezier(.2,.8,.2,1)] motion-safe:starting:open:translate-y-3 motion-safe:starting:open:opacity-0"
     >
       {open && (
         <>
@@ -281,7 +282,7 @@ export function PublishDialog({
                 type="button"
                 onClick={() => dialogRef.current?.close()}
                 aria-label="Close"
-                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
               >
                 <Svg className="size-5">
                   <path d="M6 18 18 6M6 6l12 12" />
@@ -300,7 +301,7 @@ export function PublishDialog({
             {/* ---------- Endereço grátis ---------- */}
             <section
               aria-labelledby="free-address-title"
-              className="mt-4 rounded-2xl border border-slate-200 bg-surface p-4"
+              className="glass-edge mt-4 rounded-2xl bg-white/60 p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 id="free-address-title" className="text-[13px] font-semibold text-ink">
@@ -421,7 +422,7 @@ export function PublishDialog({
             </p>
           </div>
 
-          <div className="shrink-0 border-t border-slate-200 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
+          <div className="shrink-0 border-t border-slate-900/10 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
             {error && (
               <p
                 role="alert"
@@ -448,7 +449,7 @@ export function PublishDialog({
               <button
                 type="button"
                 disabled
-                className="mt-2 inline-flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-100 text-[15px] font-semibold text-slate-500"
+                className="mt-2 inline-flex h-12 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-slate-900/[0.06] text-[15px] font-semibold text-slate-600"
               >
                 <CheckIcon />
                 Latest version published
@@ -460,7 +461,7 @@ export function PublishDialog({
                 disabled={pending}
                 aria-busy={pending}
                 aria-describedby={needsPlan ? "publish-plan-note" : undefined}
-                className={`mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px disabled:cursor-wait disabled:opacity-80 motion-reduce:transition-none ${focusRing}`}
+                className={`glass-tint mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-[background-color,scale] duration-150 [--glass-tint:#0066ff] hover:[--glass-tint:#0052cc] active:scale-[0.98] disabled:cursor-wait disabled:opacity-80 motion-reduce:transition-none ${focusRing}`}
               >
                 <Svg className="size-4">
                   <path d="M4.5 12h15m0 0-6.75-6.75M19.5 12l-6.75 6.75" strokeWidth={2} />

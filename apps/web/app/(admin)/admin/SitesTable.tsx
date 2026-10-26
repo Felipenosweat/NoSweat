@@ -2,13 +2,24 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { StatusBadge, focusRing, textButton } from "@/components/DashboardUi";
+import {
+  ConfirmDialog,
+  EmptyState,
+  GlassBadge,
+  GlassButton,
+  GlassMenu,
+  GlassToolbar,
+  cx,
+  focusRing,
+  type GlassMenuItem,
+} from "@/components/glass";
+import { Notice, linkClass, mobileCard, rowClass, td, th } from "./AdminUi";
 import { deleteSitesAction, unpublishSiteAction, type AdminActionResult } from "./actions";
-import { ConfirmDialog } from "./ConfirmDialog";
 
-// Lista de sites do admin (no /admin e na ficha da conta): ações por site (editar, abrir no ar,
-// gerenciar, tirar do ar, apagar) e seleção em massa para apagar sites de teste. Tabela no
-// computador, cartões no celular. Cada ação pede confirmação com o nome do site.
+// Lista de sites do admin (em /admin/websites e na ficha da conta). Cada linha tem UM menu "⋯"
+// (Edit, Open live, Manage, Take offline, Delete); o que tira do ar ou apaga pede confirmação na
+// folha de vidro com o nome do site. Seleção em massa: aparece uma barra flutuante embaixo
+// ("3 selected · Delete · Clear"). Tabela no computador, cartões no celular.
 
 export type AdminSiteRow = {
   id: string;
@@ -29,74 +40,69 @@ type Pending =
   | { kind: "offline"; id: string; name: string }
   | { kind: "delete"; ids: string[]; names: string[] };
 
-const linkClass = `rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`;
-const dangerLink = `rounded-sm font-semibold text-red-700 underline-offset-4 hover:underline ${focusRing}`;
-const plainLink = `rounded-sm font-semibold text-slate-700 underline-offset-4 hover:underline ${focusRing}`;
-const th = "px-4 py-3 font-medium whitespace-nowrap";
-const td = "px-4 py-3 align-top";
-const checkbox = `size-4 rounded border-slate-300 accent-brand ${focusRing}`;
 const SHOWN_NAMES = 8;
 
-function Actions({
-  row,
-  onOffline,
-  onDelete,
+/** Caixa de seleção com área de toque de 44px (a caixinha continua pequena). */
+function SelectBox({
+  checked,
+  onChange,
+  label,
+  indeterminate = false,
 }: {
-  row: AdminSiteRow;
-  onOffline: () => void;
-  onDelete: () => void;
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  indeterminate?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
-      <Link href={`/sites/${row.id}/edit`} className={linkClass}>
-        Edit
-      </Link>
-      {row.liveHref && (
-        <a href={row.liveHref} target="_blank" rel="noreferrer" className={linkClass}>
-          Open live<span className="sr-only"> (opens in a new tab)</span> ↗
-        </a>
-      )}
-      <Link href={`/sites/${row.id}`} className={linkClass}>
-        Manage
-      </Link>
-      {row.published && (
-        <button type="button" onClick={onOffline} className={plainLink}>
-          Take offline
-        </button>
-      )}
-      <button type="button" onClick={onDelete} className={dangerLink}>
-        Delete
-      </button>
-    </div>
+    <label className="-m-2.5 inline-grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl hover:bg-(--glass-ghost-hover) md:size-9 md:-m-1.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        aria-label={label}
+        // `indeterminate` só existe como propriedade do DOM (não há atributo HTML).
+        ref={(node) => {
+          if (node) node.indeterminate = indeterminate;
+        }}
+        className={cx("size-[18px] cursor-pointer rounded-md accent-brand", focusRing)}
+      />
+    </label>
   );
 }
 
 function Owner({ owner }: { owner: AdminSiteRow["owner"] }) {
-  if (!owner) return <span className="text-slate-500">Visitor (no account)</span>;
+  if (!owner) return <span className="text-(--glass-fg-muted)">Visitor (no account)</span>;
   return (
     <span className="inline-flex min-w-0 flex-wrap items-center gap-1.5">
-      <Link href={`/admin/clients/${owner.id}`} className={`${linkClass} break-all`}>
+      <Link href={`/admin/clients/${owner.id}`} className={cx(linkClass, "break-all")}>
         {owner.label}
       </Link>
-      {owner.test && <StatusBadge tone="pending">Test</StatusBadge>}
+      {owner.test && (
+        <GlassBadge tone="pending" size="sm">
+          Test
+        </GlassBadge>
+      )}
     </span>
   );
 }
 
 function Address({ row }: { row: AdminSiteRow }) {
-  if (!row.address) return <span className="text-slate-400">—</span>;
-  return <span className="font-mono text-xs break-all text-slate-600">{row.address}</span>;
+  if (!row.address) return <span className="text-(--glass-fg-muted)">—</span>;
+  return <span className="font-mono text-xs break-all text-(--glass-fg-muted)">{row.address}</span>;
 }
 
 export function SitesTable({
   rows,
   showOwner = true,
   emptyText = "No websites.",
+  emptyDescription,
 }: {
   rows: AdminSiteRow[];
   /** Coluna do dono (na ficha da conta não precisa). */
   showOwner?: boolean;
   emptyText?: string;
+  emptyDescription?: string;
 }) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [confirming, setConfirming] = useState<Pending | null>(null);
@@ -107,6 +113,7 @@ export function SitesTable({
   // Só conta o que ainda está na lista (sites apagados somem quando a página recarrega).
   const selectedRows = rows.filter((row) => selected.has(row.id));
   const allSelected = rows.length > 0 && selectedRows.length === rows.length;
+  const someSelected = selectedRows.length > 0 && !allSelected;
 
   const toggle = (id: string) =>
     setSelected((current) => {
@@ -158,115 +165,112 @@ export function SitesTable({
 
   const askDelete = (ids: string[], names: string[]) => open({ kind: "delete", ids, names });
 
+  const menuItems = (row: AdminSiteRow): GlassMenuItem[] => [
+    { type: "link", label: "Edit", href: `/sites/${row.id}/edit`, key: "edit" },
+    ...(row.liveHref
+      ? [
+          {
+            type: "link" as const,
+            label: "Open live",
+            href: row.liveHref,
+            external: true,
+            key: "live",
+          },
+        ]
+      : []),
+    { type: "link", label: "Manage", href: `/sites/${row.id}`, key: "manage" },
+    ...(row.published
+      ? [
+          {
+            label: "Take offline",
+            onSelect: () => open({ kind: "offline", id: row.id, name: row.name }),
+            key: "offline",
+          },
+        ]
+      : []),
+    { type: "separator", key: "sep" },
+    {
+      label: "Delete…",
+      destructive: true,
+      onSelect: () => askDelete([row.id], [row.name]),
+      key: "delete",
+    },
+  ];
+
+  const deleteCount = confirming?.kind === "delete" ? confirming.names.length : 0;
+
   return (
-    <div>
+    <div className="grid gap-3">
       {result && (
-        <p
-          role={result.ok ? "status" : "alert"}
-          className={`mx-4 mt-4 flex items-start justify-between gap-3 rounded-lg px-3 py-2 text-sm ${
-            result.ok ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-700"
-          }`}
-        >
-          <span>{result.message}</span>
-          <button
-            type="button"
-            onClick={() => setResult(null)}
-            className={`shrink-0 rounded-sm font-semibold ${focusRing}`}
-          >
-            <span aria-hidden="true">×</span>
-            <span className="sr-only">Dismiss</span>
-          </button>
-        </p>
+        <Notice tone={result.ok ? "success" : "error"} onDismiss={() => setResult(null)}>
+          {result.message}
+        </Notice>
       )}
 
       {rows.length === 0 ? (
-        <p className="px-5 py-4 text-[15px] text-slate-600">{emptyText}</p>
+        <EmptyState title={emptyText} description={emptyDescription} />
       ) : (
         <>
-          <div className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-100 px-4 py-2">
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleAll}
-                className={checkbox}
-              />
-              Select all shown
-            </label>
-            {selectedRows.length > 0 && (
-              <>
-                <span className="text-sm text-slate-500 tabular-nums">
-                  {selectedRows.length} selected
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    askDelete(
-                      selectedRows.map((row) => row.id),
-                      selectedRows.map((row) => row.name),
-                    )
-                  }
-                  className={`inline-flex min-h-11 items-center rounded-lg px-1 text-[15px] font-semibold text-red-700 hover:text-red-800 sm:min-h-10 ${focusRing}`}
-                >
-                  Delete selected
-                </button>
-                <button type="button" onClick={() => setSelected(new Set())} className={textButton}>
-                  Clear
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Computador: tabela. */}
-          <div className="hidden overflow-x-auto md:block">
+          {/* Computador: tabela num cartão de vidro. */}
+          <div className="glass hidden overflow-x-auto rounded-2xl md:block">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
+              <thead>
                 <tr>
-                  <th className={`${th} w-10`}>
-                    <span className="sr-only">Select</span>
+                  <th className={cx(th, "w-12")}>
+                    <SelectBox
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      onChange={toggleAll}
+                      label="Select all shown websites"
+                    />
                   </th>
                   <th className={th}>Business</th>
                   {showOwner && <th className={th}>Owner</th>}
                   <th className={th}>Status</th>
                   <th className={th}>Address</th>
                   <th className={th}>Created</th>
-                  <th className={th}>Actions</th>
+                  <th className={cx(th, "w-14")}>
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={row.id} className="border-t border-slate-100">
+                  <tr
+                    key={row.id}
+                    className={cx(rowClass, selected.has(row.id) && "bg-brand/[0.06]")}
+                  >
                     <td className={td}>
-                      <input
-                        type="checkbox"
+                      <SelectBox
                         checked={selected.has(row.id)}
                         onChange={() => toggle(row.id)}
-                        aria-label={`Select ${row.name}`}
-                        className={`${checkbox} mt-0.5`}
+                        label={`Select ${row.name}`}
                       />
                     </td>
-                    <td className={td}>
-                      <span className="block font-semibold text-ink">{row.name}</span>
-                      <span className="block text-[13px] text-slate-500">{row.template}</span>
+                    <td className={cx(td, "min-w-[11rem]")}>
+                      <span className="block font-semibold break-words text-(--glass-fg)">
+                        {row.name}
+                      </span>
+                      <span className="block text-[13px] text-(--glass-fg-muted)">
+                        {row.template}
+                      </span>
                     </td>
                     {showOwner && (
-                      <td className={`${td} max-w-[16rem]`}>
+                      <td className={cx(td, "max-w-[16rem]")}>
                         <Owner owner={row.owner} />
                       </td>
                     )}
                     <td className={td}>
-                      <StatusBadge tone={row.badge.tone}>{row.badge.label}</StatusBadge>
+                      <GlassBadge tone={row.badge.tone}>{row.badge.label}</GlassBadge>
                     </td>
-                    <td className={`${td} max-w-[14rem]`}>
+                    <td className={cx(td, "max-w-[14rem]")}>
                       <Address row={row} />
                     </td>
-                    <td className={`${td} whitespace-nowrap text-slate-600`}>{row.created}</td>
-                    <td className={`${td} min-w-[15rem]`}>
-                      <Actions
-                        row={row}
-                        onOffline={() => open({ kind: "offline", id: row.id, name: row.name })}
-                        onDelete={() => askDelete([row.id], [row.name])}
-                      />
+                    <td className={cx(td, "whitespace-nowrap text-(--glass-fg-muted)")}>
+                      {row.created}
+                    </td>
+                    <td className={cx(td, "text-right")}>
+                      <GlassMenu items={menuItems(row)} label={`Actions for ${row.name}`} />
                     </td>
                   </tr>
                 ))}
@@ -274,47 +278,99 @@ export function SitesTable({
             </table>
           </div>
 
-          {/* Celular: cartões. */}
-          <ul className="divide-y divide-slate-100 md:hidden">
-            {rows.map((row) => (
-              <li key={row.id} className="flex gap-3 px-4 py-4">
-                <input
-                  type="checkbox"
-                  checked={selected.has(row.id)}
-                  onChange={() => toggle(row.id)}
-                  aria-label={`Select ${row.name}`}
-                  className={`${checkbox} mt-1 shrink-0`}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold break-words text-ink">{row.name}</span>
-                    <StatusBadge tone={row.badge.tone}>{row.badge.label}</StatusBadge>
-                  </div>
-                  <p className="mt-0.5 text-[13px] text-slate-500">
-                    {row.template} · created {row.created}
-                  </p>
-                  {showOwner && (
-                    <p className="mt-1 text-sm">
-                      <Owner owner={row.owner} />
-                    </p>
+          {/* Celular: um cartão por site, com o mesmo menu "⋯". */}
+          <div className="md:hidden">
+            <div className="flex min-h-11 items-center gap-3 px-1">
+              <SelectBox
+                checked={allSelected}
+                indeterminate={someSelected}
+                onChange={toggleAll}
+                label="Select all shown websites"
+              />
+              <span className="text-sm font-medium text-(--glass-fg-muted)">Select all</span>
+            </div>
+            <ul className="mt-1 grid gap-2.5">
+              {rows.map((row) => (
+                <li
+                  key={row.id}
+                  className={cx(
+                    mobileCard,
+                    "flex items-start gap-3",
+                    selected.has(row.id) && "ring-2 ring-brand/40",
                   )}
-                  {row.address && (
-                    <p className="mt-1">
-                      <Address row={row} />
-                    </p>
-                  )}
-                  <div className="mt-2">
-                    <Actions
-                      row={row}
-                      onOffline={() => open({ kind: "offline", id: row.id, name: row.name })}
-                      onDelete={() => askDelete([row.id], [row.name])}
+                >
+                  <div className="pt-0.5">
+                    <SelectBox
+                      checked={selected.has(row.id)}
+                      onChange={() => toggle(row.id)}
+                      label={`Select ${row.name}`}
                     />
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold break-words text-(--glass-fg)">{row.name}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <GlassBadge tone={row.badge.tone} size="sm">
+                        {row.badge.label}
+                      </GlassBadge>
+                      <span className="text-[13px] text-(--glass-fg-muted)">
+                        {row.template} · {row.created}
+                      </span>
+                    </div>
+                    {showOwner && (
+                      <p className="mt-2 text-sm">
+                        <Owner owner={row.owner} />
+                      </p>
+                    )}
+                    {row.address && (
+                      <p className="mt-1">
+                        <Address row={row} />
+                      </p>
+                    )}
+                  </div>
+                  <div className="-mt-1 -mr-1">
+                    <GlassMenu items={menuItems(row)} label={`Actions for ${row.name}`} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </>
+      )}
+
+      {/* Barra flutuante da seleção em massa (vidro por cima do conteúdo). */}
+      {selectedRows.length > 0 && (
+        <GlassToolbar
+          role="region"
+          aria-label="Selected websites"
+          sticky={false}
+          className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 mx-auto w-auto max-w-md flex-nowrap! sm:inset-x-0 sm:w-fit sm:max-w-none"
+          actions={
+            <>
+              <GlassButton
+                variant="ghost"
+                onClick={() =>
+                  askDelete(
+                    selectedRows.map((row) => row.id),
+                    selectedRows.map((row) => row.name),
+                  )
+                }
+                className="text-red-700! hover:text-red-800!"
+              >
+                Delete
+              </GlassButton>
+              <GlassButton variant="secondary" onClick={() => setSelected(new Set())}>
+                Clear
+              </GlassButton>
+            </>
+          }
+        >
+          <span
+            aria-live="polite"
+            className="pl-3 text-[15px] font-semibold whitespace-nowrap text-(--glass-fg) tabular-nums"
+          >
+            {selectedRows.length} selected
+          </span>
+        </GlassToolbar>
       )}
 
       <ConfirmDialog
@@ -322,13 +378,13 @@ export function SitesTable({
         title={
           confirming?.kind === "offline"
             ? `Take ${confirming.name} offline?`
-            : confirming?.kind === "delete" && confirming.names.length === 1
-              ? `Delete ${confirming.names[0] ?? "this website"}?`
-              : `Delete ${confirming?.kind === "delete" ? confirming.names.length : 0} websites?`
+            : deleteCount === 1
+              ? `Delete ${confirming?.kind === "delete" ? (confirming.names[0] ?? "this website") : "this website"}?`
+              : `Delete ${deleteCount} websites?`
         }
         confirmLabel={confirming?.kind === "offline" ? "Take offline" : "Delete forever"}
         pendingLabel={confirming?.kind === "offline" ? "Taking offline…" : "Deleting…"}
-        danger={confirming?.kind !== "offline"}
+        tone={confirming?.kind === "offline" ? "primary" : "destructive"}
         pending={pending}
         error={dialogError}
         onConfirm={run}
@@ -342,21 +398,19 @@ export function SitesTable({
         ) : confirming?.kind === "delete" ? (
           <>
             <p>
-              {confirming.names.length === 1
+              {deleteCount === 1
                 ? "It goes offline, its custom domain is released and its versions and messages are erased."
                 : "They go offline, custom domains are released and their versions and messages are erased."}{" "}
               This can&rsquo;t be undone.
             </p>
-            {confirming.names.length > 1 && (
-              <ul className="mt-2 max-h-40 list-disc overflow-y-auto pl-5 text-sm text-slate-700">
+            {deleteCount > 1 && (
+              <ul className="mt-2 max-h-40 list-disc overflow-y-auto pl-5 text-sm">
                 {confirming.names.slice(0, SHOWN_NAMES).map((name, index) => (
                   <li key={`${index}-${name}`} className="break-words">
                     {name}
                   </li>
                 ))}
-                {confirming.names.length > SHOWN_NAMES && (
-                  <li>and {confirming.names.length - SHOWN_NAMES} more</li>
-                )}
+                {deleteCount > SHOWN_NAMES && <li>and {deleteCount - SHOWN_NAMES} more</li>}
               </ul>
             )}
           </>

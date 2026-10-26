@@ -74,13 +74,16 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
       {connected === "1" && !errorText && (
         <p
           role="status"
-          className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
+          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
         >
           Instagram connected. Approved posts will go out at their scheduled time.
         </p>
       )}
       {errorText && (
-        <p role="alert" className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-[15px] text-red-700">
+        <p
+          role="alert"
+          className="glass-edge mt-6 rounded-2xl bg-red-50/85 px-4 py-3 text-[15px] text-red-700"
+        >
           {errorText}
           {error === "payment_required" && (
             <>
@@ -98,7 +101,7 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
       {approvedCount > 0 && (
         <p
           role="status"
-          className="mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900"
+          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
         >
           {approvedCount} post{approvedCount === 1 ? "" : "s"} approved.
         </p>

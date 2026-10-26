@@ -17,6 +17,7 @@ import {
   primaryButton,
   secondaryButton,
 } from "@/components/DashboardUi";
+import { GlassBadge, GlassSegmented } from "@/components/glass";
 import { CheckIcon } from "@/components/marketing/icons";
 
 export type PlanCard = {
@@ -190,7 +191,7 @@ export function BillingPlans({
       {ended && !current.active && (
         <section
           role="status"
-          className="mb-8 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[15px] text-amber-950"
+          className="glass-edge mb-8 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
         >
           <p>
             Your {ended.name} plan ended on {dateFormat.format(new Date(ended.endedOn))}, so your
@@ -254,27 +255,15 @@ export function BillingPlans({
           </p>
         </section>
       )}
-      <div
-        role="group"
+      <GlassSegmented
         aria-label="Billing period"
-        className="inline-flex rounded-xl bg-slate-200/60 p-1"
-      >
-        {(["monthly", "annual"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={interval === value}
-            onClick={() => setBillingInterval(value)}
-            className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
-              interval === value
-                ? "bg-white text-ink shadow-[0_1px_2px_rgb(7_27_51/0.08),0_1px_1px_rgb(7_27_51/0.04)]"
-                : "text-slate-600 hover:text-ink"
-            }`}
-          >
-            {value === "monthly" ? "Monthly" : "Annual · 2 months free"}
-          </button>
-        ))}
-      </div>
+        options={[
+          { value: "monthly", label: "Monthly" },
+          { value: "annual", label: "Annual · 2 months free" },
+        ]}
+        value={interval}
+        onChange={setBillingInterval}
+      />
 
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         {plans.map((plan) => {
@@ -283,16 +272,16 @@ export function BillingPlans({
             <li
               key={plan.id}
               aria-labelledby={`billing-plan-${plan.id}`}
-              className={`${panelClass} flex flex-col ${recommended ? "ring-2 ring-brand" : ""}`}
+              className={`${panelClass} flex flex-col ${recommended ? "ring-2 ring-brand/70 glass-raised" : ""}`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 id={`billing-plan-${plan.id}`} className={panelTitle}>
                   {plan.name}
                 </h2>
                 {recommended && (
-                  <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+                  <GlassBadge tone="info" dot={false}>
                     Recommended
-                  </span>
+                  </GlassBadge>
                 )}
               </div>
               <p className="mt-3 font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
@@ -323,9 +312,10 @@ export function BillingPlans({
               <div className="mt-auto pt-5">
                 {isCurrent(plan.id) ? (
                   <p
-                    className={`${secondaryButton} w-full cursor-default hover:bg-white`}
+                    className="glass-edge flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-emerald-50/85 text-[15px] font-semibold text-emerald-800 sm:min-h-10"
                     aria-current="true"
                   >
+                    <CheckIcon className="size-4" />
                     Current plan
                   </p>
                 ) : manualActive ? (
@@ -334,7 +324,7 @@ export function BillingPlans({
                       contact,
                       `Hi! I'd like to switch from ${currentName} to ${plan.name} (${interval}).`,
                     )}
-                    className={`${primaryButton} w-full`}
+                    className={`${recommended ? primaryButton : secondaryButton} w-full`}
                   >
                     {`Switch to ${plan.name}`}
                   </ContactLink>
@@ -349,7 +339,7 @@ export function BillingPlans({
                       )
                     }
                     disabled={pending !== null}
-                    className={`${primaryButton} w-full`}
+                    className={`${recommended ? primaryButton : secondaryButton} w-full`}
                   >
                     {pending === plan.id
                       ? "Opening checkout…"
@@ -361,7 +351,7 @@ export function BillingPlans({
                       contact,
                       `Hi! I'd like the ${plan.name} plan (${interval}) for my website.`,
                     )}
-                    className={`${primaryButton} w-full`}
+                    className={`${recommended ? primaryButton : secondaryButton} w-full`}
                   >
                     {`Choose ${plan.name}`}
                   </ContactLink>

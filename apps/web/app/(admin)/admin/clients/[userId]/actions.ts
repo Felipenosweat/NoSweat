@@ -45,7 +45,7 @@ async function requireClient(userId: string) {
 
 function refresh(userId: string) {
   revalidatePath(`/admin/clients/${userId}`);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Histórico de notas no próprio campo: a nova (com a data) na frente das antigas. */

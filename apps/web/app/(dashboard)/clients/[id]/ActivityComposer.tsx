@@ -3,7 +3,7 @@
 import { ClientActivityResponse, CreateClientActivityRequest } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
-import { cardClass, primaryButton } from "@/components/DashboardUi";
+import { GlassButton, GlassSegmented } from "@/components/glass";
 import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientUrl, clientsApi, toClientsError, type ClientsApiError } from "../api";
 import { fieldClass, fieldErrorClass, labelClass } from "../ui";
@@ -13,8 +13,8 @@ import { fieldClass, fieldErrorClass, labelClass } from "../ui";
 type Kind = "note" | "job";
 
 const KINDS: { value: Kind; label: string }[] = [
-  { value: "note", label: "Note" },
-  { value: "job", label: "Job done" },
+  { value: "note", label: "Add note" },
+  { value: "job", label: "Log a job" },
 ];
 
 /** "AAAA-MM-DD" de hoje no relógio de quem está usando. */
@@ -87,32 +87,23 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
       onSubmit={(event) => void submit(event)}
       noValidate
       aria-label="Add to history"
-      className={`p-4 sm:p-5 ${cardClass}`}
+      className="glass rounded-2xl p-4 sm:p-5"
     >
-      <fieldset disabled={pending}>
-        <legend className="sr-only">What are you adding?</legend>
-        <div className="inline-flex gap-1 rounded-xl bg-slate-100 p-1">
-          {KINDS.map((option) => (
-            <label
-              key={option.value}
-              className="flex min-h-11 cursor-pointer items-center rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 hover:text-ink has-checked:bg-white has-checked:text-ink has-checked:ring-1 has-checked:ring-slate-200 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand sm:min-h-9"
-            >
-              <input
-                type="radio"
-                name={`${ids}-kind`}
-                value={option.value}
-                checked={kind === option.value}
-                onChange={() => {
-                  setKind(option.value);
-                  setFieldError({});
-                }}
-                className="sr-only"
-              />
-              {option.label}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <GlassSegmented
+        aria-label="What are you adding?"
+        options={KINDS.map((option) => ({
+          value: option.value,
+          label: option.label,
+          disabled: pending,
+        }))}
+        value={kind}
+        onChange={(next) => {
+          setKind(next);
+          setFieldError({});
+        }}
+        fullWidth
+        className="sm:w-80"
+      />
 
       <fieldset disabled={pending} className="mt-4 grid gap-4">
         <div>
@@ -191,9 +182,9 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
       {error && <ErrorNote error={error} className="mt-4" />}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending} className={primaryButton}>
-          {pending ? "Saving…" : kind === "job" ? "Save job" : "Add note"}
-        </button>
+        <GlassButton type="submit" variant="primary" loading={pending}>
+          {pending ? "Saving…" : kind === "job" ? "Save job" : "Save note"}
+        </GlassButton>
         <p aria-live="polite" className="text-[13px] text-slate-500">
           {savedText}
         </p>

@@ -1,4 +1,4 @@
-import type { Client } from "@nosweat/schema";
+import type { Client, CreditBalance } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -8,9 +8,7 @@ import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardCh
 import {
   ChevronRightIcon,
   IconTile,
-  StatusBadge,
   cardClass,
-  cardShadowHover,
   focusRing,
   insetDivider,
   sectionTitle,
@@ -20,12 +18,12 @@ import { ExampleSiteEmpty } from "@/components/ExampleSiteEmpty";
 import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
 import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
-import { MODULES, type HubModule } from "@/lib/modules";
 import { getAccount } from "@/server/admin";
 import { createSupabaseServerClient } from "@/server/auth/session";
 import { getViewer, type Viewer, type ViewingAs } from "@/server/auth/viewer";
 import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
 import { clientsNeedingAttention, listClients } from "@/server/clients/service";
+import { getBalance } from "@/server/credits";
 import { socialCapability } from "@/server/social/config";
 import { isValidTimeZone, monthOf } from "@/server/social/service";
 import { getSocialStore } from "@/server/social/store";
@@ -43,7 +41,6 @@ import {
   ClockIcon,
   ClientsIcon,
   LinkIcon,
-  MODULE_ICONS,
   MessagesIcon,
   SocialIcon,
 } from "../NavIcons";
@@ -240,6 +237,24 @@ const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconC
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
 
+/** Brilho (créditos da IA), no traço dos ícones da navegação. */
+function SparkIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M12 3.5 13.9 9a2 2 0 0 0 1.2 1.2l5.4 1.8-5.4 1.8a2 2 0 0 0-1.2 1.2L12 20.5 10.1 15a2 2 0 0 0-1.2-1.2L3.5 12l5.4-1.8A2 2 0 0 0 10.1 9z" />
+    </svg>
+  );
+}
+
 /** Número em destaque dentro de uma frase (peso, não cor). */
 function Count({ value }: { value: number }) {
   return <span className="font-semibold tabular-nums">{value}</span>;
@@ -327,12 +342,7 @@ function needsRows({
   }
 
   // Só rascunhos com data ainda no futuro: a revisão não mostra (nem aprova) os outros.
-  const drafts = posts
-    .filter(
-      (post) =>
-        post.status === "draft" && post.scheduledAt !== null && Date.parse(post.scheduledAt) >= now,
-    )
-    .sort(byScheduledAt);
+  const drafts = pendingDrafts(posts, now);
   const firstDraft = drafts[0];
   const lastDraft = drafts[drafts.length - 1];
   if (firstDraft?.scheduledAt && lastDraft?.scheduledAt) {
@@ -560,7 +570,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
                 <li key={row.key} className={insetDivider}>
                   <Link
                     href={row.href}
-                    className="group flex min-h-16 items-center gap-3.5 px-4 py-3 transition-colors duration-150 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
+                    className="group flex min-h-16 items-center gap-3.5 px-4 py-3 transition-colors duration-150 hover:bg-(--glass-ghost-hover) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
                   >
                     <IconTile tone={style.tone}>
                       <style.Icon className="size-[18px]" />
@@ -589,128 +599,102 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
   );
 }
 
-const tileBase = "flex h-full min-h-[10.5rem] flex-col rounded-2xl p-4 sm:p-5";
+/** Número de um quadro: `null` = indisponível (erro ao ler). */
+type StatValue = number | "unlimited" | null;
 
-function LiveTile({
-  hub,
-  value,
-  unit,
-  linkText,
-}: {
-  hub: HubModule;
-  /** `null` = número indisponível (erro ao ler): só o rótulo e o link. */
-  value: number | null;
-  unit: string;
-  linkText: string;
-}) {
-  const ModuleIcon = MODULE_ICONS[hub.key];
+type Stat = {
+  key: string;
+  label: string;
+  value: StatValue;
+  /** Linha de apoio embaixo do número (o que fazer ou de onde vem). */
+  hint: string;
+  href: string;
+  tone: IconTone;
+  Icon: IconComponent;
+  /** Pede atenção (número > 0): o número fica na cor do tom. */
+  attention: boolean;
+  /** O serviço corta a lista (ex.: no máximo 5 retornos): mostra "5+". */
+  capped?: boolean;
+};
+
+const STAT_NUMBER: Record<IconTone, string> = {
+  brand: "text-brand",
+  amber: "text-amber-700",
+  sky: "text-sky-700",
+  red: "text-red-700",
+  emerald: "text-emerald-700",
+  slate: "text-ink",
+};
+
+/** Quadro de número (como os widgets do iOS): ícone, número grande, rótulo e a linha de apoio. */
+function StatTile({ stat }: { stat: Stat }) {
+  const { value } = stat;
+  const shown =
+    value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`;
   return (
     <li>
       <Link
-        href={hub.href}
-        className={`group ${tileBase} ${cardClass} transition-[box-shadow,border-color] duration-200 hover:border-slate-300/80 ${cardShadowHover} ${focusRing}`}
+        href={stat.href}
+        className={`group flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
       >
         <span className="flex items-start justify-between gap-2">
-          <IconTile tone="brand">
-            <ModuleIcon className="size-[18px]" />
+          <IconTile tone={stat.tone}>
+            <stat.Icon className="size-[18px]" />
           </IconTile>
-          <ChevronRightIcon className="mt-2.5 size-4 text-slate-300 transition-colors duration-150 group-hover:text-slate-500" />
+          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
         </span>
-        {/* Rótulo, número e unidade, nessa ordem (na tela e no leitor de tela: "Website, 1"). */}
-        <div className="mt-auto flex flex-col pt-5">
-          <h3 className="text-[15px] leading-6 font-semibold text-ink">{hub.label}</h3>
-          {value !== null && (
-            <span className="my-1 font-display text-[2.25rem] leading-none font-semibold tracking-[-0.02em] text-ink tabular-nums">
-              {value}
-            </span>
-          )}
-          <span className="text-[13px] leading-5 text-slate-500">{unit}</span>
-          <span className="sr-only">. {linkText}</span>
-        </div>
+        {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
+            fica em cima (ordem visual com `order`). */}
+        <span className="mt-auto flex flex-col pt-4">
+          <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
+          <span
+            className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
+              stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
+            }`}
+          >
+            {shown}
+            {value === null && <span className="sr-only">not available</span>}
+            {value === "unlimited" && <span className="sr-only">unlimited</span>}
+          </span>
+          <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
+        </span>
       </Link>
     </li>
   );
 }
 
-function SoonTile({ hub }: { hub: HubModule }) {
-  const ModuleIcon = MODULE_ICONS[hub.key];
+function QuickStats({ stats }: { stats: Stat[] }) {
   return (
-    <li className={`${tileBase} border border-slate-200/70 bg-white/50`}>
-      <span className="flex items-start justify-between gap-2">
-        <IconTile tone="slate">
-          <ModuleIcon className="size-[18px]" />
-        </IconTile>
-        <span aria-hidden="true">
-          <StatusBadge tone="neutral">Soon</StatusBadge>
-        </span>
-      </span>
-      <div className="mt-auto pt-5">
-        <h3 className="text-[15px] leading-6 font-semibold text-slate-600">
-          {hub.label}
-          <span className="sr-only"> (coming soon)</span>
-        </h3>
-        {hub.soonText && (
-          <p className="mt-0.5 text-[13px] leading-5 text-slate-500">{hub.soonText}</p>
-        )}
-      </div>
-    </li>
-  );
-}
-
-function YourOffice({
-  liveSites,
-  totalSites,
-  scheduledSoon,
-  clients,
-}: {
-  liveSites: number;
-  totalSites: number;
-  scheduledSoon: number;
-  clients: ClientsSnapshot | null;
-}) {
-  return (
-    <section aria-labelledby="office-heading">
-      <h2 id="office-heading" className={sectionTitle}>
-        Your office
+    <section aria-labelledby="stats-heading">
+      <h2 id="stats-heading" className="sr-only">
+        At a glance
       </h2>
-      <ul className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {MODULES.map((hub) => {
-          if (hub.comingSoon) return <SoonTile key={hub.key} hub={hub} />;
-          if (hub.key === "website") {
-            return (
-              <LiveTile
-                key={hub.key}
-                hub={hub}
-                value={liveSites}
-                unit={`live · ${totalSites} ${plural(totalSites, "site", "sites")} total`}
-                linkText="See sites"
-              />
-            );
-          }
-          if (hub.key === "clients") {
-            return (
-              <LiveTile
-                key={hub.key}
-                hub={hub}
-                value={clients?.total ?? null}
-                unit={clients ? `${clients.newCount} new` : "Everyone who contacted you"}
-                linkText="Open clients"
-              />
-            );
-          }
-          return (
-            <LiveTile
-              key={hub.key}
-              hub={hub}
-              value={scheduledSoon}
-              unit="posts in the next 30 days"
-              linkText="Open calendar"
-            />
-          );
-        })}
+      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <StatTile key={stat.key} stat={stat} />
+        ))}
       </ul>
     </section>
   );
+}
+
+/** Rascunhos com data ainda no futuro (os que a revisão mostra e deixa aprovar). */
+function pendingDrafts(posts: SocialPostRecord[], now: number): SocialPostRecord[] {
+  return posts
+    .filter(
+      (post) =>
+        post.status === "draft" && post.scheduledAt !== null && Date.parse(post.scheduledAt) >= now,
+    )
+    .sort(byScheduledAt);
+}
+
+/** Saldo de créditos da IA da conta mostrada. Erro = `null` (o quadro mostra "–"). */
+async function loadCredits(ownerId: string): Promise<CreditBalance | null> {
+  try {
+    return await getBalance({ id: ownerId });
+  } catch {
+    return null;
+  }
 }
 
 /** Tudo o que a página inicial mostra, lido de uma vez (fora do componente: usa o relógio). */
@@ -720,12 +704,13 @@ async function loadHome(viewer: Viewer) {
   const shown = { id: ownerId, email: viewingAs ? viewingAs.email : viewer.user.email };
   const now = Date.now();
   const store = getSiteStore();
-  const [sites, firstName, social, settings, access] = await Promise.all([
+  const [sites, firstName, social, settings, access, credits] = await Promise.all([
     store.list(ownerId),
     getFirstName(viewingAs),
     loadSocial(ownerId, now),
     loadSettings(ownerId),
     loadAccess(ownerId),
+    loadCredits(ownerId),
   ]);
   // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
   const timeZone =
@@ -759,6 +744,7 @@ async function loadHome(viewer: Viewer) {
     timeZone,
     autoPublish,
     domainIncluded,
+    credits,
   };
 }
 
@@ -780,21 +766,12 @@ export default async function DashboardPage() {
     timeZone,
     autoPublish,
     domainIncluded,
+    credits,
   } = await loadHome(viewer);
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
   // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
   const offline = access.enforced && !access.live;
-
-  const liveSites = sites.filter((site) => site.status === "published").length;
-  // Posts já aprovados nos próximos 30 dias: "scheduled" (sai sozinho) e "approved" (postar à mão).
-  const scheduledSoon = social.posts.filter(
-    (post) =>
-      (post.status === "scheduled" || post.status === "approved") &&
-      post.scheduledAt !== null &&
-      Date.parse(post.scheduledAt) >= now &&
-      Date.parse(post.scheduledAt) < now + 30 * DAY_MS,
-  ).length;
 
   // "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
   // manual não há botão de conectar e o passo nunca terminaria.
@@ -817,17 +794,82 @@ export default async function DashboardPage() {
     },
   ];
 
-  const needs = (
-    <NeedsYou rows={needsRows({ sites, weekLeads, social, clients, access, timeZone, now })} />
-  );
-  const office = (
-    <YourOffice
-      liveSites={liveSites}
-      totalSites={sites.length}
-      scheduledSoon={scheduledSoon}
-      clients={clients}
-    />
-  );
+  const needRows = needsRows({ sites, weekLeads, social, clients, access, timeZone, now });
+  const needs = <NeedsYou rows={needRows} />;
+
+  // Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos.
+  const drafts = pendingDrafts(social.posts, now);
+  const firstDraft = drafts[0];
+  const weekTotal = Object.values(weekLeads).reduce((sum, n) => sum + n, 0);
+  const followUps = clients?.followUpsDue.length ?? null;
+  const stats: Stat[] = [
+    clients
+      ? {
+          key: "requests",
+          label: "New requests",
+          value: clients.newCount,
+          hint: clients.newCount > 0 ? "Waiting for a reply" : "All caught up",
+          href: clients.newCount > 0 ? "/clients?stage=new" : "/clients",
+          tone: "brand",
+          Icon: ClientsIcon,
+          attention: clients.newCount > 0,
+        }
+      : {
+          // Sem o módulo de clientes (erro ao ler): as mensagens do site nos últimos 7 dias.
+          key: "requests",
+          label: "New requests",
+          value: weekTotal,
+          hint: "Last 7 days",
+          href: latest ? `/sites/${latest.id}#messages` : "/dashboard#sites",
+          tone: "brand",
+          Icon: MessagesIcon,
+          attention: weekTotal > 0,
+        },
+    {
+      key: "follow-ups",
+      label: "Follow-ups due",
+      value: followUps,
+      // O serviço manda no máximo 5 retornos.
+      capped: followUps !== null && followUps >= 5,
+      hint:
+        followUps === null
+          ? "Open clients"
+          : followUps > 0
+            ? "Due today or earlier"
+            : "Nothing due",
+      href: "/clients",
+      tone: "sky",
+      Icon: ClockIcon,
+      attention: Boolean(followUps),
+    },
+    {
+      key: "approvals",
+      label: "Posts to approve",
+      value: drafts.length,
+      hint: drafts.length > 0 ? "Read and approve" : "Nothing waiting",
+      href: firstDraft?.scheduledAt
+        ? `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`
+        : "/social",
+      tone: "amber",
+      Icon: ApproveIcon,
+      attention: drafts.length > 0,
+    },
+    {
+      key: "credits",
+      label: "AI credits left",
+      value: credits === null ? null : credits.unlimited ? "unlimited" : credits.total,
+      hint:
+        credits === null || credits.unlimited
+          ? "Plans and billing"
+          : `Refills ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(credits.resetsAt))}`,
+      href: "/billing#credits",
+      tone: credits !== null && !credits.unlimited && credits.total === 0 ? "red" : "emerald",
+      Icon: SparkIcon,
+      attention: credits !== null && !credits.unlimited && credits.total === 0,
+    },
+  ];
+  const quickStats = <QuickStats stats={stats} />;
+
   const yourSites = (
     <section id="sites" aria-labelledby="sites-heading">
       <h2 id="sites-heading" className={sectionTitle}>
@@ -855,12 +897,22 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <Greeting firstName={firstName} nowIso={new Date(now).toISOString()} />
+      <Greeting
+        firstName={firstName}
+        nowIso={new Date(now).toISOString()}
+        summary={
+          !latest
+            ? "Let’s get your business online."
+            : needRows.length === 0
+              ? "You’re all caught up."
+              : `${needRows.length} ${plural(needRows.length, "thing needs", "things need")} you today.`
+        }
+      />
 
       {latest ? (
-        <div className="mt-8 grid gap-10 sm:gap-12 lg:mt-10 lg:gap-14">
+        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+          {quickStats}
           {needs}
-          {office}
           <DashboardChecklist
             siteId={latest.id}
             siteName={latest.spec.business.name}
@@ -872,10 +924,10 @@ export default async function DashboardPage() {
         </div>
       ) : (
         // Conta sem sites: primeiro o convite para criar, depois o resto.
-        <div className="mt-8 grid gap-10 sm:gap-12 lg:mt-10 lg:gap-14">
+        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
           {yourSites}
           {needs}
-          {office}
+          {quickStats}
         </div>
       )}
     </div>

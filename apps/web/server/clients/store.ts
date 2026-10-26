@@ -28,6 +28,15 @@ export interface ClientStore {
   deleteClient(ownerId: string, id: string): Promise<boolean>;
   /** Histórico do cliente, mais novo primeiro. */
   listActivities(ownerId: string, clientId: string): Promise<ClientActivityRecord[]>;
+  /**
+   * Itens do histórico de TODOS os clientes do dono, dos tipos pedidos, a partir de `sinceIso`
+   * (inclusive), mais novos primeiro. Serve ao resumo do mês (serviços e clientes ganhos).
+   */
+  listActivitiesSince(
+    ownerId: string,
+    sinceIso: string,
+    kinds: readonly ClientActivityKind[],
+  ): Promise<ClientActivityRecord[]>;
   /** Grava um item do histórico. `null` se for um pedido do site (`leadId`) já importado. */
   insertActivity(activity: NewClientActivity): Promise<ClientActivityRecord | null>;
   /** Pedidos do site que o sync não deve importar: já importados ou descartados pelo dono. */
@@ -75,6 +84,8 @@ const ClientRow = z.object({
   jobs_count: z.coerce.number(),
   created_at: z.string(),
   updated_at: z.string(),
+  // Coluna da migration 0021 (antes dela, a linha vem sem o campo).
+  tags: z.array(z.string()).nullish(),
 });
 
 function toClient(row: z.infer<typeof ClientRow>): ClientRecord {
@@ -95,6 +106,7 @@ function toClient(row: z.infer<typeof ClientRow>): ClientRecord {
     jobsCount: row.jobs_count,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    tags: row.tags ?? [],
   };
 }
 
@@ -139,6 +151,7 @@ const CLIENT_COLUMNS: Record<keyof ClientPatch, string> = {
   lastActivityAt: "last_activity_at",
   totalJobsCents: "total_jobs_cents",
   jobsCount: "jobs_count",
+  tags: "tags",
 };
 
 function patchToRow(patch: ClientPatch): Record<string, unknown> {
@@ -250,6 +263,9 @@ export class SupabaseClientStore implements ClientStore {
         last_activity_at: client.lastActivityAt ?? nowIso(),
         email_norm: normalizeEmail(client.email),
         phone_norm: normalizePhone(client.phone),
+        // Só manda a coluna quando há etiquetas: cadastrar continua funcionando mesmo antes de
+        // a migration 0021 rodar.
+        ...(client.tags && client.tags.length > 0 ? { tags: client.tags } : {}),
       }),
     });
     if (!row) throw new Error("Supabase did not return the new client.");
@@ -289,6 +305,23 @@ export class SupabaseClientStore implements ClientStore {
     return this.activities(
       `/client_activities?client_id=eq.${clientId}&owner_id=eq.${ownerId}&select=*&order=occurred_at.desc,created_at.desc&limit=${PAGE}`,
     );
+  }
+
+  async listActivitiesSince(
+    ownerId: string,
+    sinceIso: string,
+    kinds: readonly ClientActivityKind[],
+  ) {
+    if (!isUuid(ownerId) || kinds.length === 0 || Number.isNaN(Date.parse(sinceIso))) return [];
+    const since = encodeURIComponent(new Date(sinceIso).toISOString());
+    const all: ClientActivityRecord[] = [];
+    for (let offset = 0; ; offset += PAGE) {
+      const rows = await this.activities(
+        `/client_activities?owner_id=eq.${ownerId}&kind=in.(${kinds.join(",")})&occurred_at=gte.${since}&select=*&order=occurred_at.desc,id.asc&limit=${PAGE}&offset=${offset}`,
+      );
+      all.push(...rows);
+      if (rows.length < PAGE) return all;
+    }
   }
 
   async insertActivity(activity: NewClientActivity) {
@@ -390,6 +423,7 @@ export class MemoryClientStore implements ClientStore {
       jobsCount: 0,
       createdAt: now,
       updatedAt: now,
+      tags: [...(client.tags ?? [])],
     };
     this.state.clients.set(record.id, record);
     return { ...record };
@@ -421,6 +455,21 @@ export class MemoryClientStore implements ClientStore {
   async listActivities(ownerId: string, clientId: string) {
     return [...this.state.activities.values()]
       .filter((a) => a.ownerId === ownerId && a.clientId === clientId)
+      .map((a) => ({ ...a }))
+      .sort(byOccurredDesc);
+  }
+
+  async listActivitiesSince(
+    ownerId: string,
+    sinceIso: string,
+    kinds: readonly ClientActivityKind[],
+  ) {
+    const since = Date.parse(sinceIso);
+    if (Number.isNaN(since)) return [];
+    return [...this.state.activities.values()]
+      .filter(
+        (a) => a.ownerId === ownerId && kinds.includes(a.kind) && Date.parse(a.occurredAt) >= since,
+      )
       .map((a) => ({ ...a }))
       .sort(byOccurredDesc);
   }

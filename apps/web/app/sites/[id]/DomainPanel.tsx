@@ -2,7 +2,8 @@
 
 import { ApiError, DomainResponse, type DomainResponse as DomainState } from "@nosweat/schema";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { StatusBadge, focusRing, secondaryButton, textButton } from "@/components/DashboardUi";
+import { StatusBadge, secondaryButton, textButton } from "@/components/DashboardUi";
+import { glassButtonClass } from "@/components/glass";
 import { DnsGuidePanel } from "./DnsGuidePanel";
 
 const STATUS: Record<
@@ -204,7 +205,7 @@ export function DomainPanel({
             spellCheck={false}
             inputMode="url"
             aria-describedby={!isPublished ? "domain-tip" : undefined}
-            className="h-12 w-full min-w-0 rounded-xl sm:flex-1 border border-slate-300 bg-white px-4 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none sm:h-11"
+            className="h-12 w-full min-w-0 rounded-full border border-slate-300 bg-white/80 px-5 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none sm:h-11 sm:flex-1"
           />
           <button
             type="submit"
@@ -222,7 +223,7 @@ export function DomainPanel({
         {error && (
           <p
             role="alert"
-            className="mt-3 inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            className="glass-edge mt-3 inline-flex rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700"
           >
             {error}
             {needsPlan && (
@@ -246,7 +247,7 @@ export function DomainPanel({
 
   return (
     <div className="mt-5 space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-surface px-4 py-3">
+      <div className="glass-edge flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/50 px-4 py-3">
         <span className="font-display text-[15px] font-semibold break-all text-ink">
           {state.domain}
         </span>
@@ -255,10 +256,10 @@ export function DomainPanel({
       {status && <p className="text-[15px] leading-[1.6] text-slate-600">{status.help}</p>}
 
       {state.status !== "active" && (
-        <div className="overflow-hidden rounded-xl border border-slate-200">
+        <div className="glass-edge overflow-hidden rounded-xl bg-white/50">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-surface text-[13px] text-slate-500">
+              <thead className="bg-slate-900/[0.03] text-[13px] text-slate-500">
                 <tr>
                   <th scope="col" className="px-4 py-2 font-medium">
                     Type
@@ -273,7 +274,10 @@ export function DomainPanel({
               </thead>
               <tbody>
                 {state.records.map((record) => (
-                  <tr key={`${record.type}-${record.name}`} className="border-t border-slate-200">
+                  <tr
+                    key={`${record.type}-${record.name}`}
+                    className="border-t border-(--glass-rim)"
+                  >
                     <td className="px-4 py-3 font-semibold text-ink">{record.type}</td>
                     <td className="px-4 py-3 font-mono text-ink">{record.name}</td>
                     <td className="px-4 py-2">
@@ -282,7 +286,7 @@ export function DomainPanel({
                         <button
                           type="button"
                           onClick={() => copy(record.value)}
-                          className={`inline-flex min-h-9 shrink-0 items-center rounded-lg border border-slate-300 bg-white px-2.5 text-[13px] font-semibold text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 ${focusRing}`}
+                          className={glassButtonClass({ variant: "secondary", size: "sm" })}
                         >
                           {copied === record.value ? "Copied" : "Copy"}
                           <span className="sr-only"> {record.type} value</span>
@@ -294,7 +298,7 @@ export function DomainPanel({
               </tbody>
             </table>
           </div>
-          <p className="border-t border-slate-200 px-4 py-3 text-[13px] leading-normal text-slate-500">
+          <p className="border-t border-(--glass-rim) px-4 py-3 text-[13px] leading-normal text-slate-500">
             {state.status === "unverified"
               ? "Adding a TXT record doesn’t change your website or email. It can take a few minutes to show up."
               : "Delete any other A record for “@” and CNAME record for “www” first. Keep your email (MX) records as they are."}
@@ -315,7 +319,10 @@ export function DomainPanel({
       </p>
 
       {error && (
-        <p role="alert" className="inline-flex rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          role="alert"
+          className="glass-edge inline-flex rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700"
+        >
           {error}
         </p>
       )}
@@ -324,7 +331,7 @@ export function DomainPanel({
         <div
           role="alertdialog"
           aria-label={`Remove ${state.domain}?`}
-          className="rounded-xl border border-slate-200 bg-surface p-4 text-sm"
+          className="glass-edge rounded-2xl bg-white/50 p-4 text-sm"
         >
           <p className="font-medium text-ink">
             Your site will stop showing at <span className="font-semibold">{state.domain}</span>.
@@ -336,7 +343,7 @@ export function DomainPanel({
               onClick={() => void request("DELETE")}
               disabled={pending}
               aria-busy={pending}
-              className="inline-flex min-h-10 items-center rounded-xl bg-red-600 px-4 font-semibold text-white transition-colors duration-150 hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-wait disabled:opacity-70"
+              className={glassButtonClass({ variant: "destructive" })}
             >
               {pending ? "Removing…" : "Remove"}
             </button>

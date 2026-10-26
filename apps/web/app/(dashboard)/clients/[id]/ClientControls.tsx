@@ -7,22 +7,24 @@ import {
   type ClientStage,
 } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
-import { CLIENT_STAGES, STAGE_LABELS, followUpState, formatDateOnly } from "@/lib/clients";
+import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { GlassButton } from "@/components/glass";
+import { CLIENT_STAGES, STAGE_LABELS, parseTagsInput } from "@/lib/clients";
+import { ErrorNote, clientUrl, clientsApi, toClientsError, type ClientsApiError } from "../api";
+import { TagSuggestions } from "../ClientForm";
 import {
-  ErrorNote,
-  clientUrl,
-  clientsApi,
-  clientsApiNoContent,
-  toClientsError,
-  type ClientsApiError,
-} from "../api";
-import { fieldClass, fieldErrorClass, hintClass, labelClass } from "../ui";
+  FollowUpBadge,
+  choicePill,
+  fieldClass,
+  fieldErrorClass,
+  hintClass,
+  labelClass,
+} from "../ui";
 
 // Controles da ficha do cliente (/clients/[id]). Cada um salva sozinho com PATCH e depois
 // `router.refresh()`; a página passa uma `key` com o valor salvo, então o componente recomeça
 // com os dados novos (sem copiar props para o estado dentro de efeitos).
+// `readOnly` (modo "ver como" do admin): mostra os dados sem deixar mudar nada.
 
 /** PATCH /api/clients/[id] com estado de envio e erro. */
 function usePatch(clientId: string) {
@@ -50,17 +52,19 @@ function usePatch(clientId: string) {
 
 // ---------- dados de contato ----------
 
-type ContactField = "name" | "phone" | "email" | "address";
+type ContactField = "name" | "phone" | "email" | "address" | "tags";
 
 /**
  * Dados de contato: mostra `children` (a versão de leitura, feita no servidor) com o botão
- * "Edit details", ou o formulário de edição.
+ * "Edit details", ou o formulário de edição (inclui as etiquetas).
  */
 export function ContactDetails({
   client,
+  readOnly = false,
   children,
 }: {
-  client: Pick<Client, "id" | "name" | "phone" | "email" | "address">;
+  client: Pick<Client, "id" | "name" | "phone" | "email" | "address" | "tags">;
+  readOnly?: boolean;
   children: ReactNode;
 }) {
   const ids = useId();
@@ -70,6 +74,7 @@ export function ContactDetails({
   const [phone, setPhone] = useState(client.phone ?? "");
   const [email, setEmail] = useState(client.email ?? "");
   const [address, setAddress] = useState(client.address ?? "");
+  const [tags, setTags] = useState(client.tags.join(", "));
   const [errors, setErrors] = useState<Partial<Record<ContactField, string>>>({});
 
   function startEditing() {
@@ -77,6 +82,7 @@ export function ContactDetails({
     setPhone(client.phone ?? "");
     setEmail(client.email ?? "");
     setAddress(client.address ?? "");
+    setTags(client.tags.join(", "));
     setErrors({});
     setEditing(true);
   }
@@ -88,6 +94,7 @@ export function ContactDetails({
       phone: phone.trim() || null,
       email: email.trim() || null,
       address: address.trim() || null,
+      tags: parseTagsInput(tags),
     };
     const parsed = UpdateClientRequest.safeParse(body);
     const next: Partial<Record<ContactField, string>> = {};
@@ -95,11 +102,18 @@ export function ContactDetails({
       for (const issue of parsed.error.issues) {
         const key = issue.path[0];
         if (
-          (key === "name" || key === "phone" || key === "email" || key === "address") &&
+          (key === "name" ||
+            key === "phone" ||
+            key === "email" ||
+            key === "address" ||
+            key === "tags") &&
           !next[key]
         ) {
           next[key] = issue.message;
         }
+      }
+      if (Object.keys(next).length === 0) {
+        next.name = parsed.error.issues[0]?.message ?? "Please check the form.";
       }
     }
     // Mesma regra do cadastro: pelo menos um jeito de falar com a pessoa.
@@ -113,15 +127,17 @@ export function ContactDetails({
     return (
       <div>
         {children}
-        <button type="button" onClick={startEditing} className={`${textButton} mt-3`}>
-          Edit details
-        </button>
+        {!readOnly && (
+          <GlassButton variant="secondary" onClick={startEditing} className="mt-4" fullWidth>
+            Edit details
+          </GlassButton>
+        )}
       </div>
     );
   }
 
   const field = (
-    key: ContactField,
+    key: Exclude<ContactField, "tags">,
     label: string,
     value: string,
     onChange: (value: string) => void,
@@ -156,33 +172,59 @@ export function ContactDetails({
       onSubmit={(event) => void submit(event)}
       noValidate
       aria-label="Edit contact details"
+      className="mt-5 border-t border-(--glass-rim) pt-5"
       onKeyDown={(event) => {
         if (event.key === "Escape" && !pending) setEditing(false);
       }}
     >
       <fieldset disabled={pending} className="grid gap-4">
         {field("name", "Name", name, setName, { maxLength: 120 })}
-        {field("phone", "Phone", phone, setPhone, { type: "tel", inputMode: "tel", maxLength: 40 })}
+        {field("phone", "Mobile phone", phone, setPhone, {
+          type: "tel",
+          inputMode: "tel",
+          maxLength: 40,
+        })}
         {field("email", "Email", email, setEmail, {
           type: "email",
           inputMode: "email",
           maxLength: 254,
         })}
-        {field("address", "Address", address, setAddress, { maxLength: 300 })}
+        {field("address", "Service address", address, setAddress, { maxLength: 300 })}
+        <div>
+          <label htmlFor={`${ids}-tags`} className={labelClass}>
+            Tags
+          </label>
+          <input
+            id={`${ids}-tags`}
+            value={tags}
+            onChange={(event) => setTags(event.target.value)}
+            maxLength={340}
+            autoComplete="off"
+            placeholder="VIP, Referral"
+            aria-invalid={errors.tags ? true : undefined}
+            aria-describedby={errors.tags ? `${ids}-tags-error` : `${ids}-tags-hint`}
+            className={`${fieldClass} mt-1.5 h-11`}
+          />
+          {errors.tags ? (
+            <p id={`${ids}-tags-error`} className={fieldErrorClass}>
+              {errors.tags}
+            </p>
+          ) : (
+            <p id={`${ids}-tags-hint`} className={hintClass}>
+              Separate tags with commas.
+            </p>
+          )}
+          <TagSuggestions value={tags} onChange={setTags} disabled={pending} />
+        </div>
       </fieldset>
       {error && <ErrorNote error={error} className="mt-4" />}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending} className={primaryButton}>
-          {pending ? "Saving…" : "Save details"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          disabled={pending}
-          className={textButton}
-        >
+      <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <GlassButton variant="secondary" onClick={() => setEditing(false)} disabled={pending}>
           Cancel
-        </button>
+        </GlassButton>
+        <GlassButton type="submit" variant="primary" loading={pending}>
+          {pending ? "Saving…" : "Save details"}
+        </GlassButton>
       </div>
     </form>
   );
@@ -190,7 +232,15 @@ export function ContactDetails({
 
 // ---------- etapa ----------
 
-export function StagePicker({ clientId, stage }: { clientId: string; stage: ClientStage }) {
+export function StagePicker({
+  clientId,
+  stage,
+  readOnly = false,
+}: {
+  clientId: string;
+  stage: ClientStage;
+  readOnly?: boolean;
+}) {
   const ids = useId();
   const { save, pending, error } = usePatch(clientId);
   const [value, setValue] = useState<ClientStage>(stage);
@@ -204,14 +254,11 @@ export function StagePicker({ clientId, stage }: { clientId: string; stage: Clie
 
   return (
     <div>
-      <fieldset disabled={pending}>
+      <fieldset disabled={pending || readOnly}>
         <legend className={labelClass}>Stage</legend>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-1.5">
           {CLIENT_STAGES.map((option) => (
-            <label
-              key={option}
-              className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3 text-sm font-semibold text-ink transition-colors duration-150 hover:border-slate-400 has-checked:border-ink has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed sm:min-h-9"
-            >
+            <label key={option} className={choicePill}>
               <input
                 type="radio"
                 name={`${ids}-stage`}
@@ -245,17 +292,18 @@ export function FollowUpForm({
   clientId,
   followUpOn,
   today,
+  readOnly = false,
 }: {
   clientId: string;
   followUpOn: string | null;
   /** Hoje no fuso da empresa ("AAAA-MM-DD"). */
   today: string;
+  readOnly?: boolean;
 }) {
   const ids = useId();
   const { save, pending, error } = usePatch(clientId);
   const [value, setValue] = useState(followUpOn ?? "");
   const saved = followUpOn ?? "";
-  const state = followUpOn ? followUpState(followUpOn, today) : null;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -263,75 +311,64 @@ export function FollowUpForm({
     await save({ followUpOn: value });
   }
 
+  const quick: { label: string; days: number }[] = [
+    { label: "Tomorrow", days: 1 },
+    { label: "In 3 days", days: 3 },
+    { label: "Next week", days: 7 },
+  ];
+
   return (
     <form onSubmit={(event) => void submit(event)} aria-label="Follow-up date">
-      <label htmlFor={`${ids}-date`} className={labelClass}>
-        Follow up on
-      </label>
-      {state && followUpOn && (
-        <p
-          id={`${ids}-state`}
-          className={`mt-1 text-[13px] leading-5 font-medium ${
-            state === "overdue"
-              ? "text-red-700"
-              : state === "today"
-                ? "text-amber-800"
-                : "text-slate-500"
-          }`}
-        >
-          {state === "overdue"
-            ? `Overdue since ${formatDateOnly(followUpOn, today)}`
-            : state === "today"
-              ? "Due today"
-              : `Due ${formatDateOnly(followUpOn, today)}`}
-        </p>
-      )}
-      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-        <input
-          id={`${ids}-date`}
-          type="date"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          disabled={pending}
-          aria-describedby={state ? `${ids}-state` : undefined}
-          className={`${fieldClass} h-11 w-auto min-w-0 flex-1 sm:h-10`}
-        />
-        <button
-          type="submit"
-          disabled={pending || !value || value === saved}
-          className={secondaryButton}
-        >
-          {pending ? "Saving…" : "Save"}
-        </button>
-      </div>
-      <div className="mt-1 flex flex-wrap gap-x-4">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => void save({ followUpOn: addDays(today, 1) })}
-          className={textButton}
-        >
-          Tomorrow
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={() => void save({ followUpOn: addDays(today, 7) })}
-          className={textButton}
-        >
-          In a week
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label htmlFor={`${ids}-date`} className={labelClass}>
+          Follow up on
+        </label>
         {followUpOn && (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => void save({ followUpOn: null })}
-            className={textButton}
-          >
-            Clear
-          </button>
+          <span id={`${ids}-state`}>
+            <FollowUpBadge date={followUpOn} today={today} />
+          </span>
         )}
       </div>
+      <fieldset disabled={pending || readOnly}>
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            id={`${ids}-date`}
+            type="date"
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            aria-describedby={followUpOn ? `${ids}-state` : undefined}
+            className={`${fieldClass} h-11 min-w-0 flex-1`}
+          />
+          {!readOnly && (
+            <GlassButton
+              type="submit"
+              variant="secondary"
+              disabled={!value || value === saved}
+              loading={pending}
+            >
+              Save
+            </GlassButton>
+          )}
+        </div>
+        {!readOnly && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {quick.map((option) => (
+              <GlassButton
+                key={option.days}
+                variant="ghost"
+                onClick={() => void save({ followUpOn: addDays(today, option.days) })}
+              >
+                {option.label}
+              </GlassButton>
+            ))}
+            {followUpOn && (
+              <GlassButton variant="ghost" onClick={() => void save({ followUpOn: null })}>
+                Clear
+              </GlassButton>
+            )}
+          </div>
+        )}
+      </fieldset>
       {error && <ErrorNote error={error} className="mt-3" />}
     </form>
   );
@@ -339,7 +376,15 @@ export function FollowUpForm({
 
 // ---------- anotação fixa ----------
 
-export function PinnedNotes({ clientId, notes }: { clientId: string; notes: string }) {
+export function PinnedNotes({
+  clientId,
+  notes,
+  readOnly = false,
+}: {
+  clientId: string;
+  notes: string;
+  readOnly?: boolean;
+}) {
   const ids = useId();
   const { save, pending, error } = usePatch(clientId);
   const [value, setValue] = useState(notes);
@@ -364,94 +409,23 @@ export function PinnedNotes({ clientId, notes }: { clientId: string; notes: stri
         value={value}
         onChange={(event) => setValue(event.target.value)}
         disabled={pending}
+        readOnly={readOnly}
         rows={4}
         maxLength={5000}
         aria-describedby={`${ids}-hint`}
         className={`${fieldClass} mt-2 resize-y py-2.5 leading-[1.55]`}
       />
       {error && <ErrorNote error={error} className="mt-3" />}
-      <div className="mt-3 flex items-center gap-3">
-        <button type="submit" disabled={pending || !changed} className={secondaryButton}>
-          {pending ? "Saving…" : "Save notes"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ---------- apagar ----------
-
-export function DeleteClientButton({ clientId, name }: { clientId: string; name: string }) {
-  const router = useRouter();
-  const ids = useId();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<ClientsApiError | null>(null);
-
-  async function remove() {
-    setPending(true);
-    setError(null);
-    try {
-      await clientsApiNoContent(clientUrl(clientId), { method: "DELETE" });
-      dialogRef.current?.close();
-      router.push("/clients");
-      router.refresh();
-    } catch (err) {
-      setError(toClientsError(err));
-      setPending(false);
-    }
-  }
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setError(null);
-          dialogRef.current?.showModal();
-        }}
-        className={`inline-flex min-h-11 items-center rounded-xl border border-red-200 bg-white px-4 text-[15px] font-semibold text-red-700 transition-colors duration-150 hover:bg-red-50 active:translate-y-px sm:min-h-10 ${focusRing}`}
-      >
-        Delete client
-      </button>
-      <dialog
-        ref={dialogRef}
-        aria-labelledby={`${ids}-title`}
-        aria-describedby={`${ids}-text`}
-        onCancel={(event) => {
-          if (pending) event.preventDefault();
-        }}
-        className="m-auto w-[min(100%-2.5rem,28rem)] rounded-2xl border border-slate-200/70 bg-white p-5 text-ink shadow-[0_1px_2px_rgb(7_27_51/0.06),0_24px_48px_-12px_rgb(7_27_51/0.25)] backdrop:bg-ink/40 sm:p-6"
-      >
-        <h2
-          id={`${ids}-title`}
-          className="font-display text-lg leading-7 font-semibold tracking-[-0.02em]"
-        >
-          Delete {name}?
-        </h2>
-        <p id={`${ids}-text`} className="mt-2 text-[15px] leading-[1.6] text-slate-600">
-          Their contact details, notes and job history are erased. This can&rsquo;t be undone.
-        </p>
-        {error && <ErrorNote error={error} className="mt-4" />}
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            disabled={pending}
-            className={secondaryButton}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void remove()}
-            disabled={pending}
-            className={`inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-4 text-[15px] font-semibold text-white transition-colors duration-150 hover:bg-red-700 active:translate-y-px disabled:opacity-70 sm:min-h-10 ${focusRing}`}
-          >
-            {pending ? "Deleting…" : "Yes, delete"}
-          </button>
+      {!readOnly && changed && (
+        <div className="mt-3 flex justify-end gap-2">
+          <GlassButton variant="ghost" onClick={() => setValue(notes)} disabled={pending}>
+            Undo
+          </GlassButton>
+          <GlassButton type="submit" variant="secondary" loading={pending}>
+            Save notes
+          </GlassButton>
         </div>
-      </dialog>
-    </>
+      )}
+    </form>
   );
 }

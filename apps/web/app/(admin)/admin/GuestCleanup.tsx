@@ -1,15 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  focusRing,
-  panelClass,
-  panelText,
-  panelTitle,
-  secondaryButton,
-} from "@/components/DashboardUi";
+import { ConfirmDialog, GlassButton, GlassCard } from "@/components/glass";
+import { Notice, fieldClass, labelClass, panelText, panelTitle } from "./AdminUi";
 import { deleteGuestDraftsAction, type AdminActionResult } from "./actions";
-import { ConfirmDialog } from "./ConfirmDialog";
 
 // Faxina dos rascunhos de visitantes (sites criados sem conta que nunca foram para uma conta).
 // O cron diário já apaga os de mais de 30 dias; aqui o admin escolhe o número de dias.
@@ -56,16 +50,19 @@ export function GuestCleanup({
   };
 
   return (
-    <section aria-labelledby="guest-cleanup" className={panelClass}>
+    <GlassCard as="section" aria-labelledby="guest-cleanup">
       <h2 id="guest-cleanup" className={panelTitle}>
-        Guest drafts
+        Guest drafts{" "}
+        <span className="font-medium text-(--glass-fg-muted) tabular-nums">
+          · {guestCreatedAt.length}
+        </span>
       </h2>
       <p className={`mt-1 ${panelText}`}>
-        Websites made without an account that never moved to one: {guestCreatedAt.length} right now.
-        They are never live. The daily cleanup already deletes the ones older than 30 days.
+        Websites made without an account that never moved to one. They are never live. The daily
+        cleanup already deletes the ones older than 30 days.
       </p>
       <form
-        className="mt-4 flex flex-wrap items-end gap-3"
+        className="mt-5 flex flex-wrap items-end gap-3"
         onSubmit={(event) => {
           event.preventDefault();
           if (!valid) return;
@@ -74,7 +71,7 @@ export function GuestCleanup({
           setConfirming(true);
         }}
       >
-        <label className="text-sm font-medium text-slate-700">
+        <label className={labelClass}>
           Older than (days)
           <input
             type="number"
@@ -85,14 +82,14 @@ export function GuestCleanup({
             required
             value={days}
             onChange={(event) => setDays(event.target.value)}
-            className={`mt-1.5 block h-11 w-28 rounded-lg border border-slate-300 bg-white px-3 text-[15px] text-ink sm:h-10 ${focusRing}`}
+            className={`${fieldClass} w-28`}
           />
         </label>
-        <button type="submit" disabled={!valid || matching === 0} className={secondaryButton}>
+        <GlassButton type="submit" variant="secondary" disabled={!valid || matching === 0}>
           {valid
-            ? `Delete ${matching} guest ${matching === 1 ? "draft" : "drafts"}`
-            : "Delete guest drafts"}
-        </button>
+            ? `Delete ${matching} guest ${matching === 1 ? "draft" : "drafts"}…`
+            : "Delete guest drafts…"}
+        </GlassButton>
       </form>
       {!valid && (
         <p role="alert" className="mt-2 text-sm text-red-700">
@@ -100,14 +97,13 @@ export function GuestCleanup({
         </p>
       )}
       {result && (
-        <p
-          role={result.ok ? "status" : "alert"}
-          className={`mt-3 rounded-lg px-3 py-2 text-sm ${
-            result.ok ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-700"
-          }`}
+        <Notice
+          tone={result.ok ? "success" : "error"}
+          onDismiss={() => setResult(null)}
+          className="mt-4"
         >
           {result.message}
-        </p>
+        </Notice>
       )}
 
       <ConfirmDialog
@@ -127,6 +123,6 @@ export function GuestCleanup({
           account. Visitors who come back won&rsquo;t find them. This can&rsquo;t be undone.
         </p>
       </ConfirmDialog>
-    </section>
+    </GlassCard>
   );
 }

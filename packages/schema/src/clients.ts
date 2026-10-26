@@ -22,6 +22,17 @@ export type ClientSource = z.infer<typeof ClientSource>;
 /** Data sem hora "AAAA-MM-DD" (no fuso da empresa). */
 const DateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use the YYYY-MM-DD format.");
 
+/** Etiqueta livre do dono ("VIP", "Commercial", "Referral"...). */
+export const ClientTag = z
+  .string()
+  .trim()
+  .min(1, "Tags can't be empty.")
+  .max(30, "Keep each tag under 30 characters.");
+export type ClientTag = z.infer<typeof ClientTag>;
+
+/** Até 10 etiquetas por cliente. */
+const ClientTags = z.array(ClientTag).max(10, "Use up to 10 tags.");
+
 export const Client = z.object({
   id: z.string(),
   name: z.string(),
@@ -43,6 +54,8 @@ export const Client = z.object({
   jobsCount: z.number().int().nonnegative(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /** Etiquetas do dono (migration 0021). Campo novo: respostas antigas sem ele viram []. */
+  tags: z.array(z.string()).default([]),
 });
 export type Client = z.infer<typeof Client>;
 
@@ -92,6 +105,8 @@ export const CreateClientRequest = z
     address: OptionalText(300),
     stage: ClientStage.optional(),
     notes: z.string().trim().max(5000).optional(),
+    tags: ClientTags.optional(),
+    followUpOn: DateOnly.nullable().optional(),
   })
   .refine((c) => Boolean(c.email) || Boolean(c.phone), {
     message: "Add an email or a phone number.",
@@ -122,6 +137,7 @@ export const UpdateClientRequest = z
     stage: ClientStage.optional(),
     notes: z.string().trim().max(5000).optional(),
     followUpOn: DateOnly.nullable().optional(),
+    tags: ClientTags.optional(),
   })
   .refine((c) => Object.values(c).some((v) => v !== undefined), {
     message: "Nothing to update.",

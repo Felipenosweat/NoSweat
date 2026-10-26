@@ -25,7 +25,7 @@ export function DnsGuidePanel({
   return (
     <section
       aria-labelledby="dns-guide-title"
-      className="rounded-xl border border-slate-200 p-4 sm:p-5"
+      className="glass-edge rounded-2xl bg-white/40 p-4 sm:p-5"
     >
       <h3 id="dns-guide-title" className="font-display text-[15px] font-semibold text-ink">
         Where did you buy your domain?
@@ -43,10 +43,10 @@ export function DnsGuidePanel({
             type="button"
             aria-pressed={selected === option.id}
             onClick={() => setSelected(option.id)}
-            className={`min-h-10 rounded-full border px-3.5 text-[13px] font-semibold transition-colors duration-150 ${focusRing} ${
+            className={`min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
               selected === option.id
                 ? "border-ink bg-ink text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+                : "border-slate-300 bg-white/80 text-slate-700 hover:border-slate-400 hover:bg-white"
             }`}
           >
             {option.name}
@@ -134,7 +134,7 @@ function FormPreview({
     <div
       aria-label={`${record.type} record: ${nameLabel} ${name || "empty"}, ${valueLabel} ${record.value}`}
       role="img"
-      className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[6rem_8rem_1fr]"
+      className="glass-edge grid gap-2 rounded-xl bg-slate-900/[0.03] p-3 sm:grid-cols-[6rem_8rem_1fr]"
     >
       <Field label="Type" value={record.type} />
       <Field label={nameLabel} value={name} placeholder="(leave empty)" />
@@ -163,7 +163,7 @@ function Field({
         // Valor (ex.: o código TXT de 47 letras) quebra a linha em vez de cortar com "…":
         // as pessoas copiam o que veem.
         className={`mt-1 block rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] ${
-          value ? "text-ink" : "text-slate-400 italic"
+          value ? "text-ink" : "text-slate-500 italic"
         } ${mono ? "font-mono break-all" : "truncate font-semibold"}`}
       >
         {value || placeholder}

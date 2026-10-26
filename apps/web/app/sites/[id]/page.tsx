@@ -4,20 +4,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { AccountShellForCurrentViewer } from "@/app/(dashboard)/AccountShell";
-import {
-  ClockIcon,
-  GlobeIcon,
-  LinkIcon,
-  MessagesIcon,
-  TrashIcon,
-} from "@/app/(dashboard)/NavIcons";
+import { ClockIcon, GlobeIcon, LinkIcon, MessagesIcon } from "@/app/(dashboard)/NavIcons";
 import {
   IconTile,
   PageHeader,
   SiteUrlLine,
   StatusBadge,
   cardClass,
-  cardShadow,
   focusRing,
   panelClass,
   panelText,
@@ -27,7 +20,6 @@ import {
   textButton,
   type IconTone,
 } from "@/components/DashboardUi";
-import { DeleteSiteButton } from "@/components/DeleteSiteButton";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
@@ -37,7 +29,7 @@ import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server
 import { getSiteStore } from "@/server/store";
 import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
-import { TakeOfflineButton } from "./TakeOfflineButton";
+import { SiteActionsMenu } from "./SiteActionsMenu";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
@@ -133,12 +125,23 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             </StatusBadge>
           }
           description={where || undefined}
+          actions={
+            // Ações secundárias e as que tiram do ar/apagam ficam no menu "⋯" (com confirmação).
+            <SiteActionsMenu
+              siteId={site.id}
+              siteName={business.name}
+              liveUrl={live}
+              place="page"
+              hasPendingChanges={pendingChanges}
+              redirectAfterDelete="/dashboard"
+            />
+          }
         />
 
         {offline && (
           <p
             role="status"
-            className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-[15px] text-amber-900"
+            className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-900"
           >
             Your plan has ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page.{" "}
             <Link
@@ -157,7 +160,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             className="lg:sticky lg:top-24 lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:self-start"
           >
             <div className={`overflow-hidden ${cardClass}`}>
-              <div className="border-b border-slate-200/70">
+              <div className="m-2 mb-0 overflow-hidden rounded-xl ring-1 ring-(--glass-rim)">
                 <SiteThumb spec={liveSpec(site)} />
               </div>
               <div className="p-5">
@@ -244,9 +247,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 />
               </div>
               {isPublished && (
-                <div className="mt-4 border-t border-slate-200/70 pt-3">
-                  <TakeOfflineButton siteId={site.id} siteName={business.name} />
-                </div>
+                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-slate-500">
+                  Need to pause it? Use the{" "}
+                  <span className="font-semibold text-slate-600">&ldquo;⋯&rdquo;</span> menu at the
+                  top to take it offline. Nothing is deleted.
+                </p>
               )}
             </section>
 
@@ -285,7 +290,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   )}
                 </p>
               ) : (
-                <ul className="mt-4 divide-y divide-slate-200/70 border-t border-slate-200/70">
+                <ul className="mt-4 divide-y divide-(--glass-rim) border-t border-(--glass-rim)">
                   {leads.map((lead) => (
                     <li key={lead.id} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -362,27 +367,6 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   source,
                   createdAt,
                 }))}
-              />
-            </section>
-
-            <section
-              aria-labelledby="delete-title"
-              className={`rounded-2xl border border-red-200/70 bg-white p-5 sm:p-6 ${cardShadow}`}
-            >
-              <PanelHeading
-                id="delete-title"
-                tone="red"
-                icon={<TrashIcon className="size-[18px]" />}
-              >
-                Delete website
-              </PanelHeading>
-              <p className={`mt-3 mb-4 max-w-[60ch] ${panelText}`}>
-                Remove this website from your account. Deleting doesn&rsquo;t give back AI credits.
-              </p>
-              <DeleteSiteButton
-                siteId={site.id}
-                siteName={site.spec.business.name}
-                redirectTo="/dashboard"
               />
             </section>
           </div>

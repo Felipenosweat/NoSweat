@@ -24,6 +24,8 @@ export type NewClient = {
   siteId: string | null;
   notes: string;
   followUpOn: string | null;
+  /** Etiquetas do dono (padrão: nenhuma). */
+  tags?: string[];
   /** Padrão: agora. */
   lastActivityAt?: string;
 };
@@ -42,6 +44,7 @@ export type ClientPatch = Partial<
     | "lastActivityAt"
     | "totalJobsCents"
     | "jobsCount"
+    | "tags"
   >
 >;
 
@@ -68,4 +71,22 @@ export function normalizePhone(phone: string | null | undefined): string | null 
   let digits = (phone ?? "").replace(/\D/g, "");
   if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
   return digits || null;
+}
+
+/**
+ * Etiquetas como o dono digitou, limpas: sem espaços nas pontas, sem vazias e sem repetidas
+ * (sem diferença de maiúsculas; fica a primeira grafia). No máximo 10.
+ */
+export function normalizeTags(tags: readonly string[] | null | undefined): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of tags ?? []) {
+    const tag = raw.trim().replace(/\s+/g, " ").slice(0, 30);
+    const key = tag.toLowerCase();
+    if (!tag || seen.has(key)) continue;
+    seen.add(key);
+    out.push(tag);
+    if (out.length === 10) break;
+  }
+  return out;
 }

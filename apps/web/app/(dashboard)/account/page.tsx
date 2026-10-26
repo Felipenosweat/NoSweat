@@ -62,12 +62,18 @@ export default async function AccountPage() {
       <PageHeader title="Account" description="Your name, password and login email." />
 
       {viewer.viewingAs && (
-        <p role="status" className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-amber-900">
+        <p
+          role="status"
+          className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
+        >
           You’re viewing another account. Account settings are read-only.
         </p>
       )}
       {!authEnabled && (
-        <p role="status" className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-slate-700">
+        <p
+          role="status"
+          className="glass glass-flat mt-6 rounded-2xl px-4 py-3 text-[15px] text-slate-700"
+        >
           Login is turned off on this server, so there is nothing to change here.
         </p>
       )}

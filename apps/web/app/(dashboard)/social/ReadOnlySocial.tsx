@@ -87,7 +87,10 @@ function caption(post: SocialPostRecord): string {
 export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
   if (!data) {
     return (
-      <p role="alert" className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-[15px] text-red-700">
+      <p
+        role="alert"
+        className="glass-edge mt-8 rounded-2xl bg-red-50/85 px-4 py-3 text-[15px] text-red-700"
+      >
         We couldn&rsquo;t load this account&rsquo;s posts. Please refresh the page.
       </p>
     );
@@ -117,7 +120,7 @@ export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
             No posts in this period.
           </p>
         ) : (
-          <ul className={`mt-3 divide-y divide-slate-200/70 overflow-hidden ${cardClass}`}>
+          <ul className={`mt-3 divide-y divide-(--glass-rim) overflow-hidden ${cardClass}`}>
             {posts.map((post) => (
               <li key={post.id} className="flex flex-col gap-1.5 px-4 py-3 sm:px-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">

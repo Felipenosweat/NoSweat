@@ -1,22 +1,22 @@
 import type { ReactNode } from "react";
+import { focusRing, glassButtonClass } from "./glass/styles";
 
 // Peças visuais compartilhadas do painel do cliente (/dashboard, /clients, /social, /billing e
-// /sites/[id]). Linguagem "Apple": superfícies claras, cartões brancos raio 2xl com linha fina
-// (slate-200/70) e sombra bem leve, controles raio xl, hierarquia pelo tamanho e peso do texto.
-// Sem "use client" e sem imports do servidor: servem tanto para server quanto para client components.
+// /sites/[id]). Linguagem "Liquid Glass" (iOS/macOS 26): cartões de vidro claro raio 2xl com brilho
+// de 1px no topo e sombra leve, botões em cápsula, hierarquia pelo tamanho e peso do texto.
+// Os componentes de vidro completos (menu "⋯", folha de confirmação, segmentado...) estão em
+// components/glass. Sem "use client" e sem imports do servidor: servem tanto para server quanto
+// para client components.
 
-export const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+export { focusRing };
 
 // Espaço entre palavras dos títulos (`font-display`): vale para o app todo, em app/globals.css.
 
-const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 sm:min-h-10 ${focusRing}`;
+/** Ação principal (cápsula azul da marca com brilho de vidro). Só uma por tela. */
+export const primaryButton = glassButtonClass({ variant: "primary" });
 
-/** Ação principal (azul da marca). Só uma por tela. */
-export const primaryButton = `${buttonBase} bg-brand text-white hover:bg-brand-dark disabled:bg-slate-100 disabled:text-slate-400`;
-
-/** Ação secundária: fundo branco, linha fina e sombra mínima. */
-export const secondaryButton = `${buttonBase} border border-slate-200 bg-white text-ink shadow-xs hover:border-slate-300 hover:bg-slate-50 disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none`;
+/** Ação secundária: cápsula de vidro claro. */
+export const secondaryButton = glassButtonClass({ variant: "secondary" });
 
 /** Ação de texto (terciária). */
 export const textButton = `inline-flex min-h-11 items-center gap-1.5 rounded-lg px-1 text-[15px] font-semibold text-slate-600 transition-colors duration-150 hover:text-ink disabled:cursor-not-allowed disabled:text-slate-400 sm:min-h-10 ${focusRing}`;
@@ -28,8 +28,11 @@ export const cardShadow = "shadow-[0_1px_2px_rgb(7_27_51/0.04),0_2px_12px_-4px_r
 export const cardShadowHover =
   "hover:shadow-[0_1px_2px_rgb(7_27_51/0.05),0_12px_28px_-12px_rgb(7_27_51/0.16)]";
 
-/** Cartão branco (raio 2xl, linha fina, sombra leve), sem padding: listas agrupadas e grades. */
-export const cardClass = `rounded-2xl border border-slate-200/70 bg-white ${cardShadow}`;
+/**
+ * Cartão de vidro (raio 2xl, brilho no topo, linha fina, sombra leve), sem padding: listas
+ * agrupadas e grades. A borda transparente mantém o tamanho antigo (e aceita hover:border-*).
+ */
+export const cardClass = "rounded-2xl border border-transparent glass";
 
 /** Painel de configurações: o cartão com padding. */
 export const panelClass = `${cardClass} p-5 sm:p-6`;
@@ -117,7 +120,7 @@ export function IconTile({
   return (
     <span
       aria-hidden="true"
-      className={`grid shrink-0 place-items-center ${
+      className={`glass-edge grid shrink-0 place-items-center ${
         size === "lg" ? "size-12 rounded-xl" : "size-9 rounded-lg"
       } ${ICON_TONES[tone]}`}
     >
@@ -154,10 +157,10 @@ const DOTS: Record<BadgeTone, string> = {
   neutral: "",
 };
 
-/** Selo em cápsula com bolinha de status real (estática: nada de pulsar). */
+/** Selo em cápsula de vidro com bolinha de status real (estática: nada de pulsar). */
 export function StatusBadge({ tone, children }: { tone: BadgeTone; children: ReactNode }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2.5 py-0.5 text-[13px] leading-5 font-medium text-ink ring-1 ring-slate-200">
+    <span className="glass glass-flat inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[13px] leading-5 font-medium text-ink">
       {tone !== "neutral" && (
         <span aria-hidden="true" className={`size-1.5 rounded-full ${DOTS[tone]}`} />
       )}

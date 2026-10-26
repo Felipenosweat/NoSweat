@@ -132,3 +132,284 @@ html {
     animation-delay: calc(var(--i, 0) * 30ms);
   }
 }
+
+/* ======================================================================================
+   Liquid Glass (telas logadas: painel, admin). Componentes em components/glass/.
+   ======================================================================================
+   Materiais (utilidades do Tailwind, aceitam variantes como hover:/md:):
+   - glass          vidro normal: cartões, painéis, campos, botões secundários
+   - glass-strong   mais opaco e mais desfocado: menus, folhas (modais), barras flutuantes
+   - glass-bar      faixa de ponta a ponta (cabeçalho/barra grudada), linha fina embaixo
+   - glass-edge     só a borda de vidro (brilho de 1px no topo + linha fina), sem fundo
+   - glass-tint     vidro "tingido" com uma cor sólida (`--glass-tint`), para botões de ação
+   - glass-pill     cápsula clara do controle segmentado
+   Ajustes: glass-raised (sombra mais funda), glass-flat (sem sombra), glass-interactive
+   (clareia no hover), glass-on-dark (vale para tudo dentro: vidro escuro e texto claro).
+   Texto em cima do vidro: text-(--glass-fg) e text-(--glass-fg-muted) (contraste AA nos dois tons).
+   Não misture com shadow-*: a sombra do vidro é ajustada por glass-raised/glass-flat.
+   Sem backdrop-filter, com "reduzir transparência" ou "aumentar contraste": fundo sólido. */
+
+/* Sombra de um elemento só (não herda: um botão dentro de um cartão "raised" não fica raised). */
+@property --glass-shadow {
+  syntax: "*";
+  inherits: false;
+}
+
+@layer base {
+  :root {
+    --glass-fg: #071b33;
+    --glass-fg-muted: #475569;
+    --glass-bg: rgb(255 255 255 / 0.62);
+    --glass-bg-hover: rgb(255 255 255 / 0.82);
+    --glass-bg-strong: rgb(255 255 255 / 0.78);
+    --glass-bg-bar: rgb(248 250 252 / 0.72);
+    --glass-solid: #ffffff;
+    --glass-solid-hover: #f1f5f9;
+    --glass-solid-strong: #ffffff;
+    --glass-solid-bar: #f8fafc;
+    --glass-rim: rgb(7 27 51 / 0.08);
+    --glass-rim-contrast: rgb(7 27 51 / 0.45);
+    --glass-specular: rgb(255 255 255 / 0.9);
+    --glass-sheen: rgb(255 255 255 / 0.4);
+    --glass-depth: 0 1px 2px rgb(7 27 51 / 0.04), 0 10px 30px -12px rgb(7 27 51 / 0.16);
+    --glass-depth-raised: 0 2px 6px rgb(7 27 51 / 0.06), 0 24px 56px -20px rgb(7 27 51 / 0.32);
+    --glass-blur: 20px;
+    --glass-blur-strong: 36px;
+    --glass-saturate: 180%;
+    --glass-groove: rgb(7 27 51 / 0.06);
+    --glass-pill: #ffffff;
+    --glass-ghost-hover: rgb(7 27 51 / 0.06);
+  }
+}
+
+/* Vidro sobre fundo escuro (ex.: faixa bg-ink). Põe no contêiner; vale para os filhos. */
+@utility glass-on-dark {
+  --glass-fg: #ffffff;
+  --glass-fg-muted: #cbd5e1;
+  --glass-bg: rgb(7 27 51 / 0.45);
+  --glass-bg-hover: rgb(7 27 51 / 0.62);
+  --glass-bg-strong: rgb(7 27 51 / 0.72);
+  --glass-bg-bar: rgb(7 27 51 / 0.6);
+  --glass-solid: #0d2747;
+  --glass-solid-hover: #13325a;
+  --glass-solid-strong: #0d2747;
+  --glass-solid-bar: #0b2240;
+  --glass-rim: rgb(255 255 255 / 0.12);
+  --glass-rim-contrast: rgb(255 255 255 / 0.6);
+  --glass-specular: rgb(255 255 255 / 0.22);
+  --glass-sheen: rgb(255 255 255 / 0.08);
+  --glass-depth: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 32px -12px rgb(0 0 0 / 0.5);
+  --glass-depth-raised: 0 2px 6px rgb(0 0 0 / 0.3), 0 24px 56px -20px rgb(0 0 0 / 0.6);
+  --glass-groove: rgb(255 255 255 / 0.08);
+  --glass-pill: rgb(255 255 255 / 0.2);
+  --glass-ghost-hover: rgb(255 255 255 / 0.1);
+}
+
+@utility glass {
+  background-color: var(--glass-bg);
+  background-image: linear-gradient(180deg, var(--glass-sheen), transparent 45%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    var(--glass-shadow, var(--glass-depth));
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background-color: var(--glass-solid);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--glass-solid);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) {
+    background-color: var(--glass-solid);
+    box-shadow:
+      inset 0 0 0 1px var(--glass-rim-contrast),
+      var(--glass-shadow, var(--glass-depth));
+  }
+  @media (forced-colors: active) {
+    border: 1px solid CanvasText;
+  }
+}
+
+@utility glass-strong {
+  background-color: var(--glass-bg-strong);
+  background-image: linear-gradient(180deg, var(--glass-sheen), transparent 40%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    var(--glass-shadow, var(--glass-depth-raised));
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background-color: var(--glass-solid-strong);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--glass-solid-strong);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) {
+    background-color: var(--glass-solid-strong);
+    box-shadow:
+      inset 0 0 0 1px var(--glass-rim-contrast),
+      var(--glass-shadow, var(--glass-depth-raised));
+  }
+  @media (forced-colors: active) {
+    border: 1px solid CanvasText;
+  }
+}
+
+@utility glass-bar {
+  background-color: var(--glass-bg-bar);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 -1px 0 0 var(--glass-rim),
+    var(--glass-shadow, 0 0 #0000);
+
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    background-color: var(--glass-solid-bar);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--glass-solid-bar);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) {
+    background-color: var(--glass-solid-bar);
+    box-shadow: inset 0 -1px 0 0 var(--glass-rim-contrast);
+  }
+  @media (forced-colors: active) {
+    border-bottom: 1px solid CanvasText;
+  }
+}
+
+@utility glass-edge {
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    var(--glass-shadow, 0 0 #0000);
+
+  @media (prefers-contrast: more) {
+    box-shadow: inset 0 0 0 1px var(--glass-rim-contrast);
+  }
+}
+
+/* Cor sólida com brilho de vidro (o texto branco mantém o contraste AA da cor). */
+@utility glass-tint {
+  background-color: var(--glass-tint, #0066ff);
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 45%);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.32),
+    inset 0 0 0 1px rgb(0 0 0 / 0.06),
+    var(
+      --glass-shadow,
+      0 1px 2px rgb(7 27 51 / 0.12),
+      0 8px 20px -10px color-mix(in srgb, var(--glass-tint, #0066ff) 70%, transparent)
+    );
+
+  @media (prefers-reduced-transparency: reduce) {
+    background-image: none;
+  }
+  @media (forced-colors: active) {
+    border: 1px solid ButtonText;
+  }
+}
+
+@utility glass-pill {
+  background-color: var(--glass-pill);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim),
+    0 1px 2px rgb(7 27 51 / 0.08),
+    0 3px 10px -3px rgb(7 27 51 / 0.14);
+
+  @media (forced-colors: active) {
+    border: 2px solid Highlight;
+  }
+}
+
+@utility glass-interactive {
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--glass-bg-hover);
+    }
+    @media (prefers-reduced-transparency: reduce) {
+      &:hover {
+        background-color: var(--glass-solid-hover);
+      }
+    }
+    @media (prefers-contrast: more) {
+      &:hover {
+        background-color: var(--glass-solid-hover);
+      }
+    }
+  }
+}
+
+@utility glass-raised {
+  --glass-shadow: var(--glass-depth-raised);
+}
+
+@utility glass-flat {
+  --glass-shadow: 0 0 #0000;
+}
+
+/* Fundo do app para o vidro aparecer (ver <GlassBackdrop />): manchas suaves da marca. */
+@utility glass-backdrop {
+  background-color: #f5f8fc;
+  background-image:
+    radial-gradient(44rem 34rem at 6% -8%, rgb(0 102 255 / 0.16), transparent 70%),
+    radial-gradient(38rem 30rem at 98% 6%, rgb(0 194 255 / 0.14), transparent 70%),
+    radial-gradient(46rem 36rem at 72% 110%, rgb(99 102 241 / 0.1), transparent 70%);
+}
+
+/* Entrada do menu (escala a partir do botão) e da folha. Sem movimento: aparecem direto. */
+@keyframes glass-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes glass-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .glass-pop {
+    animation: glass-pop 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .glass-sheet[open] {
+    animation: glass-sheet-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .glass-sheet[open]::backdrop {
+    animation: ns-fade 200ms ease-out both;
+  }
+}
+
+/* Fundo escurecido da folha: leve desfoque; com "reduzir transparência", só escurece mais. */
+.glass-sheet::backdrop {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-sheet::backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: rgb(7 27 51 / 0.55);
+  }
+}
