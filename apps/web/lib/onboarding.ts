@@ -150,6 +150,13 @@ export function clampStep(index: number, total = TOUR_STEPS.length): number {
   return Math.min(Math.max(Math.trunc(index), 0), total - 1);
 }
 
+/** O passo no índice (preso entre o primeiro e o último). */
+export function tourStepAt(index: number): TourStep {
+  const step = TOUR_STEPS[clampStep(index)];
+  if (!step) throw new Error("The welcome tour has no steps.");
+  return step;
+}
+
 /** Atalhos do último passo. Sem site ainda, "Create my website" leva ao /create. */
 export function tourShortcuts(
   latestSiteId: string | null,

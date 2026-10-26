@@ -16,24 +16,10 @@ export type GuideSectionId =
   | "team"
   | "billing";
 
-/** Ícone da seção (os desenhos ficam em app/(dashboard)/NavIcons.tsx). */
-export type GuideIcon =
-  | "home"
-  | "website"
-  | "clients"
-  | "schedule"
-  | "estimates"
-  | "invoices"
-  | "social"
-  | "reviews"
-  | "settings"
-  | "team"
-  | "billing";
-
 export type GuideSection = {
+  /** Âncora da seção; o ícone é o mesmo da navegação (mapa por `id` na página /guide). */
   id: GuideSectionId;
   title: string;
-  icon: GuideIcon;
   /** 2–4 frases curtas. */
   body: string;
   cta: { label: string; href: string };
@@ -45,7 +31,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "home",
     title: "Home",
-    icon: "home",
     body: "Home is your day at a glance: today’s jobs, the money coming in and what needs you. The checklist shows what’s left to finish your website.",
     cta: { label: "Open Home", href: "/dashboard" },
     steps: [
@@ -57,7 +42,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "website",
     title: "Website",
-    icon: "website",
     body: "Your website is ready to edit. Change any text or photo, or ask AI to make a change for you. Publish puts it online at a free address, and you can connect your own domain later. Messages from your contact form show up on the website page and in Clients.",
     cta: { label: "Open Website", href: "/dashboard#sites" },
     steps: [
@@ -69,7 +53,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "clients",
     title: "Clients",
-    icon: "clients",
     body: "Everyone who fills out your website’s contact form becomes a client on their own. Call or text them in one tap, add notes and tags, and move them through stages as the work goes on.",
     cta: { label: "Open Clients", href: "/clients" },
     steps: [
@@ -81,7 +64,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "schedule",
     title: "Schedule",
-    icon: "schedule",
     body: "Schedule is your jobs calendar. Book a job for a client, pick a time and assign someone from your team.",
     cta: { label: "Open Schedule", href: "/schedule" },
     steps: [
@@ -93,7 +75,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "estimates",
     title: "Estimates",
-    icon: "estimates",
     body: "Build an estimate from your price book and text or email your customer a link. They open it on their phone and approve it by typing their name. No account needed. Once it’s approved, turn it into a job, an invoice or both.",
     cta: { label: "Open Estimates", href: "/estimates" },
     steps: [
@@ -105,7 +86,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "invoices",
     title: "Invoices",
-    icon: "invoices",
     body: "Send an invoice link by text or email. Your customer sees what they owe and how to pay you. When the cash, check or Zelle comes in, record the payment and the invoice is marked paid.",
     cta: { label: "Open Invoices", href: "/invoices" },
     steps: [
@@ -117,7 +97,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "social",
     title: "Social",
-    icon: "social",
     body: "AI drafts a month of Instagram posts from your website. You read, edit, approve or delete each one. Nothing goes out until you approve it.",
     cta: { label: "Open Social", href: "/social" },
     steps: [
@@ -129,7 +108,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "reviews",
     title: "Google reviews",
-    icon: "reviews",
     body: "Paste your Google review link once. Your website gets a “Review us on Google” button, and you get quick ways to ask your clients by text, email or QR code.",
     cta: { label: "Open Google reviews", href: "/reviews" },
     steps: [
@@ -141,7 +119,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "settings",
     title: "Business settings and price book",
-    icon: "settings",
     body: "Set your company details, sales tax, how long estimates are good for, when invoices are due and how customers can pay you. Save the services you sell most in your price book so estimates and invoices take a few taps.",
     cta: { label: "Open Business settings", href: "/office/settings" },
     steps: [
@@ -153,7 +130,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "team",
     title: "Team",
-    icon: "team",
     body: "Add your technicians, helpers or office staff. Each person gets a color so you can see who’s on which job. Team members don’t log in yet.",
     cta: { label: "Open Team", href: "/team" },
     steps: [
@@ -165,7 +141,6 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "billing",
     title: "Billing",
-    icon: "billing",
     body: "Billing shows your plan and your AI credits. Your plan decides how many websites you can have online and whether you can use your own domain, which comes with Pro and Premium.",
     cta: { label: "Open Billing", href: "/billing" },
     steps: [

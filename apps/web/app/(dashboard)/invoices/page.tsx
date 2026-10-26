@@ -25,6 +25,7 @@ import { getOfficeSettings, listInvoices } from "@/server/office/service";
 import { DocumentsToolbar } from "../office/_ui/DocumentsToolbar";
 import { InvoiceBadge, InvoiceIcon, PlusIcon } from "../office/_ui/ui";
 import { InvoiceMenu } from "./InvoiceMenu";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Invoices", robots: { index: false } };
 
@@ -92,6 +93,7 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
           title="Get paid faster"
           description="Send an invoice link by text or email, then mark it paid when the cash, check or Zelle comes in."
           actions={readOnly ? undefined : <NewInvoiceButton label="Create an invoice" />}
+          footnote={<GuideHint section="invoices" />}
         />
       ) : (
         <InvoicesContent

@@ -143,6 +143,14 @@ export const HelpIcon = (props: IconProps) => (
   </Icon>
 );
 
+// Bússola: rever o tour de boas-vindas ("Take the tour") e o guia.
+export const TourIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.5 8.5-2 5-5 2 2-5z" />
+  </Icon>
+);
+
 // Escudo: painel do admin.
 export const AdminIcon = (props: IconProps) => (
   <Icon {...props}>

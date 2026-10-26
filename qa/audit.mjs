@@ -99,7 +99,7 @@ if (process.env.SEED === "1") {
     });
     await post("/api/office/team", { name: "Ana Souza", role: "Cleaner", color: "teal" });
     const extraPages = ["/schedule", "/estimates", "/invoices", "/office/settings"];
-    extraPages.push("/office/price-book", "/team", "/reviews");
+    extraPages.push("/office/price-book", "/team", "/reviews", "/guide");
     if (client?.id) {
       const start = new Date();
       start.setUTCHours(18, 0, 0, 0);

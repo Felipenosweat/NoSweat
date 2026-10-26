@@ -24,6 +24,7 @@ import { getOfficeSettings, listEstimates } from "@/server/office/service";
 import { DocumentsToolbar } from "../office/_ui/DocumentsToolbar";
 import { EstimateBadge, EstimateIcon, PlusIcon } from "../office/_ui/ui";
 import { EstimateMenu } from "./EstimateMenu";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Estimates", robots: { index: false } };
 
@@ -91,6 +92,7 @@ export default async function EstimatesPage({ searchParams }: EstimatesPageProps
           title="Send your first estimate"
           description="Pick a client, add your services and prices, and text them a link. They can approve it from their phone."
           actions={readOnly ? undefined : <NewEstimateButton label="Create an estimate" />}
+          footnote={<GuideHint section="estimates" />}
         />
       ) : (
         <EstimatesContent

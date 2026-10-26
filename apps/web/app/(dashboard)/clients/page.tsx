@@ -27,6 +27,7 @@ import {
   type RawSearchParams,
 } from "./params";
 import { ClockIcon, DownloadIcon, InboxIcon, MoneyIcon, TrophyIcon } from "./ui";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Clients", robots: { index: false } };
 
@@ -266,6 +267,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
             </>
           }
           actions={readOnly ? undefined : <AddClientButton label="Add your first client" />}
+          footnote={<GuideHint section="clients" />}
         />
       ) : (
         <ClientsContent

@@ -4,7 +4,11 @@ import {
   TOUR_METADATA_KEY,
   tourDoneAt,
 } from "@/lib/onboarding";
-import { createSupabaseServerClient, getCurrentUser, getSessionClaims } from "@/server/auth/session";
+import {
+  createSupabaseServerClient,
+  getCurrentUser,
+  getSessionClaims,
+} from "@/server/auth/session";
 import { errorResponse, handle, jsonResponse, readJson, unauthorized } from "@/server/http";
 
 /**

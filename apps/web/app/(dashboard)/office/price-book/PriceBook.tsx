@@ -28,6 +28,7 @@ import {
   hintClass,
   labelClass,
 } from "../_ui/ui";
+import { GuideHint } from "../../GuideHint";
 
 // Tabela de preços (price book): os serviços e peças que o dono cobra sempre, para montar
 // orçamentos e faturas em poucos toques. Lista com busca; "Add item" e "Edit" abrem a mesma folha.
@@ -69,6 +70,7 @@ export function PriceBook({ items, readOnly }: { items: PriceItem[]; readOnly: b
           title="Add the work you do most"
           description="Save your usual services and parts with their prices once. Then build estimates and invoices in a few taps."
           actions={addButton}
+          footnote={<GuideHint section="settings" />}
         />
       ) : (
         <>
