@@ -148,6 +148,56 @@ describe("SupabaseSiteStore", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("finds a site by address with only id and owner", async () => {
+    const { store, fetchMock } = storeWith([{ id: ID, owner_id: OWNER }]);
+    expect(await store.findRef({ slug: "joes-plumbing-6f1c2a" })).toEqual({
+      id: ID,
+      ownerId: OWNER,
+    });
+    expect(await store.findRef({ domain: "joes.com" })).toEqual({ id: ID, ownerId: OWNER });
+    expect(await store.findRef({ slug: "Bad Slug" })).toBeNull();
+    expect(await store.findRef({ domain: "joes.com&select=*" })).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const [slugUrl] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(slugUrl).toContain("slug=eq.joes-plumbing-6f1c2a&select=id,owner_id");
+    const [domainUrl] = fetchMock.mock.calls[1] as unknown as [string];
+    expect(domainUrl).toContain("custom_domain=eq.joes.com&select=id,owner_id");
+  });
+
+  it("reads a published site without the draft spec", async () => {
+    const live = fixtures["sparkle-cleaning"];
+    const { store, fetchMock } = storeWith([
+      { id: ID, owner_id: OWNER, slug: "joes", custom_domain: null, published_spec: live },
+    ]);
+    const site = await store.getPublished(ID);
+    expect(site).toMatchObject({ id: ID, ownerId: OWNER, slug: "joes", customDomain: null });
+    expect(site?.liveSpec.business.name).toBe(live.business.name);
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toContain(`id=eq.${ID}&status=eq.published`);
+    expect(url).toContain("select=id,owner_id,slug,custom_domain,published_spec");
+    expect(url).not.toMatch(/select=[^&]*[,=]spec\b/);
+    expect(await store.getPublished("not-a-uuid")).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("falls back to the draft only for legacy published sites without published_spec", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json([{ id: ID, owner_id: OWNER, slug: "joes", published_spec: null }]),
+      )
+      .mockResolvedValueOnce(Response.json([{ spec: fixtures["joes-plumbing"] }]));
+    const store = new SupabaseSiteStore({
+      url: "https://demo.supabase.co",
+      serviceKey: "secret",
+      fetch: fetchMock as unknown as typeof fetch,
+    });
+    const site = await store.getPublished(ID);
+    expect(site?.liveSpec.business.name).toBe(fixtures["joes-plumbing"].business.name);
+    const [legacyUrl] = fetchMock.mock.calls[1] as unknown as [string];
+    expect(legacyUrl).toContain("select=spec");
+  });
+
   it("reads legacy rows without an owner", async () => {
     const { store } = storeWith([{ ...row, owner_id: null }]);
     expect((await store.get(ID))?.ownerId).toBeNull();

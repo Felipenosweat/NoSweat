@@ -74,7 +74,9 @@ describe("Photo", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toMatch(/fetchpriority/i);
     expect(html).toContain('sizes="50vw"');
-    expect(html).toMatch(/srcset="https:\/\/images\.pexels\.com\/photos\/1\/a\.jpeg\?auto=compress/i);
+    expect(html).toMatch(
+      /srcset="https:\/\/images\.pexels\.com\/photos\/1\/a\.jpeg\?auto=compress/i,
+    );
   });
 
   it("com priority carrega já e com prioridade alta", () => {

@@ -1,13 +1,20 @@
 "use client";
 
 import type { SiteSpec } from "@nosweat/schema";
-import { SiteRenderer } from "@nosweat/templates";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from "react";
 import { publishedSlug } from "./brief";
 import styles from "./create.module.css";
 import { focusRing, primaryButton, secondaryButton } from "./ui";
 import { PhotoPlanBox } from "./WizardPickers";
+
+// O desenho do site (pacote de templates: todas as composições e seções) só baixa quando a prévia
+// aparece, no fim da geração: fora do JS da primeira carga do /create. A caixa da prévia já
+// reserva o espaço (aspect-ratio), então nada pula quando ele chega.
+const SiteRenderer = dynamic(() => import("@nosweat/templates").then((m) => m.SiteRenderer), {
+  ssr: false,
+});
 
 /** Etapas mostradas enquanto o site é gerado. A última só fecha quando a resposta chega. */
 export const BUILD_STEPS = [
@@ -114,6 +121,10 @@ type BuildingPanelProps = {
 
 export function BuildingPanel({ progress, slug, slow = false, headingRef }: BuildingPanelProps) {
   const current = BUILD_STEPS[Math.min(progress, BUILD_STEPS.length - 1)];
+  // Enquanto a IA escreve, já baixa o desenho do site: a prévia aparece na hora ao terminar.
+  useEffect(() => {
+    void import("@nosweat/templates");
+  }, []);
   return (
     <div className="flex min-h-[calc(100svh-10rem)] items-center justify-center lg:min-h-[calc(100svh-13rem)]">
       <section

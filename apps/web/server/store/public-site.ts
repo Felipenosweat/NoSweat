@@ -3,13 +3,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { ownerHasCustomDomainAccess, ownerHasLiveAccess } from "../billing";
 import { getSiteStore } from "./index";
-import {
-  hostTag,
-  ownerTag,
-  PUBLIC_SITE_REVALIDATE_S,
-  siteTag,
-  slugTag,
-} from "./revalidate";
+import { hostTag, ownerTag, PUBLIC_SITE_REVALIDATE_S, siteTag, slugTag } from "./revalidate";
 import type { SiteRef } from "./types";
 
 // Leitura das páginas públicas dos sites (/s/<slug> e o domínio do cliente, /d/<host>), com

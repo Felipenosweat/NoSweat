@@ -7,8 +7,9 @@ import {
   type SocialPost,
   type UpdateSocialSettingsRequest,
 } from "@nosweat/schema";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   cardClass,
   focusRing,
@@ -31,7 +32,6 @@ import {
 } from "@/components/glass";
 import { ConnectCard } from "./ConnectCard";
 import { PlanMonthButton } from "./PlanMonthButton";
-import { PostComposer } from "./PostComposer";
 import {
   CHIP_TONE,
   ErrorNote,
@@ -51,6 +51,12 @@ import {
   type SocialApiError,
   type StatusTone,
 } from "./shared";
+
+// A gaveta de edição (o maior pedaço da tela) só baixa quando o dono abre um post: fora do JS da
+// primeira carga. Ela já abre com a própria animação, então não precisa de esqueleto.
+const PostComposer = dynamic(() => import("./PostComposer").then((m) => m.PostComposer), {
+  ssr: false,
+});
 
 // Tela principal do /social: conta do Instagram, "preencher o mês com IA" e o calendário do mês,
 // tudo no fuso da empresa. Calendário: barra de vidro grudada (mês, "Today", revisar, novo post)
@@ -168,12 +174,50 @@ function CalendarIcon() {
   );
 }
 
-export function SocialCalendar({ initialMonth }: { initialMonth: string | null }) {
-  const [state, setState] = useState<SocialStateResponse | null>(null);
+/** O que o servidor já leu para a primeira tela (mesmo conteúdo de /api/social/state e /posts). */
+export type SocialCalendarInitial = {
+  state: SocialStateResponse;
+  /** Mês mostrado ("YYYY-MM"), no fuso da empresa. */
+  month: string;
+  /** Posts desse mês (mais os rascunhos sem data), como a rota /api/social/posts devolve. */
+  posts: SocialPost[];
+};
+
+/**
+ * Esqueleto da tela (antes dos dados): a mesma estrutura e alturas parecidas com a tela pronta,
+ * para nada pular quando ela chega. Também serve de fallback do <Suspense> e do loading.tsx.
+ */
+export function SocialCalendarSkeleton() {
+  return (
+    <div className="mt-6 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="glass h-56 rounded-2xl motion-safe:animate-pulse" />
+        <div className="glass h-80 rounded-2xl motion-safe:animate-pulse" />
+      </div>
+      <div className="mt-6 glass h-14 rounded-[26px] motion-safe:animate-pulse" />
+      <div className="glass h-10 rounded-full motion-safe:animate-pulse sm:w-96" />
+      <div className="glass h-[22rem] rounded-2xl motion-safe:animate-pulse md:h-[50rem]" />
+    </div>
+  );
+}
+
+export function SocialCalendar({
+  initialMonth,
+  initial = null,
+}: {
+  initialMonth: string | null;
+  /** Dados lidos no servidor: a tela já nasce pronta (sem a ida e volta de /state e /posts). */
+  initial?: SocialCalendarInitial | null;
+}) {
+  const [state, setState] = useState<SocialStateResponse | null>(initial?.state ?? null);
   const [stateError, setStateError] = useState<SocialApiError | null>(null);
-  const [month, setMonth] = useState<string | null>(initialMonth);
-  const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [month, setMonth] = useState<string | null>(initial?.month ?? initialMonth);
+  const [posts, setPosts] = useState<SocialPost[]>(initial?.posts ?? []);
+  const initialKey = initial ? `${initial.month}|${initial.state.settings.timezone}` : null;
+  const [loadedKey, setLoadedKey] = useState<string | null>(initialKey);
+  // Com os dados do servidor, a primeira carga pelo navegador não precisa acontecer.
+  const skipStateLoad = useRef(initial !== null);
+  const skipPostsKey = useRef(initialKey);
   const [postsError, setPostsError] = useState<SocialApiError | null>(null);
   const [composer, setComposer] = useState<ComposerState | null>(null);
   const [message, setMessage] = useState("");
@@ -194,6 +238,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
 
   // Primeira carga: o setState só roda na volta da promessa (regra react-hooks/set-state-in-effect).
   useEffect(() => {
+    if (skipStateLoad.current) return;
     let alive = true;
     socialApi("/api/social/state", SocialStateResponse)
       .then((next) => {
@@ -215,6 +260,9 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
 
   useEffect(() => {
     if (!month || !tz || !postsKey) return;
+    // O mês que veio do servidor já está carregado; ao mudar de mês, volta ao normal.
+    if (postsKey === skipPostsKey.current) return;
+    skipPostsKey.current = null;
     let alive = true;
     const { from, to } = monthRange(month, tz);
     const url = `/api/social/posts?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
@@ -239,9 +287,11 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     setPosts((list) => [...list.filter((p) => p.id !== post.id), post]);
   }, []);
 
+  // `key` diferente em cada estado: o React troca os nós em vez de reaproveitar um <div> do
+  // esqueleto em outra posição (reaproveitar fazia o conteúdo "pular" e contava como CLS).
   if (stateError && !state) {
     return (
-      <div className="mt-8">
+      <div key="error" className="mt-8">
         <ErrorNote error={stateError} />
         <GlassButton variant="secondary" onClick={() => void loadState()} className="mt-3">
           Try again
@@ -250,18 +300,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
     );
   }
 
-  if (!state || !month || !tz) {
-    return (
-      <div className="mt-6 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="glass h-44 rounded-2xl motion-safe:animate-pulse" />
-          <div className="glass h-44 rounded-2xl motion-safe:animate-pulse" />
-        </div>
-        <div className="glass h-14 rounded-[26px] motion-safe:animate-pulse" />
-        <div className="glass h-96 rounded-2xl motion-safe:animate-pulse" />
-      </div>
-    );
-  }
+  if (!state || !month || !tz) return <SocialCalendarSkeleton key="loading" />;
 
   const loading = loadedKey !== postsKey;
   // Um relógio só por render: "hoje" na grade e "já passou?" para aprovar.
@@ -338,7 +377,7 @@ export function SocialCalendar({ initialMonth }: { initialMonth: string | null }
           : "No problems this month.";
 
   return (
-    <div>
+    <div key="calendar">
       <div aria-live="polite" className="sr-only">
         {message}
       </div>

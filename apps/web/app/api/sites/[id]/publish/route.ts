@@ -5,6 +5,7 @@ import { placeholdersIn } from "@/lib/placeholders";
 import { errorResponse, handle, jsonResponse, notFound, unauthorized } from "@/server/http";
 import { freeUrl, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
+import { revalidatePublicSite } from "@/server/store/revalidate";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -54,6 +55,8 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       publishedAt: site.publishedAt ?? new Date().toISOString(),
     });
     if (!published) return notFound();
+    // A página pública (/s/<slug> e o domínio) mostra a versão nova já na próxima visita.
+    revalidatePublicSite(published);
 
     const url = freeUrl(published, new URL(request.url).origin);
     return jsonResponse(PublishSiteResponse, {

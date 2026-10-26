@@ -3,6 +3,7 @@ import { getCurrentUser, type CurrentUser } from "./auth/session";
 import { getVercelConfig, removeDomain } from "./domains/vercel";
 import { getGuestId } from "./guest";
 import { getSiteStore, type SiteRecord } from "./store";
+import { revalidatePublicSite } from "./store/revalidate";
 
 /**
  * Site do usuário logado, ou `null` se não existir ou for de outra pessoa (tratamos igual: 404).
@@ -81,5 +82,8 @@ export async function deleteSiteForever(site: SiteRecord): Promise<boolean> {
     // Se a Vercel falhar, o site é apagado mesmo assim; o domínio sobra no projeto (inofensivo).
     await removeDomain(vercel, site.customDomain).catch(() => undefined);
   }
-  return getSiteStore().delete(site.id);
+  const deleted = await getSiteStore().delete(site.id);
+  // A página pública (/s/<slug> e o domínio) passa a responder "não encontrado" na hora.
+  revalidatePublicSite(site);
+  return deleted;
 }

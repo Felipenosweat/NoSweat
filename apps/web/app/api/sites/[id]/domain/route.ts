@@ -20,6 +20,7 @@ import {
 } from "@/server/http";
 import { requireOwnedSite } from "@/server/sites";
 import { DomainTakenError, getSiteStore } from "@/server/store";
+import { revalidatePublicSite } from "@/server/store/revalidate";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -77,6 +78,8 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
       if (vercel) await addDomain(vercel, domain);
       const updated = await store.updateMeta(site.id, { customDomain: domain });
       if (!updated) return notFound();
+      // O domínio novo (talvez com "não encontrado" no cache) e o anterior mudam de site.
+      revalidatePublicSite(updated, { customDomain: previous });
       if (vercel && previous && previous !== domain) {
         await removeDomain(vercel, previous).catch((error: unknown) => {
           console.error("[domains] could not release previous domain", previous, error);
@@ -116,6 +119,7 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     }
     const updated = await getSiteStore().updateMeta(site.id, { customDomain: null });
     if (!updated) return notFound();
+    revalidatePublicSite(updated, { customDomain: site.customDomain });
     return jsonResponse(DomainResponse, await getDomainState(updated));
   }, "/api/sites/[id]/domain");
 }

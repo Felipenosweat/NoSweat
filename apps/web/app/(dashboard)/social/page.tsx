@@ -2,10 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { Suspense } from "react";
 import { PageHeader } from "@/components/DashboardUi";
+import type { CurrentUser } from "@/server/auth/session";
 import { getViewer } from "@/server/auth/viewer";
+import { getSocialState } from "@/server/social/api";
+import { currentMonth, monthRangeUtc, toPublicPost } from "@/server/social/service";
+import { getSocialStore } from "@/server/social/store";
 import { ReadOnlySocial, loadReadOnlySocial } from "./ReadOnlySocial";
-import { SocialCalendar } from "./SocialCalendar";
+import {
+  SocialCalendar,
+  SocialCalendarSkeleton,
+  type SocialCalendarInitial,
+} from "./SocialCalendar";
 
 export const metadata: Metadata = { title: "Social", robots: { index: false } };
 
@@ -31,6 +40,49 @@ const CONNECT_ERRORS: Record<string, string> = {
 };
 
 const GENERIC_CONNECT_ERROR = "We couldn't connect Instagram. Please try again in a minute.";
+
+/**
+ * A primeira tela do calendário lida no servidor: o mesmo que /api/social/state e
+ * /api/social/posts devolvem para o mês mostrado. Sem isto o navegador fazia duas idas e voltas
+ * (estado, depois posts) antes de desenhar qualquer coisa. Erro = `null`: o calendário busca pela
+ * API como antes (e mostra o erro e o "Try again" de sempre).
+ */
+async function loadInitialSocial(
+  user: CurrentUser,
+  initialMonth: string | null,
+): Promise<SocialCalendarInitial | null> {
+  try {
+    const store = getSocialStore();
+    // Em paralelo: as configurações (fuso) para achar o mês dos posts, e o estado completo.
+    const [state, posts] = await Promise.all([
+      getSocialState(user),
+      store.getSettings(user.id).then((settings) => {
+        const month = initialMonth ?? currentMonth(settings.timezone);
+        const { fromIso, toIso } = monthRangeUtc(month, settings.timezone);
+        return store
+          .listPosts(user.id, fromIso, toIso)
+          .then((list) => ({ month, timezone: settings.timezone, list }));
+      }),
+    ]);
+    // As duas leituras das configurações discordaram (salvou no meio): deixa o navegador buscar.
+    if (posts.timezone !== state.settings.timezone) return null;
+    return { state, month: posts.month, posts: posts.list.map(toPublicPost) };
+  } catch (error) {
+    console.error("[social] could not preload the calendar", error);
+    return null;
+  }
+}
+
+async function PreloadedCalendar({
+  user,
+  initialMonth,
+}: {
+  user: CurrentUser;
+  initialMonth: string | null;
+}) {
+  const initial = await loadInitialSocial(user, initialMonth);
+  return <SocialCalendar initialMonth={initialMonth} initial={initial} />;
+}
 
 export default async function SocialPage({ searchParams }: SocialPageProps) {
   // Sempre na hora do request (dados do dono e da sessão).
@@ -107,7 +159,10 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
         </p>
       )}
 
-      <SocialCalendar initialMonth={initialMonth} />
+      {/* O topo aparece na hora; o calendário chega em streaming, já com os dados. */}
+      <Suspense fallback={<SocialCalendarSkeleton />}>
+        <PreloadedCalendar user={viewer.user} initialMonth={initialMonth} />
+      </Suspense>
     </div>
   );
 }

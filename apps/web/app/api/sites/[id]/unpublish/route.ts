@@ -2,6 +2,7 @@ import { PublishSiteResponse } from "@nosweat/schema";
 import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
 import { freeUrl, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
+import { revalidatePublicSite } from "@/server/store/revalidate";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -25,6 +26,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
         ? site
         : await getSiteStore().updateMeta(site.id, { status: "draft" });
     if (!updated) return notFound();
+    if (updated !== site) revalidatePublicSite(updated);
 
     const origin = new URL(request.url).origin;
     return jsonResponse(PublishSiteResponse, {

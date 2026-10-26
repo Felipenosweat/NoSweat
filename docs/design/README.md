@@ -78,7 +78,7 @@ Depois de mudar composições, o planejador ou a biblioteca:
   com 3+ negócios e um segundo estilo para um deles; compare as prévias lado a lado (topo e seções
   de baixo).
 - Regrave as capturas da landing (`apps/web/public/landing/wall` e `build`) a partir de
-  `/examples/<slug>?embed=1`.
+  `/examples/<slug>/embed`.
 
 ## Estado da pesquisa (2026-10-26)
 

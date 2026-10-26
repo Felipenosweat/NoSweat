@@ -59,6 +59,12 @@ import { MoneyIcon, PlusIcon } from "../clients/ui";
 import { formatTime, safeTimeZone, zonedParts } from "../schedule/time";
 import { JobStatusBadge } from "../schedule/ui";
 import { Greeting } from "./Greeting";
+import {
+  GreetingSummarySkeleton,
+  OfficeSkeleton,
+  OverviewSkeleton,
+  SitesSkeleton,
+} from "./skeletons";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -1228,8 +1234,6 @@ function jobsTodayText(office: OfficeSnapshot | null): string {
 
 // ---------- seções em streaming (cada uma no seu <Suspense>) ----------
 
-const skeleton = "rounded-2xl bg-(--glass-groove) motion-safe:animate-pulse";
-
 /** Linha de resumo da saudação ("2 things need you."): espera os dados de "Needs you". */
 async function GreetingSummary({ ctx }: { ctx: HomeContext }) {
   const { sites, office, needRows } = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
@@ -1244,14 +1248,6 @@ async function GreetingSummary({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function GreetingSummarySkeleton() {
-  return (
-    <span
-      aria-hidden="true"
-      className={`${skeleton} inline-block h-[1em] w-64 max-w-full rounded-md align-middle`}
-    />
-  );
-}
 
 /** O escritório primeiro: os serviços de hoje e o dinheiro. Erro = a seção some. */
 async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
@@ -1259,24 +1255,6 @@ async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
   return office ? <OfficeSection office={office} readOnly={ctx.readOnly} /> : null;
 }
 
-function OfficeSkeleton() {
-  return (
-    <div aria-hidden="true" className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
-      <div className="flex flex-col">
-        <div className={`${skeleton} h-7 w-48 rounded-lg`} />
-        <div className={`${skeleton} mt-3 h-40 flex-1 lg:h-auto`} />
-      </div>
-      <div>
-        <div className={`${skeleton} h-7 w-24 rounded-lg`} />
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className={`${skeleton} h-[8.5rem]`} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Quadros, "Needs you" e (com site) o checklist. `order`: com site, os quadros primeiro; conta sem
@@ -1312,38 +1290,8 @@ async function Overview({ ctx, order }: { ctx: HomeContext; order: "stats-first"
   );
 }
 
-function StatsSkeleton() {
-  return (
-    <div aria-hidden="true" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className={`${skeleton} h-[8.5rem]`} />
-      ))}
-    </div>
-  );
-}
 
-function NeedsSkeleton() {
-  return (
-    <div aria-hidden="true">
-      <div className={`${skeleton} h-7 w-32 rounded-lg`} />
-      <div className={`${skeleton} mt-3 h-48`} />
-    </div>
-  );
-}
 
-function OverviewSkeleton({ order }: { order: "stats-first" | "needs-first" }) {
-  return order === "stats-first" ? (
-    <>
-      <StatsSkeleton />
-      <NeedsSkeleton />
-    </>
-  ) : (
-    <>
-      <NeedsSkeleton />
-      <StatsSkeleton />
-    </>
-  );
-}
 
 /** Os cards dos sites: espera os pedidos por site e o plano (selo "Offline"). */
 async function SitesCards({ ctx }: { ctx: HomeContext }) {
@@ -1357,23 +1305,6 @@ async function SitesCards({ ctx }: { ctx: HomeContext }) {
   return <SitesGrid sites={sites} leadCounts={leadCounts} headingLevel={3} offline={offline} />;
 }
 
-/** Cards de site vazios, um por site (mesma grade do SitesGrid), para nada pular ao chegar. */
-function SitesSkeleton({ count }: { count: number }) {
-  return (
-    <ul aria-hidden="true" className="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-6">
-      {Array.from({ length: Math.min(count, 6) }, (_, i) => (
-        <li key={i} className={`overflow-hidden ${cardClass}`}>
-          <div className={`${skeleton} m-2 mb-0 aspect-[16/10] rounded-xl`} />
-          <div className="px-4 pt-3.5 pb-3 sm:px-5">
-            <div className={`${skeleton} h-6 w-2/3 rounded-md`} />
-            <div className={`${skeleton} mt-1.5 h-4 w-1/2 rounded-md`} />
-            <div className={`${skeleton} mt-4 h-11 w-20 rounded-full`} />
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 /**
  * Tudo depois do escritório. A lista de sites (a mesma que a moldura já leu, com dedupe) decide a
@@ -1428,10 +1359,6 @@ async function HomeSections({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function HomeSectionsSkeleton() {
-  return <OverviewSkeleton order="stats-first" />;
-}
-
 export default async function DashboardPage() {
   // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
   await connection();
@@ -1467,7 +1394,7 @@ export default async function DashboardPage() {
         <Suspense fallback={<OfficeSkeleton />}>
           <OfficeBlock ctx={ctx} />
         </Suspense>
-        <Suspense fallback={<HomeSectionsSkeleton />}>
+        <Suspense fallback={<OverviewSkeleton order="stats-first" />}>
           <HomeSections ctx={ctx} />
         </Suspense>
       </div>

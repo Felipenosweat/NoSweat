@@ -1,6 +1,7 @@
 "use client";
 
 import type { Job, TeamMember } from "@nosweat/schema";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -16,7 +17,7 @@ import {
 import { formatCents } from "@/lib/clients";
 import { ListIcon, PlusIcon } from "../clients/ui";
 import { AgendaList } from "./AgendaList";
-import { NewJobSheet, type NewJobDefaults } from "./JobForm";
+import type { NewJobDefaults } from "./JobForm";
 import { placeJobs } from "./layout-jobs";
 import {
   UNASSIGNED,
@@ -28,6 +29,12 @@ import {
 import { TimeGrid } from "./TimeGrid";
 import { dateKeyOf, longDay, weekDays, weekRangeLabel } from "./time";
 import { ChevronLeftIcon, ChevronRightIcon, DayIcon, TeamDot, WeekIcon, assigneeNames } from "./ui";
+
+// O formulário "New job" (o maior pedaço da tela) baixa depois da primeira pintura, num pedaço
+// próprio: fora do JS que o navegador precisa ler antes de a agenda responder.
+const NewJobSheet = dynamic(() => import("./JobForm").then((m) => m.NewJobSheet), {
+  ssr: false,
+});
 
 // Agenda (/schedule): barra (hoje, anterior/próximo, visão, filtro de equipe), bandeja dos
 // serviços sem data e a semana/dia/lista. Os dados vêm da página (server component); aqui só a
@@ -76,7 +83,11 @@ export function ScheduleBoard({
   const activeTeam = useMemo(() => team.filter((member) => member.active), [team]);
 
   const params: Omit<ScheduleParams, "openNew"> = { view, date, team: teamFilter };
-  const days = view === "day" ? [date] : weekDays(rangeStart);
+  // Estáveis entre renders (a grade é `memo`): abrir a folha não redesenha a semana.
+  const days = useMemo(
+    () => (view === "day" ? [date] : weekDays(rangeStart)),
+    [view, date, rangeStart],
+  );
 
   const filtered = useMemo(() => {
     const byTeam = (job: Job) =>
@@ -117,9 +128,17 @@ export function ScheduleBoard({
     }
   }
 
-  const onSlot = readOnly
-    ? undefined
-    : (day: string, time: string) => openSheet({ date: day, time });
+  const onSlot = useMemo(
+    () =>
+      readOnly
+        ? undefined
+        : (day: string, time: string) => {
+            const defaults = { date: day, time };
+            setLastDefaults(defaults);
+            setSheet(defaults);
+          },
+    [readOnly],
+  );
   const onAdd = readOnly ? undefined : (day: string) => openSheet({ date: day, time: null });
 
   const title = view === "day" ? longDay(date) : weekRangeLabel(rangeStart);
