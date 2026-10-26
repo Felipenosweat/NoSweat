@@ -69,8 +69,8 @@ export default async function ReviewsPage() {
         title="Google reviews"
         description={
           <>
-            Paste your Google review link once. We add a &ldquo;Review us on Google&rdquo; button
-            to your website and give you easy ways to ask your clients.
+            Paste your Google review link once. We add a &ldquo;Review us on Google&rdquo; button to
+            your website and give you easy ways to ask your clients.
           </>
         }
       />

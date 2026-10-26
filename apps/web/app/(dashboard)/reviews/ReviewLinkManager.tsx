@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { GlassBadge, GlassButton, GlassCard, cx, glassButtonClass } from "@/components/glass";
 import { clientsApi, toClientsError } from "../clients/api";
-import { OpenIcon, fieldClass, fieldErrorClass, hintClass, labelClass, sectionTitle } from "../clients/ui";
+import {
+  OpenIcon,
+  fieldClass,
+  fieldErrorClass,
+  hintClass,
+  labelClass,
+  sectionTitle,
+} from "../clients/ui";
 import { AskForReviews } from "./AskForReviews";
 
 // Campo do link de avaliações: colar, testar e salvar. Com mais de um site, o dono escolhe em
@@ -61,8 +68,7 @@ export function ReviewLinkManager({
   const unchanged = trimmed === (saved ?? "");
 
   // Link para o painel "Ask your clients": o do alvo, ou o primeiro salvo de qualquer site.
-  const askSite =
-    targets.find((site) => site.url) ?? sites.find((site) => site.url) ?? null;
+  const askSite = targets.find((site) => site.url) ?? sites.find((site) => site.url) ?? null;
   const anyLive = targets.some((site) => site.live && site.url);
 
   function pickTarget(next: string) {
@@ -184,7 +190,10 @@ export function ReviewLinkManager({
                 ) : (
                   <>
                     Don&rsquo;t have it yet?{" "}
-                    <a href="#how-to" className="font-semibold text-brand underline-offset-4 hover:underline">
+                    <a
+                      href="#how-to"
+                      className="font-semibold text-brand underline-offset-4 hover:underline"
+                    >
                       Follow the 5 steps
                     </a>
                     .

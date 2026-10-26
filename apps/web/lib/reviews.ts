@@ -37,7 +37,11 @@ export function smsHref(phone: string | null | undefined, body: string): string 
 }
 
 /** Link mailto: com assunto e texto (sem e-mail, o app abre com o destinatário vazio). */
-export function mailtoHref(email: string | null | undefined, subject: string, body: string): string {
+export function mailtoHref(
+  email: string | null | undefined,
+  subject: string,
+  body: string,
+): string {
   const to = (email ?? "").trim();
   return `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(
     subject,

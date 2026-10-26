@@ -74,7 +74,9 @@ const SKETCHES: Record<number, ReactNode> = {
   4: (
     <Sketch>
       <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
-        <span className="min-w-0 flex-1 truncate text-[11px] text-slate-500">g.page/r/…/review</span>
+        <span className="min-w-0 flex-1 truncate text-[11px] text-slate-500">
+          g.page/r/…/review
+        </span>
       </div>
       <Chip on>Copy link</Chip>
     </Sketch>
@@ -122,7 +124,10 @@ const STEPS: { title: string; body: ReactNode }[] = [
 export function GuideSteps({ headingId }: { headingId: string }) {
   return (
     <div>
-      <ol aria-labelledby={headingId} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <ol
+        aria-labelledby={headingId}
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+      >
         {STEPS.map((step, index) => (
           <li key={step.title} className="glass flex flex-col gap-3 rounded-2xl p-4">
             {SKETCHES[index + 1]}

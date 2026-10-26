@@ -3,12 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { GlassButton, GlassCard, cx, glassButtonClass } from "@/components/glass";
 import { qrPath, qrSvgDataUrl, QR_MARGIN } from "@/lib/qr";
-import {
-  mailtoHref,
-  reviewEmailSubject,
-  reviewRequestMessage,
-  smsHref,
-} from "@/lib/reviews";
+import { mailtoHref, reviewEmailSubject, reviewRequestMessage, smsHref } from "@/lib/reviews";
 import {
   CopyIcon,
   DownloadIcon,
@@ -84,11 +79,8 @@ export function AskForReviews({ link, businessName }: { link: string; businessNa
             className={cx(fieldClass, "mt-1.5 h-11 max-w-xs")}
           />
 
-          <p className={cx(labelClass, "mt-4")}>
-            Message
-          </p>
-          <p className="glass-edge mt-1.5 rounded-xl bg-white/80 px-3.5 py-3 text-[15px] leading-[1.6] break-words text-ink"
-          >
+          <p className={cx(labelClass, "mt-4")}>Message</p>
+          <p className="glass-edge mt-1.5 rounded-xl bg-white/80 px-3.5 py-3 text-[15px] leading-[1.6] break-words text-ink">
             {message}
           </p>
 

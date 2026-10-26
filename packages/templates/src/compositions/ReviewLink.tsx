@@ -7,7 +7,8 @@ import { ArrowRightIcon } from "../components/icons";
 // tema, sobre o bloco escuro e sobre foto, sem cor fixa.
 
 // O mesmo foco de shared.tsx (copiado para shared.tsx poder importar este arquivo sem ciclo).
-const focus = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
+const focus =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
 
 /** Link de avaliações do dono, se for um link do Google válido (senão, nada aparece). */
 function reviewHref(business: Business): string | null {
