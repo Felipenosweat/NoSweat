@@ -9,6 +9,7 @@ import {
   type StyleId,
   type StyleOption,
 } from "./brief";
+import { PHOTO_PLAN_NOTE, photoPlan } from "./photos";
 
 // Passos 2 (layout) e 3 (cores) do assistente do /create: cartões de rádio com miniatura.
 // "No Sweat chooses" é sempre o primeiro e o padrão.
@@ -70,9 +71,20 @@ type OptionCardProps = {
   thumb: ReactNode;
   label: string;
   note: string;
+  /** Linha extra embaixo da nota (ex.: quantas fotos o layout pede). */
+  extra?: string;
 };
 
-function OptionCard({ name, value, checked, onSelect, thumb, label, note }: OptionCardProps) {
+function OptionCard({
+  name,
+  value,
+  checked,
+  onSelect,
+  thumb,
+  label,
+  note,
+  extra,
+}: OptionCardProps) {
   return (
     <label className={cardClass}>
       <input
@@ -92,6 +104,9 @@ function OptionCard({ name, value, checked, onSelect, thumb, label, note }: Opti
         <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-slate-500">
           {note}
         </span>
+        {extra && (
+          <span className="mt-1.5 block text-[12px] font-semibold text-slate-600">{extra}</span>
+        )}
       </span>
     </label>
   );
@@ -116,43 +131,75 @@ export function LayoutPicker({
   labelledBy: string;
 }) {
   return (
-    <div
-      role="radiogroup"
-      aria-labelledby={labelledBy}
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3"
-    >
-      <OptionCard
-        name="layout"
-        value="auto"
-        checked={value === "auto"}
-        onSelect={() => onChange("auto")}
-        thumb={<AutoThumb />}
-        label="No Sweat chooses"
-        note="Picked for your kind of business."
-      />
-      {LAYOUT_OPTIONS.map((option) => (
+    <>
+      <div
+        role="radiogroup"
+        aria-labelledby={labelledBy}
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3"
+      >
         <OptionCard
-          key={option.id}
           name="layout"
-          value={option.id}
-          checked={value === option.id}
-          onSelect={() => onChange(option.id)}
-          thumb={
-            <span aria-hidden="true" className={`${thumbClass} bg-slate-100`}>
-              <Image
-                src={option.image}
-                alt=""
-                fill
-                sizes="(min-width: 640px) 180px, 45vw"
-                className="object-cover object-top"
-              />
-            </span>
-          }
-          label={option.label}
-          note={option.note}
+          value="auto"
+          checked={value === "auto"}
+          onSelect={() => onChange("auto")}
+          thumb={<AutoThumb />}
+          label="No Sweat chooses"
+          note="Picked for your kind of business."
+          extra={photoPlan("auto").total}
         />
-      ))}
-    </div>
+        {LAYOUT_OPTIONS.map((option) => (
+          <OptionCard
+            key={option.id}
+            name="layout"
+            value={option.id}
+            checked={value === option.id}
+            onSelect={() => onChange(option.id)}
+            thumb={
+              <span aria-hidden="true" className={`${thumbClass} bg-slate-100`}>
+                <Image
+                  src={option.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 640px) 180px, 45vw"
+                  className="object-cover object-top"
+                />
+              </span>
+            }
+            label={option.label}
+            note={option.note}
+            extra={photoPlan(option.id).total}
+          />
+        ))}
+      </div>
+      <PhotoPlanBox layout={value} />
+    </>
+  );
+}
+
+/** Quantas fotos mandar para o layout escolhido (muda junto com a escolha). */
+export function PhotoPlanBox({ layout }: { layout: LayoutChoice }) {
+  const plan = photoPlan(layout);
+  return (
+    <section
+      aria-labelledby="photo-plan-title"
+      aria-live="polite"
+      className="mt-5 rounded-xl border border-slate-200 bg-surface p-4 sm:p-5"
+    >
+      <h3 id="photo-plan-title" className="font-display text-[15px] font-semibold text-ink">
+        Photos to send: {plan.total}
+      </h3>
+      <ul className="mt-3 space-y-2.5">
+        {plan.needs.map((need) => (
+          <li key={need.label} className="flex gap-3 text-[14px] leading-snug">
+            <span className="w-14 shrink-0 font-semibold text-ink tabular-nums">{need.count}</span>
+            <span className="text-slate-600">
+              <span className="font-semibold text-ink">{need.label}.</span> {need.tip}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[13px] leading-snug text-slate-500">{PHOTO_PLAN_NOTE}</p>
+    </section>
   );
 }
 

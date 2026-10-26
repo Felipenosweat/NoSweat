@@ -255,7 +255,16 @@ function GlassNav({ model }: { model: SiteModel }) {
 }
 
 /** Botões do topo (o primeiro é a ação principal do plano). */
-function Actions({ model, tone }: { model: SiteModel; tone: "light" | "dark" }) {
+function Actions({
+  model,
+  tone,
+  stack = false,
+}: {
+  model: SiteModel;
+  tone: "light" | "dark";
+  /** Coluna estreita do topo (3 de 12): no computador os botões ficam um embaixo do outro. */
+  stack?: boolean;
+}) {
   const { ctaHref, ctaLabel, phoneHref, business, primaryAction } = model;
   const solid =
     tone === "light"
@@ -285,7 +294,7 @@ function Actions({ model, tone }: { model: SiteModel; tone: "light" | "dark" }) 
     </a>
   );
   return (
-    <div className="flex flex-col gap-3 @min-[40rem]:flex-row">
+    <div className={`flex flex-col gap-3 @min-[40rem]:flex-row ${stack ? "@5xl:flex-col" : ""}`}>
       {callFirst ? [call(true), cta(false)] : [cta(true), call(false)]}
     </div>
   );
@@ -502,8 +511,8 @@ function SignatureHero({
           <p className="ns-hero-fade max-w-md leading-relaxed text-ns-muted @5xl:col-span-4">
             {data.subtitle}
           </p>
-          <div className="ns-hero-fade @5xl:col-span-3 @5xl:justify-self-end">
-            <Actions model={model} tone="dark" />
+          <div className="ns-hero-fade @5xl:col-span-3">
+            <Actions model={model} tone="dark" stack />
           </div>
         </div>
         <HighlightList
@@ -556,8 +565,8 @@ function SignatureHero({
           <p className="ns-hero-fade max-w-md leading-relaxed opacity-80 @5xl:col-span-4">
             {data.subtitle}
           </p>
-          <div className="ns-hero-fade @5xl:col-span-3 @5xl:justify-self-end">
-            <Actions model={model} tone="light" />
+          <div className="ns-hero-fade @5xl:col-span-3">
+            <Actions model={model} tone="light" stack />
           </div>
         </div>
         <HighlightList highlights={business.highlights} className="ns-hero-fade mt-6 opacity-80" />

@@ -1,110 +1,92 @@
+import Image from "next/image";
 import type { CSSProperties } from "react";
-import { BackdropPhoto, BackdropShade } from "@/components/landing/Backdrop";
-import { PhoneFrame } from "@/components/landing/demos/Frames";
-import type { PhotoKey } from "@/components/photos";
 import { PromptForm } from "@/components/marketing/PromptForm";
-import { TightPunctuation } from "@/components/marketing/TightPunctuation";
-import { container } from "@/components/marketing/styles";
 
-// Hero da landing (V7, tela cheia): uma montagem de fotos de ofícios que se trocam sozinhas
-// (só CSS, 4 s cada; parada com movimento reduzido), o título grande, o campo REAL de descrição
-// e os três celulares com sites de exemplo (capturas das fixtures; negócios fictícios). Os
-// celulares são o "objeto 3D": inclinados em perspectiva, eles se endireitam e sobem com a
-// rolagem (`--hero-p`, escrito pelo ScrollStage em [data-hero]). O do meio é a Sparkle & Co.
-// Cleaning, a mesma história do tour logo abaixo.
+// Hero da landing V8: o título gigante em serifa com a última palavra em itálico, o campo REAL
+// de descrição em vidro e, logo abaixo, a moldura de um site de exemplo de verdade (captura do
+// molde Signature, negócio fictício) que cresce com a rolagem. Sem cortina de abertura (pedido
+// do fundador): a página abre direto no conteúdo.
 
-/** As cinco fotos da montagem, na ordem em que aparecem. */
-const MONTAGE: PhotoKey[] = ["plumber", "cleaner", "landscaper", "stylist", "cook"];
+/** O título, uma linha por <span> (sobem de dentro de uma máscara ao abrir). */
+const LINES = [
+  <>Your business,</>,
+  <>
+    online by <em>lunch.</em>
+  </>,
+];
 
 export function Hero() {
   return (
-    <section
-      aria-labelledby="hero-title"
-      data-hero
-      data-hide-mobile-cta
-      className="relative isolate overflow-hidden bg-ink"
-    >
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
-        {MONTAGE.map((photo, index) => (
-          <div
-            key={photo}
-            className="lp-montage absolute inset-0"
-            style={{ "--i": index } as CSSProperties}
-          >
-            <BackdropPhoto photo={photo} priority={index === 0} />
-          </div>
-        ))}
-        <BackdropShade side="left" />
-      </div>
-
-      <div
-        className={`${container} grid min-h-[calc(100svh-4rem)] grid-cols-1 items-center gap-12 pt-12 pb-16 lg:grid-cols-[7fr_5fr] lg:gap-8 lg:pt-16 lg:pb-24`}
+    <>
+      <section
+        aria-labelledby="hero-title"
+        data-hide-mobile-cta
+        className="lp-night relative isolate overflow-hidden pt-32 pb-12 sm:pt-40 lg:pt-36 lg:pb-14"
       >
-        <div className="min-w-0">
+        <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
+          <p className="lp-eyebrow lp-fade-up text-white/60" style={{ "--i": 0 } as CSSProperties}>
+            Website builder for local businesses
+          </p>
           <h1
             id="hero-title"
-            className="max-w-[11ch] font-display text-[clamp(3rem,8.4vw,7rem)] leading-[0.94] font-extrabold tracking-[-0.045em] text-balance text-white"
+            className="lp-serif mt-6 text-[clamp(3.4rem,10.5vw,10.5rem)] leading-[0.9] text-white"
           >
-            <TightPunctuation strong>Your business,</TightPunctuation>{" "}
-            <span className="lp-accent-text">
-              <TightPunctuation strong>online by lunch.</TightPunctuation>
-            </span>
+            {LINES.map((line, index) => (
+              <span key={index} className="lp-line">
+                <span style={{ "--i": index } as CSSProperties}>{line}</span>
+              </span>
+            ))}
           </h1>
-          <p className="mt-7 max-w-[42ch] text-lg leading-[1.55] text-pretty text-slate-200 lg:text-xl">
-            Describe your business in one sentence. Get a real website for your trade, a client list
-            that fills itself, and Instagram posts you approve.
-          </p>
-          <div className="mt-9 max-w-[35rem]">
-            <PromptForm tone="dark" />
+
+          <div className="mt-12 grid grid-cols-1 gap-10 lg:mt-14 lg:grid-cols-12 lg:items-start lg:gap-8">
+            <p
+              className="lp-fade-up max-w-[40ch] text-lg leading-[1.6] text-pretty text-white/75 lg:col-span-5 lg:text-xl"
+              style={{ "--i": 1 } as CSSProperties}
+            >
+              Tell us what you do and where. We build the website for you.
+            </p>
+            <div
+              className="lp-fade-up lg:col-span-6 lg:col-start-7"
+              style={{ "--i": 2 } as CSSProperties}
+            >
+              <PromptForm
+                tone="glass"
+                caption="Free to create. No account or credit card needed."
+              />
+            </div>
           </div>
         </div>
+      </section>
 
-        <figure className="lp-rig min-w-0">
-          <div className="lp-rig-inner flex items-end justify-center">
-            <PhoneFrame
-              src="/landing/wall/phone-joes-plumbing-top.webp"
-              sizes="(min-width: 1024px) 180px, 130px"
-              className="lp-rig-side w-[min(130px,30vw)] shrink-0 sm:w-[180px]"
-            />
-            <PhoneFrame
-              src="/landing/wall/phone-sparkle-cleaning-top.webp"
-              alt="Example website for Sparkle & Co. Cleaning on a phone, with a call button at the bottom."
-              sizes="(min-width: 1024px) 220px, 160px"
-              priority
-              className="lp-rig-main relative z-10 -mx-5 w-[min(160px,38vw)] shrink-0 sm:-mx-6 sm:w-[220px]"
-            />
-            <PhoneFrame
-              src="/landing/wall/phone-glow-salon-top.webp"
-              sizes="(min-width: 1024px) 180px, 130px"
-              className="lp-rig-side w-[min(130px,30vw)] shrink-0 sm:w-[180px]"
-            />
-          </div>
-          <figcaption className="mt-6 text-center text-[13px] text-slate-300">
-            Example sites made with No Sweat. The businesses are made up.
-          </figcaption>
-        </figure>
-      </div>
-
-      {/* Dica de rolagem: só enfeite (o tour começa logo abaixo e é alcançável pelo teclado). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[11px] font-semibold tracking-[0.18em] text-slate-300 uppercase lg:flex"
-      >
-        <svg viewBox="0 0 24 36" className="h-9 w-6" fill="none" stroke="currentColor">
-          <rect x="1" y="1" width="22" height="34" rx="11" strokeWidth="1.5" />
-          <rect
-            className="lp-wheel"
-            x="10.5"
-            y="8"
-            width="3"
-            height="7"
-            rx="1.5"
-            fill="currentColor"
-            stroke="none"
+      {/* O site de exemplo: no computador a captura inteira; no celular, a do celular. */}
+      <figure className="lp-night px-3 pb-14 sm:px-5 lg:pb-20">
+        <div
+          data-lp-stage
+          className="lp-stage relative mx-auto max-w-[300px] overflow-hidden rounded-[2.2rem] ring-1 ring-white/15 sm:max-w-[1440px] sm:rounded-[10px]"
+        >
+          <Image
+            src="/landing/signature/still-water-spa-d.webp"
+            alt="Home page of Still Water Spa, an example site made with No Sweat: a full-width photo of a treatment room with the spa’s name in large serif type."
+            width={1600}
+            height={1000}
+            sizes="(min-width: 1440px) 1440px, 100vw"
+            priority
+            className="hidden h-auto w-full sm:block"
           />
-        </svg>
-        Scroll
-      </div>
-    </section>
+          <Image
+            src="/landing/signature/still-water-spa-m.webp"
+            alt="Home page of Still Water Spa on a phone, an example site made with No Sweat."
+            width={640}
+            height={1385}
+            sizes="300px"
+            className="block aspect-[9/14] h-auto w-full object-cover object-top sm:hidden"
+          />
+        </div>
+        <figcaption className="mx-auto mt-5 flex max-w-[1440px] flex-wrap justify-between gap-2 px-2 text-[13px] text-white/55">
+          <span>Still Water Spa, Scottsdale. Made with No Sweat.</span>
+          <span>Example site. The business is made up.</span>
+        </figcaption>
+      </figure>
+    </>
   );
 }

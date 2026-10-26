@@ -2,6 +2,7 @@ import type { Faq } from "@/components/marketing/faqs";
 import { escapeJsonForScript } from "@/components/site-metadata";
 import { PLANS } from "@/server/billing/plans";
 import { SITE_ORIGIN, siteUrl } from "./site";
+import { SOCIAL_PROFILES } from "./social-profiles";
 
 // Dados estruturados (schema.org em JSON-LD) do nosweatfd.com. O Google usa para entender a
 // empresa, o produto e as perguntas frequentes; buscadores com IA (ChatGPT, Perplexity, Gemini)
@@ -23,6 +24,8 @@ export function organization() {
     url: siteUrl(),
     logo: `${SITE_ORIGIN}/brand/icon.png`,
     email: "hello@nosweatfd.com",
+    // Perfis oficiais: ajudam o Google e as IAs a ligar a marca aos perfis certos.
+    sameAs: SOCIAL_PROFILES.map((profile) => profile.url),
     description:
       "No Sweat builds websites for small local businesses in the United States from a one-sentence description, with AI.",
   };

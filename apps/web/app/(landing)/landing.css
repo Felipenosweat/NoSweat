@@ -1,779 +1,241 @@
-/* Landing V7 ("cinematográfica"): hero em tela cheia com montagem de fotos e celulares em 3D,
-   tour (#story) com uma foto de ofício por cena atrás do palco, e as seções claras depois.
-   Aqui só fica o que não cabe em utilitários do Tailwind: fundos (sombra, luz, grão), a
-   montagem do hero, as cenas fixas, as batidas (`data-beat` em cada cena, escrito pelo
-   ScrollStage) e a faixa que "acende". Tudo que anda com a rolagem mexe só em opacity,
-   transform e clip-path. Cores só da marca: #0066FF (brand), #00C2FF (accent),
-   #071B33 (ink), #F8FAFC (surface) e slate. O fundador pediu fundos trabalhados (luz e grão)
-   no lugar da cor chapada: é a exceção aprovada à regra de "sem degradês". */
+/* Landing V8 ("Signature"): o mesmo padrão dos sites premium dos clientes.
+   Ink (noite) e papel quente, títulos em serifa editorial com a última palavra em itálico,
+   menu de vidro, fotos que se revelam, parágrafo que acende palavra por palavra, galeria que
+   anda de lado e o nome gigante no fim. Sem cortina de abertura: a página abre direto. Sem degradê de cor (só os
+   véus escuros sobre fotos, para o texto ler bem).
+   O movimento com rolagem é do LandingMotion (components/landing/LandingMotion.tsx). Sem JS
+   ou com "reduzir movimento", tudo aparece parado, legível e completo. */
 
-/* ---------- Fundos: sombra ink, luz da marca e grão ---------- */
-
-/* Sombra sobre a foto: o texto branco fica AA mesmo em cima da parte clara da foto. */
-.lp-shade {
-  background:
-    linear-gradient(180deg, rgb(7 27 51 / 0.45) 0%, rgb(7 27 51 / 0) 30%, rgb(7 27 51 / 0.6) 100%),
-    rgb(7 27 51 / 0.7);
+.lp {
+  --lp-night: #050c18;
+  --lp-ink: #071b33;
+  --lp-paper: #f3f0e9;
+  --lp-paper-deep: #e9e4da;
+  --lp-line: rgb(7 27 51 / 0.14);
+  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--lp-night);
 }
 
-@media (min-width: 1024px) {
-  .lp-shade-left {
-    background:
-      linear-gradient(90deg, rgb(7 27 51 / 0.65) 0%, rgb(7 27 51 / 0.2) 55%, rgb(7 27 51 / 0) 80%),
-      linear-gradient(
-        180deg,
-        rgb(7 27 51 / 0.35) 0%,
-        rgb(7 27 51 / 0) 25%,
-        rgb(7 27 51 / 0.45) 100%
-      ),
-      rgb(7 27 51 / 0.66);
+/* ---------- Tipografia ---------- */
+
+.lp-serif {
+  font-family: var(--font-lp-serif), "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  word-spacing: 0.02em;
+}
+
+.lp-serif em {
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+.lp-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---------- Superfícies ---------- */
+
+.lp-paper {
+  background: var(--lp-paper);
+  color: var(--lp-ink);
+}
+
+.lp-night {
+  background: var(--lp-night);
+  color: #ffffff;
+}
+
+/* Vidro (menu, campo do hero): escuro o bastante para o texto branco ler sobre o papel. */
+.lp-glass {
+  background: rgb(6 15 30 / 0.74);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 24px 60px -28px rgb(0 0 0 / 0.6);
+  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Sublinhado que corre da esquerda (links do texto e do menu). */
+.lp-underline {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size 500ms var(--lp-ease);
+}
+
+.lp-underline:hover,
+.lp-underline:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* Linhas do título do hero sobem de dentro de uma máscara assim que a página abre. */
+.lp-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.lp-line > span {
+  display: block;
+  animation: lp-line-in 1100ms var(--lp-ease) both;
+  animation-delay: calc(80ms + var(--i, 0) * 100ms);
+}
+
+@keyframes lp-line-in {
+  from {
+    transform: translateY(108%);
   }
 }
 
-/* Luz da marca: dois focos suaves (azul em cima, ciano embaixo), bem fracos. */
-.lp-glow {
-  background:
-    radial-gradient(55% 50% at 82% 12%, rgb(0 102 255 / 0.3), rgb(0 102 255 / 0) 70%),
-    radial-gradient(45% 45% at 8% 92%, rgb(0 194 255 / 0.16), rgb(0 194 255 / 0) 70%);
+.lp-fade-up {
+  animation: lp-fade-up 1200ms var(--lp-ease) both;
+  animation-delay: calc(250ms + var(--i, 0) * 100ms);
 }
 
-/* Grão de filme (ruído SVG em data URI, sem arquivo extra). */
-.lp-grain {
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
+@keyframes lp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 
-/* O único texto em degradê da página: o fim do título do hero (branco → ciano). */
-.lp-accent-text {
-  background-image: linear-gradient(100deg, #ffffff 0%, #9fe6ff 35%, #00c2ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+.lp-nav {
+  animation: lp-fade-down 900ms var(--lp-ease) 150ms both;
+}
+
+@keyframes lp-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
 }
 
 /* ---------- Hero ---------- */
 
-/* Montagem: cinco fotos empilhadas; parada (movimento reduzido) só a primeira aparece. */
-.lp-montage {
-  opacity: 0;
+/* A foto do site de exemplo atrás do título: bem escura, com véu embaixo para o texto. */
+.lp-hero-veil {
+  background:
+    linear-gradient(
+      180deg,
+      rgb(5 12 24 / 0.72) 0%,
+      rgb(5 12 24 / 0.35) 40%,
+      rgb(5 12 24 / 0.94) 100%
+    ),
+    rgb(5 12 24 / 0.25);
 }
 
-.lp-montage:first-child {
-  opacity: 1;
-}
-
-@keyframes lp-montage {
-  0% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-  20% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
-  25% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  95% {
-    opacity: 0;
-    transform: scale(1.12);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}
-
-@keyframes lp-wheel {
-  0% {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  /* 4 s por foto, 20 s o ciclo; o atraso negativo põe cada uma na sua vez desde o início. */
-  .lp-montage {
-    animation: lp-montage 20s ease-in-out infinite;
-    animation-delay: calc(var(--i, 0) * 4s - 20s);
-  }
-
-  .lp-wheel {
-    animation: lp-wheel 1.8s ease-out infinite;
-  }
-}
-
-/* Os celulares: inclinados em perspectiva; com a rolagem (--hero-p) eles se endireitam e sobem.
-   Sem o ScrollStage (movimento reduzido, sem JS) ficam parados na pose inicial. */
-.lp-rig {
-  perspective: 1600px;
-}
-
-.lp-rig-inner {
-  --hp: min(1, var(--hero-p, 0) * 2.2);
-  transform-style: preserve-3d;
-  transform-origin: 50% 100%;
-  transform: translate3d(0, calc(var(--hp) * -10%), 0) rotateX(calc((1 - var(--hp)) * 14deg))
-    rotateY(calc((1 - var(--hp)) * -18deg));
-}
-
-.lp-rig-main {
-  transform: translateZ(60px);
-}
-
-.lp-rig-side {
-  transform: translateZ(-40px);
-}
-
-/* ---------- Tour: base ---------- */
-
-.st-theater {
-  --beat: 50svh;
-  --st-dur: 450ms;
-  --st-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-@media (min-width: 1024px) {
-  .st-theater {
-    --beat: 60svh;
-  }
-}
-
-/* Fundo de cada cena: fica preso (sticky) atrás dela. */
-.st-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.st-bg-pin {
-  position: sticky;
-  top: 0;
-  /* lvh: altura com a barra do Safari recolhida. Com svh sobrava uma faixa sem foto embaixo
-     quando a barra do iPhone encolhia durante a rolagem. */
-  height: 100vh;
-  height: 100lvh;
-  overflow: hidden;
-  /* As pontas da foto somem no fundo escuro: sem "degrau" entre o fundo de uma cena e o da
-     seguinte (nem entre o hero e a primeira cena). */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0,
-    #000 10%,
-    #000 90%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 90%, transparent 100%);
-}
-
-/* A área atrás das barras do Safari (e o "elástico" da rolagem) fica escura na landing, não
-   branca. */
-:root:has([data-hero]) {
-  background-color: #071b33;
-}
-
-/* Ken Burns: a foto vai encolhendo bem devagar com o progresso da cena. */
-.st-bg-img {
-  transform-origin: 50% 40%;
-  transform: scale(calc(1.14 - var(--p, 1) * 0.1));
-}
-
-/* ---------- Versão estática (padrão: sem JS, movimento reduzido, tela baixa) ---------- */
-
-.st-pin {
-  display: flex;
-  flex-direction: column;
-  padding-block: 3rem;
-}
-
-.st-inner {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-}
-
-@media (min-width: 1024px) {
-  .st-pin {
-    padding-block: 5rem;
-  }
-
-  .st-inner {
-    justify-content: center;
-  }
-
-  /* Legenda num painel de vidro sobre a foto. */
-  .st-caption {
-    padding: 2rem;
-    border: 1px solid rgb(255 255 255 / 0.1);
-    border-radius: 1.5rem;
-    background: rgb(255 255 255 / 0.05);
-    -webkit-backdrop-filter: blur(18px) saturate(1.2);
-    backdrop-filter: blur(18px) saturate(1.2);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.1),
-      0 40px 90px -40px rgb(0 0 0 / 0.65);
-  }
-}
-
-/* O palco é um container de tamanho: as molduras cabem na altura dele (unidades cqh). */
-.st-stage {
-  position: relative;
-  container-type: size;
-  display: grid;
-  place-items: center;
-  height: min(48svh, 520px);
-  min-height: 18rem;
-}
-
-@media (min-width: 1024px) {
-  .st-stage {
-    height: min(72svh, 640px);
-    min-height: 26rem;
-  }
-}
-
-/* Moldura de navegador: largura limitada para a página (proporção --ar) caber no palco. */
-.st-frame {
-  width: min(100%, 820px, calc((100cqh - var(--st-offset, 2.25rem)) * var(--ar, 1.6)));
-}
-
-.st-caps {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.st-progress {
-  transform-origin: left;
-  transform: scaleX(var(--p, 1));
-}
-
-/* Trilho de capítulos: linha de 2px à esquerda; o ativo fica branco com a linha ciano. */
-.st-rail::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.625rem;
-  bottom: 0.625rem;
-  width: 2px;
-  background: rgb(255 255 255 / 0.18);
-}
-
-.st-rail[aria-current="step"] {
-  color: #ffffff;
-}
-
-.st-rail[aria-current="step"]::before {
-  background: #00c2ff;
-}
-
-/* ---------- Tour ligado: cenas fixas e fundos que se cruzam ---------- */
-
-[data-story="on"] .st-scene {
-  height: calc(100svh + var(--beats) * var(--beat));
-}
-
-/* O fundo começa uma tela antes da cena e termina uma tela depois: o da cena seguinte entra
-   por cima (opacidade --in) enquanto o anterior ainda está preso atrás. O #story corta o que
-   passa das pontas (overflow: clip, que não atrapalha o sticky). */
-[data-story="on"] .st-bg {
-  top: -100svh;
-  bottom: -100svh;
-}
-
-[data-story="on"] .st-bg-pin {
-  opacity: var(--in, 1);
-}
-
-[data-story="on"] .st-bg-img {
+/* A moldura do site de exemplo que cresce com a rolagem (escala escrita pelo LandingMotion). */
+.lp-stage {
+  transform-origin: 50% 0;
   will-change: transform;
 }
 
-[data-story="on"] .st-pin {
+/* ---------- Galeria lateral (#looks) ---------- */
+
+/* Padrão: trilho com rolagem nativa (celular, sem JS). */
+.lp-rail {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-inline: 1.25rem;
+  scroll-padding-inline: 1.25rem;
+}
+
+.lp-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-rail > * {
+  scroll-snap-align: start;
+  flex: none;
+}
+
+/* Computador sem a galeria presa (máquina fraca, sem JS ou movimento reduzido): a roda do mouse
+   não anda de lado, então os sites ficam numa grade de 3 colunas. */
+@media (min-width: 1024px) {
+  .lp-hscroll:not([data-pinned]) .lp-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem 1.5rem;
+    overflow: visible;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 2rem;
+  }
+
+  .lp-hscroll:not([data-pinned]) .lp-rail > * {
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Com o LandingMotion no computador: a seção fica alta, o trilho preso na tela anda de lado. */
+.lp-hscroll[data-pinned] {
+  height: 220vh;
+}
+
+.lp-hscroll[data-pinned] .lp-hscroll-sticky {
   position: sticky;
-  top: 4rem;
-  height: calc(100svh - 4rem);
-  padding-block: 0;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   overflow: hidden;
 }
 
-@media (max-width: 1023px) {
-  /* Celular: palco em cima, legenda embaixo, o conjunto no meio da altura (sem vão vazio). */
-  [data-story="on"] .st-body {
-    flex: 1;
-    justify-content: center;
-    padding-block: 0.75rem 1rem;
+.lp-hscroll[data-pinned] .lp-rail {
+  overflow: visible;
+  scroll-snap-type: none;
+  padding-inline: max(2rem, calc((100vw - 1240px) / 2));
+  will-change: transform;
+}
+
+/* ---------- Parede de celulares (PhoneWall): fileiras correndo devagar ---------- */
+
+.lp-drift {
+  animation: lp-drift 70s linear infinite;
+}
+
+.lp-drift-reverse {
+  animation-direction: reverse;
+}
+
+@keyframes lp-drift {
+  to {
+    transform: translateX(-50%);
   }
-
-  [data-story="on"] .st-stage {
-    height: min(42svh, 26rem);
-  }
-}
-
-/* Legendas empilhadas no mesmo lugar; só a da batida atual aparece (as outras seguem no DOM). */
-[data-story="on"] .st-caps {
-  gap: 0;
-}
-
-[data-story="on"] .st-caps > li {
-  grid-area: 1 / 1;
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity var(--st-dur) var(--st-ease),
-    transform var(--st-dur) var(--st-ease);
-}
-
-[data-story="on"] [data-beat="0"] .st-caps > li:nth-child(1),
-[data-story="on"] [data-beat="1"] .st-caps > li:nth-child(2),
-[data-story="on"] [data-beat="2"] .st-caps > li:nth-child(3),
-[data-story="on"] [data-beat="3"] .st-caps > li:nth-child(4),
-[data-story="on"] [data-beat="4"] .st-caps > li:nth-child(5) {
-  opacity: 1;
-  transform: none;
-}
-
-/* ---------- Peças das batidas ---------- */
-
-.st-mark::after,
-.st-chip,
-.st-caret,
-.st-b-text,
-.st-b-photo,
-.st-b-photo-img,
-.st-b-hours,
-.st-tab::before,
-.st-e-layer,
-.st-e-outline,
-.st-e-hours,
-.st-e-updated,
-.st-e-photo,
-.st-e-tint,
-.st-seg::before,
-.st-look,
-.st-live-frame,
-.st-live-phone,
-.st-live-dns,
-.st-url-free,
-.st-url-own,
-.st-c-mail,
-.st-c-list,
-.st-c-card,
-.st-dot,
-.st-dot-ok,
-.st-s-post,
-.st-status-wait,
-.st-status-ok,
-.st-d-row::before,
-.st-d-tile {
-  transition:
-    opacity var(--st-dur) var(--st-ease),
-    transform var(--st-dur) var(--st-ease),
-    clip-path 600ms var(--st-ease);
-}
-
-/* 1. Describe: a frase se digita; depois os fatos ganham sublinhado e viram chips. */
-.st-mark {
-  position: relative;
-  background: transparent;
-  color: inherit;
-  white-space: nowrap;
-}
-
-.st-mark::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.08em;
-  height: 3px;
-  border-radius: 2px;
-  background: #0066ff;
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
-[data-beat="1"] .st-mark::after {
-  transform: scaleX(1);
-}
-
-.st-chip {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-[data-beat="1"] .st-chip {
-  opacity: 1;
-  transform: none;
-}
-
-.st-chip:nth-child(2) {
-  transition-delay: 60ms;
-}
-
-.st-chip:nth-child(3) {
-  transition-delay: 120ms;
-}
-
-.st-chip:nth-child(4) {
-  transition-delay: 180ms;
-}
-
-.st-caret {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  margin-left: 1px;
-  vertical-align: -0.2em;
-  background: #0066ff;
-  opacity: 0;
-}
-
-[data-story="on"] [data-typing] + .st-caret {
-  opacity: 1;
-}
-
-/* 2. Build: topo e texto → foto → horário. Nenhuma batida mostra caixa vazia. */
-.st-b-text {
-  clip-path: inset(0 0 0 0);
-}
-
-.st-b-photo {
-  clip-path: inset(0 0 0 100%);
-}
-
-.st-b-photo-img {
-  transform: scale(1.15);
-}
-
-[data-beat="1"] .st-b-photo,
-[data-beat="2"] .st-b-photo {
-  clip-path: inset(0 0 0 0);
-}
-
-[data-beat="1"] .st-b-photo-img,
-[data-beat="2"] .st-b-photo-img {
-  transform: none;
-}
-
-.st-b-hours {
-  opacity: 0;
-  transform: translateY(16px);
-}
-
-[data-beat="2"] .st-b-hours {
-  opacity: 1;
-  transform: none;
-}
-
-/* Recorte da linha "Sat" (cantos de baixo arredondados como o cartão da captura). */
-.st-hours-clip {
-  clip-path: inset(0 0 38% 0 round 0 0 4.6% 4.6% / 0 0 15.8% 15.8%);
-}
-
-/* 3. Edit: contorno na seção clicada → a IA põe o sábado → a foto do dono → o estilo Harbor. */
-.st-e-frame {
-  transform: scale(0.9) translate(-5%, -4%);
-}
-
-.st-tab {
-  color: #475569;
-}
-
-.st-tab::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgb(7 27 51 / 0.14);
-  opacity: 0;
-}
-
-[data-beat="0"] .st-tab-content,
-[data-beat="1"] .st-tab-ai,
-[data-beat="2"] .st-tab-content,
-[data-beat="3"] .st-tab-style {
-  color: #071b33;
-}
-
-[data-beat="0"] .st-tab-content::before,
-[data-beat="1"] .st-tab-ai::before,
-[data-beat="2"] .st-tab-content::before,
-[data-beat="3"] .st-tab-style::before {
-  opacity: 1;
-}
-
-.st-e-layer {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-[data-beat="0"] .st-e-l0,
-[data-beat="1"] .st-e-l1,
-[data-beat="2"] .st-e-l2,
-[data-beat="3"] .st-e-l3 {
-  opacity: 1;
-  transform: none;
-}
-
-.st-e-outline,
-.st-e-updated,
-.st-e-tint {
-  opacity: 0;
-}
-
-[data-beat="0"] .st-e-outline {
-  opacity: 1;
-}
-
-[data-beat="1"] .st-e-hours,
-[data-beat="2"] .st-e-hours,
-[data-beat="3"] .st-e-hours {
-  clip-path: inset(0 0 0 0 round 0 0 4.6% 4.6% / 0 0 15.8% 15.8%);
-}
-
-[data-beat="1"] .st-e-updated,
-[data-beat="2"] .st-e-updated,
-[data-beat="3"] .st-e-updated {
-  opacity: 1;
-}
-
-.st-e-photo {
-  clip-path: inset(0 0 0 100%);
-}
-
-[data-beat="2"] .st-e-photo,
-[data-beat="3"] .st-e-photo {
-  clip-path: inset(0 0 0 0);
-}
-
-/* Do verde-petróleo ("Clean slate") para o azul do "Harbor": os cinzas não mudam de cor. */
-.st-e-tint {
-  filter: hue-rotate(50deg) saturate(1.1);
-}
-
-[data-beat="3"] .st-e-tint {
-  opacity: 1;
-}
-
-/* 4. Five layouts: o seletor marca o atual e cada captura entra por cima com uma cortina. */
-.st-seg {
-  color: #cbd5e1;
-}
-
-.st-seg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #0066ff;
-  opacity: 0;
-}
-
-[data-beat="0"] .st-seg-0,
-[data-beat="1"] .st-seg-1,
-[data-beat="2"] .st-seg-2,
-[data-beat="3"] .st-seg-3,
-[data-beat="4"] .st-seg-4 {
-  color: #ffffff;
-}
-
-[data-beat="0"] .st-seg-0::before,
-[data-beat="1"] .st-seg-1::before,
-[data-beat="2"] .st-seg-2::before,
-[data-beat="3"] .st-seg-3::before,
-[data-beat="4"] .st-seg-4::before {
-  opacity: 1;
-}
-
-.st-look {
-  clip-path: inset(0 100% 0 0);
-}
-
-.st-look-0,
-[data-beat="1"] .st-look-1,
-[data-beat="2"] :is(.st-look-1, .st-look-2),
-[data-beat="3"] :is(.st-look-1, .st-look-2, .st-look-3),
-[data-beat="4"] :is(.st-look-1, .st-look-2, .st-look-3, .st-look-4) {
-  clip-path: inset(0 0 0 0);
-}
-
-/* 5. Go live: publicado → o celular sobe com a barra de ligar → domínio próprio e DNS. */
-[data-beat="1"] .st-live-frame,
-[data-beat="2"] .st-live-frame {
-  transform: scale(0.84) translateX(-9%);
-}
-
-.st-live-phone {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-[data-beat="1"] .st-live-phone,
-[data-beat="2"] .st-live-phone {
-  opacity: 1;
-  transform: none;
-}
-
-.st-live-dns {
-  opacity: 0;
-  transform: translateY(16px);
-}
-
-[data-beat="2"] .st-live-dns {
-  opacity: 1;
-  transform: none;
-}
-
-.st-url-own,
-[data-beat="2"] .st-url-free {
-  opacity: 0;
-}
-
-[data-beat="2"] .st-url-own {
-  opacity: 1;
-}
-
-/* 6. Clients: e-mail → lista → ficha da cliente. */
-.st-c-list,
-.st-c-card {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-[data-beat="1"] .st-c-mail,
-[data-beat="2"] .st-c-mail {
-  opacity: 0;
-}
-
-[data-beat="1"] .st-c-list,
-[data-beat="2"] .st-c-card {
-  opacity: 1;
-  transform: none;
-}
-
-/* 7. Instagram: o mês se enche de rascunhos (âmbar); os aprovados ficam azuis. */
-.st-dot {
-  opacity: 0;
-  transform: scaleX(0.3);
-  transition-delay: calc(var(--i, 0) * 40ms);
-}
-
-[data-beat="1"] .st-dot,
-[data-beat="2"] .st-dot {
-  opacity: 1;
-  transform: none;
-}
-
-.st-dot-ok,
-.st-status-ok,
-[data-beat="2"] .st-status-wait {
-  opacity: 0;
-}
-
-[data-beat="2"] .st-dot-ok,
-[data-beat="2"] .st-status-ok {
-  opacity: 1;
-}
-
-.st-s-post {
-  opacity: 0;
-  transform: translateY(16px);
-}
-
-[data-beat="1"] .st-s-post,
-[data-beat="2"] .st-s-post {
-  opacity: 1;
-  transform: none;
-}
-
-/* 8. Your day: a lista "Needs you" → a linha do retorno em destaque → os números do escritório. */
-.st-d-row {
-  position: relative;
-  isolation: isolate;
-}
-
-.st-d-row::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgb(0 102 255 / 0.07);
-  box-shadow: inset 3px 0 0 #0066ff;
-  opacity: 0;
-}
-
-[data-beat="1"] .st-d-row-follow-up::before {
-  opacity: 1;
-}
-
-.st-d-tile {
-  opacity: 0;
-  transform: translateY(10px);
-  transition-delay: calc(var(--i, 0) * 60ms);
-}
-
-[data-beat="2"] .st-d-tile {
-  opacity: 1;
-  transform: none;
-}
-
-/* ---------- Faixa "That's the whole morning.": de ink para surface com a rolagem ---------- */
-
-.st-lights {
-  position: relative;
-  isolation: isolate;
-  background: #071b33;
-  color: #ffffff;
-  transition: color 200ms linear;
-}
-
-.st-lights::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: #f8fafc;
-  opacity: var(--l, 0);
-}
-
-.st-lights[data-lit="true"] {
-  color: #071b33;
 }
 
-/* ---------- Seções claras: pontinhos e uma luz da marca atrás do preço ---------- */
+/* ---------- Fotos que se revelam / zoom no hover ---------- */
 
-.lp-dots {
-  background-image: radial-gradient(rgb(7 27 51 / 0.08) 1px, rgb(7 27 51 / 0) 1.3px);
-  background-size: 22px 22px;
+.lp-zoom img {
+  transition: transform 1400ms var(--lp-ease);
 }
 
-.lp-pricing-glow {
-  background:
-    radial-gradient(closest-side, rgb(0 102 255 / 0.18), rgb(0 102 255 / 0)),
-    radial-gradient(closest-side at 70% 60%, rgb(0 194 255 / 0.14), rgb(0 194 255 / 0));
+.lp-zoom:hover img {
+  transform: scale(1.04);
 }
 
-/* ---------- Movimento reduzido: nada anda (o tour nem liga, ver ScrollStage) ---------- */
+/* ---------- Movimento reduzido: nada anda ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .st-theater *,
-  .st-theater *::before,
-  .st-theater *::after,
-  .st-lights {
-    transition: none !important;
+  .lp-line > span,
+  .lp-fade-up,
+  .lp-nav,
+  .lp-drift {
+    animation: none;
+  }
+
+  .lp-zoom img,
+  .lp-underline {
+    transition: none;
   }
 }
