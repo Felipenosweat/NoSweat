@@ -9,8 +9,16 @@ import {
   reviewRequestMessage,
   smsHref,
 } from "@/lib/reviews";
-import { CopyIcon, DownloadIcon, MailIcon, TextIcon } from "../clients/ui";
-import { fieldClass, hintClass, labelClass, sectionTitle } from "../clients/ui";
+import {
+  CopyIcon,
+  DownloadIcon,
+  MailIcon,
+  TextIcon,
+  fieldClass,
+  hintClass,
+  labelClass,
+  sectionTitle,
+} from "../clients/ui";
 
 // "Ask your clients": o link e o texto prontos para mandar por SMS ou e-mail, e um QR code para o
 // balcão ou o caminhão. Nada aqui muda dados (funciona também no modo "ver como" do admin).
@@ -76,12 +84,10 @@ export function AskForReviews({ link, businessName }: { link: string; businessNa
             className={cx(fieldClass, "mt-1.5 h-11 max-w-xs")}
           />
 
-          <p className={cx(labelClass, "mt-4")} id={`${nameId}-msg`}>
+          <p className={cx(labelClass, "mt-4")}>
             Message
           </p>
-          <p
-            aria-labelledby={`${nameId}-msg`}
-            className="glass-edge mt-1.5 rounded-xl bg-white/80 px-3.5 py-3 text-[15px] leading-[1.6] break-words text-ink"
+          <p className="glass-edge mt-1.5 rounded-xl bg-white/80 px-3.5 py-3 text-[15px] leading-[1.6] break-words text-ink"
           >
             {message}
           </p>
