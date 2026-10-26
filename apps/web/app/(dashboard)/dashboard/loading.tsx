@@ -1,4 +1,4 @@
-import { OfficeSkeleton, OverviewSkeleton } from "./skeletons";
+import { ActionsSkeleton, NeedsSkeleton, OfficeSkeleton } from "./skeletons";
 
 // Esqueleto da página inicial: aparece na hora do clique (antes da sessão e dos dados), com a
 // mesma grade das seções que chegam depois em streaming (ver page.tsx).
@@ -14,8 +14,9 @@ export default function DashboardLoading() {
         <div className={`${block} mt-1 h-10 w-80 max-w-full rounded-xl lg:h-12`} />
         <div className={`${block} mt-1.5 h-5 w-64 max-w-full rounded-md`} />
         <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+          <ActionsSkeleton />
+          <NeedsSkeleton />
           <OfficeSkeleton />
-          <OverviewSkeleton order="stats-first" />
         </div>
       </div>
     </div>

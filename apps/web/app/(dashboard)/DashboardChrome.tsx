@@ -51,7 +51,7 @@ type ChromeProps = {
   admin: boolean;
   /** Conta logada (com login ligado). `null` no dev sem Supabase: sem e-mail e sem "Log out". */
   account: { email: string | null } | null;
-  /** Site mais recente, para o atalho "Messages". `null` = conta sem sites (atalho escondido). */
+  /** Site mais recente (o tour usa para o passo do editor). `null` = conta sem sites. */
   latestSiteId: string | null;
   /**
    * Link "Help" (WhatsApp ou e-mail da equipe, montado no AccountShell). Sem ele, o item some.
@@ -161,19 +161,45 @@ const BILLING_ITEM: NavItem = {
   Icon: BillingIcon,
 };
 
-/** "Messages": a caixa do site mais recente (some sem site). */
-function messagesItem(latestSiteId: string | null): NavItem[] {
-  return latestSiteId
-    ? [
-        {
-          key: "messages",
-          label: "Messages",
-          href: `/sites/${latestSiteId}#messages`,
-          Icon: MessagesIcon,
-          match: null,
-        },
-      ]
-    : [];
+// "+ New": tudo o que se cria no dia a dia num lugar só (barra lateral e aba do meio no celular).
+// Os pedidos do site já viram clientes sozinhos, então não há mais o atalho "Messages".
+const CREATE_ITEMS: NavItem[] = [
+  { key: "new-job", label: "Book a job", href: "/schedule?new=1", Icon: ScheduleIcon },
+  { key: "new-estimate", label: "Send an estimate", href: "/estimates/new", Icon: EstimatesIcon },
+  { key: "new-invoice", label: "Send an invoice", href: "/invoices/new", Icon: InvoicesIcon },
+  { key: "new-client", label: "Add a client", href: "/clients/new", Icon: ClientsIcon },
+  { key: "new-site", label: "New website", href: "/create", Icon: WebsiteIcon },
+];
+
+/**
+ * Um <details> que funciona como folha/menu: fecha ao mudar de tela, com Esc (o foco volta ao
+ * botão) e por `close()`. Sem estado do React: mexe direto no `open` do elemento.
+ */
+function useDetailsMenu(pathname: string) {
+  const ref = useRef<HTMLDetailsElement>(null);
+  const close = () => {
+    if (ref.current) ref.current.open = false;
+  };
+  useEffect(() => {
+    if (ref.current) ref.current.open = false;
+  }, [pathname]);
+  // Tocar fora fecha (no celular o fundo escuro, que fica dentro do <details>, já fecha sozinho).
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const menu = ref.current;
+      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) {
+        menu.open = false;
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, []);
+  const onKeyDown = (event: KeyboardEvent<HTMLDetailsElement>) => {
+    if (event.key !== "Escape" || !ref.current?.open) return;
+    close();
+    ref.current.querySelector("summary")?.focus();
+  };
+  return { ref, close, onKeyDown };
 }
 
 /** "Take the tour": abre o tour de boas-vindas de novo (botão, não muda de página). */
@@ -298,10 +324,10 @@ function supportLinkProps(href: string): { target?: "_blank"; rel?: string } {
 function SidebarNav({
   admin,
   account,
-  latestSiteId,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner" | "tour">) {
-  const { currentItem } = useCurrent();
+}: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId">) {
+  const { currentItem, pathname } = useCurrent();
+  const create = useDetailsMenu(pathname);
   const main: NavItem[] = [
     HOME_ITEM,
     SCHEDULE_ITEM,
@@ -309,7 +335,6 @@ function SidebarNav({
     ESTIMATES_ITEM,
     INVOICES_ITEM,
     WEBSITE_ITEM,
-    ...messagesItem(latestSiteId),
     SOCIAL_ITEM,
     REVIEWS_ITEM,
   ];
@@ -321,16 +346,30 @@ function SidebarNav({
       <div className="px-3 pb-5">
         <Logo />
       </div>
-      <div className="pb-5">
-        <Link
-          href="/create"
-          data-tour="new-site"
-          className={glassButtonClass({ variant: "secondary", fullWidth: true })}
+      <details ref={create.ref} onKeyDown={create.onKeyDown} className="group relative z-10 pb-5">
+        <summary
+          data-tour="nav-new"
+          className={`${glassButtonClass({ variant: "primary", fullWidth: true })} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
         >
           <PlusIcon className="size-4" />
-          New site
-        </Link>
-      </div>
+          New
+        </summary>
+        <div className="glass-strong glass-pop absolute inset-x-0 top-12 rounded-[22px] p-1.5">
+          <ul className="grid gap-0.5">
+            {CREATE_ITEMS.map((item) => (
+              <li key={item.key}>
+                <NavLink
+                  item={item}
+                  current={undefined}
+                  onClick={create.close}
+                  className={sheetItem}
+                  iconClassName={sideIcon}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
       <nav aria-label="Main" className="flex flex-1 flex-col">
         <ul className="grid gap-0.5">
           {main.map((item) => (
@@ -420,36 +459,43 @@ function SidebarNav({
 function TabBar({
   admin,
   account,
-  latestSiteId,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner" | "tour">) {
+}: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId">) {
   const { currentItem, pathname } = useCurrent();
-  const moreRef = useRef<HTMLDetailsElement>(null);
-  // Abas fixas (o que se usa na rua) e o resto na folha "More".
-  const tabs: NavItem[] = [HOME_ITEM, SCHEDULE_ITEM, CLIENTS_ITEM, WEBSITE_ITEM];
+  const moreMenu = useDetailsMenu(pathname);
+  const createMenu = useDetailsMenu(pathname);
+  const moreRef = moreMenu.ref;
+  const closeMore = moreMenu.close;
+  const onMoreKeyDown = moreMenu.onKeyDown;
+  // Abas fixas (o que se usa na rua), o "+" no meio e o resto na folha "More".
+  const left: NavItem[] = [HOME_ITEM, SCHEDULE_ITEM];
+  const right: NavItem[] = [CLIENTS_ITEM];
   const more: NavItem[] = [
+    WEBSITE_ITEM,
     ESTIMATES_ITEM,
     INVOICES_ITEM,
-    ...messagesItem(latestSiteId),
     SOCIAL_ITEM,
     REVIEWS_ITEM,
     ...businessItems({ admin, account, supportHref }),
   ];
   const moreActive = more.some((item) => currentItem(item) === "page");
-
-  // Fecha a folha "More" mexendo direto no <details> (sem estado do React).
-  const closeMore = () => {
-    if (moreRef.current) moreRef.current.open = false;
+  // Só uma folha aberta por vez.
+  const closeAll = () => {
+    moreMenu.close();
+    createMenu.close();
   };
-  // Mudou de tela (aba, voltar do navegador...): a folha não fica aberta por cima da nova.
-  useEffect(() => {
-    if (moreRef.current) moreRef.current.open = false;
-  }, [pathname]);
-  const onMoreKeyDown = (event: KeyboardEvent<HTMLDetailsElement>) => {
-    if (event.key !== "Escape" || !moreRef.current?.open) return;
-    closeMore();
-    moreRef.current.querySelector("summary")?.focus();
-  };
+  const tabLink = (item: NavItem) => (
+    <li key={item.key}>
+      <NavLink
+        item={item}
+        current={currentItem(item)}
+        onClick={closeAll}
+        className={tabItem}
+        iconClassName="size-6"
+        tour={`tab-${item.key}`}
+      />
+    </li>
+  );
 
   return (
     <nav
@@ -460,20 +506,65 @@ function TabBar({
           de referência dos filhos `fixed` (a folha "More" e o fundo dela ficariam presos aqui). */}
       <div aria-hidden="true" className="glass-strong absolute inset-0 -z-10 rounded-[28px]" />
       <ul className="grid h-full grid-cols-5 px-1">
-        {tabs.map((item) => (
-          <li key={item.key}>
-            <NavLink
-              item={item}
-              current={currentItem(item)}
-              onClick={closeMore}
-              className={tabItem}
-              iconClassName="size-6"
-              tour={`tab-${item.key}`}
-            />
-          </li>
-        ))}
+        {left.map(tabLink)}
         <li>
-          <details ref={moreRef} onKeyDown={onMoreKeyDown} className="group h-full">
+          <details
+            ref={createMenu.ref}
+            onKeyDown={createMenu.onKeyDown}
+            onToggle={(event) => {
+              if (event.currentTarget.open) moreMenu.close();
+            }}
+            className="group h-full"
+          >
+            <summary
+              aria-label="New"
+              data-tour="tab-new"
+              className={`${tabItem} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
+            >
+              <span
+                aria-hidden="true"
+                className="grid size-11 place-items-center rounded-full bg-brand text-white shadow-[0_6px_16px_-6px_rgb(0_92_230/0.6)] transition-transform duration-150 group-open:rotate-45"
+              >
+                <PlusIcon className="size-6" />
+              </span>
+            </summary>
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label="Close menu"
+              onClick={createMenu.close}
+              className="fixed inset-0 -z-20 cursor-default bg-ink/25"
+            />
+            <div className="glass-strong glass-pop fixed inset-x-3 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+4.5rem)] rounded-[28px] px-2 pt-2 pb-2">
+              <p className="px-3 pt-1 pb-1 text-[13px] font-semibold text-(--glass-fg-muted)">
+                What do you want to do?
+              </p>
+              <ul className="grid gap-0.5">
+                {CREATE_ITEMS.map((item) => (
+                  <li key={item.key}>
+                    <NavLink
+                      item={item}
+                      current={undefined}
+                      onClick={createMenu.close}
+                      className={sheetItem}
+                      iconClassName="size-[22px] shrink-0 text-brand"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </li>
+        {right.map(tabLink)}
+        <li>
+          <details
+            ref={moreRef}
+            onKeyDown={onMoreKeyDown}
+            onToggle={(event) => {
+              if (event.currentTarget.open) createMenu.close();
+            }}
+            className="group h-full"
+          >
             <summary
               aria-current={moreActive ? "page" : undefined}
               data-tour="tab-more"
@@ -602,22 +693,10 @@ export function DashboardChrome({
   return (
     <div className="relative isolate min-h-screen">
       <GlassBackdrop />
-      <SidebarNav
-        admin={admin}
-        account={account}
-        latestSiteId={latestSiteId}
-        supportHref={supportHref}
-      />
-      <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
+      <SidebarNav admin={admin} account={account} supportHref={supportHref} />
+      {/* Criar fica no "+" da barra de abas. */}
+      <header className="glass-bar sticky top-0 z-30 flex h-14 items-center gap-3 px-4 sm:px-6 lg:hidden">
         <Logo />
-        <Link
-          href="/create"
-          data-tour="new-site"
-          className={glassButtonClass({ variant: "secondary", size: "md" })}
-        >
-          <PlusIcon className="size-4" />
-          New site
-        </Link>
       </header>
       {/* No celular o conteúdo rola por baixo da barra de abas flutuante: o espaço embaixo deixa
           o fim da página aparecer acima dela. */}
@@ -630,12 +709,7 @@ export function DashboardChrome({
           {children}
         </div>
       </main>
-      <TabBar
-        admin={admin}
-        account={account}
-        latestSiteId={latestSiteId}
-        supportHref={supportHref}
-      />
+      <TabBar admin={admin} account={account} supportHref={supportHref} />
       <WelcomeTour config={tour} latestSiteId={latestSiteId} />
     </div>
   );

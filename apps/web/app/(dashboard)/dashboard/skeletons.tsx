@@ -33,11 +33,12 @@ export function OfficeSkeleton() {
   );
 }
 
-export function StatsSkeleton() {
+/** Os quatro atalhos do topo (Book a job, Send an estimate...). */
+export function ActionsSkeleton() {
   return (
     <div aria-hidden="true" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className={`${skeleton} h-[8.5rem]`} />
+        <div key={i} className={`${skeleton} h-[7.5rem]`} />
       ))}
     </div>
   );
@@ -49,20 +50,6 @@ export function NeedsSkeleton() {
       <div className={`${skeleton} h-7 w-32 rounded-lg`} />
       <div className={`${skeleton} mt-3 h-48`} />
     </div>
-  );
-}
-
-export function OverviewSkeleton({ order }: { order: "stats-first" | "needs-first" }) {
-  return order === "stats-first" ? (
-    <>
-      <StatsSkeleton />
-      <NeedsSkeleton />
-    </>
-  ) : (
-    <>
-      <NeedsSkeleton />
-      <StatsSkeleton />
-    </>
   );
 }
 
