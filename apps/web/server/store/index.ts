@@ -9,8 +9,10 @@ export type {
   GuestUsageFilter,
   LeadRecord,
   NewLead,
+  PublishedSiteRecord,
   SiteMeta,
   SiteRecord,
+  SiteRef,
   SiteStore,
   VersionRecord,
 } from "./types";

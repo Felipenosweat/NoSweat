@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import type { CSSProperties } from "react";
 import { PromptForm } from "@/components/marketing/PromptForm";
 
@@ -14,6 +14,53 @@ const LINES = [
     online by <em>lunch.</em>
   </>,
 ];
+
+// A captura do site de exemplo: no computador a inteira, no celular a do celular. Um <picture>
+// só (getImageProps), para o navegador baixar apenas a que aparece, com prioridade alta (é o
+// LCP). Antes eram duas <Image>: a do computador (escondida no celular) tinha priority e a do
+// celular ficava lazy, então o celular baixava a imagem errada primeiro.
+// Sem <link rel=preload>: a imagem já está no começo do HTML e o fetchPriority alto basta.
+const STAGE_ALT =
+  "Home page of Still Water Spa, an example site made with No Sweat: a full-width photo of a treatment room with the spa’s name in large serif type.";
+
+function StagePicture() {
+  const common = { alt: STAGE_ALT, fetchPriority: "high", loading: "eager" } as const;
+  const {
+    props: { srcSet: desktop },
+  } = getImageProps({
+    ...common,
+    src: "/landing/signature/still-water-spa-d.webp",
+    width: 1600,
+    height: 1000,
+    // 60: a moldura começa menor (escala 0.82) e a foto é escura; bem menos bytes que o 75.
+    quality: 60,
+    sizes: "(min-width: 1440px) 1440px, 100vw",
+  });
+  const {
+    props: { srcSet: mobile, ...rest },
+  } = getImageProps({
+    ...common,
+    src: "/landing/signature/still-water-spa-m.webp",
+    width: 640,
+    height: 1385,
+    sizes: "300px",
+  });
+  return (
+    <picture>
+      <source
+        media="(min-width: 640px)"
+        srcSet={desktop}
+        sizes="(min-width: 1440px) 1440px, 100vw"
+      />
+      <source media="(max-width: 639.98px)" srcSet={mobile} sizes="300px" />
+      <img
+        {...rest}
+        alt={STAGE_ALT}
+        className="block aspect-[9/14] h-auto w-full object-cover object-top sm:aspect-[8/5]"
+      />
+    </picture>
+  );
+}
 
 export function Hero() {
   return (
@@ -64,23 +111,7 @@ export function Hero() {
           data-lp-stage
           className="lp-stage relative mx-auto max-w-[300px] overflow-hidden rounded-[2.2rem] ring-1 ring-white/15 sm:max-w-[1440px] sm:rounded-[10px]"
         >
-          <Image
-            src="/landing/signature/still-water-spa-d.webp"
-            alt="Home page of Still Water Spa, an example site made with No Sweat: a full-width photo of a treatment room with the spa’s name in large serif type."
-            width={1600}
-            height={1000}
-            sizes="(min-width: 1440px) 1440px, 100vw"
-            priority
-            className="hidden h-auto w-full sm:block"
-          />
-          <Image
-            src="/landing/signature/still-water-spa-m.webp"
-            alt="Home page of Still Water Spa on a phone, an example site made with No Sweat."
-            width={640}
-            height={1385}
-            sizes="300px"
-            className="block aspect-[9/14] h-auto w-full object-cover object-top sm:hidden"
-          />
+          <StagePicture />
         </div>
         <figcaption className="mx-auto mt-5 flex max-w-[1440px] flex-wrap justify-between gap-2 px-2 text-[13px] text-white/55">
           <span>Still Water Spa, Scottsdale. Made with No Sweat.</span>

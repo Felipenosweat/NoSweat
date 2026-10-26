@@ -13,6 +13,8 @@
   --lp-paper-deep: #e9e4da;
   --lp-line: rgb(7 27 51 / 0.14);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
+  --font-lp-serif: var(--ns-font-editorial-heading);
   background: var(--lp-night);
 }
 
@@ -72,7 +74,10 @@
   background-size: 100% 1px;
 }
 
-/* Linhas do título do hero sobem de dentro de uma máscara assim que a página abre. */
+/* Linhas do título do hero sobem um pouco de dentro de uma máscara assim que a página abre.
+   O título é o LCP: já no primeiro quadro a maior parte do texto aparece (deslocamento curto,
+   sem espera na primeira linha). Antes começava 108% abaixo, todo escondido, e o LCP só
+   contava quando a animação revelava o texto. */
 .lp-line {
   display: block;
   overflow: hidden;
@@ -82,25 +87,26 @@
 
 .lp-line > span {
   display: block;
-  animation: lp-line-in 1100ms var(--lp-ease) both;
-  animation-delay: calc(80ms + var(--i, 0) * 100ms);
+  animation: lp-line-in 900ms var(--lp-ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 
 @keyframes lp-line-in {
   from {
-    transform: translateY(108%);
+    transform: translateY(22%);
   }
 }
 
+/* Sem começar em opacidade 0 (o navegador não conta o que está invisível como pintado). */
 .lp-fade-up {
-  animation: lp-fade-up 1200ms var(--lp-ease) both;
-  animation-delay: calc(250ms + var(--i, 0) * 100ms);
+  animation: lp-fade-up 900ms var(--lp-ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 
 @keyframes lp-fade-up {
   from {
-    opacity: 0;
-    transform: translateY(24px);
+    opacity: 0.35;
+    transform: translateY(14px);
   }
 }
 
@@ -129,10 +135,40 @@
     rgb(5 12 24 / 0.25);
 }
 
-/* A moldura do site de exemplo que cresce com a rolagem (escala escrita pelo LandingMotion). */
+/* A moldura do site de exemplo cresce com a rolagem: animação presa à rolagem só em CSS
+   (animation-timeline), que o navegador roda fora da thread principal e já vale no primeiro
+   quadro (antes era o GSAP, que só chegava depois de carregar e pulava de escala). Navegador
+   sem suporte (Firefox) ou "reduzir movimento": a moldura fica parada no tamanho cheio.
+   Fim igual ao de antes: quando o topo da moldura chega a 12% da altura da tela. */
 .lp-stage {
+  --lp-stage-from: 0.92;
   transform-origin: 50% 0;
-  will-change: transform;
+}
+
+@media (min-width: 1024px) {
+  .lp-stage {
+    --lp-stage-from: 0.82;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-stage {
+      will-change: transform;
+      animation: lp-stage-grow linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 88vh;
+    }
+  }
+}
+
+@keyframes lp-stage-grow {
+  from {
+    transform: scale(var(--lp-stage-from));
+  }
+  to {
+    transform: none;
+  }
 }
 
 /* ---------- Galeria lateral (#looks) ---------- */

@@ -114,7 +114,7 @@ export function PhotoFrame({
       >
         <Photo
           image={image}
-          loading={eager ? "eager" : "lazy"}
+          priority={eager}
           sizes={sizes}
           className={imgClassName}
         />

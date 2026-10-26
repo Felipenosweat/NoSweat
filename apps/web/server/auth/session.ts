@@ -31,15 +31,27 @@ export async function createSupabaseServerClient() {
 }
 
 /**
+ * Claims do JWT da sessão (validadas pelo Supabase), lidas uma vez por request: `getCurrentUser`
+ * e quem precisa do `user_metadata` (ex.: o primeiro nome da saudação) dividem a mesma leitura.
+ * `null` sem Supabase configurado ou sem sessão.
+ */
+export const getSessionClaims = cache(async (): Promise<Record<string, unknown> | null> => {
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getClaims();
+  return (data?.claims as Record<string, unknown> | undefined) ?? null;
+});
+
+/**
  * Usuário logado (validado pelo Supabase), DEV_USER sem Supabase, ou `null` se não estiver logado.
  * `cache()` do React: dentro de um mesmo request (layout + página + seções) a sessão é lida uma vez só.
  * Fora de um request do React (testes, scripts) o cache não guarda nada e cada chamada lê de novo.
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
-  const supabase = await createSupabaseServerClient();
-  if (!supabase) return DEV_USER;
-  const { data } = await supabase.auth.getClaims();
-  const claims = data?.claims;
-  if (!claims?.sub) return null;
-  return { id: claims.sub, email: typeof claims.email === "string" ? claims.email : null };
+  if (!getSupabaseAuthConfig()) return DEV_USER;
+  const claims = await getSessionClaims();
+  const sub = claims?.sub;
+  if (typeof sub !== "string" || !sub) return null;
+  const email = claims?.email;
+  return { id: sub, email: typeof email === "string" ? email : null };
 });

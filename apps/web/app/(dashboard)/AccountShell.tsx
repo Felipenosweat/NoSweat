@@ -4,7 +4,7 @@ import { ViewAsBanner } from "@/components/ViewAsBanner";
 import { isAdminUser } from "@/server/admin";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { getViewer, type Viewer } from "@/server/auth/viewer";
-import { getSiteStore } from "@/server/store";
+import { listOwnerSites } from "@/server/owner-sites";
 import { DashboardChrome } from "./DashboardChrome";
 
 // Moldura do painel (barra lateral + abas do celular) para quem tem conta. Usada pelo layout do
@@ -17,8 +17,8 @@ import { DashboardChrome } from "./DashboardChrome";
  */
 async function latestSiteId(ownerId: string): Promise<string | null> {
   try {
-    // `list` já vem do mais recente para o mais antigo.
-    const sites = await getSiteStore().list(ownerId);
+    // `list` já vem do mais recente para o mais antigo. Com dedupe: a página lê a mesma lista.
+    const sites = await listOwnerSites(ownerId);
     const site = sites.find((s) => s.status === "published") ?? sites[0];
     return site?.id ?? null;
   } catch {

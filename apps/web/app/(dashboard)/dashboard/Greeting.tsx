@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { pageLead, pageTitle } from "@/components/DashboardUi";
 
 const subscribe = () => () => {};
@@ -24,8 +24,11 @@ export function Greeting({
 }: {
   firstName: string | null;
   nowIso: string;
-  /** Resumo do dia embaixo da saudação (montado no servidor). */
-  summary?: string;
+  /**
+   * Resumo do dia embaixo da saudação (montado no servidor; pode chegar em streaming dentro de um
+   * <Suspense>, com um esqueleto do tamanho da linha).
+   */
+  summary?: ReactNode;
 }) {
   const onClient = useSyncExternalStore(
     subscribe,
