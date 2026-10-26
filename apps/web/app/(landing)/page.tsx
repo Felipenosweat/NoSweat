@@ -13,7 +13,14 @@ import { PromptForm } from "@/components/marketing/PromptForm";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
-import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
+import {
+  faqPage,
+  INSTAGRAM_URL,
+  jsonLd,
+  organization,
+  product,
+  website,
+} from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
 
 // Landing V8 ("Signature", pedido do fundador: "de realeza, que nem os templates premium", sem
@@ -221,6 +228,29 @@ export default function LandingPage() {
         >
           No <em>Sweat</em>
         </p>
+      </div>
+      {/* O Instagram logo abaixo do nome gigante, antes do rodapé (pedido do fundador). */}
+      <div className="bg-ink pt-4 pb-10 text-center">
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="lp-underline inline-flex min-h-11 items-center gap-2 rounded-sm text-lg font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.75}
+            className="size-5"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="5" />
+            <circle cx="12" cy="12" r="4" />
+            <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none" />
+          </svg>
+          Follow us on Instagram @nosweatfd
+        </a>
       </div>
 
       <LandingMotion />

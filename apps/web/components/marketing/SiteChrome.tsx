@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
+import { INSTAGRAM_URL } from "@/lib/structured-data";
 import { MarketingMenu } from "./MobileCtaBar";
 import { container, focusRing } from "./styles";
 
@@ -45,6 +46,7 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
       { href: "/create", label: "Build my website" },
       { href: "/login", label: "Log in" },
       { href: "mailto:hello@nosweatfd.com", label: "hello@nosweatfd.com", external: true },
+      { href: INSTAGRAM_URL, label: "Instagram @nosweatfd", external: true },
     ],
   },
   {

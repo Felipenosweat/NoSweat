@@ -15,6 +15,9 @@ const APP_ID = `${SITE_ORIGIN}/#product`;
 
 const dollars = (cents: number) => (cents / 100).toFixed(2);
 
+/** Instagram oficial da No Sweat (@nosweatfd). O rodapé do marketing usa o mesmo endereço. */
+export const INSTAGRAM_URL = "https://www.instagram.com/nosweatfd/";
+
 export function organization() {
   return {
     "@type": "Organization",
@@ -23,6 +26,8 @@ export function organization() {
     url: siteUrl(),
     logo: `${SITE_ORIGIN}/brand/icon.png`,
     email: "hello@nosweatfd.com",
+    // Perfis oficiais: ajudam o Google e as IAs a ligar a marca aos perfis certos.
+    sameAs: [INSTAGRAM_URL],
     description:
       "No Sweat builds websites for small local businesses in the United States from a one-sentence description, with AI.",
   };
