@@ -71,6 +71,8 @@ export function AskAiPanel({
   isGuest = false,
   signUpHref = null,
   onSignUp,
+  aiEnabled = true,
+  onEditYourself,
 }: {
   messages: ChatMessage[];
   instruction: string;
@@ -95,6 +97,10 @@ export function AskAiPanel({
   signUpHref?: string | null;
   /** Antes de ir para o cadastro (o editor salva o que estiver pendente). */
   onSignUp?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  /** IA ligada? Sem ela (produção sem chave), o campo fica travado e um aviso leva à edição. */
+  aiEnabled?: boolean;
+  /** Abre a edição manual (botão do aviso de IA desligada). */
+  onEditYourself?: () => void;
 }) {
   const ids = useId();
   const field = useRef<HTMLTextAreaElement>(null);
@@ -104,8 +110,8 @@ export function AskAiPanel({
   const [menuOpen, setMenuOpen] = useState(false);
   const outOfCredits = aiCredits !== null && aiCredits.left < aiCredits.cost;
   const outOfEdits = aiEditsLeft === 0 || outOfCredits;
-  const offerSignUp = isGuest && outOfEdits;
-  const locked = pending || outOfEdits;
+  const offerSignUp = aiEnabled && isGuest && outOfEdits;
+  const locked = pending || outOfEdits || !aiEnabled;
   const canSend = !locked && instruction.trim().length >= 3;
   const lastDoneId = [...messages]
     .reverse()
@@ -163,8 +169,9 @@ export function AskAiPanel({
     });
   }
 
-  const hint =
-    outOfCredits && aiCredits
+  const hint = !aiEnabled
+    ? "AI changes are coming soon. Everything else works now."
+    : outOfCredits && aiCredits
       ? `You’re out of AI credits. Your monthly credits refill on ${refillDate.format(new Date(aiCredits.resetsAt))}.`
       : outOfEdits
         ? isGuest
@@ -220,13 +227,31 @@ export function AskAiPanel({
       >
         <div className="flex gap-2.5">
           <Mark />
-          <p className="text-[15px] leading-[1.55] text-ink">
-            Your site is ready. Tell me what to change, in your own words, and I&rsquo;ll update the
-            draft.
-          </p>
+          {aiEnabled ? (
+            <p className="text-[15px] leading-[1.55] text-ink">
+              Your site is ready. Tell me what to change, in your own words, and I&rsquo;ll update
+              the draft.
+            </p>
+          ) : (
+            <div>
+              <p className="text-[15px] leading-[1.55] text-ink">
+                Your site is ready. AI changes aren&rsquo;t switched on yet. You can edit every
+                text, color and photo yourself.
+              </p>
+              {onEditYourself && (
+                <button
+                  type="button"
+                  onClick={onEditYourself}
+                  className={`${primaryButton} mt-3`}
+                >
+                  Edit your site
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {messages.length === 0 && !pending && (
+        {aiEnabled && messages.length === 0 && !pending && (
           <div role="group" aria-label="Suggestions" className="flex flex-wrap gap-2 pl-7.5">
             {SUGGESTIONS.map((suggestion) => (
               <button
@@ -321,20 +346,26 @@ export function AskAiPanel({
             id={`${ids}-menu`}
             className="absolute inset-x-3 bottom-full mb-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_1px_2px_rgb(7_27_51/.06),0_12px_32px_-12px_rgb(7_27_51/.2)]"
           >
-            <p className="px-2 pt-1 pb-2 text-[12px] font-medium text-slate-500">Quick requests</p>
-            <div className="flex flex-wrap gap-1.5">
-              {SUGGESTIONS.map((suggestion) => (
-                <button
-                  key={suggestion.label}
-                  type="button"
-                  disabled={locked}
-                  onClick={() => applySuggestion(suggestion.text)}
-                  className={suggestionButton}
-                >
-                  {suggestion.label}
-                </button>
-              ))}
-            </div>
+            {aiEnabled && (
+              <>
+                <p className="px-2 pt-1 pb-2 text-[12px] font-medium text-slate-500">
+                  Quick requests
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTIONS.map((suggestion) => (
+                    <button
+                      key={suggestion.label}
+                      type="button"
+                      disabled={locked}
+                      onClick={() => applySuggestion(suggestion.text)}
+                      className={suggestionButton}
+                    >
+                      {suggestion.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
             <button
               type="button"
               onClick={() => {
@@ -363,7 +394,7 @@ export function AskAiPanel({
             maxLength={1000}
             aria-describedby={`${ids}-hint`}
             aria-keyshortcuts="Enter"
-            placeholder="Ask for a change…"
+            placeholder={aiEnabled ? "Ask for a change…" : "AI changes are coming soon"}
             className="block max-h-40 min-h-16 w-full resize-none rounded-t-2xl bg-transparent px-3.5 pt-3 text-base leading-[1.5] text-ink [field-sizing:content] placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed disabled:text-slate-500 lg:text-[15px]"
           />
           <div className="flex items-center justify-between gap-2 px-2 pb-2">
@@ -391,7 +422,7 @@ export function AskAiPanel({
         <p id={`${ids}-hint`} className="mt-2 px-1 text-[12px] text-slate-500">
           {hint}
         </p>
-        {outOfCredits && (
+        {aiEnabled && outOfCredits && (
           <Link href="/billing#credits" className={`${primaryButton} mt-2 w-full text-center`}>
             Get more credits
           </Link>

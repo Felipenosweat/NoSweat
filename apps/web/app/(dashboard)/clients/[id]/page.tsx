@@ -204,7 +204,7 @@ function activityTitle(activity: ClientActivity): string {
   }
   // Pagamento registrado numa fatura (tipo novo do servidor; comparação por texto até o contrato
   // ter o tipo).
-  if ((activity.kind as string) === "payment") {
+  if (activity.kind === "payment") {
     return activity.amountCents !== null && activity.amountCents > 0
       ? `Payment · ${formatCents(activity.amountCents)}`
       : "Payment";
