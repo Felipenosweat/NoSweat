@@ -62,10 +62,10 @@ export function Hero() {
       </section>
 
       {/* O site de exemplo: no computador a captura inteira; no celular, a do celular. */}
-      <figure className="lp-night px-3 pb-20 sm:px-5 lg:pb-32">
+      <figure className="lp-night px-3 pb-14 sm:px-5 lg:pb-20">
         <div
           data-lp-stage
-          className="lp-stage relative mx-auto max-w-[340px] overflow-hidden rounded-[2.2rem] ring-1 ring-white/15 sm:max-w-[1440px] sm:rounded-[10px]"
+          className="lp-stage relative mx-auto max-w-[300px] overflow-hidden rounded-[2.2rem] ring-1 ring-white/15 sm:max-w-[1440px] sm:rounded-[10px]"
         >
           <Image
             src="/landing/signature/still-water-spa-d.webp"
@@ -81,8 +81,8 @@ export function Hero() {
             alt="Home page of Still Water Spa on a phone, an example site made with No Sweat."
             width={640}
             height={1385}
-            sizes="340px"
-            className="block aspect-[9/16] h-auto w-full object-cover object-top sm:hidden"
+            sizes="300px"
+            className="block aspect-[9/14] h-auto w-full object-cover object-top sm:hidden"
           />
         </div>
         <figcaption className="mx-auto mt-5 flex max-w-[1440px] flex-wrap justify-between gap-2 px-2 text-[13px] text-white/55">
