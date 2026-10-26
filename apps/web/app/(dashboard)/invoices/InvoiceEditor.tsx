@@ -23,13 +23,7 @@ import {
   isUnpaidStatus,
   parsePercentToBps,
 } from "@/lib/office";
-import {
-  ErrorNote,
-  OfficeApiError,
-  invoiceUrl,
-  officeApi,
-  toOfficeError,
-} from "../office/_ui/api";
+import { ErrorNote, OfficeApiError, invoiceUrl, officeApi, toOfficeError } from "../office/_ui/api";
 import { ClientPicker, type PickedClient } from "../office/_ui/ClientPicker";
 import { DocumentPaper } from "../office/_ui/DocumentPaper";
 import {
@@ -72,7 +66,12 @@ export type InvoiceEditorProps = {
   /** Só na fatura nova (?jobId=). */
   jobId: string | null;
   defaults: { taxRateBps: number; dueOn: string | null };
-  company: { companyName: string; phone: string | null; email: string | null; address: string | null };
+  company: {
+    companyName: string;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+  };
   paymentInstructions: string;
   today: string;
   readOnly: boolean;
@@ -160,7 +159,9 @@ export function InvoiceEditor({
     detailsEditable && (dirty || (doc === null && client !== null && form.lines.length > 0)),
   );
 
-  const taxRateBps = itemsEditable ? (parsePercentToBps(form.taxRate) ?? 0) : (doc?.taxRateBps ?? 0);
+  const taxRateBps = itemsEditable
+    ? (parsePercentToBps(form.taxRate) ?? 0)
+    : (doc?.taxRateBps ?? 0);
   const totals = itemsEditable
     ? draftTotals(form.lines, form.taxRate, form.discount)
     : doc
@@ -232,11 +233,7 @@ export function InvoiceEditor({
           body: parsed.data,
         });
         adopt(result.invoice);
-        window.history.replaceState(
-          null,
-          "",
-          `/invoices/${encodeURIComponent(result.invoice.id)}`,
-        );
+        window.history.replaceState(null, "", `/invoices/${encodeURIComponent(result.invoice.id)}`);
         return result.invoice;
       }
       if (!doc) return null;
@@ -704,7 +701,14 @@ function InvoiceStatusCard({ invoice, today }: { invoice: Invoice | null; today:
         )}
         {status === "paid" && (
           <p>
-            Paid in full{invoice.paidAt ? <> · <LocalTime iso={invoice.paidAt} /></> : null}.
+            Paid in full
+            {invoice.paidAt ? (
+              <>
+                {" "}
+                · <LocalTime iso={invoice.paidAt} />
+              </>
+            ) : null}
+            .
           </p>
         )}
         {status === "void" && <p>This invoice was voided. The customer owes nothing on it.</p>}

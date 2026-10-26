@@ -55,7 +55,12 @@ describe("computeTotals", () => {
 
 describe("office request schemas", () => {
   it("fills line defaults", () => {
-    const parsed = LineItem.parse({ priceItemId: null, name: " Labor ", quantity: 1, unitPriceCents: 0 });
+    const parsed = LineItem.parse({
+      priceItemId: null,
+      name: " Labor ",
+      quantity: 1,
+      unitPriceCents: 0,
+    });
     expect(parsed).toEqual({
       priceItemId: null,
       name: "Labor",
@@ -72,7 +77,9 @@ describe("office request schemas", () => {
   });
 
   it("requires a name to approve", () => {
-    expect(RespondEstimateRequest.safeParse({ decision: "approve", name: " " }).success).toBe(false);
+    expect(RespondEstimateRequest.safeParse({ decision: "approve", name: " " }).success).toBe(
+      false,
+    );
     expect(RespondEstimateRequest.safeParse({ decision: "decline" }).success).toBe(true);
   });
 });

@@ -166,8 +166,7 @@ function InvoicesContent({
             {formatCents(balances.overdueCents)}
           </span>
           <span className="text-[13px] text-slate-600">
-            overdue · {balances.overdueCount}{" "}
-            {balances.overdueCount === 1 ? "invoice" : "invoices"}
+            overdue · {balances.overdueCount} {balances.overdueCount === 1 ? "invoice" : "invoices"}
           </span>
         </Link>
       </section>

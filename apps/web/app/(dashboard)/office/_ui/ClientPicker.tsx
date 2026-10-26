@@ -2,7 +2,14 @@
 
 import { ClientDetailResponse, ClientsResponse, type Client } from "@nosweat/schema";
 import { useState } from "react";
-import { GlassButton, GlassSearchField, GlassSheet, SpinnerIcon, cx, focusRing } from "@/components/glass";
+import {
+  GlassButton,
+  GlassSearchField,
+  GlassSheet,
+  SpinnerIcon,
+  cx,
+  focusRing,
+} from "@/components/glass";
 import { ClientForm } from "../../clients/ClientForm";
 import { Avatar } from "../../clients/ui";
 import { ErrorNote, officeApi, toOfficeError, type OfficeApiError } from "./api";

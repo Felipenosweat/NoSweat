@@ -206,7 +206,12 @@ function EstimatesContent({
         />
       </div>
 
-      <GlassCard as="section" padding="none" aria-label="Estimates" className="mt-4 overflow-hidden">
+      <GlassCard
+        as="section"
+        padding="none"
+        aria-label="Estimates"
+        className="mt-4 overflow-hidden"
+      >
         {shown.length === 0 ? (
           <EmptyState
             framed={false}

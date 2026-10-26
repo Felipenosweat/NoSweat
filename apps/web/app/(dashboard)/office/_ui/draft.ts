@@ -191,7 +191,8 @@ export function validateForm(form: DocumentForm):
   const discountCents = parseDollars(form.discount);
   if (discountCents === undefined) problems.discount = "Enter an amount like 50 or 25.50.";
   if (form.title.trim().length > 160) problems.title = "Keep the title under 160 characters.";
-  if (form.message.trim().length > 4000) problems.message = "Keep the message under 4,000 characters.";
+  if (form.message.trim().length > 4000)
+    problems.message = "Keep the message under 4,000 characters.";
   if (form.lines.length > 100) problems.items = "Use up to 100 lines.";
   const hasProblem =
     Object.keys(errors).length > 0 ||

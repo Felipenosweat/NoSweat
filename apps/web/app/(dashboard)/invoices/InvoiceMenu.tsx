@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { ConfirmDialog, GlassMenu, SpinnerIcon, type GlassMenuItem } from "@/components/glass";
 import { invoiceLabel } from "@/lib/office";
-import {
-  invoiceUrl,
-  officeApi,
-  officeApiNoContent,
-  toOfficeError,
-} from "../office/_ui/api";
+import { invoiceUrl, officeApi, officeApiNoContent, toOfficeError } from "../office/_ui/api";
 import { CopyIcon, OpenIcon, SlashIcon, TrashIcon } from "../office/_ui/ui";
 
 // Menu "⋯" de uma fatura (linha da lista e topo da fatura): abrir, copiar o link, anular e apagar

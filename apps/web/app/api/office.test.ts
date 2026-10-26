@@ -44,7 +44,10 @@ import {
   DELETE as deletePriceItemRoute,
   PATCH as patchPriceItemRoute,
 } from "./office/price-items/[id]/route";
-import { GET as listPriceItemsRoute, POST as createPriceItemRoute } from "./office/price-items/route";
+import {
+  GET as listPriceItemsRoute,
+  POST as createPriceItemRoute,
+} from "./office/price-items/route";
 import { GET as getSettingsRoute, PUT as putSettingsRoute } from "./office/settings/route";
 import { GET as summaryRoute } from "./office/summary/route";
 import { PATCH as patchTeamRoute } from "./office/team/[id]/route";
@@ -122,9 +125,7 @@ describe("/api/office settings, price book and team", () => {
     expect(PriceItemResponse.parse(await patched.json()).item.active).toBe(false);
     const list = PriceItemsResponse.parse(await (await listPriceItemsRoute()).json());
     expect(list.items.map((i) => i.id)).toEqual([item.id]);
-    expect(
-      (await deletePriceItemRoute(new Request(BASE), ctx(item.id))).status,
-    ).toBe(200);
+    expect((await deletePriceItemRoute(new Request(BASE), ctx(item.id))).status).toBe(200);
     expect((await deletePriceItemRoute(new Request(BASE), ctx(item.id))).status).toBe(404);
 
     const member = TeamMemberResponse.parse(

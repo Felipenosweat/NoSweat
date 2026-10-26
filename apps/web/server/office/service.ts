@@ -227,7 +227,9 @@ async function settingsRecord(ownerId: string): Promise<OfficeSettingsRecord> {
 }
 
 /** Configurações + "hoje" no fuso da empresa. */
-async function context(ownerId: string): Promise<{ settings: OfficeSettingsRecord; today: string }> {
+async function context(
+  ownerId: string,
+): Promise<{ settings: OfficeSettingsRecord; today: string }> {
   const settings = await settingsRecord(ownerId);
   return { settings, today: todayIn(settings.timeZone) };
 }
@@ -235,6 +237,9 @@ async function context(ownerId: string): Promise<{ settings: OfficeSettingsRecor
 export async function getSettings(ownerId: string): Promise<OfficeSettings> {
   return toSettings(await settingsRecord(ownerId));
 }
+
+/** Mesmo que getSettings (nome usado pelas páginas). */
+export const getOfficeSettings = getSettings;
 
 export async function updateSettings(
   ownerId: string,
@@ -337,7 +342,9 @@ function toTeamMember(record: TeamMemberRecord): TeamMember {
 /** Primeira cor que nenhum membro ativo usa (todas usadas: roda a lista). */
 function nextColor(team: readonly TeamMemberRecord[]): TeamColor {
   const used = new Set(team.filter((m) => m.active).map((m) => m.color));
-  return TEAM_COLORS.find((c) => !used.has(c)) ?? TEAM_COLORS[team.length % TEAM_COLORS.length] ?? "blue";
+  return (
+    TEAM_COLORS.find((c) => !used.has(c)) ?? TEAM_COLORS[team.length % TEAM_COLORS.length] ?? "blue"
+  );
 }
 
 export async function listTeam(ownerId: string): Promise<TeamMember[]> {
@@ -483,7 +490,8 @@ export async function listJobs(ownerId: string, filter: JobListFilter = {}): Pro
   const settings = await settingsRecord(ownerId);
   const from =
     filter.from !== undefined ? parseBoundary(filter.from, settings.timeZone, false) : undefined;
-  const to = filter.to !== undefined ? parseBoundary(filter.to, settings.timeZone, true) : undefined;
+  const to =
+    filter.to !== undefined ? parseBoundary(filter.to, settings.timeZone, true) : undefined;
   const hasRange = from !== undefined || to !== undefined;
 
   const [records, clients, team] = await Promise.all([
@@ -559,7 +567,8 @@ export async function updateJob(
     patch.assigneeIds = cleanAssignees(input.assigneeIds, await store().listTeam(ownerId));
   }
 
-  const startAt = input.startAt === undefined ? current.startAt : (toInstant(input.startAt) ?? null);
+  const startAt =
+    input.startAt === undefined ? current.startAt : (toInstant(input.startAt) ?? null);
   const endAt = input.endAt === undefined ? current.endAt : (toInstant(input.endAt) ?? null);
   checkTimes(startAt, endAt);
   if (input.startAt !== undefined) patch.startAt = startAt;
@@ -741,7 +750,9 @@ export async function updateEstimate(
   const open = isOpenEstimate(current);
 
   const touchesTotals =
-    input.items !== undefined || input.taxRateBps !== undefined || input.discountCents !== undefined;
+    input.items !== undefined ||
+    input.taxRateBps !== undefined ||
+    input.discountCents !== undefined;
   const touchesDocument =
     touchesTotals ||
     input.title !== undefined ||
@@ -1026,7 +1037,9 @@ export async function updateInvoice(
 
   const hasPayments = (await paymentsOf(ownerId, id)).length > 0;
   const touchesTotals =
-    input.items !== undefined || input.taxRateBps !== undefined || input.discountCents !== undefined;
+    input.items !== undefined ||
+    input.taxRateBps !== undefined ||
+    input.discountCents !== undefined;
   if (touchesTotals && hasPayments) {
     throw new OfficeError(
       409,

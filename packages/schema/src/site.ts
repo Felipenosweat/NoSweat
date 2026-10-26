@@ -200,6 +200,57 @@ export const SiteDesign = z.object({
 });
 export type SiteDesign = z.infer<typeof SiteDesign>;
 
+// ---------- link de avaliações do Google ----------
+
+/** Caminho de www.google.com / google.com aceito: só o Maps e a busca (perfil da empresa). */
+const isMapsOrSearchPath = (path: string) => /^\/(maps|search)(\/|$)/.test(path);
+
+/**
+ * Endereços do Google de onde vem o link "pedir avaliação" do Perfil da Empresa (só https):
+ * - g.page/r/<id>/review: o link curto de "Ask for reviews" / "Get more reviews";
+ * - search.google.com/local/writereview?placeid=...: o formato longo;
+ * - www.google.com e google.com: só /maps... e /search... (perfil aberto no Maps ou na busca);
+ * - maps.google.com, maps.app.goo.gl e goo.gl/maps/...: links do Google Maps. No goo.gl só
+ *   /maps (o encurtador antigo levava a qualquer lugar).
+ * Um Map (e não um objeto) para "__proto__" e afins nunca contarem como host.
+ */
+const GOOGLE_REVIEW_HOSTS = new Map<string, (path: string) => boolean>([
+  ["g.page", () => true],
+  ["search.google.com", () => true],
+  ["maps.google.com", () => true],
+  ["maps.app.goo.gl", () => true],
+  ["goo.gl", (path) => /^\/maps(\/|$)/.test(path)],
+  ["www.google.com", isMapsOrSearchPath],
+  ["google.com", isMapsOrSearchPath],
+]);
+
+/** Mensagem (para pessoas) quando o link colado não é um link de avaliações do Google. */
+export const GOOGLE_REVIEW_URL_MESSAGE =
+  "Paste the review link you copied from Google. It starts with https://g.page/ or https://search.google.com/.";
+
+/**
+ * O link é um link de avaliações do Google que podemos pôr no site? Só https, sem usuário/senha
+ * nem porta, e só nos hosts de GOOGLE_REVIEW_HOSTS. Não apara espaços: quem chama apara antes.
+ */
+export function isGoogleReviewUrl(value: string): boolean {
+  if (typeof value !== "string" || value.length > 500 || /\s/.test(value)) return false;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:" || url.username || url.password || url.port) return false;
+  const allowedPath = GOOGLE_REVIEW_HOSTS.get(url.hostname.toLowerCase());
+  return allowedPath ? allowedPath(url.pathname) : false;
+}
+
+/** Link de avaliações do Google (ver isGoogleReviewUrl). */
+export const GoogleReviewUrl = z
+  .url(GOOGLE_REVIEW_URL_MESSAGE)
+  .max(500, GOOGLE_REVIEW_URL_MESSAGE)
+  .refine(isGoogleReviewUrl, { message: GOOGLE_REVIEW_URL_MESSAGE });
+
 export const SiteSpec = z.object({
   version: z.literal(1),
   template: TemplateId,
@@ -242,6 +293,11 @@ export const SiteSpec = z.object({
         linkedin: ExternalUrl.optional(),
       })
       .optional(),
+    /**
+     * Link "deixe uma avaliação" do Perfil da Empresa no Google, colado pelo dono em /reviews.
+     * Vira o botão "Review us on Google" do site. Só o dono muda (a IA nunca põe nem tira).
+     */
+    googleReviewUrl: GoogleReviewUrl.optional(),
   }),
   theme: Theme,
   sections: z.array(Section).min(2).max(10),

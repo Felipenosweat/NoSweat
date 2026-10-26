@@ -73,7 +73,12 @@ export type EstimateEditorProps = {
   party: DocumentParty | null;
   /** Padrões das configurações para um orçamento novo. */
   defaults: { taxRateBps: number; validUntil: string | null };
-  company: { companyName: string; phone: string | null; email: string | null; address: string | null };
+  company: {
+    companyName: string;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+  };
   terms: string;
   today: string;
   readOnly: boolean;
@@ -155,7 +160,9 @@ export function EstimateEditor({
   const signature = formSignature(form);
   const dirty = signature !== baseline;
   const editable = !readOnly && (doc === null || estimateItemsEditable(doc.status));
-  useUnsavedWarning(editable && (dirty || (doc === null && client !== null && form.lines.length > 0)));
+  useUnsavedWarning(
+    editable && (dirty || (doc === null && client !== null && form.lines.length > 0)),
+  );
 
   const taxRateBps = parsePercentToBps(form.taxRate) ?? 0;
   const totals = draftTotals(form.lines, form.taxRate, form.discount);
@@ -211,7 +218,11 @@ export function EstimateEditor({
         });
         adopt(result.estimate);
         // Mesmo endereço de um orçamento salvo, sem recarregar a tela.
-        window.history.replaceState(null, "", `/estimates/${encodeURIComponent(result.estimate.id)}`);
+        window.history.replaceState(
+          null,
+          "",
+          `/estimates/${encodeURIComponent(result.estimate.id)}`,
+        );
         return result.estimate;
       }
       if (!doc) return null;
@@ -290,7 +301,8 @@ export function EstimateEditor({
 
   const status = doc?.status ?? "draft";
   const title = doc ? estimateLabel(doc.number) : "New estimate";
-  const sendTarget = client ?? (doc ? { id: doc.clientId, name: doc.clientName, phone: null, email: null } : null);
+  const sendTarget =
+    client ?? (doc ? { id: doc.clientId, name: doc.clientName, phone: null, email: null } : null);
   const blocked = dirty ? "Save your changes first." : null;
 
   // Uma ação azul por vez: com mudanças sem salvar, o azul é o "Save" da barra de baixo.
@@ -364,7 +376,11 @@ export function EstimateEditor({
                   publicToken: doc.publicToken,
                 }}
                 extraItems={[
-                  { label: "Print / Save as PDF", icon: <PrintIcon />, onSelect: () => window.print() },
+                  {
+                    label: "Print / Save as PDF",
+                    icon: <PrintIcon />,
+                    onSelect: () => window.print(),
+                  },
                   {
                     type: "link",
                     label: "Open client",
@@ -421,7 +437,9 @@ export function EstimateEditor({
                   className={`${fieldClass} mt-1.5 mb-5 h-11`}
                   aria-invalid={problems?.title ? true : undefined}
                 />
-                {problems?.title && <p className={`${fieldErrorClass} -mt-4 mb-5`}>{problems.title}</p>}
+                {problems?.title && (
+                  <p className={`${fieldErrorClass} -mt-4 mb-5`}>{problems.title}</p>
+                )}
                 <LineItemsEditor
                   lines={form.lines}
                   onChange={(lines) => update({ lines })}
@@ -432,7 +450,9 @@ export function EstimateEditor({
               </>
             ) : (
               <>
-                {doc?.title && <p className="mb-2 text-[15px] font-semibold text-ink">{doc.title}</p>}
+                {doc?.title && (
+                  <p className="mb-2 text-[15px] font-semibold text-ink">{doc.title}</p>
+                )}
                 <LineItemsView lines={doc?.items ?? []} />
               </>
             )}
@@ -461,7 +481,10 @@ export function EstimateEditor({
                 ) : (
                   <p id={`${ids}-message-hint`} className={hintClass}>
                     Shows at the top of the estimate. Your terms from{" "}
-                    <Link href="/office/settings" className="font-semibold text-brand underline-offset-4 hover:underline">
+                    <Link
+                      href="/office/settings"
+                      className="font-semibold text-brand underline-offset-4 hover:underline"
+                    >
                       Office settings
                     </Link>{" "}
                     show at the bottom.
@@ -540,13 +563,23 @@ export function EstimateEditor({
           number={doc?.number ?? 0}
           title={editable ? form.title.trim() : (doc?.title ?? "")}
           company={company}
-          client={party ?? { name: sendTarget?.name ?? "", email: sendTarget?.email ?? null, phone: sendTarget?.phone ?? null, address: null }}
+          client={
+            party ?? {
+              name: sendTarget?.name ?? "",
+              email: sendTarget?.email ?? null,
+              phone: sendTarget?.phone ?? null,
+              address: null,
+            }
+          }
           items={editable ? valid : (doc?.items ?? [])}
           taxRateBps={editable ? taxRateBps : (doc?.taxRateBps ?? 0)}
           totals={editable ? totals : doc ? docTotals(doc) : totals}
           message={editable ? form.message : (doc?.message ?? "")}
           facts={[
-            { label: "Date", value: formatDateOnly((doc?.sentAt ?? doc?.createdAt ?? today).slice(0, 10)) },
+            {
+              label: "Date",
+              value: formatDateOnly((doc?.sentAt ?? doc?.createdAt ?? today).slice(0, 10)),
+            },
             ...(form.date ? [{ label: "Valid until", value: formatDateOnly(form.date) }] : []),
           ]}
           notes={[{ title: "Terms", body: terms }]}
@@ -600,7 +633,9 @@ export function EstimateEditor({
               disabled={Boolean(doc.jobId)}
               onChange={setCreateJob}
               title="Schedule a job"
-              hint={doc.jobId ? "Already has a job." : "Shows up as unscheduled until you pick a time."}
+              hint={
+                doc.jobId ? "Already has a job." : "Shows up as unscheduled until you pick a time."
+              }
             />
             <ConvertOption
               checked={createInvoice}
@@ -697,8 +732,7 @@ function StatusCard({
         {status === "draft" && <p>Only you can see this until you send it.</p>}
         {status === "sent" && (
           <p>
-            Sent{" "}
-            {estimate.sentAt ? <LocalTime iso={estimate.sentAt} /> : null}. Waiting for{" "}
+            Sent {estimate.sentAt ? <LocalTime iso={estimate.sentAt} /> : null}. Waiting for{" "}
             {estimate.clientName} to approve.
           </p>
         )}
@@ -728,7 +762,10 @@ function StatusCard({
             {(estimate.jobId || jobCreated) && (
               <p className="mt-1">
                 Job created.{" "}
-                <Link href="/schedule" className={`font-semibold underline underline-offset-4 ${focusRing}`}>
+                <Link
+                  href="/schedule"
+                  className={`font-semibold underline underline-offset-4 ${focusRing}`}
+                >
                   Open schedule
                 </Link>
               </p>

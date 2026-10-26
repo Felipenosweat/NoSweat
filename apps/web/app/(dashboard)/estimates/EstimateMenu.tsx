@@ -178,9 +178,7 @@ export function EstimateMenu({
       <span role="status" className="text-[13px] font-medium text-emerald-700 empty:hidden">
         {copied}
       </span>
-      {blockedReason && canMark && !readOnly && (
-        <span className="sr-only">{blockedReason}</span>
-      )}
+      {blockedReason && canMark && !readOnly && <span className="sr-only">{blockedReason}</span>}
 
       {confirmMounted && (
         <ConfirmDialog

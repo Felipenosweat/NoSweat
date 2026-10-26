@@ -435,7 +435,10 @@ export class SupabaseOfficeStore implements OfficeStore {
   }
 
   async getInvoiceByToken(token: string) {
-    return this.one(InvoiceRecord, `/invoices?public_token=eq.${encodeURIComponent(token)}&select=*`);
+    return this.one(
+      InvoiceRecord,
+      `/invoices?public_token=eq.${encodeURIComponent(token)}&select=*`,
+    );
   }
 
   async insertInvoice(invoice: NewInvoice) {

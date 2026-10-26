@@ -14,7 +14,10 @@ export function ListSkeleton({ label, tiles = 3 }: { label: string; tiles?: numb
         {tiles > 0 && (
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {Array.from({ length: tiles }, (_, i) => (
-              <div key={i} className={`${block} h-24 ${i === 2 ? "col-span-2 sm:col-span-1" : ""}`} />
+              <div
+                key={i}
+                className={`${block} h-24 ${i === 2 ? "col-span-2 sm:col-span-1" : ""}`}
+              />
             ))}
           </div>
         )}

@@ -228,9 +228,12 @@ export function PaymentsList({
     setPending(true);
     setError(null);
     try {
-      await officeApiNoContent(invoiceUrl(invoiceId, `/payments/${encodeURIComponent(target.id)}`), {
-        method: "DELETE",
-      });
+      await officeApiNoContent(
+        invoiceUrl(invoiceId, `/payments/${encodeURIComponent(target.id)}`),
+        {
+          method: "DELETE",
+        },
+      );
       setTarget(null);
       router.refresh();
     } catch (err) {
@@ -282,7 +285,9 @@ export function PaymentsList({
       {mounted && (
         <ConfirmDialog
           open={target !== null}
-          title={target ? `Delete the ${formatCents(target.amountCents)} payment?` : "Delete payment?"}
+          title={
+            target ? `Delete the ${formatCents(target.amountCents)} payment?` : "Delete payment?"
+          }
           confirmLabel="Delete payment"
           pendingLabel="Deleting…"
           pending={pending}

@@ -133,9 +133,7 @@ export function matchesInvoiceFilter(status: InvoiceStatus, filter: InvoiceFilte
 
 /** Itens da fatura só mudam sem pagamento registrado e antes de paga/anulada. */
 export function invoiceItemsEditable(invoice: Pick<Invoice, "status" | "payments">): boolean {
-  return (
-    invoice.payments.length === 0 && invoice.status !== "paid" && invoice.status !== "void"
-  );
+  return invoice.payments.length === 0 && invoice.status !== "paid" && invoice.status !== "void";
 }
 
 /** "$X unpaid · $Y overdue" do topo da lista (saldo, não o total). */

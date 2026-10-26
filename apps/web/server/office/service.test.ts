@@ -224,10 +224,7 @@ describe("estimate lifecycle", () => {
     expect((await getClientStore().getClient(OWNER, client.id))?.stage).toBe("won");
 
     // Segunda resposta (mesmo que recusa): conflito.
-    await expectOfficeError(
-      respondToEstimate(draft.publicToken, { decision: "decline" }),
-      409,
-    );
+    await expectOfficeError(respondToEstimate(draft.publicToken, { decision: "decline" }), 409);
     // Aprovado não muda mais as linhas.
     await expectOfficeError(updateEstimate(OWNER, draft.id, { items: [line()] }), 409);
   });
@@ -382,9 +379,9 @@ describe("invoices and payments", () => {
     const updatedClient = await getClientStore().getClient(OWNER, client.id);
     expect(updatedClient?.totalJobsCents).toBe(30_000);
     const activities = await getClientStore().listActivities(OWNER, client.id);
-    expect(activities.filter((a) => a.body === `Payment for invoice #${invoice.number}`)).toHaveLength(
-      2,
-    );
+    expect(
+      activities.filter((a) => a.body === `Payment for invoice #${invoice.number}`),
+    ).toHaveLength(2);
 
     const reverted = await deletePayment(OWNER, invoice.id, paid!.payments[1]!.id);
     expect(reverted?.status).toBe("partial");
@@ -409,7 +406,10 @@ describe("invoices and payments", () => {
     expect(voided?.status).toBe("void");
     expect(await getPublicInvoice(invoice.publicToken)).toBeNull();
     await expectOfficeError(updateInvoice(OWNER, invoice.id, { title: "x" }), 409);
-    await expectOfficeError(recordPayment(OWNER, invoice.id, { amountCents: 1, method: "cash" }), 409);
+    await expectOfficeError(
+      recordPayment(OWNER, invoice.id, { amountCents: 1, method: "cash" }),
+      409,
+    );
 
     const client = await newClient(OWNER, "Dan Ruiz");
     const draft = await createInvoice(OWNER, { clientId: client.id, items: [line()] });
@@ -442,10 +442,7 @@ describe("jobs", () => {
     });
     expect(scheduled?.status).toBe("scheduled");
     expect(scheduled?.startAt).toBe("2030-05-10T19:00:00.000Z");
-    await expectOfficeError(
-      updateJob(OWNER, job.id, { endAt: "2030-05-10T13:00:00-05:00" }),
-      400,
-    );
+    await expectOfficeError(updateJob(OWNER, job.id, { endAt: "2030-05-10T13:00:00-05:00" }), 400);
 
     const floating = await createJob(OWNER, { clientId: client.id, title: "Someday" });
 
@@ -502,7 +499,12 @@ describe("summary", () => {
     const now = new Date();
     const start = new Date(now.getTime() - 30 * 60 * 1000).toISOString();
     const end = new Date(now.getTime() + 30 * 60 * 1000).toISOString();
-    const todayJob = await createJob(OWNER, { clientId: client.id, title: "Now", startAt: start, endAt: end });
+    const todayJob = await createJob(OWNER, {
+      clientId: client.id,
+      title: "Now",
+      startAt: start,
+      endAt: end,
+    });
     await createJob(OWNER, { clientId: client.id, title: "Later" });
     const done = await createJob(OWNER, { clientId: client.id, title: "Done" });
     await updateJob(OWNER, done.id, { status: "done" });
