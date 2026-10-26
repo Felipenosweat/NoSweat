@@ -90,7 +90,10 @@ const chosen = archetypeScores[0]?.archetype;
 const combination = { archetype: chosen?.id };
 for (const axis of Object.keys(axes)) {
   const preferred = chosen?.axes?.[axis] ?? [];
-  const options = axes[axis].map((option) => {
+  // Só as opções que o arquétipo aceita; se ele não lista nenhuma, vale qualquer uma. Repetir
+  // uma opção do arquétipo é melhor que fugir para uma que não combina com ele.
+  const pool = preferred.length ? axes[axis].filter((o) => preferred.includes(o.id)) : axes[axis];
+  const options = pool.map((option) => {
     const rank = preferred.indexOf(option.id);
     const base = rank === -1 ? 0 : preferred.length - rank;
     return { id: option.id, score: base - recencyPenalty(log, axis, option.id) };

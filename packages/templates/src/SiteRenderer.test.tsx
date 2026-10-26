@@ -22,6 +22,18 @@ describe("SiteRenderer", () => {
     expect(html).toContain(spec.business.name.replace("&", "&amp;").replace("'", "&#x27;"));
   });
 
+  it.each(Object.entries(fixtures))("always ends %s with the nosweatfd badge", (_slug, spec) => {
+    // O selo não depende do spec: nem o editor nem a IA conseguem tirá-lo.
+    for (const html of [
+      renderToStaticMarkup(<SiteRenderer spec={spec} />),
+      renderToStaticMarkup(<SiteRenderer spec={spec} editable />),
+    ]) {
+      expect(html).toContain("data-ns-badge");
+      expect(html).toContain("nosweatfd");
+      expect(html.lastIndexOf("data-ns-badge")).toBeGreaterThan(html.lastIndexOf("</footer>"));
+    }
+  });
+
   it("renders sections in the order of the array", () => {
     const spec = fixtures["joes-plumbing"];
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);

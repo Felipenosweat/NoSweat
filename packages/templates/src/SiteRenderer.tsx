@@ -1,4 +1,5 @@
 import type { SiteSpec } from "@nosweat/schema";
+import { NoSweatBadge } from "./components/NoSweatBadge";
 import { COMPOSITIONS, compositionOf } from "./compositions";
 import { siteStyle } from "./compositions/model";
 import { themeToCssVars } from "./theme";
@@ -25,6 +26,7 @@ export type SiteRendererProps = {
  * wrapper ocupa a tela toda, então o resultado é o mesmo das variantes sm:/md:/lg:.
  * `data-font` deixa o CSS ajustar detalhes por par de fontes; `data-density` e `data-image` aplicam
  * o respiro entre seções e o tratamento das fotos do plano de design (ver styles.css).
+ * No fim vem sempre o selo "Website by nosweatfd" (NoSweatBadge), que não depende do spec.
  */
 export function SiteRenderer({
   spec,
@@ -63,6 +65,8 @@ export function SiteRenderer({
       ) : (
         <Template spec={spec} contactEndpoint={contactEndpoint} anchors={anchors} />
       )}
+      {/* Selo da No Sweat: sempre, fora do SiteSpec (o cliente não consegue tirar). */}
+      <NoSweatBadge />
     </div>
   );
 }

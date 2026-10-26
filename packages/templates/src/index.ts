@@ -1,4 +1,5 @@
 export { SiteRenderer, type SiteRendererProps } from "./SiteRenderer";
+export { NoSweatBadge } from "./components/NoSweatBadge";
 export { EDITABLE_SECTION_LABELS, EditableSection } from "./EditableSection";
 export { FONT_CSS_VARIABLES, FONT_PAIRS } from "./fonts";
 export { readableTextOn, themeToCssVars } from "./theme";

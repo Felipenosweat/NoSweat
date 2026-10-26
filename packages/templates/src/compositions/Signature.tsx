@@ -1030,7 +1030,7 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
   const credits = pool.filter((image) => image.credit);
   const year = new Date().getFullYear();
   return (
-    <footer className="overflow-hidden bg-ns-text pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] text-ns-background @3xl:pb-0">
+    <footer className="overflow-hidden bg-ns-text pt-20 text-ns-background">
       <div className={`grid grid-cols-2 gap-8 text-sm leading-relaxed @5xl:grid-cols-4 ${wrap}`}>
         {(business.address || city) && (
           <div>
