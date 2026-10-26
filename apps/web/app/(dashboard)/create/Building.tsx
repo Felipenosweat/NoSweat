@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from "rea
 import { publishedSlug } from "./brief";
 import styles from "./create.module.css";
 import { focusRing, primaryButton, secondaryButton } from "./ui";
+import { PhotoPlanBox } from "./WizardPickers";
 
 /** Etapas mostradas enquanto o site é gerado. A última só fecha quando a resposta chega. */
 export const BUILD_STEPS = [
@@ -268,6 +269,9 @@ export function ReadyPanel({ siteId, spec, signedIn = true, headingRef }: ReadyP
       <p className="mt-3 text-center text-[13px] text-slate-500">
         Your address once you publish. You can connect your own domain later.
       </p>
+      <div className="mx-auto mt-8 max-w-[36rem]">
+        <PhotoPlanBox layout={spec.design?.composition ?? "service-led"} />
+      </div>
     </section>
   );
 }
