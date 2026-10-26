@@ -1224,6 +1224,8 @@ function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] })
 type QuickAction = {
   key: string;
   label: string;
+  /** Rótulo curto do celular (meia largura: cabe numa linha ao lado do ícone). */
+  short: string;
   hint: string;
   href: string;
   tone: IconTone;
@@ -1234,6 +1236,7 @@ type QuickAction = {
 const QUICK_ACTIONS: readonly QuickAction[] = [
   {
     key: "job",
+    short: "New job",
     label: "Book a job",
     hint: "Put it on the calendar",
     href: "/schedule?new=1",
@@ -1242,6 +1245,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "estimate",
+    short: "New estimate",
     label: "Send an estimate",
     hint: "They approve from their phone",
     href: "/estimates/new",
@@ -1250,6 +1254,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "invoice",
+    short: "New invoice",
     label: "Send an invoice",
     hint: "Get paid, track who paid",
     href: "/invoices/new",
@@ -1258,6 +1263,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "client",
+    short: "New client",
     label: "Add a client",
     hint: "Name and phone is enough",
     href: "/clients/new",
@@ -1275,20 +1281,29 @@ function QuickActions() {
       <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {QUICK_ACTIONS.map((action) => (
           <li key={action.key}>
+            {/* Celular: linha compacta (ícone + rótulo curto). Do sm em diante: cartão com a frase
+                de apoio. */}
             <Link
               href={action.href}
-              className={`group flex h-full min-h-[7.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+              className={`group flex h-full min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 sm:min-h-[7.5rem] sm:flex-col sm:items-start sm:gap-0 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
             >
-              <span className="flex items-start justify-between gap-2">
+              <span className="flex shrink-0 items-start justify-between gap-2 sm:w-full">
                 <IconTile tone={action.tone}>
                   <action.Icon className="size-[18px]" />
                 </IconTile>
-                <PlusIcon className="mt-2 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
+                <PlusIcon className="mt-2 hidden size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600 sm:block" />
               </span>
-              <span className="mt-auto pt-4 text-[17px] leading-6 font-semibold text-ink">
-                {action.label}
+              <span className="min-w-0 sm:mt-auto sm:pt-4">
+                <span className="block text-[15px] leading-5 font-semibold text-ink sm:hidden">
+                  {action.short}
+                </span>
+                <span className="hidden text-[17px] leading-6 font-semibold text-ink sm:block">
+                  {action.label}
+                </span>
+                <span className="mt-0.5 hidden text-[13px] leading-5 text-(--glass-fg-muted) sm:block">
+                  {action.hint}
+                </span>
               </span>
-              <span className="mt-0.5 text-[13px] leading-5 text-slate-500">{action.hint}</span>
             </Link>
           </li>
         ))}
