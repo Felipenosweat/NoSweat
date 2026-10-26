@@ -1,4 +1,4 @@
-import type { Client, CreditBalance } from "@nosweat/schema";
+import type { Client, CreditBalance, Job, OfficeSummary } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   type IconTone,
 } from "@/components/DashboardUi";
 import { ExampleSiteEmpty } from "@/components/ExampleSiteEmpty";
+import { glassButtonClass } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
 import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
@@ -32,6 +33,7 @@ import type {
   SocialPostRecord,
   SocialSettingsRecord,
 } from "@/server/social/types";
+import { getOfficeSettings, getOfficeSummary } from "@/server/office/service";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import {
   AlertIcon,
@@ -40,10 +42,16 @@ import {
   CheckIcon,
   ClockIcon,
   ClientsIcon,
+  EstimatesIcon,
+  InvoicesIcon,
   LinkIcon,
   MessagesIcon,
+  ScheduleIcon,
   SocialIcon,
 } from "../NavIcons";
+import { MoneyIcon, PlusIcon } from "../clients/ui";
+import { formatTime, safeTimeZone, zonedParts } from "../schedule/time";
+import { JobStatusBadge } from "../schedule/ui";
 import { Greeting } from "./Greeting";
 
 export const metadata: Metadata = { title: "Home" };
@@ -615,6 +623,8 @@ type Stat = {
   attention: boolean;
   /** O serviço corta a lista (ex.: no máximo 5 retornos): mostra "5+". */
   capped?: boolean;
+  /** Texto pronto no lugar do número (ex.: dinheiro "$1,250"). */
+  display?: string;
 };
 
 const STAT_NUMBER: Record<IconTone, string> = {
@@ -630,7 +640,8 @@ const STAT_NUMBER: Record<IconTone, string> = {
 function StatTile({ stat }: { stat: Stat }) {
   const { value } = stat;
   const shown =
-    value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`;
+    stat.display ??
+    (value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`);
   return (
     <li>
       <Link
@@ -678,6 +689,224 @@ function QuickStats({ stats }: { stats: Stat[] }) {
   );
 }
 
+// ---------- escritório (agenda e dinheiro) ----------
+
+type OfficeSnapshot = {
+  summary: OfficeSummary;
+  /** Fuso da agenda (configurações do escritório). */
+  timeZone: string;
+  /** "Hoje" e o mês corrente no fuso da agenda. */
+  today: string;
+};
+
+/**
+ * Resumo do escritório (serviços de hoje e dinheiro). `null` = erro ou módulo ainda sem dados:
+ * a seção some e o resto da página continua igual.
+ */
+async function loadOffice(ownerId: string, now: number): Promise<OfficeSnapshot | null> {
+  try {
+    const [summary, settings] = await Promise.all([
+      getOfficeSummary(ownerId),
+      getOfficeSettings(ownerId).catch(() => null),
+    ]);
+    const timeZone = safeTimeZone(settings?.timeZone);
+    return { summary, timeZone, today: zonedParts(new Date(now), timeZone).dateKey };
+  } catch (error) {
+    console.error("[dashboard] could not load the office summary", error);
+    return null;
+  }
+}
+
+/** Centavos → "$1,250" (com centavos só quando houver). */
+function money(cents: number): string {
+  const whole = cents % 100 === 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: whole ? 0 : 2,
+  }).format(cents / 100);
+}
+
+/** Mês por extenso de uma data "AAAA-MM-DD" ("October"). */
+function monthLong(dateKey: string): string {
+  const [year, mon] = dateKey.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", { month: "long", timeZone: "UTC" }).format(
+    new Date(Date.UTC(year ?? 1970, (mon ?? 1) - 1, 1)),
+  );
+}
+
+/** Quadros de dinheiro: a receber, vencido, orçamentos esperando e recebido no mês. */
+function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
+  return [
+    {
+      key: "unpaid",
+      label: "Unpaid invoices",
+      value: summary.unpaidInvoices,
+      display: money(summary.unpaidCents),
+      hint:
+        summary.unpaidInvoices > 0
+          ? `${summary.unpaidInvoices} ${plural(summary.unpaidInvoices, "invoice", "invoices")} out`
+          : "All paid up",
+      href: "/invoices",
+      tone: "brand",
+      Icon: InvoicesIcon,
+      attention: summary.unpaidCents > 0,
+    },
+    {
+      key: "overdue",
+      label: "Overdue",
+      value: summary.overdueInvoices,
+      display: money(summary.overdueCents),
+      hint:
+        summary.overdueInvoices > 0 ? `${summary.overdueInvoices} past due` : "Nothing past due",
+      href: "/invoices?status=overdue",
+      tone: "red",
+      Icon: AlertIcon,
+      attention: summary.overdueInvoices > 0,
+    },
+    {
+      key: "estimates",
+      label: "Estimates waiting",
+      value: summary.estimatesAwaiting,
+      hint:
+        summary.estimatesAwaiting > 0
+          ? `${money(summary.estimatesAwaitingCents)} waiting for a yes`
+          : "No open estimates",
+      href: "/estimates?status=sent",
+      tone: "amber",
+      Icon: EstimatesIcon,
+      attention: summary.estimatesAwaiting > 0,
+    },
+    {
+      key: "collected",
+      label: "Collected",
+      value: summary.collectedThisMonthCents,
+      display: money(summary.collectedThisMonthCents),
+      hint: `In ${monthLong(today)}`,
+      href: "/invoices?status=paid",
+      tone: "emerald",
+      Icon: MoneyIcon,
+      attention: summary.collectedThisMonthCents > 0,
+    },
+  ];
+}
+
+/** Uma linha de serviço de hoje: horário, título, cliente e situação. */
+function TodayJobRow({ job, timeZone }: { job: Job; timeZone: string }) {
+  return (
+    <li className={insetDivider}>
+      <Link
+        href={`/schedule/${encodeURIComponent(job.id)}`}
+        className="group flex min-h-16 items-center gap-3.5 px-4 py-3 transition-colors duration-150 hover:bg-(--glass-ghost-hover) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
+      >
+        <span className="w-[4.5rem] shrink-0 text-[13px] leading-5 font-semibold text-brand tabular-nums">
+          {job.startAt ? formatTime(job.startAt, timeZone) : "No time"}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span
+            className={`block truncate text-[15px] leading-5 font-semibold text-ink ${
+              job.status === "canceled" ? "line-through opacity-60" : ""
+            }`}
+          >
+            {job.title}
+          </span>
+          <span className="mt-0.5 block truncate text-[13px] leading-5 text-slate-500">
+            {job.clientName}
+            {job.startAt && job.endAt && (
+              <span className="tabular-nums"> · until {formatTime(job.endAt, timeZone)}</span>
+            )}
+          </span>
+        </span>
+        {job.status !== "scheduled" && <JobStatusBadge status={job.status} size="sm" />}
+        <ChevronRightIcon className="size-4 shrink-0 text-slate-400" />
+      </Link>
+    </li>
+  );
+}
+
+/** "Today": os serviços de hoje (no fuso da agenda) e o atalho para marcar um. */
+function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boolean }) {
+  const { summary, timeZone, today } = office;
+  const jobs = summary.todayJobs;
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${today}T12:00:00Z`));
+  return (
+    <section aria-labelledby="today-heading" className="flex min-w-0 flex-col">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 id="today-heading" className={sectionTitle}>
+          Today
+          <span className="font-sans text-[15px] font-normal text-slate-500"> · {dateLabel}</span>
+        </h2>
+        <Link
+          href="/schedule"
+          className={`inline-flex min-h-11 items-center gap-1 rounded-lg text-[15px] font-semibold whitespace-nowrap text-brand sm:min-h-9 ${focusRing}`}
+        >
+          Schedule
+          <ChevronRightIcon className="size-4" />
+        </Link>
+      </div>
+      <div className={`mt-3 flex-1 overflow-hidden ${cardClass}`}>
+        {jobs.length === 0 ? (
+          <div className="flex h-full min-h-40 flex-col items-center justify-center gap-3 px-6 py-8 text-center">
+            <IconTile tone="brand" size="lg">
+              <ScheduleIcon className="size-6" />
+            </IconTile>
+            <p className="text-[15px] font-semibold text-ink">Nothing scheduled today</p>
+            {!readOnly && (
+              <Link href="/schedule?new=1" className={glassButtonClass({ variant: "secondary" })}>
+                <PlusIcon className="-ml-0.5 size-[1.15em]" />
+                New job
+              </Link>
+            )}
+          </div>
+        ) : (
+          <ul>
+            {jobs.map((job) => (
+              <TodayJobRow key={job.id} job={job} timeZone={timeZone} />
+            ))}
+          </ul>
+        )}
+        {summary.unscheduledJobs > 0 && (
+          <Link
+            href="/schedule"
+            className="flex min-h-12 items-center justify-between gap-3 border-t border-(--glass-rim) px-4 text-[13px] text-slate-600 hover:bg-(--glass-ghost-hover) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
+          >
+            <span>
+              <Count value={summary.unscheduledJobs} />{" "}
+              {plural(summary.unscheduledJobs, "job is", "jobs are")} waiting for a date
+            </span>
+            <ChevronRightIcon className="size-4 shrink-0 text-slate-400" />
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** O escritório primeiro: os serviços de hoje e o dinheiro. */
+function OfficeSection({ office, readOnly }: { office: OfficeSnapshot; readOnly: boolean }) {
+  return (
+    <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
+      <TodayCard office={office} readOnly={readOnly} />
+      <section aria-labelledby="money-heading" className="flex min-w-0 flex-col">
+        <h2 id="money-heading" className={sectionTitle}>
+          Money
+        </h2>
+        <ul className="mt-3 grid flex-1 grid-cols-2 gap-3 sm:gap-4">
+          {moneyStats(office).map((stat) => (
+            <StatTile key={stat.key} stat={stat} />
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
 /** Rascunhos com data ainda no futuro (os que a revisão mostra e deixa aprovar). */
 function pendingDrafts(posts: SocialPostRecord[], now: number): SocialPostRecord[] {
   return posts
@@ -704,13 +933,14 @@ async function loadHome(viewer: Viewer) {
   const shown = { id: ownerId, email: viewingAs ? viewingAs.email : viewer.user.email };
   const now = Date.now();
   const store = getSiteStore();
-  const [sites, firstName, social, settings, access, credits] = await Promise.all([
+  const [sites, firstName, social, settings, access, credits, office] = await Promise.all([
     store.list(ownerId),
     getFirstName(viewingAs),
     loadSocial(ownerId, now),
     loadSettings(ownerId),
     loadAccess(ownerId),
     loadCredits(ownerId),
+    loadOffice(ownerId, now),
   ]);
   // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
   const timeZone =
@@ -745,6 +975,7 @@ async function loadHome(viewer: Viewer) {
     autoPublish,
     domainIncluded,
     credits,
+    office,
   };
 }
 
@@ -767,7 +998,10 @@ export default async function DashboardPage() {
     autoPublish,
     domainIncluded,
     credits,
+    office,
   } = await loadHome(viewer);
+  // "Ver como" do admin: só leitura (sem o atalho "New job").
+  const readOnly = viewer.viewingAs !== null;
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
   // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
@@ -869,6 +1103,14 @@ export default async function DashboardPage() {
     },
   ];
   const quickStats = <QuickStats stats={stats} />;
+  // O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro.
+  const officeSection = office ? <OfficeSection office={office} readOnly={readOnly} /> : null;
+  const todayCount =
+    office?.summary.todayJobs.filter((job) => job.status !== "canceled").length ?? 0;
+  const jobsToday =
+    todayCount > 0
+      ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
+      : "";
 
   const yourSites = (
     <section id="sites" aria-labelledby="sites-heading">
@@ -901,16 +1143,17 @@ export default async function DashboardPage() {
         firstName={firstName}
         nowIso={new Date(now).toISOString()}
         summary={
-          !latest
+          !latest && !jobsToday
             ? "Let’s get your business online."
             : needRows.length === 0
-              ? "You’re all caught up."
-              : `${needRows.length} ${plural(needRows.length, "thing needs", "things need")} you today.`
+              ? `${jobsToday}You’re all caught up.`
+              : `${jobsToday}${needRows.length} ${plural(needRows.length, "thing needs", "things need")} you.`
         }
       />
 
       {latest ? (
         <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+          {officeSection}
           {quickStats}
           {needs}
           <DashboardChecklist
@@ -925,6 +1168,7 @@ export default async function DashboardPage() {
       ) : (
         // Conta sem sites: primeiro o convite para criar, depois o resto.
         <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+          {officeSection}
           {yourSites}
           {needs}
           {quickStats}

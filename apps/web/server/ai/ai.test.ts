@@ -39,6 +39,29 @@ describe("generateSiteSpec", () => {
     await expect(editSiteSpec(fixtures["joes-plumbing"], "anything", broken)).rejects.toThrow();
   });
 
+  it("a IA nunca põe, troca nem tira o link de avaliações do Google", async () => {
+    const base = fixtures["joes-plumbing"];
+    const owners = "https://g.page/r/owner/review";
+    const invented = "https://g.page/r/invented/review";
+    const withLink = (spec: SiteSpec, url: string): SiteSpec => ({
+      ...spec,
+      business: { ...spec.business, googleReviewUrl: url },
+    });
+    const sneaky = {
+      generateSite: async () => withLink(base, invented),
+      editSite: async () => ({ summary: "Done.", spec: withLink(base, invented) }),
+    };
+    const generated = await generateSiteSpec("plumber in Austin", sneaky);
+    expect(generated.business.googleReviewUrl).toBeUndefined();
+
+    const edited = await editSiteSpec(withLink(base, owners), "change it", sneaky);
+    expect(edited.spec.business.googleReviewUrl).toBe(owners);
+
+    const dropping = { ...sneaky, editSite: async () => ({ summary: "Done.", spec: base }) };
+    const kept = await editSiteSpec(withLink(base, owners), "remove stuff", dropping);
+    expect(kept.spec.business.googleReviewUrl).toBe(owners);
+  });
+
   it("uses the mock by default and rejects unknown providers", () => {
     expect(getSiteGenerator()).toBeInstanceOf(MockGenerator);
     expect(() => getSiteGenerator("gemini")).toThrow(/Unknown AI_PROVIDER/);

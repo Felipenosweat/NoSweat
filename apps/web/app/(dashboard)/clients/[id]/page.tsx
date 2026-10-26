@@ -16,6 +16,8 @@ import {
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
+import { accountReviewLink } from "@/server/reviews";
+import { getSiteStore } from "@/server/store";
 import { ClientMenu } from "../ClientMenu";
 import {
   Avatar,
@@ -49,6 +51,16 @@ async function loadClient(ownerId: string, id: string) {
     ? formatDateOnly(dateKeyIn(timeZone, new Date(detail.client.createdAt)), today)
     : "";
   return { today, detail, since };
+}
+
+/** Link de avaliações do Google da conta (para "pedir avaliação" no menu). Erro = sem atalho. */
+async function loadReviewLink(ownerId: string) {
+  try {
+    return accountReviewLink(await getSiteStore().list(ownerId));
+  } catch (error) {
+    console.error("[clients] could not read the review link", error);
+    return null;
+  }
 }
 
 // ---------- ações de um toque ----------
@@ -286,7 +298,10 @@ export default async function ClientPage({ params }: ClientPageProps) {
   if (!viewer) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
   const readOnly = viewer.viewingAs !== null;
 
-  const { today, detail, since } = await loadClient(viewer.ownerId, id);
+  const [{ today, detail, since }, review] = await Promise.all([
+    loadClient(viewer.ownerId, id),
+    loadReviewLink(viewer.ownerId),
+  ]);
   if (!detail) notFound();
   const { client, activities } = detail;
 
@@ -311,6 +326,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
                 <ClientMenu
                   context="detail"
                   readOnly={readOnly}
+                  review={review}
                   client={{
                     id: client.id,
                     name: client.name,

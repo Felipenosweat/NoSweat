@@ -132,6 +132,13 @@ Como as peças se ligam:
   em `client_dismissed_leads` para não voltar no próximo sync. Etiquetas (`tags`, migration
   0021, até 10), quadro por etapa, resumo do mês e exportação CSV (`GET /api/clients/export`,
   só os clientes do dono).
+- Avaliações do Google (`/reviews`, `server/reviews.ts`): o dono cola o link "pedir avaliação" do
+  Perfil da Empresa (`business.googleReviewUrl`, só hosts do Google, `isGoogleReviewUrl`) e
+  `PUT /api/sites/[id]/review-link` salva no rascunho (com versão) e, se o site estiver no ar, SÓ
+  este campo no `published_spec` (exceção deliberada, como o domínio). O site mostra "Review us on
+  Google" no contato e no rodapé (`templates/.../ReviewLink.tsx`, sem estrelas nem números). A IA
+  e "restaurar versão" nunca mudam o link (`keepReviewUrl`). Pedir avaliação: SMS, e-mail e QR
+  em `/reviews` e no ⋯ da ficha do cliente.
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

@@ -13,6 +13,13 @@ import {
 } from "@/components/glass";
 import { CLIENT_STAGES, STAGE_LABELS, directionsHref, phoneHref } from "@/lib/clients";
 import {
+  firstNameOf,
+  mailtoHref,
+  reviewEmailSubject,
+  reviewRequestMessage,
+  smsHref,
+} from "@/lib/reviews";
+import {
   clientUrl,
   clientsApi,
   clientsApiNoContent,
@@ -32,7 +39,8 @@ import {
 
 // Menu "⋯" de um cliente (linha da lista, cartão do quadro e topo da ficha): ligar, mandar SMS,
 // e-mail, rota, mudar de etapa e apagar (com confirmação). No modo "ver como" do admin
-// (`readOnly`) só ficam os atalhos que não mudam nada.
+// (`readOnly`) só ficam os atalhos que não mudam nada. Na ficha, com o link de avaliações do
+// Google do dono (`review`), também "pedir avaliação" por SMS, e-mail ou copiando o texto.
 
 export type ClientMenuClient = {
   id: string;
@@ -48,8 +56,11 @@ export function ClientMenu({
   readOnly = false,
   context = "row",
   triggerVariant = "ghost",
+  review,
 }: {
   client: ClientMenuClient;
+  /** Link de avaliações do Google do dono (página /reviews). Só na ficha ("detail"). */
+  review?: { url: string; businessName: string } | null;
   readOnly?: boolean;
   /** "row"/"board": tem "Open" e mudar de etapa; "detail": a ficha já mostra a etapa. */
   context?: "row" | "board" | "detail";
@@ -160,6 +171,38 @@ export function ClientMenu({
         onSelect: () => void copy(email),
       });
     }
+  }
+  if (context === "detail" && review) {
+    const message = reviewRequestMessage({
+      firstName: firstNameOf(client.name),
+      businessName: review.businessName,
+      link: review.url,
+    });
+    items.push({ type: "separator", key: "review-sep" });
+    if (client.phone) {
+      items.push({
+        type: "link",
+        label: "Ask for a review by text",
+        href: smsHref(client.phone, message),
+        icon: <TextIcon />,
+        key: "review-text",
+      });
+    }
+    if (client.email) {
+      items.push({
+        type: "link",
+        label: "Ask for a review by email",
+        href: mailtoHref(client.email, reviewEmailSubject(review.businessName), message),
+        icon: <MailIcon />,
+        key: "review-email",
+      });
+    }
+    items.push({
+      label: "Copy review request",
+      icon: <CopyIcon />,
+      onSelect: () => void copy(message),
+      key: "review-copy",
+    });
   }
   if (!readOnly && context !== "detail") {
     items.push({ type: "separator", key: "stage-sep" });

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SiteImage, SiteSpec } from "./site";
+import { GoogleReviewUrl, SiteImage, SiteSpec } from "./site";
 
 // Contrato das rotas em apps/web/app/api. Front e back importam daqui.
 
@@ -172,6 +172,22 @@ export const DeleteSiteResponse = z.object({
   deleted: z.literal(true),
 });
 export type DeleteSiteResponse = z.infer<typeof DeleteSiteResponse>;
+
+// ---------- PUT /api/sites/[id]/review-link ----------
+
+/** Link de avaliações do Google do dono (página /reviews). `null` tira o botão do site. */
+export const UpdateReviewLinkRequest = z.object({ url: GoogleReviewUrl.nullable() });
+export type UpdateReviewLinkRequest = z.infer<typeof UpdateReviewLinkRequest>;
+
+export const ReviewLinkResponse = z.object({
+  siteId: SiteId,
+  googleReviewUrl: GoogleReviewUrl.nullable(),
+  /** O site está no ar (o botão já aparece para os visitantes, sem publicar de novo). */
+  live: z.boolean(),
+  /** Novo `updatedAt` do rascunho (ver UpdateSiteRequest.baseUpdatedAt). */
+  updatedAt: z.string(),
+});
+export type ReviewLinkResponse = z.infer<typeof ReviewLinkResponse>;
 
 // ---------- PUT/GET/DELETE /api/sites/[id]/domain ----------
 

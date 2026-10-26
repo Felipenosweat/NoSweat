@@ -1,6 +1,7 @@
 import { UpdateSiteResponse } from "@nosweat/schema";
 import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
 import { savesExceeded } from "@/server/quota";
+import { keepReviewUrl } from "@/server/reviews";
 import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 
@@ -9,7 +10,8 @@ type Context = { params: Promise<{ id: string; versionId: string }> };
 /**
  * POST /api/sites/[id]/versions/[versionId]/restore → { siteId, spec }
  * Traz uma versão antiga de volta para o RASCUNHO (vira uma versão nova "restore").
- * Para ir ao ar, o cliente publica depois, como qualquer mudança.
+ * Para ir ao ar, o cliente publica depois, como qualquer mudança. O link de avaliações do Google
+ * fica o de agora (é configuração do dono, não conteúdo da versão).
  */
 export async function POST(_request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
@@ -25,7 +27,7 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
     const version = await store.getVersion(site.id, versionId);
     if (!version) return notFound("Version");
 
-    const restored = await store.update(site.id, version.spec, "restore");
+    const restored = await store.update(site.id, keepReviewUrl(version.spec, site.spec), "restore");
     if (!restored) return notFound();
     return jsonResponse(UpdateSiteResponse, { siteId: restored.id, spec: restored.spec });
   }, "/api/sites/[id]/versions/[versionId]/restore");

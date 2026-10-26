@@ -154,6 +154,8 @@ const PUBLIC_API = [
   /^\/api\/billing\/webhook\/?$/,
   /^\/api\/meta\//,
   /^\/api\/cron\//,
+  // Resposta do cliente final ao orçamento pelo link público (não é dado da conta vista).
+  /^\/api\/public\//,
 ];
 
 /** No modo "ver como", este pedido mudaria dados? (non-GET em /api/*, menos as rotas públicas) */

@@ -1,6 +1,7 @@
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { applyDesignPlan, planDesign, type PlanOptions } from "../design";
 import { sanitizeAiImages } from "../images/sanitize";
+import { keepReviewUrl } from "../reviews";
 import { AnthropicGenerator } from "./anthropic";
 import { MockGenerator } from "./mock";
 import { OpenAIGenerator } from "./openai";
@@ -66,7 +67,8 @@ export async function generateSiteSpec(
     fallback: plan.fallback,
   });
   const raw: unknown = await generator.generateSite(brief, plan);
-  const spec = SiteSpec.parse(sanitizeAiImages(SiteSpec.parse(raw)));
+  // O link de avaliações do Google só vem do dono (página /reviews): a IA nunca põe um.
+  const spec = SiteSpec.parse(keepReviewUrl(sanitizeAiImages(SiteSpec.parse(raw)), null));
   return SiteSpec.parse({ ...spec, design: applyDesignPlan(spec.design, plan) });
 }
 
@@ -81,6 +83,8 @@ export async function editSiteSpec(
 ): Promise<AiEditResult> {
   const raw: unknown = await generator.editSite(spec, instruction);
   const result = AiEditResult.parse(raw);
-  // Fotos e galerias voltam como estavam (regras em server/images/sanitize.ts).
-  return AiEditResult.parse({ ...result, spec: sanitizeAiImages(result.spec, spec) });
+  // Fotos e galerias voltam como estavam (regras em server/images/sanitize.ts). O link de
+  // avaliações do Google também: só o dono muda (página /reviews).
+  const edited = keepReviewUrl(sanitizeAiImages(result.spec, spec), spec);
+  return AiEditResult.parse({ ...result, spec: edited });
 }
