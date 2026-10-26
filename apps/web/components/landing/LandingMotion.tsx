@@ -42,11 +42,15 @@ export function LandingMotion() {
       const ctx = gsap.context(() => {
         // Só transform (escala): animar o arredondamento redesenharia a foto inteira a cada quadro.
         for (const el of lite ? [] : all("[data-lp-stage]")) {
-          gsap.fromTo(el, { scale: wide ? 0.82 : 0.92 }, {
-            scale: 1,
-            ease: "none",
-            scrollTrigger: { trigger: el, start: "top bottom", end: "top 12%", scrub: true },
-          });
+          gsap.fromTo(
+            el,
+            { scale: wide ? 0.82 : 0.92 },
+            {
+              scale: 1,
+              ease: "none",
+              scrollTrigger: { trigger: el, start: "top bottom", end: "top 12%", scrub: true },
+            },
+          );
         }
 
         for (const el of lite ? [] : all("[data-lp-parallax]")) {
@@ -173,7 +177,6 @@ export function LandingMotion() {
             button.removeEventListener("mouseleave", leave);
           });
         }
-
       }
 
       ScrollTrigger.refresh();
