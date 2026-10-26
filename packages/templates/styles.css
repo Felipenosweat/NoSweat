@@ -216,8 +216,9 @@
     color-mix(in srgb, var(--ns-background) 70%, transparent),
     color-mix(in srgb, var(--ns-background) 42%, transparent)
   );
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  backdrop-filter: blur(22px) saturate(180%);
+  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
   border: 1px solid color-mix(in srgb, var(--ns-background) 70%, transparent);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),

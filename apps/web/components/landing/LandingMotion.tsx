@@ -33,17 +33,27 @@ export function LandingMotion() {
       const all = (selector: string) => Array.from(root.querySelectorAll<HTMLElement>(selector));
       const wide = window.matchMedia("(min-width: 1024px)").matches;
       const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      // Máquina fraca (até 4 núcleos ou 4 GB): só as entradas de uma vez (sobe/abre). Os efeitos
+      // presos à rolagem (crescer, parallax, palavras, galeria presa) recalculam a cada quadro e
+      // travam a rolagem nesses computadores. Sem os dados no navegador, conta como máquina boa.
+      const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+      const lite = (navigator.hardwareConcurrency || 8) <= 4 || memory <= 4;
 
       const ctx = gsap.context(() => {
-        for (const el of all("[data-lp-stage]")) {
-          gsap.fromTo(el, wide ? { scale: 0.78, borderRadius: 28 } : { scale: 0.9 }, {
-            ...(wide ? { scale: 1, borderRadius: 10 } : { scale: 1 }),
-            ease: "none",
-            scrollTrigger: { trigger: el, start: "top bottom", end: "top 12%", scrub: true },
-          });
+        // Só transform (escala): animar o arredondamento redesenharia a foto inteira a cada quadro.
+        for (const el of lite ? [] : all("[data-lp-stage]")) {
+          gsap.fromTo(
+            el,
+            { scale: wide ? 0.82 : 0.92 },
+            {
+              scale: 1,
+              ease: "none",
+              scrollTrigger: { trigger: el, start: "top bottom", end: "top 12%", scrub: true },
+            },
+          );
         }
 
-        for (const el of all("[data-lp-parallax]")) {
+        for (const el of lite ? [] : all("[data-lp-parallax]")) {
           const speed = Number(el.dataset.lpParallax) || 0.2;
           gsap.fromTo(
             el,
@@ -84,7 +94,7 @@ export function LandingMotion() {
           });
         }
 
-        for (const p of all("[data-lp-words]")) {
+        for (const p of lite ? [] : all("[data-lp-words]")) {
           const words: HTMLElement[] = [];
           const walk = (node: Node) => {
             for (const child of Array.from(node.childNodes)) {
@@ -118,7 +128,7 @@ export function LandingMotion() {
         }
 
         // Galeria lateral presa na tela: só no computador (no celular o dedo já rola de lado).
-        if (wide) {
+        if (wide && !lite) {
           for (const section of all("[data-lp-hscroll]")) {
             const rail = section.querySelector<HTMLElement>(".lp-rail");
             if (!rail) continue;
@@ -138,7 +148,7 @@ export function LandingMotion() {
           }
         }
 
-        for (const el of all("[data-lp-giant]")) {
+        for (const el of lite ? [] : all("[data-lp-giant]")) {
           gsap.from(el, {
             yPercent: 40,
             ease: "none",
@@ -167,19 +177,6 @@ export function LandingMotion() {
             button.removeEventListener("mouseleave", leave);
           });
         }
-
-        // Rolagem suave (a roda do mouse continua mandando; links #âncora também).
-        const { default: Lenis } = await import("lenis");
-        if (disposed) return;
-        const lenis = new Lenis({ duration: 1.1, smoothWheel: true, anchors: { offset: -80 } });
-        lenis.on("scroll", ScrollTrigger.update);
-        const raf = (time: number) => lenis.raf(time * 1000);
-        gsap.ticker.add(raf);
-        gsap.ticker.lagSmoothing(0);
-        cleanups.push(() => {
-          gsap.ticker.remove(raf);
-          lenis.destroy();
-        });
       }
 
       ScrollTrigger.refresh();

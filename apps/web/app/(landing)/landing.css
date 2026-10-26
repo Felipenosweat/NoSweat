@@ -1,7 +1,7 @@
 /* Landing V8 ("Signature"): o mesmo padrão dos sites premium dos clientes.
    Ink (noite) e papel quente, títulos em serifa editorial com a última palavra em itálico,
    menu de vidro, fotos que se revelam, parágrafo que acende palavra por palavra, galeria que
-   anda de lado, faixa de ofícios correndo e o nome gigante no fim. Sem degradê de cor (só os
+   anda de lado e o nome gigante no fim. Sem cortina de abertura: a página abre direto. Sem degradê de cor (só os
    véus escuros sobre fotos, para o texto ler bem).
    O movimento com rolagem é do LandingMotion (components/landing/LandingMotion.tsx). Sem JS
    ou com "reduzir movimento", tudo aparece parado, legível e completo. */
@@ -14,13 +14,6 @@
   --lp-line: rgb(7 27 51 / 0.14);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
   background: var(--lp-night);
-}
-
-/* Lenis (rolagem suave) cuida das âncoras; o smooth do CSS brigaria com ele. */
-html.lenis,
-html.lenis body {
-  height: auto;
-  scroll-behavior: auto;
 }
 
 /* ---------- Tipografia ---------- */
@@ -63,8 +56,9 @@ html.lenis body {
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.1),
     0 24px 60px -28px rgb(0 0 0 / 0.6);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 /* Sublinhado que corre da esquerda (links do texto e do menu). */
@@ -78,39 +72,7 @@ html.lenis body {
   background-size: 100% 1px;
 }
 
-/* ---------- Cortina de abertura (só CSS, ~1,2 s: "no sweat", sem espera) ---------- */
-
-.lp-intro {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  background: var(--lp-night);
-  color: #ffffff;
-  pointer-events: none;
-  animation: lp-intro-out 700ms var(--lp-ease) 550ms forwards;
-}
-
-.lp-intro-word {
-  animation: lp-intro-word 600ms var(--lp-ease) 0ms both;
-}
-
-@keyframes lp-intro-word {
-  from {
-    opacity: 0;
-    transform: translateY(40%);
-  }
-}
-
-@keyframes lp-intro-out {
-  to {
-    transform: translateY(-100%);
-    visibility: hidden;
-  }
-}
-
-/* Linhas do título do hero sobem de dentro de uma máscara depois da cortina. */
+/* Linhas do título do hero sobem de dentro de uma máscara assim que a página abre. */
 .lp-line {
   display: block;
   overflow: hidden;
@@ -121,7 +83,7 @@ html.lenis body {
 .lp-line > span {
   display: block;
   animation: lp-line-in 1100ms var(--lp-ease) both;
-  animation-delay: calc(700ms + var(--i, 0) * 100ms);
+  animation-delay: calc(80ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-line-in {
@@ -132,7 +94,7 @@ html.lenis body {
 
 .lp-fade-up {
   animation: lp-fade-up 1200ms var(--lp-ease) both;
-  animation-delay: calc(850ms + var(--i, 0) * 100ms);
+  animation-delay: calc(250ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-fade-up {
@@ -143,7 +105,7 @@ html.lenis body {
 }
 
 .lp-nav {
-  animation: lp-fade-down 900ms var(--lp-ease) 800ms both;
+  animation: lp-fade-down 900ms var(--lp-ease) 150ms both;
 }
 
 @keyframes lp-fade-down {
@@ -170,6 +132,7 @@ html.lenis body {
 /* A moldura do site de exemplo que cresce com a rolagem (escala escrita pelo LandingMotion). */
 .lp-stage {
   transform-origin: 50% 0;
+  will-change: transform;
 }
 
 /* ---------- Galeria lateral (#looks) ---------- */
@@ -192,6 +155,25 @@ html.lenis body {
 .lp-rail > * {
   scroll-snap-align: start;
   flex: none;
+}
+
+/* Computador sem a galeria presa (máquina fraca, sem JS ou movimento reduzido): a roda do mouse
+   não anda de lado, então os sites ficam numa grade de 3 colunas. */
+@media (min-width: 1024px) {
+  .lp-hscroll:not([data-pinned]) .lp-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.5rem 1.5rem;
+    overflow: visible;
+    max-width: 1240px;
+    margin-inline: auto;
+    padding-inline: 2rem;
+  }
+
+  .lp-hscroll:not([data-pinned]) .lp-rail > * {
+    width: auto;
+    max-width: none;
+  }
 }
 
 /* Com o LandingMotion no computador: a seção fica alta, o trilho preso na tela anda de lado. */
@@ -229,10 +211,6 @@ html.lenis body {
 /* ---------- Movimento reduzido: nada anda ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-intro {
-    display: none;
-  }
-
   .lp-line > span,
   .lp-fade-up,
   .lp-nav {
