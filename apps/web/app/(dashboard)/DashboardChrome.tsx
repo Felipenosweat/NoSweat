@@ -82,6 +82,9 @@ const tabItem = `mx-0.5 my-1.5 flex h-[calc(100%-0.75rem)] flex-col items-center
 
 const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-(--glass-fg) transition-colors duration-150 hover:bg-(--glass-ghost-hover) aria-[current=page]:glass-pill ${focusRing}`;
 
+/** Item do menu "+ New" do computador: a altura das linhas da barra lateral. */
+const menuItem = sheetItem.replace("min-h-12", "min-h-10");
+
 /**
  * Onde a barra de abas flutua (acima da área segura do iPhone). Quem gruda embaixo da tela no
  * celular (ex.: a barra de aprovar posts) soma a altura da barra (4rem) + um respiro.
@@ -332,7 +335,7 @@ function AdminButton({ compact = false }: { compact?: boolean }) {
       data-tour="nav-admin"
       className={`group relative isolate flex items-center overflow-hidden text-white ring-1 ring-white/15 ring-inset backdrop-blur-xl motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 ${
         compact
-          ? "min-h-10 gap-2 rounded-full pr-3.5 pl-2 text-[15px] font-semibold shadow-[0_8px_20px_-8px_rgb(0_102_255/0.7)]"
+          ? "min-h-11 gap-2 rounded-full pr-3.5 pl-2 text-[15px] font-semibold shadow-[0_8px_20px_-8px_rgb(0_102_255/0.7)]"
           : "min-h-[4.25rem] w-full gap-3 rounded-[22px] px-3 py-3 shadow-[0_14px_32px_-12px_rgb(0_102_255/0.75)] hover:shadow-[0_18px_40px_-12px_rgb(0_102_255/0.85)]"
       } ${focusRing}`}
     >
@@ -412,7 +415,7 @@ function SidebarNav({
           data-tour="nav-new"
           className={`${glassButtonClass({ variant: "primary", fullWidth: true })} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
         >
-          <PlusIcon className="size-4" />
+          <PlusIcon className="size-4 motion-safe:transition-transform motion-safe:duration-150 group-open:rotate-45" />
           New
         </summary>
         <div className="glass-strong glass-pop absolute inset-x-0 top-12 rounded-[22px] p-1.5">
@@ -423,8 +426,8 @@ function SidebarNav({
                   item={item}
                   current={undefined}
                   onClick={create.close}
-                  className={sheetItem}
-                  iconClassName={sideIcon}
+                  className={menuItem}
+                  iconClassName="size-[22px] shrink-0 text-brand"
                 />
               </li>
             ))}

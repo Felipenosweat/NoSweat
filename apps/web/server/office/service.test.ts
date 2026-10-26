@@ -347,6 +347,21 @@ describe("invoices and payments", () => {
     return { client, invoice: sent!.invoice };
   }
 
+  it("moves an old draft's dates to the day it is sent (never sent already overdue)", async () => {
+    const client = await newClient(OWNER, "Carla Diaz");
+    const issuedOn = addDays(today(), -20);
+    const draft = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line()],
+      issuedOn,
+      dueOn: addDays(issuedOn, 14),
+    });
+    const sent = await sendInvoice(OWNER, draft.id, ORIGIN);
+    expect(sent?.invoice.issuedOn).toBe(today());
+    expect(sent?.invoice.dueOn).toBe(addDays(today(), 14));
+    expect(sent?.invoice.status).toBe("sent");
+  });
+
   it("goes partial, refuses overpayment, then paid; deleting a payment reverts", async () => {
     const { client, invoice } = await sentInvoice();
     expect(invoice.status).toBe("sent");

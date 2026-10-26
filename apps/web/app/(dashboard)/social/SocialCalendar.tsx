@@ -547,7 +547,12 @@ export function SocialCalendar({
             <ChevronIcon direction="right" />
           </GlassIconButton>
           {month !== thisMonth && (
-            <GlassButton variant="ghost" size="sm" onClick={() => setMonth(thisMonth)}>
+            <GlassButton
+              variant="ghost"
+              size="sm"
+              className="max-sm:min-h-11"
+              onClick={() => setMonth(thisMonth)}
+            >
               Today
             </GlassButton>
           )}
@@ -559,7 +564,6 @@ export function SocialCalendar({
             options={filterOptions}
             value={filter}
             onChange={setFilter}
-            size="sm"
             className="min-w-full sm:min-w-0"
           />
         </div>
@@ -986,7 +990,7 @@ function SettingsForm({
   }
 
   const field =
-    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none";
+    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-base text-ink focus:border-brand sm:text-[15px] focus:ring-4 focus:ring-brand/15 focus:outline-none";
 
   return (
     <details className="group mt-5 border-t border-(--glass-rim) pt-3">

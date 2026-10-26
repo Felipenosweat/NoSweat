@@ -1,8 +1,8 @@
 import { PublicEstimateResponse, RespondEstimateRequest } from "@nosweat/schema";
 import { errorResponse, jsonResponse, notFound, readJson } from "@/server/http";
-import { RateLimiter, clientIp } from "@/server/notify";
+import { RateLimiter, appOrigin, clientIp, notifyOwnerOfEstimateAnswer } from "@/server/notify";
 import { officeHandle } from "@/server/office/api";
-import { respondToEstimate } from "@/server/office/service";
+import { estimateOwnerByToken, respondToEstimate } from "@/server/office/service";
 import { isPublicToken } from "@/server/office/tokens";
 
 type Context = { params: Promise<{ token: string }> };
@@ -29,6 +29,23 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     if (!input.ok) return input.response;
     const estimate = await respondToEstimate(token, input.data);
     if (!estimate) return notFound("Estimate");
+    // Avisa o dono por e-mail (depois da resposta; erro aqui nunca derruba a aprovação).
+    const owner = await estimateOwnerByToken(token).catch(() => null);
+    if (owner) {
+      notifyOwnerOfEstimateAnswer({
+        ownerId: owner.ownerId,
+        estimateId: owner.estimateId,
+        number: estimate.number,
+        title: estimate.title,
+        clientName: estimate.client.name,
+        decision: input.data.decision === "approve" ? "approved" : "declined",
+        approvedByName: estimate.approvedByName,
+        declineReason: input.data.decision === "decline" ? input.data.reason?.trim() || null : null,
+        totalCents: estimate.totalCents,
+        fallbackEmail: owner.companyEmail,
+        appOrigin: appOrigin(request.url),
+      });
+    }
     return jsonResponse(PublicEstimateResponse, { estimate });
   });
 }

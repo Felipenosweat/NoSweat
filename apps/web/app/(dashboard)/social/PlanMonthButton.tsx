@@ -115,7 +115,7 @@ export function PlanMonthButton({
     );
   }
 
-  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-[15px] text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none`;
+  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-base text-ink focus:border-brand sm:text-[15px] focus:ring-4 focus:ring-brand/15 focus:outline-none`;
 
   return (
     <form
