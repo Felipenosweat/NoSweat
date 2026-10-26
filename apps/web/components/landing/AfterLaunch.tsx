@@ -152,17 +152,17 @@ function SocialMock() {
 
 export function AfterLaunch() {
   return (
-    <section aria-labelledby="after-title" className="lp-night py-24 lg:py-36">
+    <section aria-labelledby="after-title" className="lp-night py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <h2
           id="after-title"
           data-lp-rise
-          className="lp-serif max-w-[14ch] text-[clamp(2.8rem,7vw,6.5rem)] leading-[0.92] text-white"
+          className="lp-serif max-w-[14ch] text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] text-white"
         >
           After it goes <em>live</em>
         </h2>
 
-        <div className="mt-16 grid grid-cols-1 gap-20 lg:mt-24 lg:grid-cols-2 lg:gap-12">
+        <div className="mt-10 grid grid-cols-1 gap-14 lg:mt-14 lg:grid-cols-2 lg:gap-12">
           <article id="clients" className="scroll-mt-24">
             <div data-lp-rise>
               <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none text-white">
@@ -174,12 +174,12 @@ export function AfterLaunch() {
                 you go.
               </p>
             </div>
-            <div data-lp-rise className="mt-10">
+            <div data-lp-rise className="mt-8">
               <ClientsMock />
             </div>
           </article>
 
-          <article id="social" className="scroll-mt-24 lg:mt-40">
+          <article id="social" className="scroll-mt-24">
             <div data-lp-rise>
               <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none text-white">
                 Posts that wait for your <em>OK</em>
@@ -189,7 +189,7 @@ export function AfterLaunch() {
                 Nothing is posted until you approve it. Needs an Instagram professional account.
               </p>
             </div>
-            <div data-lp-rise className="mt-10">
+            <div data-lp-rise className="mt-8">
               <SocialMock />
             </div>
           </article>

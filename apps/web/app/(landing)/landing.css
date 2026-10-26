@@ -78,7 +78,7 @@ html.lenis body {
   background-size: 100% 1px;
 }
 
-/* ---------- Cortina de abertura (só CSS, ~1,6 s) ---------- */
+/* ---------- Cortina de abertura (só CSS, ~1,2 s: "no sweat", sem espera) ---------- */
 
 .lp-intro {
   position: fixed;
@@ -89,11 +89,11 @@ html.lenis body {
   background: var(--lp-night);
   color: #ffffff;
   pointer-events: none;
-  animation: lp-intro-out 900ms var(--lp-ease) 1050ms forwards;
+  animation: lp-intro-out 700ms var(--lp-ease) 550ms forwards;
 }
 
 .lp-intro-word {
-  animation: lp-intro-word 900ms var(--lp-ease) 100ms both;
+  animation: lp-intro-word 600ms var(--lp-ease) 0ms both;
 }
 
 @keyframes lp-intro-word {
@@ -120,8 +120,8 @@ html.lenis body {
 
 .lp-line > span {
   display: block;
-  animation: lp-line-in 1300ms var(--lp-ease) both;
-  animation-delay: calc(1250ms + var(--i, 0) * 110ms);
+  animation: lp-line-in 1100ms var(--lp-ease) both;
+  animation-delay: calc(700ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-line-in {
@@ -132,7 +132,7 @@ html.lenis body {
 
 .lp-fade-up {
   animation: lp-fade-up 1200ms var(--lp-ease) both;
-  animation-delay: calc(1500ms + var(--i, 0) * 120ms);
+  animation-delay: calc(850ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-fade-up {
@@ -143,7 +143,7 @@ html.lenis body {
 }
 
 .lp-nav {
-  animation: lp-fade-down 1000ms var(--lp-ease) 1400ms both;
+  animation: lp-fade-down 900ms var(--lp-ease) 800ms both;
 }
 
 @keyframes lp-fade-down {
@@ -158,7 +158,12 @@ html.lenis body {
 /* A foto do site de exemplo atrás do título: bem escura, com véu embaixo para o texto. */
 .lp-hero-veil {
   background:
-    linear-gradient(180deg, rgb(5 12 24 / 0.72) 0%, rgb(5 12 24 / 0.35) 40%, rgb(5 12 24 / 0.94) 100%),
+    linear-gradient(
+      180deg,
+      rgb(5 12 24 / 0.72) 0%,
+      rgb(5 12 24 / 0.35) 40%,
+      rgb(5 12 24 / 0.94) 100%
+    ),
     rgb(5 12 24 / 0.25);
 }
 
@@ -191,7 +196,7 @@ html.lenis body {
 
 /* Com o LandingMotion no computador: a seção fica alta, o trilho preso na tela anda de lado. */
 .lp-hscroll[data-pinned] {
-  height: 320vh;
+  height: 220vh;
 }
 
 .lp-hscroll[data-pinned] .lp-hscroll-sticky {
@@ -209,20 +214,6 @@ html.lenis body {
   scroll-snap-type: none;
   padding-inline: max(2rem, calc((100vw - 1240px) / 2));
   will-change: transform;
-}
-
-/* ---------- Faixa de ofícios correndo ---------- */
-
-.lp-marquee {
-  display: flex;
-  width: max-content;
-  animation: lp-marquee 48s linear infinite;
-}
-
-@keyframes lp-marquee {
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 /* ---------- Fotos que se revelam / zoom no hover ---------- */
@@ -244,8 +235,7 @@ html.lenis body {
 
   .lp-line > span,
   .lp-fade-up,
-  .lp-nav,
-  .lp-marquee {
+  .lp-nav {
     animation: none;
   }
 

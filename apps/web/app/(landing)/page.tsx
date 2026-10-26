@@ -18,7 +18,7 @@ import { checkoutReady } from "@/server/billing";
 // Landing V8 ("Signature", pedido do fundador: "de realeza, que nem os templates premium", sem
 // degradê "cara de IA"): hero com título gigante em serifa e o site de exemplo que cresce →
 // parágrafo que acende → galeria de sites de exemplo (#looks) → como funciona (#story) →
-// depois de publicado (#clients, #social) → faixa de ofícios → preço → dúvidas → CTA final
+// depois de publicado (#clients, #social) → preço → dúvidas → CTA final
 // sobre foto e o nome gigante. Um só exemplo do começo ao fim: a Still Water Spa (fictícia).
 // Só afirmações que o produto cumpre hoje. Nada de números, logos ou depoimentos inventados.
 
@@ -51,21 +51,6 @@ const wrap = "mx-auto w-full max-w-[1240px] px-5 sm:px-8";
 const linkDark =
   "lp-underline rounded-sm font-semibold text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-const TRADES = [
-  "Plumbers",
-  "Hair salons",
-  "Bakeries",
-  "Barbers",
-  "Law offices",
-  "Landscapers",
-  "Tattoo studios",
-  "Electricians",
-  "Coffee shops",
-  "Day spas",
-  "Painters",
-  "Dentists",
-];
-
 // A foto do CTA final: a mesma do topo do site de exemplo (Unsplash, hotlink com crédito).
 const finalPhoto = MODEL_UNSPLASH_PHOTOS["still-water-spa"]?.hero;
 
@@ -78,12 +63,12 @@ export default function LandingPage() {
       <Hero />
 
       {/* O QUE VEM: o parágrafo acende palavra por palavra com a rolagem. */}
-      <section aria-label="What you get" className="lp-paper py-24 lg:py-40">
+      <section aria-label="What you get" className="lp-paper py-16 lg:py-24">
         <div className={`${wrap} grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8`}>
           <p className="lp-eyebrow text-[#071b33]/55 lg:col-span-3 lg:pt-4">What you get</p>
           <p
             data-lp-words
-            className="lp-serif text-[clamp(1.9rem,4vw,3.6rem)] leading-[1.12] text-balance lg:col-span-9"
+            className="lp-serif text-[clamp(1.7rem,3.4vw,3rem)] leading-[1.14] text-balance lg:col-span-9"
           >
             You tell us what you do and where. We write the site, choose photos that fit your trade,
             add a call button for phones and a contact form, and put it online at a free address or
@@ -96,36 +81,18 @@ export default function LandingPage() {
       <Steps />
       <AfterLaunch />
 
-      {/* Faixa de ofícios correndo (enfeite; a lista não é afirmação de clientes). */}
-      <div
-        aria-hidden="true"
-        className="lp-paper overflow-hidden border-b border-[var(--lp-line)] py-8 lg:py-10"
-      >
-        <div className="lp-marquee">
-          {[0, 1].map((copy) => (
-            <p
-              key={copy}
-              className="lp-serif flex shrink-0 items-center text-[clamp(2.4rem,6vw,5rem)] leading-none whitespace-nowrap"
-            >
-              {TRADES.map((trade, index) => (
-                <span key={trade} className="flex items-center">
-                  <span className={index % 2 ? "italic" : ""}>{trade}</span>
-                  <span className="mx-[0.6em] text-[0.4em] text-[#071b33]/35">●</span>
-                </span>
-              ))}
-            </p>
-          ))}
-        </div>
-      </div>
-
       {/* PREÇO — o mesmo componente da página /pricing. */}
-      <section id="pricing" aria-labelledby="pricing-title" className="lp-paper py-24 lg:py-36">
+      <section
+        id="pricing"
+        aria-labelledby="pricing-title"
+        className="lp-paper border-t border-[var(--lp-line)] py-16 lg:py-24"
+      >
         <div className={wrap}>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-end">
             <h2
               id="pricing-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.8rem,7vw,6.5rem)] leading-[0.92] lg:col-span-8"
+              className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] lg:col-span-8"
             >
               Build it free. Pay when it’s <em>live.</em>
             </h2>
@@ -134,7 +101,7 @@ export default function LandingPage() {
               to publish.
             </p>
           </div>
-          <div className="mt-14 rounded-[1.75rem] bg-white p-4 ring-1 ring-[var(--lp-line)] sm:p-8 lg:mt-20 lg:p-10">
+          <div className="mt-10 rounded-[1.75rem] bg-white p-4 ring-1 ring-[var(--lp-line)] sm:p-8 lg:mt-12 lg:p-10">
             <PricingPlans checkout={checkoutReady()} />
           </div>
         </div>
@@ -144,14 +111,14 @@ export default function LandingPage() {
       <section
         id="faq"
         aria-labelledby="faq-title"
-        className="lp-paper border-t border-[var(--lp-line)] py-24 lg:py-36"
+        className="lp-paper border-t border-[var(--lp-line)] py-16 lg:py-24"
       >
         <div className={`${wrap} grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8`}>
           <div className="lg:col-span-4">
             <h2
               id="faq-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.8rem,6vw,5rem)] leading-[0.92]"
+              className="lp-serif text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.95]"
             >
               Questions, <em>answered</em>
             </h2>
@@ -176,7 +143,7 @@ export default function LandingPage() {
             {LANDING_FAQS.map((faq) => (
               <details key={faq.question} className="ns-faq group border-t border-[var(--lp-line)]">
                 <summary
-                  className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-6 text-lg font-medium text-[#071b33] transition-colors duration-150 hover:text-[#071b33]/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:py-7 lg:text-xl [&::-webkit-details-marker]:hidden`}
+                  className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-5 text-lg font-medium text-[#071b33] transition-colors duration-150 hover:text-[#071b33]/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:text-xl [&::-webkit-details-marker]:hidden`}
                 >
                   {faq.question}
                   <PlusIcon className="size-5 shrink-0 text-[#071b33]/50 transition-transform duration-300 group-open:rotate-45 motion-reduce:transition-none" />
@@ -194,7 +161,7 @@ export default function LandingPage() {
       <section
         aria-labelledby="final-title"
         data-hide-mobile-cta
-        className="lp-night relative isolate overflow-hidden py-28 lg:py-44"
+        className="lp-night relative isolate overflow-hidden py-20 lg:py-28"
       >
         {finalPhoto && (
           <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
@@ -216,7 +183,7 @@ export default function LandingPage() {
             <h2
               id="final-title"
               data-lp-rise
-              className="lp-serif text-[clamp(3rem,8vw,7.5rem)] leading-[0.9] text-white"
+              className="lp-serif text-[clamp(2.8rem,6.5vw,6rem)] leading-[0.92] text-white"
             >
               Stop sweating the <em>website.</em>
             </h2>
@@ -242,7 +209,7 @@ export default function LandingPage() {
           </div>
         </div>
         {finalPhoto?.credit && (
-          <p className={`${wrap} mt-16 text-[12px] text-white/50`}>
+          <p className={`${wrap} mt-10 text-[12px] text-white/50`}>
             Photo by{" "}
             <a href={finalPhoto.credit.url} className="underline underline-offset-2">
               {finalPhoto.credit.name}
