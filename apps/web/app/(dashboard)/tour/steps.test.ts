@@ -13,6 +13,8 @@ const ids = (viewport: "desktop" | "mobile") => spotlightSteps(viewport).map((st
 describe("spotlightSteps (desktop)", () => {
   it("walks Home, then each menu item followed by its page, then help", () => {
     expect(ids("desktop")).toEqual([
+      "home-actions",
+      "nav-new",
       "home-money",
       "home-today",
       "site-edit",
@@ -59,6 +61,8 @@ describe("spotlightSteps (desktop)", () => {
 describe("spotlightSteps (mobile)", () => {
   it("uses the tab bar and folds everything in More into one step", () => {
     expect(ids("mobile")).toEqual([
+      "home-actions",
+      "nav-new",
       "home-money",
       "home-today",
       "site-edit",
@@ -75,7 +79,8 @@ describe("spotlightSteps (mobile)", () => {
     expect(steps.find((s) => s.id === "nav-schedule")?.targets[0]?.id).toBe("tab-schedule");
     const more = steps.find((s) => s.id === "tab-more");
     expect(more?.targets[0]?.id).toBe("tab-more");
-    expect(more?.body).toMatch(/Find Estimates, Invoices, Social/);
+    expect(more?.body).toMatch(/Website, Estimates, Invoices, Social/);
+    expect(steps.find((s) => s.id === "nav-new")?.targets[0]?.id).toBe("tab-new");
   });
 });
 

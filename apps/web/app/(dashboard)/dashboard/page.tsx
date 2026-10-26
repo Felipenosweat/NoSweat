@@ -1,4 +1,4 @@
-import type { Client, CreditBalance, Estimate, Job, OfficeSummary } from "@nosweat/schema";
+import type { Client, Estimate, Job, OfficeSummary } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -24,7 +24,6 @@ import { getSessionClaims } from "@/server/auth/session";
 import { getViewer, type ViewingAs } from "@/server/auth/viewer";
 import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
 import { attentionFromClients, listOwnerClients } from "@/server/clients/service";
-import { getBalance } from "@/server/credits";
 import { socialCapability } from "@/server/social/config";
 import { isValidTimeZone, monthOf } from "@/server/social/service";
 import { getSocialStore } from "@/server/social/store";
@@ -59,12 +58,7 @@ import { MoneyIcon, PlusIcon } from "../clients/ui";
 import { formatTime, safeTimeZone, zonedParts } from "../schedule/time";
 import { JobStatusBadge } from "../schedule/ui";
 import { Greeting } from "./Greeting";
-import {
-  GreetingSummarySkeleton,
-  OfficeSkeleton,
-  OverviewSkeleton,
-  SitesSkeleton,
-} from "./skeletons";
+import { GreetingSummarySkeleton, NeedsSkeleton, OfficeSkeleton, SitesSkeleton } from "./skeletons";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -265,24 +259,6 @@ const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconC
   approved: { tone: "emerald", label: "Estimates", Icon: EstimatesIcon },
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
-
-/** Brilho (créditos da IA), no traço dos ícones da navegação. */
-function SparkIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 3.5 13.9 9a2 2 0 0 0 1.2 1.2l5.4 1.8-5.4 1.8a2 2 0 0 0-1.2 1.2L12 20.5 10.1 15a2 2 0 0 0-1.2-1.2L3.5 12l5.4-1.8A2 2 0 0 0 10.1 9z" />
-    </svg>
-  );
-}
 
 /** Número em destaque dentro de uma frase (peso, não cor). */
 function Count({ value }: { value: number }) {
@@ -760,21 +736,6 @@ function StatTile({ stat }: { stat: Stat }) {
   );
 }
 
-function QuickStats({ stats }: { stats: Stat[] }) {
-  return (
-    <section aria-labelledby="stats-heading">
-      <h2 id="stats-heading" className="sr-only">
-        At a glance
-      </h2>
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <StatTile key={stat.key} stat={stat} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 // ---------- escritório (agenda e dinheiro) ----------
 
 type OfficeSnapshot = {
@@ -1038,15 +999,6 @@ function pendingDrafts(posts: SocialPostRecord[], now: number): SocialPostRecord
     .sort(byScheduledAt);
 }
 
-/** Saldo de créditos da IA da conta mostrada. Erro = `null` (o quadro mostra "–"). */
-const loadCredits = cache(async (ownerId: string): Promise<CreditBalance | null> => {
-  try {
-    return await getBalance({ id: ownerId });
-  } catch {
-    return null;
-  }
-});
-
 /** Pedidos por site: o total (checklist e cards) e os dos últimos 7 dias. */
 const loadLeadStats = cache(async (ownerId: string, now: number) => {
   const sites = await listOwnerSites(ownerId);
@@ -1074,18 +1026,17 @@ type HomeContext = {
 };
 
 /**
- * Tudo o que "Needs you", os quadros, o checklist e a saudação mostram. Cada leitura começa na
+ * Tudo o que "Needs you", o checklist e a saudação mostram. Cada leitura começa na
  * hora e com dedupe: o escritório e a lista de sites (lidos também por outras seções e pela
  * moldura) não vão ao banco duas vezes.
  */
 const loadHome = cache(async (ownerId: string, shownEmail: string | null, now: number) => {
   const shown = { id: ownerId, email: shownEmail };
-  const [sites, social, settings, access, credits, office, leadStats] = await Promise.all([
+  const [sites, social, settings, access, office, leadStats] = await Promise.all([
     listOwnerSites(ownerId),
     loadSocial(ownerId, now),
     loadSettings(ownerId),
     loadAccess(ownerId),
-    loadCredits(ownerId),
     loadOffice(ownerId, now),
     loadLeadStats(ownerId, now),
   ]);
@@ -1121,89 +1072,12 @@ const loadHome = cache(async (ownerId: string, shownEmail: string | null, now: n
     timeZone,
     autoPublish,
     domainIncluded,
-    credits,
     office,
     needRows,
   };
 });
 
 type HomeData = Awaited<ReturnType<typeof loadHome>>;
-
-/** Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos. */
-function homeStats(home: HomeData, now: number): Stat[] {
-  const { sites, social, clients, weekLeads, timeZone, credits } = home;
-  const latest = sites[0];
-  const drafts = pendingDrafts(social.posts, now);
-  const firstDraft = drafts[0];
-  const weekTotal = Object.values(weekLeads).reduce((sum, n) => sum + n, 0);
-  const followUps = clients?.followUpsDue.length ?? null;
-  return [
-    clients
-      ? {
-          key: "requests",
-          label: "New requests",
-          value: clients.newCount,
-          hint: clients.newCount > 0 ? "Waiting for a reply" : "All caught up",
-          href: clients.newCount > 0 ? "/clients?stage=new" : "/clients",
-          tone: "brand",
-          Icon: ClientsIcon,
-          attention: clients.newCount > 0,
-        }
-      : {
-          // Sem o módulo de clientes (erro ao ler): as mensagens do site nos últimos 7 dias.
-          key: "requests",
-          label: "New requests",
-          value: weekTotal,
-          hint: "Last 7 days",
-          href: latest ? `/sites/${latest.id}#messages` : "/dashboard#sites",
-          tone: "brand",
-          Icon: MessagesIcon,
-          attention: weekTotal > 0,
-        },
-    {
-      key: "follow-ups",
-      label: "Follow-ups due",
-      value: followUps,
-      // O serviço manda no máximo 5 retornos.
-      capped: followUps !== null && followUps >= 5,
-      hint:
-        followUps === null
-          ? "Open clients"
-          : followUps > 0
-            ? "Due today or earlier"
-            : "Nothing due",
-      href: "/clients",
-      tone: "sky",
-      Icon: ClockIcon,
-      attention: Boolean(followUps),
-    },
-    {
-      key: "approvals",
-      label: "Posts to approve",
-      value: drafts.length,
-      hint: drafts.length > 0 ? "Read and approve" : "Nothing waiting",
-      href: firstDraft?.scheduledAt
-        ? `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`
-        : "/social",
-      tone: "amber",
-      Icon: ApproveIcon,
-      attention: drafts.length > 0,
-    },
-    {
-      key: "credits",
-      label: "AI credits left",
-      value: credits === null ? null : credits.unlimited ? "unlimited" : credits.total,
-      hint:
-        credits === null || credits.unlimited
-          ? "Plans and billing"
-          : `Refills ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(credits.resetsAt))}`,
-      href: "/billing#credits",
-      tone: credits !== null && !credits.unlimited && credits.total === 0 ? "red" : "emerald",
-      Icon: SparkIcon,
-      attention: credits !== null && !credits.unlimited && credits.total === 0,
-    },
-  ];
-}
 
 /**
  * "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
@@ -1262,44 +1136,10 @@ async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
   return office ? <OfficeSection office={office} readOnly={ctx.readOnly} /> : null;
 }
 
-/**
- * Quadros, "Needs you" e (com site) o checklist. `order`: com site, os quadros primeiro; conta sem
- * site mostra "Needs you" antes (o convite para criar fica em cima, ver `HomeSections`).
- */
-async function Overview({
-  ctx,
-  order,
-}: {
-  ctx: HomeContext;
-  order: "stats-first" | "needs-first";
-}) {
+/** "Needs you": o que pede uma ação agora (pedidos novos, retornos, faturas vencidas, posts...). */
+async function NeedsBlock({ ctx }: { ctx: HomeContext }) {
   const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
-  const quickStats = <QuickStats stats={homeStats(home, ctx.now)} />;
-  const needs = <NeedsYou rows={home.needRows} />;
-  if (order === "needs-first") {
-    return (
-      <>
-        {needs}
-        {quickStats}
-      </>
-    );
-  }
-  const latest = home.sites[0];
-  return (
-    <>
-      {quickStats}
-      {needs}
-      {latest && (
-        <DashboardChecklist
-          siteId={latest.id}
-          siteName={latest.spec.business.name}
-          steps={checklistSteps(latest, home.leadCounts[latest.id] ?? 0, home.domainIncluded)}
-          extraSteps={socialSteps(home)}
-          shareHref={latest.status === "published" ? `/sites/${latest.id}#publish` : null}
-        />
-      )}
-    </>
-  );
+  return <NeedsYou rows={home.needRows} />;
 }
 
 /** Os cards dos sites: espera os pedidos por site e o plano (selo "Offline"). */
@@ -1314,56 +1154,128 @@ async function SitesCards({ ctx }: { ctx: HomeContext }) {
   return <SitesGrid sites={sites} leadCounts={leadCounts} headingLevel={3} offline={offline} />;
 }
 
-/**
- * Tudo depois do escritório. A lista de sites (a mesma que a moldura já leu, com dedupe) decide a
- * ordem; o resto chega em streaming, cada parte no seu <Suspense>.
- */
-async function HomeSections({ ctx }: { ctx: HomeContext }) {
-  const sites = await listOwnerSites(ctx.ownerId);
+/** Checklist "deixar o site no ar" (some sozinho quando tudo está feito). */
+async function SiteChecklist({ ctx, site }: { ctx: HomeContext; site: SiteRecord }) {
+  const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  return (
+    <DashboardChecklist
+      siteId={site.id}
+      siteName={site.spec.business.name}
+      steps={checklistSteps(site, home.leadCounts[site.id] ?? 0, home.domainIncluded)}
+      extraSteps={socialSteps(home)}
+      shareHref={site.status === "published" ? `/sites/${site.id}#publish` : null}
+    />
+  );
+}
+
+/** "Your sites": o checklist do site mais recente e os cards (ou o convite para criar o primeiro). */
+function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] }) {
   // `list` já vem do mais recente para o mais antigo.
   const latest = sites[0];
-
-  const yourSites = (
-    <section id="sites" aria-labelledby="sites-heading" data-tour="home-sites">
-      <h2 id="sites-heading" className={sectionTitle}>
-        Your sites
-        {sites.length > 0 && (
-          <span className="font-sans font-normal text-slate-500 tabular-nums">
-            {" "}
-            · {sites.length}
-          </span>
-        )}
-      </h2>
-      {sites.length === 0 ? (
-        <div className="mt-4">
-          <ExampleSiteEmpty />
-        </div>
-      ) : (
-        <Suspense fallback={<SitesSkeleton count={sites.length} />}>
-          <SitesCards ctx={ctx} />
-        </Suspense>
-      )}
-    </section>
-  );
-
-  if (latest) {
-    return (
-      <>
-        <Suspense fallback={<OverviewSkeleton order="stats-first" />}>
-          <Overview ctx={ctx} order="stats-first" />
-        </Suspense>
-        {yourSites}
-      </>
-    );
-  }
-  // Conta sem sites: primeiro o convite para criar, depois o resto.
   return (
     <>
-      {yourSites}
-      <Suspense fallback={<OverviewSkeleton order="needs-first" />}>
-        <Overview ctx={ctx} order="needs-first" />
-      </Suspense>
+      {latest && (
+        <Suspense fallback={null}>
+          <SiteChecklist ctx={ctx} site={latest} />
+        </Suspense>
+      )}
+      <section id="sites" aria-labelledby="sites-heading" data-tour="home-sites">
+        <h2 id="sites-heading" className={sectionTitle}>
+          Your website
+          {sites.length > 1 && (
+            <span className="font-sans font-normal text-slate-500 tabular-nums">
+              {" "}
+              · {sites.length}
+            </span>
+          )}
+        </h2>
+        {sites.length === 0 ? (
+          <div className="mt-4">
+            <ExampleSiteEmpty />
+          </div>
+        ) : (
+          <Suspense fallback={<SitesSkeleton count={sites.length} />}>
+            <SitesCards ctx={ctx} />
+          </Suspense>
+        )}
+      </section>
     </>
+  );
+}
+
+type QuickAction = {
+  key: string;
+  label: string;
+  hint: string;
+  href: string;
+  tone: IconTone;
+  Icon: IconComponent;
+};
+
+/** As quatro coisas do dia a dia, a um toque (as mesmas do "+ New" do menu). */
+const QUICK_ACTIONS: readonly QuickAction[] = [
+  {
+    key: "job",
+    label: "Book a job",
+    hint: "Put it on the calendar",
+    href: "/schedule?new=1",
+    tone: "brand",
+    Icon: ScheduleIcon,
+  },
+  {
+    key: "estimate",
+    label: "Send an estimate",
+    hint: "They approve from their phone",
+    href: "/estimates/new",
+    tone: "amber",
+    Icon: EstimatesIcon,
+  },
+  {
+    key: "invoice",
+    label: "Send an invoice",
+    hint: "Get paid, track who paid",
+    href: "/invoices/new",
+    tone: "emerald",
+    Icon: InvoicesIcon,
+  },
+  {
+    key: "client",
+    label: "Add a client",
+    hint: "Name and phone is enough",
+    href: "/clients/new",
+    tone: "sky",
+    Icon: ClientsIcon,
+  },
+];
+
+function QuickActions() {
+  return (
+    <section aria-labelledby="actions-heading" data-tour="home-actions">
+      <h2 id="actions-heading" className="sr-only">
+        Quick actions
+      </h2>
+      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {QUICK_ACTIONS.map((action) => (
+          <li key={action.key}>
+            <Link
+              href={action.href}
+              className={`group flex h-full min-h-[7.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+            >
+              <span className="flex items-start justify-between gap-2">
+                <IconTile tone={action.tone}>
+                  <action.Icon className="size-[18px]" />
+                </IconTile>
+                <PlusIcon className="mt-2 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
+              </span>
+              <span className="mt-auto pt-4 text-[17px] leading-6 font-semibold text-ink">
+                {action.label}
+              </span>
+              <span className="mt-0.5 text-[13px] leading-5 text-slate-500">{action.hint}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -1381,10 +1293,14 @@ export default async function DashboardPage() {
     now: requestNow(),
     readOnly: viewingAs !== null,
   };
-  // Rápido: as claims da sessão já lidas (ou a conta vista, já lida pelo getViewer).
-  const firstName = await getFirstName(viewingAs);
+  // Rápido: as claims da sessão já lidas (ou a conta vista, já lida pelo getViewer). A lista de
+  // sites é a mesma que a moldura já leu neste request (dedupe), então não custa nada.
+  const [firstName, sites] = await Promise.all([getFirstName(viewingAs), listOwnerSites(ownerId)]);
+  const sitesSection = <SitesSection ctx={ctx} sites={sites} />;
 
-  // A saudação aparece na hora; o resto chega em partes (escritório, quadros e "Needs you", sites).
+  // Ordem pensada para ser simples: o que fazer (atalhos), o que precisa de você, o dia e o
+  // dinheiro, e por fim o site. Conta sem site: o convite para criar o site vem logo depois dos
+  // atalhos.
   return (
     <div>
       <Greeting
@@ -1398,13 +1314,15 @@ export default async function DashboardPage() {
       />
 
       <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
-        {/* O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro. */}
+        {!ctx.readOnly && <QuickActions />}
+        {sites.length === 0 && sitesSection}
+        <Suspense fallback={<NeedsSkeleton />}>
+          <NeedsBlock ctx={ctx} />
+        </Suspense>
         <Suspense fallback={<OfficeSkeleton />}>
           <OfficeBlock ctx={ctx} />
         </Suspense>
-        <Suspense fallback={<OverviewSkeleton order="stats-first" />}>
-          <HomeSections ctx={ctx} />
-        </Suspense>
+        {sites.length > 0 && sitesSection}
       </div>
     </div>
   );

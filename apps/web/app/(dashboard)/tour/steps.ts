@@ -2,7 +2,7 @@
 // fica em destaque (`data-tour="..."` no componente) e o que ele faz. Só dados e funções puras
 // (sem React, sem DOM): usado pelo WelcomeTour e pelos testes.
 //
-// Ordem no computador: Home (dinheiro, hoje, site) → cada item do menu, e logo depois a tela dele
+// Ordem no computador: Home (atalhos, botão New, dinheiro, hoje, site) → cada item do menu, e logo depois a tela dele
 // com o botão principal → ajuda. No celular, o que mora em "More" (Estimates, Invoices, Social,
 // Google reviews, Business settings, Help) vira um passo só, no botão "More" (a folha não abre).
 
@@ -45,6 +45,21 @@ const HOME = "/dashboard";
 // Textos: uma ou duas frases, o que a pessoa ganha e onde tocar. Nada de promessa que o produto
 // não cumpre (pagamento online não existe; a IA nunca publica sozinha).
 const STEP_DEFS: readonly StepDef[] = [
+  {
+    id: "home-actions",
+    route: HOME,
+    targets: [{ id: "home-actions" }],
+    title: "Start here",
+    body: "The things you do every day, one tap away: book a job, send an estimate or an invoice, add a client.",
+  },
+  {
+    id: "nav-new",
+    route: HOME,
+    targets: [{ id: "nav-new" }],
+    mobileTargets: [{ id: "tab-new" }],
+    title: "New, from any screen",
+    body: "Tap New anytime to book a job, send an estimate or invoice, add a client or make a new website.",
+  },
   {
     id: "home-money",
     route: HOME,
@@ -182,7 +197,7 @@ const MORE_STEP: Omit<SpotlightStep, "route"> = {
   id: "tab-more",
   targets: [{ id: "tab-more" }],
   title: "More",
-  body: "Find Estimates, Invoices, Social, Google reviews, Business settings and Help here.",
+  body: "Find your Website, Estimates, Invoices, Social, Google reviews, settings and Help here.",
 };
 
 function plain(def: StepDef, targets: readonly TourTarget[]): SpotlightStep {
