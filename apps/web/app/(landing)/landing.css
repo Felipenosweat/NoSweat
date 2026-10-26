@@ -1,7 +1,7 @@
 /* Landing V8 ("Signature"): o mesmo padrão dos sites premium dos clientes.
    Ink (noite) e papel quente, títulos em serifa editorial com a última palavra em itálico,
    menu de vidro, fotos que se revelam, parágrafo que acende palavra por palavra, galeria que
-   anda de lado, faixa de ofícios correndo e o nome gigante no fim. Sem degradê de cor (só os
+   anda de lado e o nome gigante no fim. Sem cortina de abertura: a página abre direto. Sem degradê de cor (só os
    véus escuros sobre fotos, para o texto ler bem).
    O movimento com rolagem é do LandingMotion (components/landing/LandingMotion.tsx). Sem JS
    ou com "reduzir movimento", tudo aparece parado, legível e completo. */
@@ -72,39 +72,7 @@
   background-size: 100% 1px;
 }
 
-/* ---------- Cortina de abertura (só CSS, ~1,2 s: "no sweat", sem espera) ---------- */
-
-.lp-intro {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  background: var(--lp-night);
-  color: #ffffff;
-  pointer-events: none;
-  animation: lp-intro-out 700ms var(--lp-ease) 550ms forwards;
-}
-
-.lp-intro-word {
-  animation: lp-intro-word 600ms var(--lp-ease) 0ms both;
-}
-
-@keyframes lp-intro-word {
-  from {
-    opacity: 0;
-    transform: translateY(40%);
-  }
-}
-
-@keyframes lp-intro-out {
-  to {
-    transform: translateY(-100%);
-    visibility: hidden;
-  }
-}
-
-/* Linhas do título do hero sobem de dentro de uma máscara depois da cortina. */
+/* Linhas do título do hero sobem de dentro de uma máscara assim que a página abre. */
 .lp-line {
   display: block;
   overflow: hidden;
@@ -115,7 +83,7 @@
 .lp-line > span {
   display: block;
   animation: lp-line-in 1100ms var(--lp-ease) both;
-  animation-delay: calc(700ms + var(--i, 0) * 100ms);
+  animation-delay: calc(80ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-line-in {
@@ -126,7 +94,7 @@
 
 .lp-fade-up {
   animation: lp-fade-up 1200ms var(--lp-ease) both;
-  animation-delay: calc(850ms + var(--i, 0) * 100ms);
+  animation-delay: calc(250ms + var(--i, 0) * 100ms);
 }
 
 @keyframes lp-fade-up {
@@ -137,7 +105,7 @@
 }
 
 .lp-nav {
-  animation: lp-fade-down 900ms var(--lp-ease) 800ms both;
+  animation: lp-fade-down 900ms var(--lp-ease) 150ms both;
 }
 
 @keyframes lp-fade-down {
@@ -243,10 +211,6 @@
 /* ---------- Movimento reduzido: nada anda ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-intro {
-    display: none;
-  }
-
   .lp-line > span,
   .lp-fade-up,
   .lp-nav {

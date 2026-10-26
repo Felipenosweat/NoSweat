@@ -2,11 +2,12 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { PromptForm } from "@/components/marketing/PromptForm";
 
-// Hero da landing V8: a cortina de abertura (só CSS), o título gigante em serifa com a última
-// palavra em itálico, o campo REAL de descrição em vidro e, logo abaixo, a moldura de um site
-// de exemplo de verdade (captura do molde Signature, negócio fictício) que cresce com a rolagem.
+// Hero da landing V8: o título gigante em serifa com a última palavra em itálico, o campo REAL
+// de descrição em vidro e, logo abaixo, a moldura de um site de exemplo de verdade (captura do
+// molde Signature, negócio fictício) que cresce com a rolagem. Sem cortina de abertura (pedido
+// do fundador): a página abre direto no conteúdo.
 
-/** O título, uma linha por <span> (sobem de dentro de uma máscara depois da cortina). */
+/** O título, uma linha por <span> (sobem de dentro de uma máscara ao abrir). */
 const LINES = [
   <>Your business,</>,
   <>
@@ -17,12 +18,6 @@ const LINES = [
 export function Hero() {
   return (
     <>
-      <div aria-hidden="true" className="lp-intro">
-        <p className="lp-intro-word lp-serif text-[clamp(2.5rem,7vw,5rem)] leading-none">
-          No <em>Sweat</em>
-        </p>
-      </div>
-
       <section
         aria-labelledby="hero-title"
         data-hide-mobile-cta
