@@ -4,6 +4,7 @@ import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
 import { hasImageProvider, resolveHeroImage } from "@/server/images";
+import { RateLimiter, clientIp } from "@/server/notify";
 import { refundUse, reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -11,6 +12,9 @@ import type { Composition } from "@nosweat/schema";
 
 // A IA de verdade leva alguns segundos (às vezes dezenas) para montar o site.
 export const maxDuration = 300;
+
+// Modo modelo (sem IA): até 20 sites por hora por IP (melhor esforço, em memória por instância).
+const templateLimiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
  * POST /api/sites/generate: { brief } → { siteId, spec }
@@ -31,6 +35,13 @@ export async function POST(request: Request): Promise<Response> {
     if (generator.usesAi) {
       const overLimit = await reserveUse(actor, "generate");
       if (overLimit) return overLimit;
+    } else if (!templateLimiter.take(clientIp(request))) {
+      // Sem IA não custa crédito, mas cada site é uma linha no banco: trava contra robôs.
+      return errorResponse(
+        429,
+        "quota_exceeded",
+        "You've created a lot of sites in a short time. Please try again in a little while.",
+      );
     }
 
     let spec: SiteSpec;

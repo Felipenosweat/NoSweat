@@ -82,7 +82,7 @@ const INDUSTRY_TESTS: [Industry, (body: string) => boolean][] = [
   [
     "wellness",
     has(
-      /\b(spa|massage|yoga|pilates|wellness|therapy|therapist|chiropract|acupunct|fitness|gym|trainer|dentist|dental|clinic)\b/,
+      /\b(spa|massage|yoga|pilates|wellness|therapy|therapist|chiropract\w*|acupunct\w*|fitness|gym|trainer|dentist|dental|clinic)\b/,
     ),
   ],
   ["trades", has(TRADES_WORDS)],

@@ -55,7 +55,8 @@ export function templateFor(brief: string): TemplateId | null {
         return "beauty";
       }
       if (/\b(dentist|dental|clinic|therap|chiropract|acupunct)/.test(text)) return "professional";
-      if (/\b(yoga|pilates|fitness|gyms?|trainers?|personal training)\b/.test(text)) return "beauty";
+      if (/\b(yoga|pilates|fitness|gyms?|trainers?|personal training)\b/.test(text))
+        return "beauty";
       return null;
     }
     case "other":
@@ -138,8 +139,7 @@ export function pickModel(
   let bestHits = 0;
   for (const model of candidates) {
     const hits = keywordHits(text, model.keywords);
-    const score =
-      hits * 10 + (plan && model.spec.design?.composition === plan.composition ? 1 : 0);
+    const score = hits * 10 + (plan && model.spec.design?.composition === plan.composition ? 1 : 0);
     // Empate: fica o que veio antes (os modelos originais vêm primeiro).
     if (score > bestScore) {
       best = model;

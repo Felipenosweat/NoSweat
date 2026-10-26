@@ -327,6 +327,23 @@ export const PROFILES: readonly TemplateProfile[] = [
   },
   // ---------- beleza, cuidados pessoais e bem-estar ----------
   {
+    id: "pet-grooming",
+    template: "beauty",
+    // Banho e tosa: "grooming" com bicho por perto ("men's grooming" é barbearia).
+    match:
+      /\b(?:pets?|dogs?|cats?|pupp(?:y|ies)|canine)\b[\s\S]*\bgroom|\bgroom\w*\b[\s\S]*\b(?:pets?|dogs?|cats?|pupp(?:y|ies))\b/,
+    category: "Pet grooming",
+    word: "Pet Grooming",
+    imageQuery: "dog grooming salon",
+    hero: { title: "Grooming your pet will love", ctaLabel: "Book a groom" },
+    services: [
+      ["Bath and brush", "A good wash, dry and brush-out."],
+      ["Full grooming", "Bath, haircut and tidy-up."],
+      ["Nail trims", "Nails trimmed carefully."],
+      ["Ear cleaning", "Gentle ear care."],
+    ],
+  },
+  {
     id: "barber",
     template: "beauty",
     match: /\b(barber|fades?\b|beard)/,
@@ -445,21 +462,6 @@ export const PROFILES: readonly TemplateProfile[] = [
       ["Group classes", "Train with others, at your level."],
       ["Strength training", "Build strength with good form."],
       ["Beginner programs", "A careful start if you're new or coming back."],
-    ],
-  },
-  {
-    id: "pet-grooming",
-    template: "beauty",
-    match: /\b(pet groom|dog groom|cat groom|grooming|groomer|groomers)\b/,
-    category: "Pet grooming",
-    word: "Pet Grooming",
-    imageQuery: "dog grooming salon",
-    hero: { title: "Grooming your pet will love", ctaLabel: "Book a groom" },
-    services: [
-      ["Bath and brush", "A good wash, dry and brush-out."],
-      ["Full grooming", "Bath, haircut and tidy-up."],
-      ["Nail trims", "Nails trimmed carefully."],
-      ["Ear cleaning", "Gentle ear care."],
     ],
   },
   {

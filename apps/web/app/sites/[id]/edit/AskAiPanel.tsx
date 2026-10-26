@@ -239,11 +239,7 @@ export function AskAiPanel({
                 text, color and photo yourself.
               </p>
               {onEditYourself && (
-                <button
-                  type="button"
-                  onClick={onEditYourself}
-                  className={`${primaryButton} mt-3`}
-                >
+                <button type="button" onClick={onEditYourself} className={`${primaryButton} mt-3`}>
                   Edit your site
                 </button>
               )}

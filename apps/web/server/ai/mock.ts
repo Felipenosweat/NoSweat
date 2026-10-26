@@ -4,7 +4,7 @@ import type { DesignPlan } from "../design";
 import { factsFromBrief } from "./brief-facts";
 import { applyModelFill, verifyFacts, type ModelFill } from "./model-fill";
 import { modelBySlug, modelFor, templateFor } from "./models";
-import { profileFor, templateFill } from "./template-mode";
+import { profileFor, templateFill, type TemplateProfile } from "./template-mode";
 import type { SiteGenerator } from "./types";
 
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
@@ -194,16 +194,28 @@ function withHeroQuery(spec: SiteSpec, query: string | undefined): SiteSpec {
 }
 
 /**
- * Modo modelo (produção sem chave de IA): tipo de negócio → site-modelo → textos genéricos do
- * tipo + fatos do pedido (template-mode.ts). Nenhum texto do modelo fica no site.
+ * Tipo de negócio e site-modelo do modo modelo: o modelo preferido do tipo (ex.: o de BBQ só
+ * para churrasco, nunca para qualquer food truck), senão o mais parecido da categoria.
  */
-export function templateModeSite(brief: string, plan?: DesignPlan): SiteSpec {
+export function templateModeChoice(
+  brief: string,
+  plan?: DesignPlan,
+): { profile: TemplateProfile; model: SiteSpec } {
   const profile = profileFor(brief, templateFor(brief));
   const preferred = profile.model ? modelBySlug(profile.model) : undefined;
   const model =
     preferred && preferred.category === profile.template
       ? preferred.spec
       : modelFor(profile.template, brief, plan);
+  return { profile, model };
+}
+
+/**
+ * Modo modelo (produção sem chave de IA): tipo de negócio → site-modelo → textos genéricos do
+ * tipo + fatos do pedido (template-mode.ts). Nenhum texto do modelo fica no site.
+ */
+export function templateModeSite(brief: string, plan?: DesignPlan): SiteSpec {
+  const { profile, model } = templateModeChoice(brief, plan);
   const fill = templateFill(brief, profile, model);
   const spec = applyModelFill(model, fill, plan, verifyFacts(fill.business, brief));
   return withHeroQuery(spec, fill.hero.imageQuery);

@@ -38,8 +38,9 @@ type Labeled = { value: string; start: number; end: number };
 /**
  * Valor de uma frase com rótulo ("Phone: …", "Based in …"): o texto depois do rótulo até o fim
  * da frase. `start`/`end` cobrem a frase inteira (com a pontuação final), para tirá-la do texto.
+ * `isName`: o ponto de "Co."/"Inc." no fim faz parte do nome (num lugar, "CO." é o estado).
  */
-function labeled(text: string, label: RegExp): Labeled | undefined {
+function labeled(text: string, label: RegExp, isName = false): Labeled | undefined {
   const match = label.exec(text);
   if (!match) return undefined;
   const valueStart = match.index + match[0].length;
@@ -47,7 +48,7 @@ function labeled(text: string, label: RegExp): Labeled | undefined {
   let value = text.slice(valueStart, stop).trim();
   const closing = text[stop];
   if (closing === "!" || closing === "?") value += closing;
-  if (closing === ".") {
+  if (closing === "." && isName) {
     const last = /([A-Za-z]+)$/.exec(value)?.[1]?.toLowerCase() ?? "";
     if (SUFFIX_ABBREVIATIONS.has(last)) value += ".";
   }
@@ -136,7 +137,7 @@ function nameAtStart(brief: string): string | undefined {
 
 /** Nome do negócio: a frase "The business is called X." ou o começo de um pedido livre. */
 export function nameFromBrief(brief: string): string | undefined {
-  const called = labeled(brief, NAME_RE)?.value;
+  const called = labeled(brief, NAME_RE, true)?.value;
   if (called && called.length <= 80) return called;
   return nameAtStart(brief);
 }
@@ -171,7 +172,9 @@ export function placeFromBrief(brief: string): { city?: string; state?: string }
     if (/^[A-Za-z]{2}$/.test(based) && isUsStateCode(based.toUpperCase())) {
       return { state: based.toUpperCase() };
     }
-    if (!withState && /^[A-Za-z]/.test(based) && based.length <= 60) return { city: based };
+    // Sigla que não é de estado dos EUA: fica só a cidade (que o dono digitou).
+    const city = (withState?.[1] ?? based).trim();
+    if (/^[A-Za-z]/.test(city) && city.length <= 60) return { city };
   }
   for (const match of brief.matchAll(FREE_PLACE_RE)) {
     const city = match[1]?.trim();
@@ -199,7 +202,8 @@ export function serviceAreaFromBrief(brief: string): string | undefined {
 const DAY_RE =
   /\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)\b|\b(?:daily|every day|weekdays|weekends)\b/i;
 const MERIDIEM = "(?:\\s?(?:a\\.?m\\.?|p\\.?m\\.?))?";
-const CLOCK = `\\d{1,2}(?::\\d{2})?${MERIDIEM}`;
+// Sem dígito colado antes ou depois: "512-555-0142" não é "12-55".
+const CLOCK = `(?<![\\d:.])\\d{1,2}(?::\\d{2})?(?!\\d)${MERIDIEM}`;
 const TIME_RE = new RegExp(`${CLOCK}\\s*(?:-|–|—|to)\\s*${CLOCK}|\\b24 hours\\b`, "i");
 const CLOSED_RE = /\bclosed\b/i;
 
@@ -228,7 +232,10 @@ export function hoursFromBrief(brief: string): BriefFacts["hours"] {
         continue;
       }
       if (day && time && day.index < time.index) {
-        const days = part.slice(day.index, time.index).replace(/[:\s]+$/, "").trim();
+        const days = part
+          .slice(day.index, time.index)
+          .replace(/[:\s]+$/, "")
+          .trim();
         hours.push({ days: capitalize(days).slice(0, 40), time: time[0].trim().slice(0, 40) });
         carriedDays = "";
       } else if (day && !time) {
@@ -260,7 +267,7 @@ export function whatFromBrief(brief: string): string | undefined {
   let intro = brief.split(/\n\s*\n/)[0] ?? "";
   let found = false;
   for (const label of [NAME_RE, LOCATION_RE, AREA_RE, PHONE_RE]) {
-    const hit = labeled(intro, label);
+    const hit = labeled(intro, label, label === NAME_RE);
     if (!hit) continue;
     found = true;
     intro = `${intro.slice(0, hit.start)} ${intro.slice(hit.end)}`;
@@ -286,25 +293,45 @@ export function titleCase(text: string): string {
 
 /** Começos que fazem do pedaço uma frase sobre o negócio, não um serviço. */
 const NOT_A_SERVICE_START =
-  /^(?:we|we're|i|i'm|our|my|us|you|your|they|it|its|it's|this|that|there|here|a|an|the|located|based|serving|call|open|since|locally)\b/i;
-/** Pedaços que falam do negócio (onde fica, desde quando), não de um serviço. */
-const ABOUT_THE_BUSINESS = /\b(?:serving|based|located|owned|operated|since|years?)\b/i;
+  /^(?:we|we're|we've|i|i'm|i've|our|my|us|you|your|they|it|its|it's|this|that|there|here|a|an|the|located|based|serving|call|open|since|locally|helping|help|selling|sell|buying|buy|making|make|providing|provide|bringing|bring|keeping|keep|getting|get|working|work)\b/i;
+/** Pedaços que falam do negócio (quem, onde, desde quando), não de um serviço. */
+const ABOUT_THE_BUSINESS =
+  /\b(?:serving|based|located|owned|operated|since|years?|our|we|my|us|you|your|their)\b/i;
 /** Verbos do começo ("We offer …", "Specializing in …"): saem, o resto é o serviço. */
 const LEAD_IN =
   /^(?:(?:we|i)(?:'re|’re| are| am)?\s+(?:also\s+)?(?:do|offer|provide|handle|specialize in|specialise in|focus on|make|sell|teach|bake|cook|serve)\s+|(?:offering|specializing in|specialising in|services include|including|plus|also)\s+)/i;
 /** Um pedaço sozinho que é o tipo de negócio ("Plumber", "Hair salon"), não um serviço. */
 const BUSINESS_NOUN =
-  /(?:er|ers|ist|ists|ian|shop|salon|studio|company|business|agency|firm|office|clinic|store|truck|bakery|restaurant|cafe|café|spa|gym|practice)$/i;
+  /(?:er|ers|or|ors|ist|ists|ian|shop|salon|studio|company|business|agency|firm|office|clinic|store|truck|bakery|restaurant|cafe|café|spa|gym|practice)$/i;
+
+/** O pedaço pode ser o nome de um serviço? */
+function isServiceName(part: string): boolean {
+  return (
+    part.length >= 3 &&
+    part.length <= 60 &&
+    part.split(/\s+/).length <= 5 &&
+    !/\d/.test(part) &&
+    !part.includes("$") &&
+    !NOT_A_SERVICE_START.test(part) &&
+    !ABOUT_THE_BUSINESS.test(part) &&
+    // "Hair salon in Miami": tem lugar, é a descrição do negócio.
+    !/\b(?:in|near|around) [A-Z]/.test(part) &&
+    // "Care for back and neck pain": o "and" partiu uma frase, não uma lista.
+    !/\b(?:for|from|to|with|by|of)\b/i.test(part)
+  );
+}
 
 /**
  * Serviços que o dono digitou em "What do you do?" ("Plumbing repairs, drain cleaning and
- * water heater installs"): separados por vírgula, ";", "and", "&" e linhas; em maiúsculas de
- * título; até 8. Pedaços que são frases ("We're a family business"), longos demais ou com
- * números ficam de fora. Lista vazia quando não há serviços claros.
+ * water heater installs"): a primeira frase, separada por vírgula, ";", "and", "or", " & " e
+ * linhas; em maiúsculas de título; até 8. Tudo ou nada: se algum pedaço não parece nome de
+ * serviço ("Helping families buy and sell homes", "Family-owned bakery making sourdough"), a
+ * frase é uma descrição, não uma lista, e a resposta é vazia (o site usa a lista genérica).
  */
 export function servicesFromWhat(what: string): string[] {
-  const parts = what
-    .split(/[.!?](?:\s+|$)|[,;\n]|\s+&\s+|\s+\band\b\s+|\s+\bor\b\s+/i)
+  const first = what.split(/[.!?](?:\s+|$)/)[0] ?? "";
+  const parts = first
+    .split(/[,;\n]|\s+&\s+|\s+\band\b\s+|\s+\bor\b\s+/i)
     .map((part) =>
       part
         .trim()
@@ -314,20 +341,12 @@ export function servicesFromWhat(what: string): string[] {
         .replace(/[\s.:;!?-]+$/, "")
         .trim(),
     )
-    .filter(
-      (part) =>
-        part.length >= 3 &&
-        part.length <= 60 &&
-        part.split(/\s+/).length <= 6 &&
-        !/\d/.test(part) &&
-        !part.includes("$") &&
-        !NOT_A_SERVICE_START.test(part) &&
-        !ABOUT_THE_BUSINESS.test(part) &&
-        // "Hair salon in Miami": tem lugar, é a descrição do negócio.
-        !/\b(?:in|near|around) [A-Z]/.test(part),
-    );
-  if (parts.length === 1 && parts[0] && parts[0].split(/\s+/).length <= 2) {
-    if (BUSINESS_NOUN.test(parts[0])) return [];
+    .filter(Boolean);
+  if (parts.length === 0 || !parts.every(isServiceName)) return [];
+  if (parts.length === 1 && parts[0]) {
+    const words = parts[0].split(/\s+/).length;
+    // Um pedaço só: o tipo do negócio ("Plumber", "Hair salon") ou uma descrição longa.
+    if (words > 3 || (words <= 2 && BUSINESS_NOUN.test(parts[0]))) return [];
   }
   const seen = new Set<string>();
   const services: string[] = [];

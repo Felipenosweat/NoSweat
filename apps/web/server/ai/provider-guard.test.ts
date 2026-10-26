@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getSiteGenerator } from "./index";
+import { aiEnabled, getSiteGenerator } from "./index";
 import { fixtures } from "@nosweat/fixtures";
 import { MockGenerator } from "./mock";
 
@@ -42,5 +42,52 @@ describe("getSiteGenerator configuration guards", () => {
   it("builds the Anthropic generator when the key is set", () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
     expect(() => getSiteGenerator("anthropic")).not.toThrow();
+  });
+
+  it("says which generators use real AI (and spend credits)", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    // O mock do dev simula a IA (créditos e limites valem); o modo modelo não usa IA.
+    expect(new MockGenerator().usesAi).toBe(true);
+    expect(new MockGenerator({ templateMode: true }).usesAi).toBe(false);
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
+    expect(getSiteGenerator("anthropic").usesAi).toBe(true);
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubEnv("ANTHROPIC_AUTH_TOKEN", "");
+    expect(getSiteGenerator("anthropic").usesAi).toBe(false);
+  });
+
+  it("aiEnabled() is off in production without an AI key, quietly", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    vi.stubEnv("ANTHROPIC_AUTH_TOKEN", "");
+    expect(aiEnabled("mock")).toBe(false);
+    expect(aiEnabled("anthropic")).toBe(false);
+    expect(aiEnabled("gemini")).toBe(false);
+    expect(warn).not.toHaveBeenCalled();
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
+    expect(aiEnabled("anthropic")).toBe(true);
+    vi.stubEnv("VERCEL_ENV", "preview");
+    expect(aiEnabled("mock")).toBe(true);
+  });
+
+  it("template mode builds the site from the brief the /create wizard writes", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const spec = await new MockGenerator({ delayMs: 0, templateMode: true }).generateSite(
+      "The business is called Valley Cuts. Fades, beard trims and kids cuts. Based in McAllen, TX. Phone: 956-555-0110.",
+    );
+    expect(spec.business).toMatchObject({
+      name: "Valley Cuts",
+      phone: "(956) 555-0110",
+      city: "McAllen",
+      state: "TX",
+    });
+    const services = spec.sections.find((section) => section.type === "services");
+    expect(services?.type === "services" && services.items.map((item) => item.name)).toEqual([
+      "Fades",
+      "Beard Trims",
+      "Kids Cuts",
+    ]);
   });
 });
