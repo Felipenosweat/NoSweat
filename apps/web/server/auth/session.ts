@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { getSupabaseAuthConfig } from "./config";
 
 export type CurrentUser = { id: string; email: string | null };
@@ -29,12 +30,16 @@ export async function createSupabaseServerClient() {
   });
 }
 
-/** Usuário logado (validado pelo Supabase), DEV_USER sem Supabase, ou `null` se não estiver logado. */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+/**
+ * Usuário logado (validado pelo Supabase), DEV_USER sem Supabase, ou `null` se não estiver logado.
+ * `cache()` do React: dentro de um mesmo request (layout + página + seções) a sessão é lida uma vez só.
+ * Fora de um request do React (testes, scripts) o cache não guarda nada e cada chamada lê de novo.
+ */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createSupabaseServerClient();
   if (!supabase) return DEV_USER;
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   if (!claims?.sub) return null;
   return { id: claims.sub, email: typeof claims.email === "string" ? claims.email : null };
-}
+});
