@@ -26,8 +26,12 @@ export async function POST(request: Request): Promise<Response> {
     // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
     // IA) vira 500 sem descontar nada do cliente.
     const generator = getSiteGenerator();
-    const overLimit = await reserveUse(actor, "generate");
-    if (overLimit) return overLimit;
+    // Modo modelo (sem IA de verdade): não desconta créditos nem conta no ai_usage (o custo
+    // do /admin e o limite diário são da IA).
+    if (generator.usesAi) {
+      const overLimit = await reserveUse(actor, "generate");
+      if (overLimit) return overLimit;
+    }
 
     let spec: SiteSpec;
     try {
@@ -38,7 +42,7 @@ export async function POST(request: Request): Promise<Response> {
     } catch (error) {
       console.error("[api] site generation failed", error);
       // A IA falhou: os créditos voltam para a conta.
-      await refundUse(actor, "generate");
+      if (generator.usesAi) await refundUse(actor, "generate");
       return errorResponse(
         502,
         "generation_failed",

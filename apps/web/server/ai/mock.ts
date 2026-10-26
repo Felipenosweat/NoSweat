@@ -1,8 +1,10 @@
 import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
-import type { AiEditResult, SiteSpec, TemplateId } from "@nosweat/schema";
+import { SiteSpec, type AiEditResult, type TemplateId } from "@nosweat/schema";
 import type { DesignPlan } from "../design";
+import { factsFromBrief } from "./brief-facts";
 import { applyModelFill, verifyFacts, type ModelFill } from "./model-fill";
-import { modelFor, templateFor } from "./models";
+import { modelBySlug, modelFor, templateFor } from "./models";
+import { profileFor, templateFill } from "./template-mode";
 import type { SiteGenerator } from "./types";
 
 const RULES: { slug: FixtureSlug; keywords: string[] }[] = [
@@ -144,34 +146,21 @@ const MOCK_COPY: Record<
   },
 };
 
-/** Nome no início da descrição ("Joe's Plumbing in Austin..." → "Joe's Plumbing"). */
-function nameFromBrief(brief: string): string | undefined {
-  const first = brief.split("\n")[0]?.trim() ?? "";
-  const cut = [",", " is ", " in ", " at "]
-    .map((sep) => first.indexOf(sep))
-    .filter((i) => i > 0)
-    .sort((a, b) => a - b)[0];
-  const name = (cut === undefined ? "" : first.slice(0, cut)).trim();
-  return /^[A-Z]/.test(name) && name.length <= 60 && name.split(" ").length <= 6 ? name : undefined;
-}
-
 /**
  * Um ModelFill de mentira, montado só com o que está na descrição (sem IA, sem rede): textos
- * genéricos da categoria, nomes de serviço do modelo e fatos tirados do texto com expressões
- * simples. Passa pelo mesmo applyModelFill da IA de verdade.
+ * genéricos da categoria, nomes de serviço do modelo e fatos tirados do texto (brief-facts.ts).
+ * Passa pelo mesmo applyModelFill da IA de verdade. Só no dev e nos testes: em produção sem IA
+ * vale o modo modelo (template-mode.ts), que nunca copia serviços do modelo.
  */
 export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): ModelFill {
   const copy = MOCK_COPY[model.template];
   const services = model.sections.flatMap((s) => (s.type === "services" ? s.items : []));
-  const place = /\b([A-Z][a-z]+(?: [A-Z][a-z]+)*),\s([A-Z]{2})\b/.exec(brief);
-  const phone = /\(\d{3}\) \d{3}-\d{4}/.exec(brief)?.[0];
-  const email = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/.exec(brief)?.[0];
+  const facts = factsFromBrief(brief);
   const testimonials = [...brief.matchAll(/"([^"]{10,300})"\s*\(([^)]{2,60})\)/g)].flatMap((m) =>
     m[1] && m[2] ? [{ quote: m[1], author: m[2] }] : [],
   );
   const imageQuery = slug ? IMAGE_QUERIES[slug] : undefined;
-  const name = nameFromBrief(brief);
-  const city = place?.[1];
+  const city = facts.city;
   return {
     hero: { ...copy.hero, ...(imageQuery ? { imageQuery } : {}) },
     services: services.slice(0, 8).map((item) => ({
@@ -184,13 +173,40 @@ export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): Mo
     testimonials: testimonials.slice(0, 6),
     category: copy.category,
     business: {
-      name: name ?? (city ? `${city} ${copy.word}` : `Main Street ${copy.word}`),
-      ...(phone ? { phone } : {}),
-      ...(email ? { email } : {}),
-      ...(city ? { city } : {}),
-      ...(place?.[2] ? { state: place[2] } : {}),
+      ...facts,
+      name: facts.name ?? (city ? `${city} ${copy.word}` : `Main Street ${copy.word}`),
     },
   };
+}
+
+/** Põe a busca da foto do topo quando o modelo não tinha (o modelo mostrava a foto dele). */
+function withHeroQuery(spec: SiteSpec, query: string | undefined): SiteSpec {
+  const clean = query?.trim();
+  if (!clean) return spec;
+  return SiteSpec.parse({
+    ...spec,
+    sections: spec.sections.map((section) =>
+      section.type === "hero" && !section.image && !section.imageQuery?.trim()
+        ? { ...section, imageQuery: clean.slice(0, 80) }
+        : section,
+    ),
+  });
+}
+
+/**
+ * Modo modelo (produção sem chave de IA): tipo de negócio → site-modelo → textos genéricos do
+ * tipo + fatos do pedido (template-mode.ts). Nenhum texto do modelo fica no site.
+ */
+export function templateModeSite(brief: string, plan?: DesignPlan): SiteSpec {
+  const profile = profileFor(brief, templateFor(brief));
+  const preferred = profile.model ? modelBySlug(profile.model) : undefined;
+  const model =
+    preferred && preferred.category === profile.template
+      ? preferred.spec
+      : modelFor(profile.template, brief, plan);
+  const fill = templateFill(brief, profile, model);
+  const spec = applyModelFill(model, fill, plan, verifyFacts(fill.business, brief));
+  return withHeroQuery(spec, fill.hero.imageQuery);
 }
 
 /** Escolhe a fixture por palavra-chave no brief (sem acento e sem diferenciar maiúsculas). */
@@ -206,10 +222,19 @@ export function selectFixture(brief: string): FixtureSlug {
  * Gerador sem IA (não usa rede nem chave).
  * - Dev e testes: parte das 6 fixtures originais, com um atraso para simular a IA.
  * - `templateMode` (produção sem chave de IA): parte do site-modelo mais parecido da biblioteca
- *   inteira (server/ai/models.ts), e mudanças pela IA avisam que a IA ainda não está ligada.
+ *   inteira, com os textos genéricos do tipo de negócio (templateModeSite), e mudanças pela IA
+ *   avisam que a IA ainda não está ligada (a rota nem chega aqui: responde 503 antes).
  */
 export class MockGenerator implements SiteGenerator {
-  constructor(private readonly options: { delayMs?: number; templateMode?: boolean } = {}) {}
+  /**
+   * O mock do dev simula a IA (gasta créditos, para testar o fluxo inteiro). O modo modelo não
+   * usa IA: gerar não desconta créditos e mudanças pela IA ficam desligadas (503).
+   */
+  readonly usesAi: boolean;
+
+  constructor(private readonly options: { delayMs?: number; templateMode?: boolean } = {}) {
+    this.usesAi = !options.templateMode;
+  }
 
   /**
    * Como a geração a partir do modelo: parte do site-modelo e junta um ModelFill de mentira
@@ -218,14 +243,7 @@ export class MockGenerator implements SiteGenerator {
   async generateSite(brief: string, plan?: DesignPlan): Promise<SiteSpec> {
     const delayMs = this.options.delayMs ?? 1500;
     if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
-    if (this.options.templateMode) {
-      const template = templateFor(brief);
-      if (template) {
-        const model = modelFor(template, brief, plan);
-        const fill = mockFill(brief, model);
-        return applyModelFill(model, fill, plan, verifyFacts(fill.business, brief));
-      }
-    }
+    if (this.options.templateMode) return templateModeSite(brief, plan);
     const slug = selectFixture(brief);
     const model = fixtures[slug];
     const fill = mockFill(brief, model, slug);

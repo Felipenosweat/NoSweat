@@ -1,8 +1,13 @@
 import { fixtures } from "@nosweat/fixtures";
 import type { LineItem } from "@nosweat/schema";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEV_USER } from "../auth/session";
-import { createClient } from "../clients/service";
+import {
+  addClientActivity,
+  CLIENT_HAS_DOCUMENTS,
+  createClient,
+  deleteClient,
+} from "../clients/service";
 import { getClientStore, resetMemoryClientStore } from "../clients/store";
 import { getSiteStore } from "../store";
 import {
@@ -79,6 +84,10 @@ async function expectOfficeError(promise: Promise<unknown>, status: number): Pro
 beforeEach(() => {
   resetMemoryOfficeStore();
   resetMemoryClientStore();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("dates", () => {
@@ -375,26 +384,36 @@ describe("invoices and payments", () => {
       400,
     );
 
-    // Cada pagamento entra no histórico do cliente como serviço.
+    // Cada pagamento entra no histórico do cliente como `payment`: soma no total, não é serviço.
     const updatedClient = await getClientStore().getClient(OWNER, client.id);
     expect(updatedClient?.totalJobsCents).toBe(30_000);
+    expect(updatedClient?.jobsCount).toBe(0);
     const activities = await getClientStore().listActivities(OWNER, client.id);
-    expect(
-      activities.filter((a) => a.body === `Payment for invoice #${invoice.number}`),
-    ).toHaveLength(2);
+    const payments = activities.filter((a) => a.body === `Payment for invoice #${invoice.number}`);
+    expect(payments).toHaveLength(2);
+    expect(payments.every((a) => a.kind === "payment")).toBe(true);
+    expect(new Set(payments.map((a) => a.paymentId))).toEqual(
+      new Set(paid!.payments.map((p) => p.id)),
+    );
 
     const reverted = await deletePayment(OWNER, invoice.id, paid!.payments[1]!.id);
     expect(reverted?.status).toBe("partial");
     expect(reverted?.paidAt).toBeNull();
     expect(reverted?.balanceCents).toBe(20_000);
     await expectOfficeError(deletePayment(OWNER, invoice.id, "missing"), 404);
+    // O item do pagamento apagado sai do histórico e o total do cliente cai junto.
+    expect((await getClientStore().getClient(OWNER, client.id))?.totalJobsCents).toBe(10_000);
+    const left = await getClientStore().listActivities(OWNER, client.id);
+    expect(left.filter((a) => a.kind === "payment").map((a) => a.paymentId)).toEqual([
+      paid!.payments[0]!.id,
+    ]);
 
     const publicView = await getPublicInvoice(invoice.publicToken);
     expect(publicView?.amountPaidCents).toBe(10_000);
     expect(publicView?.status).toBe("partial");
   });
 
-  it("shows overdue, voids without payments, and hides drafts and voids publicly", async () => {
+  it("shows overdue, voids without payments, shows voids publicly and hides drafts", async () => {
     const { invoice } = await sentInvoice(5_000);
     const overdue = await updateInvoice(OWNER, invoice.id, { dueOn: "2020-01-01" });
     expect(overdue?.status).toBe("overdue");
@@ -404,7 +423,10 @@ describe("invoices and payments", () => {
 
     const voided = await updateInvoice(OWNER, invoice.id, { status: "void" });
     expect(voided?.status).toBe("void");
-    expect(await getPublicInvoice(invoice.publicToken)).toBeNull();
+    // Anulada continua no link (a página mostra "canceled"); rascunho não.
+    const publicVoid = await getPublicInvoice(invoice.publicToken);
+    expect(publicVoid?.status).toBe("void");
+    expect(publicVoid?.timeZone).toBe("America/New_York");
     await expectOfficeError(updateInvoice(OWNER, invoice.id, { title: "x" }), 409);
     await expectOfficeError(
       recordPayment(OWNER, invoice.id, { amountCents: 1, method: "cash" }),
@@ -536,5 +558,286 @@ describe("summary", () => {
     expect(summary.overdueInvoices).toBe(1);
     expect(summary.overdueCents).toBe(1_000);
     expect(summary.collectedThisMonthCents).toBe(3_000);
+  });
+});
+
+// ---------- correções da 0023 ----------
+
+/** Orçamento enviado (com uma linha) pronto para o cliente responder. */
+async function sentEstimate(clientName = "Ana Lima") {
+  const client = await newClient(OWNER, clientName);
+  const draft = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+  const sent = await sendEstimate(OWNER, draft.id, ORIGIN);
+  return { client, estimate: sent!.estimate };
+}
+
+describe("deleting a client with office documents", () => {
+  it("refuses with 409 while estimates, jobs or invoices exist", async () => {
+    const client = await newClient();
+    const estimate = await createEstimate(OWNER, { clientId: client.id });
+    const error = await deleteClient(OWNER, client.id).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(OfficeError);
+    expect((error as OfficeError).status).toBe(409);
+    expect((error as OfficeError).message).toBe(CLIENT_HAS_DOCUMENTS);
+    expect(await getEstimate(OWNER, estimate.id)).not.toBeNull();
+
+    await getOfficeStore().deleteEstimate(OWNER, estimate.id);
+    const job = await createJob(OWNER, { clientId: client.id, title: "Fix" });
+    await expectOfficeError(deleteClient(OWNER, client.id), 409);
+    await deleteJob(OWNER, job.id);
+
+    // Só fatura anulada: apaga a fatura e o cliente.
+    const invoice = await createInvoice(OWNER, { clientId: client.id, items: [line()] });
+    await expectOfficeError(deleteClient(OWNER, client.id), 409);
+    await updateInvoice(OWNER, invoice.id, { status: "void" });
+    expect(await deleteClient(OWNER, client.id)).toBe(true);
+    expect(await getInvoice(OWNER, invoice.id)).toBeNull();
+    expect(await getClientStore().getClient(OWNER, client.id)).toBeNull();
+  });
+
+  it("still deletes a client without documents (and 404s someone else's)", async () => {
+    const client = await newClient();
+    expect(await deleteClient(OTHER, client.id)).toBe(false);
+    expect(await deleteClient(OWNER, client.id)).toBe(true);
+  });
+});
+
+describe("void invoices and job links", () => {
+  it("unlinks jobs when voiding and relinks them on the next invoice", async () => {
+    const client = await newClient();
+    const job = await createJob(OWNER, { clientId: client.id, title: "Install" });
+    const first = await createInvoice(OWNER, { clientId: client.id, jobId: job.id });
+    expect((await getJob(OWNER, job.id))?.invoiceId).toBe(first.id);
+
+    await updateInvoice(OWNER, first.id, { status: "void" });
+    expect((await getJob(OWNER, job.id))?.invoiceId).toBeNull();
+
+    const second = await createInvoice(OWNER, { clientId: client.id, jobId: job.id });
+    expect((await getJob(OWNER, job.id))?.invoiceId).toBe(second.id);
+  });
+
+  it("relinks a job whose invoice was voided (data from before the fix) on create and convert", async () => {
+    const client = await newClient();
+    const estimate = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    await updateEstimate(OWNER, estimate.id, { status: "approved" });
+    const first = await convertEstimate(OWNER, estimate.id, {
+      createJob: true,
+      createInvoice: true,
+    });
+    const jobId = first!.job!.id;
+    // Fatura anulada por fora (sem soltar o job), como nos dados antigos.
+    await getOfficeStore().updateInvoice(OWNER, first!.invoice!.id, { status: "void" });
+    expect((await getJob(OWNER, jobId))?.invoiceId).toBe(first!.invoice!.id);
+
+    const again = await convertEstimate(OWNER, estimate.id, {
+      createJob: true,
+      createInvoice: true,
+    });
+    expect(again?.invoice?.id).not.toBe(first!.invoice!.id);
+    expect(again?.job?.id).toBe(jobId);
+    expect(again?.job?.invoiceId).toBe(again?.invoice?.id);
+
+    await getOfficeStore().updateInvoice(OWNER, again!.invoice!.id, { status: "void" });
+    const manual = await createInvoice(OWNER, { clientId: client.id, jobId });
+    expect((await getJob(OWNER, jobId))?.invoiceId).toBe(manual.id);
+  });
+
+  it("refuses a job from another client", async () => {
+    const ana = await newClient();
+    const bob = await newClient(OWNER, "Bob Stone");
+    const job = await createJob(OWNER, { clientId: ana.id, title: "Ana's job" });
+    await expectOfficeError(createInvoice(OWNER, { clientId: bob.id, jobId: job.id }), 400);
+    await expectOfficeError(createEstimate(OWNER, { clientId: bob.id, jobId: job.id }), 400);
+  });
+});
+
+describe("payments race", () => {
+  it("never records more than the balance with two payments at once", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line({ unitPriceCents: 30_000 })],
+      taxRateBps: 0,
+    });
+    const results = await Promise.allSettled([
+      recordPayment(OWNER, invoice.id, { amountCents: 20_000, method: "cash" }),
+      recordPayment(OWNER, invoice.id, { amountCents: 20_000, method: "zelle" }),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    const rejected = results.find((r) => r.status === "rejected");
+    expect((rejected as PromiseRejectedResult).reason).toBeInstanceOf(OfficeError);
+    expect(((rejected as PromiseRejectedResult).reason as OfficeError).status).toBe(400);
+
+    const after = await getInvoice(OWNER, invoice.id);
+    expect(after?.amountPaidCents).toBe(20_000);
+    expect(after?.payments).toHaveLength(1);
+    // Rascunho com pagamento vira enviado.
+    expect(after?.status).toBe("partial");
+  });
+});
+
+describe("client totals with payments", () => {
+  it("counts payments as revenue but not as jobs", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line({ unitPriceCents: 5_000 })],
+      taxRateBps: 0,
+    });
+    await recordPayment(OWNER, invoice.id, { amountCents: 5_000, method: "card" });
+    const logged = await addClientActivity(OWNER, client.id, {
+      kind: "job",
+      body: "Gutter cleaning",
+      amountCents: 2_000,
+    });
+    // O serviço manual não apaga o pagamento do total.
+    expect(logged?.client.jobsCount).toBe(1);
+    expect(logged?.client.totalJobsCents).toBe(7_000);
+  });
+});
+
+describe("stale estimate answers", () => {
+  it("rejects an approval of a version the customer did not see", async () => {
+    const { estimate } = await sentEstimate();
+    const seen = await getPublicEstimate(estimate.publicToken);
+    expect(seen?.updatedAt).toBe(estimate.updatedAt);
+    expect(seen?.timeZone).toBe("America/New_York");
+
+    // O dono muda o preço de um orçamento enviado: continua enviado, versão nova.
+    const edited = await updateEstimate(OWNER, estimate.id, {
+      items: [line({ unitPriceCents: 99_000 })],
+    });
+    expect(edited?.status).toBe("sent");
+    expect(edited?.updatedAt).not.toBe(estimate.updatedAt);
+
+    const error = await respondToEstimate(estimate.publicToken, {
+      decision: "approve",
+      name: "Ana Lima",
+      updatedAt: seen!.updatedAt,
+    }).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(OfficeError);
+    expect((error as OfficeError).status).toBe(409);
+    expect((error as OfficeError).message).toBe(
+      "This estimate was changed. Refresh to see the latest version.",
+    );
+    expect((await getEstimate(OWNER, estimate.id))?.status).toBe("sent");
+
+    const fresh = await getPublicEstimate(estimate.publicToken);
+    const approved = await respondToEstimate(estimate.publicToken, {
+      decision: "approve",
+      name: "Ana Lima",
+      updatedAt: fresh!.updatedAt,
+    });
+    expect(approved?.status).toBe("approved");
+    expect(approved?.totalCents).toBe(99_000);
+  });
+
+  it("shows the decline reason to the owner", async () => {
+    const { estimate } = await sentEstimate();
+    await respondToEstimate(estimate.publicToken, { decision: "decline", reason: "Too pricey" });
+    expect((await getEstimate(OWNER, estimate.id))?.declineReason).toBe("Too pricey");
+  });
+});
+
+describe("owner answer race", () => {
+  it("returns 409 when the customer answered after the owner loaded the estimate", async () => {
+    const { estimate } = await sentEstimate();
+    const stale = await getOfficeStore().getEstimate(OWNER, estimate.id);
+    await respondToEstimate(estimate.publicToken, { decision: "decline" });
+    // O dono ainda tem a leitura antiga ("sent") quando marca "approved".
+    vi.spyOn(getOfficeStore(), "getEstimate").mockResolvedValueOnce(stale);
+    await expectOfficeError(updateEstimate(OWNER, estimate.id, { status: "approved" }), 409);
+    expect((await getEstimate(OWNER, estimate.id))?.status).toBe("declined");
+  });
+});
+
+describe("convert twice at once", () => {
+  it("creates one job and one invoice", async () => {
+    const client = await newClient();
+    const estimate = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    await updateEstimate(OWNER, estimate.id, { status: "approved" });
+    const both = { createJob: true, createInvoice: true };
+    const [a, b] = await Promise.all([
+      convertEstimate(OWNER, estimate.id, both),
+      convertEstimate(OWNER, estimate.id, both),
+    ]);
+    expect(a?.job?.id).toBe(b?.job?.id);
+    expect(a?.invoice?.id).toBe(b?.invoice?.id);
+    expect(await listJobs(OWNER)).toHaveLength(1);
+    expect(await listInvoices(OWNER)).toHaveLength(1);
+    expect((await getEstimate(OWNER, estimate.id))?.jobId).toBe(a?.job?.id);
+  });
+
+  it("keeps one active invoice per estimate in the store", async () => {
+    const client = await newClient();
+    const estimate = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    await updateEstimate(OWNER, estimate.id, { status: "approved" });
+    const result = await convertEstimate(OWNER, estimate.id, {
+      createJob: false,
+      createInvoice: true,
+    });
+    const stored = await getOfficeStore().getInvoice(OWNER, result!.invoice!.id);
+    expect(stored).not.toBeNull();
+    await expect(
+      getOfficeStore().insertInvoice({ ...stored!, publicToken: "y".repeat(32) }),
+    ).rejects.toThrow();
+  });
+});
+
+describe("job status needs a start time", () => {
+  it("refuses scheduled or in progress without startAt", async () => {
+    const client = await newClient();
+    const job = await createJob(OWNER, { clientId: client.id, title: "Someday" });
+    await expectOfficeError(updateJob(OWNER, job.id, { status: "scheduled" }), 400);
+    await expectOfficeError(updateJob(OWNER, job.id, { status: "in_progress" }), 400);
+    const ok = await updateJob(OWNER, job.id, {
+      status: "in_progress",
+      startAt: "2030-01-15T09:00:00-05:00",
+    });
+    expect(ok?.status).toBe("in_progress");
+    // Tirar o horário de um job em andamento também não pode.
+    await expectOfficeError(updateJob(OWNER, job.id, { startAt: null }), 400);
+    expect((await updateJob(OWNER, job.id, { status: "done" }))?.status).toBe("done");
+  });
+});
+
+describe("totals cap", () => {
+  it("refuses documents over $1,000,000", async () => {
+    const client = await newClient();
+    const huge = [line({ quantity: 2, unitPriceCents: 60_000_000 })];
+    await expectOfficeError(createEstimate(OWNER, { clientId: client.id, items: huge }), 400);
+    await expectOfficeError(createInvoice(OWNER, { clientId: client.id, items: huge }), 400);
+    const estimate = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    await expectOfficeError(updateEstimate(OWNER, estimate.id, { items: huge }), 400);
+    // Exatamente US$ 1.000.000 passa.
+    const max = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line({ unitPriceCents: 100_000_000 })],
+      taxRateBps: 0,
+    });
+    expect(max.totalCents).toBe(100_000_000);
+    // Nenhum número foi gasto nas recusadas.
+    expect(max.number).toBe(1001);
+  });
+});
+
+describe("pure reads", () => {
+  it("do not create the settings row", async () => {
+    const owner = "reader-only";
+    expect((await getSettings(owner)).invoiceDueDays).toBe(14);
+    await listEstimates(owner);
+    await listInvoices(owner);
+    await listJobs(owner);
+    await getOfficeSummary(owner);
+    expect(await getOfficeStore().getSettings(owner)).toBeNull();
+
+    await updateSettings(owner, { companyName: "Saved" });
+    expect((await getOfficeStore().getSettings(owner))?.companyName).toBe("Saved");
   });
 });

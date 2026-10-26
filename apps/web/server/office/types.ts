@@ -96,7 +96,8 @@ export type EstimateGuard = {
 /** Resultado de registrar um pagamento (atômico: confere o saldo e grava de uma vez). */
 export type RecordPaymentResult =
   | { ok: true; payment: PaymentRecord; invoice: InvoiceRecord }
-  | { ok: false; reason: "not_found" | "void" }
+  | { ok: false; reason: "not_found" }
+  | { ok: false; reason: "void" }
   | { ok: false; reason: "over_balance"; balanceCents: number };
 
 /** Tipos de documento com número sequencial (`office_next_number`). */

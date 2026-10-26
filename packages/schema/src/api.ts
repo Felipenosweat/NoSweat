@@ -24,6 +24,8 @@ export const ERROR_CODES = [
   "internal_error",
   "conflict",
   "out_of_credits",
+  /** A IA ainda não está ligada (produção sem chave): mudanças pela IA respondem 503. */
+  "ai_unavailable",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 

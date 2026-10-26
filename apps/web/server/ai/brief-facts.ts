@@ -107,7 +107,13 @@ const NAME_CONNECTORS = new Set(["&", "and", "of", "the", "de", "la", "del", "y"
 /** O texto tem cara de nome de negócio? (curto, cada palavra com maiúscula, sem ser uma frase) */
 export function looksLikeName(candidate: string): boolean {
   const name = candidate.trim();
-  if (!name || name.length > 60 || /[.!?]\s/.test(name) || !/^[A-Z0-9]/.test(name)) return false;
+  if (!name || name.length > 60 || !/^[A-Z0-9]/.test(name)) return false;
+  // Um ponto no meio só vale em abreviação ("St. Louis", "Sparkle & Co. Cleaning") ou inicial.
+  const withoutAbbreviations = name.replace(
+    /\b(?:St|Mt|Ft|Pt|Dr|Mr|Mrs|Ms|Co|Inc|Ltd|LLC|Corp|Bros|Jr|Sr|[A-Z])\.(?=\s)/g,
+    "X",
+  );
+  if (/[.!?]\s/.test(withoutAbbreviations)) return false;
   const words = name.split(/\s+/);
   if (words.length > 6) return false;
   const first = (words[0] ?? "").toLowerCase().replace(/[’]/g, "'");
@@ -191,10 +197,10 @@ export function serviceAreaFromBrief(brief: string): string | undefined {
 }
 
 const DAY_RE =
-  /\b(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)(?:day|days|s|\.)?\b|\b(daily|every day|weekdays|weekends|7 days)\b/i;
+  /\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)\b|\b(?:daily|every day|weekdays|weekends)\b/i;
 const MERIDIEM = "(?:\\s?(?:a\\.?m\\.?|p\\.?m\\.?))?";
 const CLOCK = `\\d{1,2}(?::\\d{2})?${MERIDIEM}`;
-const TIME_RE = new RegExp(`${CLOCK}\\s*(?:-|–|—|to)\\s*${CLOCK}|\\bnoon\\b.*|\\b24 hours\\b`, "i");
+const TIME_RE = new RegExp(`${CLOCK}\\s*(?:-|–|—|to)\\s*${CLOCK}|\\b24 hours\\b`, "i");
 const CLOSED_RE = /\bclosed\b/i;
 
 /** "mon–fri" → "Mon–fri" (primeira letra maiúscula, o resto como o dono escreveu). */
@@ -280,7 +286,9 @@ export function titleCase(text: string): string {
 
 /** Começos que fazem do pedaço uma frase sobre o negócio, não um serviço. */
 const NOT_A_SERVICE_START =
-  /^(?:we|we're|i|i'm|our|my|us|you|your|they|it|its|it's|this|that|there|here|a|an|the|located|based|serving|call|open|since|family|owned|locally)\b/i;
+  /^(?:we|we're|i|i'm|our|my|us|you|your|they|it|its|it's|this|that|there|here|a|an|the|located|based|serving|call|open|since|locally)\b/i;
+/** Pedaços que falam do negócio (onde fica, desde quando), não de um serviço. */
+const ABOUT_THE_BUSINESS = /\b(?:serving|based|located|owned|operated|since|years?)\b/i;
 /** Verbos do começo ("We offer …", "Specializing in …"): saem, o resto é o serviço. */
 const LEAD_IN =
   /^(?:(?:we|i)(?:'re|’re| are| am)?\s+(?:also\s+)?(?:do|offer|provide|handle|specialize in|specialise in|focus on|make|sell|teach|bake|cook|serve)\s+|(?:offering|specializing in|specialising in|services include|including|plus|also)\s+)/i;
@@ -313,7 +321,10 @@ export function servicesFromWhat(what: string): string[] {
         part.split(/\s+/).length <= 6 &&
         !/\d/.test(part) &&
         !part.includes("$") &&
-        !NOT_A_SERVICE_START.test(part),
+        !NOT_A_SERVICE_START.test(part) &&
+        !ABOUT_THE_BUSINESS.test(part) &&
+        // "Hair salon in Miami": tem lugar, é a descrição do negócio.
+        !/\b(?:in|near|around) [A-Z]/.test(part),
     );
   if (parts.length === 1 && parts[0] && parts[0].split(/\s+/).length <= 2) {
     if (BUSINESS_NOUN.test(parts[0])) return [];

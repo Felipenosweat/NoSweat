@@ -96,6 +96,8 @@ export function SectionsPanel({
   onChange: (index: number, change: (section: Section) => void) => void;
   onAdd: (type: SectionType) => void;
   rewrite: {
+    /** IA desligada (produção sem chave): o "Rewrite with AI" nem aparece. */
+    hidden?: boolean;
     /** Motivo para não poder pedir agora (ex.: há mudanças não salvas), ou `null`. */
     blockedReason: string | null;
     pendingIndex: number | null;
@@ -178,7 +180,7 @@ export function SectionsPanel({
               </div>
               {open && (
                 <div id={bodyId} className="space-y-4 px-5 pt-1 pb-6">
-                  {REWRITABLE.has(section.type) && (
+                  {REWRITABLE.has(section.type) && !rewrite.hidden && (
                     <RewriteMenu
                       sectionLabel={SECTION_LABELS[section.type]}
                       blockedReason={rewrite.blockedReason}

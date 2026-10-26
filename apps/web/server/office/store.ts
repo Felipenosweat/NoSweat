@@ -864,7 +864,9 @@ export class MemoryOfficeStore implements OfficeStore {
         (i) => i.estimateId === estimateId && i.status !== "void",
       )
     ) {
-      throw new Error("duplicate key value violates unique constraint invoices_estimate_active_idx");
+      throw new Error(
+        "duplicate key value violates unique constraint invoices_estimate_active_idx",
+      );
     }
     return insertOwned<InvoiceRecord>(this.state.invoices, invoice, true);
   }
@@ -922,7 +924,12 @@ export class MemoryOfficeStore implements OfficeStore {
     } else if (invoice.status === "draft") {
       patch.status = "sent";
     }
-    const updated = patchOwned<InvoiceRecord>(this.state.invoices, invoice.ownerId, invoice.id, patch);
+    const updated = patchOwned<InvoiceRecord>(
+      this.state.invoices,
+      invoice.ownerId,
+      invoice.id,
+      patch,
+    );
     if (!updated) return { ok: false, reason: "not_found" };
     return { ok: true, payment: record, invoice: updated };
   }

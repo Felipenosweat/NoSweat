@@ -162,6 +162,7 @@ export function SiteEditor({
   needsPlan = false,
   domainUrl = null,
   model = null,
+  aiEnabled = true,
 }: {
   siteId: string;
   initialSpec: SiteSpec;
@@ -190,6 +191,11 @@ export function SiteEditor({
   domainUrl?: string | null;
   /** Editando um site-modelo no estúdio (só admins); ver ModelEditorMode. */
   model?: ModelEditorMode | null;
+  /**
+   * As mudanças pela IA estão ligadas (server/ai, aiEnabled)? Sem IA (produção sem chave), o
+   * pedido à IA e o "Rewrite with AI" somem, com um aviso, e o editor abre na edição.
+   */
+  aiEnabled?: boolean;
 }) {
   // Endereços do site ou, no modo modelo, do modelo (cópia local separada por prefixo).
   const draftKey = model ? `model-${siteId}` : siteId;
@@ -231,13 +237,16 @@ export function SiteEditor({
   const [aiEditsLeft, setAiEditsLeft] = useState(initialAiEditsLeft);
   const [creditsLeft, setCreditsLeft] = useState<number | null>(initialAiCredits?.left ?? null);
   const [rewritingIndex, setRewritingIndex] = useState<number | null>(null);
+  /** IA ligada? Começa com o que o servidor disse; um 503 `ai_unavailable` desliga. */
+  const [aiOn, setAiOn] = useState(aiEnabled);
   /** Versão anterior ao último pedido à IA, para o botão "Undo". */
   const [beforeAi, setBeforeAi] = useState<SiteSpec | null>(null);
   /** Tema antes do primeiro "Shuffle style", para desfazer. */
   const [themeBeforeShuffle, setThemeBeforeShuffle] = useState<Theme | null>(null);
 
   const isDesktop = useMediaQuery(DESKTOP_QUERY, true);
-  const [tab, setTab] = useState<TabId>("ai");
+  // Sem IA, abre direto na edição (no celular, "content" vira a aba "Edit").
+  const [tab, setTab] = useState<TabId>(aiEnabled ? "ai" : "content");
   /** Última aba de edição usada (o botão "Edit" do topo volta para ela). */
   const [editTab, setEditTab] = useState<TabId>("content");
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -554,7 +563,7 @@ export function SiteEditor({
   // ---------- IA ----------
 
   async function runAi(text: string, options: { fromPrompt: boolean; sectionIndex?: number }) {
-    if (saving || aiPending) return;
+    if (saving || aiPending || !aiOn) return;
     say({ role: "user", text: text.trim() });
     // A IA trabalha sobre o rascunho SALVO: mudanças pendentes são salvas antes do pedido.
     let previous = spec;
@@ -585,6 +594,7 @@ export function SiteEditor({
           setAiEditsLeft(0);
           setCreditsLeft(0);
         }
+        if (apiError.success && apiError.data.error.code === "ai_unavailable") setAiOn(false);
         const message = apiError.success
           ? apiError.data.error.message
           : "The AI couldn't make that change.";
@@ -970,6 +980,8 @@ export function SiteEditor({
         onAddPhotos={openPhotos}
         historyHref={isGuest || model ? null : `/sites/${siteId}`}
         isGuest={isGuest}
+        aiEnabled={aiOn}
+        onEditYourself={() => selectTab(isDesktop ? "content" : "edit")}
         signUpHref={isGuest ? signUpHref : null}
         onSignUp={onSignUpClick}
       />
@@ -1007,6 +1019,7 @@ export function SiteEditor({
                 onChange={updateSection}
                 onAdd={addSection}
                 rewrite={{
+                  hidden: !aiOn,
                   blockedReason: aiBlockedReason,
                   pendingIndex: rewritingIndex,
                   onRewrite: rewriteSection,

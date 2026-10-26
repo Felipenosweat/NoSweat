@@ -454,9 +454,10 @@ const COUNTS_AS_REVENUE = new Set<ClientActivity["kind"]>(["job", "payment"]);
  * Totais do cliente a partir do histórico (sem somar em cima do valor antigo): `jobsCount` conta só
  * os serviços (`job`); `totalJobsCents` soma serviços e pagamentos do escritório (`payment`).
  */
-export function clientTotals(
-  activities: readonly Pick<ClientActivity, "kind" | "amountCents">[],
-): { jobsCount: number; totalJobsCents: number } {
+export function clientTotals(activities: readonly Pick<ClientActivity, "kind" | "amountCents">[]): {
+  jobsCount: number;
+  totalJobsCents: number;
+} {
   let jobsCount = 0;
   let totalJobsCents = 0;
   for (const activity of activities) {

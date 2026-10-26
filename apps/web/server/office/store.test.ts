@@ -124,6 +124,129 @@ describe("SupabaseOfficeStore", () => {
     expect(calls).toHaveLength(1);
   });
 
+  it("guards by version and by the linked job", async () => {
+    const { store, calls } = fakeStore([[], []]);
+    const seen = "2026-10-26T12:00:00.123+00:00";
+    expect(
+      await store.updateEstimate(
+        OWNER,
+        JOB,
+        { status: "approved" },
+        { status: "sent", updatedAt: seen },
+      ),
+    ).toBeNull();
+    expect(calls[0]?.url).toBe(
+      `https://x.supabase.co/rest/v1/estimates?id=eq.${JOB}&owner_id=eq.${OWNER}&status=eq.sent&updated_at=eq.${encodeURIComponent(seen)}`,
+    );
+    await store.updateEstimate(OWNER, JOB, { jobId: CLIENT }, { status: "approved", jobId: null });
+    expect(calls[1]?.url).toBe(
+      `https://x.supabase.co/rest/v1/estimates?id=eq.${JOB}&owner_id=eq.${OWNER}&status=eq.approved&job_id=is.null`,
+    );
+    // Versão que não é data nunca bate (e não chega ao banco).
+    expect(await store.updateEstimate(OWNER, JOB, {}, { updatedAt: "nope" })).toBeNull();
+    expect(calls).toHaveLength(2);
+  });
+
+  it("filters jobs by invoice and checks a client's documents", async () => {
+    const { store, calls } = fakeStore([[jobRow], [], [], [{ id: JOB }]]);
+    await store.listJobs(OWNER, { invoiceId: JOB });
+    expect(calls[0]?.url).toContain(`&invoice_id=eq.${JOB}&`);
+    expect(await store.clientHasDocuments(OWNER, CLIENT)).toBe(true);
+    expect(calls[3]?.url).toBe(
+      `https://x.supabase.co/rest/v1/invoices?owner_id=eq.${OWNER}&client_id=eq.${CLIENT}&select=id&limit=1&status=neq.void`,
+    );
+  });
+
+  it("records payments through the atomic RPC and maps its errors", async () => {
+    const paymentRow = {
+      id: "44444444-4444-4444-8444-444444444444",
+      owner_id: OWNER,
+      invoice_id: JOB,
+      amount_cents: 5_000,
+      method: "cash",
+      reference: "",
+      received_on: "2026-10-26",
+      created_at: "2026-10-26T12:00:00+00:00",
+    };
+    const invoiceRow = {
+      id: JOB,
+      owner_id: OWNER,
+      number: 1001,
+      client_id: CLIENT,
+      job_id: null,
+      estimate_id: null,
+      title: "",
+      status: "sent",
+      items: [],
+      tax_rate_bps: 0,
+      subtotal_cents: 10_000,
+      discount_cents: 0,
+      tax_cents: 0,
+      total_cents: 10_000,
+      amount_paid_cents: 5_000,
+      message: "",
+      issued_on: "2026-10-26",
+      due_on: null,
+      public_token: "x".repeat(32),
+      sent_at: null,
+      paid_at: null,
+      created_at: "2026-10-26T12:00:00+00:00",
+      updated_at: "2026-10-26T12:00:00+00:00",
+    };
+    const replies: [number, unknown][] = [
+      [200, { payment: paymentRow, invoice: invoiceRow }],
+      [400, { code: "P0001", message: "office_payment_over_balance", details: "5000", hint: null }],
+      [400, { code: "P0001", message: "office_invoice_void", details: null, hint: null }],
+      [400, { code: "P0001", message: "office_invoice_not_found", details: null, hint: null }],
+      [500, { message: "boom" }],
+    ];
+    const bodies: unknown[] = [];
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://x.supabase.co/rest/v1/rpc/office_record_payment");
+      bodies.push(JSON.parse(String(init?.body)));
+      const [status, body] = replies.shift()!;
+      return new Response(JSON.stringify(body), { status });
+    }) as typeof fetch;
+    const store = new SupabaseOfficeStore(
+      { url: "https://x.supabase.co", serviceKey: "service-key" },
+      fetchImpl,
+    );
+    const payment = {
+      ownerId: OWNER,
+      invoiceId: JOB,
+      amountCents: 5_000,
+      method: "cash" as const,
+      reference: "",
+      receivedOn: "2026-10-26",
+    };
+
+    const ok = await store.recordPayment(payment);
+    expect(bodies[0]).toEqual({
+      p_owner: OWNER,
+      p_invoice: JOB,
+      p_amount: 5_000,
+      p_method: "cash",
+      p_reference: "",
+      p_received_on: "2026-10-26",
+    });
+    expect(ok.ok && ok.payment.amountCents).toBe(5_000);
+    expect(ok.ok && ok.invoice.amountPaidCents).toBe(5_000);
+    expect(await store.recordPayment(payment)).toEqual({
+      ok: false,
+      reason: "over_balance",
+      balanceCents: 5_000,
+    });
+    expect(await store.recordPayment(payment)).toEqual({ ok: false, reason: "void" });
+    expect(await store.recordPayment(payment)).toEqual({ ok: false, reason: "not_found" });
+    await expect(store.recordPayment(payment)).rejects.toThrow(/500/);
+    // Id inválido nem chega ao banco.
+    expect(await store.recordPayment({ ...payment, invoiceId: "nope" })).toEqual({
+      ok: false,
+      reason: "not_found",
+    });
+    expect(bodies).toHaveLength(5);
+  });
+
   it("creates settings without overwriting existing ones", async () => {
     const settingsRow = {
       owner_id: OWNER,

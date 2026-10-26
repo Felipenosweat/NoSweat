@@ -8,7 +8,8 @@ type Context = { params: Promise<{ token: string }> };
 
 /**
  * GET /api/public/invoices/[token]: a fatura como o cliente final vê (página /i/[token]).
- * Público, sem conta. Rascunho, anulada ou token desconhecido = 404.
+ * Público, sem conta. Rascunho ou token desconhecido = 404; anulada vem com `status: "void"` (a
+ * página mostra o aviso de cancelada).
  */
 export async function GET(_request: Request, { params }: Context): Promise<Response> {
   return officeHandle("/api/public/invoices/[token]", async () => {

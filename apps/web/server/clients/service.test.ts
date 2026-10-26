@@ -7,11 +7,14 @@ import { getSiteStore } from "../store";
 import { clientsToCsv, csvCell } from "./csv";
 import {
   addClientActivity,
+  addClientPayment,
+  clientTotals,
   clientsNeedingAttention,
   createClient,
   getClientsSummary,
   listClients,
   searchClients,
+  removeClientPayment,
   summarizeClients,
   updateClient,
 } from "./service";
@@ -294,5 +297,56 @@ describe("clientsToCsv", () => {
     expect(csvCell("-5")).toBe("-5");
     expect(csvCell("@cmd")).toBe("'@cmd");
     expect(csvCell(null)).toBe("");
+  });
+});
+
+describe("office payments in the client history", () => {
+  it("count as revenue but not as jobs", () => {
+    expect(
+      clientTotals([
+        { kind: "job", amountCents: 10_000 },
+        { kind: "payment", amountCents: 2_500 },
+        { kind: "payment", amountCents: 500 },
+        { kind: "note", amountCents: null },
+      ]),
+    ).toEqual({ jobsCount: 1, totalJobsCents: 13_000 });
+
+    const summary = summarizeClients({
+      clients: [],
+      activities: [
+        {
+          clientId: "c1",
+          kind: "payment",
+          body: "Payment for invoice #1001",
+          amountCents: 7_000,
+          occurredAt: "2026-10-09T14:00:00.000Z",
+        },
+      ],
+      today: "2026-10-26",
+      timeZone: "America/New_York",
+    });
+    expect(summary.revenueThisMonthCents).toBe(7_000);
+    expect(summary.jobsThisMonth).toBe(0);
+  });
+
+  it("adds and removes the payment item with the totals", async () => {
+    const client = await createClient(DEV_USER.id, {
+      name: "Paying Client",
+      email: "paying.client@example.test",
+    });
+    const paymentId = crypto.randomUUID();
+    const activity = await addClientPayment(DEV_USER.id, client.id, {
+      paymentId,
+      amountCents: 4_000,
+      body: "Payment for invoice #1001",
+    });
+    expect(activity?.kind).toBe("payment");
+    let detail = (await listClients(DEV_USER.id)).find((c) => c.id === client.id);
+    expect(detail?.totalJobsCents).toBe(4_000);
+    expect(detail?.jobsCount).toBe(0);
+
+    await removeClientPayment(DEV_USER.id, paymentId);
+    detail = (await listClients(DEV_USER.id)).find((c) => c.id === client.id);
+    expect(detail?.totalJobsCents).toBe(0);
   });
 });
