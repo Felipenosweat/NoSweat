@@ -40,10 +40,11 @@ export default async function ExamplePage({ params, searchParams }: ExamplePageP
   return (
     <>
       {!embed && (
-        // Uma linha só do sm para cima (fixa no topo); em telas bem estreitas quebra e rola junto.
+        // Etiqueta flutuante no canto de baixo (o menu do site fica livre no alto). No celular,
+        // logo acima da barra de ligar do site.
         <aside
           aria-label="About this example"
-          className="top-0 z-50 flex min-h-11 items-center justify-center bg-ink px-3 text-center text-[13px] text-slate-300 sm:sticky sm:whitespace-nowrap sm:px-4 sm:text-sm"
+          className="fixed bottom-24 left-1/2 z-50 flex min-h-11 -translate-x-1/2 items-center rounded-full bg-ink/90 px-4 text-center text-[13px] whitespace-nowrap text-slate-300 shadow-lg backdrop-blur md:bottom-5 md:left-5 md:translate-x-0 md:text-sm"
         >
           <p>
             Fictional example made with No Sweat

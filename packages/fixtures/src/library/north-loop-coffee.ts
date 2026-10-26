@@ -67,9 +67,9 @@ export const northLoopCoffee: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Roasted in the back on Monday. Poured up front all week.",
+        title: "Neighborhood coffee in the North Loop",
         subtitle:
-          "A neighborhood coffee shop in an old North Loop printing warehouse. Espresso from beans we roast ourselves, cardamom buns baked every morning, and a seat that's yours until 3.",
+          "We're in an old printing warehouse on Washington Ave N. We roast our own beans in the back, Theo bakes the pastry case every morning, and we're open until 3.",
         ctaLabel: "Order ahead",
         imageQuery: "espresso cup on saucer with coffee beans",
         image: {
@@ -88,8 +88,8 @@ export const northLoopCoffee: ModelEntry = {
       },
       {
         type: "about",
-        title: "Our story",
-        body: "Theo and I opened North Loop Coffee in 2017 in an old printing warehouse, and the 12-kilo roaster went in the back before the espresso machine went in the front. I roast every Monday and Thursday, so the bag you take home was in the drum this week. Theo bakes the pastry case before we open, and Ramón makes sure every cortado tastes the same no matter who pulls it.",
+        title: "About us",
+        body: "Theo and I opened North Loop Coffee in 2017 in an old printing warehouse. I roast the beans on a 12-kilo roaster in the back every Monday and Thursday. Theo runs the kitchen and bakes the pastry case each morning, and Ramón, our head barista, trains everyone who works the bar.",
         people: [
           {
             name: "Hannah Lindqvist",
@@ -110,25 +110,25 @@ export const northLoopCoffee: ModelEntry = {
       },
       {
         type: "services",
-        title: "On the counter",
+        title: "Menu",
         items: [
           {
             group: "Espresso bar",
             name: "Cortado",
-            description: "A double shot of the house blend cut with an equal pour of steamed milk.",
+            description: "Espresso with an equal amount of steamed milk.",
             price: "$4.25",
           },
           {
             group: "Espresso bar",
             name: "Oat milk latte",
-            description: "House espresso and steamed oat milk. Oat costs the same as dairy here.",
+            description: "Espresso and steamed oat milk. We don't charge extra for oat.",
             price: "$5.50",
             detail: "12 oz",
           },
           {
             group: "Espresso bar",
             name: "Pour-over",
-            description: "This week's single origin, brewed to order by the cup.",
+            description: "The single origin of the week, brewed by the cup.",
             price: "$5",
             detail: "Ask what's on",
           },
@@ -136,35 +136,34 @@ export const northLoopCoffee: ModelEntry = {
             group: "Pastry case",
             name: "Cardamom bun",
             description:
-              "A knotted Swedish bun from Hannah's grandmother's recipe, baked every morning.",
+              "Made from Hannah's grandmother's recipe. They usually sell out early on Saturdays.",
             price: "$4.75",
             detail: "Gone by 10 on Saturdays",
           },
           {
             group: "Pastry case",
             name: "Blueberry corn muffin",
-            description: "Cornmeal crumb, a lot of blueberries, a crackly sugar top.",
+            description: "A blueberry muffin made with cornmeal.",
             price: "$3.75",
           },
           {
             group: "Breakfast",
             name: "Egg & cheddar",
-            description:
-              "Soft eggs, sharp cheddar and chive butter on an English muffin. Add bacon $2.",
+            description: "Egg, cheddar and chive butter on an English muffin. Add bacon for $2.",
             price: "$8.50",
             detail: "Until 1 PM",
           },
           {
             group: "Breakfast",
             name: "Lox toast",
-            description: "Smoked salmon, whipped cream cheese, capers and dill on toasted rye.",
+            description: "Lox on rye toast.",
             price: "$11",
           },
           {
             group: "Beans to go",
             name: "House blend, 12 oz",
             description:
-              "Roasted here Monday and Thursday. Ground free for your brewer. Office 5 lb bags $75.",
+              "Our house blend, roasted here. We'll grind it for free if you ask. Office bags of 5 lb are $75.",
             price: "$17",
             detail: "5 lb bags: a week's notice",
           },
@@ -172,7 +171,7 @@ export const northLoopCoffee: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From the regulars",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -187,15 +186,15 @@ export const northLoopCoffee: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Good to know",
+        title: "Questions",
         items: [
           {
             q: "Can I order ahead?",
-            a: "Yes. Order online and pick it up at the end of the bar, no line.",
+            a: "Yes. Order online and pick it up at the end of the bar.",
           },
           {
             q: "Is it OK to work from the cafe?",
-            a: "Please do. Wi-Fi is free and every table has outlets.",
+            a: "Yes. Wi-Fi is free and every table has outlets.",
           },
           {
             q: "Can I bring my dog?",
@@ -203,7 +202,7 @@ export const northLoopCoffee: ModelEntry = {
           },
           {
             q: "Do you sell beans for offices?",
-            a: "5 lb bags of the house blend are $75. Give us a week's notice so we can roast it fresh.",
+            a: "Yes, 5 lb bags of the house blend are $75 with a week's notice.",
           },
           {
             q: "Where do I park?",
@@ -213,7 +212,7 @@ export const northLoopCoffee: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Find us on Washington Ave",
+        title: "Visit us on Washington Ave N",
         showForm: true,
         showMap: true,
       },

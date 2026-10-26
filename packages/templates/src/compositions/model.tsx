@@ -47,14 +47,14 @@ export type Vocabulary = {
 const VOCABULARY: Record<TemplateId, Vocabulary> = {
   "home-services": {
     services: "Services",
-    servicesTitle: "What we can do for you",
+    servicesTitle: "Services",
     about: "About",
-    aboutTitle: "Who you'll talk to",
+    aboutTitle: "About us",
     gallery: "Recent jobs",
     galleryTitle: "Recent jobs",
-    testimonialsTitle: "What customers told us",
-    faqTitle: "Good questions, straight answers",
-    contactTitle: "Tell us what you need",
+    testimonialsTitle: "Reviews",
+    faqTitle: "Questions",
+    contactTitle: "Contact us",
     visited: false,
     formPreset: "trade",
     submitLabel: "Send request",
@@ -62,11 +62,11 @@ const VOCABULARY: Record<TemplateId, Vocabulary> = {
   beauty: {
     services: "Services",
     servicesTitle: "Services and prices",
-    about: "The chairs",
-    aboutTitle: "The chairs",
+    about: "About",
+    aboutTitle: "About us",
     gallery: "Work",
     galleryTitle: "Recent work",
-    testimonialsTitle: "From our clients",
+    testimonialsTitle: "Reviews",
     faqTitle: "Before your appointment",
     contactTitle: "Book your visit",
     visited: true,
@@ -79,9 +79,9 @@ const VOCABULARY: Record<TemplateId, Vocabulary> = {
     about: "Our story",
     aboutTitle: "Our story",
     gallery: "Gallery",
-    galleryTitle: "At the table",
-    testimonialsTitle: "From our guests",
-    faqTitle: "Good to know",
+    galleryTitle: "Photos",
+    testimonialsTitle: "Reviews",
+    faqTitle: "Questions",
     contactTitle: "Visit us",
     visited: true,
     formPreset: "catering",
@@ -89,13 +89,13 @@ const VOCABULARY: Record<TemplateId, Vocabulary> = {
   },
   professional: {
     services: "Services",
-    servicesTitle: "How we can help",
+    servicesTitle: "Services",
     about: "About",
-    aboutTitle: "Who you'll work with",
+    aboutTitle: "About us",
     gallery: "Work",
     galleryTitle: "Our work",
-    testimonialsTitle: "From our clients",
-    faqTitle: "Common questions",
+    testimonialsTitle: "Reviews",
+    faqTitle: "Questions",
     contactTitle: "Book a consultation",
     visited: false,
     formPreset: "consultation",
@@ -107,9 +107,9 @@ const VOCABULARY: Record<TemplateId, Vocabulary> = {
     about: "About",
     aboutTitle: "About",
     gallery: "Work",
-    galleryTitle: "Selected work",
-    testimonialsTitle: "Kind words",
-    faqTitle: "Working together",
+    galleryTitle: "Work",
+    testimonialsTitle: "Reviews",
+    faqTitle: "Questions",
     contactTitle: "Start a project",
     visited: false,
     formPreset: "inquiry",
@@ -140,6 +140,8 @@ export type SiteModel = {
   address?: string;
   primaryAction: PrimaryAction;
   words: Vocabulary;
+  /** Estilo das peças repetidas, sorteado pelo nome (ver siteStyle). */
+  style: SiteStyle;
   /** Título da seção: o do dono, senão o padrão do ramo. */
   titleOf: (section: Section) => string;
 };
@@ -197,6 +199,38 @@ export function isVisible(section: Section): boolean {
   if (section.type === "gallery") return section.images.some((image) => isOwnerPhoto(image));
   if (section.type === "services") return section.items.length > 0;
   return true;
+}
+
+/**
+ * Estilo das peças repetidas (cabeçalho, botões, contato), sorteado pelo nome do negócio para
+ * dois sites com a mesma composição não terem a mesma cara. Sempre o mesmo para o mesmo nome.
+ */
+export type HeaderStyle = "classic" | "centered" | "bar" | "minimal";
+export type ButtonStyle = "pill" | "sharp" | "line" | "caps";
+export type ContactStyle = "split" | "stacked" | "letter";
+export type SiteStyle = { header: HeaderStyle; buttons: ButtonStyle; contact: ContactStyle };
+
+const HEADER_STYLES: readonly HeaderStyle[] = ["classic", "centered", "bar", "minimal"];
+const BUTTON_STYLES: readonly ButtonStyle[] = ["pill", "sharp", "line", "caps"];
+const CONTACT_STYLES: readonly ContactStyle[] = ["split", "stacked", "letter"];
+
+/** Hash pequeno e estável (FNV-1a) do texto. */
+function hashOf(text: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
+
+export function siteStyle(spec: SiteSpec): SiteStyle {
+  const seed = hashOf(spec.business.name.trim().toLowerCase());
+  return {
+    header: HEADER_STYLES[seed % HEADER_STYLES.length] ?? "classic",
+    buttons: BUTTON_STYLES[Math.floor(seed / 7) % BUTTON_STYLES.length] ?? "sharp",
+    contact: CONTACT_STYLES[Math.floor(seed / 31) % CONTACT_STYLES.length] ?? "split",
+  };
 }
 
 export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
@@ -267,6 +301,7 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
     address: fullAddress(business),
     primaryAction,
     words,
+    style: siteStyle(spec),
     titleOf: (section) =>
       (section.type === "hero" ? "" : section.title?.trim()) || defaultTitles[section.type],
   };

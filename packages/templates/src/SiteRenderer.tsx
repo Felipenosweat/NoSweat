@@ -1,5 +1,6 @@
 import type { SiteSpec } from "@nosweat/schema";
 import { COMPOSITIONS, compositionOf } from "./compositions";
+import { siteStyle } from "./compositions/model";
 import { themeToCssVars } from "./theme";
 
 export type SiteRendererProps = {
@@ -36,6 +37,7 @@ export function SiteRenderer({
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
   const composition = compositionOf(spec);
   const Template = COMPOSITIONS[composition];
+  const style = siteStyle(spec);
   return (
     <div
       className="ns-site @container min-h-screen bg-ns-background font-ns-body text-ns-text antialiased"
@@ -45,6 +47,9 @@ export function SiteRenderer({
       data-composition={composition}
       data-density={spec.design?.density ?? "balanced"}
       data-image={spec.design?.imageTreatment ?? "natural"}
+      data-buttons={style.buttons}
+      data-header={style.header}
+      data-contact={style.contact}
       data-editable={editable ? "" : undefined}
     >
       {editable ? (

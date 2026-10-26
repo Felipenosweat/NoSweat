@@ -1,21 +1,18 @@
 import type { Composition } from "@nosweat/schema";
 import type { TemplateComponent } from "../types";
-import { EditorialComposition } from "./Editorial";
-import { ImmersiveComposition } from "./Immersive";
-import { ModularComposition } from "./Modular";
-import { ServiceLedComposition } from "./ServiceLed";
-import { TypographicComposition } from "./Typographic";
+import { SignatureComposition } from "./Signature";
 
 export { compositionOf } from "./model";
 
 /**
- * Uma arquitetura de página para cada composição do schema (o TypeScript exige todas).
- * "service-led" é também a dos sites sem `design` (os antigos continuam nela).
+ * Todas as composições usam o molde Signature (o padrão premium aprovado pelo dono); a
+ * composição do plano de design escolhe o formato do topo (ver SignatureHero) e o nome do
+ * negócio sorteia o menu e os botões (siteStyle).
  */
 export const COMPOSITIONS: Record<Composition, TemplateComponent> = {
-  "service-led": ServiceLedComposition,
-  editorial: EditorialComposition,
-  immersive: ImmersiveComposition,
-  typographic: TypographicComposition,
-  modular: ModularComposition,
+  "service-led": SignatureComposition,
+  editorial: SignatureComposition,
+  immersive: SignatureComposition,
+  typographic: SignatureComposition,
+  modular: SignatureComposition,
 };

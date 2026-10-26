@@ -54,9 +54,9 @@ export const vegaPhoto: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Weddings in the Blue Ridge, photographed quietly",
+      title: "Wedding photography in Asheville and the Blue Ridge",
       subtitle:
-        "Unposed photographs of the day as it happens, for couples marrying in and around Asheville. About 20 weddings a year, so I answer every email myself.",
+        "I photograph weddings and elopements as they happen, without posing anyone. I take about 20 weddings a year, so I answer every email myself.",
       ctaLabel: "Check your date",
       image: {
         url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2400&h=1350&q=80",
@@ -70,7 +70,7 @@ export const vegaPhoto: SiteSpec = {
     },
     {
       type: "gallery",
-      title: "Selected work",
+      title: "Recent weddings",
       images: [
         work(
           "1511285560929-80b456fea0bc",
@@ -132,7 +132,7 @@ export const vegaPhoto: SiteSpec = {
         },
         {
           name: "Engagement portraits",
-          description: "An hour somewhere that means something to you.",
+          description: "An hour together at a place the two of you pick.",
           price: "$450",
           detail: "1 hour",
         },
@@ -140,8 +140,8 @@ export const vegaPhoto: SiteSpec = {
     },
     {
       type: "about",
-      title: "About me",
-      body: "I'm Marisol. I've photographed weddings in western North Carolina since 2016, mostly small ones. I stay out of the way and photograph what happens. Every couple gets an online gallery of edited photos within 6 weeks, and travel within 2 hours of Asheville is included.",
+      title: "About",
+      body: "I'm Marisol, and I've photographed weddings and elopements across western North Carolina since 2016. I stay out of the way and photograph what happens, at the Biltmore Estate or in a backyard. Every couple gets an online gallery of edited photos within 6 weeks, and travel within 2 hours of Asheville is included.",
     },
     {
       type: "testimonials",

@@ -1,3 +1,4 @@
+import { withModelPhotos } from "../model-photos";
 import type { ModelEntry } from "./types";
 import { archAndLash } from "./arch-and-lash";
 import { baysideFamilyDental } from "./bayside-family-dental";
@@ -25,7 +26,7 @@ export type { ModelEntry } from "./types";
  * Biblioteca de sites-modelo (além dos 6 originais em ../): com eles, 5 por categoria, cada um
  * com uma composição diferente. Ver types.ts e apps/web/server/ai/models.ts.
  */
-export const MODEL_LIBRARY: readonly ModelEntry[] = [
+const BASE_LIBRARY: readonly ModelEntry[] = [
   archAndLash,
   baysideFamilyDental,
   brickOvenPizza,
@@ -46,3 +47,9 @@ export const MODEL_LIBRARY: readonly ModelEntry[] = [
   sunriseBakery,
   trueCoatPainting,
 ];
+
+/** Os modelos com as fotos do Unsplash escolhidas para cada um (ver ../model-photos.ts). */
+export const MODEL_LIBRARY: readonly ModelEntry[] = BASE_LIBRARY.map((entry) => ({
+  ...entry,
+  spec: withModelPhotos(entry.slug, entry.spec),
+}));

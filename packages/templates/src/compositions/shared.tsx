@@ -2,7 +2,6 @@ import type { Business, SectionOf, SiteImage } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import {
   ArrowRightIcon,
-  CheckIcon,
   ChevronDownIcon,
   MailIcon,
   MapPinIcon,
@@ -21,17 +20,18 @@ export const focus =
 export type Surface = "page" | "primary" | "dark";
 
 const PRIMARY_BUTTON: Record<Surface, string> = {
-  page: "bg-ns-primary text-ns-on-primary hover:brightness-110",
-  primary: "bg-ns-background text-ns-text hover:bg-ns-surface",
-  dark: "bg-ns-background text-ns-text hover:bg-ns-surface",
+  page: "ns-btn-primary bg-ns-primary text-ns-on-primary hover:brightness-110",
+  primary: "ns-btn-primary bg-ns-background text-ns-text hover:bg-ns-surface",
+  dark: "ns-btn-primary bg-ns-background text-ns-text hover:bg-ns-surface",
 };
 const SECONDARY_BUTTON: Record<Surface, string> = {
-  page: "border border-ns-text/20 text-ns-text hover:border-ns-text",
-  primary: "border border-ns-on-primary/40 text-ns-on-primary hover:border-ns-on-primary",
-  dark: "border border-ns-background/50 text-ns-background hover:border-ns-background",
+  page: "ns-btn-secondary border border-ns-text/20 text-ns-text hover:border-ns-text",
+  primary:
+    "ns-btn-secondary border border-ns-on-primary/40 text-ns-on-primary hover:border-ns-on-primary",
+  dark: "ns-btn-secondary border border-ns-background/50 text-ns-background hover:border-ns-background",
 };
 
-const buttonBase = `inline-flex min-h-12 items-center justify-center gap-2 px-6 py-3 text-base font-semibold transition duration-150 motion-reduce:transition-none ${focus}`;
+const buttonBase = `ns-btn inline-flex min-h-12 items-center justify-center gap-2.5 px-7 py-3 text-[0.9375rem] font-medium tracking-[0.01em] transition duration-200 motion-reduce:transition-none ${focus}`;
 
 /**
  * Botões do topo. A ordem segue a ação principal do plano de design: "call" põe o telefone
@@ -57,7 +57,6 @@ export function HeroActions({
       className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
     >
       {ctaLabel}
-      {primary && <ArrowRightIcon className="size-5 shrink-0" />}
     </a>
   );
   const call = (primary: boolean) =>
@@ -67,7 +66,6 @@ export function HeroActions({
         href={phoneHref}
         className={`${buttonBase} ${radius} ${primary ? PRIMARY_BUTTON[surface] : SECONDARY_BUTTON[surface]}`}
       >
-        <PhoneIcon className="size-5 shrink-0" />
         <span className="whitespace-nowrap tabular-nums">
           {primary ? `Call ${business.phone}` : business.phone}
         </span>
@@ -111,7 +109,7 @@ export function PhotoFrame({
     <figure className={className}>
       <div
         data-kind={image.kind}
-        className={`ns-photo relative size-full overflow-hidden bg-ns-border ${radius}`}
+        className={`ns-photo relative size-full overflow-hidden bg-ns-border ${eager ? "ns-hero-zoom" : "ns-unclip"} ${radius}`}
       >
         <Photo
           image={image}
@@ -144,10 +142,9 @@ export function HighlightList({
 }) {
   if (!highlights?.length) return null;
   return (
-    <ul className={`flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium ${className}`}>
+    <ul className={`flex flex-wrap gap-y-2 text-sm ${className}`}>
       {highlights.map((label, index) => (
-        <li key={index} className="flex items-center gap-2">
-          <CheckIcon className="size-4 shrink-0 opacity-70" />
+        <li key={index} className="border-current/25 not-last:mr-4 not-last:border-r not-last:pr-4">
           {label}
         </li>
       ))}
@@ -279,6 +276,24 @@ export function FactList({
   );
 }
 
+/**
+ * Fatos numa linha fina (rótulo pequeno + fato), como a ficha técnica de um site premiado.
+ * Substitui as faixas de quadros "Hours | Find us | Phone", que davam cara de modelo pronto.
+ */
+export function FactLine({ facts, className = "" }: { facts: Fact[]; className?: string }) {
+  if (facts.length === 0) return null;
+  return (
+    <dl className={`flex flex-wrap gap-x-10 gap-y-4 text-sm ${className}`}>
+      {facts.map((fact) => (
+        <div key={fact.label} className="min-w-0">
+          <dt className="text-[0.6875rem] tracking-[0.16em] uppercase opacity-70">{fact.label}</dt>
+          <dd className="mt-1.5 [&_address_a]:min-h-0 [&_address_a]:mt-1">{fact.content}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 /** Endereço do dono (rua e cidade) com o link de rota. Sem rua, nada. */
 export function AddressBlock({
   model,
@@ -295,7 +310,9 @@ export function AddressBlock({
   const city = location(business);
   return (
     <address className={`not-italic ${className}`}>
-      <span className={`block ${large ? "font-ns-heading text-3xl leading-tight font-bold" : ""}`}>
+      <span
+        className={`block ${large ? "font-ns-heading text-3xl leading-tight font-ns-display" : ""}`}
+      >
         {street}
       </span>
       {city && <span className={`block ${large ? "mt-1 text-lg" : ""}`}>{city}</span>}
@@ -552,14 +569,14 @@ export function SimpleFooter({
         className={`mx-auto w-full ${wide ? "max-w-7xl" : "max-w-6xl"} px-4 py-14 @min-[40rem]:px-6 @5xl:px-8`}
       >
         {bigName && (
-          <p className="mb-12 font-ns-heading text-[length:clamp(2.5rem,9cqw,7rem)] leading-[0.95] font-bold tracking-tight [overflow-wrap:anywhere]">
+          <p className="ns-rise mb-14 font-ns-heading text-[length:clamp(3rem,11.5cqw,12rem)] leading-[0.85] font-ns-display tracking-[-0.045em] [overflow-wrap:anywhere]">
             {business.name}
           </p>
         )}
         <div className="grid gap-8 text-sm @min-[40rem]:grid-cols-2 @5xl:grid-cols-4">
           <div>
             {!bigName && (
-              <p className="font-ns-heading text-lg font-bold [overflow-wrap:anywhere]">
+              <p className="font-ns-heading text-lg font-ns-display [overflow-wrap:anywhere]">
                 {business.name}
               </p>
             )}
@@ -695,11 +712,270 @@ export function HeaderAction({
       <a
         href={ctaHref}
         {...externalProps(ctaHref)}
-        className={`hidden min-h-11 items-center px-4 text-sm font-semibold whitespace-nowrap @3xl:inline-flex ${radius} bg-ns-primary text-ns-on-primary transition hover:brightness-110 motion-reduce:transition-none ${focus}`}
+        className={`ns-btn ns-btn-primary hidden min-h-11 items-center px-4 text-sm font-semibold whitespace-nowrap @3xl:inline-flex ${radius} bg-ns-primary text-ns-on-primary transition hover:brightness-110 motion-reduce:transition-none ${focus}`}
       >
         {ctaLabel}
       </a>
     </div>
+  );
+}
+
+/**
+ * Cabeçalho do site, num dos 4 formatos de `model.style.header` (sorteado pelo nome do negócio):
+ * - classic: nome à esquerda, menu e ação à direita;
+ * - centered: menu à esquerda, nome grande no meio, ação à direita;
+ * - bar: faixa fina com horário, lugar e telefone em cima; nome e menu embaixo;
+ * - minimal: nome à esquerda; à direita só o telefone escrito e a ação, sem menu.
+ * `overlay`: transparente por cima da foto do topo (texto claro). Senão, fixo no alto.
+ * O telefone fica sempre visível (ícone no celular), em todos os formatos.
+ */
+export function SiteHeader({
+  model,
+  overlay = false,
+  wide = false,
+  radius = "rounded-md",
+}: {
+  model: SiteModel;
+  overlay?: boolean;
+  wide?: boolean;
+  radius?: string;
+}) {
+  const { business } = model;
+  const variant = model.style.header;
+  const shell = overlay
+    ? "absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-ns-text/70 to-transparent text-ns-background"
+    : "sticky top-0 z-40 border-b border-ns-border bg-ns-background/95 backdrop-blur";
+  const nameClass = `min-w-0 font-ns-heading leading-tight font-ns-display tracking-tight [overflow-wrap:anywhere] ${focus}`;
+  const linkClass = overlay ? "opacity-85 hover:opacity-100" : "text-ns-muted hover:text-ns-text";
+
+  if (variant === "centered") {
+    return (
+      <header className={shell}>
+        <Wrap
+          wide={wide}
+          className="grid h-20 grid-cols-[1fr_auto] items-center gap-6 @5xl:h-24 @5xl:grid-cols-[1fr_auto_1fr]"
+        >
+          <NavLinks model={model} className="hidden @5xl:block" linkClassName={linkClass} />
+          <a
+            href="#top"
+            className={`${nameClass} text-xl @min-[40rem]:text-2xl @5xl:text-center @5xl:text-3xl`}
+          >
+            {business.name}
+          </a>
+          <div className="flex justify-end">
+            <HeaderAction model={model} radius={radius} />
+          </div>
+        </Wrap>
+      </header>
+    );
+  }
+
+  if (variant === "bar") {
+    const strip = [hoursSummary(business.hours), model.where].filter(Boolean).join("  ·  ");
+    return (
+      <header className={shell}>
+        <div
+          className={overlay ? "border-b border-ns-background/20" : "bg-ns-text text-ns-background"}
+        >
+          <Wrap wide={wide} className="flex min-h-9 items-center justify-between gap-6 text-xs">
+            <p className="hidden truncate opacity-85 @3xl:block">{strip}</p>
+            {model.phoneHref && business.phone && (
+              <a
+                href={model.phoneHref}
+                className={`ml-auto inline-flex min-h-9 items-center gap-2 font-medium tabular-nums ${focus}`}
+              >
+                <PhoneIcon className="size-3.5 shrink-0" />
+                {business.phone}
+              </a>
+            )}
+          </Wrap>
+        </div>
+        <Wrap
+          wide={wide}
+          className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20"
+        >
+          <a href="#top" className={`${nameClass} text-xl @min-[40rem]:text-2xl`}>
+            {business.name}
+          </a>
+          <div className="flex shrink-0 items-center gap-8">
+            <NavLinks model={model} className="hidden @5xl:block" linkClassName={linkClass} />
+            <a
+              href={model.ctaHref}
+              {...externalProps(model.ctaHref)}
+              className={`ns-btn ns-btn-primary hidden min-h-11 items-center px-4 text-sm font-semibold whitespace-nowrap @3xl:inline-flex ${radius} bg-ns-primary text-ns-on-primary transition hover:brightness-110 motion-reduce:transition-none ${focus}`}
+            >
+              {model.ctaLabel}
+            </a>
+          </div>
+        </Wrap>
+      </header>
+    );
+  }
+
+  if (variant === "minimal") {
+    return (
+      <header className={shell}>
+        <Wrap wide={wide} className="flex h-20 items-center justify-between gap-6 @5xl:h-24">
+          <a href="#top" className={`${nameClass} text-2xl @min-[40rem]:text-3xl`}>
+            {business.name}
+          </a>
+          <div className="flex shrink-0 items-center gap-6 text-sm">
+            {model.phoneHref && business.phone ? (
+              <a
+                href={model.phoneHref}
+                className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-2 font-medium tabular-nums ${focus}`}
+              >
+                <PhoneIcon className="size-5 shrink-0 @min-[40rem]:hidden" />
+                <span className="sr-only @min-[40rem]:not-sr-only">{business.phone}</span>
+              </a>
+            ) : null}
+            <a
+              href={model.ctaHref}
+              {...externalProps(model.ctaHref)}
+              className={`hidden min-h-11 items-center border-b border-current pb-0.5 font-medium whitespace-nowrap @3xl:inline-flex ${focus}`}
+            >
+              {model.ctaLabel}
+            </a>
+          </div>
+        </Wrap>
+      </header>
+    );
+  }
+
+  return (
+    <header className={shell}>
+      <Wrap wide={wide} className="flex h-16 items-center justify-between gap-6 @min-[40rem]:h-20">
+        <a href="#top" className={`${nameClass} text-xl @min-[40rem]:text-2xl`}>
+          {business.name}
+        </a>
+        <div className="flex shrink-0 items-center gap-8">
+          <NavLinks model={model} className="hidden @5xl:block" linkClassName={linkClass} />
+          <HeaderAction model={model} radius={radius} />
+        </div>
+      </Wrap>
+    </header>
+  );
+}
+
+/**
+ * Seção de contato, num dos 3 formatos de `model.style.contact` (sorteado pelo nome do negócio):
+ * - split: fundo escuro, telefone enorme e os dados à esquerda, formulário à direita;
+ * - stacked: tudo centralizado: título, telefone enorme, os fatos numa linha e o formulário;
+ * - letter: como um cartão de visita: endereço e horário grandes na fonte dos títulos, numa
+ *   faixa clara, com o formulário ao lado.
+ */
+export function ContactSection({
+  id,
+  model,
+  data,
+  endpoint,
+  radius = "md",
+}: {
+  id?: string;
+  model: SiteModel;
+  data: SectionOf<"contact">;
+  endpoint?: string;
+  radius?: ContactFormRadius;
+}) {
+  const { business, phoneHref } = model;
+  const variant = model.style.contact;
+  const title = model.titleOf(data);
+  const bigPhone = (className: string) =>
+    business.phone && phoneHref ? (
+      <a
+        href={phoneHref}
+        className={`block font-ns-heading text-[length:clamp(2.25rem,6cqw,4.75rem)] leading-none font-ns-display tracking-[-0.03em] whitespace-nowrap tabular-nums underline-offset-8 hover:underline ${focus} ${className}`}
+      >
+        {business.phone}
+      </a>
+    ) : null;
+  const form = (className = "") =>
+    data.showForm ? (
+      <ContactFormBlock
+        data={data}
+        model={model}
+        endpoint={endpoint}
+        radius={radius}
+        framed={false}
+        className={className}
+      />
+    ) : null;
+
+  if (variant === "stacked") {
+    const facts = factsFor(model, { phone: false, price: false, hours: "line" });
+    return (
+      <section id={id} className={`scroll-mt-24 border-t border-ns-border ${sectionY}`}>
+        <Wrap className="flex flex-col items-center text-center">
+          <h2 className="ns-rise max-w-[18ch] font-ns-heading text-[length:clamp(2.5rem,6cqw,5rem)] leading-[0.95] font-ns-display tracking-[-0.03em] text-balance">
+            {title}
+          </h2>
+          {bigPhone("mt-10 text-ns-primary")}
+          <FactLine
+            facts={facts}
+            className="mt-10 justify-center text-ns-muted [&_dd]:text-ns-text"
+          />
+          {business.email && (
+            <a
+              href={`mailto:${business.email}`}
+              className={`mt-6 inline-flex min-h-11 items-center underline-offset-4 hover:underline ${focus}`}
+            >
+              {business.email}
+            </a>
+          )}
+          {data.showForm && (
+            <div className="mt-14 w-full max-w-2xl border-t border-ns-border pt-12 text-left">
+              {form()}
+            </div>
+          )}
+        </Wrap>
+      </section>
+    );
+  }
+
+  if (variant === "letter") {
+    const hours = business.hours?.length ? business.hours : null;
+    return (
+      <section id={id} className={`scroll-mt-24 bg-ns-surface ${sectionY}`}>
+        <Wrap className="grid gap-14 @5xl:grid-cols-12">
+          <div className="@5xl:col-span-6">
+            <p className="text-[0.6875rem] tracking-[0.2em] text-ns-muted uppercase">{title}</p>
+            <p className="ns-rise mt-6 font-ns-heading text-[length:clamp(2rem,4cqw,3.5rem)] leading-[1.05] font-ns-display tracking-[-0.02em] [overflow-wrap:anywhere]">
+              {business.name}
+            </p>
+            <div className="mt-10 grid gap-8 border-t border-ns-text/20 pt-8 @min-[40rem]:grid-cols-2">
+              {model.address ? (
+                <AddressBlock model={model} className="text-lg" />
+              ) : (
+                model.where && <p className="text-lg">{model.where}</p>
+              )}
+              {hours && <HoursTable hours={hours} />}
+            </div>
+            {bigPhone("mt-10")}
+            <ContactLines model={model} phone={false} place={false} className="mt-8" />
+          </div>
+          {data.showForm && <div className="@5xl:col-span-5 @5xl:col-start-8">{form()}</div>}
+        </Wrap>
+      </section>
+    );
+  }
+
+  return (
+    <section id={id} className={`scroll-mt-24 bg-ns-text text-ns-background ${sectionY}`}>
+      <Wrap className="grid gap-12 @5xl:grid-cols-12">
+        <div className={data.showForm ? "@5xl:col-span-6" : "@5xl:col-span-12"}>
+          <h2 className="ns-rise font-ns-heading text-4xl leading-tight font-ns-display tracking-tight text-balance @min-[40rem]:text-5xl">
+            {title}
+          </h2>
+          {bigPhone("mt-10")}
+          <ContactLines model={model} phone={false} className="mt-10" />
+        </div>
+        {data.showForm && (
+          <div className="rounded-sm bg-ns-background p-6 text-ns-text @min-[40rem]:p-8 @5xl:col-span-6">
+            {form()}
+          </div>
+        )}
+      </Wrap>
+    </section>
   );
 }
 
@@ -733,7 +1009,7 @@ export function PeopleList({
             </div>
           )}
           <div className="min-w-0">
-            <h3 className="font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+            <h3 className="font-ns-heading text-xl leading-snug font-ns-display [overflow-wrap:anywhere]">
               {person.name}
             </h3>
             {person.role && (
@@ -796,7 +1072,7 @@ export function ServiceAreaList({
   return (
     <div className={className}>
       <p className="text-xs font-semibold tracking-[0.18em] uppercase">Serving</p>
-      <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-ns-heading text-2xl leading-tight font-bold @min-[40rem]:text-3xl">
+      <ul className="mt-5 flex flex-wrap gap-x-8 gap-y-3 font-ns-heading text-2xl leading-tight font-ns-display @min-[40rem]:text-3xl">
         {places.map((place) => (
           <li key={place}>{place}</li>
         ))}
@@ -857,7 +1133,7 @@ export function PriceList({
               {group.items.map((item, index) => (
                 <li key={`${item.name}-${index}`} className="py-5">
                   <div className="flex items-baseline gap-3">
-                    <ItemHeading className="min-w-0 font-ns-heading text-xl leading-snug font-bold [overflow-wrap:anywhere]">
+                    <ItemHeading className="min-w-0 font-ns-heading text-xl leading-snug font-ns-display [overflow-wrap:anywhere]">
                       {item.name}
                     </ItemHeading>
                     {item.price && (
@@ -958,6 +1234,51 @@ export function MobileCallBar({
       {wide}
       {square}
     </nav>
+  );
+}
+
+/** Nomes dos serviços do próprio site (para a faixa corrida). */
+export function serviceNames(model: SiteModel, max = 8): string[] {
+  const services = model.spec.sections.find(
+    (section): section is SectionOf<"services"> => section.type === "services",
+  );
+  return (services?.items ?? [])
+    .map((item) => item.name.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+/**
+ * Faixa corrida com os serviços em letra enorme, como nos sites premiados. Decorativa: os
+ * mesmos serviços aparecem na lista logo abaixo, então a faixa inteira fica fora do leitor de
+ * tela. Com "reduzir movimento", fica parada.
+ */
+export function ServiceMarquee({
+  model,
+  className = "",
+}: {
+  model: SiteModel;
+  className?: string;
+}) {
+  const names = serviceNames(model);
+  if (names.length < 3) return null;
+  const row = (copy: number) =>
+    names.map((name, index) => (
+      <span key={`${copy}-${index}`} className="flex items-center">
+        <span className="px-[0.35em]">{name}</span>
+        <span className="size-[0.14em] rounded-full bg-current opacity-60" />
+      </span>
+    ));
+  return (
+    <div
+      aria-hidden="true"
+      className={`ns-marquee py-[clamp(1.25rem,3cqw,2.5rem)] font-ns-heading text-[length:clamp(2.75rem,7.5cqw,7.5rem)] leading-none font-ns-display tracking-[-0.03em] ${className}`}
+    >
+      <div className="ns-marquee-track">
+        {row(0)}
+        {row(1)}
+      </div>
+    </div>
   );
 }
 

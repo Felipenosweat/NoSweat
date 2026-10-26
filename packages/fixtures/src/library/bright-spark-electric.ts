@@ -65,9 +65,9 @@ export const brightSparkElectric: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "More power for older Phoenix homes. Price in writing, permit pulled.",
+        title: "Residential electrician in Phoenix, Arizona",
         subtitle:
-          "Panel upgrades, EV chargers and rewiring for houses that were built before the second fridge, the pool pump and the car in the garage. Call and you get Marcus or Tasha.",
+          "Marcus Bell has been wiring houses in the Valley since 2006. We upgrade panels, install EV chargers and rewire older homes, and you get a written quote before we start.",
         ctaLabel: "Call for a quote",
         image: {
           url: "/photos/models/bright-spark-electric-2.webp",
@@ -86,37 +86,36 @@ export const brightSparkElectric: ModelEntry = {
       },
       {
         type: "services",
-        title: "What we wire",
+        title: "Electrical services",
         items: [
           {
             name: "Panel upgrades",
             description:
-              "Old or undersized panels replaced with a 200-amp service, permitted and ready for inspection.",
+              "We replace old or undersized panels with 200-amp service and pull the permit when the job needs one.",
             detail: "200 amps",
             price: "from $2,400",
           },
           {
             name: "EV charger installs",
             description:
-              "Level 2 chargers for Tesla, ChargePoint or whatever brand you bought, on a dedicated circuit.",
+              "Level 2 chargers from Tesla, ChargePoint or whatever brand you already bought.",
             detail: "Level 2",
             price: "from $650",
           },
           {
             name: "Whole-home rewiring",
             description:
-              "New wiring for older houses, planned room by room so you keep living there while we work.",
+              "New wiring for older houses, quoted after Marcus walks through the house with you.",
             detail: "Quoted after a walkthrough",
           },
           {
             name: "Lighting and ceiling fans",
-            description: "Recessed cans, fixtures and ceiling fans, hung, wired and switched.",
+            description: "Recessed cans, light fixtures and ceiling fans.",
             price: "from $175",
           },
           {
             name: "Troubleshooting",
-            description:
-              "Breakers that keep tripping, outlets that went dead, lights that flicker. We find the cause.",
+            description: "For breakers that keep tripping and outlets that went dead.",
             detail: "Service call",
             price: "$95",
           },
@@ -124,7 +123,7 @@ export const brightSparkElectric: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From customers",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -140,8 +139,8 @@ export const brightSparkElectric: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who you'll deal with",
-        body: "Marcus Bell has been wiring houses in the Valley since 2006 and started Bright Spark in 2014. Tasha runs the office and handles the city permits. When you call, you talk to one of them, not a call center.",
+        title: "About us",
+        body: "Marcus Bell has been wiring houses in the Valley since 2006 and started Bright Spark in 2014. His wife Tasha runs the office and handles the city permits. When you call, you talk to one of them.",
         people: [
           {
             name: "Marcus Bell",
@@ -160,7 +159,7 @@ export const brightSparkElectric: ModelEntry = {
           },
           {
             q: "What does a service call cost?",
-            a: "The service call is $95. Marcus finds the problem first, then quotes the repair.",
+            a: "The service call is $95, and you get a written quote before any repair.",
           },
           {
             q: "How does a panel upgrade day go?",
@@ -182,7 +181,7 @@ export const brightSparkElectric: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Tell us what's not working",
+        title: "Contact us",
         showForm: true,
         showMap: false,
       },

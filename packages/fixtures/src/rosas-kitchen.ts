@@ -34,10 +34,10 @@ export const rosasKitchen: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Handmade tortillas, family recipes",
+      title: "Family Mexican cooking on Logan Ave",
       subtitle:
-        "A family Mexican kitchen in Barrio Logan. Walk in for carne asada and fish tacos, or call ahead to reserve a table.",
-      ctaLabel: "Plan your visit",
+        "Rosa Delgado's family recipes in Barrio Logan, with corn tortillas pressed by hand every morning. Walk in, or call ahead for a table.",
+      ctaLabel: "Reserve a table",
       imageQuery: "chef plating mexican food",
       image: {
         url: "/photos/cook.webp",
@@ -56,39 +56,39 @@ export const rosasKitchen: SiteSpec = {
         {
           group: "Plates",
           name: "Carne asada plate",
-          description: "Grilled marinated steak, rice, beans and handmade corn tortillas.",
+          description: "Grilled steak with rice, beans and our handmade corn tortillas.",
           price: "$18",
         },
         {
           group: "Plates",
           name: "Mole poblano",
-          description: "Grandma's mole over tender chicken, with rice and tortillas.",
+          description: "Grandma's mole poblano over chicken, with rice and tortillas.",
           price: "$17",
           detail: "Sundays",
         },
         {
           group: "Tacos",
           name: "Fish tacos",
-          description: "Beer-battered fish, cabbage slaw and chipotle crema.",
+          description: "Fish tacos with our chipotle crema.",
           price: "$14",
         },
         {
           group: "Tacos",
           name: "Tacos al pastor",
-          description: "Marinated pork off the grill, pineapple, onion and cilantro.",
+          description: "Pork al pastor with pineapple, onion and cilantro.",
           price: "$12",
         },
         {
           group: "Sunday brunch",
           name: "Chilaquiles",
-          description: "Red or green, with eggs your way and crema.",
+          description: "Red or green, with eggs and crema.",
           price: "$13",
           detail: "Sundays until 1 PM",
         },
         {
           group: "Catering",
           name: "Taco bar for 20",
-          description: "Two meats, tortillas, rice, beans and all the salsas.",
+          description: "Two meats, tortillas, rice, beans and salsas for 20 people.",
           price: "$320",
           detail: "48 hours notice",
         },
@@ -96,7 +96,7 @@ export const rosasKitchen: SiteSpec = {
     },
     {
       type: "about",
-      body: "Rosa Delgado opened the kitchen in 2014 with her mother's recipes. Her son Marco runs the grill, and the corn tortillas are still pressed by hand every morning.",
+      body: "Rosa Delgado opened the restaurant in 2014, cooking from her mother's recipes. Her son Marco runs the grill, and we still press the corn tortillas by hand every morning.",
     },
     {
       type: "testimonials",
@@ -116,7 +116,7 @@ export const rosasKitchen: SiteSpec = {
       items: [
         {
           q: "Do you take reservations?",
-          a: "Call us to reserve a table. Walk-ins are always welcome too.",
+          a: "Yes, call us to reserve a table. Walk-ins are welcome too.",
         },
         {
           q: "Is there parking?",
@@ -124,7 +124,7 @@ export const rosasKitchen: SiteSpec = {
         },
         {
           q: "How much notice do you need for catering?",
-          a: "48 hours for the taco bar. Send the form below or call us.",
+          a: "We need 48 hours for the taco bar. Use the form below or give us a call.",
         },
       ],
     },

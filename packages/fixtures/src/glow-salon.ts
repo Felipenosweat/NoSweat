@@ -35,9 +35,9 @@ export const glowSalon: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Color and cuts, planned with you first",
+      title: "Hair salon in Wynwood, Miami",
       subtitle:
-        "A three-chair Wynwood studio for balayage, precision cuts and keratin smoothing. Book online; we take walk-ins when a chair is open.",
+        "Color, cuts, keratin and event hair at 2520 NW 2nd Ave. Book online, or walk in if one of us has an opening.",
       ctaLabel: "Book an appointment",
       imageQuery: "modern hair salon interior",
       image: {
@@ -56,21 +56,21 @@ export const glowSalon: SiteSpec = {
         {
           group: "Cut & style",
           name: "Precision cut and blowout",
-          description: "Shaped for how your hair grows, finished with a blowout.",
+          description: "A precision cut, finished with a blowout.",
           price: "from $85",
           detail: "60 min",
         },
         {
           group: "Cut & style",
           name: "Blowout",
-          description: "Wash and a smooth or full-volume finish.",
+          description: "Wash and blow-dry, smooth or with volume.",
           price: "$55",
           detail: "45 min",
         },
         {
           group: "Color",
           name: "Balayage",
-          description: "Hand-painted highlights, planned at the chair before we start.",
+          description: "Hand-painted highlights for lived-in color.",
           price: "from $220",
           detail: "About 3 hours",
         },
@@ -84,7 +84,7 @@ export const glowSalon: SiteSpec = {
         {
           group: "Treatments",
           name: "Keratin smoothing",
-          description: "Calms humidity frizz and cuts blow-dry time.",
+          description: "A smoothing treatment for frizzy hair.",
           price: "from $250",
           detail: "Lasts up to 12 weeks",
         },
@@ -98,14 +98,14 @@ export const glowSalon: SiteSpec = {
         {
           group: "Events",
           name: "Bridal and event hair and makeup",
-          description: "For weddings, quinceañeras and big nights. Ask us for a date.",
+          description: "Hair and makeup for weddings and events. Call or email us with the date.",
           detail: "By request",
         },
       ],
     },
     {
       type: "about",
-      body: "Camila Reyes opened Glow in 2019: three chairs and a wash station on NW 2nd Ave. Every appointment starts with a conversation at the chair before anything gets cut or colored.",
+      body: "Camila Reyes opened Glow Salon on NW 2nd Ave in 2019 and does the color. Jordan Lee does precision cuts and curly hair, and Aisha Grant does keratin, blowouts and event styling.",
       people: [
         { name: "Camila Reyes", role: "Owner, colorist", note: "Balayage and lived-in color." },
         { name: "Jordan Lee", role: "Stylist", note: "Precision cuts and curly hair." },
@@ -131,7 +131,7 @@ export const glowSalon: SiteSpec = {
       items: [
         {
           q: "Do you accept walk-ins?",
-          a: "When a chair is open, yes. We recommend booking ahead, especially on weekends.",
+          a: "Yes, when one of us has an opening. Booking ahead is the surer way to get in.",
         },
         {
           q: "How long does a color appointment take?",

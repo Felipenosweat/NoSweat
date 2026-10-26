@@ -55,18 +55,18 @@ export const ironLotusTattoo: ModelEntry = {
       links: { booking: "https://ironlotus.example.com/book" },
     },
     theme: {
-      primary: "#14453D",
-      secondary: "#D98E48",
-      background: "#F2EEE6",
-      text: "#151515",
+      primary: "#C9A86A",
+      secondary: "#6B5B45",
+      background: "#0F0F0E",
+      text: "#EDEAE4",
       font: "bold",
     },
     sections: [
       {
         type: "hero",
-        title: "Drawn for one person, then never again",
+        title: "Custom tattoos in RiNo, Denver",
         subtitle:
-          "A private custom studio in RiNo. Three artists for blackwork, fine line, color and cover-ups. Custom pieces are drawn from scratch and changed with you until they're right.",
+          "Iron Lotus is a private studio on Larimer St, where Mara, Theo and Lena do blackwork, fine line, color realism and cover-ups. We change every drawing with you until it's right.",
         ctaLabel: "Book a consult",
         image: {
           url: "/photos/models/iron-lotus-tattoo-11.webp",
@@ -84,32 +84,32 @@ export const ironLotusTattoo: ModelEntry = {
       },
       {
         type: "services",
-        title: "The work and what it costs",
+        title: "Services and prices",
         items: [
           {
             name: "Custom pieces",
             description:
-              "Your idea, drawn from scratch. We start with a consult and a drawing session, then tattoo.",
+              "We draw your idea from scratch, starting with a consult and a drawing session.",
             price: "$180 an hour",
             detail: "Consult + drawing session",
           },
           {
             name: "Fine line & script",
-            description: "Small, precise work: names, dates, botanicals, single-needle detail.",
+            description:
+              "Theo does small, precise work like names, dates and single-needle detail.",
             price: "from $150",
             detail: "Most pieces 1–2 hours",
           },
           {
             name: "Cover-ups & reworks",
             description:
-              "Old, faded or regretted work, covered or brought back. Lena looks at it first, for free.",
+              "Lena covers or reworks old tattoos, and she looks at yours first in a free consult.",
             price: "$180 an hour",
             detail: "Free consult first",
           },
           {
             name: "Full-day sessions",
-            description:
-              "For sleeves and back pieces: one long session instead of several short ones.",
+            description: "Up to 6 hours in one sitting, for sleeves and back pieces.",
             price: "$1,100",
             detail: "Up to 6 hours",
           },
@@ -130,28 +130,28 @@ export const ironLotusTattoo: ModelEntry = {
       {
         type: "about",
         title: "The artists",
-        body: "Iron Lotus is a private custom studio in RiNo with three artists, each with a style of their own. Mara has tattooed since 2011; bring an idea to the artist whose work matches it, and Lena looks at old tattoos you want covered.",
+        body: "Iron Lotus is a private custom studio in RiNo. Mara Quinn owns it and has tattooed since 2011, and Theo Banks and Lena Ruiz each work in a style of their own, so bring your idea to the artist whose work is closest to it.",
         people: [
           {
             name: "Mara Quinn",
             role: "Owner · blackwork & large custom",
-            note: "Tattooing since 2011. Sleeves, back pieces and heavy black.",
+            note: "Has tattooed since 2011, mostly blackwork and large custom pieces.",
           },
           {
             name: "Theo Banks",
             role: "Fine line & script",
-            note: "Small, precise work: lettering, dates and single-needle detail.",
+            note: "Does fine line work and script lettering.",
           },
           {
             name: "Lena Ruiz",
             role: "Color realism & cover-ups",
-            note: "The one to see about an old tattoo you want gone.",
+            note: "Does color realism and covers up old tattoos.",
           },
         ],
       },
       {
         type: "faq",
-        title: "Booking & deposits",
+        title: "Booking and deposits",
         items: [
           {
             q: "How do I hold a date?",
@@ -163,7 +163,7 @@ export const ironLotusTattoo: ModelEntry = {
           },
           {
             q: "Can I see the drawing before the day?",
-            a: "We show the drawing on the day of your appointment, not before, and change it with you until it's right.",
+            a: "No. We show it on the day of your appointment and change it with you until it's right.",
           },
           {
             q: "Do I need ID?",
@@ -177,7 +177,7 @@ export const ironLotusTattoo: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "Healed and happy",
+        title: "Reviews",
         items: [
           {
             quote:

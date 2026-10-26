@@ -261,7 +261,12 @@ describe("sanitizeAiImages", () => {
   });
 
   it("restores galleries in their original position and drops invented ones", () => {
-    const base = fixtures["joes-plumbing"];
+    // Sem a galeria de fotos do modelo: o teste monta a dele.
+    const model = fixtures["joes-plumbing"];
+    const base: SiteSpec = {
+      ...model,
+      sections: model.sections.filter((section) => section.type !== "gallery"),
+    };
     const [hero, services, ...rest] = base.sections as [Section, Section, ...Section[]];
     const previous: SiteSpec = { ...base, sections: [hero, services, gallery, ...rest] };
 

@@ -64,16 +64,16 @@ export const mercerLaw: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Put it in writing while it's still an easy conversation.",
+        title: "Family and estate law in German Village",
         subtitle:
-          "Wills, trusts, probate and divorce consultations from a two-person law office in German Village. Flat fees, quoted in writing before we start.",
+          "Ellen Mercer handles wills, trusts, probate and divorce consultations from a two-person office on S Third St, with fees quoted in writing before we start.",
         ctaLabel: "Book a consultation",
         imageQuery: "law office desk documents",
       },
       {
         type: "about",
-        title: "A small office, on purpose",
-        body: "Mercer Law is two people. You meet with me at the start, Ruth prepares every document, and the two of us sit with you when you sign. Nobody hands your file to someone you've never met.\n\nI can't promise a result in any case. What I can do is tell you plainly what Ohio law says and what each option costs, before you spend anything.",
+        title: "About the office",
+        body: "Mercer Law is two people. You meet with me at the start, and Ruth Okafor, our paralegal, prepares every document and runs the signing meeting, so your file stays with the two of us.\n\nI can't promise a result in any case. I will tell you plainly what Ohio law says and what each option costs.",
         people: [
           {
             name: "Ellen Mercer",
@@ -89,46 +89,45 @@ export const mercerLaw: ModelEntry = {
       },
       {
         type: "services",
-        title: "What we do, and what it costs",
+        title: "Services and fees",
         items: [
           {
             name: "Will package",
             description:
-              "Your will, a financial power of attorney, a health care power of attorney and a living will, drafted together so they agree with each other.",
+              "Your will, a financial power of attorney, a health care power of attorney and a living will, drafted together as one package.",
             price: "$1,450 flat",
             detail: "Drafts in about two weeks",
           },
           {
             name: "Revocable living trust",
             description:
-              "For families who want to keep the estate out of probate. The trust is written alongside the rest of your plan.",
+              "A revocable living trust, drafted together with the rest of your estate plan.",
             price: "from $3,200",
             detail: "Flat fee, quoted in writing",
           },
           {
             name: "Estate plan review",
             description:
-              "Bring the documents you already have. We check them against your family today and Ohio law today.",
+              "We read the estate plan you already have and tell you whether it still fits your family and current Ohio law.",
             price: "$350",
             detail: "One meeting",
           },
           {
             name: "Probate and estate administration",
-            description:
-              "Guidance for executors through Ohio probate, from the first filing to closing the estate.",
+            description: "Help for executors and families handling an estate in Ohio probate.",
             price: "$285 an hour",
             detail: "Or a flat quote once we've seen the estate",
           },
           {
             name: "Divorce and dissolution consultation",
             description:
-              "Sixty minutes to understand your options, the steps and the likely costs. Credited toward your fee if you hire us.",
+              "A one-hour meeting about your options, the steps and the likely costs. The fee is credited if you hire us.",
             price: "$200",
             detail: "60 min",
           },
           {
             name: "Prenuptial agreements",
-            description: "Drafted or reviewed, with time to talk it through before the wedding.",
+            description: "Prenuptial agreements drafted at a flat fee, quoted in writing.",
             price: "from $1,800",
             detail: "Flat fee",
           },
@@ -136,11 +135,11 @@ export const mercerLaw: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before your first meeting",
+        title: "Questions",
         items: [
           {
             q: "How does an estate plan come together?",
-            a: "A first meeting to talk through your family and what you own. Drafts arrive in about two weeks. Then a signing meeting here at the office, with witnesses and a notary, so everything is done properly in one visit.",
+            a: "We start with a meeting about your family and what you own. Drafts are ready in about two weeks, and then you sign here at the office with witnesses and a notary.",
           },
           {
             q: "Are your fees really flat?",
@@ -148,11 +147,11 @@ export const mercerLaw: ModelEntry = {
           },
           {
             q: "Can you tell me how my divorce will turn out?",
-            a: "No, and you should be careful with anyone who does. In the consultation I explain what Ohio law says, what your options are and what each one costs.",
+            a: "No. In the consultation I explain what Ohio law says, what your options are and what each one costs.",
           },
           {
             q: "Do you meet after work?",
-            a: "Yes. Tuesday evening appointments are available by request. Our regular hours are Mon–Thu 9 AM – 5 PM and Fri 9 AM – 1 PM.",
+            a: "Yes, on Tuesday evenings by request. Our regular hours are Mon–Thu 9 AM – 5 PM and Fri 9 AM – 1 PM.",
           },
           {
             q: "Where do I park?",

@@ -64,9 +64,9 @@ export const trueCoatPainting: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Prep is the paint job. The color is the easy part.",
+        title: "House painters in Portland, Oregon",
         subtitle:
-          "Interior and exterior painting, cabinets and decks for Portland houses. We spend most of every job scraping, patching, caulking and taping, because that's what makes two coats last.",
+          "We paint inside and out, refinish cabinets and stain decks. Most of every job is scraping, patching, caulking and taping, because that's what makes two coats last.",
         ctaLabel: "Book a walkthrough",
         image: {
           url: "/photos/models/true-coat-painting-1.webp",
@@ -84,8 +84,8 @@ export const trueCoatPainting: ModelEntry = {
       },
       {
         type: "about",
-        title: "Old Portland houses, one wall at a time",
-        body: "Hannah Lindqvist has been painting Portland houses since 2011 and started True Coat in 2017. Most of the homes we paint were built before 1978, so the crew of four is EPA lead-safe certified and uses low-VOC paint by default. Hannah writes every estimate and helps with color; Theo runs the crew and the cabinet spray shop on SE Division.",
+        title: "About True Coat",
+        body: "Hannah Lindqvist has painted Portland houses since 2011 and started True Coat in 2017. Most of the homes we paint were built before 1978, so we are EPA lead-safe certified and the crew sets up containment before any scraping or sanding. We use low-VOC paint unless you ask for something else. Theo Nakamura leads our crew of four and runs the cabinet spray shop on SE Division.",
         people: [
           {
             name: "Hannah Lindqvist",
@@ -100,12 +100,12 @@ export const trueCoatPainting: ModelEntry = {
       },
       {
         type: "services",
-        title: "What we paint",
+        title: "Painting services",
         items: [
           {
             name: "Interior painting",
             description:
-              "Walls, ceilings and trim. We move and cover the furniture, patch the dings and leave the room ready to live in.",
+              "Walls, ceilings and trim, with the furniture moved and covered while we work.",
             price: "from $450 a room",
           },
           {
@@ -117,7 +117,7 @@ export const trueCoatPainting: ModelEntry = {
           {
             name: "Cabinet refinishing",
             description:
-              "Doors come off and get sprayed in our shop for a smooth, even finish. Your kitchen stays usable.",
+              "We take the doors to our shop and spray them there, so you can keep using your kitchen.",
             detail: "About 2 weeks",
             price: "from $3,800",
           },
@@ -129,7 +129,7 @@ export const trueCoatPainting: ModelEntry = {
           {
             name: "Color consultation",
             description:
-              "Ninety minutes at your house with samples on your walls, in your light. Credited toward the job if you hire us.",
+              "Ninety minutes at your house to choose colors. We credit the $150 toward the job if you hire us.",
             detail: "90 minutes",
             price: "$150",
           },
@@ -137,7 +137,7 @@ export const trueCoatPainting: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "From the houses we've painted",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -157,7 +157,7 @@ export const trueCoatPainting: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before we start",
+        title: "Questions",
         items: [
           {
             q: "How do you price a job?",
@@ -187,7 +187,7 @@ export const trueCoatPainting: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Book a walkthrough",
+        title: "Contact us",
         showForm: true,
         showMap: false,
       },

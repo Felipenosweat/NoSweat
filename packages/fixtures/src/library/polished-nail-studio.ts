@@ -70,10 +70,10 @@ export const polishedNailStudio: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "Gel that makes it to week three",
+        title: "Nail studio on South Lamar in Austin",
         subtitle:
-          "Gel, structured gel, dip and hand-painted nail art on South Lamar. Sterilized tools, a new file for every client and free parking out back.",
-        ctaLabel: "Book your nails",
+          "Gel and dip manicures, Gel-X, nail art and pedicures at 1100 S Lamar Blvd. Metal tools go through an autoclave, and every client gets a new file and buffer.",
+        ctaLabel: "Book an appointment",
         image: {
           url: "/photos/models/polished-nail-studio-8.webp",
           alt: "A drop of glossy red nail polish falling from the brush back into the bottle",
@@ -90,12 +90,12 @@ export const polishedNailStudio: ModelEntry = {
       },
       {
         type: "services",
-        title: "The menu",
+        title: "Services and prices",
         items: [
           {
             group: "Hands",
             name: "Gel manicure",
-            description: "Shape, cuticle care and gel color in any shade on the wall.",
+            description: "Shaping, cuticle care and gel color.",
             price: "$45",
             detail: "45 min",
           },
@@ -123,14 +123,15 @@ export const polishedNailStudio: ModelEntry = {
           {
             group: "Art & extras",
             name: "Nail art",
-            description: "From simple accents to full hand-painted sets. Bring inspiration photos.",
+            description:
+              "Anything from a simple accent to a full hand-painted set. Bring inspiration photos.",
             price: "from $10",
             detail: "Added to any set",
           },
           {
             group: "Art & extras",
             name: "Gel removal",
-            description: "Gentle soak-off. Free if you're getting a new set.",
+            description: "Soak-off removal, free if you're getting a new set.",
             price: "$15",
           },
           {
@@ -143,7 +144,7 @@ export const polishedNailStudio: ModelEntry = {
           {
             group: "Feet",
             name: "Spa pedicure",
-            description: "The classic, plus a scrub, a mask and hot stones.",
+            description: "Our classic pedicure with a scrub, a mask and hot stones.",
             price: "$60",
             detail: "60 min",
           },
@@ -151,11 +152,11 @@ export const polishedNailStudio: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before you come in",
+        title: "Questions",
         items: [
           {
             q: "How long does gel last?",
-            a: "Usually 2 to 3 weeks. Structured gel tends to hold best on short or weak nails.",
+            a: "Usually 2 to 3 weeks. If your nails are weak or short, ask about structured gel.",
           },
           {
             q: "How do you keep things clean?",
@@ -167,7 +168,7 @@ export const polishedNailStudio: ModelEntry = {
           },
           {
             q: "Do you take walk-ins?",
-            a: "Only if there's an opening. Booking online is the surest way to get a spot.",
+            a: "Only if there's an opening, so it's best to book online.",
           },
           {
             q: "What's your cancellation policy?",
@@ -177,8 +178,8 @@ export const polishedNailStudio: ModelEntry = {
       },
       {
         type: "about",
-        title: "Who's at the table",
-        body: "Thao Nguyen has been a nail tech for 9 years and opened Polished in 2020: a small studio on South Lamar where every set gets the time it needs. Bring a photo, a color, or no idea at all.",
+        title: "About us",
+        body: "Thao Nguyen has been a nail tech for 9 years and opened Polished on South Lamar in 2020. Brianna Cole does structured gel and Gel-X, and Mai Tran does the pedicures.",
         people: [
           { name: "Thao Nguyen", role: "Owner, nail tech", note: "Hand-painted nail art." },
           { name: "Brianna Cole", role: "Nail tech", note: "Structured gel and Gel-X." },
@@ -187,7 +188,7 @@ export const polishedNailStudio: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "Fresh off the table",
+        title: "Reviews",
         items: [
           {
             quote:
@@ -203,7 +204,7 @@ export const polishedNailStudio: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Book a set",
+        title: "Book an appointment",
         showForm: true,
         showMap: true,
       },

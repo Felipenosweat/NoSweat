@@ -62,9 +62,9 @@ export const stillWaterSpa: ModelEntry = {
     sections: [
       {
         type: "hero",
-        title: "An hour where nobody needs anything from you",
+        title: "Day spa in Old Town Scottsdale",
         subtitle:
-          "Massage and facials in Old Town Scottsdale. Five quiet rooms, no phones, no music unless you ask for it, and licensed therapists who listen before they start.",
+          "Massage and facials with licensed therapists at 7134 E Stetson Dr. We have five treatment rooms, one of them a couples suite, and phones stay out of all of them.",
         ctaLabel: "Book a treatment",
         image: {
           url: "/photos/models/still-water-spa-9.webp",
@@ -81,8 +81,8 @@ export const stillWaterSpa: ModelEntry = {
       },
       {
         type: "about",
-        title: "The rooms and the hands",
-        body: "Renee Calloway opened Still Water on Stetson Drive in 2015 with one idea: the quiet is part of the treatment. There are five treatment rooms, one of them a couples suite with two tables side by side. No phones in the rooms, and no music unless you ask for it.",
+        title: "About us",
+        body: "Renee Calloway, a licensed massage therapist, opened Still Water on Stetson Drive in 2015. The couples suite has two tables side by side. There is no music in the rooms unless you ask for it.",
         people: [
           {
             name: "Renee Calloway",
@@ -108,21 +108,21 @@ export const stillWaterSpa: ModelEntry = {
           {
             group: "Massage",
             name: "Swedish massage",
-            description: "Long, even pressure to slow everything down.",
+            description: "Long, even strokes.",
             price: "$110 / $155",
             detail: "60 / 90 min",
           },
           {
             group: "Massage",
             name: "Deep tissue massage",
-            description: "Slow, firm work on the knots that don't let go on their own.",
+            description: "Firm pressure on tight muscles and knots.",
             price: "$125 / $175",
             detail: "60 / 90 min",
           },
           {
             group: "Massage",
             name: "Hot stone massage",
-            description: "Warm stones and long Swedish strokes.",
+            description: "Swedish massage with warm stones.",
             price: "$165",
             detail: "90 min",
           },
@@ -136,14 +136,14 @@ export const stillWaterSpa: ModelEntry = {
           {
             group: "Facials",
             name: "Signature facial",
-            description: "Cleanse, extractions and a mask chosen for your skin that day.",
+            description: "A cleanse, extractions and a mask.",
             price: "$130",
             detail: "60 min",
           },
           {
             group: "Facials",
             name: "Express facial",
-            description: "A cleanse and mask for a lunch break.",
+            description: "A shorter facial with a cleanse and a mask.",
             price: "$85",
             detail: "30 min",
           },
@@ -157,7 +157,7 @@ export const stillWaterSpa: ModelEntry = {
           {
             group: "Together",
             name: "Couples retreat",
-            description: "Massage, then a facial mask and tea together in the couples suite.",
+            description: "A massage, then a facial mask and tea in the couples suite.",
             price: "$340",
             detail: "90 min",
           },
@@ -165,7 +165,7 @@ export const stillWaterSpa: ModelEntry = {
       },
       {
         type: "testimonials",
-        title: "Afterward",
+        title: "Reviews",
         items: [
           {
             quote: "Marcus found the knot in my shoulder that three other therapists missed.",
@@ -180,15 +180,15 @@ export const stillWaterSpa: ModelEntry = {
       },
       {
         type: "faq",
-        title: "Before your visit",
+        title: "Questions",
         items: [
           {
             q: "When should I arrive?",
-            a: "15 minutes early, so you can fill out a short health form and settle in before your time starts.",
+            a: "15 minutes early, so you have time to fill out a short health form.",
           },
           {
             q: "Can I have a massage while pregnant?",
-            a: "Yes, after the first trimester. Book the prenatal massage and Renee will set you up side-lying with full support.",
+            a: "Yes, after the first trimester. For the prenatal massage you lie on your side, fully supported.",
           },
           {
             q: "What is your cancellation policy?",
@@ -196,7 +196,7 @@ export const stillWaterSpa: ModelEntry = {
           },
           {
             q: "Is gratuity included?",
-            a: "No, gratuity is not included in our prices.",
+            a: "No, it isn't included in our prices.",
           },
           {
             q: "Do you sell gift cards?",
@@ -206,7 +206,7 @@ export const stillWaterSpa: ModelEntry = {
       },
       {
         type: "contact",
-        title: "Book your time",
+        title: "Book a treatment",
         showForm: true,
         showMap: true,
       },

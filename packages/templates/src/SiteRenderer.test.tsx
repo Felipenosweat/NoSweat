@@ -4,9 +4,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SiteRenderer } from "./SiteRenderer";
 import { foldMessage } from "./sections/fold-message";
-import type { GalleryVariant } from "./sections/Gallery";
 import { FONT_CSS_VARIABLES, FONT_PAIRS } from "./fonts";
 import { readableTextOn, themeToCssVars } from "./theme";
+
+/** O modelo sem a galeria de fotos do Unsplash (os testes montam a galeria que precisam). */
+const withoutGallery = (spec: SiteSpec): SiteSpec => ({
+  ...spec,
+  sections: spec.sections.filter((section) => section.type !== "gallery"),
+});
 
 describe("SiteRenderer", () => {
   it.each(Object.entries(fixtures))("renders %s without errors", (_slug, spec) => {
@@ -34,7 +39,7 @@ describe("SiteRenderer", () => {
 });
 
 describe("honest by default", () => {
-  const base = fixtures["joes-plumbing"];
+  const base = withoutGallery(fixtures["joes-plumbing"]);
 
   it.each(Composition.options)(
     "shows no trust badges unless the owner confirmed them (%s)",
@@ -76,7 +81,7 @@ describe("readableTextOn", () => {
 });
 
 describe("photos", () => {
-  const base = fixtures["joes-plumbing"];
+  const base = withoutGallery(fixtures["joes-plumbing"]);
   const scene: SiteImage = {
     url: "https://images.pexels.com/photos/123/pexels-photo-123.jpeg",
     alt: "Plumber's tools on a kitchen counter",
@@ -147,44 +152,39 @@ describe("photos", () => {
       <SiteRenderer spec={withGallery([owner(1), owner(2), owner(3)])} />,
     );
     // Título padrão do ramo (serviços para casa: "Recent jobs").
-    expect(html).toContain(">Recent jobs</h2>");
+    // O título pode vir com a última palavra em itálico (<em>): compara só o texto.
+    expect(html.replace(/<\/?em[^>]*>/g, "")).toContain(">Recent jobs</h2>");
     expect(html).toContain('id="work"');
     expect(html).toContain('href="#work"');
     for (const n of [1, 2, 3]) {
       expect(html).toContain(`src="https://cdn.example.com/owner-${n}.jpg"`);
       expect(html).toContain(`alt="Finished bathroom remodel ${n}"`);
     }
-    expect(html.match(/loading="lazy"/g)).toHaveLength(3);
+    // A galeria e a foto que segue o mouse na lista de serviços carregam sob demanda.
+    expect(html.match(/loading="lazy"/g)?.length).toBeGreaterThanOrEqual(3);
   });
 
   it("uses the owner's gallery title", () => {
     const html = renderToStaticMarkup(
       <SiteRenderer spec={withGallery([owner(1)], "Bathrooms we remodeled")} />,
     );
-    expect(html).toContain(">Bathrooms we remodeled</h2>");
+    expect(html.replace(/<\/?em[^>]*>/g, "")).toContain(">Bathrooms we remodeled</h2>");
     expect(html).not.toContain(">Recent jobs</h2>");
   });
 
-  const variants: [Composition, GalleryVariant][] = [
-    ["service-led", "grid"],
-    ["editorial", "sheet"],
-    ["immersive", "wall"],
-    ["typographic", "grid"],
-    ["modular", "tiles"],
-  ];
-  it.each(variants)(
-    "%s shows the gallery as %s, with the owner's captions",
-    (composition, variant) => {
+  it.each(["service-led", "editorial", "immersive", "typographic", "modular"] as const)(
+    "%s shows the gallery as a rail, with the owner's captions",
+    (composition) => {
       const images = [1, 2, 3].map((n) => ({
         ...owner(n),
         caption: `Job ${n} · Round Rock · 2025`,
       }));
       const spec = { ...withGallery(images), design: { composition } };
       const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
-      expect(html).toContain(`data-gallery="${variant}"`);
+      expect(html).toContain('data-gallery="rail"');
       expect(html).toContain("Job 2 · Round Rock · 2025");
       // Fotos do dono ficam fora dos filtros de preto e branco/véu de cor.
-      expect(html.match(/data-kind="owner"/g)).toHaveLength(3);
+      expect(html.match(/data-kind="owner"/g)?.length).toBeGreaterThanOrEqual(3);
     },
   );
 
@@ -230,7 +230,7 @@ describe("fonts", () => {
 });
 
 describe("compositions", () => {
-  const plumbing = fixtures["joes-plumbing"];
+  const plumbing = withoutGallery(fixtures["joes-plumbing"]);
 
   it("keeps the old layout for sites without a design plan", () => {
     const old: SiteSpec = { ...plumbing, design: undefined };
@@ -322,7 +322,7 @@ describe("model sites", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).toContain('id="about"');
     expect(html).toContain('href="#about"');
-    expect(html).toContain(">Who picks up the phone</h2>");
+    expect(html).toContain(">About us</h2>");
     expect(html).toContain("Maria Ramirez");
   });
 

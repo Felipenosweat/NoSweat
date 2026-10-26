@@ -32,9 +32,9 @@ export const haleOrtiz: SiteSpec = {
   sections: [
     {
       type: "hero",
-      title: "Your books, kept. Your taxes, filed.",
+      title: "Bookkeeping and tax practice in Denver",
       subtitle:
-        "A two-person bookkeeping and tax practice in Denver for small businesses and the people who run them.",
+        "Dana Hale, CPA, and Luis Ortiz, enrolled agent, keep the books and prepare the returns for small businesses and their owners, by appointment on Wynkoop Street.",
       ctaLabel: "Book a consultation",
       imageQuery: "tidy desk ledger notebook",
     },
@@ -43,7 +43,7 @@ export const haleOrtiz: SiteSpec = {
       items: [
         {
           name: "Monthly bookkeeping",
-          description: "Your accounts reconciled every month, with a short report you can read.",
+          description: "We reconcile your accounts and keep your books up to date each month.",
           price: "from $350",
           detail: "Monthly",
         },
@@ -61,20 +61,20 @@ export const haleOrtiz: SiteSpec = {
         },
         {
           name: "Quarterly estimates",
-          description: "We work out what to set aside each quarter, so April has no surprises.",
+          description: "We calculate your estimated tax payment for each quarter.",
           price: "$150",
           detail: "Each quarter",
         },
         {
           name: "IRS letters",
-          description: "Bring us the letter. We explain what it means and help you answer it.",
+          description: "We explain what the IRS letter means and help you write the reply.",
           detail: "As needed",
         },
       ],
     },
     {
       type: "about",
-      body: "Hale & Ortiz is two people. You always work with one of us, from the first meeting to the filed return.",
+      body: "Hale & Ortiz is a two-person practice, and you work with one of us from the first meeting to the filed return.",
       people: [
         {
           name: "Dana Hale",
@@ -107,7 +107,7 @@ export const haleOrtiz: SiteSpec = {
       items: [
         {
           q: "Do I need an appointment?",
-          a: "Yes. We meet by appointment, Monday to Friday, so we can give you our full attention.",
+          a: "Yes. We meet by appointment, Monday through Friday from 9 to 5, and you can book a consultation online.",
         },
         {
           q: "What should I bring to the first meeting?",
