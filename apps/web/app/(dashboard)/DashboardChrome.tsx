@@ -15,6 +15,7 @@ import { focusRing } from "@/components/DashboardUi";
 import { GlassBackdrop, glassButtonClass } from "@/components/glass";
 import { Logo } from "@/components/Logo";
 import { SOON_MODULES } from "@/lib/modules";
+import type { TourConfig } from "@/lib/onboarding";
 import {
   AccountIcon,
   AdminIcon,
@@ -34,8 +35,10 @@ import {
   SocialIcon,
   StarIcon,
   TeamIcon,
+  TourIcon,
   WebsiteIcon,
 } from "./NavIcons";
+import { WelcomeTour, openWelcomeTour } from "./WelcomeTour";
 
 // Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral de vidro flutuante no
 // computador; barra de cima de vidro + barra de abas flutuante (como a do iOS 26) no celular, com o
@@ -57,6 +60,8 @@ type ChromeProps = {
   supportHref?: string;
   /** Faixa no topo do conteúdo (ex.: modo "ver como" do admin). */
   banner?: ReactNode;
+  /** Tour de boas-vindas: abre sozinho uma vez por conta e "Take the tour" abre de novo. */
+  tour: TourConfig;
   children: ReactNode;
 };
 
@@ -95,6 +100,8 @@ type NavItem = {
   match?: string | null;
   /** Link de fora (Help): `<a>` com os atributos de `supportLinkProps`. */
   external?: boolean;
+  /** Botão em vez de link (ex.: "Take the tour"): `href` fica sem uso. */
+  action?: () => void;
 };
 
 const HOME_ITEM: NavItem = { key: "home", label: "Home", href: "/dashboard", Icon: HomeIcon };
@@ -169,7 +176,20 @@ function messagesItem(latestSiteId: string | null): NavItem[] {
     : [];
 }
 
-/** Grupo "Business" (embaixo da barra lateral): equipe, configurações, cobrança, ajuda, admin. */
+/** "Take the tour": abre o tour de boas-vindas de novo (botão, não muda de página). */
+const TOUR_ITEM: NavItem = {
+  key: "tour",
+  label: "Take the tour",
+  href: "/guide",
+  Icon: TourIcon,
+  match: null,
+  action: openWelcomeTour,
+};
+
+/**
+ * Grupo "Business" (embaixo da barra lateral): equipe, configurações, cobrança, ajuda, tour,
+ * admin.
+ */
 function businessItems({
   admin,
   account,
@@ -182,6 +202,7 @@ function businessItems({
     ...(supportHref
       ? [{ key: "help", label: "Help", href: supportHref, Icon: HelpIcon, external: true }]
       : []),
+    TOUR_ITEM,
     ...(admin
       ? [{ key: "admin", label: "Admin", href: "/admin", Icon: AdminIcon, match: null }]
       : []),
@@ -219,6 +240,21 @@ function NavLink({
       {item.label}
     </>
   );
+  if (item.action) {
+    const action = item.action;
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onClick?.();
+          action();
+        }}
+        className={className}
+      >
+        {content}
+      </button>
+    );
+  }
   if (item.external) {
     return (
       <a href={item.href} {...supportLinkProps(item.href)} onClick={onClick} className={className}>
@@ -248,7 +284,7 @@ function SidebarNav({
   account,
   latestSiteId,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner">) {
+}: Omit<ChromeProps, "children" | "banner" | "tour">) {
   const { currentItem } = useCurrent();
   const main: NavItem[] = [
     HOME_ITEM,
@@ -367,7 +403,7 @@ function TabBar({
   account,
   latestSiteId,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner">) {
+}: Omit<ChromeProps, "children" | "banner" | "tour">) {
   const { currentItem, pathname } = useCurrent();
   const moreRef = useRef<HTMLDetailsElement>(null);
   // Abas fixas (o que se usa na rua) e o resto na folha "More".
@@ -505,6 +541,7 @@ export function DashboardChrome({
   latestSiteId,
   supportHref,
   banner,
+  tour,
   children,
 }: ChromeProps) {
   const { isCreate } = useCurrent();
@@ -574,6 +611,7 @@ export function DashboardChrome({
         latestSiteId={latestSiteId}
         supportHref={supportHref}
       />
+      <WelcomeTour config={tour} latestSiteId={latestSiteId} />
     </div>
   );
 }

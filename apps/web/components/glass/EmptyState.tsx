@@ -9,6 +9,7 @@ export function EmptyState({
   title,
   description,
   actions,
+  footnote,
   framed = true,
   headingLevel = 2,
   className,
@@ -19,6 +20,8 @@ export function EmptyState({
   description?: ReactNode;
   /** Botões (ex.: um <GlassButton variant="primary" />). */
   actions?: ReactNode;
+  /** Linha pequena embaixo de tudo (ex.: "New here? See how it works"). */
+  footnote?: ReactNode;
   /** Dentro de um cartão de vidro (padrão). `false` = só o conteúdo, para dentro de outro cartão. */
   framed?: boolean;
   headingLevel?: 2 | 3;
@@ -56,6 +59,9 @@ export function EmptyState({
       )}
       {actions && (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">{actions}</div>
+      )}
+      {footnote && (
+        <div className="mt-5 text-[13px] leading-5 text-(--glass-fg-muted)">{footnote}</div>
       )}
     </div>
   );

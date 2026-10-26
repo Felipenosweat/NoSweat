@@ -9,6 +9,7 @@ import { getViewer } from "@/server/auth/viewer";
 import { listTeam } from "@/server/office/service";
 import { PersonIcon, TEAM_COLOR_STYLES, nextFreeColor } from "../schedule/ui";
 import { AddMemberButton, MemberMenu } from "./TeamControls";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Team", robots: { index: false } };
 
@@ -105,6 +106,7 @@ export default async function TeamPage() {
               <AddMemberButton defaultColor={defaultColor} label="Add your first team member" />
             )
           }
+          footnote={<GuideHint section="team" />}
         />
       ) : (
         <div className="mt-8 grid gap-8">
