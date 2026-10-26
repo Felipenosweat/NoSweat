@@ -19,6 +19,8 @@ export type GlassSheetProps = {
   /** Pedido para fechar (Esc, clique fora). O pai muda `open` para false. */
   onClose: () => void;
   title: ReactNode;
+  /** Desenho acima do título (ex.: a ilustração de cada passo do tour). Decorativo. */
+  media?: ReactNode;
   /** Frase de apoio abaixo do título (vira `aria-describedby`). */
   description?: ReactNode;
   children?: ReactNode;
@@ -38,6 +40,7 @@ export function GlassSheet({
   open,
   onClose,
   title,
+  media,
   description,
   children,
   footer,
@@ -98,6 +101,11 @@ export function GlassSheet({
       )}
     >
       <div className="p-6 sm:p-7">
+        {media && (
+          <div aria-hidden="true" className="mb-5">
+            {media}
+          </div>
+        )}
         <h2
           id={titleId}
           className="font-display text-[19px] leading-7 font-semibold tracking-[-0.012em] break-words"
