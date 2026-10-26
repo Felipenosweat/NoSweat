@@ -11,6 +11,7 @@ import { PlusIcon } from "@/components/marketing/icons";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { PromptForm } from "@/components/marketing/PromptForm";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
+import { SocialLinks } from "@/components/marketing/SocialLinks";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
@@ -222,6 +223,13 @@ export default function LandingPage() {
           No <em>Sweat</em>
         </p>
       </div>
+      {/* As redes da No Sweat logo abaixo do nome gigante, antes do rodapé (pedido do fundador). */}
+      <section aria-labelledby="follow-title" className="bg-ink pt-6 pb-14 text-center">
+        <h2 id="follow-title" className="lp-eyebrow text-white/60">
+          Follow @nosweatfd
+        </h2>
+        <SocialLinks tone="dark" className="mt-5 justify-center" />
+      </section>
 
       <LandingMotion />
     </>

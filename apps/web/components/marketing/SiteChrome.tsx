@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { MarketingMenu } from "./MobileCtaBar";
+import { SocialLinks } from "./SocialLinks";
 import { container, focusRing } from "./styles";
 
 // Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
@@ -181,6 +182,10 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
           >
             Websites for small businesses, built from a sentence and easy to keep up to date.
           </p>
+          <p className={`mt-6 text-sm font-semibold ${dark ? "text-white" : "text-ink"}`}>
+            Follow @nosweatfd
+          </p>
+          <SocialLinks tone={dark ? "dark" : "light"} className="mt-3" />
         </div>
         <nav
           aria-label="Footer"
