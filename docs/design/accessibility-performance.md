@@ -49,6 +49,12 @@ cabe aqui, a ideia muda.
 **Rolagem lateral**: uma fileira que rola de lado sem nada focável dentro precisa de
 `tabIndex={0}` + `aria-label` (senão quem usa teclado não consegue rolar).
 
+**O básico que até sites premiados erram** (pesquisa de 2026-10-26, 14 sites): sem h1
+(oryzo-ai, velaa) ou vários h1 (son-daven); 38 de 39 imagens sem `alt` (oryzo-ai); contorno de
+foco removido (floema, kozowood, a-lign); texto corrido de 10 px em caixa-alta (son-daven);
+zoom com pinça desligado (oryzo-ai); `tel:` malformado (kozowood) ou ausente (floema);
+botão principal com contraste de 2,93:1 (a-lign). Prêmio não é prova de acessibilidade.
+
 ## Desempenho
 
 **Orçamento de uma página de demonstração**

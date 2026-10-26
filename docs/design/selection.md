@@ -26,8 +26,8 @@ Ele devolve (JSON):
 Como pontua:
 
 - referência: ramo +3, cada tom +1, objetivo +1, `verified-live` +0,5;
-- arquétipo: ramo +3, cada tom +1, cada referência boa do mesmo arquétipo +1,5, menos a
-  penalidade de repetição × 1,5;
+- arquétipo: ramo +3, cada tom +1,5, cada referência boa do mesmo arquétipo +1,5 (se for do
+  mesmo ramo) ou +0,5 (se só combina no tom), menos a penalidade de repetição × 1,5;
 - cada eixo: posição na lista de preferência do arquétipo, menos a penalidade de repetição.
 
 **Penalidade de repetição:** para cada um dos últimos 6 projetos de `usage-log.json` que usou
@@ -35,6 +35,11 @@ o mesmo valor, soma `2 / idade` (o último projeto pesa 2, o penúltimo 1, o ant
 Na prática: logo depois do Aurelia, o mesmo pedido de hotel sai como `quiet-luxury`,
 `split-editorial`, `grotesk-only`, `index-led`, `framed-editorial`, `top-bar`, `quiet`,
 `single-paper`: outro site, não o Aurelia com outra cor.
+
+Conferido com o log vazio (2026-10-26): hotel → heritage-grandeur; encanador →
+service-direct; spa → quiet-luxury; arquiteto → quiet-luxury; restaurante →
+warm-hospitality; barbearia → kinetic-type; joalheria → heritage-grandeur; advogado →
+broadsheet-editorial.
 
 ## 3. Leia antes de desenhar
 

@@ -73,8 +73,13 @@ const rankedRefs = references
 const archetypeScores = archetypes.map((archetype) => {
   let score = 0;
   if (archetype.fits.businesses.includes(brief.industry)) score += 3;
-  score += archetype.fits.tones.filter((tone) => brief.tones.includes(tone)).length;
-  score += rankedRefs.filter((item) => item.ref.archetype === archetype.id).length * 1.5;
+  // O tom pesa mais no arquétipo que na referência: é o que separa um spa acolhedor de um palácio.
+  score += archetype.fits.tones.filter((tone) => brief.tones.includes(tone)).length * 1.5;
+  // Referência do mesmo ramo puxa forte; a que só combina no tom puxa pouco.
+  for (const item of rankedRefs) {
+    if (item.ref.archetype !== archetype.id) continue;
+    score += (item.ref.fits?.businesses ?? []).includes(brief.industry) ? 1.5 : 0.5;
+  }
   score -= recencyPenalty(log, "archetype", archetype.id) * 1.5;
   return { archetype, score };
 });

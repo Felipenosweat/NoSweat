@@ -2,17 +2,38 @@
   "_comment": "Arquétipos de direção de arte e os eixos de design. Lido por tools/select.mjs. Explicação em archetypes.md. Cada referência em references.json aponta para um arquétipo (campo archetype).",
   "axes": {
     "composition": [
-      { "id": "full-bleed-photo", "label": "Photo edge to edge with the name or headline over it" },
-      { "id": "split-editorial", "label": "Headline column beside a tall image, magazine grid" },
-      { "id": "type-poster", "label": "Type is the image: giant name or statement, no hero photo" },
-      { "id": "bento-grid", "label": "Tiles of different sizes (facts, photo, action)" },
-      { "id": "pinned-stage", "label": "One frame pinned while the story changes inside it" },
-      { "id": "horizontal-chapters", "label": "Chapters move sideways (pinned horizontal track)" },
+      {
+        "id": "full-bleed-photo",
+        "label": "Photo edge to edge with the name or headline over it"
+      },
+      {
+        "id": "split-editorial",
+        "label": "Headline column beside a tall image, magazine grid"
+      },
+      {
+        "id": "type-poster",
+        "label": "Type is the image: giant name or statement, no hero photo"
+      },
+      {
+        "id": "bento-grid",
+        "label": "Tiles of different sizes (facts, photo, action)"
+      },
+      {
+        "id": "pinned-stage",
+        "label": "One frame pinned while the story changes inside it"
+      },
+      {
+        "id": "horizontal-chapters",
+        "label": "Chapters move sideways (pinned horizontal track)"
+      },
       {
         "id": "monument-centered",
         "label": "Centered, symmetrical, ceremonial layout around a crest or object"
       },
-      { "id": "collage", "label": "Overlapping images and type at different scales" }
+      {
+        "id": "collage",
+        "label": "Overlapping images and type at different scales"
+      }
     ],
     "typeSystem": [
       {
@@ -23,52 +44,136 @@
         "id": "old-style-serif+humanist-sans",
         "label": "Garamond/Caslon-like serif with a humanist sans"
       },
-      { "id": "grotesk-only", "label": "One grotesk family, hierarchy by size and weight" },
-      { "id": "slab+grotesk", "label": "Slab or wide display with a grotesk body" },
+      {
+        "id": "grotesk-only",
+        "label": "One grotesk family, hierarchy by size and weight"
+      },
+      {
+        "id": "slab+grotesk",
+        "label": "Slab or wide display with a grotesk body"
+      },
       {
         "id": "variable-expressive",
         "label": "Variable or display face used kinetically (width/weight change)"
       },
-      { "id": "serif-only", "label": "One serif family for everything, italic for emphasis" }
+      {
+        "id": "serif-only",
+        "label": "One serif family for everything, italic for emphasis"
+      }
     ],
     "hierarchy": [
-      { "id": "headline-led", "label": "A sentence carries the page" },
-      { "id": "image-led", "label": "Photography carries the page; text is captions" },
-      { "id": "index-led", "label": "Numbered lists and indexes (services, rooms, chapters)" },
-      { "id": "number-led", "label": "Facts and figures as display elements" }
+      {
+        "id": "headline-led",
+        "label": "A sentence carries the page"
+      },
+      {
+        "id": "image-led",
+        "label": "Photography carries the page; text is captions"
+      },
+      {
+        "id": "index-led",
+        "label": "Numbered lists and indexes (services, rooms, chapters)"
+      },
+      {
+        "id": "number-led",
+        "label": "Facts and figures as display elements"
+      }
     ],
     "imagery": [
-      { "id": "full-bleed", "label": "Full-width photography" },
-      { "id": "arch-masks", "label": "Images in architectural shapes (arches, circles)" },
-      { "id": "framed-editorial", "label": "Framed photos with captions and credits" },
-      { "id": "collage-cutouts", "label": "Cut-out objects and overlaps" },
-      { "id": "duotone", "label": "Tinted / duotone treatment for unity" },
-      { "id": "illustration", "label": "Drawn or generated illustration" },
-      { "id": "product-ui", "label": "Real product interface as the image" }
+      {
+        "id": "full-bleed",
+        "label": "Full-width photography"
+      },
+      {
+        "id": "arch-masks",
+        "label": "Images in architectural shapes (arches, circles)"
+      },
+      {
+        "id": "framed-editorial",
+        "label": "Framed photos with captions and credits"
+      },
+      {
+        "id": "collage-cutouts",
+        "label": "Cut-out objects and overlaps"
+      },
+      {
+        "id": "duotone",
+        "label": "Tinted / duotone treatment for unity"
+      },
+      {
+        "id": "illustration",
+        "label": "Drawn or generated illustration"
+      },
+      {
+        "id": "product-ui",
+        "label": "Real product interface as the image"
+      }
     ],
     "navigation": [
-      { "id": "top-bar", "label": "Classic bar with links and one action" },
-      { "id": "floating-pill", "label": "Floating glass pill" },
-      { "id": "side-rail", "label": "Vertical rail at the side" },
-      { "id": "overlay-menu", "label": "Minimal bar + full-screen menu with large type" },
-      { "id": "bottom-bar-mobile", "label": "Primary actions fixed at the bottom on phones" }
+      {
+        "id": "top-bar",
+        "label": "Classic bar with links and one action"
+      },
+      {
+        "id": "floating-pill",
+        "label": "Floating glass pill"
+      },
+      {
+        "id": "side-rail",
+        "label": "Vertical rail at the side"
+      },
+      {
+        "id": "overlay-menu",
+        "label": "Minimal bar + full-screen menu with large type"
+      },
+      {
+        "id": "bottom-bar-mobile",
+        "label": "Primary actions fixed at the bottom on phones"
+      }
     ],
     "motion": [
       {
         "id": "ceremonial",
         "label": "Slow masked reveals, hairlines drawing, long ease-out; never bouncy"
       },
-      { "id": "cinematic", "label": "Scroll-scrubbed scenes, pinned sections, crossfades" },
-      { "id": "kinetic", "label": "Type moves: split lines, marquees, weight/width shifts" },
-      { "id": "quiet", "label": "Fades and small rises only; content first" },
-      { "id": "playful", "label": "Springs, hover tilts, cursor followers" }
+      {
+        "id": "cinematic",
+        "label": "Scroll-scrubbed scenes, pinned sections, crossfades"
+      },
+      {
+        "id": "kinetic",
+        "label": "Type moves: split lines, marquees, weight/width shifts"
+      },
+      {
+        "id": "quiet",
+        "label": "Fades and small rises only; content first"
+      },
+      {
+        "id": "playful",
+        "label": "Springs, hover tilts, cursor followers"
+      }
     ],
     "surface": [
-      { "id": "night-day-alternation", "label": "Dark and light chapters alternate" },
-      { "id": "single-paper", "label": "One warm paper ground throughout" },
-      { "id": "brand-block", "label": "Large blocks of one brand colour" },
-      { "id": "monochrome-dark", "label": "Dark throughout" },
-      { "id": "photographic", "label": "Photos are the surfaces" }
+      {
+        "id": "night-day-alternation",
+        "label": "Dark and light chapters alternate"
+      },
+      {
+        "id": "single-paper",
+        "label": "One warm paper ground throughout"
+      },
+      {
+        "id": "brand-block",
+        "label": "Large blocks of one brand colour"
+      },
+      {
+        "id": "monochrome-dark",
+        "label": "Dark throughout"
+      },
+      {
+        "id": "photographic",
+        "label": "Photos are the surfaces"
+      }
     ]
   },
   "archetypes": [
@@ -77,7 +182,7 @@
       "name": "Heritage grandeur",
       "summary": "Palaces, grand hotels, heritage houses, jewellers. Ceremony, craft and time: high-contrast serif, gold used sparingly as hairlines, night/day chapters, architectural shapes, slow masked reveals.",
       "fits": {
-        "businesses": ["hotel", "event-venue", "jeweller", "winery", "spa"],
+        "businesses": ["hotel", "event-venue", "jeweller", "winery"],
         "tones": ["refined", "premium", "calm"]
       },
       "axes": {

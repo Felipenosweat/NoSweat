@@ -46,11 +46,21 @@ menu.
 - **`prefers-reduced-motion: reduce`**: abertura não toca, nada preso, nada ligado à rolagem,
   só trocas instantâneas ou opacidade curta. Testar de verdade (Playwright
   `reducedMotion: "reduce"`), não só ler o CSS.
+- Dos 4 sites imersivos, só a kozowood muda algo com "reduzir movimento" (tira a porta). Os
+  nossos vão além: nada preso, nada ligado à rolagem, sem carregador, imagens no estado final.
 - **Como a era-estate faz** (a única das 5 de luxo que respeita "reduzir movimento"): duração
   quase zero em tudo e as revelações forçadas a aparecer. Nenhum dos 5 sites editoriais mudou
   com "reduzir movimento". É o mínimo, não um diferencial.
 - **Modo leve** em máquina fraca (`hardwareConcurrency <= 4 || deviceMemory <= 4`): pula os
   efeitos ligados à rolagem e mantém as revelações simples (mesma regra da landing V8).
+- **Carregador: no máximo ~1 s**, e só enquanto a foto do herói ou as fontes carregam, com a
+  cara da marca (a son-daven conta "% LOADED" e some em segundos; o da oryzo-ai ainda estava
+  na tela aos 48 s sem placa de vídeo). Nunca uma porta "Entrar" que trava a rolagem (kozowood).
+- **Palavra por palavra só em 2–3 linhas de manifesto**, e o texto inteiro aparece sem
+  movimento (kozowood).
+- **Som desligado por padrão; um filme de herói de até 3 MB, mudo, com pôster primeiro.**
+  floema baixa ~14 MB de MP3 na página inicial, kozowood ~7,7 MB de áudio, son-daven ~54 MB
+  numa rolagem completa.
 - **Só `transform` e `opacity`** (e `clip-path` em elementos pequenos). Nada de animar
   `width/height/top/left`, sombra ou filtro em área grande.
 - **Movimento nunca atrasa a ação principal.** O botão de reservar/ligar aparece no primeiro

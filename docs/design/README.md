@@ -80,8 +80,21 @@ Depois de mudar composições, o planejador ou a biblioteca:
 - Regrave as capturas da landing (`apps/web/public/landing/wall` e `build`) a partir de
   `/examples/<slug>?embed=1`.
 
-## Estado da pesquisa (2026-10-14)
+## Estado da pesquisa (2026-10-26)
 
-A Awwwards não abriu deste ambiente (conexão recusada; ver `studies/access-log.md`). Os prêmios
-vêm só de resultados de busca; os sites originais foram inspecionados ao vivo. Faltam referências
-verificadas de salão/beleza, restaurante com cardápio e serviço doméstico dos EUA.
+24 referências, cada uma com um arquétipo (`archetypes.md`). A rodada de 2026-10-26
+acrescentou 14 sites premiados ou listados na Awwwards, em 6 direções:
+
+- luxo e hotelaria: royal-savoy, grand-hotel-miramare, castello-del-sole, velaa, era-estate;
+- editorial: explora-journal, joshuas-magazine, mosbys-files;
+- tipografia expressiva: mat-voyce, a-lign-studio;
+- layout experimental: floema;
+- orgânico: son-daven, kozowood (não aprovada: sem prêmio da Awwwards confirmado);
+- narrativa imersiva: oryzo-ai.
+
+A Awwwards continua inacessível deste ambiente (conexão recusada em todas as tentativas; ver
+`studies/access-log.md`). Os prêmios vêm de trechos de busca, páginas das agências e créditos
+no próprio site; cada registro diz qual (`awwwardsEvidence`). Os sites foram abertos ao vivo
+em 1440 e 390 px e com "reduzir movimento". Faltam: casas de joias/moda (Cartier e Bulgari
+bloquearam), hotéis atrás de Cloudflare (Badrutt's, Passalacqua, Le Sirenuse), e ainda
+salão/beleza, restaurante com cardápio e serviço doméstico dos EUA verificados.

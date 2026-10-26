@@ -1644,5 +1644,450 @@
     "study": "studies/era-estate.md",
     "archetypeLabel": "art-deco-grandeur",
     "researchSlice": "luxury"
+  },
+  {
+    "id": "oryzo-ai",
+    "name": "Oryzo AI (by Lusion)",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "WebSearch `Oryzo AI Lusion awwwards site of the month` (summary of Lusion's Awwwards profile + Sites of the Month page): 'Developer Award SOTM Site Of The Month Apr, 2026'; 'a cinematic product story built around a cork coaster'. Query `awwwards \"Site of the Month\" June 2026` also listed 'Oryzo AI … April'. Awwwards unreachable; award page not loaded. Live copy: 'DESIGNED BY LUSION, THE AWARD-WINNING DESIGN STUDIO'.",
+    "siteUrl": "https://oryzo.ai/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot", "reduced-motion", "network"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["immersive-photography", "product-demo", "editorial"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": ["hotel", "product-brand", "restaurant", "spa"],
+      "tones": ["cinematic", "premium", "playful"],
+      "goals": ["browse", "book", "contact"]
+    },
+    "industry": "Fictional consumer product (studio showcase by a 3D/WebGL studio)",
+    "audience": "Brands/agencies evaluating Lusion; design-literate visitors",
+    "aestheticTags": [
+      "dark-warm",
+      "photoreal-3d",
+      "cinematic",
+      "editorial-set-pieces",
+      "cream-on-black"
+    ],
+    "archetype": "cinematic-scrollytelling",
+    "observed": {
+      "layout": "≈56 700 px desktop document over a fixed full-screen canvas. Olive wireframe loader → 'ISN'T JUST A COASTER' (3D cork object centre, copy left/right) → 'Powered by AI*' hand + iridescent edge glow → 'SO PORTABLE, it's wearable' big type + horizontal card stack → 'RISE' magazine cover → CAD wireframe → thermal scene → 'SMART FLIP ENCRYPTION' desk scene → sustainability panel → drop-test cards → 'CHOOSE YOU OWN ORYZO' configurator → dark footer statement + newsletter.",
+      "typography": "document.fonts: halyard-display-variable (100–900), Literata (200–900), DM Mono 400. h2 51 px 500 uppercase; body 13.5 px; nav 12 px uppercase. Link labels duplicated letter-by-letter in DOM (rolling hover markup). No h1.",
+      "imagery": "Photoreal real-time 3D of one cork object, Gaussian-splat props, warm editorial photos (jacket, cap, face), a thermal-camera scene; colour from cork/terracotta on near-black.",
+      "interaction": "Scenes advance with scroll (object rotation/scale seen across sequential shots); fixed chapter nav INTRO/FEATURES/PRODUCT/CONTACT; right-edge progress bar; 'SCROLL TO CONTINUE' per scene; programmatic jumps were held at one scene (y≈29 756) for 5 targets; 'DECODE MESSAGE' interactive button. Preloader still present at 48 s in software GL.",
+      "responsive": "Mobile keeps the same story and 3D (≈51 300 px), resized type, '● MENU' pill, 'SCROLL TO CONTINUE'. Viewport meta disables zoom (maximum-scale=1, user-scalable=no). Reduced-motion emulation: same loader and animated scenes."
+    },
+    "layoutPatterns": [
+      "fixed full-screen canvas with scroll-driven scenes",
+      "one headline per scene in negative space",
+      "horizontal card stack inside vertical scroll",
+      "magazine-cover set piece",
+      "persistent chapter nav + progress bar",
+      "dark closing statement + contact"
+    ],
+    "typography": {
+      "display": "halyard-display-variable (uppercase/large sans), Literata for editorial moments",
+      "body": "halyard-display-variable 13.5 px",
+      "scale": "51 px h2 → 13.5 px body → 12 px nav; captions ≈9–11 px",
+      "notes": "Mono (DM Mono) for technical labels; no h1; rolling-letter link markup."
+    },
+    "palette": [
+      {
+        "hex": "#100904",
+        "role": "page background (html)"
+      },
+      {
+        "hex": "#FFEDD7",
+        "role": "primary text (cream)"
+      },
+      {
+        "hex": "#DC5000",
+        "role": "accent (links/labels)"
+      },
+      {
+        "hex": "#382416",
+        "role": "dark brown surface"
+      },
+      {
+        "hex": "#4B5B3C",
+        "role": "loader olive"
+      }
+    ],
+    "imageryDirection": "One hero object lit like a product film; warm terracotta/cork tones on near-black; occasional full-colour editorial photo or an iridescent/thermal scene for contrast.",
+    "interactionPatterns": [
+      "scroll-scrubbed 3D object transforms",
+      "pinned scenes with 'scroll to continue'",
+      "chapter anchors",
+      "vertical progress bar",
+      "rolling-letter hover",
+      "interactive scene button"
+    ],
+    "motion": {
+      "purpose": "Turn a trivial product into a film; each scroll beat reveals one feature joke.",
+      "choreography": "Camera/object transforms tied to scroll inside pinned scenes; scene-to-scene crossfades and type sweeps; edge glow and falling coffee beans as time-based accents.",
+      "pacing": "Roughly one idea per viewport; long (≈60 viewports desktop); loader before anything.",
+      "evidenceOfLibraries": "window.__THREE__ = '178 - modified by Lusion'; Astro (/_astro/hoisted.*.js); Rive runtime (unpkg @rive-app/canvas@2.37.0 rive.wasm); .sog Gaussian splats; no window.gsap, no Lenis class."
+    },
+    "accessibility": "No h1, one h2; 38/39 images without alt; pinch-zoom disabled; small low-contrast captions; default focus outline visible; no skip link; reduced motion not honoured (same animated scenes).",
+    "performance": "Desktop (to ≈22 500 px scrolled) ≈211 requests / ≈16.6 MB: images 7.6 MB (webp textures), XHR 7.1 MB (models + splats; props.sog 3.0 MB), fonts 342 kB, JS ≈0.8 MB. Loader ≥48 s in software WebGL on a loaded CPU (not representative of a GPU).",
+    "whyItWorks": "Film grammar on the web: one subject, one line per beat, and always-visible chapter navigation and progress, so a very long page stays orientable.",
+    "principles": [
+      "One subject and one sentence per scene; put text in the negative space next to the subject.",
+      "Give long stories visible chapters and a progress indicator.",
+      "Break a product sequence with editorial set pieces (cover, card stack).",
+      "End on a dark full-bleed statement with the contact block."
+    ],
+    "doNotCarryOver": [
+      "Real-time 3D/splats and a blocking loader for a hotel site.",
+      "No h1/alt text; user-scalable=no.",
+      "Scroll that holds inside an interactive scene.",
+      "Tiny low-contrast captions.",
+      "Lusion brand, satirical copy."
+    ],
+    "implementationNotes": "Build the pacing, not the 3D: Next.js page of full-viewport <section>s; hero object = pre-rendered image sequence (≈60 webp frames) drawn on a <canvas> and scrubbed with GSAP ScrollTrigger (scrub: true, pin: true) or a short muted MP4 with poster; text blocks with SplitText-free CSS (opacity/translate) tweens; chapter nav = fixed <nav> with IntersectionObserver for active state; progress bar = ScrollTrigger progress → scaleY. Under prefers-reduced-motion: no pin, show the end frame as a static image.",
+    "reuseGuidance": {
+      "whenItWorks": "Signature properties with one iconic subject (a façade, a suite, a signature dish) and owner-supplied film/photography; marketing pages where dwell time matters.",
+      "whenToAvoid": "Booking-first pages, slow devices/connections, businesses without strong imagery, any page where the visitor needs facts fast."
+    },
+    "study": "studies/oryzo-ai.md",
+    "archetypeLabel": "cinematic-scrollytelling",
+    "researchSlice": "immersive"
+  },
+  {
+    "id": "son-daven",
+    "name": "Son Daven (resort design hotel, Yaremche)",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "WebSearch `awwwards \"Site of the Month\" June 2026` (summary of awwwards.com/websites/sites_of_the_month/): 'lists Son Daven as the June 2026 Site of the Month … tagged Site Of The Month Jun, 2026, and carries a Business & Services Honors label from May 2026.' Live site matched by name only (sondaven.com, title 'Son Daven — Курортний дизайн-готель у Яремче'); no studio credit on the page; `\"Son Daven\" awwwards` returned nothing more. Award page not loaded.",
+    "siteUrl": "https://sondaven.com/en",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot", "reduced-motion", "network"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["immersive-photography", "warm-hospitality", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["hotel", "resort", "spa", "real-estate-development", "event-venue"],
+      "tones": ["premium", "calm", "earthy", "cinematic"],
+      "goals": ["book", "contact", "consultation"]
+    },
+    "industry": "Hospitality / real-estate investment (resort design hotel under construction 2026–2029)",
+    "audience": "Investors and future guests/apartment buyers (Ukrainian + English)",
+    "aestheticTags": [
+      "earthy-two-tone",
+      "serif-numerals",
+      "stripe-motif",
+      "mountain-forest",
+      "cgi-renders",
+      "editorial"
+    ],
+    "archetype": "organic-naturalist",
+    "observed": {
+      "layout": "≈33 200 px desktop. Hero (sunset render, wordmark with stripe texture, 10%/30% figures, circle CTA) → aerial render on tan with stripe band → 'PROLOGUE' serif quote on dark → About/Concept with cut-out renders + video → 'WHERE THE MOUNTAINS SPEAK' line map + 'N MIN.' distance carousel → stripe sun transition → 'WHY SON DAVEN CAPTIVATE' tilted photo cards → 'CONSTRUCTION TIMELINE' → apartments (type tabs, 'FROM 37 M²', feature chips) → financial indicators marquee + pixel mountain → developer facts → render carousel → 'BECOME PART OF THE LEGEND' → news → FAQ → footer (tel/mail).",
+      "typography": "document.fonts: KTF Metro Roman (serif display, uppercase, tracking ≈−0.064em: 96 px 'N MIN.', 56 px figures, 40 px hero line) and KTF Metro Blueline (wide uppercase sans: body 10 px/0.8 px tracking, nav 14.4 px). Mobile serif 48.75 px.",
+      "imagery": "CGI renders of the timber terraced hotel in misty mountains; real lifestyle photos (bonfire, children on rocks, yoga, spa, interiors); vertical-stripe graphics.",
+      "interaction": "Sheep preloader (striped video, '% LOADED'); header hidden during the story, back at the end; stripe transitions and canvas scenes driven by scroll; carousels with arrows and counters; Barba page transitions.",
+      "responsive": "Mobile keeps the same chapters, stacked, with hamburger + 'UA'; chips wrap; ≈22 400 px. Reduced-motion emulation: preloader, stripe transitions and tilted cards unchanged."
+    },
+    "layoutPatterns": [
+      "full-bleed hero with figures in the sky",
+      "serif quote chapter on dark band",
+      "line map + 'N min.' distance cards",
+      "tilted overlapping photo cards",
+      "room-type tabs with area + feature chips",
+      "marquee section title",
+      "footer with big phone + e-mail"
+    ],
+    "typography": {
+      "display": "KTF Metro Roman, uppercase serif, tight negative tracking; numerals as heroes",
+      "body": "KTF Metro Blueline, wide uppercase sans, 10 px (too small)",
+      "scale": "96 / 56 / 40 px display → 14.4 px nav → 10 px body",
+      "notes": "Two families only; all-caps everywhere; serif numerals carry hierarchy."
+    },
+    "palette": [
+      {
+        "hex": "#A89474",
+        "role": "page background (tan)"
+      },
+      {
+        "hex": "#2C2824",
+        "role": "text and dark bands"
+      },
+      {
+        "hex": "#FFFFFF",
+        "role": "text over renders"
+      },
+      {
+        "hex": "#2B2623",
+        "role": "dark section (pixel)"
+      }
+    ],
+    "imageryDirection": "Golden-hour architecture in forest and mountains, mist; interiors in timber/stone; lifestyle shots of fire, rocks, yoga; a single abstract motif (vertical stripes) for all transitions.",
+    "interactionPatterns": [
+      "branded preloader with progress %",
+      "scroll-scrubbed canvas stripe scenes",
+      "hidden-on-scroll header",
+      "carousel with n/total counter",
+      "type tabs + chips",
+      "persistent consultation CTA",
+      "page transitions (Barba)"
+    ],
+    "motion": {
+      "purpose": "Atmosphere and continuity: the stripe motif morphs between loader, sun, mountain, data and footer.",
+      "choreography": "Scroll-linked canvas scenes per section; cards tilt/slide in; marquee titles; SplitText-style line reveals likely (SplitText loaded).",
+      "pacing": "Slow, one chapter per 1–3 viewports; practical info (rooms, timeline, FAQ) arrives after the mood chapters.",
+      "evidenceOfLibraries": "Script URLs: gsap@3.13.0 (gsap, ScrollTrigger, CustomEase, SplitText), gsap@3.14.1 Flip, lenis@1.3.15 (+ html.lenis), @barba/core, swiper@11, jQuery 3.5.1, Webflow, custom ActiveFrame.js; 16 canvases (canvas.scroll-video + 15 canvas.scene); window.gsap 3.13.0 present."
+    },
+    "accessibility": "Multiple h1s; 10 px uppercase body copy; default focus outline visible on links (CTA outline-width 0); all 71 images have alt; tel:/mailto: present; reduced motion not honoured; cookie panel could not be dismissed by our scripts.",
+    "performance": "Desktop ≈484 requests / ≈54 MB over a full scroll (images ≈27.9 MB, XHR ≈16.5 MB, 54 document fetches ≈3.7 MB); mobile ≈387 requests / ≈32.8 MB. Hero visible within ≈3 s; preloader present until 10–18 s in the loaded reduced-motion run.",
+    "whyItWorks": "It sells a place in the order a guest imagines it: arrival, legend, surroundings in walking minutes, life there, rooms, proof, invitation — with one recognisable motif and a calm two-tone earth palette.",
+    "principles": [
+      "Order the hotel story as arrival → legend → surroundings → experiences → rooms → book.",
+      "Express distances as 'N min. walk to X' cards next to a simple line map.",
+      "Use one proprietary motif (from the building or region) for loader, dividers and transitions.",
+      "Two earth tones + white over imagery; serif numerals as heroes.",
+      "Keep a consultation/booking CTA reappearing in every chapter."
+    ],
+    "doNotCarryOver": [
+      "Investment-return and ranking claims without owner-provided sources (rule 8).",
+      "10 px uppercase paragraphs; multiple h1s; hiding the header during the story.",
+      "≈54 MB page weight; undismissable cookie panel.",
+      "Mixing CGI renders and photos without labels."
+    ],
+    "implementationNotes": "Next.js + Tailwind: sections as server components; stripe motif as an SVG pattern (repeating <rect>s with CSS-var heights) animated with GSAP ScrollTrigger scrub on transform: scaleY — no canvas needed; distance cards = static data + CSS scroll-snap carousel; room tabs = client component with aria-selected tabs; header always visible (sticky) with Book CTA; preloader only if fonts/hero image not cached, max ≈1 s, skipped under prefers-reduced-motion.",
+    "reuseGuidance": {
+      "whenItWorks": "Hotels, resorts, spas and venues in a strong landscape, with owner photos/renders and real distances to attractions.",
+      "whenToAvoid": "City business hotels selling convenience/price; when the owner has no landscape imagery; text-heavy information pages."
+    },
+    "study": "studies/son-daven.md",
+    "archetypeLabel": "nature-led-hospitality-story",
+    "researchSlice": "immersive"
+  },
+  {
+    "id": "floema",
+    "name": "Floema",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "WebSearch `Floema Bürocratik awwwards site of the month` (summary quoting a listing): 'Floema, DEV, Developer Award, SOTM, Site Of The Month, May, 2026'; Bürocratik-linked LinkedIn post: 'recently recognised as Site of the Month at awwwards'. Live footer 'Made by Büro' (consistent). Award page not loaded.",
+    "siteUrl": "https://floema.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot", "reduced-motion", "network"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["editorial", "modular", "immersive-photography"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": [
+        "manufacturer",
+        "landscape",
+        "architect",
+        "outdoor-equipment",
+        "hotel",
+        "golf-club"
+      ],
+      "tones": ["calm", "premium", "bold"],
+      "goals": ["browse", "download-catalogue", "quote"]
+    },
+    "industry": "Signage, street furniture and equipment (urban, nature, golf, recycled plastic)",
+    "audience": "Municipalities, park/golf operators, architects (Portuguese)",
+    "aestheticTags": [
+      "3d-image-field",
+      "single-typeface",
+      "off-white",
+      "nature-photography",
+      "acid-yellow-accent"
+    ],
+    "archetype": "experimental-grid",
+    "observed": {
+      "layout": "Hero: centred two-line h1 over a three.js field of small floating project/product photos. Then numbered chapters 01–05 (Urban, Nature, RePlastic, Golf, Details): full-bleed darkened photo, category pill, one claim, 'VER PRODUTOS …' pill, floating catalogue-download card. Then Est. 2007 manifesto + project cards, product cards, collections index in large type with counts and thumbnails, dark-green testimonial, three process columns, newsletter, full yellow footer with big logo arrow and line drawings.",
+      "typography": "Single family Zimula 400 (computed + document.fonts). Desktop h1 57.2/60 px, −2.288 px (−0.04 em); h2 51 px; chapter claims 43.75 px; cards 18–19 px; labels 12 px uppercase. Mobile h1 32 px, h2 30 px.",
+      "imagery": "Their own installations in landscapes (granite plateau, boardwalk in forest, timber clubhouse, plaza in front of a palace hotel), product cut-outs, workshop process photos.",
+      "interaction": "Image field drifts on its own (two frames 1.2 s apart differ) and changed with mouse movement (not separable). First wheel steps slide the first chapter photo up over the hero; chapter photos wipe into each other. Lenis (html.lenis).",
+      "responsive": "Mobile: same chapters stacked; headline readable in the first 1.5 s; catalogue cards kept; menu+search pill. Reduced-motion emulation: no visible difference."
+    },
+    "layoutPatterns": [
+      "centred sentence over floating image field",
+      "panel slides over sticky hero",
+      "numbered chapters with pill + claim + CTA + download card",
+      "collections index in large type with counts",
+      "process in three columns",
+      "full-colour footer block"
+    ],
+    "typography": {
+      "display": "Zimula 400, tight tracking −0.04 em",
+      "body": "Zimula 400 14–18 px",
+      "scale": "57.2 / 51 / 43.75 / 23 / 19 / 18 / 16 / 14 / 12 px",
+      "notes": "One family, one weight; hierarchy by size only."
+    },
+    "palette": [
+      {
+        "hex": "#F2EFEA",
+        "role": "background (warm off-white)"
+      },
+      {
+        "hex": "#241F21",
+        "role": "text"
+      },
+      {
+        "hex": "#042D2B",
+        "role": "deep green block"
+      },
+      {
+        "hex": "#E9E778",
+        "role": "accent / footer yellow"
+      },
+      {
+        "hex": "#FFFFFF",
+        "role": "text over photos"
+      }
+    ],
+    "imageryDirection": "Products photographed in use in real landscapes; earthy natural light; small cut-outs for the hero field.",
+    "interactionPatterns": [
+      "3D drifting thumbnail field",
+      "sticky hero with overlapping panel reveal",
+      "chapter photo wipes",
+      "floating download card",
+      "pill category tags"
+    ],
+    "motion": {
+      "purpose": "Signal craft and range (many projects) in the first screen; then calm chaptered reading.",
+      "choreography": "Time-based Z-drift in the hero; scroll-driven panel overlap and image wipes in chapters.",
+      "pacing": "Hero 1 viewport; each chapter ≈1–2 viewports; static content afterwards.",
+      "evidenceOfLibraries": "window.__THREE__ = '181' with div.three-container canvases (3); html.lenis; Nuxt chunks (/_nuxt/); Cookiebot. No window.gsap."
+    },
+    "accessibility": "Focus not visible (outline: none, no box-shadow) on Tab; icon-only buttons labelled 'Button'; all 65 images have alt; no skip link; phone as plain text (no tel:); reduced motion ignored.",
+    "performance": "Desktop ≈183 requests / ≈22 MB; ≈14 MB of it is four ≈3.5 MB MP3s fetched on the home page with no sound control found; 3D shadow texture 464 kB; headline visible ≈2 s, image field filled ≈8 s (software GL).",
+    "whyItWorks": "An experimental first screen that never blocks the message (plain centred sentence), followed by a strict, repeated chapter anatomy that makes a long visual page scannable and gives each chapter its own action.",
+    "principles": [
+      "Keep the hero message as one plain sentence; let motion be decoration made of real work.",
+      "Repeat one chapter anatomy: number, label, one claim, one CTA, one download.",
+      "One typeface, one weight; hierarchy by size and tight tracking.",
+      "Close with one full-colour brand block."
+    ],
+    "doNotCarryOver": [
+      "Preloading ≈14 MB of audio.",
+      "outline:none and aria-label='Button'.",
+      "Phone without tel: link.",
+      "Continuous hero motion under reduced motion.",
+      "Their Zimula, yellow and logo arrow."
+    ],
+    "implementationNotes": "Hero field without WebGL: 15–25 absolutely positioned <Image> thumbnails with CSS custom properties for depth; a single requestAnimationFrame loop (or GSAP ticker) translating them in Z via scale/translate and opacity; pause when off-screen (IntersectionObserver) and render static under prefers-reduced-motion. Chapters: sticky hero (position: sticky; top:0) + next section with relative z-index for the overlap; image wipes with clip-path inset() tweened by ScrollTrigger scrub. Tailwind tokens for the 4 colours.",
+    "reuseGuidance": {
+      "whenItWorks": "Businesses with many projects/products to hint at (makers, landscapers, venues with many spaces, a hotel with many rooms/restaurants) and good own photos.",
+      "whenToAvoid": "Few or weak images; single-offer businesses; when the first screen must show price/booking immediately."
+    },
+    "study": "studies/floema.md",
+    "archetypeLabel": "experimental-image-field",
+    "researchSlice": "immersive"
+  },
+  {
+    "id": "kozowood",
+    "name": "Kōzōwood",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Listed on Awwwards, award NOT confirmed. WebSearch `kozowood awwwards site of the day Bürocratik`: 'An Awwwards page lists a Mobile element from \"Kōzōwood — Made of Nature,\" credited to Bürocratik … doesn't confirm a win' (awwwards.com/inspiration/mobile_thumbnail-submission-65aa92c0b8ee8386992006). `\"Kōzōwood\" awwwards honorable mention OR \"site of the day\"` found nothing. Other jury award: European Design Awards 'Project Kōzōwood.com Agency Bürocratik Year 2024 Award Bronze'. Live footer 'Made by Büro'.",
+    "siteUrl": "https://kozowood.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot", "reduced-motion", "network"],
+    "evidenceStatus": "partial",
+    "approved": false,
+    "directions": ["warm-hospitality", "editorial", "immersive-photography"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["builder", "architect", "cabin-rental", "eco-lodge", "spa", "hotel"],
+      "tones": ["warm", "calm", "earthy", "refined"],
+      "goals": ["contact", "browse", "quote"]
+    },
+    "industry": "Timber (CLT / wood-frame) house builder",
+    "audience": "Homeowners, developers and architects in Portugal",
+    "aestheticTags": [
+      "earthy",
+      "ochre-tan-brown",
+      "high-contrast-serif",
+      "video-led",
+      "word-by-word-reveal",
+      "organic-materials"
+    ],
+    "archetype": "organic-naturalist",
+    "observed": {
+      "layout": "≈9 000 px desktop. Hero video + h1 + 'Entrar' gate → card slider 'Sinta-se em casa com a Kōzōwood' → dark band with round video porthole → factory video → ochre band of large serif lines revealed word by word → interior photo collage → 'Sustentável…' + 'Sobre a Kōzō' → two product cards (Kōzōwood, OOTY) → CLT contact card → 'Deixe a inspiração tomar forma' 120 px over a model photo + line drawings → three journal cards → dark footer menu in large serif + full-width wordmark.",
+      "typography": "document.fonts: Ogg 400/500 (serif display: 120 px h2, 84.4 px reveal lines, 64/52 px menu, 17–19 px buttons) and PPMori 400 (h1 47.6 px −1.9 px, body 15.3/19.8 px, intros 22.8 px). Mobile h1 30 px.",
+      "imagery": "Aerial and close-up video of timber houses, dunes/landscape, factory CNC, warm interiors, an architectural model; line drawings of houses.",
+      "interaction": "Desktop with motion allowed: 'Entrar' gate with html.lenis-stopped until clicked (it also accepts cookies); word-by-word opacity reveal tied to scroll; card slider; '≡' pill and chat bubble fixed. With reduced motion: no gate, cookie toast instead (verified twice). Desktop fetched 10 MP3s (music + field recordings).",
+      "responsive": "Mobile: no gate, cookie toast + card slider; same sections stacked (≈6 650 px); audio not fetched (XHR ≈10 kB)."
+    },
+    "layoutPatterns": [
+      "video hero with small h1 top-left",
+      "round video porthole",
+      "manifesto lines revealed word by word",
+      "loose photo collage",
+      "product cards with overlay text",
+      "footer as large-type menu + wordmark"
+    ],
+    "typography": {
+      "display": "Ogg (high-contrast serif) 400/500",
+      "body": "PP Mori 400",
+      "scale": "120 / 84 / 64 / 48 (sans h1) / 23 / 19 / 15 / 12 px",
+      "notes": "Serif for emotion lines and buttons, sans for facts; slight negative tracking on both."
+    },
+    "palette": [
+      {
+        "hex": "#3E362E",
+        "role": "text and dark bands"
+      },
+      {
+        "hex": "#AB8867",
+        "role": "tan band / muted text"
+      },
+      {
+        "hex": "#BB945B",
+        "role": "ochre band"
+      },
+      {
+        "hex": "#E1DDD4",
+        "role": "light stone"
+      },
+      {
+        "hex": "#EAE7DD",
+        "role": "light text on dark"
+      }
+    ],
+    "imageryDirection": "Material close-ups (timber, grain), houses in landscape at golden hour, process footage; colours pulled from wood.",
+    "interactionPatterns": [
+      "entry gate (skipped under reduced motion)",
+      "scroll-linked word reveal",
+      "video porthole",
+      "card slider",
+      "fixed menu pill + chat bubble"
+    ],
+    "motion": {
+      "purpose": "Slow, sensory pacing (sound + video) to make wood feel warm and premium.",
+      "choreography": "Gate → video; scroll-linked opacity per word; section colour changes; Lenis smoothing.",
+      "pacing": "Slow manifesto beats between practical blocks.",
+      "evidenceOfLibraries": "html.lenis lenis-smooth (lenis-stopped during gate); Nuxt (window.$nuxt, /_nuxt/); window.__THREE__ = '160' but no <canvas> on home; no window.gsap; HubSpot."
+    },
+    "accessibility": "Focus not visible (outline: none); buttons named 'Slide Button'; two malformed tel: links (tel:Desegundaasexta-08:00h-17:30h, tel:Atendimentopormarcação) plus one valid; all 26 images have alt; no visible nav until footer/pill; reduced motion partly honoured (gate removed, word reveal still scroll-linked).",
+    "performance": "Desktop ≈130–150 requests; audio ≈7.7 MB (10 MP3s, desktop only); six MP4 sources ≈38.7 MB if fully downloaded (largest 18.7 MB) — actual streamed bytes not measured; videos have no poster. Blank beige screen without H.264 support (headless Chromium) — the loader waits for video.",
+    "whyItWorks": "Organic without clichés: the palette, type and footage all come from the material (wood), and slow serif statements alternate with short practical paragraphs.",
+    "principles": [
+      "Derive the palette from the material in the photos (wood → tan/ochre/brown + stone).",
+      "Alternate big serif manifesto lines with short sans paragraphs and one CTA.",
+      "Reveal manifesto lines word by word, fully visible without motion.",
+      "Under reduced motion, skip any intro gate.",
+      "End with a footer-menu in large type."
+    ],
+    "doNotCarryOver": [
+      "Entry gate locking scroll; sound by default.",
+      "Loader that depends on video decoding.",
+      "Malformed tel: links; outline:none; 'Slide Button' labels.",
+      "≈39 MB of video sources without posters."
+    ],
+    "implementationNotes": "Word reveal: split server-side into <span>s, animate opacity 0.2→1 with ScrollTrigger scrub (or CSS animation-timeline: view() with fallback); render fully opaque under prefers-reduced-motion. Video: <video muted playsInline preload='metadata' poster> with WebM+MP4 sources ≤3 MB, never gate content on canplay. Palette as Tailwind ns-* tokens sampled from owner photos.",
+    "reuseGuidance": {
+      "whenItWorks": "Eco-lodges, cabins, spas, builders and craft businesses with material-rich footage.",
+      "whenToAvoid": "Businesses without own video/photos; urgent-service businesses; when sound or gating would slow the first action."
+    },
+    "study": "studies/kozowood.md",
+    "archetypeLabel": "organic-naturalist",
+    "researchSlice": "immersive"
   }
 ]

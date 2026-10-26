@@ -7,18 +7,21 @@ não usem o mesmo conjunto.
 
 ## Layout
 
-| Padrão                            | Como é                                                                                                               | Fonte                            | Arquétipos                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------- |
-| **Monumento tipográfico**         | o nome em largura total sobre foto escura, fatos pequenos nos cantos, fio fino embaixo                               | Aurelia, haven-constructions     | heritage-grandeur, service-direct       |
-| **Coluna + arco**                 | texto em 7 colunas, imagem em arco nas 5 restantes, desalinhada para baixo                                           | Aurelia (I Estate)               | heritage-grandeur, organic-naturalist   |
-| **Pares desiguais deslocados**    | duas imagens de tamanhos diferentes, uma mais baixa que a outra, numa grade de 10–12 colunas                         | explora-journal                  | broadsheet-editorial, quiet-luxury      |
-| **Faixa de cor inteira**          | de tempos em tempos uma faixa de cor chapada (areia, oliva) com texto e foto, para quebrar o ritmo                   | explora-journal                  | broadsheet-editorial, warm-hospitality  |
-| **Grade à mostra**                | colunas e margens desenhadas (tracejado, fios), o próprio grid vira ornamento                                        | a-lign-studio                    | experimental-grid, broadsheet-editorial |
-| **Dossiê**                        | ficha com datas, nomes e fotos de arquivo recortadas; capitular + lista de fatos                                     | mosbys-files                     | broadsheet-editorial, heritage-grandeur |
-| **Linha de fatos**                | 3 números grandes (48 / 212 / 1789) com rótulo em versalete, separados por fios                                      | Aurelia, haven-constructions     | heritage-grandeur, service-direct       |
-| **Grandeza pela escala**          | marfim, tinta quase preta, um serif e **um** gesto enorme (título em script de 128 px ou marca-d'água de ~150 px)    | royal-savoy, castello-del-sole   |
-| **Sinal de herança como sistema** | um elemento real da casa (brasão, recorte do toldo, arco art déco) vira borda, selo e moldura do rodapé, numa cor só | grand-hotel-miramare, era-estate |
-| **Fatos práticos no topo**        | datas de fechamento e reabertura da temporada, o que acontece nesta estação, logo abaixo do herói                    | castello-del-sole, royal-savoy   |
+| Padrão                            | Como é                                                                                                                                                                                | Fonte                            | Arquétipos                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------- |
+| **Monumento tipográfico**         | o nome em largura total sobre foto escura, fatos pequenos nos cantos, fio fino embaixo                                                                                                | Aurelia, haven-constructions     | heritage-grandeur, service-direct       |
+| **Coluna + arco**                 | texto em 7 colunas, imagem em arco nas 5 restantes, desalinhada para baixo                                                                                                            | Aurelia (I Estate)               | heritage-grandeur, organic-naturalist   |
+| **Pares desiguais deslocados**    | duas imagens de tamanhos diferentes, uma mais baixa que a outra, numa grade de 10–12 colunas                                                                                          | explora-journal                  | broadsheet-editorial, quiet-luxury      |
+| **Faixa de cor inteira**          | de tempos em tempos uma faixa de cor chapada (areia, oliva) com texto e foto, para quebrar o ritmo                                                                                    | explora-journal                  | broadsheet-editorial, warm-hospitality  |
+| **Grade à mostra**                | colunas e margens desenhadas (tracejado, fios), o próprio grid vira ornamento                                                                                                         | a-lign-studio                    | experimental-grid, broadsheet-editorial |
+| **Dossiê**                        | ficha com datas, nomes e fotos de arquivo recortadas; capitular + lista de fatos                                                                                                      | mosbys-files                     | broadsheet-editorial, heritage-grandeur |
+| **Linha de fatos**                | 3 números grandes (48 / 212 / 1789) com rótulo em versalete, separados por fios                                                                                                       | Aurelia, haven-constructions     | heritage-grandeur, service-direct       |
+| **Grandeza pela escala**          | marfim, tinta quase preta, um serif e **um** gesto enorme (título em script de 128 px ou marca-d'água de ~150 px)                                                                     | royal-savoy, castello-del-sole   |
+| **Sinal de herança como sistema** | um elemento real da casa (brasão, recorte do toldo, arco art déco) vira borda, selo e moldura do rodapé, numa cor só                                                                  | grand-hotel-miramare, era-estate |
+| **Fatos práticos no topo**        | datas de fechamento e reabertura da temporada, o que acontece nesta estação, logo abaixo do herói                                                                                     | castello-del-sole, royal-savoy   |
+| **Distâncias em vez de mapa**     | cartões "6 MIN. a pé até a cachoeira" ao lado de um mapa de linhas simples, no lugar do mapa embutido                                                                                 | son-daven                        |
+| **Um motivo próprio em tudo**     | um desenho da casa (as listras da son-daven; num palácio: ferro forjado, parquet, ritmo da fachada) aparece no carregamento, nas transições, na marca e no rodapé; mais barato que 3D | son-daven                        |
+| **Peça editorial no meio**        | uma capa de revista ou uma pilha de cartões inclinados para citações de imprensa e fotos antigas (só reais)                                                                           | oryzo-ai, son-daven              |
 
 ## Narrativa
 
@@ -35,8 +38,17 @@ não usem o mesmo conjunto.
 6. **A história de fundação como prova.** Um manifesto curto em caixa-alta com o ano e a
    família, uma foto de arquivo ou um bilhete assinado do dono. Sem superlativos
    (grand-hotel-miramare, velaa). Só com fatos do dono (regra 8).
-7. **A decisão por último, mas sempre a um toque.** A reserva é o capítulo final e também o
-   botão fixo no topo (Aurelia, explora-journal).
+7. **Ordem dos capítulos de um resort:** chegada → lenda/história → arredores em minutos a pé
+   → experiências → quartos e suítes → reserva (son-daven, quase exatamente).
+8. **Navegação de capítulos e progresso sempre à vista.** A oryzo-ai mantém
+   INTRO / FEATURES / PRODUCT / CONTACT presos, com barra de progresso; son-daven e kozowood
+   escondem o menu durante a história e não deixam pular. Não copiar o segundo.
+9. **Mesma anatomia em todo capítulo:** número, rótulo, uma afirmação, uma ação (floema).
+   Página longa continua fácil de varrer.
+10. **Um assunto por cena, texto no espaço vazio.** Nunca texto em cima do detalhe da foto
+    (oryzo-ai, son-daven).
+11. **A decisão por último, mas sempre a um toque.** A reserva é o capítulo final e também o
+    botão fixo no topo (Aurelia, explora-journal).
 
 ## Componentes
 
