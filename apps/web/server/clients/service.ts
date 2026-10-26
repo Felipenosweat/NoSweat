@@ -6,12 +6,14 @@ import type {
   CreateClientRequest,
   UpdateClientRequest,
 } from "@nosweat/schema";
+import { cache } from "react";
 import { CLIENTS_TIME_ZONE, dateKeyIn } from "@/lib/clients";
 import { getOfficeStore } from "../office/store";
 import { OfficeError } from "../office/types";
 import { isValidTimeZone } from "../social/service";
 import { getSocialStore } from "../social/store";
-import { getSiteStore, type LeadRecord } from "../store";
+import { listOwnerSites, listSiteLeads } from "../owner-sites";
+import type { LeadRecord } from "../store";
 import { byLastActivityDesc, getClientStore, type ClientStore } from "./store";
 import {
   normalizeEmail,
@@ -172,14 +174,14 @@ export async function syncLeadsToClients(
   ownerId: string,
   ownerEmail?: string | null,
 ): Promise<void> {
-  const siteStore = getSiteStore();
-  const sites = await siteStore.list(ownerId);
+  // Leituras com dedupe por request: a página do painel lê os mesmos sites e pedidos.
+  const sites = await listOwnerSites(ownerId);
   if (sites.length === 0) return;
 
   const store = getClientStore();
   const [handled, leadLists] = await Promise.all([
     store.handledLeadIds(ownerId),
-    Promise.all(sites.map((site) => siteStore.listLeads(site.id))),
+    Promise.all(sites.map((site) => listSiteLeads(site.id))),
   ]);
   const pending = leadLists
     .flat()
@@ -198,6 +200,18 @@ export async function syncLeadsToClients(
     await importLead(store, ownerId, lead, clients);
   }
 }
+
+/**
+ * O sync uma vez só por request (`cache()` do React): a moldura, o resumo e a lista de clientes
+ * pedem a mesma coisa no mesmo request. Também evita dois syncs EM PARALELO no mesmo request, que
+ * poderiam criar o mesmo cliente duas vezes (o índice único de `client_activities.lead_id` continua
+ * sendo a proteção de verdade entre requests). Fora de um request do React (rotas da API, testes)
+ * roda toda vez, como antes.
+ */
+const syncLeadsOncePerRequest = cache(
+  (ownerId: string, ownerEmail: string | null): Promise<void> =>
+    syncLeadsToClients(ownerId, ownerEmail),
+);
 
 // ---------- leitura ----------
 
@@ -234,7 +248,7 @@ export async function listClients(
   ownerId: string,
   opts: { stage?: ClientStage; q?: string; ownerEmail?: string | null } = {},
 ): Promise<Client[]> {
-  await syncLeadsToClients(ownerId, opts.ownerEmail);
+  await syncLeadsOncePerRequest(ownerId, opts.ownerEmail ?? null);
   const clients = await getClientStore().listClients(ownerId);
   return clients
     .filter((c) => !opts.stage || c.stage === opts.stage)
@@ -242,6 +256,16 @@ export async function listClients(
     .sort(byLastActivityDesc)
     .map(toPublicClient);
 }
+
+/**
+ * Todos os clientes do dono (sem filtro), com dedupe por request: o painel e a página de clientes
+ * leem a lista uma vez e derivam o resto dela (ex.: `attentionFromClients`). Array compartilhado:
+ * não ordenar nem alterar no lugar.
+ */
+export const listOwnerClients = cache(
+  (ownerId: string, ownerEmail: string | null): Promise<Client[]> =>
+    listClients(ownerId, { ownerEmail }),
+);
 
 /** Cliente com o histórico (mais novo primeiro). `null` se não existir ou for de outro dono. */
 export async function getClientDetail(
@@ -265,17 +289,29 @@ export async function clientsNeedingAttention(
   today: string,
   ownerEmail?: string | null,
 ): Promise<{ newCount: number; followUpsDue: Client[] }> {
-  await syncLeadsToClients(ownerId, ownerEmail);
-  const clients = await getClientStore().listClients(ownerId);
+  return attentionFromClients(await listOwnerClients(ownerId, ownerEmail ?? null), today);
+}
+
+/**
+ * O mesmo resumo de `clientsNeedingAttention`, a partir de uma lista já lida (de `listClients` ou
+ * `listOwnerClients`): sem segunda leitura do banco nem segundo sync. Puro.
+ */
+export function attentionFromClients(
+  clients: readonly Client[],
+  today: string,
+): { newCount: number; followUpsDue: Client[] } {
   const newCount = clients.filter((c) => c.stage === "new").length;
   const followUpsDue = clients
     .filter(
-      (c): c is ClientRecord & { followUpOn: string } =>
+      (c): c is Client & { followUpOn: string } =>
         c.followUpOn !== null && c.followUpOn <= today && c.stage !== "won" && c.stage !== "lost",
     )
-    .sort((a, b) => a.followUpOn.localeCompare(b.followUpOn) || byLastActivityDesc(a, b))
-    .slice(0, 5)
-    .map(toPublicClient);
+    .sort(
+      (a, b) =>
+        a.followUpOn.localeCompare(b.followUpOn) ||
+        Date.parse(b.lastActivityAt) - Date.parse(a.lastActivityAt),
+    )
+    .slice(0, 5);
   return { newCount, followUpsDue };
 }
 

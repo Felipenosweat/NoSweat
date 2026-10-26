@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import Link from "next/link";
 
 // Galeria de sites de exemplo (#looks): capturas reais do molde Signature (public/landing/
@@ -37,6 +37,45 @@ const SITES = [
   },
 ];
 
+const DESKTOP_SIZES = "(min-width: 1024px) 46vw, 78vw";
+
+/**
+ * A captura de um site: a do computador a partir de sm, a do celular abaixo. Um <picture> (um
+ * <img> só por site) em vez de duas <Image> com uma escondida: metade do DOM e da hidratação, e
+ * o navegador escolhe uma só para baixar. Lazy: a galeria está bem abaixo do topo.
+ */
+function SitePicture({ slug }: { slug: string }) {
+  const {
+    props: { srcSet: desktop },
+  } = getImageProps({
+    alt: "",
+    src: `/landing/signature/${slug}-d.webp`,
+    width: 1600,
+    height: 1000,
+    sizes: DESKTOP_SIZES,
+  });
+  const {
+    props: { srcSet: mobile, ...rest },
+  } = getImageProps({
+    alt: "",
+    src: `/landing/signature/${slug}-m.webp`,
+    width: 640,
+    height: 1385,
+    sizes: "78vw",
+  });
+  return (
+    <picture>
+      <source media="(min-width: 640px)" srcSet={desktop} sizes={DESKTOP_SIZES} />
+      <source media="(max-width: 639.98px)" srcSet={mobile} sizes="78vw" />
+      <img
+        {...rest}
+        alt=""
+        className="block aspect-[4/5] h-auto w-full object-cover object-top sm:aspect-[8/5]"
+      />
+    </picture>
+  );
+}
+
 export function Showcase() {
   return (
     <section
@@ -66,22 +105,7 @@ export function Showcase() {
                 className="group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
                 <span className="lp-zoom block overflow-hidden rounded-lg ring-1 ring-white/10">
-                  <Image
-                    src={`/landing/signature/${site.slug}-d.webp`}
-                    alt=""
-                    width={1600}
-                    height={1000}
-                    sizes="(min-width: 1024px) 46vw, 78vw"
-                    className="hidden h-auto w-full sm:block"
-                  />
-                  <Image
-                    src={`/landing/signature/${site.slug}-m.webp`}
-                    alt=""
-                    width={640}
-                    height={1385}
-                    sizes="78vw"
-                    className="block aspect-[4/5] h-auto w-full object-cover object-top sm:hidden"
-                  />
+                  <SitePicture slug={site.slug} />
                 </span>
                 <span className="mt-4 flex items-baseline justify-between gap-4">
                   <span className="lp-serif text-2xl text-white lg:text-[1.75rem]">

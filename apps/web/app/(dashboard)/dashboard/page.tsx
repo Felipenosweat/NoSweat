@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import type { ReactNode } from "react";
+import { Suspense, cache, type ReactNode } from "react";
 import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardChecklist";
 import {
   ChevronRightIcon,
@@ -20,10 +20,10 @@ import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
 import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { getAccount } from "@/server/admin";
-import { createSupabaseServerClient } from "@/server/auth/session";
-import { getViewer, type Viewer, type ViewingAs } from "@/server/auth/viewer";
+import { getSessionClaims } from "@/server/auth/session";
+import { getViewer, type ViewingAs } from "@/server/auth/viewer";
 import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
-import { clientsNeedingAttention, listClients } from "@/server/clients/service";
+import { attentionFromClients, listOwnerClients } from "@/server/clients/service";
 import { getBalance } from "@/server/credits";
 import { socialCapability } from "@/server/social/config";
 import { isValidTimeZone, monthOf } from "@/server/social/service";
@@ -39,7 +39,8 @@ import {
   listEstimates,
   listInvoices,
 } from "@/server/office/service";
-import { getSiteStore, type SiteRecord } from "@/server/store";
+import { listOwnerSites, listSiteLeads } from "@/server/owner-sites";
+import type { SiteRecord } from "@/server/store";
 import {
   AlertIcon,
   ApproveIcon,
@@ -58,6 +59,12 @@ import { MoneyIcon, PlusIcon } from "../clients/ui";
 import { formatTime, safeTimeZone, zonedParts } from "../schedule/time";
 import { JobStatusBadge } from "../schedule/ui";
 import { Greeting } from "./Greeting";
+import {
+  GreetingSummarySkeleton,
+  OfficeSkeleton,
+  OverviewSkeleton,
+  SitesSkeleton,
+} from "./skeletons";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -113,10 +120,9 @@ function checklistSteps(site: SiteRecord, leads: number, domainIncluded: boolean
 async function getFirstName(viewingAs: ViewingAs | null): Promise<string | null> {
   try {
     if (viewingAs) return (await getAccount(viewingAs.id))?.firstName?.slice(0, 40) ?? null;
-    const supabase = await createSupabaseServerClient();
-    if (!supabase) return null;
-    const { data } = await supabase.auth.getClaims();
-    const metadata: unknown = data?.claims?.user_metadata;
+    // As mesmas claims que o getCurrentUser já leu neste request (sem nova ida ao Supabase).
+    const claims = await getSessionClaims();
+    const metadata: unknown = claims?.user_metadata;
     if (!metadata || typeof metadata !== "object") return null;
     const raw: unknown = (metadata as Record<string, unknown>).first_name;
     if (typeof raw !== "string") return null;
@@ -129,8 +135,14 @@ async function getFirstName(viewingAs: ViewingAs | null): Promise<string | null>
 
 type SocialSnapshot = { account: SocialAccountRecord | null; posts: SocialPostRecord[] };
 
+// Os loaders abaixo usam `cache()` do React: cada seção da página (em seu próprio <Suspense>) chama
+// o que precisa e, no mesmo request, cada leitura acontece uma vez só.
+
+/** O "agora" do request: todas as seções contam o tempo a partir do mesmo instante. */
+const requestNow = cache((): number => Date.now());
+
 /** Conta do Instagram e posts de 90 dias para trás a 90 para a frente. Erro = vazio. */
-async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot> {
+const loadSocial = cache(async (ownerId: string, now: number): Promise<SocialSnapshot> => {
   try {
     const social = getSocialStore();
     const [account, posts] = await Promise.all([
@@ -145,16 +157,16 @@ async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot>
   } catch {
     return { account: null, posts: [] };
   }
-}
+});
 
 /** Configurações de posts do dono (fuso da empresa e liberação de testador). Erro = `null`. */
-async function loadSettings(ownerId: string): Promise<SocialSettingsRecord | null> {
+const loadSettings = cache(async (ownerId: string): Promise<SocialSettingsRecord | null> => {
   try {
     return await getSocialStore().getSettings(ownerId);
   } catch {
     return null;
   }
-}
+});
 
 /**
  * O dono consegue postar sozinho pelo Instagram? Usa a conta MOSTRADA (no "ver como", a conta
@@ -173,13 +185,13 @@ async function loadAutoPublish(
 }
 
 /** Erro ao ler o plano = sem aviso e passo do domínio normal (como `ownerHasLiveAccess`). */
-async function loadAccess(ownerId: string): Promise<AccessSummary> {
+const loadAccess = cache(async (ownerId: string): Promise<AccessSummary> => {
   try {
     return await accessSummary(ownerId);
   } catch {
     return { enforced: false, live: true, endsAt: null, source: null };
   }
-}
+});
 
 type ClientsSnapshot = {
   total: number;
@@ -202,9 +214,9 @@ async function loadClients(
 ): Promise<ClientsSnapshot | null> {
   const today = dateKeyIn(timeZone, new Date(now));
   try {
-    // Um depois do outro: os dois importam os pedidos do site, e em paralelo poderiam duplicar.
-    const clients = await listClients(ownerId, { ownerEmail });
-    const attention = await clientsNeedingAttention(ownerId, today, ownerEmail);
+    // Uma leitura só (o sync roda uma vez por request); o resumo sai da mesma lista.
+    const clients = await listOwnerClients(ownerId, ownerEmail);
+    const attention = attentionFromClients(clients, today);
     return {
       total: clients.length,
       newCount: attention.newCount,
@@ -779,7 +791,7 @@ type OfficeSnapshot = {
  * Resumo do escritório (serviços de hoje e dinheiro). `null` = erro ou módulo ainda sem dados:
  * a seção some e o resto da página continua igual.
  */
-async function loadOffice(ownerId: string, now: number): Promise<OfficeSnapshot | null> {
+const loadOffice = cache(async (ownerId: string, now: number): Promise<OfficeSnapshot | null> => {
   try {
     const [summary, settings, toConvert] = await Promise.all([
       getOfficeSummary(ownerId),
@@ -792,7 +804,7 @@ async function loadOffice(ownerId: string, now: number): Promise<OfficeSnapshot 
     console.error("[dashboard] could not load the office summary", error);
     return null;
   }
-}
+});
 
 /**
  * Orçamentos aprovados que ainda não viraram serviço nem fatura. Barato: as faturas só são lidas
@@ -1019,42 +1031,19 @@ function pendingDrafts(posts: SocialPostRecord[], now: number): SocialPostRecord
 }
 
 /** Saldo de créditos da IA da conta mostrada. Erro = `null` (o quadro mostra "–"). */
-async function loadCredits(ownerId: string): Promise<CreditBalance | null> {
+const loadCredits = cache(async (ownerId: string): Promise<CreditBalance | null> => {
   try {
     return await getBalance({ id: ownerId });
   } catch {
     return null;
   }
-}
+});
 
-/** Tudo o que a página inicial mostra, lido de uma vez (fora do componente: usa o relógio). */
-async function loadHome(viewer: Viewer) {
-  const { ownerId, viewingAs } = viewer;
-  // A conta MOSTRADA: no "ver como", a conta vista (nunca o e-mail ou a liberação do admin).
-  const shown = { id: ownerId, email: viewingAs ? viewingAs.email : viewer.user.email };
-  const now = Date.now();
-  const store = getSiteStore();
-  const [sites, firstName, social, settings, access, credits, office] = await Promise.all([
-    store.list(ownerId),
-    getFirstName(viewingAs),
-    loadSocial(ownerId, now),
-    loadSettings(ownerId),
-    loadAccess(ownerId),
-    loadCredits(ownerId),
-    loadOffice(ownerId, now),
-  ]);
-  // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
-  const timeZone =
-    settings?.timezone && isValidTimeZone(settings.timezone)
-      ? settings.timezone
-      : CLIENTS_TIME_ZONE;
-  const [clients, autoPublish, domainIncluded, leadLists] = await Promise.all([
-    loadClients(ownerId, shown.email, now, timeZone),
-    loadAutoPublish(shown, settings),
-    // Erro ao ler o plano já vira `true` lá dentro (o passo segue para o domínio, como antes).
-    ownerHasCustomDomainAccess(ownerId),
-    Promise.all(sites.map((site) => store.listLeads(site.id))),
-  ]);
+/** Pedidos por site: o total (checklist e cards) e os dos últimos 7 dias. */
+const loadLeadStats = cache(async (ownerId: string, now: number) => {
+  const sites = await listOwnerSites(ownerId);
+  // Mesmas leituras (com dedupe) que o sync dos clientes faz neste request.
+  const leadLists = await Promise.all(sites.map((site) => listSiteLeads(site.id)));
   const weekAgo = now - 7 * DAY_MS;
   const leadCounts: Record<string, number> = {};
   const weekLeads: Record<string, number> = {};
@@ -1063,72 +1052,47 @@ async function loadHome(viewer: Viewer) {
     leadCounts[site.id] = leads.length;
     weekLeads[site.id] = leads.filter((lead) => Date.parse(lead.createdAt) >= weekAgo).length;
   });
-  return {
-    now,
-    sites,
-    firstName,
-    social,
-    clients,
-    leadCounts,
-    weekLeads,
-    access,
-    timeZone,
-    autoPublish,
-    domainIncluded,
-    credits,
-    office,
-  };
-}
+  return { leadCounts, weekLeads };
+});
 
-export default async function DashboardPage() {
-  // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
-  await connection();
-  // No modo "ver como" do admin, os dados da conta vista (só leitura).
-  const viewer = await getViewer();
-  if (!viewer) redirect("/login?next=/dashboard");
-  const {
-    now,
-    sites,
-    firstName,
-    social,
-    clients,
-    leadCounts,
-    weekLeads,
-    access,
-    timeZone,
-    autoPublish,
-    domainIncluded,
-    credits,
-    office,
-  } = await loadHome(viewer);
-  // "Ver como" do admin: só leitura (sem o atalho "New job").
-  const readOnly = viewer.viewingAs !== null;
-  // `list` já vem do mais recente para o mais antigo.
-  const latest = sites[0];
-  // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
-  const offline = access.enforced && !access.live;
+/** O que toda seção da página precisa saber (só valores simples: viram chave do `cache()`). */
+type HomeContext = {
+  ownerId: string;
+  /** E-mail da conta MOSTRADA: no "ver como", o da conta vista (nunca o do admin). */
+  shownEmail: string | null;
+  now: number;
+  /** "Ver como" do admin: só leitura (sem o atalho "New job"). */
+  readOnly: boolean;
+};
 
-  // "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
-  // manual não há botão de conectar e o passo nunca terminaria.
-  const socialSteps: ChecklistStep[] = [
-    ...(autoPublish || social.account !== null
-      ? [
-          {
-            label: "Connect Instagram",
-            done: social.account?.status === "active",
-            href: "/social",
-            hint: "Post without opening the app",
-          },
-        ]
-      : []),
-    {
-      label: "Plan your first month",
-      done: social.posts.length > 0,
-      href: "/social",
-      hint: "A month of posts in minutes",
-    },
-  ];
-
+/**
+ * Tudo o que "Needs you", os quadros, o checklist e a saudação mostram. Cada leitura começa na
+ * hora e com dedupe: o escritório e a lista de sites (lidos também por outras seções e pela
+ * moldura) não vão ao banco duas vezes.
+ */
+const loadHome = cache(async (ownerId: string, shownEmail: string | null, now: number) => {
+  const shown = { id: ownerId, email: shownEmail };
+  const [sites, social, settings, access, credits, office, leadStats] = await Promise.all([
+    listOwnerSites(ownerId),
+    loadSocial(ownerId, now),
+    loadSettings(ownerId),
+    loadAccess(ownerId),
+    loadCredits(ownerId),
+    loadOffice(ownerId, now),
+    loadLeadStats(ownerId, now),
+  ]);
+  // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
+  const timeZone =
+    settings?.timezone && isValidTimeZone(settings.timezone)
+      ? settings.timezone
+      : CLIENTS_TIME_ZONE;
+  const [clients, autoPublish, domainIncluded] = await Promise.all([
+    loadClients(ownerId, shownEmail, now, timeZone),
+    loadAutoPublish(shown, settings),
+    // Erro ao ler o plano já vira `true` lá dentro (o passo segue para o domínio, como antes).
+    ownerHasCustomDomainAccess(ownerId),
+  ]);
+  const { leadCounts, weekLeads } = leadStats;
   const needRows = needsRows({
     sites,
     weekLeads,
@@ -1139,14 +1103,33 @@ export default async function DashboardPage() {
     timeZone,
     now,
   });
-  const needs = <NeedsYou rows={needRows} />;
+  return {
+    sites,
+    social,
+    clients,
+    leadCounts,
+    weekLeads,
+    access,
+    timeZone,
+    autoPublish,
+    domainIncluded,
+    credits,
+    office,
+    needRows,
+  };
+});
 
-  // Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos.
+type HomeData = Awaited<ReturnType<typeof loadHome>>;
+
+/** Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos. */
+function homeStats(home: HomeData, now: number): Stat[] {
+  const { sites, social, clients, weekLeads, timeZone, credits } = home;
+  const latest = sites[0];
   const drafts = pendingDrafts(social.posts, now);
   const firstDraft = drafts[0];
   const weekTotal = Object.values(weekLeads).reduce((sum, n) => sum + n, 0);
   const followUps = clients?.followUpsDue.length ?? null;
-  const stats: Stat[] = [
+  return [
     clients
       ? {
           key: "requests",
@@ -1212,15 +1195,125 @@ export default async function DashboardPage() {
       attention: credits !== null && !credits.unlimited && credits.total === 0,
     },
   ];
-  const quickStats = <QuickStats stats={stats} />;
-  // O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro.
-  const officeSection = office ? <OfficeSection office={office} readOnly={readOnly} /> : null;
+}
+
+/**
+ * "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
+ * manual não há botão de conectar e o passo nunca terminaria.
+ */
+function socialSteps(home: HomeData): ChecklistStep[] {
+  const { autoPublish, social } = home;
+  return [
+    ...(autoPublish || social.account !== null
+      ? [
+          {
+            label: "Connect Instagram",
+            done: social.account?.status === "active",
+            href: "/social",
+            hint: "Post without opening the app",
+          },
+        ]
+      : []),
+    {
+      label: "Plan your first month",
+      done: social.posts.length > 0,
+      href: "/social",
+      hint: "A month of posts in minutes",
+    },
+  ];
+}
+
+/** Serviços de hoje (sem os cancelados), para a frase da saudação. */
+function jobsTodayText(office: OfficeSnapshot | null): string {
   const todayCount =
     office?.summary.todayJobs.filter((job) => job.status !== "canceled").length ?? 0;
-  const jobsToday =
-    todayCount > 0
-      ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
-      : "";
+  return todayCount > 0
+    ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
+    : "";
+}
+
+// ---------- seções em streaming (cada uma no seu <Suspense>) ----------
+
+/** Linha de resumo da saudação ("2 things need you."): espera os dados de "Needs you". */
+async function GreetingSummary({ ctx }: { ctx: HomeContext }) {
+  const { sites, office, needRows } = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  const jobsToday = jobsTodayText(office);
+  if (!sites[0] && !jobsToday) return <>Let’s get your business online.</>;
+  if (needRows.length === 0) return <>{jobsToday}You’re all caught up.</>;
+  return (
+    <>
+      {jobsToday}
+      {needRows.length} {plural(needRows.length, "thing needs", "things need")} you.
+    </>
+  );
+}
+
+/** O escritório primeiro: os serviços de hoje e o dinheiro. Erro = a seção some. */
+async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
+  const office = await loadOffice(ctx.ownerId, ctx.now);
+  return office ? <OfficeSection office={office} readOnly={ctx.readOnly} /> : null;
+}
+
+/**
+ * Quadros, "Needs you" e (com site) o checklist. `order`: com site, os quadros primeiro; conta sem
+ * site mostra "Needs you" antes (o convite para criar fica em cima, ver `HomeSections`).
+ */
+async function Overview({
+  ctx,
+  order,
+}: {
+  ctx: HomeContext;
+  order: "stats-first" | "needs-first";
+}) {
+  const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  const quickStats = <QuickStats stats={homeStats(home, ctx.now)} />;
+  const needs = <NeedsYou rows={home.needRows} />;
+  if (order === "needs-first") {
+    return (
+      <>
+        {needs}
+        {quickStats}
+      </>
+    );
+  }
+  const latest = home.sites[0];
+  return (
+    <>
+      {quickStats}
+      {needs}
+      {latest && (
+        <DashboardChecklist
+          siteId={latest.id}
+          siteName={latest.spec.business.name}
+          steps={checklistSteps(latest, home.leadCounts[latest.id] ?? 0, home.domainIncluded)}
+          extraSteps={socialSteps(home)}
+          shareHref={latest.status === "published" ? `/sites/${latest.id}#publish` : null}
+        />
+      )}
+    </>
+  );
+}
+
+/** Os cards dos sites: espera os pedidos por site e o plano (selo "Offline"). */
+async function SitesCards({ ctx }: { ctx: HomeContext }) {
+  const [sites, { leadCounts }, access] = await Promise.all([
+    listOwnerSites(ctx.ownerId),
+    loadLeadStats(ctx.ownerId, ctx.now),
+    loadAccess(ctx.ownerId),
+  ]);
+  // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
+  const offline = access.enforced && !access.live;
+  return <SitesGrid sites={sites} leadCounts={leadCounts} headingLevel={3} offline={offline} />;
+}
+
+/**
+ * Tudo depois do escritório. A lista de sites (a mesma que a moldura já leu, com dedupe) decide a
+ * ordem; o resto chega em streaming, cada parte no seu <Suspense>.
+ */
+async function HomeSections({ ctx }: { ctx: HomeContext }) {
+  const sites = await listOwnerSites(ctx.ownerId);
+  // `list` já vem do mais recente para o mais antigo.
+  const latest = sites[0];
 
   const yourSites = (
     <section id="sites" aria-labelledby="sites-heading">
@@ -1233,57 +1326,78 @@ export default async function DashboardPage() {
           </span>
         )}
       </h2>
-      <SitesGrid
-        sites={sites}
-        leadCounts={leadCounts}
-        headingLevel={3}
-        offline={offline}
-        emptyState={
-          <div className="mt-4">
-            <ExampleSiteEmpty />
-          </div>
-        }
-      />
+      {sites.length === 0 ? (
+        <div className="mt-4">
+          <ExampleSiteEmpty />
+        </div>
+      ) : (
+        <Suspense fallback={<SitesSkeleton count={sites.length} />}>
+          <SitesCards ctx={ctx} />
+        </Suspense>
+      )}
     </section>
   );
 
+  if (latest) {
+    return (
+      <>
+        <Suspense fallback={<OverviewSkeleton order="stats-first" />}>
+          <Overview ctx={ctx} order="stats-first" />
+        </Suspense>
+        {yourSites}
+      </>
+    );
+  }
+  // Conta sem sites: primeiro o convite para criar, depois o resto.
+  return (
+    <>
+      {yourSites}
+      <Suspense fallback={<OverviewSkeleton order="needs-first" />}>
+        <Overview ctx={ctx} order="needs-first" />
+      </Suspense>
+    </>
+  );
+}
+
+export default async function DashboardPage() {
+  // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
+  await connection();
+  // No modo "ver como" do admin, os dados da conta vista (só leitura).
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login?next=/dashboard");
+  const { ownerId, viewingAs } = viewer;
+  const ctx: HomeContext = {
+    ownerId,
+    // A conta MOSTRADA: no "ver como", a conta vista (nunca o e-mail ou a liberação do admin).
+    shownEmail: viewingAs ? viewingAs.email : viewer.user.email,
+    now: requestNow(),
+    readOnly: viewingAs !== null,
+  };
+  // Rápido: as claims da sessão já lidas (ou a conta vista, já lida pelo getViewer).
+  const firstName = await getFirstName(viewingAs);
+
+  // A saudação aparece na hora; o resto chega em partes (escritório, quadros e "Needs you", sites).
   return (
     <div>
       <Greeting
         firstName={firstName}
-        nowIso={new Date(now).toISOString()}
+        nowIso={new Date(ctx.now).toISOString()}
         summary={
-          !latest && !jobsToday
-            ? "Let’s get your business online."
-            : needRows.length === 0
-              ? `${jobsToday}You’re all caught up.`
-              : `${jobsToday}${needRows.length} ${plural(needRows.length, "thing needs", "things need")} you.`
+          <Suspense fallback={<GreetingSummarySkeleton />}>
+            <GreetingSummary ctx={ctx} />
+          </Suspense>
         }
       />
 
-      {latest ? (
-        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
-          {officeSection}
-          {quickStats}
-          {needs}
-          <DashboardChecklist
-            siteId={latest.id}
-            siteName={latest.spec.business.name}
-            steps={checklistSteps(latest, leadCounts[latest.id] ?? 0, domainIncluded)}
-            extraSteps={socialSteps}
-            shareHref={latest.status === "published" ? `/sites/${latest.id}#publish` : null}
-          />
-          {yourSites}
-        </div>
-      ) : (
-        // Conta sem sites: primeiro o convite para criar, depois o resto.
-        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
-          {officeSection}
-          {yourSites}
-          {needs}
-          {quickStats}
-        </div>
-      )}
+      <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+        {/* O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro. */}
+        <Suspense fallback={<OfficeSkeleton />}>
+          <OfficeBlock ctx={ctx} />
+        </Suspense>
+        <Suspense fallback={<OverviewSkeleton order="stats-first" />}>
+          <HomeSections ctx={ctx} />
+        </Suspense>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,9 @@ import {
   DomainTakenError,
   type LeadRecord,
   type NewLead,
+  type PublishedSiteRecord,
   type SiteMeta,
+  type SiteRef,
   type SiteRecord,
   type AiUsageKind,
   type GuestUsage,
@@ -31,6 +33,18 @@ const Row = z.object({
   updated_at: z.string(),
 });
 type Row = z.infer<typeof Row>;
+
+/** Linha leve das páginas públicas: só id e dono (achar o site pelo endereço). */
+const RefRow = z.object({ id: z.string(), owner_id: z.string().nullable().optional() });
+
+/** Linha da página pública: a versão no ar, sem o rascunho (`spec`). */
+const PublishedRow = z.object({
+  id: z.string(),
+  owner_id: z.string().nullable().optional(),
+  slug: z.string().nullable().optional(),
+  custom_domain: z.string().nullable().optional(),
+  published_spec: SiteSpec.nullable().optional(),
+});
 
 const SLUG = /^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/;
 const DOMAIN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
@@ -428,6 +442,57 @@ export class SupabaseSiteStore implements SiteStore {
     if (!DOMAIN.test(domain)) return null;
     const [row] = await this.request(`?custom_domain=eq.${domain}&select=*`);
     return row ? toRecord(row) : null;
+  }
+
+  async findRef(by: { slug: string } | { domain: string }): Promise<SiteRef | null> {
+    let filter: string;
+    if ("slug" in by) {
+      if (!SLUG.test(by.slug)) return null;
+      filter = `slug=eq.${by.slug}`;
+    } else {
+      if (!DOMAIN.test(by.domain)) return null;
+      filter = `custom_domain=eq.${by.domain}`;
+    }
+    const [row] = z
+      .array(RefRow)
+      .parse(await this.raw(this.endpoint, `?${filter}&select=id,owner_id&limit=1`, {}));
+    return row ? { id: row.id, ownerId: row.owner_id ?? null } : null;
+  }
+
+  async getPublished(id: string): Promise<PublishedSiteRecord | null> {
+    if (!UUID.test(id)) return null;
+    const [raw] = z
+      .array(z.unknown())
+      .parse(
+        await this.raw(
+          this.endpoint,
+          `?id=eq.${id}&status=eq.published&select=id,owner_id,slug,custom_domain,published_spec`,
+          {},
+        ),
+      );
+    if (raw === undefined) return null;
+    const parsed = PublishedRow.safeParse(raw);
+    if (!parsed.success) {
+      console.error("[store] published site fails the schema", id, parsed.error.issues);
+      return null;
+    }
+    const row = parsed.data;
+    let liveSpec = row.published_spec ?? null;
+    if (!liveSpec) {
+      // Site publicado antes de existir `published_spec`: o que está no ar é o rascunho.
+      const [legacy] = z
+        .array(z.object({ spec: SiteSpec }))
+        .parse(await this.raw(this.endpoint, `?id=eq.${id}&select=spec`, {}));
+      if (!legacy) return null;
+      liveSpec = legacy.spec;
+    }
+    return {
+      id: row.id,
+      ownerId: row.owner_id ?? null,
+      slug: row.slug ?? null,
+      customDomain: row.custom_domain ?? null,
+      liveSpec,
+    };
   }
 
   async list(ownerId: string): Promise<SiteRecord[]> {

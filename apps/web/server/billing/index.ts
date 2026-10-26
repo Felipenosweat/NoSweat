@@ -9,6 +9,7 @@ import { isAdmin } from "../admin";
 import type { CurrentUser } from "../auth/session";
 import { errorResponse } from "../http";
 import { getSiteStore } from "../store";
+import { revalidateOwnerSites } from "../store/revalidate";
 import { getGrantStore, isGrantActive } from "./grants";
 import { PLANS, priceCents, setupCentsFor } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
@@ -446,6 +447,8 @@ async function syncSubscription(config: StripeConfig, sub: StripeSubscription): 
     cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
   };
   await store.upsert(record);
+  // Plano começou, mudou ou acabou: os sites no ar da conta aparecem, mudam ou somem já.
+  revalidateOwnerSites(userId);
   // Troca de plano concluída: a assinatura antiga para de cobrar.
   if (other?.stripeSubscriptionId && isActiveStatus(other.status) && isActiveStatus(sub.status)) {
     await cancelReplaced(config, other.stripeSubscriptionId);

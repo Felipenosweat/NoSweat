@@ -1,9 +1,7 @@
 "use client";
 
-import { create as createQr } from "qrcode";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -30,29 +28,54 @@ const focusRing =
 const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
 const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
 
-/** QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem. */
+type QrDrawing = { value: string; size: number; path: string };
+
+/**
+ * QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem.
+ * A biblioteca `qrcode` só baixa quando o QR aparece (o modal aberto): fora do JS da primeira
+ * carga da página do site e do editor. Até chegar, um quadrado branco do mesmo tamanho.
+ */
 function QrCode({ value, className = "" }: { value: string; className?: string }) {
-  const { size, path } = useMemo(() => {
-    const { modules } = createQr(value, { errorCorrectionLevel: "M" });
-    let d = "";
-    for (let row = 0; row < modules.size; row++) {
-      for (let col = 0; col < modules.size; col++) {
-        if (modules.get(row, col)) d += `M${col} ${row}h1v1h-1z`;
-      }
-    }
-    return { size: modules.size, path: d };
+  const [drawing, setDrawing] = useState<QrDrawing | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    import("qrcode")
+      .then(({ create }) => {
+        if (!alive) return;
+        const { modules } = create(value, { errorCorrectionLevel: "M" });
+        let d = "";
+        for (let row = 0; row < modules.size; row++) {
+          for (let col = 0; col < modules.size; col++) {
+            if (modules.get(row, col)) d += `M${col} ${row}h1v1h-1z`;
+          }
+        }
+        setDrawing({ value, size: modules.size, path: d });
+      })
+      .catch((error: unknown) => {
+        // Sem QR (falhou ao baixar): o resto do modal continua funcionando.
+        console.error("[publish] could not load the QR code", error);
+      });
+    return () => {
+      alive = false;
+    };
   }, [value]);
+
+  // Outro endereço do que o desenhado: espera o novo (nunca mostra o QR errado).
+  const ready = drawing?.value === value ? drawing : null;
+  const size = ready?.size ?? 25;
 
   return (
     <svg
       viewBox={`-2 -2 ${size + 4} ${size + 4}`}
       role="img"
       aria-label={`QR code for ${value}`}
+      aria-busy={ready ? undefined : true}
       shapeRendering="crispEdges"
       className={className}
     >
       <rect x={-2} y={-2} width={size + 4} height={size + 4} className="fill-white" />
-      <path d={path} className="fill-ink" />
+      {ready && <path d={ready.path} className="fill-ink" />}
     </svg>
   );
 }

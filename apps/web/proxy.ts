@@ -35,6 +35,29 @@ const isProtected = (path: string) =>
   !GUEST_PATHS.some((pattern) => pattern.test(path)) &&
   PROTECTED_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
+// Caminhos públicos que não leem a sessão: sem renovar a sessão do Supabase aqui (o getClaims
+// custa uma ida ao Supabase quando o token venceu e atrasa a página). Sites publicados, exemplos,
+// links públicos de orçamento/fatura (/q, /i), a API pública (formulário dos sites, crons,
+// webhook do Stripe, descadastro) e as páginas estáticas do marketing.
+// Nenhuma destas páginas ou rotas chama getCurrentUser; se uma passar a chamar, tirar daqui.
+const PUBLIC_PREFIXES = ["/s/", "/examples/", "/q/", "/i/", "/api/public/", "/api/cron/"];
+const PUBLIC_PATTERNS = [
+  /^\/api\/sites\/[^/]+\/leads\/?$/,
+  /^\/api\/billing\/webhook\/?$/,
+  /^\/api\/unsubscribe\/?$/,
+];
+const PUBLIC_PAGES = new Set(["/", "/pricing", "/terms", "/privacy", "/credits"]);
+
+/** O caminho dispensa a sessão do Supabase (ver PUBLIC_PREFIXES). */
+function isPublicPath(path: string): boolean {
+  const page = path.length > 1 ? path.replace(/\/+$/, "") : path;
+  return (
+    PUBLIC_PAGES.has(page) ||
+    PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix)) ||
+    PUBLIC_PATTERNS.some((pattern) => pattern.test(path))
+  );
+}
+
 /** 403 do modo "ver como" (admin vendo outra conta só para ler). */
 function readOnlyResponse(): NextResponse {
   return NextResponse.json(
@@ -98,6 +121,13 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/callback";
     return NextResponse.redirect(url);
+  }
+
+  // Depois do domínio de cliente e do ?code= (o e-mail de confirmação pode cair em "/?code=").
+  // As rotas da API daqui são todas públicas também no modo "ver como" (blockedWrite é falso
+  // para elas); o teste de blockedWrite fica só por garantia.
+  if (!blockedWrite && isPublicPath(pathname)) {
+    return NextResponse.next();
   }
 
   let response = NextResponse.next({ request });

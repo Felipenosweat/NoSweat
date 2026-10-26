@@ -3,13 +3,20 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { SiteUnavailable } from "@/components/SiteUnavailable";
-import { ownerHasCustomDomainAccess, ownerHasLiveAccess } from "@/server/billing";
 import { appOrigin } from "@/server/notify";
-import { liveSpec } from "@/server/sites";
-import { getSiteStore, type SiteRecord } from "@/server/store";
+import { getPublicSiteByDomain, type PublicSite } from "@/server/store/public-site";
 
 // Site publicado no domínio próprio do cliente. O proxy.ts reescreve
 // joesplumbing.com/qualquer-coisa → /d/joesplumbing.com, então esta rota nunca aparece na URL.
+// Estático sob demanda (ISR), como /s/[slug]: cache de até 1 hora, limpo na hora quando o site,
+// o domínio ou o plano do dono mudam (server/store/revalidate.ts). Nada de cookies()/headers().
+
+export const revalidate = 3600;
+
+/** Nenhum domínio no build: todos são gerados na primeira visita. */
+export function generateStaticParams(): { host: string }[] {
+  return [];
+}
 
 type DomainSitePageProps = { params: Promise<{ host: string }> };
 
@@ -24,22 +31,21 @@ function normalizeHost(host: string): string | null {
   }
 }
 
-async function getPublished(host: string): Promise<SiteRecord | null> {
+async function getPublished(host: string): Promise<PublicSite | null> {
   const domain = normalizeHost(host);
   if (!domain) return null;
-  const site = await getSiteStore().getByDomain(domain);
-  return site?.status === "published" ? site : null;
+  return getPublicSiteByDomain(domain);
 }
 
 /** Endereço canônico: o domínio do cliente, sempre sem "www". */
-const siteUrl = (site: SiteRecord, host: string) =>
+const siteUrl = (site: PublicSite, host: string) =>
   customDomainUrl(site.customDomain ?? normalizeHost(host) ?? host);
 
 export async function generateMetadata({ params }: DomainSitePageProps): Promise<Metadata> {
   const { host } = await params;
   const site = await getPublished(host);
   if (!site) return {};
-  if (!(await ownerHasLiveAccess(site.ownerId))) return { robots: { index: false } };
+  if (!site.liveAccess) return { robots: { index: false } };
   return siteMetadata(site, siteUrl(site, host));
 }
 
@@ -47,12 +53,12 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
   const { host } = await params;
   const site = await getPublished(host);
   if (!site) notFound();
-  if (!(await ownerHasLiveAccess(site.ownerId))) {
-    return <SiteUnavailable name={liveSpec(site).business.name} />;
+  if (!site.liveAccess) {
+    return <SiteUnavailable name={site.spec.business.name} />;
   }
   // Plano atual sem domínio próprio (ex.: desceu de Pro para Starter): o site segue no ar no
   // endereço grátis. `appOrigin` com um host de fora devolve o endereço da No Sweat (APP_URL).
-  if (site.slug && !(await ownerHasCustomDomainAccess(site.ownerId))) {
+  if (site.slug && !site.customDomainAccess) {
     redirect(`${appOrigin("https://customer.invalid/")}/s/${encodeURIComponent(site.slug)}`);
   }
   return (
@@ -62,7 +68,7 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: siteJsonLd(site, siteUrl(site, host)) }}
       />
-      <SiteRenderer spec={liveSpec(site)} contactEndpoint={`/api/sites/${site.id}/leads`} />
+      <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />
     </>
   );
 }

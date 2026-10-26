@@ -16,8 +16,8 @@ import {
 } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
+import { listOwnerSites } from "@/server/owner-sites";
 import { accountReviewLink } from "@/server/reviews";
-import { getSiteStore } from "@/server/store";
 import { EstimateIcon, InvoiceIcon } from "../../office/_ui/ui";
 import { ClientMenu } from "../ClientMenu";
 import {
@@ -58,7 +58,7 @@ async function loadClient(ownerId: string, id: string) {
 /** Link de avaliações do Google da conta (para "pedir avaliação" no menu). Erro = sem atalho. */
 async function loadReviewLink(ownerId: string) {
   try {
-    return accountReviewLink(await getSiteStore().list(ownerId));
+    return accountReviewLink(await listOwnerSites(ownerId));
   } catch (error) {
     console.error("[clients] could not read the review link", error);
     return null;

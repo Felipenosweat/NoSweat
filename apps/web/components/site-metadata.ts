@@ -1,8 +1,16 @@
 import type { SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
 import { SITE_ORIGIN } from "@/lib/site";
-import { liveSpec } from "@/server/sites";
 import type { SiteRecord } from "@/server/store";
+
+/**
+ * O que os metadados precisam de um site: o id e a versão no ar. Serve um `SiteRecord` inteiro
+ * (vale `publishedSpec ?? spec`, como `liveSpec` de server/sites.ts) ou o `PublicSite` das
+ * páginas públicas (que já traz só a versão no ar em `spec`).
+ */
+type MetadataSite = Pick<SiteRecord, "id" | "spec"> & { publishedSpec?: SiteSpec | null };
+
+const specOf = (site: MetadataSite): SiteSpec => site.publishedSpec ?? site.spec;
 
 /** Endereço grátis de um site publicado (mesma origem do `metadataBase` do layout). */
 export const freeSiteUrl = (slug: string) => `${SITE_ORIGIN}/s/${slug}`;
@@ -55,8 +63,8 @@ export function searchSnippet(spec: SiteSpec): { title: string; description?: st
  * Título, descrição e cartões de compartilhamento de um site publicado
  * (usado em /s/<slug> e no domínio do cliente). `url` = endereço onde a página está sendo vista.
  */
-export function siteMetadata(site: SiteRecord, url: string): Metadata {
-  const spec = liveSpec(site);
+export function siteMetadata(site: MetadataSite, url: string): Metadata {
+  const spec = specOf(site);
   const { business } = spec;
   const { title, description } = searchSnippet(spec);
   const hero = spec.sections.find((s) => s.type === "hero");
@@ -104,8 +112,8 @@ export function siteMetadata(site: SiteRecord, url: string): Metadata {
  * JSON-LD (schema.org LocalBusiness) só com o que está no SiteSpec — nada inventado.
  * Devolve o texto pronto para <script type="application/ld+json">, já escapado.
  */
-export function siteJsonLd(site: SiteRecord, url: string): string {
-  const { business } = liveSpec(site);
+export function siteJsonLd(site: MetadataSite, url: string): string {
+  const { business } = specOf(site);
   const address =
     business.address || business.city || business.state
       ? {

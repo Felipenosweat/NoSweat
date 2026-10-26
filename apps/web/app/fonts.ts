@@ -21,7 +21,9 @@ import {
 } from "next/font/google";
 
 // Fontes dos 10 pares de `theme.font` (ver FONT_PAIRS em @nosweat/templates).
-// O par "modern" também é a fonte da marca No Sweat: é o único com preload.
+// O par "modern" também é a fonte da marca No Sweat: é o único com preload (vai em toda página
+// que usa o layout raiz). Nenhuma outra fonte daqui pode ter preload: viraria <link rel=preload>
+// em todas as telas, competindo com a imagem do LCP.
 // Os outros usam `preload: false`; o navegador só baixa o arquivo da fonte que a página usa
 // (o @font-face existe, mas sem nenhum elemento usando a família, nada é baixado).
 // O next/font exige opções escritas por extenso (sem spread).
@@ -75,11 +77,16 @@ const freshBody = Hanken_Grotesk({
   preload: false,
   variable: "--ns-font-fresh-body",
 });
+// Também é a serifa dos títulos da landing (landing.css: --font-lp-serif aponta para esta
+// variável). Uma declaração só: antes a landing tinha a dela, e as duas viravam @font-face
+// diferentes. Com itálico para a última palavra dos títulos da landing (o navegador só baixa o
+// arquivo do itálico onde ele aparece).
 const editorialHeading = Instrument_Serif({
   subsets: ["latin"],
   display: "swap",
   preload: false,
   weight: "400",
+  style: ["normal", "italic"],
   variable: "--ns-font-editorial-heading",
 });
 const editorialBody = Instrument_Sans({

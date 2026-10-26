@@ -3,6 +3,7 @@ import { handle, jsonResponse, notFound, readJson, unauthorized } from "@/server
 import { savesExceeded } from "@/server/quota";
 import { saveReviewLink } from "@/server/reviews";
 import { requireOwnedSite } from "@/server/sites";
+import { revalidatePublicSite } from "@/server/store/revalidate";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -28,6 +29,8 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
 
     const updated = await saveReviewLink(site, input.data.url);
     if (!updated) return notFound();
+    // No ar, o botão "Review us on Google" muda já (só este campo vai para a versão publicada).
+    if (updated.status === "published") revalidatePublicSite(updated);
     return jsonResponse(ReviewLinkResponse, {
       siteId: updated.id,
       googleReviewUrl: updated.spec.business.googleReviewUrl ?? null,

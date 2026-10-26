@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { deleteSiteForever } from "../sites";
 import { getSiteStore, type SiteRecord } from "../store";
+import { revalidatePublicSite } from "../store/revalidate";
 
 // Sites no painel do admin: filtros, busca e as ações (tirar do ar, apagar, faxina dos rascunhos
 // de visitantes). As ações reaproveitam os mesmos caminhos das rotas da API:
@@ -144,7 +145,11 @@ function defaultDeps(): AdminSiteDeps {
   const store = getSiteStore();
   return {
     getSite: (id) => store.get(id),
-    unpublish: (id) => store.updateMeta(id, { status: "draft" }),
+    unpublish: async (id) => {
+      const updated = await store.updateMeta(id, { status: "draft" });
+      if (updated) revalidatePublicSite(updated);
+      return updated;
+    },
     deleteSite: deleteSiteForever,
     deleteGuestSitesBefore: (beforeIso) => store.deleteAbandonedGuestSites(beforeIso),
   };
