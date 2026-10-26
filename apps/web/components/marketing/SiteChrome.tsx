@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
-import { INSTAGRAM_URL } from "@/lib/structured-data";
 import { MarketingMenu } from "./MobileCtaBar";
+import { SocialLinks } from "./SocialLinks";
 import { container, focusRing } from "./styles";
 
 // Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
@@ -46,7 +46,6 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
       { href: "/create", label: "Build my website" },
       { href: "/login", label: "Log in" },
       { href: "mailto:hello@nosweatfd.com", label: "hello@nosweatfd.com", external: true },
-      { href: INSTAGRAM_URL, label: "Instagram @nosweatfd", external: true },
     ],
   },
   {
@@ -183,6 +182,10 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
           >
             Websites for small businesses, built from a sentence and easy to keep up to date.
           </p>
+          <p className={`mt-6 text-sm font-semibold ${dark ? "text-white" : "text-ink"}`}>
+            Follow us
+          </p>
+          <SocialLinks tone={dark ? "dark" : "light"} className="mt-3" />
         </div>
         <nav
           aria-label="Footer"

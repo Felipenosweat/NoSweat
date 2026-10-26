@@ -2,6 +2,7 @@ import type { Faq } from "@/components/marketing/faqs";
 import { escapeJsonForScript } from "@/components/site-metadata";
 import { PLANS } from "@/server/billing/plans";
 import { SITE_ORIGIN, siteUrl } from "./site";
+import { SOCIAL_PROFILES } from "./social-profiles";
 
 // Dados estruturados (schema.org em JSON-LD) do nosweatfd.com. O Google usa para entender a
 // empresa, o produto e as perguntas frequentes; buscadores com IA (ChatGPT, Perplexity, Gemini)
@@ -15,9 +16,6 @@ const APP_ID = `${SITE_ORIGIN}/#product`;
 
 const dollars = (cents: number) => (cents / 100).toFixed(2);
 
-/** Instagram oficial da No Sweat (@nosweatfd). O rodapé do marketing usa o mesmo endereço. */
-export const INSTAGRAM_URL = "https://www.instagram.com/nosweatfd/";
-
 export function organization() {
   return {
     "@type": "Organization",
@@ -27,7 +25,7 @@ export function organization() {
     logo: `${SITE_ORIGIN}/brand/icon.png`,
     email: "hello@nosweatfd.com",
     // Perfis oficiais: ajudam o Google e as IAs a ligar a marca aos perfis certos.
-    sameAs: [INSTAGRAM_URL],
+    sameAs: SOCIAL_PROFILES.map((profile) => profile.url),
     description:
       "No Sweat builds websites for small local businesses in the United States from a one-sentence description, with AI.",
   };
