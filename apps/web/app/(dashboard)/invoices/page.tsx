@@ -49,7 +49,7 @@ async function loadInvoices(ownerId: string) {
 
 function NewInvoiceButton({ label = "New invoice" }: { label?: string }) {
   return (
-    <GlassButton href="/invoices/new" variant="primary" icon={<PlusIcon />}>
+    <GlassButton href="/invoices/new" variant="primary" icon={<PlusIcon />} data-tour="invoices-new">
       {label}
     </GlassButton>
   );
@@ -138,6 +138,7 @@ function InvoicesContent({
       {/* "$X unpaid · $Y overdue": o número que o dono abre a tela para ver. */}
       <section
         aria-labelledby="invoices-summary"
+        data-tour="invoices-summary"
         className="glass mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl px-5 py-4"
       >
         <h2 id="invoices-summary" className="sr-only">

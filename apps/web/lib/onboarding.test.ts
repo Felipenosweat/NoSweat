@@ -1,41 +1,33 @@
 import { describe, expect, it } from "vitest";
 import {
+  TOUR_FINISH,
   TOUR_METADATA_KEY,
-  TOUR_STEPS,
+  TOUR_WELCOME,
   clampStep,
   shouldAutoOpen,
   tourConfig,
   tourDoneAt,
   tourShortcuts,
-  tourStepAt,
   tourStorageKey,
   type TourConfig,
 } from "./onboarding";
 
 const account: TourConfig = { autoShow: true, persist: "account", accountKey: "user-1" };
 
-describe("TOUR_STEPS", () => {
-  it("has 5 to 7 short steps with unique ids", () => {
-    expect(TOUR_STEPS.length).toBeGreaterThanOrEqual(5);
-    expect(TOUR_STEPS.length).toBeLessThanOrEqual(7);
-    expect(new Set(TOUR_STEPS.map((step) => step.id)).size).toBe(TOUR_STEPS.length);
-    for (const step of TOUR_STEPS) {
-      expect(step.title.length).toBeLessThanOrEqual(40);
-      expect(step.body.length).toBeLessThanOrEqual(200);
+describe("TOUR_WELCOME / TOUR_FINISH", () => {
+  it("are short, with the welcome art first and the help art last", () => {
+    for (const sheet of [TOUR_WELCOME, TOUR_FINISH]) {
+      expect(sheet.title.length).toBeLessThanOrEqual(40);
+      expect(sheet.body.length).toBeLessThanOrEqual(200);
     }
+    expect(TOUR_WELCOME.art).toBe("welcome");
+    expect(TOUR_FINISH.art).toBe("help");
+    expect(TOUR_WELCOME.id).not.toBe(TOUR_FINISH.id);
   });
 
-  it("starts with the welcome and ends with where to get help", () => {
-    expect(TOUR_STEPS[0]?.id).toBe("welcome");
-    expect(TOUR_STEPS.at(-1)?.id).toBe("help");
-  });
-
-  it("never promises online payments or posting without approval", () => {
-    const text = TOUR_STEPS.map((step) => `${step.title} ${step.body}`)
-      .join(" ")
-      .toLowerCase();
+  it("never promises online payments", () => {
+    const text = `${TOUR_WELCOME.body} ${TOUR_FINISH.body}`.toLowerCase();
     expect(text).not.toMatch(/pay online|card payment|credit card/);
-    expect(text).toContain("approve");
   });
 });
 
@@ -107,19 +99,12 @@ describe("shouldAutoOpen", () => {
 
 describe("clampStep", () => {
   it("keeps the index inside the steps", () => {
-    expect(clampStep(-1)).toBe(0);
-    expect(clampStep(2)).toBe(2);
-    expect(clampStep(99)).toBe(TOUR_STEPS.length - 1);
-    expect(clampStep(Number.NaN)).toBe(0);
+    expect(clampStep(-1, 5)).toBe(0);
+    expect(clampStep(2, 5)).toBe(2);
+    expect(clampStep(99, 5)).toBe(4);
+    expect(clampStep(2.7, 5)).toBe(2);
+    expect(clampStep(Number.NaN, 5)).toBe(0);
     expect(clampStep(3, 0)).toBe(0);
-  });
-});
-
-describe("tourStepAt", () => {
-  it("always returns a step, even out of range", () => {
-    expect(tourStepAt(0).id).toBe("welcome");
-    expect(tourStepAt(-5).id).toBe("welcome");
-    expect(tourStepAt(1000).id).toBe("help");
   });
 });
 

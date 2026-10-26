@@ -212,7 +212,12 @@ export function SettingsForm({
     : [{ value: values.timeZone, label: values.timeZone }, ...US_TIME_ZONES];
 
   return (
-    <form onSubmit={(event) => void submit(event)} noValidate aria-label="Business settings">
+    <form
+      onSubmit={(event) => void submit(event)}
+      noValidate
+      aria-label="Business settings"
+      data-tour="settings-form"
+    >
       <fieldset disabled={pending || readOnly} className="grid gap-4">
         <GlassCard as="section" aria-labelledby={`${ids}-company`}>
           <CardHeading id={`${ids}-company`}>Your company</CardHeading>

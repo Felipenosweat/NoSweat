@@ -104,6 +104,7 @@ export function PlanMonthButton({
           type="button"
           onClick={openForm}
           disabled={out}
+          data-tour="social-plan"
           className={primaryButton}
         >
           <SparklesIcon className="size-4" aria-hidden="true" />

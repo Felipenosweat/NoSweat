@@ -203,6 +203,7 @@ export function ScheduleBoard({
               variant="primary"
               icon={<PlusIcon />}
               onClick={() => openSheet({ date: newJobDate, time: null })}
+              data-tour="schedule-new"
             >
               New job
             </GlassButton>

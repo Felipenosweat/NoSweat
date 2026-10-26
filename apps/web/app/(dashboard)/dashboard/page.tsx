@@ -949,7 +949,7 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
     timeZone: "UTC",
   }).format(new Date(`${today}T12:00:00Z`));
   return (
-    <section aria-labelledby="today-heading" className="flex min-w-0 flex-col">
+    <section aria-labelledby="today-heading" data-tour="home-today" className="flex min-w-0 flex-col">
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="today-heading" className={sectionTitle}>
           Today
@@ -1006,7 +1006,11 @@ function OfficeSection({ office, readOnly }: { office: OfficeSnapshot; readOnly:
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
       <TodayCard office={office} readOnly={readOnly} />
-      <section aria-labelledby="money-heading" className="flex min-w-0 flex-col">
+      <section
+        aria-labelledby="money-heading"
+        data-tour="home-money"
+        className="flex min-w-0 flex-col"
+      >
         <h2 id="money-heading" className={sectionTitle}>
           Money
         </h2>
@@ -1316,7 +1320,7 @@ async function HomeSections({ ctx }: { ctx: HomeContext }) {
   const latest = sites[0];
 
   const yourSites = (
-    <section id="sites" aria-labelledby="sites-heading">
+    <section id="sites" aria-labelledby="sites-heading" data-tour="home-sites">
       <h2 id="sites-heading" className={sectionTitle}>
         Your sites
         {sites.length > 0 && (

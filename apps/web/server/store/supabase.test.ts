@@ -198,6 +198,49 @@ describe("SupabaseSiteStore", () => {
     expect(legacyUrl).toContain("select=spec");
   });
 
+  it("lists light site summaries for the admin without the full specs", async () => {
+    const { store, fetchMock } = storeWith([
+      {
+        id: ID,
+        owner_id: OWNER,
+        guest_id: null,
+        status: "published",
+        slug: "joes",
+        custom_domain: null,
+        published_at: "2026-01-02T00:00:00Z",
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        name: "Joe's Plumbing",
+        template: "home-services",
+      },
+      // Linha sem nome no JSON: aparece com um nome padrão (não some da lista).
+      { ...row, id: "1b2c3d4e-5f60-4a7b-8c9d-0e1f2a3b4c5d", spec: undefined, name: null },
+      // Linha quebrada (sem status): fica de fora.
+      { id: "x", created_at: row.created_at, updated_at: row.updated_at },
+    ]);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const sites = await store.listAllSummaries();
+    expect(sites).toHaveLength(2);
+    expect(sites[0]).toEqual({
+      id: ID,
+      ownerId: OWNER,
+      guestId: null,
+      status: "published",
+      slug: "joes",
+      customDomain: null,
+      publishedAt: "2026-01-02T00:00:00Z",
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      spec: { business: { name: "Joe's Plumbing" }, template: "home-services" },
+    });
+    expect(sites[1]?.spec.business.name).toBe("Untitled website");
+    const [url] = fetchMock.mock.calls[0] as unknown as [string];
+    expect(url).toContain("name:spec->business->>name");
+    expect(url).toContain("template:spec->>template");
+    expect(url).not.toContain("select=*");
+    expect(url).not.toMatch(/[,=](published_)?spec[,&]/);
+  });
+
   it("reads legacy rows without an owner", async () => {
     const { store } = storeWith([{ ...row, owner_id: null }]);
     expect((await store.get(ID))?.ownerId).toBeNull();

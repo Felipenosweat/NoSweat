@@ -180,7 +180,11 @@ export function SitesGrid({
                 )}
                 {/* Ações acima do link esticado (z-10) para continuarem clicáveis. */}
                 <div className="relative z-10 mt-auto flex items-center gap-2 pt-3">
-                  <GlassButton href={`/sites/${site.id}/edit`} variant="secondary">
+                  <GlassButton
+                    href={`/sites/${site.id}/edit`}
+                    variant="secondary"
+                    data-tour="site-edit"
+                  >
                     Edit
                     <span className="sr-only"> {business.name}</span>
                   </GlassButton>
