@@ -1,0 +1,366 @@
+{
+  "_comment": "Arquétipos de direção de arte e os eixos de design. Lido por tools/select.mjs. Explicação em archetypes.md. Cada referência em references.json aponta para um arquétipo (campo archetype).",
+  "axes": {
+    "composition": [
+      {
+        "id": "full-bleed-photo",
+        "label": "Photo edge to edge with the name or headline over it"
+      },
+      {
+        "id": "split-editorial",
+        "label": "Headline column beside a tall image, magazine grid"
+      },
+      {
+        "id": "type-poster",
+        "label": "Type is the image: giant name or statement, no hero photo"
+      },
+      {
+        "id": "bento-grid",
+        "label": "Tiles of different sizes (facts, photo, action)"
+      },
+      {
+        "id": "pinned-stage",
+        "label": "One frame pinned while the story changes inside it"
+      },
+      {
+        "id": "horizontal-chapters",
+        "label": "Chapters move sideways (pinned horizontal track)"
+      },
+      {
+        "id": "monument-centered",
+        "label": "Centered, symmetrical, ceremonial layout around a crest or object"
+      },
+      {
+        "id": "collage",
+        "label": "Overlapping images and type at different scales"
+      }
+    ],
+    "typeSystem": [
+      {
+        "id": "high-contrast-serif+geometric-sans",
+        "label": "Didone/Bodoni-like display with a geometric sans for labels"
+      },
+      {
+        "id": "old-style-serif+humanist-sans",
+        "label": "Garamond/Caslon-like serif with a humanist sans"
+      },
+      {
+        "id": "grotesk-only",
+        "label": "One grotesk family, hierarchy by size and weight"
+      },
+      {
+        "id": "slab+grotesk",
+        "label": "Slab or wide display with a grotesk body"
+      },
+      {
+        "id": "variable-expressive",
+        "label": "Variable or display face used kinetically (width/weight change)"
+      },
+      {
+        "id": "serif-only",
+        "label": "One serif family for everything, italic for emphasis"
+      }
+    ],
+    "hierarchy": [
+      {
+        "id": "headline-led",
+        "label": "A sentence carries the page"
+      },
+      {
+        "id": "image-led",
+        "label": "Photography carries the page; text is captions"
+      },
+      {
+        "id": "index-led",
+        "label": "Numbered lists and indexes (services, rooms, chapters)"
+      },
+      {
+        "id": "number-led",
+        "label": "Facts and figures as display elements"
+      }
+    ],
+    "imagery": [
+      {
+        "id": "full-bleed",
+        "label": "Full-width photography"
+      },
+      {
+        "id": "arch-masks",
+        "label": "Images in architectural shapes (arches, circles)"
+      },
+      {
+        "id": "framed-editorial",
+        "label": "Framed photos with captions and credits"
+      },
+      {
+        "id": "collage-cutouts",
+        "label": "Cut-out objects and overlaps"
+      },
+      {
+        "id": "duotone",
+        "label": "Tinted / duotone treatment for unity"
+      },
+      {
+        "id": "illustration",
+        "label": "Drawn or generated illustration"
+      },
+      {
+        "id": "product-ui",
+        "label": "Real product interface as the image"
+      }
+    ],
+    "navigation": [
+      {
+        "id": "top-bar",
+        "label": "Classic bar with links and one action"
+      },
+      {
+        "id": "floating-pill",
+        "label": "Floating glass pill"
+      },
+      {
+        "id": "side-rail",
+        "label": "Vertical rail at the side"
+      },
+      {
+        "id": "overlay-menu",
+        "label": "Minimal bar + full-screen menu with large type"
+      },
+      {
+        "id": "bottom-bar-mobile",
+        "label": "Primary actions fixed at the bottom on phones"
+      }
+    ],
+    "motion": [
+      {
+        "id": "ceremonial",
+        "label": "Slow masked reveals, hairlines drawing, long ease-out; never bouncy"
+      },
+      {
+        "id": "cinematic",
+        "label": "Scroll-scrubbed scenes, pinned sections, crossfades"
+      },
+      {
+        "id": "kinetic",
+        "label": "Type moves: split lines, marquees, weight/width shifts"
+      },
+      {
+        "id": "quiet",
+        "label": "Fades and small rises only; content first"
+      },
+      {
+        "id": "playful",
+        "label": "Springs, hover tilts, cursor followers"
+      }
+    ],
+    "surface": [
+      {
+        "id": "night-day-alternation",
+        "label": "Dark and light chapters alternate"
+      },
+      {
+        "id": "single-paper",
+        "label": "One warm paper ground throughout"
+      },
+      {
+        "id": "brand-block",
+        "label": "Large blocks of one brand colour"
+      },
+      {
+        "id": "monochrome-dark",
+        "label": "Dark throughout"
+      },
+      {
+        "id": "photographic",
+        "label": "Photos are the surfaces"
+      }
+    ]
+  },
+  "archetypes": [
+    {
+      "id": "heritage-grandeur",
+      "name": "Heritage grandeur",
+      "summary": "Palaces, grand hotels, heritage houses, jewellers. Ceremony, craft and time: high-contrast serif, gold used sparingly as hairlines, night/day chapters, architectural shapes, slow masked reveals.",
+      "fits": {
+        "businesses": ["hotel", "event-venue", "jeweller", "winery"],
+        "tones": ["refined", "premium", "calm"]
+      },
+      "axes": {
+        "composition": [
+          "full-bleed-photo",
+          "monument-centered",
+          "horizontal-chapters",
+          "split-editorial"
+        ],
+        "typeSystem": [
+          "high-contrast-serif+geometric-sans",
+          "old-style-serif+humanist-sans",
+          "serif-only"
+        ],
+        "hierarchy": ["image-led", "headline-led", "index-led"],
+        "imagery": ["arch-masks", "full-bleed", "framed-editorial"],
+        "navigation": ["overlay-menu", "top-bar", "bottom-bar-mobile"],
+        "motion": ["ceremonial", "cinematic", "quiet"],
+        "surface": ["night-day-alternation", "monochrome-dark", "photographic"]
+      },
+      "avoid": [
+        "Gold text on light backgrounds",
+        "Fake crests of real houses",
+        "Bouncy easing",
+        "Stock photos of famous landmarks for a fictional or different place"
+      ]
+    },
+    {
+      "id": "quiet-luxury",
+      "name": "Quiet luxury",
+      "summary": "Fashion, design objects, boutique hotels, clinics. Restraint: lots of air, one family, small type, precise grid, photography with negative space, almost no ornament.",
+      "fits": {
+        "businesses": ["boutique", "hotel", "interior-designer", "architect", "clinic", "spa"],
+        "tones": ["minimal", "refined", "premium", "calm"]
+      },
+      "axes": {
+        "composition": ["split-editorial", "full-bleed-photo", "pinned-stage"],
+        "typeSystem": ["grotesk-only", "serif-only", "old-style-serif+humanist-sans"],
+        "hierarchy": ["image-led", "index-led"],
+        "imagery": ["framed-editorial", "full-bleed"],
+        "navigation": ["top-bar", "overlay-menu"],
+        "motion": ["quiet", "cinematic"],
+        "surface": ["single-paper", "photographic"]
+      },
+      "avoid": ["Decorative gradients", "More than one accent colour", "Big drop shadows"]
+    },
+    {
+      "id": "warm-hospitality",
+      "name": "Warm hospitality",
+      "summary": "Restaurants, cafés, bakeries, B&Bs. Appetite and welcome: warm paper, serif display, food and place photography, booking/menu always one tap away.",
+      "fits": {
+        "businesses": ["restaurant", "cafe", "bakery", "bed-and-breakfast", "hotel"],
+        "tones": ["warm", "playful", "calm"]
+      },
+      "axes": {
+        "composition": ["full-bleed-photo", "collage", "split-editorial"],
+        "typeSystem": ["old-style-serif+humanist-sans", "slab+grotesk", "serif-only"],
+        "hierarchy": ["image-led", "index-led"],
+        "imagery": ["full-bleed", "framed-editorial", "collage-cutouts"],
+        "navigation": ["top-bar", "bottom-bar-mobile"],
+        "motion": ["quiet", "playful"],
+        "surface": ["single-paper", "photographic"]
+      },
+      "avoid": ["Hiding the menu or hours", "Scroll-jacking", "Full-screen cookie walls"]
+    },
+    {
+      "id": "broadsheet-editorial",
+      "name": "Broadsheet editorial",
+      "summary": "Publications, cultural institutions, law and architecture firms. Authored pages: strong grid, columns, captions, numbered sections, typographic hierarchy over decoration.",
+      "fits": {
+        "businesses": ["lawyer", "architect", "accountant", "museum", "publisher", "consultant"],
+        "tones": ["refined", "calm", "premium"]
+      },
+      "axes": {
+        "composition": ["split-editorial", "type-poster", "bento-grid"],
+        "typeSystem": ["old-style-serif+humanist-sans", "serif-only", "grotesk-only"],
+        "hierarchy": ["headline-led", "index-led"],
+        "imagery": ["framed-editorial", "duotone"],
+        "navigation": ["top-bar", "side-rail"],
+        "motion": ["quiet", "kinetic"],
+        "surface": ["single-paper", "brand-block"]
+      },
+      "avoid": ["Centered everything", "Cards for every paragraph"]
+    },
+    {
+      "id": "kinetic-type",
+      "name": "Kinetic type",
+      "summary": "Studios, events, bold brands, tech. Type is the image and it moves: oversized words, split-line reveals, marquees, variable axes.",
+      "fits": {
+        "businesses": ["studio", "agency", "event", "barber", "tattoo", "fitness", "tech"],
+        "tones": ["bold", "playful"]
+      },
+      "axes": {
+        "composition": ["type-poster", "collage", "horizontal-chapters"],
+        "typeSystem": ["variable-expressive", "grotesk-only", "slab+grotesk"],
+        "hierarchy": ["headline-led", "number-led"],
+        "imagery": ["duotone", "collage-cutouts", "illustration"],
+        "navigation": ["floating-pill", "overlay-menu"],
+        "motion": ["kinetic", "playful"],
+        "surface": ["brand-block", "monochrome-dark"]
+      },
+      "avoid": ["Unreadable giant type on phones", "Motion that hides the call to action"]
+    },
+    {
+      "id": "cinematic-scrollytelling",
+      "name": "Cinematic scrollytelling",
+      "summary": "Launches, destinations, foundations, premium real estate. A story in scenes: pinned stages, scrubbed transitions, chapter navigation, one idea per screen.",
+      "fits": {
+        "businesses": ["hotel", "real-estate", "foundation", "winery", "tourism"],
+        "tones": ["premium", "bold", "refined"]
+      },
+      "axes": {
+        "composition": ["pinned-stage", "horizontal-chapters", "full-bleed-photo"],
+        "typeSystem": ["high-contrast-serif+geometric-sans", "grotesk-only", "variable-expressive"],
+        "hierarchy": ["image-led", "headline-led"],
+        "imagery": ["full-bleed", "arch-masks"],
+        "navigation": ["overlay-menu", "side-rail"],
+        "motion": ["cinematic", "ceremonial"],
+        "surface": ["monochrome-dark", "photographic"]
+      },
+      "avoid": ["Long loaders", "No way to skip", "Story that hides prices and contact"]
+    },
+    {
+      "id": "organic-naturalist",
+      "name": "Organic naturalist",
+      "summary": "Wellness, gardens, farms, natural products. Soft shapes, earthy palette, textures, slow drift, generous rounded forms.",
+      "fits": {
+        "businesses": ["spa", "landscaping", "farm", "florist", "therapist", "yoga"],
+        "tones": ["calm", "warm"]
+      },
+      "axes": {
+        "composition": ["collage", "split-editorial", "full-bleed-photo"],
+        "typeSystem": ["old-style-serif+humanist-sans", "serif-only"],
+        "hierarchy": ["image-led", "headline-led"],
+        "imagery": ["arch-masks", "collage-cutouts", "full-bleed"],
+        "navigation": ["top-bar", "floating-pill"],
+        "motion": ["quiet", "playful"],
+        "surface": ["single-paper", "photographic"]
+      },
+      "avoid": ["Blob shapes everywhere", "Low-contrast sage text"]
+    },
+    {
+      "id": "experimental-grid",
+      "name": "Experimental grid",
+      "summary": "Portfolios, studios, galleries. The layout itself is the idea: unusual navigation, broken grids, scale jumps; kept usable with clear wayfinding.",
+      "fits": {
+        "businesses": ["studio", "photographer", "artist", "agency", "gallery"],
+        "tones": ["bold", "minimal"]
+      },
+      "axes": {
+        "composition": ["collage", "bento-grid", "horizontal-chapters"],
+        "typeSystem": ["grotesk-only", "variable-expressive"],
+        "hierarchy": ["image-led", "index-led"],
+        "imagery": ["collage-cutouts", "framed-editorial"],
+        "navigation": ["side-rail", "overlay-menu"],
+        "motion": ["kinetic", "playful"],
+        "surface": ["single-paper", "monochrome-dark"]
+      },
+      "avoid": ["Mystery navigation with no labels", "Layouts that break on phones"]
+    },
+    {
+      "id": "service-direct",
+      "name": "Service direct",
+      "summary": "Trades and local services. Phone and quote first, plain facts, area and hours always visible; craft through type and spacing, not decoration.",
+      "fits": {
+        "businesses": ["plumber", "electrician", "trades", "cleaning", "builder", "renovation"],
+        "tones": ["bold", "calm"]
+      },
+      "axes": {
+        "composition": ["type-poster", "split-editorial", "bento-grid"],
+        "typeSystem": ["grotesk-only", "slab+grotesk"],
+        "hierarchy": ["headline-led", "index-led", "number-led"],
+        "imagery": ["framed-editorial", "full-bleed"],
+        "navigation": ["top-bar", "bottom-bar-mobile"],
+        "motion": ["quiet"],
+        "surface": ["single-paper", "brand-block"]
+      },
+      "avoid": ["Invented badges or reviews", "Hiding the phone number"]
+    }
+  ]
+}

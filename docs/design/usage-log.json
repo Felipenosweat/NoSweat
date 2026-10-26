@@ -1,0 +1,16 @@
+[
+  {
+    "project": "Aurelia Royal Estate",
+    "date": "2026-10-26",
+    "axes": {
+      "archetype": "heritage-grandeur",
+      "composition": "full-bleed-photo",
+      "typeSystem": "high-contrast-serif+geometric-sans",
+      "hierarchy": "image-led",
+      "imagery": "arch-masks",
+      "navigation": "overlay-menu",
+      "motion": "ceremonial",
+      "surface": "night-day-alternation"
+    }
+  }
+]

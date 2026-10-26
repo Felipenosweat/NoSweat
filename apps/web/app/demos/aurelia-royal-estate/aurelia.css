@@ -1,0 +1,502 @@
+/* Aurelia Royal Estate (demonstração). Cores, tipos e os efeitos que não cabem em utilitários.
+   Paleta "Gilded Nocturne": preto quente da noite, ouro antigo (só em filetes, rótulos e
+   detalhes sobre o escuro), clarete para ênfase no papel, marfim e pergaminho para os
+   capítulos claros. Contraste: marfim sobre noite 17:1; ouro #b8955a sobre noite 7,1:1;
+   tinta sobre marfim 15:1; clarete sobre marfim 9,8:1. O ouro nunca é texto sobre o marfim. */
+
+.aurelia {
+  --a-night: #0d0a08;
+  --a-ink: #1c1612;
+  --a-ivory: #f4ede1;
+  --a-ivory-bg: #f2ebdf;
+  --a-parchment-bg: #e8dfcd;
+  --a-gold: #b8955a;
+  --a-gold-bright: #d6b77d;
+  --a-claret: #6b1d24;
+  --a-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--a-night);
+  color: var(--a-ivory);
+  font-family: var(--font-a-body), system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.aurelia .a-display {
+  font-family: var(--font-a-display), "Times New Roman", serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+}
+
+.aurelia .a-ghost::before {
+  content: attr(data-word);
+}
+
+.aurelia .a-caps {
+  font-family: var(--font-a-body), system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.aurelia .a-ivory {
+  background: var(--a-ivory-bg);
+  color: var(--a-ink);
+}
+
+.aurelia .a-parchment {
+  background: var(--a-parchment-bg);
+  color: var(--a-ink);
+}
+
+/* Texto editorial em duas colunas no computador, com capitular em Bodoni. */
+@media (min-width: 1024px) {
+  .aurelia .a-columns {
+    columns: 2;
+    column-gap: 3rem;
+  }
+}
+
+.aurelia .a-dropcap::first-letter {
+  float: left;
+  margin: 0.08em 0.12em 0 0;
+  font-family: var(--font-a-display), serif;
+  font-size: 4.6em;
+  line-height: 0.8;
+  color: var(--a-claret);
+}
+
+/* Foco visível em ouro (escuro) e clarete (claro). */
+.aurelia .a-focus:focus-visible,
+.aurelia .a-link:focus-visible {
+  outline: 2px solid var(--a-gold-bright);
+  outline-offset: 4px;
+}
+
+.aurelia .a-ivory .a-focus:focus-visible,
+.aurelia .a-parchment .a-focus:focus-visible,
+.aurelia .a-focus-within:has(:focus-visible) {
+  outline: 2px solid var(--a-claret);
+  outline-offset: 4px;
+}
+
+.aurelia .a-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 300ms;
+}
+
+.aurelia .a-link:hover {
+  color: var(--a-gold-bright);
+}
+
+/* Sublinhado dourado que corre da esquerda (links do menu). */
+.aurelia .a-underline {
+  background: linear-gradient(var(--a-gold), var(--a-gold)) 0 100% / 0 1px no-repeat;
+  padding-bottom: 4px;
+  transition:
+    background-size 600ms var(--a-ease),
+    color 300ms;
+}
+
+.aurelia .a-underline:hover,
+.aurelia .a-underline:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* Botões: ouro com texto noite (escuro) e tinta com texto marfim (claro). */
+.aurelia .a-btn-gold {
+  background: var(--a-gold);
+  color: var(--a-night);
+  transition: background 400ms var(--a-ease);
+}
+
+.aurelia .a-btn-gold:hover {
+  background: var(--a-gold-bright);
+}
+
+.aurelia .a-btn-ink {
+  background: var(--a-ink);
+  color: var(--a-ivory);
+  transition: background 400ms var(--a-ease);
+}
+
+.aurelia .a-btn-ink:hover {
+  background: var(--a-claret);
+}
+
+/* ---------- Abertura: brasão, nome e as portas ---------- */
+
+.aurelia .a-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: a-opening-out 1ms linear 2700ms forwards;
+}
+
+.aurelia .a-opening > button {
+  pointer-events: auto;
+}
+
+html[data-a-opened] .aurelia .a-opening {
+  display: none;
+}
+
+.aurelia .a-door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  background: var(--a-night);
+  animation: a-door 1500ms var(--a-ease) 1300ms forwards;
+}
+
+.aurelia .a-door-left {
+  left: 0;
+  border-right: 1px solid color-mix(in srgb, var(--a-gold) 50%, transparent);
+  --a-door-to: -100%;
+}
+
+.aurelia .a-door-right {
+  right: 0;
+  border-left: 1px solid color-mix(in srgb, var(--a-gold) 50%, transparent);
+  --a-door-to: 100%;
+}
+
+.aurelia .a-opening-mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: a-mark-out 600ms var(--a-ease) 1150ms forwards;
+}
+
+.aurelia .a-crest-draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: a-draw 1100ms var(--a-ease) 100ms forwards;
+}
+
+.aurelia .a-crest-draw circle,
+.aurelia .a-crest-draw text {
+  opacity: 0;
+  animation: a-fade 700ms var(--a-ease) 600ms forwards;
+}
+
+.aurelia .a-opening-name {
+  animation: a-name 1200ms var(--a-ease) 250ms both;
+}
+
+.aurelia .a-opening-sub {
+  animation: a-fade 900ms var(--a-ease) 550ms both;
+}
+
+@keyframes a-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes a-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes a-name {
+  from {
+    opacity: 0;
+    letter-spacing: 0.4em;
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0;
+  }
+}
+
+@keyframes a-mark-out {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes a-door {
+  to {
+    transform: translateX(var(--a-door-to));
+  }
+}
+
+@keyframes a-opening-out {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ---------- Hero ---------- */
+
+.aurelia .a-hero-veil {
+  background:
+    linear-gradient(180deg, rgb(13 10 8 / 0.55) 0%, rgb(13 10 8 / 0) 30%),
+    linear-gradient(0deg, rgb(13 10 8 / 0.92) 0%, rgb(13 10 8 / 0.35) 45%, rgb(13 10 8 / 0) 70%);
+}
+
+/* O salão se afasta enquanto as portas abrem (e o título sobe linha a linha). */
+.aurelia .a-hero-zoom {
+  animation: a-hero-zoom 2600ms var(--a-ease) 1300ms both;
+}
+
+.aurelia .a-hero-title {
+  animation: a-rise 1600ms var(--a-ease) 1700ms both;
+}
+
+.aurelia .a-hero-in {
+  animation: a-fade 1400ms var(--a-ease) 2100ms both;
+}
+
+html[data-a-opened] .aurelia .a-hero-zoom {
+  animation-delay: 0ms;
+}
+
+html[data-a-opened] .aurelia .a-hero-title {
+  animation-delay: 150ms;
+}
+
+html[data-a-opened] .aurelia .a-hero-in {
+  animation-delay: 400ms;
+}
+
+@keyframes a-hero-zoom {
+  from {
+    transform: scale(1.18);
+  }
+}
+
+@keyframes a-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18%);
+  }
+}
+
+.aurelia .a-scroll-line {
+  transform-origin: top;
+  animation: a-scroll-line 2.4s var(--a-ease) infinite;
+}
+
+@keyframes a-scroll-line {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  51% {
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+/* ---------- Menu do celular ---------- */
+
+.aurelia .a-menu {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 900ms var(--a-ease);
+}
+
+.aurelia .a-menu[data-open] {
+  clip-path: inset(0 0 0 0);
+}
+
+.aurelia .a-menu li {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 700ms var(--a-ease),
+    transform 700ms var(--a-ease);
+}
+
+.aurelia .a-menu[data-open] li {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Suítes: acordeão de arcos ---------- */
+
+.aurelia .a-suite {
+  flex-basis: 0;
+  transition: flex-grow 1100ms var(--a-ease);
+}
+
+.aurelia .a-suite-img {
+  transform: scale(1.08);
+  transition: transform 1600ms var(--a-ease);
+}
+
+.aurelia .a-suite[data-on] .a-suite-img {
+  transform: scale(1);
+}
+
+.aurelia .a-suite-tab {
+  transform: rotate(-90deg) translateY(50%);
+  transition: opacity 500ms var(--a-ease);
+}
+
+.aurelia .a-suite[data-on] .a-suite-tab {
+  opacity: 0;
+}
+
+.aurelia .a-suite-body {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 600ms var(--a-ease),
+    transform 900ms var(--a-ease);
+}
+
+.aurelia .a-suite[data-on] .a-suite-body {
+  opacity: 1;
+  transform: none;
+  transition-delay: 350ms;
+}
+
+/* ---------- Galeria: a enfilada ---------- */
+
+/* Padrão (celular, sem JS, máquina fraca): fileira com rolagem lateral nativa. */
+.aurelia .a-enfilade-rail {
+  scroll-snap-type: x mandatory;
+}
+
+.aurelia .a-enfilade-track > li {
+  width: auto;
+}
+
+/* Com o AureliaMotion no computador: a seção fica alta e a fileira presa anda de lado. */
+.aurelia .a-enfilade[data-pinned] {
+  height: 360vh;
+}
+
+.aurelia .a-enfilade[data-pinned] .a-enfilade-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.aurelia .a-enfilade[data-pinned] .a-enfilade-sticky {
+  padding-top: 5rem;
+}
+
+.aurelia .a-enfilade[data-pinned] .a-enfilade-rail {
+  overflow: visible;
+  scroll-snap-type: none;
+}
+
+.aurelia .a-enfilade[data-pinned] .a-enfilade-track {
+  will-change: transform;
+}
+
+.aurelia .a-lightbox[open] .a-lightbox-img {
+  animation: a-fade 700ms var(--a-ease);
+}
+
+/* ---------- Passos da reserva ---------- */
+
+.aurelia .a-step,
+.aurelia .a-reserve-done {
+  animation: a-step-in 800ms var(--a-ease);
+}
+
+@keyframes a-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.aurelia input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+}
+
+/* ---------- Cursor dourado ---------- */
+
+.aurelia .a-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 1px solid var(--a-gold-bright);
+  border-radius: 999px;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  transition:
+    width 500ms var(--a-ease),
+    height 500ms var(--a-ease),
+    margin 500ms var(--a-ease),
+    background 500ms;
+}
+
+.aurelia .a-cursor span {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--a-night);
+  opacity: 0;
+  transition: opacity 300ms;
+}
+
+.aurelia .a-cursor[data-label] {
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  background: var(--a-gold-bright);
+  mix-blend-mode: normal;
+}
+
+.aurelia .a-cursor[data-label] span {
+  opacity: 1;
+}
+
+/* ---------- Movimento reduzido: nada anda, tudo aparece ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .aurelia .a-opening {
+    display: none;
+  }
+
+  .aurelia *,
+  .aurelia *::before,
+  .aurelia *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+
+  .aurelia .a-crest-draw path {
+    stroke-dashoffset: 0;
+  }
+
+  .aurelia .a-crest-draw circle,
+  .aurelia .a-crest-draw text {
+    opacity: 1;
+  }
+}

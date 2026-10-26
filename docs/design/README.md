@@ -5,16 +5,32 @@ qualquer trabalho visual (landing, telas do app ou templates de site).
 
 ## O que tem aqui
 
-| Arquivo               | Para quê                                                                                                                                                                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `references.json`     | Registro estruturado de cada referência: links (Awwwards e site original), data, o que foi inspecionado de fato (`inspection`), `evidenceStatus`, `approved`, direções, para quem serve (`fits`), observações, princípios e o que **não** trazer. |
-| `studies/<id>.md`     | Estudos a fundo (observação × interpretação, com o método). `studies/access-log.md` registra cada tentativa de acesso, inclusive as falhas.                                                                                                       |
-| `principles.md`       | Lições práticas de composição, tipografia, mídia, demonstração e movimento.                                                                                                                                                                       |
-| `media.md`            | Auditoria das fotos: origem, licença, o que foi trocado e por quê.                                                                                                                                                                                |
-| `anti-patterns.md`    | Falhas de estrutura que já tivemos (sites "irmãos", demos em wireframe…) e o conserto.                                                                                                                                                            |
-| `copy-rules.md`       | Regras de texto sem "cara de IA" (da página da Wikipedia "Signs of AI writing"): valem para os sites-modelo, para o que a IA escreve (`prompt.ts`) e para a landing.                                                                              |
-| `generation-rules.md` | Como o gerador escolhe a direção de arte e as referências para uma descrição nova.                                                                                                                                                                |
-| `v4-direction.md`     | Direção da landing V4 (histórico).                                                                                                                                                                                                                |
+| Arquivo                             | Para quê                                                                                                                                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `references.json`                   | Registro estruturado de cada referência: links (Awwwards e site original), data, o que foi inspecionado de fato (`inspection`), `evidenceStatus`, `approved`, arquétipo, direções, para quem serve (`fits`), observações, princípios e o que **não** trazer. |
+| `studies/<id>.md`                   | Estudos a fundo (observação × interpretação, com o método). `studies/access-log.md` registra cada tentativa de acesso, inclusive as falhas.                                                                                                                  |
+| `archetypes.json` / `.md`           | Os 9 arquétipos (heritage-grandeur, service-direct...) e os 7 eixos de design (composição, tipografia, hierarquia, imagem, navegação, movimento, superfície).                                                                                                |
+| `selection.md` + `tools/select.mjs` | Como escolher a direção de um projeto novo: o seletor pontua referências e arquétipos e monta uma combinação de eixos evitando o que os últimos projetos usaram (`usage-log.json`).                                                                          |
+| `patterns.md`                       | Receitas de layout, narrativa, componentes e interação, cada uma com a fonte.                                                                                                                                                                                |
+| `typography-spacing.md`             | Números medidos nas referências (escala, entrelinha, espaçamento entre letras, medida) e as regras.                                                                                                                                                          |
+| `motion.md`                         | Os 5 temperamentos de movimento, receitas prontas e regras (reduzir movimento, modo leve).                                                                                                                                                                   |
+| `accessibility-performance.md`      | O piso de acessibilidade (WCAG 2.2 AA) e o orçamento de desempenho, com como conferir.                                                                                                                                                                       |
+| `review-rubric.md`                  | Rubrica de 13 critérios (0–4) para avaliar uma página antes de mostrar.                                                                                                                                                                                      |
+| `aurelia.md`                        | Estudo de caso do Aurelia Royal Estate (`/demos/aurelia-royal-estate`): 3 direções, decisões, validação, rubrica.                                                                                                                                            |
+| `principles.md`                     | Lições práticas de composição, tipografia, mídia, demonstração e movimento.                                                                                                                                                                                  |
+| `media.md`                          | Auditoria das fotos: origem, licença, o que foi trocado e por quê.                                                                                                                                                                                           |
+| `anti-patterns.md`                  | Falhas de estrutura que já tivemos (sites "irmãos", demos em wireframe…) e o conserto.                                                                                                                                                                       |
+| `copy-rules.md`                     | Regras de texto sem "cara de IA" (da página da Wikipedia "Signs of AI writing"): valem para os sites-modelo, para o que a IA escreve (`prompt.ts`) e para a landing.                                                                                         |
+| `generation-rules.md`               | Como o gerador escolhe a direção de arte e as referências para uma descrição nova.                                                                                                                                                                           |
+| `v4-direction.md`                   | Direção da landing V4 (histórico).                                                                                                                                                                                                                           |
+
+## Fluxo para um projeto desenhado à mão
+
+1. `selection.md`: rode `tools/select.mjs` com ramo, tons e objetivo.
+2. Leia os estudos das referências sugeridas, `patterns.md`, `typography-spacing.md` e `motion.md`.
+3. Escreva 3 direções, escolha 1 (exemplo: `aurelia.md`).
+4. Construa seguindo `accessibility-performance.md`.
+5. Avalie com `review-rubric.md` e grave o projeto no `usage-log.json` (`--record`).
 
 Regras visuais gerais e o checklist de "cara de IA": `.claude/skills/premium-web-design/`.
 
@@ -64,8 +80,21 @@ Depois de mudar composições, o planejador ou a biblioteca:
 - Regrave as capturas da landing (`apps/web/public/landing/wall` e `build`) a partir de
   `/examples/<slug>?embed=1`.
 
-## Estado da pesquisa (2026-10-14)
+## Estado da pesquisa (2026-10-26)
 
-A Awwwards não abriu deste ambiente (conexão recusada; ver `studies/access-log.md`). Os prêmios
-vêm só de resultados de busca; os sites originais foram inspecionados ao vivo. Faltam referências
-verificadas de salão/beleza, restaurante com cardápio e serviço doméstico dos EUA.
+24 referências, cada uma com um arquétipo (`archetypes.md`). A rodada de 2026-10-26
+acrescentou 14 sites premiados ou listados na Awwwards, em 6 direções:
+
+- luxo e hotelaria: royal-savoy, grand-hotel-miramare, castello-del-sole, velaa, era-estate;
+- editorial: explora-journal, joshuas-magazine, mosbys-files;
+- tipografia expressiva: mat-voyce, a-lign-studio;
+- layout experimental: floema;
+- orgânico: son-daven, kozowood (não aprovada: sem prêmio da Awwwards confirmado);
+- narrativa imersiva: oryzo-ai.
+
+A Awwwards continua inacessível deste ambiente (conexão recusada em todas as tentativas; ver
+`studies/access-log.md`). Os prêmios vêm de trechos de busca, páginas das agências e créditos
+no próprio site; cada registro diz qual (`awwwardsEvidence`). Os sites foram abertos ao vivo
+em 1440 e 390 px e com "reduzir movimento". Faltam: casas de joias/moda (Cartier e Bulgari
+bloquearam), hotéis atrás de Cloudflare (Badrutt's, Passalacqua, Le Sirenuse), e ainda
+salão/beleza, restaurante com cardápio e serviço doméstico dos EUA verificados.
