@@ -81,7 +81,75 @@ if (process.env.SEED === "1") {
     next.setUTCMonth(next.getUTCMonth() + 1, 1);
     const month = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
     await post("/api/social/plan", { month, postsPerWeek: 3 });
+    // Escritório: cliente, tabela de preços, equipe, serviço hoje, orçamento e fatura enviados.
+    const client = (
+      await post("/api/clients", {
+        name: "Daniel Brooks",
+        phone: "(508) 555-0123",
+        email: "daniel.brooks@example.com",
+        address: "42 Elm St, Worcester, MA",
+        stage: "contacted",
+      })
+    ).client;
+    await post("/api/office/price-items", { name: "Standard clean", unitPriceCents: 14000 });
+    await post("/api/office/price-items", {
+      name: "Move-out clean",
+      unitPriceCents: 32000,
+      unit: "each",
+    });
+    await post("/api/office/team", { name: "Ana Souza", role: "Cleaner", color: "teal" });
+    const extraPages = ["/schedule", "/estimates", "/invoices", "/office/settings"];
+    extraPages.push("/office/price-book", "/team", "/reviews");
+    if (client?.id) {
+      const start = new Date();
+      start.setUTCHours(18, 0, 0, 0);
+      const end = new Date(start.getTime() + 2 * 3600 * 1000);
+      const job = (
+        await post("/api/office/jobs", {
+          clientId: client.id,
+          title: "Move-out clean, 3 bedrooms",
+          startAt: start.toISOString(),
+          endAt: end.toISOString(),
+          valueCents: 32000,
+        })
+      ).job;
+      const lines = [
+        { priceItemId: null, name: "Move-out clean", quantity: 1, unitPriceCents: 32000 },
+        { priceItemId: null, name: "Inside oven", quantity: 1, unitPriceCents: 4500 },
+      ];
+      const estimate = (
+        await post("/api/office/estimates", {
+          clientId: client.id,
+          title: "Move-out clean",
+          items: lines,
+          taxRateBps: 625,
+        })
+      ).estimate;
+      const invoice = (
+        await post("/api/office/invoices", {
+          clientId: client.id,
+          title: "Weekly cleaning, October",
+          items: [
+            { priceItemId: null, name: "Standard clean", quantity: 4, unitPriceCents: 14000 },
+          ],
+        })
+      ).invoice;
+      if (job?.id) extraPages.push(`/schedule/${job.id}`);
+      if (estimate?.id) {
+        await post(`/api/office/estimates/${estimate.id}/send`, {});
+        extraPages.push(`/estimates/${estimate.id}`, `/q/${estimate.publicToken}`);
+      }
+      if (invoice?.id) {
+        await post(`/api/office/invoices/${invoice.id}/send`, {});
+        await post(`/api/office/invoices/${invoice.id}/payments`, {
+          amountCents: 28000,
+          method: "zelle",
+        });
+        extraPages.push(`/invoices/${invoice.id}`, `/i/${invoice.publicToken}`);
+      }
+    }
     PAGES.push(
+      ...extraPages,
       `/sites/${id}`,
       `/sites/${id}/edit`,
       "/clients",
