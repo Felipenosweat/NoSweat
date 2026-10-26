@@ -52,12 +52,17 @@ function parseDays(input: string): number | undefined {
   return /^\d{1,3}$/.test(clean) ? Number(clean) : undefined;
 }
 
+// Prazos comuns da fatura. "Other" abre o campo de dias (o padrão do servidor é 14).
 const DUE_PRESETS = [
   { days: 0, label: "On receipt" },
   { days: 7, label: "7 days" },
-  { days: 15, label: "15 days" },
+  { days: 14, label: "14 days" },
   { days: 30, label: "30 days" },
 ] as const;
+
+function isDuePreset(value: string): boolean {
+  return DUE_PRESETS.some((preset) => String(preset.days) === value.trim());
+}
 
 /** Rótulo + campo + erro (ou dica). Fora do formulário para o campo não ser recriado a cada tecla. */
 function Field({
@@ -108,6 +113,10 @@ export function SettingsForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<OfficeApiError | null>(null);
   const [notice, setNotice] = useState("");
+  // "Other" escolhido no prazo da fatura (o campo de dias aparece).
+  const [dueOther, setDueOther] = useState(false);
+  // Valor salvo fora dos prazos comuns (ex.: 45) também mostra o campo.
+  const showDueDays = dueOther || !isDuePreset(values.invoiceDueDays);
 
   const dirty = JSON.stringify(values) !== JSON.stringify(saved);
   useUnsavedWarning(!readOnly && dirty);
@@ -343,38 +352,63 @@ export function SettingsForm({
                   <GlassButton
                     key={preset.days}
                     variant="secondary"
-                    aria-pressed={values.invoiceDueDays === String(preset.days)}
-                    onClick={() => set("invoiceDueDays", String(preset.days))}
+                    aria-pressed={
+                      !showDueDays && values.invoiceDueDays.trim() === String(preset.days)
+                    }
+                    onClick={() => {
+                      setDueOther(false);
+                      set("invoiceDueDays", String(preset.days));
+                    }}
                     className="aria-pressed:bg-ink aria-pressed:text-white"
                   >
                     {preset.label}
                   </GlassButton>
                 ))}
-                <label htmlFor={`${ids}-invoiceDueDays`} className="sr-only">
-                  Days until due
-                </label>
-                <div className="relative w-32">
-                  <input
-                    id={`${ids}-invoiceDueDays`}
-                    inputMode="numeric"
-                    value={values.invoiceDueDays}
-                    onChange={(event) => set("invoiceDueDays", event.target.value)}
-                    autoComplete="off"
-                    className={`${fieldClass} h-11 pr-14 tabular-nums`}
-                    {...errorProps("invoiceDueDays")}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
-                  >
-                    days
-                  </span>
-                </div>
+                <GlassButton
+                  variant="secondary"
+                  aria-pressed={showDueDays}
+                  onClick={() => {
+                    setDueOther(true);
+                    // Depois de desenhar o campo de dias.
+                    window.requestAnimationFrame(() => {
+                      document.getElementById(`${ids}-invoiceDueDays`)?.focus();
+                    });
+                  }}
+                  className="aria-pressed:bg-ink aria-pressed:text-white"
+                >
+                  Other
+                </GlassButton>
+                {showDueDays && (
+                  <>
+                    <label htmlFor={`${ids}-invoiceDueDays`} className="sr-only">
+                      Days until due
+                    </label>
+                    <div className="relative w-32">
+                      <input
+                        id={`${ids}-invoiceDueDays`}
+                        inputMode="numeric"
+                        value={values.invoiceDueDays}
+                        onChange={(event) => set("invoiceDueDays", event.target.value)}
+                        autoComplete="off"
+                        className={`${fieldClass} h-11 pr-14 tabular-nums`}
+                        {...errorProps("invoiceDueDays")}
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                      >
+                        days
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
               {errors.invoiceDueDays ? (
                 errorText("invoiceDueDays")
               ) : (
-                <p className={hintClass}>0 means due when they get it.</p>
+                <p className={hintClass}>
+                  When you send an invoice, it&rsquo;s due this many days later.
+                </p>
               )}
             </fieldset>
           </div>

@@ -3,10 +3,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/DashboardUi";
-import { GlassButton } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import { getOfficeSettings } from "@/server/office/service";
-import { OfficeTabs, UserIcon } from "../_ui/ui";
+import { OfficeTabs } from "../_ui/ui";
 import { SettingsForm } from "./SettingsForm";
 
 export const metadata: Metadata = { title: "Business settings", robots: { index: false } };
@@ -27,15 +26,11 @@ export default async function OfficeSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl">
+    // Mesma largura das outras abas do escritório (Price book, Team). O Team fica nas abas.
+    <div className="max-w-3xl">
       <PageHeader
         title="Business settings"
         description="How your estimates and invoices look, and the defaults for new ones."
-        actions={
-          <GlassButton href="/team" variant="secondary" icon={<UserIcon />}>
-            Team
-          </GlassButton>
-        }
       />
       <div className="mt-6 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         <OfficeTabs current="settings" />

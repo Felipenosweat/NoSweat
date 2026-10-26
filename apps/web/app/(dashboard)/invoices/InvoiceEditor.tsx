@@ -514,12 +514,44 @@ export function InvoiceEditor({
             )}
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-message`}>
-            <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
-            {detailsEditable ? (
-              <>
-                <label htmlFor={`${ids}-message-field`} className="sr-only">
-                  Message to customer
+          {detailsEditable ? (
+            <MoreOptions
+              id={`${ids}-more`}
+              open={moreOpen}
+              onToggle={() => setMoreOpen((open) => !open)}
+              summary={optionsSummary({
+                kind: "invoice",
+                title: form.title,
+                message: form.message,
+                date: form.date,
+                today,
+              })}
+            >
+              <div>
+                <label htmlFor={`${ids}-title`} className={labelClass}>
+                  Title <span className="font-normal text-slate-500">(optional)</span>
+                </label>
+                <input
+                  id={`${ids}-title`}
+                  value={form.title}
+                  onChange={(event) => update({ title: event.target.value })}
+                  placeholder="Water heater install"
+                  maxLength={160}
+                  autoComplete="off"
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-invalid={problems?.title ? true : undefined}
+                  aria-describedby={problems?.title ? `${ids}-title-error` : undefined}
+                />
+                {problems?.title && (
+                  <p id={`${ids}-title-error`} className={fieldErrorClass}>
+                    {problems.title}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor={`${ids}-message-field`} className={labelClass}>
+                  Message to customer <span className="font-normal text-slate-500">(optional)</span>
                 </label>
                 <textarea
                   id={`${ids}-message-field`}
@@ -528,13 +560,22 @@ export function InvoiceEditor({
                   rows={3}
                   maxLength={4000}
                   placeholder="Thanks for your business!"
-                  className={`${fieldClass} resize-y py-2.5 leading-[1.55]`}
+                  className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
                   aria-invalid={problems?.message ? true : undefined}
-                  aria-describedby={`${ids}-message-hint`}
+                  aria-describedby={
+                    problems?.message
+                      ? `${ids}-message-error`
+                      : missingPaymentInstructions
+                        ? undefined
+                        : `${ids}-message-hint`
+                  }
                 />
                 {problems?.message ? (
-                  <p className={fieldErrorClass}>{problems.message}</p>
-                ) : (
+                  <p id={`${ids}-message-error`} className={fieldErrorClass}>
+                    {problems.message}
+                  </p>
+                ) : missingPaymentInstructions ? null : (
+                  // Só promete "como pagar" no rodapé se o dono escreveu as instruções.
                   <p id={`${ids}-message-hint`} className={hintClass}>
                     Your payment instructions from{" "}
                     <Link
@@ -546,15 +587,36 @@ export function InvoiceEditor({
                     show at the bottom.
                   </p>
                 )}
-              </>
-            ) : (
+              </div>
+
+              <div>
+                <label htmlFor={`${ids}-date`} className={labelClass}>
+                  Due date
+                </label>
+                <input
+                  id={`${ids}-date`}
+                  type="date"
+                  value={form.date}
+                  onChange={(event) => update({ date: event.target.value })}
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-describedby={`${ids}-date-hint`}
+                />
+                <p id={`${ids}-date-hint`} className={hintClass}>
+                  {form.date ? "After this date it shows as overdue." : "Due on receipt."}
+                </p>
+              </div>
+            </MoreOptions>
+          ) : (
+            <GlassCard as="section" aria-labelledby={`${ids}-message`}>
+              <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
               <p className="text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
                 {doc?.message || <span className="text-slate-500">No message.</span>}
               </p>
-            )}
-          </GlassCard>
+            </GlassCard>
+          )}
 
-          {doc && (
+          {/* Rascunho sem pagamento: ainda não há o que listar. */}
+          {doc && (status !== "draft" || doc.payments.length > 0) && (
             <GlassCard as="section" aria-labelledby={`${ids}-payments`}>
               <CardHeading id={`${ids}-payments`}>Payments</CardHeading>
               <PaymentsList
@@ -569,7 +631,8 @@ export function InvoiceEditor({
 
         {/* ---------- lateral: situação, totais e vencimento ---------- */}
         <div className="grid min-w-0 gap-4 lg:sticky lg:top-6">
-          <InvoiceStatusCard invoice={doc} today={today} />
+          {/* No rascunho, a frase "Only you see this…" fica na barra de baixo. */}
+          {!draftBar && <InvoiceStatusCard invoice={doc} today={today} />}
 
           <GlassCard as="section" aria-labelledby={`${ids}-totals`}>
             <CardHeading id={`${ids}-totals`}>Total</CardHeading>
@@ -600,42 +663,56 @@ export function InvoiceEditor({
             />
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-due`}>
-            <CardHeading id={`${ids}-due`}>Due date</CardHeading>
-            {detailsEditable ? (
-              <>
-                <label htmlFor={`${ids}-date`} className="sr-only">
-                  Due date
-                </label>
-                <input
-                  id={`${ids}-date`}
-                  type="date"
-                  value={form.date}
-                  onChange={(event) => update({ date: event.target.value })}
-                  className={`${fieldClass} h-11`}
-                />
-                <p className={hintClass}>
-                  {form.date ? "After this date it shows as overdue." : "Due on receipt."}
-                </p>
-              </>
-            ) : (
+          {detailsEditable &&
+            status !== "paid" &&
+            status !== "void" &&
+            missingPaymentInstructions && (
+              <p className="glass-edge rounded-2xl bg-amber-50/85 px-4 py-3 text-[13px] leading-5 text-amber-900">
+                Your customer won&rsquo;t see how to pay.{" "}
+                <Link
+                  href="/office/settings"
+                  className={`font-semibold underline underline-offset-4 hover:no-underline ${focusRing}`}
+                >
+                  Add payment instructions in Business settings
+                </Link>
+                .
+              </p>
+            )}
+
+          {!detailsEditable && (
+            <GlassCard as="section" aria-labelledby={`${ids}-due`}>
+              <CardHeading id={`${ids}-due`}>Due date</CardHeading>
               <p className="text-[15px] text-ink">
                 {doc?.dueOn ? formatDateOnly(doc.dueOn, today) : "Due on receipt"}
               </p>
-            )}
-          </GlassCard>
+            </GlassCard>
+          )}
         </div>
       </div>
 
-      {detailsEditable && (
-        <SaveBar
-          show={doc ? dirty : true}
-          saving={busy !== null}
-          onSave={() => void onSave()}
-          onDiscard={doc ? discard : undefined}
-          label={doc ? "Save" : "Save draft"}
-          message={doc ? "Unsaved changes" : "New invoice, not saved yet"}
+      {draftBar ? (
+        <DraftBar
+          sendLabel="Send invoice"
+          onSend={() => void onSend()}
+          sending={busy === "send"}
+          onSave={!doc || dirty ? () => void onSave() : undefined}
+          saving={busy === "save"}
+          onDiscard={doc && dirty ? discard : undefined}
+          busy={busy !== null}
+          message={doc && dirty ? "Unsaved changes" : undefined}
+          warning={priceWarning}
         />
+      ) : (
+        detailsEditable && (
+          <SaveBar
+            show={dirty}
+            saving={busy !== null}
+            onSave={() => void onSave()}
+            onDiscard={discard}
+            label="Save"
+            message="Unsaved changes"
+          />
+        )
       )}
 
       {/* Só na impressão / PDF: o mesmo papel do link público. */}
@@ -691,6 +768,7 @@ export function InvoiceEditor({
           companyName={company.companyName}
           client={sendTarget}
           totalCents={Math.max(0, doc.balanceCents)}
+          missingPaymentInstructions={missingPaymentInstructions}
         />
       )}
 
@@ -711,15 +789,8 @@ export function InvoiceEditor({
 
 /** Onde a fatura está e o que acontece agora. */
 function InvoiceStatusCard({ invoice, today }: { invoice: Invoice | null; today: string }) {
-  if (!invoice) {
-    return (
-      <GlassCard padding="sm">
-        <p className="text-[15px] leading-[1.6] text-slate-600">
-          Only you can see this until you send it.
-        </p>
-      </GlassCard>
-    );
-  }
+  // Sem fatura salva, não há o que contar (a barra de baixo já diz "Only you see this…").
+  if (!invoice) return null;
   const status = invoice.status;
   const tone =
     status === "paid"
