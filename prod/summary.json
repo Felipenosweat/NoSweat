@@ -1,0 +1,671 @@
+[
+  {
+    "name": "landing",
+    "url": "https://www.nosweatfd.com/",
+    "formFactor": "mobile",
+    "score": 94,
+    "lcpMs": 2844,
+    "fcpMs": 1249,
+    "tbtMs": 160,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 895,
+    "jsKb": 160,
+    "lcpElement": "<img alt=\"Home page of Still Water Spa, an example site made with No Sweat: a full-w…\" loading=\"eager\" fetchpriority=\"high\" width=\"640\" height=\"1385\" decoding=\"async\" style=\"color:transparent\" sizes=\"300px\" src=\"https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fstill-w…\" class=\"block aspect-[9/14] h-auto w-full object-cover object-top sm:aspect-[8/5]\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fgreenline-landscaping-m.webp&w=640&q=75",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fsunrise-bakery-m.webp&w=640&q=75",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-m.webp&w=640&q=75",
+        "kb": 36
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fgreenline-landscaping-m.webp&w=384&q=75",
+        "kb": 30
+      }
+    ]
+  },
+  {
+    "name": "landing",
+    "url": "https://www.nosweatfd.com/",
+    "formFactor": "desktop",
+    "score": 73,
+    "lcpMs": 4692,
+    "fcpMs": 1381,
+    "tbtMs": 24,
+    "cls": 0.019,
+    "ttfbMs": 20,
+    "totalKb": 1050,
+    "jsKb": 160,
+    "lcpElement": "<span style=\"--i:1\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "modern-image-formats",
+        "savingsMs": 760
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 1060
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1656570788675-1de3a58747e6?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8c3BhJTIwbWFzc2FnZSUyMHN0b25lcyUyMHRvd2VscyUyMGNhbG18ZW58MXwwfHx8MTc5Mjk2MjQ5Nnww&ixlib=rb-4.1.0&w=1920&q=80&fm=jpg&fit=max",
+        "kb": 337
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-d.webp&w=1920&q=60",
+        "kb": 38
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Fsignature%2Fgreenline-landscaping-d.webp&w=750&q=75",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/",
+        "kb": 30
+      }
+    ]
+  },
+  {
+    "name": "pricing",
+    "url": "https://www.nosweatfd.com/pricing",
+    "formFactor": "mobile",
+    "score": 99,
+    "lcpMs": 1829,
+    "fcpMs": 1079,
+    "tbtMs": 10,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 360,
+    "jsKb": 165,
+    "lcpElement": "<p class=\"max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-spa…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/?_rsc=Ud-cYVT1r8haZmW9",
+        "kb": 13
+      }
+    ]
+  },
+  {
+    "name": "pricing",
+    "url": "https://www.nosweatfd.com/pricing",
+    "formFactor": "desktop",
+    "score": 87,
+    "lcpMs": 2206,
+    "fcpMs": 1079,
+    "tbtMs": 14,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 360,
+    "jsKb": 164,
+    "lcpElement": "<h1 id=\"pricing-title\" class=\"mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold trac…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/?_rsc=Ud-cYVT1r8haZmW9",
+        "kb": 13
+      }
+    ]
+  },
+  {
+    "name": "create",
+    "url": "https://www.nosweatfd.com/create",
+    "formFactor": "mobile",
+    "score": 100,
+    "lcpMs": 1390,
+    "fcpMs": 940,
+    "tbtMs": 22,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 430,
+    "jsKb": 239,
+    "opportunities": [],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/29__n38tl-odq.js",
+        "kb": 31
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0b-pxqee179sm.js",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "create",
+    "url": "https://www.nosweatfd.com/create",
+    "formFactor": "desktop",
+    "score": 87,
+    "lcpMs": 2231,
+    "fcpMs": 1076,
+    "tbtMs": 50,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 429,
+    "jsKb": 239,
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 110
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/29__n38tl-odq.js",
+        "kb": 31
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0b-pxqee179sm.js",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "formFactor": "mobile",
+    "score": 98,
+    "lcpMs": 2277,
+    "fcpMs": 1077,
+    "tbtMs": 14,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 691,
+    "jsKb": 206,
+    "lcpElement": "<p class=\"absolute bottom-8 left-5 opacity-70 @min-[40rem]:left-8 @5xl:left-16 text-…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1776802740593-ab7833cd813a?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MjJ8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 94
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1673712981976-93dccd7699d0?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTB8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 50
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582724120764-ebe4f88229f9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MjR8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/8056169c9d560660-s.2fl0vhx7oyatw.woff2",
+        "kb": 41
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1584774354932-62ceb99e6053?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8cGx1bWJpbmclMjBjb3BwZXIlMjBwaXBlc3xlbnwxfDB8fHwxNzkyOTYyNDkxfDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 39
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "formFactor": "desktop",
+    "score": 72,
+    "lcpMs": 4076,
+    "fcpMs": 1076,
+    "tbtMs": 55,
+    "cls": 0.031,
+    "ttfbMs": 20,
+    "totalKb": 682,
+    "jsKb": 206,
+    "lcpElement": "<span class=\"block\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 140
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 140
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1776802740593-ab7833cd813a?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MjJ8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1578697413954-043f88933241?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTR8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=1600&q=80&fit=max&auto=format",
+        "kb": 42
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/8056169c9d560660-s.2fl0vhx7oyatw.woff2",
+        "kb": 41
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1584774354932-62ceb99e6053?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8cGx1bWJpbmclMjBjb3BwZXIlMjBwaXBlc3xlbnwxfDB8fHwxNzkyOTYyNDkxfDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 39
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "https://www.nosweatfd.com/examples/glow-salon",
+    "formFactor": "mobile",
+    "score": 92,
+    "lcpMs": 3326,
+    "fcpMs": 1226,
+    "tbtMs": 17,
+    "cls": 0.021,
+    "ttfbMs": 22,
+    "totalKb": 620,
+    "jsKb": 206,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 40vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"absolute inset-0 size-full object-cover\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600948836587-02c1842c9140?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8N3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 44
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 44
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/4cf231d25563e07b-s.3uuun_-7zsf1g.woff2",
+        "kb": 30
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "https://www.nosweatfd.com/examples/glow-salon",
+    "formFactor": "desktop",
+    "score": 70,
+    "lcpMs": 3925,
+    "fcpMs": 1525,
+    "tbtMs": 31,
+    "cls": 0.033,
+    "ttfbMs": 20,
+    "totalKb": 645,
+    "jsKb": 206,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 40vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"absolute inset-0 size-full object-cover\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2q9d-6g_07bzq.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 44
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/4cf231d25563e07b-s.3uuun_-7zsf1g.woff2",
+        "kb": 30
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1qj23222xn-ih.css",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/05se11n2l54_4.js",
+        "kb": 28
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "formFactor": "mobile",
+    "score": 97,
+    "lcpMs": 2351,
+    "fcpMs": 1076,
+    "tbtMs": 15,
+    "cls": 0,
+    "ttfbMs": 21,
+    "totalKb": 940,
+    "jsKb": 206,
+    "lcpElement": "<p>",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1731090390538-d814c9925232?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTB8fG1leGljYW4lMjBmb29kJTIwdGFjb3MlMjB0b3J0aWxsYXN8ZW58MXwwfHx8MTc5Mjk2MjQ5NXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 117
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1591266123515-46149ea0b0a9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Nnx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 113
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 80
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706267701248-fbbeeb1f8c7c?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 80
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1558980837-d1a62611adac?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MjR8fG1leGljYW4lMjBmb29kJTIwdGFjb3MlMjB0b3J0aWxsYXN8ZW58MXwwfHx8MTc5Mjk2MjQ5NXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 49
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1731090389571-79158024b42a?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTV8fG1leGljYW4lMjBmb29kJTIwdGFjb3MlMjB0b3J0aWxsYXN8ZW58MXwwfHx8MTc5Mjk2MjQ5NXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 46
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "formFactor": "desktop",
+    "score": 65,
+    "lcpMs": 6648,
+    "fcpMs": 1528,
+    "tbtMs": 75,
+    "cls": 0.086,
+    "ttfbMs": 20,
+    "totalKb": 1297,
+    "jsKb": 206,
+    "lcpElement": "<span class=\"block\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 750
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1591266123515-46149ea0b0a9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Nnx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=1600&q=80&fit=max&auto=format",
+        "kb": 443
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 81
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706267701248-fbbeeb1f8c7c?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 80
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0kys96f742nhj.js",
+        "kb": 73
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1731090390538-d814c9925232?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTB8fG1leGljYW4lMjBmb29kJTIwdGFjb3MlMjB0b3J0aWxsYXN8ZW58MXwwfHx8MTc5Mjk2MjQ5NXww&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 53
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1591266123515-46149ea0b0a9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Nnx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 46
+      }
+    ]
+  }
+]

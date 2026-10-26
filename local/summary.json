@@ -1,0 +1,669 @@
+[
+  {
+    "name": "dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "formFactor": "mobile",
+    "score": 87,
+    "lcpMs": 3947,
+    "fcpMs": 1069,
+    "tbtMs": 79,
+    "cls": 0,
+    "ttfbMs": 113,
+    "totalKb": 463,
+    "jsKb": 229,
+    "lcpElement": "<h1 class=\"mt-1 font-display text-[2rem] leading-[1.15] font-bold tracking-[-0.022em]…\">",
+    "opportunities": [
+      {
+        "id": "server-response-time",
+        "savingsMs": 113
+      },
+      {
+        "id": "unused-javascript",
+        "savingsMs": 260
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 140
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-d.webp&w=750&q=75",
+        "kb": 17
+      }
+    ]
+  },
+  {
+    "name": "dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "formFactor": "desktop",
+    "score": 76,
+    "lcpMs": 4409,
+    "fcpMs": 1064,
+    "tbtMs": 64,
+    "cls": 0.001,
+    "ttfbMs": 12,
+    "totalKb": 488,
+    "jsKb": 243,
+    "lcpElement": "<img alt=\"Home page of Still Water Spa, an example site made with No Sweat.\" loading=\"lazy\" width=\"1600\" height=\"1000\" decoding=\"async\" data-nimg=\"1\" class=\"block h-auto w-full\" style=\"color:transparent\" sizes=\"(min-width: 1024px) 640px, 100vw\" srcset=\"/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-d.webp&amp;w=640&amp;q=7…\" src=\"http://localhost:3000/_next/image?url=%2Flanding%2Fsignature%2Fstill-water…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 140
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "schedule",
+    "url": "http://localhost:3000/schedule",
+    "formFactor": "mobile",
+    "score": 86,
+    "lcpMs": 4020,
+    "fcpMs": 1062,
+    "tbtMs": 119,
+    "cls": 0,
+    "ttfbMs": 30,
+    "totalKb": 450,
+    "jsKb": 237,
+    "lcpElement": "<p class=\"mt-2 max-w-[60ch] text-[15px] leading-[1.6] text-slate-500 lg:text-base\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "schedule",
+    "url": "http://localhost:3000/schedule",
+    "formFactor": "desktop",
+    "score": 80,
+    "lcpMs": 3274,
+    "fcpMs": 1063,
+    "tbtMs": 43,
+    "cls": 0,
+    "ttfbMs": 12,
+    "totalKb": 488,
+    "jsKb": 251,
+    "lcpElement": "<h1 class=\"min-w-0 break-words font-display text-[2rem] leading-[1.15] font-bold trac…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 440
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 240
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "clients",
+    "url": "http://localhost:3000/clients",
+    "formFactor": "mobile",
+    "score": 92,
+    "lcpMs": 3390,
+    "fcpMs": 1059,
+    "tbtMs": 18,
+    "cls": 0,
+    "ttfbMs": 10,
+    "totalKb": 433,
+    "jsKb": 229,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 290
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "clients",
+    "url": "http://localhost:3000/clients",
+    "formFactor": "desktop",
+    "score": 81,
+    "lcpMs": 3095,
+    "fcpMs": 1060,
+    "tbtMs": 25,
+    "cls": 0,
+    "ttfbMs": 8,
+    "totalKb": 460,
+    "jsKb": 242,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 380
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "estimates",
+    "url": "http://localhost:3000/estimates",
+    "formFactor": "mobile",
+    "score": 94,
+    "lcpMs": 3097,
+    "fcpMs": 1062,
+    "tbtMs": 15,
+    "cls": 0,
+    "ttfbMs": 9,
+    "totalKb": 438,
+    "jsKb": 228,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 450
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "estimates",
+    "url": "http://localhost:3000/estimates",
+    "formFactor": "desktop",
+    "score": 76,
+    "lcpMs": 4432,
+    "fcpMs": 1063,
+    "tbtMs": 41,
+    "cls": 0,
+    "ttfbMs": 6,
+    "totalKb": 466,
+    "jsKb": 241,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 160
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 160
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "invoices",
+    "url": "http://localhost:3000/invoices",
+    "formFactor": "mobile",
+    "score": 94,
+    "lcpMs": 3104,
+    "fcpMs": 1062,
+    "tbtMs": 27,
+    "cls": 0,
+    "ttfbMs": 7,
+    "totalKb": 438,
+    "jsKb": 228,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 450
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "invoices",
+    "url": "http://localhost:3000/invoices",
+    "formFactor": "desktop",
+    "score": 81,
+    "lcpMs": 3104,
+    "fcpMs": 1060,
+    "tbtMs": 20,
+    "cls": 0,
+    "ttfbMs": 7,
+    "totalKb": 463,
+    "jsKb": 241,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 290
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "social",
+    "url": "http://localhost:3000/social",
+    "formFactor": "mobile",
+    "score": 87,
+    "lcpMs": 3945,
+    "fcpMs": 1060,
+    "tbtMs": 66,
+    "cls": 0,
+    "ttfbMs": 17,
+    "totalKb": 447,
+    "jsKb": 235,
+    "lcpElement": "<p class=\"mt-4 text-[15px] leading-[1.6] text-slate-600\">",
+    "opportunities": [],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  },
+  {
+    "name": "social",
+    "url": "http://localhost:3000/social",
+    "formFactor": "desktop",
+    "score": 78,
+    "lcpMs": 3294,
+    "fcpMs": 1062,
+    "tbtMs": 122,
+    "cls": 0,
+    "ttfbMs": 11,
+    "totalKb": 461,
+    "jsKb": 235,
+    "lcpElement": "<p class=\"mt-2 max-w-[60ch] text-[15px] leading-[1.6] text-slate-500 lg:text-base\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 550
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3jgn8xmxp5jbw.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2bv632jj0y2zo.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/brand/icon.png",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/2xhc0q-b9e78b.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3-nqi1p8axieb.css",
+        "kb": 30
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ]
+  }
+]
