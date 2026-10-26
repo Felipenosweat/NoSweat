@@ -6,6 +6,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
+  // Verificação do Google Search Console (propriedade https://www.nosweatfd.com/). Não remover:
+  // sem a etiqueta o Google desfaz a verificação.
+  verification: { google: "hC43q6uBoSo4bys-HeeUACRbg69fg0djIf2_e3So30A" },
   title: {
     default: "No Sweat · Your website, no sweat.",
     template: "%s · No Sweat",
