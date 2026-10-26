@@ -46,14 +46,15 @@ export function PromptForm({
   /** Mostra os chips de exemplo que preenchem o campo. */
   examples?: boolean;
   caption?: string;
-  /** "dark": versão para fundo escuro (hero da landing): campo branco sólido e o placeholder
-   * se digitando. */
-  tone?: "light" | "dark";
+  /** "dark": versão para fundo escuro: campo branco sólido e o placeholder se digitando.
+   * "glass": landing V8, campo de vidro com texto branco e botão branco em pílula. */
+  tone?: "light" | "dark" | "glass";
 }) {
   const id = useId();
   const router = useRouter();
   const fieldRef = useRef<HTMLTextAreaElement>(null);
-  const dark = tone === "dark";
+  const glass = tone === "glass";
+  const dark = tone === "dark" || glass;
 
   // Placeholder que se digita (efeito "máquina de escrever"). Para quando o campo tem texto ou
   // foco, e não roda com prefers-reduced-motion. O placeholder fixo é o primeiro exemplo.
@@ -130,9 +131,11 @@ export function PromptForm({
         method="get"
         onSubmit={onSubmit}
         className={`rounded-2xl border p-2 transition-colors duration-150 focus-within:ring-4 ${
-          dark
-            ? "border-white bg-white focus-within:ring-white/40"
-            : "border-slate-300 bg-white focus-within:border-brand focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
+          glass
+            ? "lp-glass rounded-[1.5rem] focus-within:ring-white/25"
+            : dark
+              ? "border-white bg-white focus-within:ring-white/40"
+              : "border-slate-300 bg-white focus-within:border-brand focus-within:ring-brand/15 hover:border-slate-400 focus-within:hover:border-brand"
         }`}
       >
         <label htmlFor={`${id}-brief`} className="sr-only">
@@ -152,10 +155,19 @@ export function PromptForm({
           }}
           aria-describedby={`${id}-caption`}
           placeholder="Family-owned plumbing in Austin, TX…"
-          className="block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] text-ink placeholder:text-slate-500 focus:outline-none"
+          className={`block w-full resize-none bg-transparent px-3 py-2.5 text-base leading-[1.55] focus:outline-none ${
+            glass ? "text-white placeholder:text-white/60" : "text-ink placeholder:text-slate-500"
+          }`}
         />
         <div className="flex justify-end px-1 pb-1">
-          <button type="submit" className={`w-full sm:w-auto ${primaryButton}`}>
+          <button
+            type="submit"
+            className={`w-full sm:w-auto ${
+              glass
+                ? "inline-flex h-12 items-center justify-center rounded-full bg-white px-6 font-semibold text-ink transition-colors duration-150 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px"
+                : primaryButton
+            }`}
+          >
             Build my website
           </button>
         </div>
@@ -171,7 +183,9 @@ export function PromptForm({
               key={example.label}
               type="button"
               onClick={() => fill(example.text)}
-              className={`inline-flex h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${
+              className={`inline-flex h-11 items-center border px-3 text-sm font-medium transition-colors duration-150 active:translate-y-px ${
+                glass ? "rounded-full px-4" : "rounded-lg"
+              } ${
                 dark
                   ? "border-white/20 bg-ink/40 text-slate-100 backdrop-blur-sm hover:border-white/40 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   : `border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-ink ${focusRing}`
