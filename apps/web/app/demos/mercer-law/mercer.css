@@ -1,0 +1,320 @@
+/* Mercer Law (demonstração). Arquétipo broadsheet-editorial: papel de jornal, tinta quase preta
+   e um bloco de cor da marca (o vinho #6B2D2A que o dono escolheu no SiteSpec) no trilho
+   lateral, na faixa da citação e nos botões. Uma família só (Newsreader, com eixo óptico): o
+   tamanho e o peso fazem o papel das outras vozes. Contraste medido: tinta/papel 15,1:1;
+   cinza #5C554B/papel 6,4:1 (5,7:1 na faixa #E9E1D3); vinho/papel 8,9:1; papel/vinho 8,9:1;
+   #E2CCC3/vinho 6,7:1. O cinza-pedra #9C8F78 (2,75:1) só em fios, nunca em texto. */
+
+.mercer {
+  --m-paper: #f3eee4;
+  --m-paper-2: #e9e1d3;
+  --m-ink: #1c1915;
+  --m-muted: #5c554b;
+  --m-ox: #6b2d2a;
+  --m-ox-deep: #57211f;
+  --m-on-ox: #f3eee4;
+  --m-on-ox-muted: #e2ccc3;
+  --m-stone: #9c8f78;
+  --m-rule: rgb(28 25 21 / 0.16);
+  --m-rule-strong: rgb(28 25 21 / 0.55);
+  --m-rail: 15rem;
+  --m-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--m-paper);
+  color: var(--m-ink);
+  font-family: var(--font-m-serif), Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A página inteira é papel: o corpo da raiz também (barra de rolagem e overscroll). */
+html:has(.mercer),
+body:has(.mercer) {
+  background: #f3eee4;
+}
+
+.mercer ::selection {
+  background: rgb(107 45 42 / 0.22);
+}
+
+.mercer .m-serif {
+  font-family: var(--font-m-serif), Georgia, serif;
+}
+
+/* Títulos: corte de display (eixo óptico no máximo), apertados quando grandes. */
+.mercer .m-display {
+  font-variation-settings: "opsz" 72;
+  font-weight: 420;
+  letter-spacing: -0.022em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+/* Rótulos: caixa-alta pequena e espaçada, números alinhados (tabela de preços e datas). */
+.mercer .m-label {
+  font-family: var(--font-m-serif), Georgia, serif;
+  font-variation-settings: "opsz" 12;
+  font-weight: 560;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.mercer .m-num {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.mercer .m-prose p {
+  text-wrap: pretty;
+}
+
+.mercer .m-muted {
+  color: var(--m-muted);
+}
+
+/* Fios de jornal: o duplo do cabeçalho e o simples entre blocos. */
+.mercer .m-double-rule {
+  border-top: 3px double var(--m-ink);
+}
+
+.mercer .m-rule {
+  border-color: var(--m-rule);
+}
+
+/* Moldura de foto: fio fino e papel em volta, como uma foto colada na página. */
+.mercer .m-frame {
+  border: 1px solid var(--m-rule-strong);
+  padding: 6px;
+  background: var(--m-paper);
+}
+
+.mercer .m-frame img {
+  filter: saturate(0.82) contrast(1.02);
+}
+
+.mercer .m-caption {
+  color: var(--m-muted);
+}
+
+/* Links de texto: sublinhado fino que engrossa no hover. */
+.mercer .m-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-thickness 200ms;
+}
+
+.mercer .m-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Foco visível: vinho no papel, papel no vinho. */
+.mercer :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--m-ox);
+  outline-offset: 3px;
+}
+
+.mercer .m-on-ox :where(a, button, [tabindex]):focus-visible {
+  outline-color: var(--m-on-ox);
+}
+
+/* Botões: bloco vinho (ação principal) e contorno de tinta (secundária). Sem brilho. */
+.mercer .m-btn {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 1.4rem;
+  font-variation-settings: "opsz" 14;
+  font-weight: 560;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  transition:
+    background-color 250ms var(--m-ease),
+    color 250ms var(--m-ease);
+}
+
+.mercer .m-btn-ox {
+  background: var(--m-ox);
+  color: var(--m-on-ox);
+}
+
+.mercer .m-btn-ox:hover {
+  background: var(--m-ox-deep);
+}
+
+.mercer .m-btn-paper {
+  background: var(--m-on-ox);
+  color: var(--m-ox);
+}
+
+.mercer .m-btn-paper:hover {
+  background: #fff;
+}
+
+.mercer .m-btn-line {
+  border: 1px solid var(--m-ink);
+  color: var(--m-ink);
+}
+
+.mercer .m-btn-line:hover {
+  background: var(--m-ink);
+  color: var(--m-paper);
+}
+
+/* Índice de serviços: pontilhado entre o nome e o preço, como um sumário de livro. */
+.mercer .m-leader {
+  flex: 1 1 1.5rem;
+  min-width: 1.5rem;
+  align-self: flex-end;
+  margin: 0 0.5rem 0.35em;
+  border-bottom: 1px dotted var(--m-stone);
+}
+
+.mercer .m-index-row {
+  transition: color 200ms;
+}
+
+.mercer .m-index-row[aria-expanded="true"] {
+  color: var(--m-ox);
+}
+
+.mercer .m-index-row::before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  width: 3px;
+  background: var(--m-ox);
+  transform: scaleY(0);
+  transition: transform 300ms var(--m-ease);
+}
+
+.mercer .m-index-row[aria-expanded="true"]::before {
+  transform: scaleY(1);
+}
+
+.mercer .m-index-row:hover .m-index-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* Troca da ficha do serviço: aparece e sobe 12 px (temperamento quieto). */
+.mercer .m-swap {
+  animation: m-swap 450ms var(--m-ease) both;
+}
+
+@keyframes m-swap {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Passos da consulta: o passo que entra aparece do mesmo jeito. */
+.mercer .m-step {
+  animation: m-swap 400ms var(--m-ease) both;
+}
+
+/* Perguntas: o "+" vira "−" ao abrir. */
+.mercer details > summary {
+  list-style: none;
+}
+
+.mercer details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mercer .m-plus {
+  transition: transform 300ms var(--m-ease);
+}
+
+.mercer details[open] .m-plus {
+  transform: rotate(45deg);
+}
+
+/* Opções do formulário (rádios grandes): a escolhida ganha o fio vinho à esquerda. */
+.mercer .m-option {
+  transition:
+    border-color 200ms,
+    background-color 200ms;
+}
+
+.mercer .m-option:has(input:checked) {
+  border-color: var(--m-ox);
+  background: rgb(107 45 42 / 0.05);
+  box-shadow: inset 3px 0 0 var(--m-ox);
+}
+
+.mercer .m-option:has(input:focus-visible) {
+  outline: 2px solid var(--m-ox);
+  outline-offset: 2px;
+}
+
+.mercer .m-field {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  border: 0;
+  border-bottom: 1px solid var(--m-rule-strong);
+  background: transparent;
+  padding: 0.6rem 0;
+  font-size: 18px;
+  color: var(--m-ink);
+  border-radius: 0;
+}
+
+.mercer .m-field:focus {
+  border-bottom-color: var(--m-ox);
+}
+
+.mercer .m-field::placeholder {
+  color: var(--m-muted);
+}
+
+/* Trilho lateral (computador): o progresso da página corre num fio vertical. */
+.mercer .m-progress {
+  transform: scaleY(var(--m-p, 0));
+  transform-origin: top;
+}
+
+/* Menu do celular: folha vinho que desce; fechada, não recebe foco (inert). */
+.mercer .m-menu {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity 300ms var(--m-ease),
+    transform 300ms var(--m-ease),
+    visibility 0s 300ms;
+  visibility: hidden;
+}
+
+.mercer .m-menu[data-open] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 300ms var(--m-ease),
+    transform 300ms var(--m-ease);
+}
+
+/* Sem movimento pedido: nada anima, nada desliza. */
+@media (prefers-reduced-motion: reduce) {
+  .mercer .m-swap,
+  .mercer .m-step {
+    animation: none;
+  }
+
+  .mercer *,
+  .mercer *::before,
+  .mercer *::after {
+    transition-duration: 1ms !important;
+  }
+}

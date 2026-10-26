@@ -1,0 +1,148 @@
+[
+  {
+    "id": "alkemist-avocats",
+    "name": "Alkemist Avocats",
+    "awwwardsUrl": "https://www.awwwards.com/sites/alkemist-avocats",
+    "awwwardsEvidence": "WebSearch (extended) query '\"Alkemist Avocats\" awwwards honorable mention' returned the result title 'Alkemist Avocats - Awwwards Honorable Mention' at https://www.awwwards.com/sites/alkemist-avocats; the summary dated it 'Honorable Mention - Apr 29, 2021' with Antoine Peltier credited. Designer portfolio https://antoinepeltier.com/projets/alkemist-avocats-elise-fabing appears in the same results and, per the summary, lists 'Awwwards (mention Honorable)' as the project's prize (portfolio page not loaded). Award page not loaded (awwwards.com unreachable from this environment).",
+    "siteUrl": "https://www.alkemist-avocats.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot",
+      "booking-cta-click"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "service-direct",
+    "directions": ["service-led", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["law-firm", "attorney", "counselor", "accountant", "therapist"],
+      "tones": ["calm", "warm", "bold"],
+      "goals": ["consultation", "contact", "request-call"]
+    },
+    "observed": {
+      "layout": "Paris employment-law firm (employee side). Home (docH 3,333px desktop): deep navy hero with a large blue curve and a centred h1 'Découvrez un accompagnement juridique plus accessible, plus adapté et plus humain' (key words in yellow); two white service cards overlap the hero bottom ('Accompagnement des salariés', 'Lutte contre les violences au travail') with 'En savoir plus' links; a navy band 'Ils parlent de nous' with four press cards (book covers, magazine pages) and short captions; 'Nos ressources 10' carousel of guides with category tags; plain footer with address and phone as text. Nav: 'Nos services', 'L'équipe' and a yellow pill 'Premier rendez-vous' (first appointment). Contact page (/contact/): an intake that asks one thing at a time. First screen is only 'Comment pouvons-nous vous aider ?' with four pill choices ('Je souhaite un premier rendez-vous', 'Nous avons déjà échangé, aidez-moi', 'J'ai une autre question', 'J'aimerais postuler chez vous'), then situation (dismissed, negotiated exit, discrimination or harassment...), contract type, status, seniority, employer, name, email, phone, a short description, with a step counter '01/12' and 'Ou appuyez sur Entrée'.",
+      "typography": "Computed: one family, 'Fivo Sans Modern' (500 and regular loaded). h1 60/66px desktop, 36px mobile; h2 34/45.9px; card h3 18/25px −0.5px; body 18/27px. Logo is a custom wordmark.",
+      "imagery": "Almost no photography of the firm: press covers and illustrated resource covers (flat illustration, duotone purple/yellow). Service cards use small line icons.",
+      "motion": "No GSAP, no Lenis, document.getAnimations() = 0 after load on the home page. Contact page has a 'site-loader' element and a 'confettis' element (not triggered). Reduced-motion run looked the same as the normal run.",
+      "interaction": "Sticky header with the yellow 'Premier rendez-vous' pill on desktop; on mobile a full-width yellow bar fixed at the bottom ('Premier rendez-vous →'). The intake is a form split into single questions (contact form 7 underneath, Turnstile).",
+      "responsive": "390px: hero h1 36px centred over navy, cards stack, the bottom yellow bar stays on screen on every scroll position. No horizontal overflow."
+    },
+    "whyItWorks": "A law firm that sounds like it is on the client's side: the promise is 'more accessible, more adapted, more human', the only call to action is the first appointment, and the intake asks one plain question at a time so a person in trouble never faces a long form.",
+    "principles": [
+      "One call to action for a law office, worded as the first step ('First appointment'), the same in the header, the cards and a bottom bar on mobile.",
+      "Start the request with 'How can we help?' and a few plain choices, then one question per screen with a step counter.",
+      "Plain-language promise in the headline; the law appears through the client's situations (dismissed, harassment), not through Latin or marble."
+    ],
+    "doNotCarryOver": [
+      "Phone number on the home page only as plain text in the footer (no tel: link).",
+      "A 12-step intake that asks for employer name and seniority before a first meeting; for a demo or a small firm, three steps and no case details.",
+      "Saturated navy, electric blue and yellow palette for a family-law office; the confetti on submit.",
+      "Their wordmark, illustrations and the Fivo Sans typeface."
+    ],
+    "study": "studies/alkemist-avocats.md"
+  },
+  {
+    "id": "imk-avocats",
+    "name": "IMK Avocats",
+    "awwwardsUrl": "https://www.awwwards.com/sites/imk-avocats",
+    "awwwardsEvidence": "WebSearch (extended) query 'IMK Avocats awwwards honorable mention 2026 OR Ontier awwwards honorable mention' returned 'IMK Avocats - Awwwards Honorable Mention' at https://www.awwwards.com/sites/imk-avocats; the summary said the page lists 'Honorable Mention - Mar 5, 2026' and describes 'a boutique law firm that specializes in litigation and dispute resolution'. The agency page https://fatfish.ca/en/projects/imk-avocats (in the results) lists the Awwwards Honorable Mention and a CSS Design Awards Special Kudos, per the summary. The live footer says 'Powered by fatfish' (consistent). Award page not loaded.",
+    "siteUrl": "https://imk.ca/en/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "broadsheet-editorial",
+    "directions": ["editorial", "service-led"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["law-firm", "attorney", "accountant", "consultant", "architect"],
+      "tones": ["calm", "refined", "premium"],
+      "goals": ["consultation", "contact", "browse"]
+    },
+    "observed": {
+      "layout": "Montréal litigation boutique. Hero: dark full-width video band, a short white note at left ('Behind the letters IMK you will find a boutique law firm that specializes in litigation and dispute resolution', 15.5px in a 190px column) and the h1 'Get us thinking for you.' with a teal full stop, round down-arrow at right. Then a one-paragraph intro (20/28px in 645px) with 'Learn more'; 'A team of 30 seasoned lawyers' with a staggered grid of studio portraits on grey, some tiles replaced by flat teal blocks; 'Areas of practice' with a counter '16' in a circle and the headline 'Some of our areas of expertise.', then a two-column index of 16 practice areas, each row an arrow + name with a hairline under it; 'Our latest news' cards with dates in teal; 'Build your career with us' with a candid office photo; footer of label/value columns (address, phone, fax, email).",
+      "typography": "Computed: Geist for everything (h1 93.3px desktop / 46.8px mobile; section h2 37.3/44.8px −1.12px; h3 and list items 17.1/22.2px; body 15.6/23.3px), plus RobotoSlab 300 loaded and Font Awesome icon fonts. Colour: ink #21272A on white/light grey, one accent teal.",
+      "imagery": "Uniform studio portraits on light grey, plus a few candid meeting photos; hero is a video (the first frame at 600ms showed the embedded player's 'Video unavailable' state).",
+      "motion": "GSAP and Lenis present (window.gsap true, html class 'lenis'); one CSS animation running after load. Which elements GSAP animates was not traced. The reduced-motion capture of the hero showed the same layout; whether scroll effects stop under reduced motion was not verified.",
+      "interaction": "'Areas of practice' is also a dropdown in the header; each index row links to its practice page. Cookie banner fixed at bottom-right on desktop and as a large bottom sheet on mobile.",
+      "responsive": "390px: h1 46.8px over the dark band, the practice index becomes one column of large rows with arrows, portraits two per row. No horizontal overflow. The cookie sheet covers about 40% of the first mobile screen."
+    },
+    "whyItWorks": "The practice areas are treated as an index, the most useful thing a law-firm home page can show: one column of names with hairlines and arrows, a count above it, nothing decorative in between. Restraint in type (one grotesk, one accent) makes the firm feel careful.",
+    "principles": [
+      "Show the practice areas as an index (number or arrow, name, hairline), not as cards with icons.",
+      "Put a count or number beside the index heading so the list feels finite and complete.",
+      "One accent colour used only for small signals (a full stop, a date, a counter)."
+    ],
+    "doNotCarryOver": [
+      "Focus not visible: the fifth Tab stop left focus on the document body in our run.",
+      "tel: links written as 'tel:514935-4460' (no country code).",
+      "Cookie bottom sheet covering the first mobile screen; hero video with an embedded third-party player.",
+      "A wall of 30 identical studio portraits (a two-person office has nothing like it, and stock people must never stand in for real staff).",
+      "Geist/IMK branding and photography."
+    ],
+    "study": "studies/imk-avocats.md"
+  },
+  {
+    "id": "ario-law-firm",
+    "name": "Ario Law Firm",
+    "awwwardsUrl": "https://www.awwwards.com/sites/ario-law-firm",
+    "awwwardsEvidence": "WebSearch (extended) query 'Ario Law Firm awwwards honorable mention website ario' returned 'Ario Law Firm - Awwwards Honorable Mention' at https://www.awwwards.com/sites/ario-law-firm; the summary said 'Honorable Mention, dated May 25, 2026', described it as 'the corporate website of a forward-thinking and bold law firm from Ukraine' and credited Ira Gritsay, Igor Veremsky and Anna Tashkinova; an Awwwards winners listing in the same results repeats 'HM Honorable Mention May 25, 2026'. The firm's own About page (in results) says the new website 'has already received international recognition'. Award page not loaded.",
+    "siteUrl": "https://ario.law/en/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": false,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "immersive"],
+    "useFor": ["marketing-site"],
+    "fits": {
+      "businesses": ["law-firm", "consultancy", "agency"],
+      "tones": ["bold"],
+      "goals": ["brand-story", "contact"]
+    },
+    "observed": {
+      "layout": "Kyiv corporate law firm. Black page: wordmark 'ARIO / 10 YEARS' and a small nav (About Us, Practices, Team, Press Center, Contacts, En/Укр); a giant 'ARIO' at bottom-left with a bold manifesto at right ('We enjoy the law, adore the drive, crisis situations motivate and changes inspire us...'). Then 'About us' / 'Rock the Future with the Rule of Law', white numeric cards '10+' and '25+' with crosshair rules, practice areas as 3D cubes that rotate as you scroll (white face '01 LITIGATION' with a small 'Head of Practice | Team' table, photo faces), a 'MORE+' card with a blue gradient, word-by-word statements on white ('love the law', 'and never stop', 'take action') with tilted press photos, partner grid in black-and-white, 'Recognition' rows (year + ranking + '+'), Press Center cards on grey, a blue gradient footer with a giant 'ARIO LAW'.",
+      "typography": "Computed: one family 'ario-sans' (700 and 400 loaded). Headlines tight: section h3 32/35.2px −1.6px uppercase; 'Have any questions?' 62/68.2px −3.1px; body 18/21.6px −0.72px (line-height 1.2 for running text). The h1 computed 32px on desktop and 18px on mobile, so the giant 'ARIO' is not the h1.",
+      "imagery": "Black-and-white partner portraits and press photos, some tilted like prints; colour only in a blue gradient.",
+      "motion": "No GSAP or Lenis detected; 3D CSS cubes rotate with scroll, statements appear word by word. The reduced-motion run still showed a cube in a rotated 3D state (whether the scroll rotation stops was not verified).",
+      "interaction": "Practice cubes are the practice index; 'MORE+' opens the rest. Footer has accordions on mobile (Social, Languages, Contacts).",
+      "responsive": "390px: 'ARIO' at full width, manifesto under it, cubes become single white cards, partners two per row. No horizontal overflow. The cookie bar covers the bottom of every screen."
+    },
+    "whyItWorks": "It proves a law firm can carry a strong voice in type alone: one grotesk, extreme weight and size contrast, numbers on white cards with drafting crosshairs, and a manifesto the partners clearly wrote themselves.",
+    "principles": [
+      "A fact table inside the practice card ('Head of Practice | Team') reads as a ledger and keeps a bold layout grounded.",
+      "Drafting marks (crosshairs, hairline tables) can be the ornament of a legal site instead of scales or columns."
+    ],
+    "doNotCarryOver": [
+      "All 27 images without an alt attribute; body text at line-height 1.2.",
+      "About 28-35 MB transferred on a home page visit (mobile and reduced-motion runs).",
+      "3D cubes and word-by-word statements for a family-law office: the tone is wrong for people going through a divorce or a death.",
+      "Claims of rankings and recognition (our fictional firm has none, and rule 8 forbids inventing them).",
+      "The 'freaking awesome lawyers' register."
+    ],
+    "study": "studies/ario-law-firm.md"
+  }
+]
