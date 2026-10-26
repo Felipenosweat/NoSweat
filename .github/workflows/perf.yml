@@ -1,0 +1,68 @@
+name: Performance
+
+# Mede a velocidade (Lighthouse, celular e computador) das páginas públicas no ar e das telas de
+# dentro da conta no app local (sem banco, DEV_USER). Roda quando qa/trigger-perf.txt muda; o
+# resumo (summary.json) vai para a ref refs/qa/perf, fora da branch.
+on:
+  push:
+    branches: ["claude/dreamy-maxwell-19fv98"]
+    paths: ["qa/trigger-perf.txt"]
+
+permissions:
+  contents: write
+
+jobs:
+  perf:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      AI_PROVIDER: mock
+      DEV_ADMIN: "true"
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @nosweat/web build
+      - name: Start app
+        run: |
+          (cd apps/web && nohup pnpm start -p 3000 > /tmp/next.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 2; done
+      # Fora do monorepo (pnpm): Lighthouse numa pasta à parte, com o Chrome do runner.
+      - name: Install Lighthouse
+        run: |
+          mkdir -p /tmp/perf && cp qa/perf.mjs /tmp/perf/
+          cd /tmp/perf && npm init -y >/dev/null && npm pkg set type=module && npm install lighthouse@12.8.2 chrome-launcher@1.2.0
+      - name: Production pages
+        run: |
+          cd /tmp/perf && CHROME_PATH=$(which google-chrome) OUT_DIR="$GITHUB_WORKSPACE/qa/out-perf/prod" TARGETS='[
+            {"name":"landing","url":"https://www.nosweatfd.com/"},
+            {"name":"pricing","url":"https://www.nosweatfd.com/pricing"},
+            {"name":"create","url":"https://www.nosweatfd.com/create"},
+            {"name":"example-plumbing","url":"https://www.nosweatfd.com/examples/joes-plumbing"},
+            {"name":"example-salon","url":"https://www.nosweatfd.com/examples/glow-salon"},
+            {"name":"example-restaurant","url":"https://www.nosweatfd.com/examples/rosas-kitchen"}
+          ]' node perf.mjs
+      - name: Logged-in pages (local app)
+        run: |
+          cd /tmp/perf && CHROME_PATH=$(which google-chrome) OUT_DIR="$GITHUB_WORKSPACE/qa/out-perf/local" TARGETS='[
+            {"name":"dashboard","url":"http://localhost:3000/dashboard"},
+            {"name":"schedule","url":"http://localhost:3000/schedule"},
+            {"name":"clients","url":"http://localhost:3000/clients"},
+            {"name":"estimates","url":"http://localhost:3000/estimates"},
+            {"name":"invoices","url":"http://localhost:3000/invoices"},
+            {"name":"social","url":"http://localhost:3000/social"}
+          ]' node perf.mjs
+      - name: Server log
+        if: always()
+        run: tail -n 40 /tmp/next.log || true
+      - name: Publish results to refs/qa/perf
+        if: always()
+        run: |
+          mkdir -p qa/out-perf && cd qa/out-perf
+          git init -q -b results && git add -A
+          git -c user.name="perf" -c user.email="perf@users.noreply.github.com" commit -qm "perf for ${GITHUB_SHA}" --allow-empty
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" results:refs/qa/perf
