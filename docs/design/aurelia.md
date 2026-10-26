@@ -60,6 +60,9 @@ romanos e os fatos em versalete; de C, os arcos.
   lightbox (abre, seta, Esc), validação e os 3 passos da reserva, menu do celular (Esc e foco).
 - `reducedMotion: "reduce"`: sem abertura, sem nada preso, galeria em rolagem nativa.
 - Modo leve (4 núcleos): sem efeitos ligados à rolagem.
+- Vídeo de demonstração (66 s, 30 fps) gravado quadro a quadro com relógio virtual no build
+  de produção: o primeiro, em tempo real, saiu travado e em modo leve (ver o fim de
+  `motion.md`).
 
 ## Rubrica (`review-rubric.md`)
 

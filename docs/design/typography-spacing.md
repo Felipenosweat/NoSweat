@@ -11,6 +11,11 @@ deles. Os estudos estão em `studies/`; os ids entre parênteses são de `refere
   sans para o texto (`explora-journal`).
 - **Duas famílias bastam, três no máximo.** JOSHUA'S usa 2, a-lign 1, Mat Voyce 1 variável.
   Disciplina é o que parece caro, não a quantidade de fontes.
+- **Três vozes nos hotéis de luxo:** display (script ou capitais de serif pesado) só em títulos
+  curtos; versalete de 12 px com +0,2em para rótulos; texto corrido simples
+  (grand-hotel-miramare, castello-del-sole, royal-savoy).
+- **Fino ou script só grande.** Uma palavra em itálico por título dá voz sem custo (velaa;
+  o Aurelia faz o mesmo: "Rooms with _a history_").
 - **Pares por arquétipo** (eixo `typeSystem`):
   - `heritage-grandeur`: Didone/Bodoni de alto contraste (itálico para o nome) + sans
     geométrico leve para rótulos (Aurelia: Bodoni Moda + Jost).
@@ -44,6 +49,9 @@ deles. Os estudos estão em `studies/`; os ids entre parênteses são de `refere
   Aurelia), nunca em texto que obriga a voltar para cima.
 
 ## Rótulos e números
+
+- **Fato em número, não adjetivo:** "5,9 m de pé-direito", "140 hectares" (era-estate,
+  castello-del-sole); no Aurelia, 48 / 212 / 1789.
 
 - **Rótulo sobre o título carrega fato, não adjetivo:** "THE DESTINATIONS • 7 MIN READ",
   "02 · FROM €1,450 A NIGHT". Escurecer o acento até 4,5:1 sobre fundo claro (o bronze da

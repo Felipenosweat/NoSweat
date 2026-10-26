@@ -38,7 +38,8 @@
       "Ignoring reduced motion.",
       "Their wordmark, blue, logo, photos."
     ],
-    "study": "studies/haven-constructions.md"
+    "study": "studies/haven-constructions.md",
+    "archetype": "service-direct"
   },
   {
     "id": "tandjung-sari",
@@ -79,7 +80,8 @@
       "Low-contrast small captions on cream.",
       "Their seal, photos, Balinese motifs."
     ],
-    "study": "studies/tandjung-sari.md"
+    "study": "studies/tandjung-sari.md",
+    "archetype": "warm-hospitality"
   },
   {
     "id": "kummerlein",
@@ -127,7 +129,8 @@
       "Text hidden behind pinned scroll steps.",
       "Their logo, lime/sage palette as-is, commercial fonts."
     ],
-    "study": "studies/kummerlein.md"
+    "study": "studies/kummerlein.md",
+    "archetype": "broadsheet-editorial"
   },
   {
     "id": "lpas",
@@ -173,7 +176,8 @@
       "Hero message only on a darkened full-bleed photo on small screens.",
       "Their colours, photos, logo, Aeonik."
     ],
-    "study": "studies/lpas.md"
+    "study": "studies/lpas.md",
+    "archetype": "service-direct"
   },
   {
     "id": "attio",
@@ -211,7 +215,8 @@
       "Overlays that cover the demo on mobile.",
       "Their UI, fonts or copy."
     ],
-    "study": "studies/attio.md"
+    "study": "studies/attio.md",
+    "archetype": "experimental-grid"
   },
   {
     "id": "animejs",
@@ -246,7 +251,8 @@
       "Dark techy aesthetic and heavy pinned sections — wrong for busy small-business owners.",
       "Scroll-scrubbed demos as the only way to see content."
     ],
-    "study": null
+    "study": null,
+    "archetype": "kinetic-type"
   },
   {
     "id": "cafe-binocle",
@@ -282,7 +288,8 @@
       "All-caps long paragraph (hard to read).",
       "Their illustrations and brand."
     ],
-    "study": null
+    "study": null,
+    "archetype": "warm-hospitality"
   },
   {
     "id": "campos-coffee",
@@ -311,7 +318,8 @@
     "whyItWorks": "Not assessable from this inspection; kept as a cautionary example.",
     "principles": ["Never stack a cookie banner and a marketing modal on first load."],
     "doNotCarryOver": ["Interstitial newsletter modal on first visit."],
-    "study": null
+    "study": null,
+    "archetype": "warm-hospitality"
   },
   {
     "id": "quay-restaurant",
@@ -340,7 +348,8 @@
     "whyItWorks": "Unknown; not inspected.",
     "principles": [],
     "doNotCarryOver": [],
-    "study": null
+    "study": null,
+    "archetype": "warm-hospitality"
   },
   {
     "id": "crav-burgers",
@@ -369,6 +378,1271 @@
     "whyItWorks": "Unknown; concept site, not a real business.",
     "principles": [],
     "doNotCarryOver": ["Concept-only: no real menu/hours/location constraints."],
-    "study": null
+    "study": null,
+    "archetype": "kinetic-type"
+  },
+  {
+    "id": "explora-journal",
+    "name": "The Explora Journal",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "WebSearch (extended) query 'awwwards Magazine / Newspaper / Blog 2026 site of the day honorable mention' returned the Awwwards category page https://www.awwwards.com/inspiration_search/magazine-newspaper-blog/ and the tool summary line: 'The Explora Journal received an Honorable Mention on September 12, 2026.' Query 'awwwards sites magazine \"Honorable Mention\" online magazine culture' also returned: 'The Awwwards category page for Magazine / Newspaper / Blog also lists more recent 2026 honorable mentions, such as The Explora Journal (Sep 12, 2026)'. A direct search for awwwards.com/sites/the-explora-journal found nothing; Awwwards not reachable, award page not loaded; no agency credit seen on the live page.",
+    "siteUrl": "https://explorajourneys.com/us/en/explora-journal",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["editorial", "immersive-photography", "warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": [
+        "hotel",
+        "bed-and-breakfast",
+        "resort",
+        "travel-agency",
+        "tour-operator",
+        "restaurant",
+        "spa",
+        "event-venue"
+      ],
+      "tones": ["refined", "calm", "premium", "warm"],
+      "goals": ["book", "call", "visit"]
+    },
+    "observed": {
+      "layout": "Journal index: h1 'The Explora Journal' + italic serif subtitle 'A Magazine by Explora Journeys', then a large lead-story photo (1360px wide) with a sand caption card overlapping its lower-left corner (category, title, 'Read Story'). Sticky category bar (All categories / The Destinations / The Journeys / The Ships / The Elements + sort + 2 grid-density toggles) replaces the main header after scrolling. Article cards in a staggered 2-up layout of unequal image sizes and vertical offsets on a 10-column grid with 96px side padding; periodically a full-bleed tinted band (sand, olive #DADABB) with text left and photo right. Article page: breadcrumb, wide hero photo, 600px text column at x=420 with serif h2s, asymmetric image pairs between text blocks, 'More Stories' strip of 6 cards, newsletter bar, large footer.",
+      "typography": "Computed + document.fonts: display 'WT Monarch Nova' 400 (h1 40px desktop / 36px mobile on index; 40px/28px on article); headings and card titles 'Sangbleu' (file SangBleuRepublic-Regular/Italic) 20/28px, article h2 28/39.2px; body/UI 'Shapiro' 15/26px index, 18/25.2px article (~60-67 characters per line in a 600px column); kickers Shapiro 11px uppercase, letter-spacing ~1.3px (0.12em), bronze #866D4B, format 'THE DESTINATIONS • 7 MIN READ'. Italic Sangbleu for subtitle and the footer line 'Maybe the best hotel isn't a hotel'.",
+      "imagery": "Commissioned-looking travel photography: aerial ship deck, coves, markets, cooks, artisans, portraits of named people; restrained warm grading; black-and-white portrait used inside a tinted band.",
+      "interaction": "Main header hides on scroll down while the category bar sticks; no scroll animations detected (document.getAnimations() = 0, no GSAP/Lenis/canvas). Reduced-motion emulation produced identical screenshots. Hover on a card not visibly different in the screenshot.",
+      "responsive": "Mobile: hamburger + centered logo + account + phone icon (tel:+18339251567); h1 36px; single-column cards, 20px serif titles, 15px body; category bar becomes a horizontal scroller; footer groups become accordions. No horizontal overflow (scrollWidth 390)."
+    },
+    "whyItWorks": "It reads as a printed travel magazine because hierarchy comes from three distinct voices (display, serif headline, quiet sans) and generous, uneven white space, while the booking path (Reserve, phone) stays present but sober. Brand content becomes proof without hype.",
+    "principles": [
+      "Three type voices: display name, serif headlines, neutral sans body; small bronze uppercase kickers.",
+      "Long-form at 18px in a ~600px column (60-70 characters per line).",
+      "Stagger content cards in two columns with unequal image sizes instead of a uniform grid.",
+      "Break long lists with a full-bleed tinted band every 4-6 items.",
+      "Keep 'Reserve' and the phone number in the header, sober colour, always reachable.",
+      "Kicker = category + reading time or another plain fact."
+    ],
+    "doNotCarryOver": [
+      "Third-party accessibility overlay widget first in tab order.",
+      "Focus outline removed on nav links.",
+      "Bronze 11px kicker at 4.37:1 contrast (just below AA for small text).",
+      "~9.6 MB / 322 requests with many trackers.",
+      "Their logo, Monarch Nova/SangBleu/Shapiro (commercial), photos."
+    ],
+    "study": "studies/explora-journal.md",
+    "industry": "Luxury ocean travel (cruise line brand journal)",
+    "audience": "Affluent travellers considering a luxury voyage; people who would otherwise book five-star hotels",
+    "aestheticTags": [
+      "quiet-luxury",
+      "magazine",
+      "sand-palette",
+      "serif-headlines",
+      "photo-led",
+      "asymmetric-grid"
+    ],
+    "archetype": "broadsheet-editorial",
+    "layoutPatterns": [
+      "masthead + italic subtitle",
+      "lead story photo with overlapping caption card",
+      "sticky category filter bar",
+      "staggered 2-up card grid",
+      "full-bleed tinted feature band",
+      "single 600px reading column",
+      "asymmetric image pair inside article",
+      "more-stories strip"
+    ],
+    "typography": {
+      "display": "WT Monarch Nova 400 (wide, light display), 40px desktop / 28-36px mobile",
+      "body": "Shapiro (sans) 15/26 index, 18/25.2 article; SangBleu Republic serif for headlines 20-28px",
+      "scale": "11 (kicker) / 15 / 18 / 20 / 28 / 40 px — a gentle ratio; the drama comes from photography, not type size",
+      "notes": "Card titles declare font-weight 100 but only SangBleu Regular is loaded, so they render Regular. Italic serif reserved for subtitle and sign-off line."
+    },
+    "palette": [
+      {
+        "hex": "#F4F2EF",
+        "role": "page background (sand)"
+      },
+      {
+        "hex": "#E7E1DA",
+        "role": "hero/caption card and band background"
+      },
+      {
+        "hex": "#DADABB",
+        "role": "olive feature band"
+      },
+      {
+        "hex": "#222222",
+        "role": "body text"
+      },
+      {
+        "hex": "#866D4B",
+        "role": "bronze kicker labels"
+      },
+      {
+        "hex": "#666666",
+        "role": "secondary text/subtitle"
+      },
+      {
+        "hex": "#0C2340",
+        "role": "navy Reserve button"
+      }
+    ],
+    "imageryDirection": "Real, specific scenes (a named place, a named person, a craft) shot in natural light; one large lead image per screen, never collage clutter.",
+    "interactionPatterns": [
+      "header hides on scroll, filter bar sticks",
+      "grid density toggle",
+      "category filter",
+      "click-to-call in header (desktop utility bar, mobile icon)"
+    ],
+    "motion": {
+      "purpose": "None beyond navigation; calm by design",
+      "choreography": "No load or scroll reveals observed",
+      "pacing": "Pacing comes from layout rhythm (staggered cards, bands), not animation",
+      "evidenceOfLibraries": "evidence: no window.gsap, no lenis class, no canvas; script paths /etc.clientlibs/ and granite/csrf indicate Adobe Experience Manager; acsbapp.com app.js (accessiBe overlay); Swiper icon font present."
+    },
+    "accessibility": "Body #222 on #F4F2EF = 14.2:1; kicker #866D4B = 4.37:1 at 11px (fails AA small text); rgba(69,69,69,.7) text ≈3.9:1. Tab order starts in an overlay widget; nav links have outline none (no visible focus in screenshot). 21 images without alt attribute on index. Real h1 present; tel links present.",
+    "performance": "Index desktop ~9.6 MB / 322 requests (images 3.7 MB, scripts 3.1 MB, many third-party trackers); fonts ~220 KB (7 files). Mobile ~8.5 MB / 311 requests.",
+    "implementationNotes": "Plain Next.js server components + Tailwind, no animation library needed. Grid: `grid grid-cols-12 gap-x-6 px-6 lg:px-24`; staggered cards: alternate `col-span-5 col-start-1` / `col-span-6 col-start-7 mt-24`. Band: full-width section with `bg-ns-surface` swap every N items. Sticky filter bar `sticky top-0` + a tiny scroll-direction hook that hides the header. Article: `max-w-[600px] text-[18px] leading-[1.4]` serif h2 `text-[28px]`. Kicker component: `text-[11px] uppercase tracking-[0.12em] text-ns-accent` but darken the accent to reach 4.5:1.",
+    "reuseGuidance": {
+      "whenItWorks": "Hotels, inns, travel and hospitality businesses with real photos and stories (rooms, neighbourhood, chef, history) that benefit from a calm magazine section next to a persistent Book/Call action.",
+      "whenToAvoid": "Businesses with few or weak photos (the layout depends on large imagery) or one-page service sites with nothing to 'read'."
+    },
+    "archetypeLabel": "brand-travel-journal",
+    "researchSlice": "editorial"
+  },
+  {
+    "id": "joshuas-magazine",
+    "name": "JOSHUA'S Magazine",
+    "awwwardsUrl": "https://www.awwwards.com/sites/joshuas-magazine",
+    "awwwardsEvidence": "WebSearch (extended) query 'awwwards sites magazine \"Honorable Mention\" online magazine culture' returned result title 'JOSHUA'S Magazine - Awwwards Honorable Mention' at https://www.awwwards.com/sites/joshuas-magazine and summary 'JOSHUA'S Magazine (Feb 19, 2026) is a luxury lifestyle publication'. Query '\"Site of the Day\" awwwards magazine editorial journal website 2026' returned: 'JOSHUA'S Magazine (WWWonder) received an Honorable Mention, not SOTD, on Feb 19, 2026.' Live footer reads 'BROUGHT TO YOU BY WWWonder' and 'WWWONDER Ltd' (consistent). Award page load failed: net::ERR_CONNECTION_RESET.",
+    "siteUrl": "https://joshuas.io/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["editorial", "typographic", "immersive-photography"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": [
+        "hotel",
+        "restaurant",
+        "bar",
+        "boutique",
+        "spa",
+        "event-venue",
+        "winery",
+        "distillery"
+      ],
+      "tones": ["premium", "refined", "bold"],
+      "goals": ["book", "visit", "browse-menu"]
+    },
+    "observed": {
+      "layout": "Splash: full-screen maroon card with a gold uppercase serif quote ('THE WILL TO CONQUER IS THE FIRST CONDITION OF VICTORY.' — Ferdinand Foch). Home: full-bleed photo hero (image changed between runs) with centered uppercase serif h1 'FOR DOWNTIME & INSPIRATION' and a 'SCROLL TO READ MAGAZINE' ticker; header = wordmark left, round emblem centre, '+ Menu' right. 'LATEST' story framed by a thin ornamental border with notched corners. Then full-viewport sticky FEATURE panels that stack over each other: letter-spaced 'F E A T U R E' spread across the full width, title bottom-left 67.5px, tag pills right. Then 'Inspiration from around the web' two-row horizontal ticker of curated images, 'STORIES OF INTEREST' category filter (pill 'ALL') with mixed-size cards and an in-feed ad, and a footer with a full-width JOSHUA'S wordmark. Article: full-bleed hero + centered title + byline/date; uppercase serif standfirst 57.6px; body 20px sans in a 720px column; numbered items each with a serif h3, 527px text column, italic caption, and a single word set vertically ('SEMINAL', 'PROVOCATIVE', 'ELEMENTAL'); a vertical 'PREVIOUS ARTICLE' rail.",
+      "typography": "Computed + document.fonts: display 'SeasonMix' 400 (h1 86.08px, letter-spacing -2.15px (-0.025em), line-height 73.2px = 0.85, uppercase); feature titles 67.5/67.5px; slide titles 28.5px; menu items 50.4px; body/UI 'BasisGrotesquePro' 20/26.7px desktop, 16/21.3px mobile. Mobile h1 42.5px (-1.06px), features 38.9px. SeasonMix italic loaded but barely used (14 chars).",
+      "imagery": "Editorial still lifes, fashion, distillery interiors, yachts, paintings; dark, warm, film-like grading; images from the publication's own archive (2016-2026 uploads).",
+      "interaction": "Lenis smooth scroll (html.lenis); sticky stacking feature panels (position: sticky; top: 0) observed across sequential screenshots; horizontal tickers; Swiper slider in the menu ('6 ART EXHIBITIONS…'); a 'SIGN UP TO THE QUIET LIST' newsletter modal with blurred backdrop appeared during scrolling in the first run and stayed over every later frame; in a second run it did not appear. Full-screen menu: cream panel, serif links 50px (Topics, All Features, About, Contact), featured story card, inline newsletter.",
+      "responsive": "Mobile 390px: emblem + '+ Menu' only, centered h1 42.5px over a different hero photo, full-height feature panels with 38.9px titles; body 16px; no horizontal overflow. No phone/booking needs (publication)."
+    },
+    "whyItWorks": "One uppercase serif at very tight leading, used at only a few large sizes over dark, warm photography, gives a luxury-print voice; the sticky full-screen 'FEATURE' panels pace the homepage like turning magazine spreads.",
+    "principles": [
+      "Uppercase high-contrast serif at line-height ~0.85-1.0 and slight negative tracking for luxury mastheads.",
+      "Pair it with one neutral grotesk body at 20px; no third family.",
+      "Pace long homepages with full-viewport sticky chapters that stack.",
+      "Spread a one-word label letter-by-letter across the width as a section marker.",
+      "Thin ornamental frames with notched corners evoke engraving/print without fake crests.",
+      "Footer as a full-width wordmark."
+    ],
+    "doNotCarryOver": [
+      "Splash/preloader quote before content.",
+      "Newsletter modal that blocks reading mid-scroll.",
+      "Random hero image per load (unpredictable first impression).",
+      "Long feature titles cut off by the next stacked panel in some frames.",
+      "~11 MB transfer with 300-750 KB legacy JPG/PNG images and a 3.7 MB GIF on mobile.",
+      "Their wordmark, emblem, SeasonMix/Basis (commercial), photos."
+    ],
+    "study": "studies/joshuas-magazine.md",
+    "industry": "Luxury lifestyle online magazine (publisher WWWonder Ltd)",
+    "audience": "Readers interested in craftsmanship, design, spirits, motoring and art at the luxury end",
+    "aestheticTags": [
+      "uppercase-serif",
+      "dark-warm-photography",
+      "cream-and-black",
+      "print-ornament",
+      "sticky-chapters",
+      "luxury-editorial"
+    ],
+    "archetype": "broadsheet-editorial",
+    "layoutPatterns": [
+      "full-bleed photo hero with centered uppercase serif h1",
+      "framed 'latest' card with ornamental border",
+      "sticky stacking full-screen feature panels",
+      "letter-spaced section word across full width",
+      "two-row image ticker",
+      "category pill filter + mixed card grid",
+      "full-width wordmark footer",
+      "article with oversized serif standfirst and vertical one-word labels"
+    ],
+    "typography": {
+      "display": "SeasonMix 400 uppercase, 86px desktop / 42.5px mobile, lh 0.85, -0.025em",
+      "body": "BasisGrotesquePro 400, 20/26.7 desktop (720px column ≈68 cpl), 16/21.3 mobile",
+      "scale": "14 / 20 / 28.5 / 41.6 / 57.6 / 67.5 / 86 px (roughly ×1.4 steps)",
+      "notes": "Only two families. Display is always uppercase; standfirsts are also uppercase serif in brown #372213. Italic used for image captions."
+    },
+    "palette": [
+      {
+        "hex": "#F9F4D5",
+        "role": "base cream (CSS var --jsc-dls-current-base, period 'morning')"
+      },
+      {
+        "hex": "#000000",
+        "role": "contrast / dark panels"
+      },
+      {
+        "hex": "#372213",
+        "role": "primary brown (standfirst)"
+      },
+      {
+        "hex": "#C02216",
+        "role": "secondary red (CSS var)"
+      },
+      {
+        "hex": "#FFF1D4",
+        "role": "base-neutral"
+      },
+      {
+        "hex": "#9D846B",
+        "role": "taupe surface"
+      },
+      {
+        "hex": "#5A1214",
+        "role": "splash maroon (approx., from screenshot only)"
+      }
+    ],
+    "imageryDirection": "Dark, rich, painterly photos with one subject; type sits directly on the image with a dark gradient, never in a box.",
+    "interactionPatterns": [
+      "sticky stacking chapters",
+      "image ticker",
+      "category filter",
+      "full-screen menu with featured card",
+      "newsletter modal (avoid)",
+      "time-of-day palette variables (plugin 'day-light-switcher'; only 'morning' observed)"
+    ],
+    "motion": {
+      "purpose": "Pacing and atmosphere (stacked chapters, tickers)",
+      "choreography": "Sticky panels slide over one another as you scroll; tickers move continuously",
+      "pacing": "One full viewport per feature; long scroll (docH ~11,400px desktop)",
+      "evidenceOfLibraries": "evidence: html class 'lenis' and theme script lenis.min.js?ver=1.2.3; swiper@11.0.0 from jsDelivr; WordPress block theme (wp-includes, wp-block-*); no window.gsap; no canvas."
+    },
+    "accessibility": "Cream on black 18.9:1, brown on cream 13.5:1. Skip link present and focus outline visible on links (outline auto), but the search input and button have outline none. 4 Web Animations kept running under reduced-motion emulation (2 at end); Lenis still active; no visible difference. Newsletter modal blocks content when it appears.",
+    "performance": "Desktop ~11.2 MB / 127 requests (images 9.8 MB); mobile ~11.4 MB incl. a 3.7 MB GIF; fonts only ~130 KB (3 files). reCAPTCHA (~350 KB) loaded on the homepage.",
+    "implementationNotes": "Next.js + Tailwind: display utility `font-display uppercase leading-[0.85] tracking-[-0.025em] text-[clamp(42px,6vw,86px)]`. Sticky chapters: each feature `<section class=\"sticky top-0 h-svh\">` with increasing z-index; no JS needed. Letter-spaced label: `flex justify-between` over the characters of the word. Ticker: CSS keyframes translateX with `motion-reduce:animate-none`. Ornamental frame: one inline SVG border with notched corners stretched via `preserveAspectRatio=none` or CSS `border-image`. Time-of-day palette: set `--ns-*` tokens server-side from the business's local hour (only if the owner wants it). GSAP not required.",
+    "reuseGuidance": {
+      "whenItWorks": "Premium hotels, bars, restaurants, distilleries with strong dark/warm photography and a name that looks good set in capitals.",
+      "whenToAvoid": "Brands with bright daylight photos or long names (uppercase serif at 86px gets heavy); anywhere the owner cannot supply quality images."
+    },
+    "archetypeLabel": "luxury-lifestyle-magazine",
+    "researchSlice": "editorial"
+  },
+  {
+    "id": "mat-voyce",
+    "name": "Mat Voyce",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "WebSearch query 'awwwards kinetic typography site of the day' summary: 'It says the site earned Awwwards Site of the Day and a GSAP Site of the Year 2025 nomination' (source https://www.hontran.dev/blog/mat-voyce-case-study-award-winning-portfolio). Live developer page https://www.hontran.dev/work/mat-voyce (loaded with Playwright) reads: 'Key wins: Awwwards — Site of the Day (Animations 8.4 / 10) GSAP — Site of the Year 2025 Nominee'. Query 'Mat Voyce portfolio awwwards site of the day' summary: 'A separate Awwwards listing credits the site to Uncommon and Mat Voyce (Desktop by Uncommon PRO from Mat Voyce)' (https://www.awwwards.com/inspiration/thumbnail-submission-6785b75eabe1f400700070) and that good-design.org lists 'Awwwards Site of the Day, Typography Honours of the Month and Site of the Month nominee (January 2025)' — that wording was NOT found on the rendered good-design.org page. Live footer: 'Design by Uncommon'. Award is self-reported by the developer; no awwwards.com/sites page found or loaded.",
+    "siteUrl": "https://matvoyce.tv/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["typographic", "playful"],
+    "useFor": ["marketing-site"],
+    "fits": {
+      "businesses": [
+        "creative-studio",
+        "sign-maker",
+        "bar",
+        "event-venue",
+        "kids-activities",
+        "streetwear-shop"
+      ],
+      "tones": ["playful", "bold"],
+      "goals": ["portfolio", "quote"]
+    },
+    "observed": {
+      "layout": "Preloader: giant cyan italic counter (000 → 035 → 070 … observed at 0.8-2.8s). Hero: 'MAT' top-left and 'VOYCE' bottom-right in 412px cyan letters on off-white; tiny meta columns 'Type designer & animator, working for brands globally.' and 'UK based / Working globally'; 'MENU +' top-right; lime 'SCROLL — SCROLL' pill bottom-left. Desktop featured-work area rendered blank in headless Chromium (WebGL canvas); on mobile the DOM version shows 'FEATURED WORK GO!' sticker heading, project title 'OLIPOP TV', prev/next arrow buttons and 'View project'. Then 'What he does' (active item black condensed italic with illustrated stickers, other items pale grey stacked below), 'Brands Mat's worked with' two-row logo marquee, a giant lime pill 'CONTACT MAT', and a cyan footer with 'MAKING TYPE MOVE' gradient sticker, WORK/ABOUT/MEDIA and social links in large condensed italic.",
+      "typography": "Computed + document.fonts: one variable family 'F37Judge' (F37Judge-VF.woff2 241 KB, weight range 100-900) plus 'F37Judge-Extended' 500 for small text. Hero letters 412.5px, letter-spacing -8.25px (-0.02em), line-height 0.7, uppercase, each letter a .char div with its own font-variation-settings, alternating 'slnt 500, wdth 60, wght 1000' and 'slnt 500, wdth 150, wght 700'. Mobile hero 156px. Small text 12px desktop / 14-16px mobile.",
+      "imagery": "Animated GIF stickers and illustrations (pencil, peace hand, TV), brand logos, project thumbnails; no photography on the homepage.",
+      "interaction": "Custom illustrated cursor (body cursor:none + cursor element). Nav/link labels are doubled per character (innerText 'W W O O R R K K'), the structure used for a roll-over text swap; hovering the hero letters at sampled points did not change their axes. Full-screen menu with giant condensed italic links and 'CLOSE ×'. CSS loop animations on backgrounds (styles_bg-animation-loop). Logo marquee rows move in opposite directions.",
+      "responsive": "Mobile: hero stacks 'MAT' / outlined box / 'VOYCE' centered at 156px with sparkle stickers; bottom bar with meta + 'MENU +'; work slider becomes DOM cards with arrow buttons; logo marquee; contact pill full-width. No horizontal overflow."
+    },
+    "whyItWorks": "The type IS the brand: one variable font pushed to extreme width/weight contrasts, a single saturated cyan and a lime accent make an unmistakable identity with almost no imagery.",
+    "principles": [
+      "A single variable font can provide every voice: vary width/weight/slant instead of adding families.",
+      "Set the name as the hero image when the name is the brand.",
+      "Use one saturated brand colour for display type and a second accent only for the CTA pill.",
+      "Give the contact action its own oversized moment near the end.",
+      "Keep meta copy tiny and factual next to giant type for scale contrast."
+    ],
+    "doNotCarryOver": [
+      "Counter preloader before content.",
+      "No h1 (only an empty h2) — SEO/accessibility loss.",
+      "Custom cursor and cursor:none.",
+      "No visible focus outline.",
+      "~21.9 MB transfer, mostly GIFs (menu GIFs 1.3-2.9 MB each).",
+      "Featured work only visible with WebGL on desktop.",
+      "Cyan #00D3FF on off-white is 1.77:1 — decorative only, never for text that must be read.",
+      "Their font F37 Judge (commercial), stickers, identity."
+    ],
+    "study": "studies/mat-voyce.md",
+    "industry": "Type designer & animator portfolio (UK)",
+    "audience": "Art directors, brands and agencies commissioning lettering and type animation",
+    "aestheticTags": [
+      "kinetic-type",
+      "variable-font",
+      "oversized-wordmark",
+      "cyan-and-lime",
+      "sticker-illustration",
+      "playful"
+    ],
+    "archetype": "kinetic-type",
+    "layoutPatterns": [
+      "split giant wordmark hero (top-left / bottom-right)",
+      "tiny meta columns on a 12-col grid",
+      "active-item list with ghosted siblings",
+      "logo marquee",
+      "oversized contact pill",
+      "colour-block footer"
+    ],
+    "typography": {
+      "display": "F37 Judge variable (wdth 60-150, wght 700-1000, slnt), 412px desktop / 156px mobile, lh 0.7, -0.02em",
+      "body": "F37 Judge Extended 500, 12px desktop / 14-16px mobile",
+      "scale": "12 / 14 / 21 / 36 / 48 / 135-150 / 412 px — extreme contrast (display/body ≈ 34×)",
+      "notes": "Per-letter variation settings create rhythm inside one word. Uppercase only for display."
+    },
+    "palette": [
+      {
+        "hex": "#FFFEF8",
+        "role": "off-white background"
+      },
+      {
+        "hex": "#00D3FF",
+        "role": "cyan display type / footer"
+      },
+      {
+        "hex": "#BCF3FF",
+        "role": "pale cyan section background"
+      },
+      {
+        "hex": "#DFFF6B",
+        "role": "lime accent (scroll pill, contact pill)"
+      },
+      {
+        "hex": "#000000",
+        "role": "text"
+      },
+      {
+        "hex": "#1F1F1F",
+        "role": "buttons/labels"
+      }
+    ],
+    "imageryDirection": "Illustrated stickers and type animations instead of photos; all imagery is the author's own work.",
+    "interactionPatterns": [
+      "counter preloader",
+      "custom cursor",
+      "roll-over doubled text",
+      "full-screen menu",
+      "project slider with arrows",
+      "logo marquee"
+    ],
+    "motion": {
+      "purpose": "Show the craft (type in motion) — motion is the product",
+      "choreography": "Counter → hero letters; marquees loop; menu GIFs animate",
+      "pacing": "Short page (docH 7,245px desktop, 3,998px mobile); dense motion",
+      "evidenceOfLibraries": "evidence: html classes 'lenis lenis-smooth js-smooth-scrollbar-enabled js-has-global-canvas'; one 1440×900 canvas with an obtainable webgl context; Next.js (_next/static chunks); Tailwind-style classes 'grid grid-cols-6 lg:grid-cols-12'; window.gsap not exposed (bundled or absent) — the developer's case study states GSAP and WebGL were used."
+    },
+    "accessibility": "No h1; no visible focus outline (outline none on all tabbed links); body text black on off-white 20.8:1 but 32%-black meta text 2.2:1; reduced-motion emulation: no visible change (lenis-smooth still on, same animations).",
+    "performance": "~21.9 MB / 99 requests desktop (images 20.7 MB, mostly GIFs); fonts 288 KB (variable 241 KB). Mobile similar (21.8 MB).",
+    "implementationNotes": "Next.js + Tailwind + GSAP: split the business name into <span> per letter in React and set `style={{fontVariationSettings:'\"wdth\" 60, \"wght\" 900'}}` alternately (needs a variable font with wdth axis — e.g. a free variable grotesk). Entrance: `gsap.from(chars,{yPercent:100, stagger:0.04})` inside `gsap.matchMedia('(prefers-reduced-motion: no-preference)')`. Roll-over links: two stacked copies in an `overflow-hidden` span, translateY on hover via Tailwind `group-hover:-translate-y-full`. Skip preloader, cursor and GIFs; use Lottie/MP4 or nothing.",
+    "reuseGuidance": {
+      "whenItWorks": "Young, loud brands where the name is short and graphic (bars, events, kids' activities, sign makers); our own marketing site for one expressive moment.",
+      "whenToAvoid": "Luxury/heritage hospitality, healthcare, legal, anything that needs calm trust or long reading."
+    },
+    "archetypeLabel": "kinetic-type",
+    "researchSlice": "editorial"
+  },
+  {
+    "id": "a-lign-studio",
+    "name": "a-lign studio",
+    "awwwardsUrl": "https://www.awwwards.com/sites/a-lign-studio",
+    "awwwardsEvidence": "WebSearch query '\"a-lign studio\" awwwards' returned https://www.awwwards.com/sites/a-lign-studio with summary 'The Awwwards profile for a-lign studio shows an Honorable Mention dated August 10, 2026 … The studio is a web design and development business based in Slovenia'. Query 'awwwards winner_category_typography Typography Honors 2026 site of the day portfolio' (extended) summary: 'The Awwwards typography winners page lists the most recent typography winner as a-lign studio, from September 2026' and 'The typography category page shows Typography Honors for Aug 2026 for a-lign studio'. Live site embeds the Awwwards ribbon script (assets.awwwards.com/assets/js/embed_ribbon.js, visible 'W. Winner' tab) and a footer link 'Awwwards' to https://www.awwwards.com/a-lign.studio/. Award page not loaded (Awwwards unreachable).",
+    "siteUrl": "https://www.a-lign.studio/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["typographic", "modular", "service-led"],
+    "useFor": ["marketing-site", "customer-sites"],
+    "fits": {
+      "businesses": [
+        "agency",
+        "architect",
+        "interior-designer",
+        "consultant",
+        "photographer",
+        "studio"
+      ],
+      "tones": ["calm", "refined", "bold"],
+      "goals": ["quote", "portfolio"]
+    },
+    "observed": {
+      "layout": "Preloader: striped pixel wordmark '<a-lign>' with 'LOADING 49%… 99%', then the page zooms out of an inset card on a dark frame. Hero: 'Websites that make sense' centered (visual text is a <p>; the real h1 is visually hidden), uppercase subline, terracotta 'GET ALIGNED' button inside a dashed box, three founder photos in dashed frames placed on the grid, grey pixel 'stair' decorations, empty dashed box bottom-right. Floating bottom dock: MENU, +, '<a>' logo, CONTACT. Manifesto quote 'People deserve better. Better process. Better collaboration…' justified with wide word gaps; 'Work' as a striped display word with three projects (name + year) in dashed boxes and 'MORE PROJECTS'; 'Process' set vertically as striped type beside three cards Strategy / Design / Build (tag chips + photo + paragraph); values 'Craft / Honesty / Partnership' at 154px with photos sliding over the words; testimonials slider with avatar row; 'Let's get aligned' CTA; footer with link lists, email, 'cmd+g grid' toggle and a giant faded striped wordmark.",
+      "typography": "Computed + document.fonts: one family Geist (Regular 400, Medium 500, Semi Bold 600; 3 woff2 ≈45 KB each). Display: hero 95.65/86.1px, letter-spacing -6.2px (-0.065em); values 154.3px, -10px; section headings 63.75px. Body 15.97/20.76px, labels 12px uppercase. Fluid: hero 50.04px and body 12.17px at 390px wide. Striped 'Work'/'Process' titles are graphic (stacked bars), not live text.",
+      "imagery": "Studio portraits of the two founders on light grey; still lifes of their tools (cameras, laptops, notebooks); real client project screenshots.",
+      "interaction": "Words of the manifesto fill from light grey to dark as you scroll; striped section titles fill with terracotta progressively; values images slide over the giant words; floating dock fixed at bottom; Barba page transitions (script present); keyboard shortcut text 'cmd+g grid' (pressing Meta+G / Ctrl+G in headless showed no overlay). Reduced-motion emulation: layout identical; no clear difference in the scrub states captured.",
+      "responsive": "Mobile: same composition, smaller (hero 50px); striped 'Work'/'Process' words become very tall vertical graphics filling most of the screen; process cards stack; dock stays at the bottom; footer links become chips. Body text shrinks to 12.17px. No horizontal overflow."
+    },
+    "whyItWorks": "A visible, disciplined 12-column grid (dashed boxes literally show the modules) plus one grotesk at extreme negative tracking makes a tiny studio feel precise and authored; the single terracotta accent marks progress and action.",
+    "principles": [
+      "One grotesk family, hierarchy by size and tracking (tighter as it gets bigger).",
+      "Expose the grid: dashed frames and modules aligned to 12 columns with fixed gutter tokens.",
+      "One warm accent reserved for action and progress.",
+      "Use a scroll-scrubbed reading effect once, on the manifesto line only.",
+      "Fluid type tied to viewport keeps the same composition on every screen.",
+      "Keep primary actions in a small persistent dock."
+    ],
+    "doNotCarryOver": [
+      "Preloader with percentage.",
+      "Visual headline as <p> with a hidden h1 stuffed with SEO text.",
+      "Body text at 12px on mobile.",
+      "White on terracotta #DE7356 = 2.93:1 (CTA text contrast fails).",
+      "Striped titles that take a whole mobile screen.",
+      "Their logo, pixel ornaments, Geist is fine (open source) but not their exact layout."
+    ],
+    "study": "studies/a-lign-studio.md",
+    "industry": "Web design & development studio (Slovenia, two people)",
+    "audience": "Founders and small teams needing a strategy-first website",
+    "aestheticTags": [
+      "swiss-grid",
+      "visible-grid",
+      "dashed-frames",
+      "tight-grotesk",
+      "terracotta-accent",
+      "scroll-scrub-type"
+    ],
+    "archetype": "experimental-grid",
+    "layoutPatterns": [
+      "centered statement hero with framed photos on grid",
+      "floating bottom action dock",
+      "justified manifesto paragraph with scroll fill",
+      "striped display word as section marker",
+      "sticky process cards with tag chips",
+      "giant value words with sliding images",
+      "footer wordmark"
+    ],
+    "typography": {
+      "display": "Geist Medium 500, 95.65px (-0.065em) hero, 154px values, 63.75px section; mobile 50 / 68 / 31px",
+      "body": "Geist Regular 400, 15.97/20.76px desktop, 12.17px mobile",
+      "scale": "12 / 16 / 64 / 96 / 154 px (≈ ×1.5-1.6 steps; display/body 6×)",
+      "notes": "Tracking scales with size (-0.016em at 16px → -0.065em at 96-154px). Uppercase only for small labels."
+    },
+    "palette": [
+      {
+        "hex": "#F7F7F7",
+        "role": "page background"
+      },
+      {
+        "hex": "#1F1F1F",
+        "role": "dark sections / frame"
+      },
+      {
+        "hex": "#4F4F4F",
+        "role": "text"
+      },
+      {
+        "hex": "#DE7356",
+        "role": "terracotta accent (CTA, progress fills)"
+      },
+      {
+        "hex": "#D5D5D5",
+        "role": "inactive stripes / ghost text"
+      }
+    ],
+    "imageryDirection": "Studio portraits and tool still lifes on neutral grey, cropped to fit grid modules; client work as screenshots.",
+    "interactionPatterns": [
+      "preloader (avoid)",
+      "scroll-scrubbed word fill",
+      "progressive fill of striped title",
+      "images sliding over giant words",
+      "floating bottom dock",
+      "testimonial slider",
+      "page transitions"
+    ],
+    "motion": {
+      "purpose": "Reading guidance and progress (fills show where you are)",
+      "choreography": "Load zoom-out → manifesto words fill as scrolled → section word fills → images slide across value words",
+      "pacing": "Long page (docH ~15,100px desktop) with one motion idea per section",
+      "evidenceOfLibraries": "evidence: window.gsap 3.15.0 with ScrollTrigger and SplitText; script URLs for gsap Flip, Draggable, CustomEase, InertiaPlugin, ScrambleTextPlugin, ScrollToPlugin; lenis@1.1.14 (html.lenis); @barba/core@2.10.3; swiper@11; hls.js; Webflow (data-wf-site, webflow.js)."
+    },
+    "accessibility": "Text #4F4F4F on #F7F7F7 = 7.65:1; accent CTA 2.93:1 (fails). Skip link; visible 2px solid focus outline on every tabbed element (best of the five). Visual hero is not the h1 (h1 is sr-only); several h2s sr-only. Mobile body 12px is small.",
+    "performance": "~2.9 MB / 70 requests desktop; fonts 136 KB (3 static Geist cuts); videos via Bunny CDN (hls).",
+    "implementationNotes": "Next.js + Tailwind + GSAP: define `--col` and `--gut` in CSS and a `grid grid-cols-12 gap-x-[var(--gut)] px-8` container; dashed module frames `border border-dashed border-ns-muted/40`. Fluid display `text-[clamp(48px,6.6vw,96px)] tracking-[-0.065em] leading-[0.9]` (Geist is free). Manifesto fill: split words in React, then `gsap.fromTo(words,{opacity:.2},{opacity:1,stagger:.05,scrollTrigger:{trigger,start:'top 70%',end:'bottom 40%',scrub:true}})` inside gsap.matchMedia for no-preference; reduced motion = full opacity. Dock: `fixed bottom-4 inset-x-0 mx-auto w-fit`. Keep the real headline as h1.",
+    "reuseGuidance": {
+      "whenItWorks": "Architects, designers, consultants and any calm professional service that wants precision; also a restrained 'modern' variant for boutique hotels with good portraits.",
+      "whenToAvoid": "Warm, food- or family-oriented businesses where the grey, technical look feels cold; owners without portraits."
+    },
+    "archetypeLabel": "swiss-grid-studio",
+    "researchSlice": "editorial"
+  },
+  {
+    "id": "mosbys-files",
+    "name": "Mosby's Files",
+    "awwwardsUrl": "https://www.awwwards.com/sites/mosbys-files",
+    "awwwardsEvidence": "WebSearch (extended) query 'awwwards \"Mosby's Files\" site of the day typography' returned result title 'Mosby's Files - Awwwards SOTD' at https://www.awwwards.com/sites/mosbys-files with summary 'lists it as a Site of the Day on August 13, 2026, in the Typography category. It was nominated for the Typography Honors, and it was built by Tubik' and 'Awwwards' honors page lists Mosby's Files among its last winners in typography, dated August 26'. Conflicting secondary source in the same results: TopCSSGallery 'SOTD September 17, 2026 Architecture' (a different gallery). Tubik's case study https://tubikstudio.com/works/mosbyfiles (loaded) links 'Awwwards Site of the Day' to awwwards.com/sites/mosbys-files and 'FWA of the Day'. Live footer: 'CRAFTED WITH 🤍 BY TUBIK STUDIO' (consistent). Award page not loaded.",
+    "siteUrl": "https://www.mosbyfiles.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": ["live-desktop", "live-mobile", "screenshot"],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["editorial", "typographic", "playful"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": [
+        "hotel",
+        "museum",
+        "architect",
+        "historic-venue",
+        "winery",
+        "bookshop",
+        "tour-operator"
+      ],
+      "tones": ["bold", "refined", "playful"],
+      "goals": ["visit", "book", "portfolio"]
+    },
+    "observed": {
+      "layout": "Home (short, docH 1,404px): dark page, centered masthead 'MOSBY'S FILES' + 'About'; h1 'AMERICAN MODERNISM' 144px condensed, grey serif description; below, a stack of coloured file folders (blue, green, purple, red) each with name tabs (Frank Lloyd Wright, Irving Gill, Frank Gehry, Louis Kahn, I. M. Pei, Paul Rudolph, Mary Colter, Louis Sullivan) and a category label with chevron at right ('Organic & Early Modernism', 'Expressive', 'Monumental Modernism', 'Contextual & Transitional Architecture'); the open red folder shows the category text in mono; footer inside the folder with wind-rose icons, a map scale bar '0 4 8 16 32', '© 2026', credit. Case page (/cases/frank-lloyd-wright): name 120px; blue folder holding a paper sheet with binder-hole dots; b/w portrait with a paper clip; 'Born:/Died:' mono facts; serif essay with a 120px drop cap; side tabs to the next folders; then a collage of coloured index cards ('ROBIE HOUSE (1910)', 'FALLINGWATER (1935)', 'GUGGENHEIM MUSEUM, NEW YORK (1959)') with mono captions, archival photos and drawings; 'An Interview with Frank Lloyd Wright 1958' video card; yellow 'Next →' button; 'Keep scrolling for the next page' hint; next architect's folder ('IRVING GILL') begins below.",
+      "typography": "Computed + document.fonts: display 'Founders Grotesk' 700 (file founders-grotesk-x-condensed-bold, 12 KB) uppercase, h1 144px / lh 0.8 (81.4px mobile), case h1 120px, card titles 32/32px; reading serif 'Signifier' (file signifier-light, reported weight 400) 20/28px intro, 24/33.6px essay in a 504px column (~40 characters per line), drop cap 120px floated left; 'IBM Plex Mono' 400/700 for facts, captions and labels 12-18px (18/25.2 on cards). Mobile essay 16/22.4px in a 239px column.",
+      "imagery": "Archival b/w portraits, period photographs and architectural drawings, treated as physical objects (paper clips, tape, slight rotations, torn paper).",
+      "interaction": "Folder tabs act as navigation; clicking a name opens that architect's file (URL /cases/<slug>). Scrolling to the end of a case continues to the next file. h1 split into 20 .char elements (load reveal likely; not captured). Lenis class on html. Reduced motion: no visible difference.",
+      "responsive": "Mobile keeps the folder metaphor: tabs stack, category labels hidden on the home stack, case side-tabs become vertical tabs on the right edge; essay column narrows to 239px (≈30 cpl) at 16px."
+    },
+    "whyItWorks": "A strong physical metaphor (an archivist's folders) turns categories into navigation and makes research content feel collectible; three type voices map to three content roles: headline (condensed caps), narrative (serif), fact (mono).",
+    "principles": [
+      "Map type to content role: condensed caps = names, serif = story, mono = facts/dates.",
+      "Drop cap + 'Born/Built/Founded' fact block opens a heritage story.",
+      "Use the owner's archival photos as physical objects (clip, tape, slight tilt).",
+      "Categories as coloured tabs that are also the navigation.",
+      "End each chapter with a clear 'Next' and let scrolling continue into the next."
+    ],
+    "doNotCarryOver": [
+      "Home with almost no visible content beyond the folder stack (no intro of who/why on mobile first screen).",
+      "Narrow 239px mobile reading column.",
+      "Grey #787A7F description on dark ≈3.9:1.",
+      "Saturated primary-colour palette for a luxury brand.",
+      "Their illustrations, scale bar, Founders/Signifier (commercial)."
+    ],
+    "study": "studies/mosbys-files.md",
+    "industry": "Cultural/editorial research archive (architecture history), studio showcase by Tubik",
+    "audience": "Design and architecture enthusiasts; Awwwards-style audience",
+    "aestheticTags": [
+      "archive",
+      "file-folders",
+      "collage",
+      "drop-cap",
+      "mono-metadata",
+      "condensed-caps",
+      "primary-colours"
+    ],
+    "archetype": "broadsheet-editorial",
+    "layoutPatterns": [
+      "masthead + giant condensed h1",
+      "stacked coloured folder tabs as navigation",
+      "paper sheet with binder holes",
+      "fact block (Born/Died) in mono",
+      "drop-cap essay column",
+      "index-card collage with archival photos",
+      "next-chapter continuation"
+    ],
+    "typography": {
+      "display": "Founders Grotesk X-Condensed Bold, 144px home / 120px case / 81px mobile, lh 0.8, uppercase",
+      "body": "Signifier (serif) 24/33.6 essay (~40 cpl), 20/28 intro; IBM Plex Mono 12-18px for facts",
+      "scale": "12 / 18 / 20 / 24 / 32 / 120 / 144 px",
+      "notes": "Drop cap 120px = 5 body lines. Mono used only for data (dates, places, captions)."
+    },
+    "palette": [
+      {
+        "hex": "#191919",
+        "role": "ink / dark page (approx.)"
+      },
+      {
+        "hex": "#FDFAF7",
+        "role": "paper/off-white text"
+      },
+      {
+        "hex": "#1E4BD7",
+        "role": "blue folder"
+      },
+      {
+        "hex": "#D71E1E",
+        "role": "red folder"
+      },
+      {
+        "hex": "#0C7866",
+        "role": "green folder"
+      },
+      {
+        "hex": "#581E70",
+        "role": "purple folder"
+      },
+      {
+        "hex": "#FFE927",
+        "role": "yellow tab / Next button"
+      }
+    ],
+    "imageryDirection": "Archival and documentary material shown as tactile objects on paper; consistent b/w treatment for photos, colour only in the folders.",
+    "interactionPatterns": [
+      "tabs as navigation",
+      "chapter-to-chapter continuous scroll",
+      "video card",
+      "next button"
+    ],
+    "motion": {
+      "purpose": "Navigation feedback and chapter flow",
+      "choreography": "Folder opens to case; scroll continues into the next file",
+      "pacing": "Short home, long case pages (docH 2,719px for one architect)",
+      "evidenceOfLibraries": "evidence: html class 'lenis'; Nuxt (_nuxt/ chunk, 1 MB JS); Storyblok CMS (api.storyblok.com, a.storyblok.com); no window.gsap; no canvas."
+    },
+    "accessibility": "Off-white on red 4.93:1, on blue 6.64:1, black on yellow 16.9:1; grey description on dark ≈3.9:1. Default focus ring visible (outline auto) on tabs. Only one h1 and no h2 on home. Reduced-motion: no visible difference.",
+    "performance": "~1.5 MB / 37 requests; fonts ~80 KB (3 files); one 1 MB JS bundle.",
+    "implementationNotes": "Next.js + Tailwind: folder tabs = buttons with an SVG/clip-path tab shape `[clip-path:polygon(...)]` in category colours, stacked with negative margins; open state = `<details>`/route. Drop cap: `first-letter:float-left first-letter:text-[5em] first-letter:leading-[0.8] first-letter:mr-3 first-letter:font-display`. Fact block: `font-mono text-sm` definition list (<dl>). Collage: absolutely positioned figures with `rotate-[-2deg]` and a decorative clip SVG; on mobile switch to a simple stack. 'Next chapter' link at the end of each story. No GSAP needed.",
+    "reuseGuidance": {
+      "whenItWorks": "Hotels, venues and businesses with real history and archive material (founding date, architect, old photos) — the dossier format makes heritage tangible; muted folder colours for luxury.",
+      "whenToAvoid": "New businesses with no history or archive images (never invent dates or documents); conversion-first service sites."
+    },
+    "archetypeLabel": "archival-dossier",
+    "researchSlice": "editorial"
+  },
+  {
+    "id": "royal-savoy",
+    "name": "Royal Savoy Hotel & Spa Lausanne",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Query 'ewm Royal Savoy Hotel Spa Lausanne website Awwwards' -> ewm.swiss blog 'ewm receives honorable mention royal savoy website': 'EWM has earned another Honorable Mention from Awwwards, recognizing their exceptional work on the Royal Savoy Hotel & Spa Lausanne website.' Agency self-report only; no Awwwards page found or loaded (awwwards.com unreachable). Live footer says 'Designed by EWM' (consistent). Date of the award unknown.",
+    "siteUrl": "https://www.royalsavoy.ch/en",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "reduced-motion",
+      "keyboard-focus",
+      "booking-cta-click",
+      "computed-styles",
+      "network"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["heritage-grandeur", "warm-hospitality", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["hotel", "boutique-hotel", "spa", "event-venue", "restaurant"],
+      "tones": ["refined", "classic", "premium", "calm"],
+      "goals": ["book", "inquire", "call"]
+    },
+    "industry": "Heritage 5-star palace hotel (1909 building) with spa, restaurants and event rooms, Lausanne, Switzerland",
+    "audience": "International leisure travellers, wedding/event planners, spa day guests",
+    "aestheticTags": [
+      "ivory-and-ink",
+      "script-display",
+      "ghost-wordmark",
+      "photo-collage",
+      "quiet-classic"
+    ],
+    "archetype": "heritage-grandeur",
+    "observed": {
+      "layout": "Preloader (black/ivory split, logo + photo + % counter) -> full-screen hero video with handwritten-script H1 'Your Exceptional Escape in Lausanne' and a white pill booking bar (Rooms & Suites | Check in & Check out | Guests) -> seasonal 'Cosy Autumn Moments' block (photo + list of events with dotted rules) -> giant pale ghost wordmarks 'ROYAL SAVOY' / 'HOTEL & SPA' with a scattered photo collage moving across them -> centred welcome text -> Rooms & Suites (script title + 3-card carousel with sizes) -> Dining -> Spa & Wellness (category filter + cards) -> Meet & Celebrate (Meetings/Weddings/Private events, 'Inquire now') -> Special offers -> newsletter -> footer with group logos. A promo popup card (White Truffle dinner) appears bottom-right on load.",
+      "typography": "Computed: H1/H2 'Crystal Sky' (script) 400, 128px/128px desktop, 88px mobile; ghost wordmark H2 Lora 300 uppercase 151.8px, letter-spacing -3.04px, colour #E1DDD7 on #F1F0EB (decorative); body/nav/UI Lora 16/24 (nav 14px). Only Lora + Crystal Sky loaded.",
+      "imagery": "Own property photography: facade with Swiss flag, rooftop terrace with lake view, rooms, dining room, spa pool, autumn garden. Hero is a video (Video Royal Savoy.mov) that did not play in our Chromium (grey hero in screenshots).",
+      "interaction": "Desktop: whole page lives in a fixed scroll wrapper (document height = 900px, wheel still moves content); header hides on scroll down. 'Book now' (top right, solid muted-blue button) opens a full-screen ivory 'BOOK NOW' panel: phone + email for special arrangements, then four image tiles routing to Rooms & Suites / Dining / SPA / Offers. Collage photos shift position between scroll frames (parallax). Reduced-motion emulation: preloader and collage unchanged; 0 prefers-reduced-motion rules found.",
+      "responsive": "Mobile keeps a sticky header with burger, language, logo and a round blue calendar 'book' button; tapping it opens a dropdown (Rooms & Suites / Dining / SPA / Offers). Hero script wraps to 2 lines at 88px. The promo popup covers ~1/3 of the first mobile screen. tel:+41216148888 present (menu/footer/booking panel)."
+    },
+    "whyItWorks": "A 1909 palace is signalled with restraint: ivory ground, near-black ink, one classical serif and one script used only for section titles. The grandeur comes from scale (128px script, 150px ghost wordmark) and real photography, not ornament. Booking is one consistent button that routes by intent (stay, table, spa, offers) and always offers a human (phone/email).",
+    "principles": [
+      "Use the property name as a huge low-contrast ghost wordmark behind a photo collage to say 'institution' without ornament.",
+      "Script display only for short section titles (Rooms & Suites, Dining, Spa); everything else in one readable serif.",
+      "A single 'Book' entry point that opens an intent router (stay / table / spa / offers) plus phone and email.",
+      "Show what is happening this season (dated events list) near the top: proof of a living house.",
+      "Booking bar inside the hero on desktop; compact icon button in the sticky header on mobile."
+    ],
+    "doNotCarryOver": [
+      "Preloader with % counter: LCP measured at 7.4s desktop / 6.2s mobile.",
+      "Promo popup over the hero on first visit, especially on mobile.",
+      "File-name alt text ('ROYALSAVOYLAUSANNEAVRIL2025©LABON3-163').",
+      "Hero video in .mov (did not play in Chromium) without poster.",
+      "Their crest, script font licence, photos."
+    ],
+    "layoutPatterns": [
+      "hero-video-with-booking-bar",
+      "ghost-wordmark-collage",
+      "seasonal-events-list",
+      "script-title-left-text-right",
+      "card-carousel-rooms",
+      "fullscreen-booking-router",
+      "group-logos-footer"
+    ],
+    "typography": {
+      "display": "Crystal Sky (handwritten script), 400, 128px desktop / 88px mobile, line-height 1.0",
+      "body": "Lora 400 16/24; UI 14px; ghost wordmark Lora 300 uppercase ~152px, -0.02em",
+      "scale": "Extreme jump: 16px body -> 128px script titles, no mid-size headings except 24px uppercase H3 (MEETINGS) and 16px uppercase event names",
+      "notes": "Hierarchy = script vs serif, not weight. Ghost wordmark contrast 1.19:1 is decorative only (duplicated as real text elsewhere)."
+    },
+    "palette": [
+      {
+        "hex": "#F1F0EB",
+        "role": "main ivory background"
+      },
+      {
+        "hex": "#E1DDD7",
+        "role": "ghost wordmark / alternate band"
+      },
+      {
+        "hex": "#EEECE7",
+        "role": "card/section background"
+      },
+      {
+        "hex": "#1F1F1D",
+        "role": "text (14.5:1 on #F1F0EB)"
+      },
+      {
+        "hex": "#111111",
+        "role": "preloader/dark panels"
+      },
+      {
+        "hex": "#C7C1B6",
+        "role": "rules/borders"
+      },
+      {
+        "hex": "#4A6F95",
+        "role": "Book now button (approx., read from screenshot, not computed)"
+      }
+    ],
+    "imageryDirection": "Own architecture-first photography: the building, terraces with lake, interiors at warm light; dining and spa details. Shot in season (autumn foliage) and rotated with the seasonal block.",
+    "interactionPatterns": [
+      "preloader-counter",
+      "header-hide-on-scroll",
+      "parallax-photo-collage",
+      "fullscreen-booking-overlay",
+      "mobile-calendar-icon-booking-dropdown",
+      "promo-popup"
+    ],
+    "motion": {
+      "purpose": "Arrival ceremony (preloader) and a sense of depth in the brand moment (collage over ghost wordmark).",
+      "choreography": "Preloader split panel with counter -> hero; on scroll, collage photos move at different speeds across the static wordmarks; cards fade in.",
+      "pacing": "Slow, one statement per screen; long sections of still text between.",
+      "evidenceOfLibraries": "None detected: no window.gsap/ScrollTrigger/Lenis/THREE/Swiper globals; scripts are app.js + custom-csp-fixes.js (bundled). Tailwind-like utility classes in DOM (e.g. 'header fixed w-full z-20 h-16')."
+    },
+    "accessibility": "Focus: default 1px auto outline; after scrolling, Tab went into the hidden header (elements off-screen). Alt text present on all 104 images but mostly camera file names. No prefers-reduced-motion handling (0 rules; preloader runs under reduce). Text contrast good (#1F1F1D on #F1F0EB 14.5:1). Click-to-call present.",
+    "performance": "Desktop 95 requests / ~6.7 MB (images 4.4 MB; one 1.48 MB PNG menu, one 826 KB JPG); mobile 78 req / ~5.4 MB. FCP=LCP=7.4s desktop (H1 after preloader), DCL ~2.0s. Video not counted.",
+    "implementationNotes": "Next.js page with a fixed header (Tailwind) and a 'Book' button that opens a full-screen <dialog> with 4 intent tiles + tel/mailto (no JS framework needed). Ghost wordmark = one <p aria-hidden> in serif 300 uppercase clamp(4rem,12vw,10rem) with text-ns-muted/10; collage = 3-4 absolutely positioned next/image with GSAP ScrollTrigger yPercent at different speeds, disabled under prefers-reduced-motion. Script display font via next/font for section titles only. Skip the preloader.",
+    "reuseGuidance": {
+      "whenItWorks": "Historic or classic hotels, B&Bs in old buildings, event venues and spas that have good photos of the building and a few seasonal events to show.",
+      "whenToAvoid": "Businesses without architecture photos; when the owner can't keep a seasonal block current; script fonts for anything longer than 3 words or for small sizes."
+    },
+    "study": "studies/royal-savoy.md",
+    "archetypeLabel": "heritage-grandeur",
+    "researchSlice": "luxury"
+  },
+  {
+    "id": "grand-hotel-miramare",
+    "name": "Grand Hotel Miramare (Santa Margherita Ligure)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/grand-hotel-miramare",
+    "awwwardsEvidence": "positioner.com/corporate/awards (loaded live): 'MARCH 2024 / HONORABLE MENTION / Grand Hotel Miramare / View on Awwwards' linking to https://www.awwwards.com/sites/grand-hotel-miramare. Search (extended) 'Awwwards Hotel booking websites nominees Honorable Mention grand hotel historic 1900s' summary: 'Grand Hotel Miramare is listed with a March 2024 Honorable Mention … digital rebirth of a Riviera classic'. Awwwards page not loaded. Live site has no agency credit; it shares a script fingerprint (psk-gallery.min.js, identical 'vce701823e…' script, gsap 3.12.2, flatpickr, swiper) with Castello del Sole, which Positioner also claims. The current site celebrates '120 years' (2026), so it may be a later version than the 2024 award.",
+    "siteUrl": "https://www.grandhotelmiramare.it/en/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "reduced-motion",
+      "keyboard-focus",
+      "booking-cta-click",
+      "computed-styles",
+      "network",
+      "scroll-sequence"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["heritage-reinvented", "editorial", "playful-luxury"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["hotel", "boutique-hotel", "beach-club", "restaurant", "family-business"],
+      "tones": ["playful", "warm", "bold", "premium"],
+      "goals": ["book", "brand-story"]
+    },
+    "industry": "Family-owned 5-star grand hotel (120 years old, Fustinoni family since 1945), Italian Riviera",
+    "audience": "Leisure travellers, design/fashion-minded couples, Leading Hotels clientele",
+    "aestheticTags": [
+      "riviera-red",
+      "scalloped-awning",
+      "crest",
+      "script-plus-engraved-caps",
+      "collage",
+      "fashion-editorial"
+    ],
+    "archetype": "heritage-grandeur",
+    "observed": {
+      "layout": "Full-bleed video hero (woman on a sea-view balustrade) with centred wordmark 'GRAND HOTEL MIRAMARE' + five stars, small caps kicker \"KNOWN AS 'THE MIRA' TO FRIENDS & FAMILY\" and a tilted script H1 'Celebrate the Estate Italiana' -> red uppercase manifesto paragraph ('NOW 120 YEARS YOUNG - OWNED AND RUN BY THE FUSTINONI FAMILY SINCE 1945…') with a rotating sun badge -> asymmetric photo collage (pool, book, balustrade) -> full-width saffron-yellow story slider ('Miramare's Pesto alla Genovese', 15 slides) -> numbered rooms block '01 ROOMS' -> tabs (Pool, Beach, Gardens, Gastronomy, Wellness) with script title 'The Hotel's Beating Heart' -> quote 'Walk in a traveler. Walk out an Italian.' + 3-photo strip -> offers -> news with an archival black-and-white photo '120 YEARS OF GRAND HOTEL MIRAMARE' -> partner logos -> footer framed by a red scalloped (awning) border with the crest, address 'VIA MILITE IGNOTO N° 30', phone, email.",
+      "typography": "Computed: H1 'Gracia' 500, 139.7px/125.7px (70px mobile), cream on video; H2 'Tilda Grande' 100/90 (60px mobile) — both scripts; labels/CTAs 'EngraversGothicBold' 20px uppercase, ls 0.8px; body Helvetica 18px. Body text colour is red #CC0000.",
+      "imagery": "Fashion-editorial lifestyle photography (people, swimwear, food close-ups, sea), plus one archival photo of the building; collage of different-size crops; sun badge illustration; crest.",
+      "interaction": "Header fixed and hidden at top (separate copy shown over hero). 'BOOK NOW' opens a full-screen cream panel 'Book your stay' (script) with ARRIVAL - DEPARTURE picker, 2 ADULTS +/- , 0 CHILDREN +/-, red BOOK NOW, and a list of direct-booking advantages ('Exclusive rates…', 'From 5% to 10% discount…', 'WIFI included', 'Complimentary minibar'); final step goes to secure-hotel-booking.com (D-EDGE). Scroll sequence: collage photos move at different speeds over the manifesto (parallax), sun badge rotates. Reduced-motion emulation: no visible change (only 1 rule, which sets smooth scroll-behaviour).",
+      "responsive": "Mobile keeps burger + wordmark + BOOK NOW on top of the hero; 'VIEW FULL VIDEO' link added; same booking panel stacked. A CCPA-style consent bar (Didomi) covered the bottom ~30% of every mobile screenshot (our run didn't accept it). Footer collapses to centred crest + address + tel."
+    },
+    "whyItWorks": "It treats a 120-year-old grand hotel like a fashion house: one loud brand colour (Riviera red) used for all text, a crest, an awning-scallop border and engraved caps carry the heritage, while lifestyle photography and script headlines make it feel alive, not museum-like. The direct-booking advantages sit inside the booking panel, exactly where the decision is made.",
+    "principles": [
+      "Turn one heritage signal (awning stripe, crest, founding year) into a graphic system: borders, badges, footer frame.",
+      "One brand colour can carry all text if it has ≥4.5:1 on the ground (red #CC0000 on cream = 5.4:1).",
+      "Script display + engraved caps labels + plain sans body: three voices, each with one job.",
+      "Write the founding story as a short all-caps manifesto right after the hero.",
+      "Put 'why book direct' bullets inside the booking panel, next to the dates.",
+      "A colour-block band (saffron) for the one story slider breaks the cream rhythm."
+    ],
+    "doNotCarryOver": [
+      "Fixed header invisible at top with a duplicate copy: Tab focus went to off-screen elements and no focus ring was visible on screen.",
+      "Red text on saffron (3.6:1) for small copy.",
+      "Consent bar covering a third of the mobile screen.",
+      "Their crest, awning motif, Gracia/Tilda fonts and photos."
+    ],
+    "layoutPatterns": [
+      "video-hero-centered-wordmark",
+      "allcaps-manifesto",
+      "parallax-collage",
+      "colour-block-story-slider",
+      "numbered-section",
+      "tabbed-facilities",
+      "archival-photo-news",
+      "decorative-border-footer"
+    ],
+    "typography": {
+      "display": "Gracia (script) 500, ~140px desktop / 70px mobile; Tilda Grande (script) 100px / 60px for H2",
+      "body": "Helvetica 18px; labels EngraversGothicBold 16-20px uppercase +0.04em",
+      "scale": "Huge scripts vs 18px body; caps labels small",
+      "notes": "Scripts are set tilted/rotated in the hero. EngraversGothic caps give the 'printed menu / hotel stationery' feel."
+    },
+    "palette": [
+      {
+        "hex": "#FAF4E9",
+        "role": "cream ground"
+      },
+      {
+        "hex": "#CC0000",
+        "role": "brand red: all body text, CTAs, footer scallops (5.4:1 on cream)"
+      },
+      {
+        "hex": "#FDC214",
+        "role": "saffron colour-block band"
+      },
+      {
+        "hex": "#141414",
+        "role": "H2 text"
+      },
+      {
+        "hex": "#FFFFFF",
+        "role": "text on photo/video"
+      }
+    ],
+    "imageryDirection": "Fashion-editorial: people in the place (swimming, reading, eating), tight food close-ups, sea and balustrades; collage of mixed crops; one archival B&W photo for the history beat.",
+    "interactionPatterns": [
+      "fullscreen-booking-panel-with-benefits",
+      "parallax-collage",
+      "rotating-badge",
+      "story-slider-with-pagination",
+      "tabs",
+      "hide-show-header"
+    ],
+    "motion": {
+      "purpose": "Make a classic hotel feel lively and summery; guide the eye through the collage.",
+      "choreography": "Video hero; on scroll the manifesto stays while photos slide past at different speeds; rotating sun badge; slider and tabs.",
+      "pacing": "Medium; one idea per screen, colour changes mark chapters.",
+      "evidenceOfLibraries": "window.gsap (3.12.2) and window.ScrollTrigger present; gsap.min.js, ScrollTrigger.min.js, swiper-bundle.min.js, jquery.min.js, flatpickr.min.js in script srcs. No Lenis/three.js."
+    },
+    "accessibility": "Red-on-cream text passes AA (5.4:1). Focus not visible in our Tab test (focused hidden header copy). Only reduced-motion rule found is scroll-behavior smooth under no-preference; animations unchanged under reduce. Alt text present on 145 images (descriptive file-ish names like 'Grand Hotel Miramare FIN 3875 Beach'). tel link present.",
+    "performance": "Desktop 148 req / ~4.7 MB (images 3.6 MB; videos streamed, not counted); mobile 131 req / ~2.6 MB. FCP 1.2s, LCP 2.4s desktop; LCP 1.4s mobile (video).",
+    "implementationNotes": "Theme tokens: --ns-bg cream, --ns-primary red used for text; one display script via next/font loaded only for hero/H2. Footer border = CSS mask/background with an SVG scallop repeated (bg-[url()] repeat-x) in primary. Manifesto = uppercase paragraph with tracking-wide. Collage = CSS grid with absolutely offset images + GSAP ScrollTrigger yPercent; disable under motion-reduce. Booking = <dialog> with date range + guest steppers that deep-links to the owner's booking engine, plus owner-provided 'book direct' bullets (only if the owner gives them).",
+    "reuseGuidance": {
+      "whenItWorks": "Family-run hotels, beach clubs, trattorias and resorts with a strong colour or motif in the real place (awnings, tiles, uniforms) and lifestyle photos.",
+      "whenToAvoid": "Sober/quiet brands, businesses without people photography, or when red/yellow clash with the owner's identity; scripts for non-Latin or long headings."
+    },
+    "study": "studies/grand-hotel-miramare.md",
+    "archetypeLabel": "heritage-reinvented",
+    "researchSlice": "luxury"
+  },
+  {
+    "id": "castello-del-sole",
+    "name": "Castello del Sole Beach Resort & Spa (Ascona)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/castello-del-sole-ascona",
+    "awwwardsEvidence": "positioner.com/corporate/awards (loaded live): 'OCTOBER 2024 / HONORABLE MENTION / Castello del Sole / View on Awwwards' -> https://www.awwwards.com/sites/castello-del-sole-ascona. Search (extended) summary also lists 'Castello del Sole (Ascona, Switzerland), an October 2024 Honorable Mention … renewed digital presence for a Swiss icon' (positioner page). Awwwards page not loaded; no agency credit on the live site; same front-end fingerprint as Grand Hotel Miramare.",
+    "siteUrl": "https://www.castellodelsole.com/en/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "reduced-motion",
+      "keyboard-focus",
+      "booking-cta-click",
+      "computed-styles",
+      "network",
+      "scroll-sequence"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["classic-luxury", "editorial", "warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["hotel", "resort", "spa", "restaurant", "winery", "event-venue"],
+      "tones": ["refined", "classic", "calm", "premium"],
+      "goals": ["book", "reserve-table", "browse"]
+    },
+    "industry": "Classic 5-star lakeside resort on a 140-hectare estate with farm, winery, restaurants and spa (The Living Circle group), Ticino",
+    "audience": "Swiss/European leisure guests, families, gourmets",
+    "aestheticTags": [
+      "engraved-serif-caps",
+      "parchment",
+      "sun-emblem",
+      "blush-accent",
+      "letterspaced-labels",
+      "quiet-classic"
+    ],
+    "archetype": "warm-hospitality",
+    "observed": {
+      "layout": "Header: MENU (dot) + language left, sun emblem logo centred, BOOK NOW right. Hero = typographic H1 'FIND YOUR UNIQUE PLACE OF REFUGE' in heavy engraved serif caps on parchment (video below did not load in our run), then an italic seasonal note 'We are closed for the winter season. We will welcome you again from 24 March 2027.' -> intro paragraph + quick links (Our connection to soil and vines, Guest therapists, Exclusive offers, What's on) -> aerial estate photo with arch-framed second photo -> 'DELIGHTFUL GASTRONOMIC VARIETY' restaurant carousel (7 venues) -> blush-pink 'SIGNATURE EXPERIENCES' deck of tilted cards (Lake fishing, Private aperitif on the water…) -> full-bleed rooms photo 'A sense of home' -> spa -> farm-to-table dark section -> 'Travel by train, we'll pick you up by boat' arrival story -> group hotels strip on dark -> footer (address, tel, mail, partner logos).",
+      "typography": "Computed: H1 'SangBleu Empire' 700 uppercase 86.4px/95px (32px mobile); H2 'SangBleu Empire' 400 50.4px/65.5px; H3 28px; labels 'SangBleu Sunrise' 500 12px uppercase, letter-spacing 2.4px (0.2em); body 'SangBleu Sunrise' 17/25.5. 'Silverline Script' declared but not loaded.",
+      "imagery": "Estate aerials, arches framing the park, restaurant interiors, farm (tractor, grapes), boat on the lake; warm natural light; a few images rotated as playing cards.",
+      "interaction": "BOOK NOW opens a full-screen beige overlay 'Book Castello del Sole' with columns by intent: Book your stay (Book online / Special packages / Leaders club), Book a table (three restaurants), Wellness, Experiences, Give the gift of unforgettable experiences (Gift vouchers). Header becomes sticky (class 'header-sticky') after scroll. Restaurant cards fade in on reveal; experience cards fan out from a tilted stack as you scroll. Reduced-motion emulation: same reveals (0 reduced-motion rules).",
+      "responsive": "Mobile keeps MENU / logo / BOOK NOW in a sticky top bar; H1 drops to 32px; carousels become swipe rows; Cookiebot banner covers the full first screen until answered."
+    },
+    "whyItWorks": "Luxury through typography and restraint: one family (SangBleu) in two cuts does everything; heavy engraved caps for the single hero line, light serif for section titles, tiny tracked caps for labels. The site is honest and operational (seasonal closing date in the hero) and the booking overlay acknowledges that a resort sells several things: rooms, tables, spa, experiences, vouchers.",
+    "principles": [
+      "Typographic hero (one heavy serif caps line) when the place sells calm, not spectacle.",
+      "Tiny uppercase labels with 0.2em tracking above every section title.",
+      "Say operational truth near the top (season, opening date).",
+      "Booking overlay organised by intent, including gift vouchers.",
+      "One soft accent band (blush) for 'experiences' to change mood without a new palette.",
+      "Tell the arrival story (train + boat pickup) as a selling point."
+    ],
+    "doNotCarryOver": [
+      "99 of 121 images without alt attribute.",
+      "Two copies of the booking-engine bundle (~1.35 MB vendor each) loaded on the home page.",
+      "Full-screen cookie wall on mobile.",
+      "SangBleu licence, sun emblem."
+    ],
+    "layoutPatterns": [
+      "typographic-hero",
+      "seasonal-notice",
+      "intro-with-quicklinks",
+      "arch-framed-image",
+      "venue-carousel",
+      "tilted-card-deck",
+      "full-bleed-photo-with-title",
+      "arrival-story",
+      "intent-booking-overlay"
+    ],
+    "typography": {
+      "display": "SangBleu Empire 700 uppercase (H1 86px/32px mobile) and 400 (H2 50px)",
+      "body": "SangBleu Sunrise 400 17/25.5; labels 500 12px uppercase +0.2em",
+      "scale": "86 / 50 / 28 / 17 / 12",
+      "notes": "Single superfamily; contrast by case and weight. Comparable free pairing: a high-contrast serif with uppercase heavy weight (e.g. Playfair Display SC / Cormorant) + a humanist text face."
+    },
+    "palette": [
+      {
+        "hex": "#FEFBF5",
+        "role": "parchment ground"
+      },
+      {
+        "hex": "#483C34",
+        "role": "text brown (10.3:1)"
+      },
+      {
+        "hex": "#211D19",
+        "role": "dark sections"
+      },
+      {
+        "hex": "#FDECEE",
+        "role": "blush band"
+      },
+      {
+        "hex": "#B24955",
+        "role": "accent labels/titles (4.6:1 on blush)"
+      },
+      {
+        "hex": "#E3DCCB",
+        "role": "booking overlay beige (approx. from screenshot)"
+      }
+    ],
+    "imageryDirection": "Estate and nature first (aerials, park through arches), then food and farm; people present but not posed; warm late-afternoon light.",
+    "interactionPatterns": [
+      "intent-booking-overlay",
+      "sticky-header-after-scroll",
+      "fade-up-reveal",
+      "card-fan-on-scroll",
+      "venue-carousel-arrows"
+    ],
+    "motion": {
+      "purpose": "Gentle reveals; one playful moment (card fan) for experiences.",
+      "choreography": "Cards fade/slide up as they enter; experience deck fans from a tilted stack; carousels by arrow.",
+      "pacing": "Slow and quiet.",
+      "evidenceOfLibraries": "window.gsap 3.12.2 + ScrollTrigger, Swiper, flatpickr in script srcs; booking engine from newbooking.azds.com. No Lenis/three.js."
+    },
+    "accessibility": "Default focus outline visible (seen on logo and links). No prefers-reduced-motion rules. Most images lack alt. Text contrast good (brown on parchment 10.3:1). tel link present.",
+    "performance": "Desktop 116 req / ~11 MB (images 6.0 MB, scripts 4.9 MB incl. two booking-engine builds); mobile 114 req / ~7.9 MB. FCP 1.2s, LCP 2.2s (H1).",
+    "implementationNotes": "Easy to build: typographic hero (next/font serif, uppercase, clamp(2rem,6vw,5.5rem)), label component (text-xs uppercase tracking-[0.2em] text-ns-muted), card deck with GSAP ScrollTrigger rotating 3 cards from stacked to fanned (static under reduced motion), booking overlay as <dialog> grouped by intent; seasonal notice from owner-provided hours. Load the booking engine only after the user opens the overlay.",
+    "reuseGuidance": {
+      "whenItWorks": "Classic hotels, wineries with lodging, country restaurants, spas — places with several bookable things and calm photography.",
+      "whenToAvoid": "Young/loud brands; owners with one product only (overlay becomes pointless)."
+    },
+    "study": "studies/castello-del-sole.md",
+    "archetypeLabel": "classic-estate",
+    "researchSlice": "luxury"
+  },
+  {
+    "id": "velaa",
+    "name": "Velaa Private Island",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Query (extended) 'awwwards \"Velaa Private Island\" Honorable Mention Sep 25, 2026 agency' -> Awwwards listing text: 'Velaa Private Island WEBSITE Velaa Private Island STRV STRV HM Honorable Mention Sep 25, 2026' (Hotel / Restaurant and Luxury category pages). Award page not loaded; live site has no agency credit (it is built on Framer: meta generator 'Framer 13ebf9e').",
+    "siteUrl": "https://www.velaaprivateisland.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "reduced-motion",
+      "keyboard-focus",
+      "booking-cta-click",
+      "computed-styles",
+      "network",
+      "scroll-sequence",
+      "mobile-menu"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["immersive-photography", "quiet-luxury", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["resort", "boutique-hotel", "villa-rental", "spa", "private-chef"],
+      "tones": ["calm", "intimate", "premium", "warm"],
+      "goals": ["book", "brand-story"]
+    },
+    "industry": "Ultra-luxury private-island resort, Maldives (family-owned)",
+    "audience": "UHNW families and couples, travel advisors",
+    "aestheticTags": [
+      "thin-serif",
+      "italic-accent-words",
+      "sand-and-midnight",
+      "handwritten-note",
+      "cinematic-video",
+      "sticky-photo-montage"
+    ],
+    "archetype": "quiet-luxury",
+    "observed": {
+      "layout": "Full-screen video hero (aerial clouds over ocean) with only a thin top bar: burger MENU, VILLAS, DINING, ACTIVITIES, centred logo, translucent BOOK NOW; 'SOUND ON' toggle bottom right; no headline. -> handwritten founders' note on sand background, signed ('Velaa began as our family's private home… honoured to share it with you') -> pinned navy section where photos slide past while a statement builds word by word ('Velaa is a world of its own. A place you don't just visit. You belong.') -> 'The art of coming home…' with 'Find your home' -> full-width father/daughter photo, 'More than paradise…' -> butler/service section with video card 'Discover Story of Velaa' -> guest quote over sunset boat photo -> activities -> H1 'A symphony of flavours & shared moments' with 4 restaurants -> 'The magic of the unexpected' (chefs) -> 'A secret held for you.' -> 'Your island is waiting.' -> footer sitemap (01 Villas … 11 Sustainability), contact, Forbes/Virtuoso logos.",
+      "typography": "Computed: headings 'Canela Text LC Web Thin' weight 100 (H2 60px/60px, -1.2px tracking; H1 80px; mobile 40/48px), italic cut used for single words ('thread of care', 'every corner feels familiar', 'You belong.'); body/UI 'Instrument Sans' 400 16/24. Handwriting in the founders' note is an image.",
+      "imagery": "Cinematic, people-centred: families, butler, chefs, boats at sunset; aerials; warm light; 2160p Vimeo videos.",
+      "interaction": "Lenis smooth scroll (html class 'lenis lenis-autoToggle'). Pinned/sticky montage with word-by-word text reveal. Header hides on scroll down. BOOK NOW is a link to /booking: split screen with sunset photo left and form right ('Reserve your home': Villa type, Check-in/out, Adults, Children, Villas, CHECK AVAILABILITY). Reduced-motion emulation: video still autoplays, reveals unchanged (0 rules).",
+      "responsive": "Mobile header shows only burger + logo (no BOOK NOW); the menu opens a full-screen sand panel with 10 large links, contact (email, phone, Contact & Location), socials and a black full-width BOOK NOW at the bottom. Headings scale to 40px; montage keeps the pinned word reveal."
+    },
+    "whyItWorks": "Ultra-luxury is communicated by what is left out: no headline in the hero, thin serif, lots of sand-coloured space, and a personal, signed note from the owners instead of claims. The italic single-word emphasis gives the copy a voice. The booking page is calm and visual, matching the brand.",
+    "principles": [
+      "Owner's signed note right after the hero: personal proof instead of superlatives.",
+      "Thin display serif with one italic word per heading for voice.",
+      "Two-colour world: warm sand ground + deep midnight for the immersive chapter.",
+      "Statement revealed word-by-word over a pinned photo montage — one per site, max.",
+      "Booking as a calm split page (photo + 5 fields), not a widget over content."
+    ],
+    "doNotCarryOver": [
+      "No H1 in the hero; first H1 is mid-page (two H1s).",
+      "All 27 images with empty alt.",
+      "BOOK NOW hidden inside the menu on mobile.",
+      "4.5 MB 8037px JPG and 2160p hero video on desktop.",
+      "Weight-100 headings at small sizes over photos; 60% opacity grey text on sand (≈3:1)."
+    ],
+    "layoutPatterns": [
+      "headline-less-video-hero",
+      "signed-founder-note",
+      "pinned-montage-word-reveal",
+      "big-quote-over-photo",
+      "restaurant-cards",
+      "numbered-sitemap-footer",
+      "split-booking-page"
+    ],
+    "typography": {
+      "display": "Canela Text Thin (100), 60-80px desktop, 40-48px mobile, -0.02em; italic accent words",
+      "body": "Instrument Sans 400 16/24",
+      "scale": "80 / 60 / 40 / 16",
+      "notes": "Free alternatives with a thin cut + italic: Cormorant Garamond Light, Fraunces 200. Never below ~28px at weight 100-300."
+    },
+    "palette": [
+      {
+        "hex": "#E8E6DF",
+        "role": "sand ground"
+      },
+      {
+        "hex": "#4B4335",
+        "role": "text brown-olive (7.8:1)"
+      },
+      {
+        "hex": "#040326",
+        "role": "midnight immersive band"
+      },
+      {
+        "hex": "#FFFFFF",
+        "role": "text on photos/navy"
+      },
+      {
+        "hex": "#8A8479",
+        "role": "60% text — too light (≈3:1)"
+      }
+    ],
+    "imageryDirection": "People and service moments (butler, family, chefs) more than empty rooms; aerial nature video for arrival; warm golden hour.",
+    "interactionPatterns": [
+      "sound-toggle-video",
+      "smooth-scroll",
+      "pinned-word-reveal",
+      "hide-on-scroll-header",
+      "fullscreen-menu-with-book-button",
+      "split-booking-page"
+    ],
+    "motion": {
+      "purpose": "Slow the visitor down; turn the brand sentence into a moment.",
+      "choreography": "Video hero; montage pinned while words appear; photos slide; sections fade in.",
+      "pacing": "Very slow, generous spacing; ~14,500px desktop page.",
+      "evidenceOfLibraries": "html class 'lenis lenis-autoToggle' and window.lenis instance (Lenis smooth scroll); Framer site (meta generator 'Framer 13ebf9e', framerusercontent.com assets). No gsap/three globals."
+    },
+    "accessibility": "Default focus outline visible and in view. No reduced-motion handling. Empty alt on every image; no hero H1. Main text contrast fine (7.8:1) but 60% secondary text ~3:1. Phone link present (tel: +9606565000, with a leading space).",
+    "performance": "Desktop 85 req / ~9.7 MB images (one 4.5 MB 8037x6026 JPG); mobile 76 req / ~2.7 MB. FCP 0.8s; LCP 3.3s desktop / 1.2s mobile. Vimeo 2160p videos not counted.",
+    "implementationNotes": "Hero: <video muted playsinline autoplay poster> with a visible sr-only H1; founder note as owner-supplied text rendered in a handwriting-style font or the owner's scanned signature (never invented). Word reveal: split the sentence into spans and animate opacity with GSAP ScrollTrigger scrub inside a sticky container (h-[200vh] wrapper, sticky top-0); show full text under prefers-reduced-motion. Lenis optional. Booking page: two-column grid, next/image left, form right deep-linking to the owner's engine.",
+    "reuseGuidance": {
+      "whenItWorks": "Small luxury stays (villas, boutique inns, retreats) with strong video/photos and an owner voice; brands where calm is the product.",
+      "whenToAvoid": "Businesses that need quick conversion on mobile (keep Book visible), or without good video; thin fonts with low-quality photos look empty."
+    },
+    "study": "studies/velaa.md",
+    "archetypeLabel": "quiet-modern-luxury",
+    "researchSlice": "luxury"
+  },
+  {
+    "id": "era-estate",
+    "name": "ERA Residential Complex (Tekta Group, Moscow)",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Query 'videinfra ERA era.center awwwards site of the day' -> LinkedIn post snippet (Vide Infra): 'era.estate has been awarded Site of the Day on Awwwards' (third win after FWA and CSSDA). Vide Infra case study (videinfra.com/blog/era-premium-real-estate-website-case-study) and workspace.ru case 'sayt dlya zhk era bogatstvo ar deko na webgl' say SOTD by CSSDA and FWA. Agency self-report only; date unknown; awwwards.com/sites/era-residence found in search is a DIFFERENT (Marbella) project. Live footer: 'WEBSITE BY VIDE INFRA' (consistent).",
+    "siteUrl": "https://era.estate/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop-partial",
+      "live-mobile",
+      "screenshot",
+      "reduced-motion",
+      "keyboard-focus",
+      "computed-styles",
+      "network"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "directions": ["art-deco-grandeur", "typographic", "immersive"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["real-estate", "hotel", "event-venue", "jeweler", "cocktail-bar"],
+      "tones": ["opulent", "bold", "premium"],
+      "goals": ["request-call", "tour", "browse"]
+    },
+    "industry": "Premium residential complex (6 Art Deco towers) — developer marketing site",
+    "audience": "Affluent home buyers and investors",
+    "aestheticTags": [
+      "art-deco",
+      "midnight-and-copper",
+      "sunburst-lines",
+      "giant-geometric-caps",
+      "arches",
+      "webgl"
+    ],
+    "archetype": "cinematic-scrollytelling",
+    "observed": {
+      "layout": "Desktop first screen: pill buttons MENU (copper), SELECT APARTMENT, VIRTUAL TOUR left; ERA logo centre; favourites heart, REQUEST A CALL (copper pill) and a taxi icon right. Giant H1 'PLACE OF ART' split across the screen ('ART' in copper) over thin sunburst lines, subtitle 'THE PLACE WHERE LIFE BECOMES ART', tower render rising from a sunset sky, floating copper '3D-MAP' pill bottom right, scroll button bottom left. Mobile story (verified): hero -> 'THE NEW ART DECO ERA' -> 'ARCHITECTURE' with tower render inside a cream arch shape -> entrance arch photo -> architect quote ('Grigorios Gavalidis, founder of GAFA') with a circular 'ARCHITECTURE' badge -> 'THE JOY OF EVERY DAY' lifestyle + neighbourhood -> 3D map -> 'A TOUCH OF SOPHISTICATION' (landscape) -> 'INTERIORS' (lobby text, '5.9 CEILING HEIGHT, M' stat) -> 'APARTMENTS' -> 'A NEW ERA FOR THE CITY…' -> sales office address, hours, 'REQUEST A CALL' circle, construction progress, footer.",
+      "typography": "Computed: H1 'Decart' 400 uppercase 257px, -5.14px tracking (85px mobile); H2 171px (57px mobile); copper statement paragraphs Decart 57px uppercase; UI/body 'Gilroy' 500 12-20px uppercase with 0.6px tracking. Only Decart + Gilroy loaded.",
+      "imagery": "Architectural 3D renders at dusk, entrance arches, lobby with chandeliers and brass, lifestyle stock-like people photos; WebGL canvases (5 on desktop).",
+      "interaction": "html classes 'has-scroll-smooth has-scroll-init' and body overflow hidden (custom smooth-scroll container); in our headless run the desktop wheel did not advance the page (environment limitation with WebGL via SwiftShader), so the desktop scroll story is unverified. Header hides on scroll. Persistent 'REQUEST A CALL' (desktop header) and a round copper phone button (mobile, bottom right). Reduced-motion: CSS sets animation-duration 1ms and reveals visible under '(prefers-reduced-motion: reduce), (update: slow)'.",
+      "responsive": "Mobile is vertical with native scroll; header shows logo, 'APARTMENTS' pill and copper burger; floating phone FAB bottom right; a 'be first to know about offers' promo and a cookie bar sit at the bottom."
+    },
+    "whyItWorks": "It sells 'royal' opulence through a coherent period system (Art Deco): midnight + copper, giant geometric caps, sunburst lines, arches and circular badges. The ornament is drawn from the architecture itself, and the conversion action (request a call) is always one tap away.",
+    "principles": [
+      "Pick one historical style that matches the building and derive every motif (lines, arches, badges) from it.",
+      "Two-colour luxury: midnight ground + metallic copper accent; cream for relief sections.",
+      "Giant geometric caps with tight negative tracking as the hero.",
+      "Arch-shaped image masks echo the architecture.",
+      "Facts as large numerals ('5.9 m ceiling height') instead of adjectives.",
+      "A persistent 'Request a call' pill/FAB for high-ticket sales."
+    ],
+    "doNotCarryOver": [
+      "~30 MB desktop home page (images 29.6 MB) and 5 WebGL canvases.",
+      "Scroll-jacked desktop container.",
+      "43 of 58 images with empty alt; an empty 'tel:' link.",
+      "Untranslated heading ('ИНТЕРЬЕРЫ') in the English site.",
+      "Decart licence and renders."
+    ],
+    "layoutPatterns": [
+      "giant-split-headline-hero",
+      "floating-cta-pills",
+      "arch-masked-image",
+      "circular-badge",
+      "quote-from-architect",
+      "big-numeral-fact",
+      "map-section",
+      "persistent-call-fab"
+    ],
+    "typography": {
+      "display": "Decart (geometric Art Deco caps) 400, up to 257px desktop / 85px mobile, -0.02em",
+      "body": "Gilroy 500; UI labels 12px uppercase +0.05em",
+      "scale": "257 / 171 / 57 / 20 / 12",
+      "notes": "Free alternatives with Deco flavour: Poiret One, Josefin Sans (light caps), Limelight for accents; pair with a geometric sans."
+    },
+    "palette": [
+      {
+        "hex": "#051936",
+        "role": "midnight ground"
+      },
+      {
+        "hex": "#F8F0E8",
+        "role": "cream text/relief sections (15.5:1)"
+      },
+      {
+        "hex": "#CF8F7D",
+        "role": "copper accent text/pills (6.6:1 on midnight)"
+      },
+      {
+        "hex": "#C07863",
+        "role": "deeper copper"
+      }
+    ],
+    "imageryDirection": "Architecture in dramatic dusk light, details of entrances/arches/brass, interiors with chandeliers; renders framed by geometric masks.",
+    "interactionPatterns": [
+      "pill-navigation",
+      "floating-3d-map-card",
+      "request-call-cta",
+      "phone-fab-mobile",
+      "smooth-scroll-container",
+      "webgl-scenes"
+    ],
+    "motion": {
+      "purpose": "Spectacle and depth for a flagship development.",
+      "choreography": "Not verified on desktop (scroll did not advance in headless). Mobile: sections enter with reveal; WebGL canvases present.",
+      "pacing": "Unknown on desktop; mobile slow chapters.",
+      "evidenceOfLibraries": "html class 'has-scroll-smooth has-scroll-init' (pattern used by Locomotive Scroll, but no window.LocomotiveScroll global found); era.center loads 'threejs.js' and 5 <canvas> elements exist on both domains; jQuery present. No gsap/Lenis globals."
+    },
+    "accessibility": "Best of the set: skip link, focus rings (box-shadow 2px cream), and reduced-motion CSS that neutralises animations and shows reveals. Weak: empty alt on most images, empty tel: link, desktop scroll container.",
+    "performance": "Desktop 237 req / ~29.9 MB (images 29.6 MB); mobile 64 req / ~4.4 MB (1.85 MB video). LCP 1.16s (image) — fast first paint but very heavy total; screenshots took >20s in software WebGL.",
+    "implementationNotes": "Deco theme = tokens (midnight, copper, cream) + one display font via next/font + SVG sunburst lines as an absolutely positioned background; arch masks via CSS clip-path / border-radius: 9999px 9999px 0 0 on next/image; circular badge = rotating SVG text (static under reduced motion). Skip WebGL; use one GSAP reveal per section. Floating 'Call' FAB on mobile with tel: from SiteSpec.",
+    "reuseGuidance": {
+      "whenItWorks": "Venues with real period character (1920s hotels, theatres, cocktail bars, jewellers), real estate and event spaces wanting opulence.",
+      "whenToAvoid": "Rustic/natural brands; when photos are weak (Deco frames amplify bad images); never ship WebGL for small-business sites."
+    },
+    "study": "studies/era-estate.md",
+    "archetypeLabel": "art-deco-grandeur",
+    "researchSlice": "luxury"
   }
 ]

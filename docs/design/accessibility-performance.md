@@ -26,6 +26,9 @@ cabe aqui, a ideia muda.
 
 **Teclado e foco**
 
+- Cabeçalho duplicado escondido (versão "presa" fora da tela) não pode receber foco: na
+  royal-savoy e na grand-hotel-miramare o Tab cai em itens invisíveis.
+
 - Tudo que abre com mouse abre com foco (acordeão das suítes: `onFocus` + `aria-expanded`).
 - Foco visível próprio (`.a-focus`: contorno de 2 px com afastamento), nunca `outline: none`
   sem troca.
@@ -54,6 +57,12 @@ cabe aqui, a ideia muda.
 - JS de cliente só para o que interage. O resto é server component.
 
 **Imagens**
+
+- `alt` que descreve a cena ("The grand staircase, east wing"), nunca nome de arquivo nem vazio
+  em foto de conteúdo. Os 5 hotéis de luxo pesquisados falharam aqui (royal-savoy usa nomes de
+  arquivo da câmera; castello-del-sole tem 99 de 121 imagens sem `alt`; velaa deixa todos vazios).
+- Peso: a era-estate tem ~30 MB na página inicial, a velaa manda um JPG de 4,5 MB e vídeo
+  2160p. Um pequeno negócio não precisa de nada disso; mosbys-files (1,5 MB) prova que dá.
 
 - Sempre com `width`/`height` (ou `aspect-ratio`) para não pular.
 - `srcset` com larguras reais (640–2560) e `sizes` honesto; a foto do herói `eager` +

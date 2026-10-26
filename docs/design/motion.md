@@ -46,6 +46,9 @@ menu.
 - **`prefers-reduced-motion: reduce`**: abertura não toca, nada preso, nada ligado à rolagem,
   só trocas instantâneas ou opacidade curta. Testar de verdade (Playwright
   `reducedMotion: "reduce"`), não só ler o CSS.
+- **Como a era-estate faz** (a única das 5 de luxo que respeita "reduzir movimento"): duração
+  quase zero em tudo e as revelações forçadas a aparecer. Nenhum dos 5 sites editoriais mudou
+  com "reduzir movimento". É o mínimo, não um diferencial.
 - **Modo leve** em máquina fraca (`hardwareConcurrency <= 4 || deviceMemory <= 4`): pula os
   efeitos ligados à rolagem e mantém as revelações simples (mesma regra da landing V8).
 - **Só `transform` e `opacity`** (e `clip-path` em elementos pequenos). Nada de animar
@@ -55,3 +58,14 @@ menu.
 - **Sem rolagem sequestrada** (Lenis e afins): a rolagem é do navegador. Tiramos o Lenis da
   landing (PR #45) porque pesava em máquina fraca.
 - **Easing nunca quica** em `heritage-grandeur`, `quiet-luxury` e `broadsheet-editorial`.
+
+## Gravar um vídeo de demonstração liso
+
+Gravar a tela em tempo real neste ambiente (sem placa de vídeo, 4 núcleos) sai travado **e**
+em modo leve (sem os efeitos). O jeito certo é quadro a quadro com relógio virtual: um script
+injetado antes da página (`addInitScript`) troca `performance.now`, `Date.now`,
+`requestAnimationFrame` e os timers por um relógio que só anda quando o gravador manda, pausa
+as animações CSS (`document.getAnimations()`) e avança o `currentTime` delas junto; o gravador
+rola a página com easing, tira um print por quadro (30 fps) e o `ffmpeg` junta. Informe 8
+núcleos (`navigator.hardwareConcurrency`) para não cair no modo leve. Usado no vídeo do
+Aurelia (`aurelia.md`).
