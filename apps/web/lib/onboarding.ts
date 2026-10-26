@@ -31,10 +31,11 @@ export function tourStorageKey(accountKey: string): string {
   return `ns_tour_done:${accountKey}`;
 }
 
-/** Desenho de cada passo (os desenhos ficam em components/onboarding/TourArt.tsx). */
-export type TourArt = "welcome" | "website" | "clients" | "money" | "social" | "help";
+/** Desenho das folhas do tour (os desenhos ficam em app/(dashboard)/TourArt.tsx). */
+export type TourArt = "welcome" | "help";
 
-export type TourStep = {
+/** Folha de texto do tour (a primeira e a última; o meio aponta a tela de verdade). */
+export type TourSheet = {
   id: string;
   title: string;
   body: string;
@@ -43,44 +44,23 @@ export type TourStep = {
 
 // Textos curtos e diretos, para o dono de uma pequena empresa nos EUA. Nada de promessa que o
 // produto não cumpre (ex.: pagamento online ainda não existe; a IA nunca publica sozinha).
-export const TOUR_STEPS: readonly TourStep[] = [
-  {
-    id: "welcome",
-    title: "Welcome to No Sweat",
-    body: "Your website, your office and your Instagram, all in one place. Here’s a one-minute look around.",
-    art: "welcome",
-  },
-  {
-    id: "website",
-    title: "Your website",
-    body: "Change any text or photo, then tap Publish to put it online. You can connect your own domain, like yourbusiness.com, whenever you’re ready.",
-    art: "website",
-  },
-  {
-    id: "clients",
-    title: "Clients come to you",
-    body: "When someone fills out the form on your website, they show up in Clients on their own. Call or text them in one tap.",
-    art: "clients",
-  },
-  {
-    id: "money",
-    title: "Book it, quote it, get paid",
-    body: "Book the job in Schedule. Send an estimate your customer approves from their phone. Then send the invoice and mark it paid when the money comes in.",
-    art: "money",
-  },
-  {
-    id: "social",
-    title: "Instagram and Google reviews",
-    body: "AI drafts a month of Instagram posts, and nothing goes out until you approve it. Add your Google review link and your site gets a review button.",
-    art: "social",
-  },
-  {
-    id: "help",
-    title: "We’re here if you need us",
-    body: "Tap Help to message our team. You can replay this tour or read the full guide anytime.",
-    art: "help",
-  },
-];
+// Os passos que apontam cada botão ficam em app/(dashboard)/tour/steps.ts.
+
+/** Primeira folha: "Show me around" começa o passeio pela tela; "Skip" encerra. */
+export const TOUR_WELCOME: TourSheet = {
+  id: "welcome",
+  title: "Welcome to No Sweat",
+  body: "Your website, your office and your Instagram, all in one place. Let us show you where everything is. It takes about a minute.",
+  art: "welcome",
+};
+
+/** Última folha (de volta à Home), com os atalhos para começar. */
+export const TOUR_FINISH: TourSheet = {
+  id: "finish",
+  title: "You’re all set",
+  body: "Tap Help anytime to message our team. You can replay this tour or read the full guide whenever you like.",
+  art: "help",
+};
 
 /** Como o tour se comporta para quem está vendo o painel (calculado no servidor). */
 export type TourConfig = {
@@ -144,20 +124,13 @@ export function shouldAutoOpen({
   return pathname === TOUR_AUTO_PATH;
 }
 
-/** Próximo índice do passo, preso entre o primeiro e o último. */
-export function clampStep(index: number, total = TOUR_STEPS.length): number {
+/** Índice do passo preso entre o primeiro e o último (`total` = quantos passos existem). */
+export function clampStep(index: number, total: number): number {
   if (!Number.isFinite(index) || total <= 0) return 0;
   return Math.min(Math.max(Math.trunc(index), 0), total - 1);
 }
 
-/** O passo no índice (preso entre o primeiro e o último). */
-export function tourStepAt(index: number): TourStep {
-  const step = TOUR_STEPS[clampStep(index)];
-  if (!step) throw new Error("The welcome tour has no steps.");
-  return step;
-}
-
-/** Atalhos do último passo. Sem site ainda, "Create my website" leva ao /create. */
+/** Atalhos da folha final. Sem site ainda, "Create my website" leva ao /create. */
 export function tourShortcuts(
   latestSiteId: string | null,
 ): Array<{ key: string; label: string; href: string }> {

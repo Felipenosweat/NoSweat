@@ -1,9 +1,10 @@
 import { liveHref, siteAddress } from "@/server/admin/sites";
-import type { SiteRecord } from "@/server/store";
+import type { SiteSummary } from "@/server/store";
 import type { AdminSiteRow } from "./SitesTable";
 
 // Converte um site do store na linha que a SitesTable (componente de cliente) recebe: só o que a
-// tela mostra, nada do SiteSpec inteiro (que não precisa ir para o navegador).
+// tela mostra, nada do SiteSpec inteiro (que não precisa ir para o navegador). Aceita a linha leve
+// (SiteSummary, das listas do admin) ou o SiteRecord inteiro (ficha da conta).
 
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" });
 
@@ -12,7 +13,7 @@ const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeS
  * os planos valendo (ver ownerHasLiveAccess); com os planos desligados, avisa que sairia do ar.
  */
 export function siteBadge(
-  site: Pick<SiteRecord, "status">,
+  site: Pick<SiteSummary, "status">,
   opts: { withoutPlan: boolean; enforced: boolean },
 ): AdminSiteRow["badge"] {
   if (site.status !== "published") return { label: "Draft", tone: "draft" };
@@ -23,7 +24,7 @@ export function siteBadge(
 }
 
 export function toSiteRow(
-  site: SiteRecord,
+  site: SiteSummary,
   opts: {
     owner: { label: string; test: boolean } | null;
     withoutPlan: boolean;

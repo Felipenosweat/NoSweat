@@ -133,7 +133,7 @@ export function ReviewLinkManager({
           )}
         </div>
 
-        <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-4">
+        <form onSubmit={onSubmit} noValidate data-tour="reviews-link" className="mt-4 grid gap-4">
           {sites.length > 1 && (
             <div>
               <label htmlFor={`${fieldId}-site`} className={labelClass}>

@@ -227,12 +227,15 @@ function NavLink({
   iconClassName,
   current,
   onClick,
+  tour,
 }: {
   item: NavItem;
   className: string;
   iconClassName: string;
   current: "page" | undefined;
   onClick?: () => void;
+  /** Alvo do tour guiado (`data-tour`), ex.: "nav-clients". Só marca o elemento. */
+  tour?: string;
 }) {
   const content = (
     <>
@@ -249,6 +252,7 @@ function NavLink({
           onClick?.();
           action();
         }}
+        data-tour={tour}
         className={className}
       >
         {content}
@@ -257,13 +261,25 @@ function NavLink({
   }
   if (item.external) {
     return (
-      <a href={item.href} {...supportLinkProps(item.href)} onClick={onClick} className={className}>
+      <a
+        href={item.href}
+        {...supportLinkProps(item.href)}
+        onClick={onClick}
+        data-tour={tour}
+        className={className}
+      >
         {content}
       </a>
     );
   }
   return (
-    <Link href={item.href} aria-current={current} onClick={onClick} className={className}>
+    <Link
+      href={item.href}
+      aria-current={current}
+      onClick={onClick}
+      data-tour={tour}
+      className={className}
+    >
       {content}
     </Link>
   );
@@ -308,6 +324,7 @@ function SidebarNav({
       <div className="pb-5">
         <Link
           href="/create"
+          data-tour="new-site"
           className={glassButtonClass({ variant: "secondary", fullWidth: true })}
         >
           <PlusIcon className="size-4" />
@@ -323,6 +340,7 @@ function SidebarNav({
                 current={currentItem(item)}
                 className={sideItem}
                 iconClassName={sideIcon}
+                tour={`nav-${item.key}`}
               />
             </li>
           ))}
@@ -367,6 +385,7 @@ function SidebarNav({
                   current={currentItem(item)}
                   className={sideItem}
                   iconClassName={sideIcon}
+                  tour={`nav-${item.key}`}
                 />
               </li>
             ))}
@@ -449,6 +468,7 @@ function TabBar({
               onClick={closeMore}
               className={tabItem}
               iconClassName="size-6"
+              tour={`tab-${item.key}`}
             />
           </li>
         ))}
@@ -456,6 +476,7 @@ function TabBar({
           <details ref={moreRef} onKeyDown={onMoreKeyDown} className="group h-full">
             <summary
               aria-current={moreActive ? "page" : undefined}
+              data-tour="tab-more"
               className={`${tabItem} cursor-pointer list-none group-open:bg-brand/10 group-open:text-brand [&::-webkit-details-marker]:hidden`}
             >
               <MoreIcon className="size-6" />
@@ -589,7 +610,11 @@ export function DashboardChrome({
       />
       <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
         <Logo />
-        <Link href="/create" className={glassButtonClass({ variant: "secondary", size: "md" })}>
+        <Link
+          href="/create"
+          data-tour="new-site"
+          className={glassButtonClass({ variant: "secondary", size: "md" })}
+        >
           <PlusIcon className="size-4" />
           New site
         </Link>

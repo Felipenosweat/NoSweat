@@ -226,6 +226,31 @@ for (const vp of VIEWPORTS) {
   }
   await context.close();
 }
+// Tutorial com destaque: abre o painel, toca em "Show me around" e tira um print por passo.
+if (process.env.SEED === "1") {
+  for (const vp of VIEWPORTS) {
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
+    const page = await context.newPage();
+    try {
+      await page.goto(`${BASE}/dashboard`, { waitUntil: "networkidle", timeout: 45000 });
+      const start = page.getByRole("button", { name: /show me around/i });
+      await start.waitFor({ timeout: 8000 });
+      await start.click();
+      for (let step = 0; step < 8; step += 1) {
+        await page.waitForTimeout(1800);
+        await page.screenshot({
+          path: `${OUT}/${vp.name}-tour-${String(step).padStart(2, "0")}.png`,
+        });
+        const next = page.getByRole("button", { name: /^(next|finish)$/i });
+        if (!(await next.count())) break;
+        await next.first().click();
+      }
+    } catch (e) {
+      report.push({ viewport: vp.name, path: "tour", issues: [`tour: ${e.message}`] });
+    }
+    await context.close();
+  }
+}
 await browser.close();
 writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));

@@ -48,7 +48,12 @@ async function loadEstimates(ownerId: string) {
 
 function NewEstimateButton({ label = "New estimate" }: { label?: string }) {
   return (
-    <GlassButton href="/estimates/new" variant="primary" icon={<PlusIcon />}>
+    <GlassButton
+      href="/estimates/new"
+      variant="primary"
+      icon={<PlusIcon />}
+      data-tour="estimates-new"
+    >
       {label}
     </GlassButton>
   );

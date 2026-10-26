@@ -4,6 +4,7 @@ import type { PlanId } from "@nosweat/schema";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/admin";
+import { revalidateAdmin } from "@/server/admin/cache";
 import {
   DeleteSitesInput,
   GuestCleanupInput,
@@ -45,6 +46,7 @@ export async function createTestAccountAction(
       admin.id,
     );
     console.info(`[admin] ${admin.id} created test account ${created.userId}`);
+    revalidateAdmin();
     revalidatePath("/admin", "layout");
     return { status: "created", ...created };
   } catch (error) {
@@ -91,6 +93,9 @@ export async function deleteAccountAction(
     return {
       error: error instanceof TestAccountError ? error.message : "Something went wrong. Try again.",
     };
+  } finally {
+    // Mesmo se falhar no meio (os sites podem já ter saído), a lista não fica com dado velho.
+    revalidateAdmin();
   }
 
   revalidatePath("/admin", "layout");
@@ -105,6 +110,7 @@ export type AdminActionResult = { ok: boolean; message: string };
 
 /** Recarrega todas as páginas do /admin (os sites aparecem em várias) e o painel. */
 function refreshAdmin() {
+  revalidateAdmin();
   revalidatePath("/admin", "layout");
   revalidatePath("/dashboard");
 }

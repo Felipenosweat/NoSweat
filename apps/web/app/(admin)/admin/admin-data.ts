@@ -1,9 +1,10 @@
-import type { Overview } from "@/server/admin/metrics";
+import type { ClientAccount } from "@/server/admin";
+import type { PlanState } from "@/server/admin/data";
 import type { SiteOwnerInfo } from "@/server/admin/sites";
-import type { SiteRecord } from "@/server/store";
+import type { SiteSummary } from "@/server/store";
 
 // Contas derivadas que mais de uma página do /admin usa (Overview, Accounts, Websites), a partir
-// do `loadOverview()`. Só funções puras: quem lê o relógio é o loadOverview.
+// das leituras de server/admin/data.ts. Só funções puras: quem lê o relógio são as leituras.
 
 export type Param = string | string[] | undefined;
 
@@ -26,9 +27,9 @@ export const formatCount = (value: number | null) =>
  * Site publicado de dono sem plano: com os planos valendo, o público vê "temporarily
  * unavailable" (ownerHasLiveAccess); sem eles, sairia do ar ao ligar REQUIRE_PLAN.
  */
-export function withoutPlanCheck(overview: Pick<Overview, "ownersWithAccess">) {
-  const { ownersWithAccess } = overview;
-  return (site: SiteRecord) =>
+export function withoutPlanCheck(state: Pick<PlanState, "ownersWithAccess">) {
+  const { ownersWithAccess } = state;
+  return (site: Pick<SiteSummary, "status" | "ownerId">) =>
     site.status === "published" &&
     site.ownerId !== null &&
     ownersWithAccess !== null &&
@@ -36,21 +37,11 @@ export function withoutPlanCheck(overview: Pick<Overview, "ownersWithAccess">) {
 }
 
 /** Dono de cada site (e-mail e marca de teste) para os filtros e a busca de sites. */
-export function ownerInfo(overview: Pick<Overview, "accounts">): Map<string, SiteOwnerInfo> {
+export function ownerInfo(data: { accounts: ClientAccount[] }): Map<string, SiteOwnerInfo> {
   return new Map(
-    overview.accounts.map((account) => [
+    data.accounts.map((account) => [
       account.id,
       { email: account.email, testAccount: account.testAccount },
     ]),
   );
-}
-
-/** Sites de cada conta (visitantes sem conta ficam de fora). */
-export function sitesByOwner(sites: SiteRecord[]): Map<string, SiteRecord[]> {
-  const map = new Map<string, SiteRecord[]>();
-  for (const site of sites) {
-    if (!site.ownerId) continue;
-    map.set(site.ownerId, [...(map.get(site.ownerId) ?? []), site]);
-  }
-  return map;
 }
