@@ -36,7 +36,7 @@ async function loadJob(ownerId: string, id: string) {
       console.error("[schedule] could not list the team", error);
       return [];
     }),
-    getClientDetail(ownerId, job.clientId)
+    getClientDetail(ownerId, found.clientId)
       .then((detail): ClientContact | null =>
         detail ? { phone: detail.client.phone, address: detail.client.address } : null,
       )
