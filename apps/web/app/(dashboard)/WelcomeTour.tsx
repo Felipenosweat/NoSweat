@@ -1,34 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronRightIcon } from "@/components/DashboardUi";
 import { GlassButton, GlassSheet, cx, focusRing } from "@/components/glass";
 import {
   OnboardingResponse,
+  TOUR_AUTO_PATH,
+  TOUR_FINISH,
   TOUR_OPEN_EVENT,
-  TOUR_STEPS,
+  TOUR_WELCOME,
   clampStep,
   shouldAutoOpen,
   tourShortcuts,
-  tourStepAt,
   tourStorageKey,
   type OnboardingRequest,
   type TourConfig,
 } from "@/lib/onboarding";
 import { TourArt } from "./TourArt";
+import {
+  TOUR_PROGRESS_KEY,
+  parseProgress,
+  serializeProgress,
+  shouldContinue,
+  type TourProgress,
+} from "./tour/progress";
+import { SpotlightTour } from "./tour/SpotlightTour";
+import {
+  DESKTOP_MIN_WIDTH,
+  nextAfterMissing,
+  remapStepIndex,
+  spotlightSteps,
+  stepCounter,
+  viewportFor,
+  type TourViewport,
+} from "./tour/steps";
 
-// Tour de boas-vindas do painel: uma folha de vidro com 6 passos curtos (centralizada no
-// computador, presa embaixo no celular). Abre sozinho uma vez por conta, no /dashboard; "Take the
-// tour" (menu e /guide) abre de novo pelo evento TOUR_OPEN_EVENT. Fechar de qualquer jeito (Skip,
-// Esc, tocar fora, "Let's go", um atalho) conta como visto: grava no localStorage na hora (para
-// nunca piscar duas vezes) e, com conta, no user_metadata (POST /api/me/onboarding).
-// Teclado: Tab entre os botões, setas ← → trocam de passo, Esc fecha. "Reduzir movimento"
-// desliga a animação (só `motion-safe:`).
+// Tour de boas-vindas do painel, em três partes:
+// 1. Folha de boas-vindas (desenho "welcome"): "Show me around" começa o passeio; "Skip" encerra.
+// 2. Passeio pela tela de verdade (tour/SpotlightTour.tsx): escurece tudo menos o item do menu ou
+//    o botão do passo, explica o que ele faz e vai trocando de página sozinho (Clients, Schedule,
+//    Estimates, Invoices...). No celular aponta as abas e o "More".
+// 3. Folha final, de volta à Home, com os atalhos para começar.
+// Abre sozinho uma vez por conta, no /dashboard; "Take the tour" (menu e /guide) abre de novo pelo
+// evento TOUR_OPEN_EVENT. Fechar de qualquer jeito (Skip, Esc, terminar, um atalho) conta como
+// visto: grava no localStorage na hora (para nunca abrir duas vezes) e, com conta, no user_metadata
+// (POST /api/me/onboarding). No modo "ver como" nada é gravado (config.persist = "none").
+// O passo atual fica no sessionStorage: se a página recarregar no meio, o tour continua.
 
 /** Espera antes de abrir sozinho: deixa o painel aparecer primeiro. */
 const AUTO_OPEN_DELAY_MS = 450;
+
+type Phase = "closed" | "welcome" | "spotlight" | "finish";
 
 /** Abre o tour de novo (de qualquer lugar do painel). */
 export function openWelcomeTour(): void {
@@ -51,17 +75,58 @@ function writeLocalDone(accountKey: string): void {
   }
 }
 
+function readProgress(): TourProgress | null {
+  try {
+    return parseProgress(window.sessionStorage.getItem(TOUR_PROGRESS_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writeProgress(progress: TourProgress): void {
+  try {
+    window.sessionStorage.setItem(TOUR_PROGRESS_KEY, serializeProgress(progress));
+  } catch {
+    // Sem sessionStorage: o tour só não continua depois de recarregar a página.
+  }
+}
+
+function clearProgress(): void {
+  try {
+    window.sessionStorage.removeItem(TOUR_PROGRESS_KEY);
+  } catch {
+    // Idem.
+  }
+}
+
 async function saveOnAccount(): Promise<void> {
   const body: OnboardingRequest = { tour: "done" };
   const res = await fetch("/api/me/onboarding", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    // Um atalho do último passo troca de página logo em seguida: o pedido não pode morrer junto.
+    // Um atalho da folha final troca de página logo em seguida: o pedido não pode morrer junto.
     keepalive: true,
   });
   if (!res.ok) throw new Error(`onboarding ${res.status}`);
   OnboardingResponse.parse(await res.json());
+}
+
+/** `matchMedia` como estado do React (no servidor: `false`). */
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const list = window.matchMedia(query);
+      list.addEventListener("change", onChange);
+      return () => list.removeEventListener("change", onChange);
+    },
+    [query],
+  );
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
 }
 
 export function WelcomeTour({
@@ -73,26 +138,80 @@ export function WelcomeTour({
   latestSiteId: string | null;
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const [phase, setPhase] = useState<Phase>("closed");
   const [index, setIndex] = useState(0);
+  /** Para que lado o tour andava (passo sem alvo é pulado nesse sentido). */
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
   /** Texto lido pelo leitor de tela ao trocar de passo. */
   const [announcement, setAnnouncement] = useState("");
-  const nextRef = useRef<HTMLButtonElement>(null);
-  /** Já abriu sozinho neste carregamento (nunca duas vezes). */
+  const startRef = useRef<HTMLButtonElement>(null);
+  const doneRef = useRef<HTMLButtonElement>(null);
+  /** Já abriu sozinho (ou continuou um tour guardado) neste carregamento: nunca duas vezes. */
   const triedRef = useRef(false);
   /** A conta já tem a marca no servidor (ou o pedido está a caminho). */
   const savedRef = useRef(!config.autoShow);
 
-  const total = TOUR_STEPS.length;
-  const step = tourStepAt(index);
-  const last = index >= total - 1;
+  const viewport: TourViewport = useMediaQuery(`(min-width: ${DESKTOP_MIN_WIDTH}px)`)
+    ? "desktop"
+    : "mobile";
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const steps = useMemo(() => spotlightSteps(viewport), [viewport]);
+
+  // A tela passou de computador para celular (ou o contrário) no meio do passeio: a lista de
+  // passos muda e o índice acompanha o mesmo passo (ajuste durante o render, sem efeito).
+  const [stepsViewport, setStepsViewport] = useState<TourViewport>(viewport);
+  if (stepsViewport !== viewport) {
+    setStepsViewport(viewport);
+    setIndex((i) => remapStepIndex(spotlightSteps(stepsViewport), steps, i));
+  }
+
+  const safeIndex = clampStep(index, steps.length);
+  const step = steps[safeIndex];
+
+  const announce = useCallback(
+    (to: number) => {
+      const target = steps[to];
+      if (target) setAnnouncement(`Step ${stepCounter(to, steps.length)}: ${target.title}`);
+    },
+    [steps],
+  );
 
   const start = useCallback(() => {
     triedRef.current = true;
+    clearProgress();
     setIndex(0);
+    setDirection("forward");
     setAnnouncement("");
-    setOpen(true);
+    setPhase("welcome");
   }, []);
+
+  // Continua um tour guardado nesta aba (a página recarregou no meio). Roda antes do auto-abrir.
+  useEffect(() => {
+    const progress = readProgress();
+    const fromSteps = progress ? spotlightSteps(progress.viewport) : [];
+    if (
+      !progress ||
+      !shouldContinue({
+        progress,
+        accountKey: config.accountKey,
+        now: Date.now(),
+        totalSteps: fromSteps.length,
+      })
+    ) {
+      if (progress) clearProgress();
+      return;
+    }
+    triedRef.current = true;
+    // O setState só roda no timer (regra react-hooks/set-state-in-effect).
+    const timer = window.setTimeout(() => {
+      const here = spotlightSteps(viewportFor(window.innerWidth));
+      setIndex(remapStepIndex(fromSteps, here, progress.index));
+      setDirection("forward");
+      setPhase(progress.phase);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [config.accountKey]);
 
   // Abre sozinho uma vez, no /dashboard, depois de o painel aparecer.
   useEffect(() => {
@@ -106,7 +225,6 @@ export function WelcomeTour({
     ) {
       return;
     }
-    // O setState só roda no timer (regra react-hooks/set-state-in-effect).
     const timer = window.setTimeout(start, AUTO_OPEN_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [config, pathname, start]);
@@ -117,16 +235,23 @@ export function WelcomeTour({
     return () => window.removeEventListener(TOUR_OPEN_EVENT, start);
   }, [start]);
 
-  // Trocou de passo e o botão com foco sumiu (ex.: "Back" no primeiro passo): o foco vai para
-  // "Next", nunca para o fundo da página.
+  // Guarda onde o passeio está (para continuar depois de recarregar).
   useEffect(() => {
-    if (!open) return;
-    const active = document.activeElement;
-    if (!active || active === document.body) nextRef.current?.focus();
-  }, [open, index]);
+    if (phase !== "spotlight" && phase !== "finish") return;
+    writeProgress({
+      v: 1,
+      accountKey: config.accountKey,
+      phase,
+      index: safeIndex,
+      viewport,
+      savedAt: Date.now(),
+    });
+  }, [phase, safeIndex, viewport, config.accountKey]);
 
+  /** Fim do tour (pulou, terminou ou saiu por um atalho): conta como visto, igual a antes. */
   const close = useCallback(() => {
-    setOpen(false);
+    setPhase("closed");
+    clearProgress();
     if (config.persist === "none") return;
     writeLocalDone(config.accountKey);
     if (config.persist !== "account" || savedRef.current) return;
@@ -138,126 +263,136 @@ export function WelcomeTour({
     });
   }, [config]);
 
-  const go = (to: number) => {
-    const target = clampStep(to, total);
-    if (target === index) return;
-    setIndex(target);
-    setAnnouncement(`Step ${target + 1} of ${total}: ${tourStepAt(target).title}`);
+  const showMeAround = () => {
+    setIndex(0);
+    setDirection("forward");
+    announce(0);
+    setPhase("spotlight");
   };
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      go(index + 1);
-    } else if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      go(index - 1);
-    }
+  /** Folha final, sempre na Home. */
+  const finish = () => {
+    // A folha abre com o título dela (o leitor de tela anuncia o diálogo).
+    setPhase("finish");
+    if (pathname !== TOUR_AUTO_PATH) router.push(TOUR_AUTO_PATH);
   };
+
+  const goTo = (to: number, dir: "forward" | "back") => {
+    setIndex(to);
+    setDirection(dir);
+    announce(to);
+  };
+
+  const next = () => {
+    if (safeIndex + 1 >= steps.length) finish();
+    else goTo(safeIndex + 1, "forward");
+  };
+
+  const back = () => {
+    if (safeIndex > 0) goTo(safeIndex - 1, "back");
+  };
+
+  // O alvo do passo não apareceu (conta sem aquele botão, página com erro...): pula, no mesmo
+  // sentido em que a pessoa andava. Nunca trava o tour.
+  const onMissing = () => {
+    const result = nextAfterMissing(safeIndex, direction, steps.length);
+    if (result === "finish") finish();
+    else goTo(result.index, result.direction);
+  };
+
+  const navigate = useCallback((route: string) => router.push(route), [router]);
 
   return (
-    <GlassSheet
-      open={open}
-      onClose={close}
-      initialFocusRef={nextRef}
-      title={step.title}
-      description={step.body}
-      media={
-        // `key`: o desenho novo entra com um fade curto a cada passo.
-        <div key={step.id} className="motion-safe:animate-[ns-fade_220ms_ease-out_both]">
-          <TourArt art={step.art} />
+    <>
+      <GlassSheet
+        open={phase === "welcome"}
+        onClose={close}
+        initialFocusRef={startRef}
+        title={TOUR_WELCOME.title}
+        description={TOUR_WELCOME.body}
+        media={<TourArt art={TOUR_WELCOME.art} />}
+        // No celular: folha presa embaixo, na largura toda (como as folhas do iOS).
+        className="max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <GlassButton variant="ghost" onClick={close} className="-ml-2">
+            Skip
+          </GlassButton>
+          <GlassButton
+            ref={startRef}
+            variant="primary"
+            onClick={showMeAround}
+            trailingIcon={<ChevronRightIcon />}
+          >
+            Show me around
+          </GlassButton>
         </div>
-      }
-      // No celular: folha presa embaixo, na largura toda (como as folhas do iOS).
-      className="max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:pb-[env(safe-area-inset-bottom)]"
-    >
-      <div onKeyDown={onKeyDown}>
-        <p aria-live="polite" className="sr-only">
-          {announcement}
-        </p>
+      </GlassSheet>
 
-        {last && (
-          <div className="grid gap-2">
-            <p className="text-[13px] font-semibold text-(--glass-fg-muted)">Start with one:</p>
-            <ul className="grid gap-2">
-              {tourShortcuts(latestSiteId).map((shortcut) => (
-                <li key={shortcut.key} className="min-w-0">
-                  <GlassButton
-                    href={shortcut.href}
-                    variant="secondary"
-                    fullWidth
-                    onClick={close}
-                    trailingIcon={<ChevronRightIcon />}
-                  >
-                    {shortcut.label}
-                  </GlassButton>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
-              Or{" "}
-              <Link
-                href="/guide"
-                onClick={close}
-                className={cx(
-                  "rounded font-semibold text-brand underline-offset-2 hover:underline",
-                  focusRing,
-                )}
-              >
-                read the full guide
-              </Link>
-              .
-            </p>
-          </div>
-        )}
-
-        <ol aria-label="Tour steps" className={cx("flex items-center gap-0.5", last && "mt-5")}>
-          {TOUR_STEPS.map((item, i) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => go(i)}
-                aria-label={`Step ${i + 1} of ${total}: ${item.title}`}
-                aria-current={i === index ? "step" : undefined}
-                className={cx("grid size-6 place-items-center rounded-full", focusRing)}
-              >
-                <span
-                  aria-hidden="true"
-                  className={cx(
-                    "block h-1.5 rounded-full motion-safe:transition-[width,background-color] motion-safe:duration-200",
-                    i === index ? "w-5 bg-brand" : "w-1.5 bg-slate-300 hover:bg-slate-400",
-                  )}
-                />
-              </button>
-            </li>
-          ))}
-        </ol>
-
-        <div className="mt-4 flex items-center justify-between gap-2">
-          {last ? (
-            <span />
-          ) : (
-            <GlassButton key="skip" variant="ghost" onClick={close} className="-ml-2">
-              Skip
-            </GlassButton>
-          )}
-          <div className="flex items-center gap-2">
-            {index > 0 && (
-              <GlassButton key="back" variant="secondary" onClick={() => go(index - 1)}>
-                Back
-              </GlassButton>
-            )}
-            <GlassButton
-              key="next"
-              ref={nextRef}
-              variant="primary"
-              onClick={() => (last ? close() : go(index + 1))}
+      <GlassSheet
+        open={phase === "finish"}
+        onClose={close}
+        initialFocusRef={doneRef}
+        title={TOUR_FINISH.title}
+        description={TOUR_FINISH.body}
+        media={<TourArt art={TOUR_FINISH.art} />}
+        className="max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none max-sm:pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="grid gap-2">
+          <p className="text-[13px] font-semibold text-(--glass-fg-muted)">Start with one:</p>
+          <ul className="grid gap-2">
+            {tourShortcuts(latestSiteId).map((shortcut) => (
+              <li key={shortcut.key} className="min-w-0">
+                <GlassButton
+                  href={shortcut.href}
+                  variant="secondary"
+                  fullWidth
+                  onClick={close}
+                  trailingIcon={<ChevronRightIcon />}
+                >
+                  {shortcut.label}
+                </GlassButton>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
+            Or{" "}
+            <Link
+              href="/guide"
+              onClick={close}
+              className={cx(
+                "rounded font-semibold text-brand underline-offset-2 hover:underline",
+                focusRing,
+              )}
             >
-              {last ? "Let’s go" : "Next"}
-            </GlassButton>
-          </div>
+              read the full guide
+            </Link>
+            .
+          </p>
         </div>
-      </div>
-    </GlassSheet>
+        <div className="mt-5 flex justify-end">
+          <GlassButton ref={doneRef} variant="primary" onClick={close}>
+            Let’s go
+          </GlassButton>
+        </div>
+      </GlassSheet>
+
+      {phase === "spotlight" && step && (
+        <SpotlightTour
+          step={step}
+          stepKey={`${viewport}:${safeIndex}:${step.id}`}
+          index={safeIndex}
+          total={steps.length}
+          routeReady={pathname === step.route}
+          reducedMotion={reducedMotion}
+          announcement={announcement}
+          onNavigate={navigate}
+          onBack={back}
+          onNext={next}
+          onSkip={close}
+          onMissing={onMissing}
+        />
+      )}
+    </>
   );
 }

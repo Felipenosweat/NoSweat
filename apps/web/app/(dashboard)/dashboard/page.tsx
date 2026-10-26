@@ -949,7 +949,11 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
     timeZone: "UTC",
   }).format(new Date(`${today}T12:00:00Z`));
   return (
-    <section aria-labelledby="today-heading" data-tour="home-today" className="flex min-w-0 flex-col">
+    <section
+      aria-labelledby="today-heading"
+      data-tour="home-today"
+      className="flex min-w-0 flex-col"
+    >
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="today-heading" className={sectionTitle}>
           Today

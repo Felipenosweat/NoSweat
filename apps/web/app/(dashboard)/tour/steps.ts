@@ -261,7 +261,10 @@ export function stepCounter(index: number, total: number): string {
 }
 
 /** Título e texto do passo para o alvo que apareceu. */
-export function stepCopy(step: SpotlightStep, targetId: string | null): { title: string; body: string } {
+export function stepCopy(
+  step: SpotlightStep,
+  targetId: string | null,
+): { title: string; body: string } {
   const target = step.targets.find((t) => t.id === targetId);
   return { title: target?.title ?? step.title, body: target?.body ?? step.body };
 }

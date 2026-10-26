@@ -49,7 +49,12 @@ async function loadInvoices(ownerId: string) {
 
 function NewInvoiceButton({ label = "New invoice" }: { label?: string }) {
   return (
-    <GlassButton href="/invoices/new" variant="primary" icon={<PlusIcon />} data-tour="invoices-new">
+    <GlassButton
+      href="/invoices/new"
+      variant="primary"
+      icon={<PlusIcon />}
+      data-tour="invoices-new"
+    >
       {label}
     </GlassButton>
   );
