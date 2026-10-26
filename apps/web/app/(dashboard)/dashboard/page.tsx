@@ -1248,19 +1248,23 @@ async function GreetingSummary({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-
 /** O escritório primeiro: os serviços de hoje e o dinheiro. Erro = a seção some. */
 async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
   const office = await loadOffice(ctx.ownerId, ctx.now);
   return office ? <OfficeSection office={office} readOnly={ctx.readOnly} /> : null;
 }
 
-
 /**
  * Quadros, "Needs you" e (com site) o checklist. `order`: com site, os quadros primeiro; conta sem
  * site mostra "Needs you" antes (o convite para criar fica em cima, ver `HomeSections`).
  */
-async function Overview({ ctx, order }: { ctx: HomeContext; order: "stats-first" | "needs-first" }) {
+async function Overview({
+  ctx,
+  order,
+}: {
+  ctx: HomeContext;
+  order: "stats-first" | "needs-first";
+}) {
   const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
   const quickStats = <QuickStats stats={homeStats(home, ctx.now)} />;
   const needs = <NeedsYou rows={home.needRows} />;
@@ -1290,9 +1294,6 @@ async function Overview({ ctx, order }: { ctx: HomeContext; order: "stats-first"
   );
 }
 
-
-
-
 /** Os cards dos sites: espera os pedidos por site e o plano (selo "Offline"). */
 async function SitesCards({ ctx }: { ctx: HomeContext }) {
   const [sites, { leadCounts }, access] = await Promise.all([
@@ -1304,7 +1305,6 @@ async function SitesCards({ ctx }: { ctx: HomeContext }) {
   const offline = access.enforced && !access.live;
   return <SitesGrid sites={sites} leadCounts={leadCounts} headingLevel={3} offline={offline} />;
 }
-
 
 /**
  * Tudo depois do escritório. A lista de sites (a mesma que a moldura já leu, com dedupe) decide a

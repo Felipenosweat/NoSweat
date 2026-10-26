@@ -1,8 +1,9 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import { cx } from "./styles";
 
-// Cartão de vidro. Sem "use client". Para listas longas prefira `material="regular"` (padrão):
-// cada superfície com desfoque custa um pouco de GPU.
+// Cartão de vidro. Sem "use client". `material="regular"` (padrão) é translúcido SEM desfoque
+// (barato, pode ter dezenas na página); "strong" desfoca o que está atrás (custa GPU): só para
+// cartão que fica por cima de conteúdo movimentado.
 
 const PADDING = {
   none: "",

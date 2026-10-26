@@ -147,7 +147,11 @@ html {
    (clareia no hover), glass-on-dark (vale para tudo dentro: vidro escuro e texto claro).
    Texto em cima do vidro: text-(--glass-fg) e text-(--glass-fg-muted) (contraste AA nos dois tons).
    Não misture com shadow-*: a sombra do vidro é ajustada por glass-raised/glass-flat.
-   Sem backdrop-filter, com "reduzir transparência" ou "aumentar contraste": fundo sólido. */
+   Sem backdrop-filter, com "reduzir transparência" ou "aumentar contraste": fundo sólido.
+   Desempenho: só o que flutua sobre o conteúdo (glass-strong: menus, folhas, barras flutuantes;
+   glass-bar: barras grudadas) usa backdrop-filter. `glass` (cartões e campos DENTRO do conteúdo,
+   dezenas por página) é translúcido sem desfoque: atrás deles só há o fundo de manchas suaves
+   (glass-backdrop), onde o desfoque quase não muda nada e custava caro para pintar e rolar. */
 
 /* Sombra de um elemento só (não herda: um botão dentro de um cartão "raised" não fica raised). */
 @property --glass-shadow {
@@ -180,6 +184,15 @@ html {
     --glass-pill: #ffffff;
     --glass-ghost-hover: rgb(7 27 51 / 0.06);
   }
+
+  /* Celular: desfoque menor nas barras, menus e folhas (o custo cresce com o raio; numa tela
+     pequena a diferença quase não aparece). */
+  @media (max-width: 639px) {
+    :root {
+      --glass-blur: 12px;
+      --glass-blur-strong: 20px;
+    }
+  }
 }
 
 /* Vidro sobre fundo escuro (ex.: faixa bg-ink). Põe no contêiner; vale para os filhos. */
@@ -205,24 +218,19 @@ html {
   --glass-ghost-hover: rgb(255 255 255 / 0.1);
 }
 
+/* Sem backdrop-filter de propósito (ver o comentário acima). Quem fica sobre uma foto (ex.: o
+   selo na miniatura do site) põe um desfoque pequeno à parte (backdrop-blur-sm). */
 @utility glass {
   background-color: var(--glass-bg);
   background-image: linear-gradient(180deg, var(--glass-sheen), transparent 45%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   box-shadow:
     inset 0 1px 0 0 var(--glass-specular),
     inset 0 0 0 1px var(--glass-rim),
     var(--glass-shadow, var(--glass-depth));
 
-  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    background-color: var(--glass-solid);
-  }
   @media (prefers-reduced-transparency: reduce) {
     background-color: var(--glass-solid);
     background-image: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
   }
   @media (prefers-contrast: more) {
     background-color: var(--glass-solid);
