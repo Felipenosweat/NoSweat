@@ -18,7 +18,7 @@ export function NoSweatBadge({ className = "" }: { className?: string }) {
         href={HREF}
         target="_blank"
         rel="noopener"
-        className="inline-flex min-h-11 items-center gap-2 text-[11px] tracking-[0.08em] opacity-55 transition-opacity hover:opacity-90 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+        className="inline-flex min-h-11 items-center gap-2 text-[11px] tracking-[0.08em] opacity-75 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
       >
         <svg aria-hidden="true" viewBox="0 0 12 12" className="size-2.5" fill="none">
           <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3" />
