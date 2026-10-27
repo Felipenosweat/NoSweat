@@ -1,0 +1,437 @@
+/* Greenline Landscaping (demonstração). Cores, tipos e os efeitos que não cabem em utilitários.
+   Superfície "single-paper": um papel de aveia só, com uma fibra leve; as cores vêm das fotos
+   (verde-pinho do gramado, barro vermelho de Charlotte, palha). Contraste medido sobre o papel
+   #f0eadc: tinta 12,5:1; tinta a 75% 5,9:1 (a 72%, 5,4:1); pinho 6,6:1; barro #8a3e22 6,3:1
+   (texto pequeno); barro #9b4527 5,4:1 (itálico grande); papel sobre pinho 6,6:1 (botão).
+   Palha (#c39a4a) só em fios, nunca em texto. Nada de sálvia clara em texto. */
+
+.greenline {
+  --g-paper: #f0eadc;
+  --g-paper-2: #e7dfcc;
+  --g-ink: #1e2a1f;
+  --g-pine: #2d5b36;
+  --g-pine-deep: #1f4228;
+  --g-clay: #9b4527;
+  --g-clay-ink: #8a3e22;
+  --g-straw: #c39a4a;
+  --g-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  background-color: var(--g-paper);
+  /* Fibra do papel: ruído fixo em SVG, bem fraco (não anima, não pesa). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .15 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--g-ink);
+  font-family: var(--font-g-body), system-ui, sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+.greenline .g-display {
+  font-family: var(--font-g-display), Georgia, serif;
+  font-weight: 360;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 100;
+  text-wrap: balance;
+}
+
+.greenline .g-em {
+  font-style: italic;
+  font-weight: 340;
+  color: var(--g-clay);
+}
+
+.greenline p,
+.greenline li,
+.greenline dd {
+  text-wrap: pretty;
+}
+
+.greenline .g-caps {
+  font-family: var(--font-g-body), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* A marca: o traço verde corre sob "line". */
+.greenline .g-wordmark-line {
+  position: absolute;
+  left: 54%;
+  right: -0.08em;
+  bottom: -0.1em;
+  height: max(2px, 0.07em);
+  border-radius: 99px;
+  background: var(--g-pine);
+}
+
+/* ---------- Foco, links, botões ---------- */
+
+.greenline .g-focus:focus-visible,
+.greenline .g-link:focus-visible {
+  outline: 2px solid var(--g-pine);
+  outline-offset: 3px;
+}
+
+.greenline .g-focus-within:has(:focus-visible) {
+  outline: 2px solid var(--g-pine);
+  outline-offset: 3px;
+}
+
+.greenline .g-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 300ms;
+}
+
+.greenline .g-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.greenline .g-underline {
+  background: linear-gradient(var(--g-pine), var(--g-pine)) 0 100% / 0 1.5px no-repeat;
+  padding-bottom: 3px;
+  transition: background-size 500ms var(--g-ease);
+}
+
+.greenline .g-underline:hover,
+.greenline .g-underline:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+.greenline .g-btn {
+  background: var(--g-pine);
+  color: var(--g-paper);
+  transition: background 300ms var(--g-ease);
+}
+
+.greenline .g-btn:hover {
+  background: var(--g-pine-deep);
+}
+
+.greenline .g-btn-ghost {
+  border: 1px solid color-mix(in srgb, var(--g-ink) 40%, transparent);
+  color: var(--g-ink);
+  transition: background 300ms var(--g-ease);
+}
+
+.greenline .g-btn-ghost:hover {
+  background: color-mix(in srgb, var(--g-ink) 6%, transparent);
+}
+
+/* ---------- Barra do topo ---------- */
+
+.greenline .g-bar {
+  border-bottom: 1px solid transparent;
+  transition: border-color 400ms;
+}
+
+.greenline .g-bar[data-scrolled] {
+  border-bottom-color: color-mix(in srgb, var(--g-ink) 14%, transparent);
+}
+
+.greenline .g-menu {
+  display: none;
+}
+
+.greenline .g-menu[data-open] {
+  display: block;
+  animation: g-fade-in 300ms var(--g-ease);
+}
+
+/* ---------- Colagem: recortes com borda de papel ---------- */
+
+.greenline .g-cutout {
+  background: var(--g-paper);
+  padding: 7px;
+  box-shadow: 0 18px 40px -24px rgb(30 42 31 / 0.45);
+}
+
+@media (min-width: 1024px) {
+  .greenline .g-cutout {
+    padding: 10px;
+  }
+}
+
+.greenline .g-paper-card {
+  background-color: var(--g-paper);
+  box-shadow: 0 30px 60px -40px rgb(30 42 31 / 0.5);
+}
+
+/* ---------- Abertura (topo) ---------- */
+
+.greenline .g-hero-photo img {
+  animation: g-settle 2200ms var(--g-ease) both;
+}
+
+.greenline .g-hero-cut > .g-cutout {
+  animation: g-rise 1100ms var(--g-ease) 450ms both;
+}
+
+.greenline .g-hero-title {
+  animation: g-rise 1000ms var(--g-ease) 120ms both;
+}
+
+.greenline .g-hero-in {
+  animation: g-fade-in 900ms var(--g-ease) 380ms both;
+}
+
+@keyframes g-settle {
+  from {
+    opacity: 0.4;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes g-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+@keyframes g-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- O ano no quintal ---------- */
+
+.greenline .g-season-tab {
+  color: color-mix(in srgb, var(--g-ink) 78%, var(--g-paper));
+  transition: color 300ms;
+}
+
+.greenline .g-season-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: var(--g-pine);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 500ms var(--g-ease);
+}
+
+.greenline .g-season-tab:hover {
+  color: var(--g-ink);
+}
+
+.greenline .g-season-tab[data-on] {
+  color: var(--g-ink);
+}
+
+.greenline .g-season-tab[data-on]::after {
+  transform: scaleX(1);
+}
+
+.greenline .g-season-tab[data-on] .g-display {
+  font-style: italic;
+  color: var(--g-pine);
+}
+
+.greenline .g-season-img {
+  transition:
+    opacity 800ms var(--g-ease),
+    transform 1400ms var(--g-ease);
+}
+
+.greenline .g-fade {
+  animation: g-rise 600ms var(--g-ease) both;
+}
+
+.greenline .g-almanac-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.greenline .g-almanac-item {
+  border-top: 1px solid color-mix(in srgb, var(--g-ink) 12%, transparent);
+}
+
+.greenline .g-almanac-cols,
+.greenline .g-almanac-today {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+}
+
+.greenline .g-almanac-cols .g-almanac-label,
+.greenline .g-almanac-today .g-almanac-label,
+.greenline .g-almanac > .g-almanac-row:first-child .g-almanac-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .greenline .g-almanac-row {
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+  }
+
+  .greenline .g-almanac-cols .g-almanac-label,
+  .greenline .g-almanac-today .g-almanac-label,
+  .greenline .g-almanac > .g-almanac-row:first-child .g-almanac-label {
+    display: block;
+  }
+}
+
+.greenline .g-col {
+  border-left: 1px solid color-mix(in srgb, var(--g-ink) 7%, transparent);
+  transition: background-color 500ms var(--g-ease);
+}
+
+.greenline .g-col[data-on] {
+  background-color: color-mix(in srgb, var(--g-pine) 10%, transparent);
+}
+
+.greenline .g-month {
+  color: color-mix(in srgb, var(--g-ink) 78%, var(--g-paper));
+  padding-bottom: 4px;
+}
+
+.greenline .g-month[data-on] {
+  color: var(--g-pine);
+}
+
+.greenline .g-bar-fill {
+  background: var(--g-pine);
+}
+
+/* "Fescue browns out": hachura de barro (seca), não uma faixa de trabalho. */
+.greenline .g-bar-fill[data-tone="clay"] {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--g-clay) 0 3px,
+    color-mix(in srgb, var(--g-clay) 25%, transparent) 3px 6px
+  );
+}
+
+.greenline .g-today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1.5px dashed var(--g-clay);
+}
+
+.greenline .g-today > span {
+  position: absolute;
+  bottom: -26px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--g-clay-ink);
+}
+
+/* ---------- Pedido de orçamento ---------- */
+
+.greenline .g-quote-card {
+  border-radius: 20px;
+  background: var(--g-paper-2);
+  padding: 22px 18px 26px;
+}
+
+@media (min-width: 640px) {
+  .greenline .g-quote-card {
+    padding: 36px 40px 40px;
+  }
+}
+
+.greenline .g-field:focus {
+  border-color: var(--g-pine);
+}
+
+.greenline .g-choice {
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--g-ink) 22%, transparent);
+  border-radius: 12px;
+  background: var(--g-paper);
+  transition:
+    border-color 250ms,
+    box-shadow 250ms;
+}
+
+.greenline .g-choice:hover {
+  border-color: color-mix(in srgb, var(--g-ink) 45%, transparent);
+}
+
+.greenline .g-choice:has(:checked) {
+  border-color: var(--g-pine);
+  box-shadow: inset 0 0 0 1px var(--g-pine);
+}
+
+.greenline .g-choice:has(:checked) svg {
+  color: var(--g-pine);
+}
+
+.greenline .g-plan-house {
+  fill: color-mix(in srgb, var(--g-ink) 55%, transparent);
+}
+
+.greenline .g-choice:has(:checked) .g-plan-house {
+  fill: var(--g-clay);
+}
+
+.greenline .g-check {
+  background: var(--g-paper);
+  transition: border-color 250ms;
+}
+
+.greenline .g-check:has(:checked) {
+  border-color: var(--g-pine);
+}
+
+.greenline .g-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--g-ink) 30%, transparent);
+  background: var(--g-paper);
+  font-size: 15px;
+  color: var(--g-ink);
+}
+
+.greenline .g-pill:has(:checked) {
+  background: var(--g-pine);
+  border-color: var(--g-pine);
+  color: var(--g-paper);
+}
+
+.greenline .g-drop {
+  border: 1.5px dashed color-mix(in srgb, var(--g-ink) 35%, transparent);
+  background: var(--g-paper);
+  transition: border-color 250ms;
+}
+
+.greenline .g-drop:hover {
+  border-color: var(--g-pine);
+}
+
+.greenline .g-step {
+  animation: g-rise 600ms var(--g-ease);
+}
+
+/* ---------- Movimento reduzido: nada anda, tudo aparece ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .greenline *,
+  .greenline *::before,
+  .greenline *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+}
+
+/* Etiqueta "agora no quintal" sobre a foto do topo (aparece depois da hidratação). */
+.greenline .g-now {
+  box-shadow: 0 16px 36px -22px rgb(30 42 31 / 0.55);
+  animation: g-rise 800ms var(--g-ease) both;
+}

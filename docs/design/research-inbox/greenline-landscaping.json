@@ -1,0 +1,97 @@
+[
+  {
+    "id": "gardenlust",
+    "name": "Gardenlust (garden design, landscaping and maintenance, Sydney)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/gardenlust",
+    "awwwardsEvidence": "WebSearch `awwwards.com/sites landscaping honorable mention` (result summary): 'Gardenlust received an honorable mention on August 26, 2021, credited to Made Agency. Its description centers on landscapes and the natural world.' The live site's footer reads 'GARDENLUST BY AXEL VÉRITÉ | WEBSITE BY MADE' and links madeagency.com.au, which matches the credited agency. Awwwards page itself not loaded (awwwards.com unreachable from here). The site may have been updated since 2021.",
+    "siteUrl": "https://www.gardenlust.com.au/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "organic-naturalist",
+    "directions": ["editorial", "immersive-photography", "quiet-luxury"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["landscaping", "garden-design", "florist", "nursery", "outdoor-living"],
+      "tones": ["calm", "premium", "earthy", "warm"],
+      "goals": ["portfolio", "quote", "contact"]
+    },
+    "observed": {
+      "layout": "Desktop: full-bleed aerial photo of a terraced garden with the wordmark 'GARDENLUST' centred and 'PARIS / SYDNEY' as tiny labels; then a stone-paper (#E2E5D7-ish) collage where photos of different sizes (steps, succulents, a stone pier) float at staggered heights around two uppercase statements; then deep-green chapters (founder 'FROM PARIS WITH LOVE' with a script signature, project photos in landscape frames, testimonials slider, Instagram) and a near-black contact footer 'LETS TALK ABOUT YOUR NEW GARDEN' with phone and e-mail. No visible top bar besides a monogram and a two-line menu icon.",
+      "typography": "Computed: Didot 500, uppercase, 48px/57.6px on desktop (20px/24px on mobile) for statements, the second line set in italic and indented ('WE DESIGN SPACES THAT WILL NURTURE / YOUR HEART, SOUL AND MIND.'); Brown-light 22px/33px for testimonials (12px/18px on mobile); tiny tracked caps for labels ('VIEW GARDENS'). No h1 on the page (statements are h2).",
+      "imagery": "Owner project photography: sunny Sydney gardens, stone steps, succulents, white houses on a hillside, one portrait of the founder. Photos are cut as plain rectangles of varied sizes, never masked; the only ornament is a thin hairline that crosses the collage.",
+      "motion": "Desktop scroll is taken over: html/body overflow hidden, window.scrollY stays 0 and wheel input moves a transformed container (GSAP 3.7 + ScrollTrigger, ScrollToPlugin, SplitText loaded); photos drift at different speeds in the collage; 'reveal'/'js-fadeIn' classes on blocks. With prefers-reduced-motion emulated the desktop sequence rendered the same. Mobile uses native scroll."
+    },
+    "whyItWorks": "A garden company that looks like a garden magazine: one stone-paper ground, project photos at several scales placed like prints on a table, and a serif with an italic second voice. The collage makes six ordinary project photos feel curated.",
+    "principles": [
+      "Place photos at 2–3 different scales on one paper ground, staggered vertically, so a handful of yard photos reads as a collage, not a grid.",
+      "Give the display serif a second voice: the second line of a statement in italic, indented under the first.",
+      "Earth palette from the photos: stone paper, deep leaf green, near-black green; no extra accent colour.",
+      "End on a quiet, large contact statement with the phone and e-mail directly under it."
+    ],
+    "doNotCarryOver": [
+      "Scroll hijacking on desktop (window never scrolls; reduced motion not honoured).",
+      "No h1; focus outline removed (outline: none on every tabbed element).",
+      "Malformed tel: link (tel:+610290340875 keeps the trunk 0 after +61).",
+      "12px body text on mobile; the phone only in the footer.",
+      "Their Didot/Brown pairing, monogram, founder signature and photography."
+    ],
+    "study": "studies/gardenlust.md"
+  },
+  {
+    "id": "cedar-springs-landscapes",
+    "name": "Cedar Springs Landscapes (design-build landscaping, Oakville, Ontario)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/cedar-springs-landscapes",
+    "awwwardsEvidence": "WebSearch `awwwards.com/sites landscaping honorable mention` (result summary): 'Cedar Springs Landscapes … lists an honorable mention dated November 20, 2025, credited to Ripple_CA. The site describes itself as transforming backyards into outdoor resorts.' The live site is a WordPress theme named 'ripple-child-theme' and loads fonts from ripple.ca, matching the credited agency (Ripple, Canada). Awwwards page itself not loaded.",
+    "siteUrl": "https://cedarsprings.net/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "quiet-luxury",
+    "directions": ["immersive-photography", "quiet-luxury", "service-led"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["landscaping", "pool-builder", "outdoor-living", "builder"],
+      "tones": ["premium", "calm", "minimal"],
+      "goals": ["quote", "portfolio", "consultation"]
+    },
+    "observed": {
+      "layout": "Fixed white top bar: serif wordmark left, 'Start Your Backyard Resort →' as the one persistent action, hamburger right; a dark vertical rail on the right edge of the viewport through the whole page (social icons at its foot). Full-bleed hero of a pool and patio with the slogan 'get away' rising; then 'get away every day / live more of what you love' with a short paragraph listing the towns served; a featured-project slider ('fire, water & alfresco'); 'design is just the beginning' with 'Our Process →'; a grey CTA band 'start the process today / Get In Touch'; a closing three-line statement 'inspired by nature / guided by experience / defined by character'; a footer with address, phone as text and menu columns.",
+      "typography": "Computed: Epilogue 300, lowercase headlines, 88px/90px with −1.76px tracking on desktop (40px/44px on mobile); h2 'design is just the beginning' 64px/75px weight 400; body akzidenz-grotesk-next-pro 16px/28.8px in #212123; wordmark in ITC Blair. One h1 ('Award-Winning Landscaping in Oakville, Burlington & Ancaster') for SEO, visually quieter than the slogans.",
+      "imagery": "Professional twilight and daylight photography of finished backyards (pool, patio, outdoor kitchen) shown full-bleed or in large sliders; no collage; lots of white around text blocks.",
+      "motion": "Lenis smooth scroll (html.lenis), slogan lines that rise in as the hero passes, slides and fades on sections, Elementor page transitions; lazy images appear as grey gradients until loaded during a fast scroll. Under prefers-reduced-motion the sequence looked the same."
+    },
+    "whyItWorks": "It sells a backyard as a place to live, not as a list of services: lowercase light headlines read like a calm voice, every screen has one statement and one action, and the single persistent 'Start Your Backyard Resort' keeps the goal (a design consultation) one click away.",
+    "principles": [
+      "One persistent action in the top bar, worded as the customer's outcome, visible on every screen.",
+      "One statement + one short paragraph + one link per screen; the list of towns served sits inside the first paragraph.",
+      "Let large photos of finished yards carry the mood; keep type light and quiet beside them."
+    ],
+    "doNotCarryOver": [
+      "Phone number as plain text with no tel: link; no visible phone in the header.",
+      "Cookie banner fixed over the bottom of every screen; logo images broken (alt text visible) on mobile in our run.",
+      "Lazy images that stay grey placeholders while scrolling; reduced motion not honoured.",
+      "'Award-Winning' in the h1 without naming the award (our rule 8).",
+      "Their Epilogue/Akzidenz pairing, dark side rail and photography."
+    ],
+    "study": "studies/cedar-springs-landscapes.md"
+  }
+]
