@@ -1,0 +1,139 @@
+[
+  {
+    "id": "bernice-bakery",
+    "name": "Bernice Bakery (cookies and cakes, Montreal)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/bernice-bakery",
+    "awwwardsEvidence": "WebSearch result title 'Bernice Bakery - Awwwards Honorable Mention' (awwwards.com/sites/bernice-bakery), summary: '(Casa Media): a Shopify template for a Montreal bakery, dated Feb 28, 2025'. The live footer ends with 'Made by Casa Media', which matches the credited studio. Award page itself not loaded (awwwards.com unreachable from this environment).",
+    "siteUrl": "https://bernicebakery.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "computed-styles",
+      "reduced-motion"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "warm-hospitality",
+    "directions": ["warm-hospitality", "playful", "typographic"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["bakery", "cafe", "dessert-shop", "cake-maker"],
+      "tones": ["playful", "warm", "bold"],
+      "goals": ["order", "shop", "browse-menu", "visit"]
+    },
+    "observed": {
+      "layout": "Shopify storefront, ≈7 800 px desktop / ≈10 100 px mobile. Full-bleed overhead photo of sliced cakes with 'A BAKING LOVE AFFAIR' in white caps bottom-left and a pink round 'INDULGE' badge → manifesto line in teal caps + small cake sticker → 'BESTSELLERS' outline marquee behind product cards in arch frames → 'THE BEST THINGS IN LIFE ARE SWEET' centred → row of round/arched photos → cookie/cake tabs with product grid (qty stepper + pink 'ADD TO CART') → press quote cards (teal/black rounded panels with publication logos) → 'CELEBRATE WITH CAKE' circular text + round pink 'ORDER' button → newsletter panel → teal footer with address, email, tel and a full-width 'BERNICE' wordmark.",
+      "typography": "Computed: headings 'Apfel Grotezk' 700 uppercase (h1 172.8 px / line-height 0.6 on desktop, 66.3 px on mobile; h3 product names 24 px), body 'balto' 400 at 17.6/22 px (15.4 px mobile). Two families only.",
+      "imagery": "Overhead food photography with crumbs and frosting, product shots of single cookies on grey, a few people/interior photos cropped into circles and arches. 87 of 105 <img> without usable alt.",
+      "motion": "GSAP and a Lenis-style smooth scroll detected; outline marquee words drift sideways; the INDULGE badge rotates. With prefers-reduced-motion emulated, 9 Web Animations were still running and transforms still changed (no reduced-motion handling observed).",
+      "responsive": "Mobile keeps the order; nav collapses to bag/search/menu icons; product cards become a single column with full-width pink buttons; a pickup-date panel (day/time) is part of the cart drawer. tel: link present in the footer only."
+    },
+    "whyItWorks": "Appetite plus a loud, friendly voice: one chunky grotesk in caps, one candy accent (pink) and round shapes (badge, arches, circle buttons) make a small bakery feel like a brand without any fake claims; pickup rules (days, hours, 48 h hold) are written plainly where you order.",
+    "principles": [
+      "Pick one round, edible shape (circle badge, arch) and repeat it for buttons, photo crops and stickers.",
+      "One chunky display family in caps for names and prices, a soft text face for the rest.",
+      "Put the ordering rules (pickup days, hours, lead time) right next to the order action, in plain sentences.",
+      "End on a full-width wordmark footer with address, phone and email."
+    ],
+    "doNotCarryOver": [
+      "Press logos and 'best' quotes unless the owner provides them (rule 8).",
+      "Images without alt; ignoring reduced motion; phone only in the footer.",
+      "Their pink/teal palette, wordmark, stickers and product photos."
+    ],
+    "study": "studies/bernice-bakery.md"
+  },
+  {
+    "id": "sonoma-bakery",
+    "name": "Sonoma Bakery (artisan sourdough, Sydney)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/sonoma-bakery",
+    "awwwardsEvidence": "WebSearch result title 'Sonoma Bakery - Awwwards Honorable Mention' (awwwards.com/sites/sonoma-bakery), summary: '(NIGHTJAR) … dated Jun 6, 2022'. The live HTML source carries the comment '* Site by https://nightjar.co', matching the credited studio. Award page not loaded. The live site may have changed since 2022.",
+    "siteUrl": "https://sonomabakery.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "computed-styles",
+      "reduced-motion"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "warm-hospitality",
+    "directions": ["warm-hospitality", "immersive-photography", "quiet-luxury"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["bakery", "cafe", "restaurant", "food-producer"],
+      "tones": ["calm", "earthy", "premium", "warm"],
+      "goals": ["order", "visit", "browse-menu", "shop"]
+    },
+    "observed": {
+      "layout": "Desktop document height equals the viewport (900 px): the page scrolls inside a transformed custom scroller, the wheel moves it. Full-bleed macro of a scored, floured sourdough crust filling the first screen with one short white sentence ('Pure intentions, humble beginnings, quality focus & exceptional customer service. Available in store today.') → product strip (loaf photos with name and price) → founder quote on a tan block ('It takes 36 hours and a lifetime of experience…' — Andrew Connole, Founder) → process photos (dough, hands) → origin story → mailing list → link grid footer (Connect / Get in touch / Shop / Sonoma) → 'UP NEXT — Shop' full-width photo panel that leads to the next page.",
+      "typography": "Computed: one grotesk 'BrutGrotesqueBook' 400 everywhere (h1 64/70.4 px, statement 28.8 px with −0.02em, h2 32–52 px, body 16/22.4 px; mobile h1 42 px). Prices and product labels in 'Typewriter_Condensed' 14 px uppercase with 0.15em tracking ('SONOMA MICHE  19.50  BREAD').",
+      "imagery": "Dark, low-key macro photography of crust, flour and dough, hands working; warm brown/black with flour-white highlights. All 12 images had alt text.",
+      "motion": "Very little: page-level smooth scroll, no Web Animations at idle, no change observed between normal and reduced-motion emulation (nothing to reduce).",
+      "responsive": "Mobile uses normal document scroll (≈3 900 px), stacks the same blocks, sticky header with 'PICKUP' link and menu; tel: links present (header menu and footer)."
+    },
+    "whyItWorks": "Appetite first and nothing else: one crust filling the screen does the selling, and the copy is a single plain sentence. A typewriter face for name + price makes the menu read like a bakery ticket instead of an e-commerce grid.",
+    "principles": [
+      "Let one macro photo of the product's texture (crust, flour) own the first screen; keep the words to one sentence.",
+      "Set prices and product labels in a small tabular/typewriter voice, like a bakery ticket.",
+      "Quote the owner on how long the process takes (a real number) instead of adjectives.",
+      "End each page with an 'Up next' panel so there is no dead end."
+    ],
+    "doNotCarryOver": [
+      "Custom transformed scroller on desktop (scroll position not in the document; anchors and find-in-page suffer).",
+      "Opening-hours and address buried in other pages.",
+      "Their photos, wordmark and colour."
+    ],
+    "study": "studies/sonoma-bakery.md"
+  },
+  {
+    "id": "enoteca-della-valpolicella",
+    "name": "Enoteca della Valpolicella (wine bar and kitchen, Fumane)",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Only a WebSearch summary of an Awwwards listing page: 'Enoteca della Valpollicella (ET Studio), a wine bar site, is listed with an Honorable Mention on Jul 25, 2025' (the summary itself warned that dates in the listing run together). No /sites/ page found and no studio credit on the live site, so the live site ↔ award match is by name only.",
+    "siteUrl": "https://www.enotecadellavalpolicella.it/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "computed-styles",
+      "reduced-motion"
+    ],
+    "evidenceStatus": "partial",
+    "approved": false,
+    "archetype": "warm-hospitality",
+    "directions": ["warm-hospitality", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["restaurant", "wine-bar", "cafe", "bakery"],
+      "tones": ["warm", "intimate", "classic"],
+      "goals": ["reserve-table", "browse-menu", "brand-story"]
+    },
+    "observed": {
+      "layout": "Cream paper page (rgb 249,243,227), ≈8 600 px desktop. Fixed top rule with 'INDICE' left, HOME / MENU / MANIFESTO / VINI / PERSONE centre, 'PRENOTA' right. Opening: 'L'ENOTECA' set huge and centred with small notes in the corners ('BENVENUT*', 'DIAMO A CASA', 'N°001'). Chapters numbered with big Roman numerals (I, II, III, IV) each with 'N°00x' and a word set huge ('BELIEVES', 'IN PEOPLE', 'AND TERRA'); typewriter paragraphs in two columns; photos tilted a few degrees like prints laid on a table; menu chapter shows a white card ('MENU') with a black-and-white photo.",
+      "typography": "Computed: display 'SelfModern' 400 uppercase (h2 100.8/90.7 px desktop, 50 px mobile), all body and nav in 'CourierNew' 16/32 px (14/28 mobile), plus a handwritten face ('September') in blue ink for small marginal notes ('#tag – il posto che…'). No h1 on the page.",
+      "imagery": "Warm documentary photos: the owners laughing together, plates, vineyard, a chef's hands; printed-photo look (tilted, white margin on some).",
+      "motion": "Lenis smooth scroll (transform-based; window.scrollY stayed 0). Transforms were still changing under reduced-motion emulation (not honoured).",
+      "responsive": "Mobile keeps INDICE + PRENOTA in the top bar, single column, typewriter body at 14 px; a third-party cookie panel covered ≈40 % of every mobile screenshot and ≈25 % on desktop until accepted. No tel: link found."
+    },
+    "whyItWorks": "It reads like a kitchen notebook: typewriter text, blue handwritten margin notes and tilted prints make the place feel hand-run, and the numbered index keeps a long story navigable.",
+    "principles": [
+      "A handwritten note in one ink colour can carry warmth for small facts (times, tips) without decoration elsewhere.",
+      "Number the chapters and keep an index plus the main action (book/order) fixed in the top bar.",
+      "Lay photos like prints: slight tilt, paper margin; never more than one per view."
+    ],
+    "doNotCarryOver": [
+      "Body copy in Courier for long paragraphs (tiring); no h1; no tel: link.",
+      "Cookie panel covering the content; smooth-scroll that ignores reduced motion.",
+      "Their wordmark, photos, Italian copy."
+    ],
+    "study": "studies/enoteca-della-valpolicella.md"
+  }
+]
