@@ -1,0 +1,135 @@
+[
+  {
+    "id": "swtch-ev-charging",
+    "name": "SWTCH (smart EV charging for properties, North America)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/swtch",
+    "awwwardsEvidence": "WebSearch `awwwards \"EV charging\" website honorable mention OR \"site of the day\"` (result summary of awwwards.com/sites/swtch): 'SWTCH received an Honorable Mention on July 3, 2023 … Smart electric vehicle charging that meets the needs of today and tomorrow.' The live footer reads 'Website by Locomotive'; the Awwwards page did not name an agency in the snippet, so the match between this live version and the 2023 award is probable, not proven. Awwwards page not loaded (awwwards.com unreachable from here).",
+    "siteUrl": "https://swtchenergy.com/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "service-direct",
+    "directions": ["typographic", "service-led", "modular"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["electrician", "ev-charging", "solar", "hvac", "home-services"],
+      "tones": ["confident", "modern", "clean", "technical"],
+      "goals": ["quote", "contact", "lead"]
+    },
+    "observed": {
+      "layout": "Full-bleed hero (muted video; in headless Chromium only a grey poster rendered) with 'EV CHARGING, SOLVED.' bottom-left, then white sections that alternate a huge uppercase statement ('CHARGING SOLUTIONS TAILORED TO YOUR NEEDS') with rows of rounded cards (Multifamily / Workplace / Public & Retail, each with a round teal arrow). A near-black logo strip, a dark photo of a driver at a wall charger, client stories, and a final full-width teal gradient block 'READY TO ELECTRIFY YOUR PROPERTY?' before a near-black footer.",
+      "typography": "Computed: one family, Akkurat Sub (400 and bold loaded). h1 75px/86px uppercase, letter-spacing -2.25px (-0.03em); the same 75px uppercase size is reused for the closing h2; section h2 30px; lead paragraphs 22px/31px. Mobile h1 29.75px. Hierarchy almost entirely from size and case, one weight.",
+      "imagery": "Product renders (charger, app on a phone with an RFID card) and staged lifestyle photos of drivers at chargers in garages; cards with small photos.",
+      "motion": "Lenis smooth scroll (html.lenis), a page loader (.c-loader), header turns into a teal pill bar after the hero on mobile. With reduced motion emulated the page rendered the same sequence. No tel: links anywhere on the homepage; 6 of 41 images without alt."
+    },
+    "whyItWorks": "An electrical-services brand that feels engineered rather than decorated: one grotesk at two sizes, uppercase statements as the main image, and one saturated accent kept for buttons and a single closing colour block.",
+    "principles": [
+      "Make the plain promise the image: a short uppercase grotesk statement at ~5x body size, tight tracking (-0.03em), with nothing competing beside it.",
+      "One family, one weight for display; hierarchy from size and case only.",
+      "Keep the one bright accent for actions and one big closing block that repeats the ask."
+    ],
+    "doNotCarryOver": [
+      "No phone number or tel: link on the homepage; contact only through a form page.",
+      "Loader + smooth-scroll library; reduced motion not honoured.",
+      "Logo strip of clients (we never show logos the owner did not provide).",
+      "Their teal, Akkurat (commercial) and product renders."
+    ],
+    "study": "studies/swtch-ev-charging.md"
+  },
+  {
+    "id": "zaptec",
+    "name": "Zaptec (EV chargers, Norway)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/zaptec",
+    "awwwardsEvidence": "WebSearch `awwwards \"EV charging\" website honorable mention OR \"site of the day\"` (result summary of awwwards.com/sites/zaptec): 'Zaptec is listed as a Site of the Day (SOTD) with an overall score of 7.29/10 … pioneer in advanced EV charging.' Date not in the snippet. A second search found an Awwwards inspiration entry 'Desktop by Good Morning from Zaptec', suggesting the agency Good Morning. Live site shows no agency credit. Awwwards page not loaded.",
+    "siteUrl": "https://www.zaptec.com/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "quiet-luxury",
+    "directions": ["typographic", "product-demo", "editorial"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": ["ev-charging", "electrician", "solar", "product"],
+      "tones": ["calm", "modern", "premium", "clean"],
+      "goals": ["product", "contact"]
+    },
+    "observed": {
+      "layout": "Hero is a near-black block (video; only the dark poster rendered headless) with 'Powers adventure' centred. Then product rows: a photo of a charger by a front door on the left and a 40px statement + small pill tags ('Detached homes', 'Semi-detached homes') + dark pill buttons on the right. A huge centred 'Explore our chargers' (120px) on a sage block with colour dots and a fact row of four specs (5-year guarantee · 22 kW · Always connected · Eco Mode), each a short title over two lines of text. News cards, then a full-bleed mountain road with 'A product of the rugged Norwegian west coast'. Desktop footer is fixed underneath and revealed as the page ends.",
+      "typography": "Computed: one family, sohneFont, one weight (300) loaded. h1 102px/122px desktop, 40px mobile; section statements 40px/48px; 'Explore our chargers' 120px/120px. Body 15–16px. No uppercase, no bold.",
+      "imagery": "Natural-light product-in-place photography (charger by a door with children's toys, chargers along a parking path), always a real setting rather than a cut-out.",
+      "motion": "The sage background of 'Explore our chargers' fades in with scroll; with reduced motion emulated the block stayed white but otherwise the page was the same. No tel: links on the homepage."
+    },
+    "whyItWorks": "A technical product presented with restraint: one light grotesk weight, very large plain statements, and the specs given as a calm row of facts instead of icons or superlatives.",
+    "principles": [
+      "Give specs/facts their own quiet row: number or short title on top, two lines underneath, four across, no icons.",
+      "Show the device in a real home setting (a door, a driveway), not on a white cut-out.",
+      "Alternate one huge centred statement with dense practical rows so the page breathes."
+    ],
+    "doNotCarryOver": [
+      "No phone number; the main action is a generic 'Get Zaptec'.",
+      "Fixed footer reveal (hides the last section behind it on short screens).",
+      "Their sage palette, Söhne (commercial) and Norwegian landscape story."
+    ],
+    "study": "studies/zaptec.md"
+  },
+  {
+    "id": "list-general-contractor",
+    "name": "List General Contractor (interior outfitting contractor, Austria)",
+    "awwwardsUrl": "",
+    "awwwardsEvidence": "Agency press release (Reichl und Partner eMarketing, reichlundpartner.com/pr-agentur/en/international-awwward-for-the-list-website, fetched with curl): 'List General Contractor's website has now also won an international award. The AWWWARDS rating portal awarded the website an \"Honorable Mention\".' The release links www.listgc.at. No date or Awwwards URL in the release; the live site may have been redesigned since the award.",
+    "siteUrl": "https://www.listgc.at/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": false,
+    "archetype": "service-direct",
+    "directions": ["typographic", "editorial"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["contractor", "construction", "interiors", "trades"],
+      "tones": ["confident", "crafted", "premium"],
+      "goals": ["portfolio", "contact"]
+    },
+    "observed": {
+      "layout": "A full-screen cookie wall (Borlabs) covers the page until accepted. Then a photo slider of a yacht interior, a white section with a giant 'Interior+' wordmark (200px) over a centred paragraph and a mint 'We are crafting visions.' statement; a three-panel band framed by 2px deep-violet rules (outline 'Y729' numerals over wood, a white text column, a portrait); a grey 'Unsere Expertise' paragraph and a row of huge numbers '92 · +315 · +400' (Planeta 120px) as proof.",
+      "typography": "Computed: Planeta 700 for display (h1 86px, 'Interior+' 200px, numbers 120px), Corbel for nav and labels, Merriweather for body (16–18px, centred). Three families; violet #220970 text, mint #6CDECC statements.",
+      "imagery": "Owner project photography (yacht interiors) and candid office portraits; wood texture behind outline numerals.",
+      "motion": "Slider and simple fades; with reduced motion emulated the sequence looked the same. Two h1 elements; 3 of 3 <img> without alt; no tel: link on the homepage."
+    },
+    "whyItWorks": "A contractor that proves itself with counts set as display type: big numbers in the brand colour do the work that badges usually do.",
+    "principles": [
+      "Use the owner's real counts as display numbers (120px+) with a short label each, instead of badges.",
+      "Frame bands with one strong 2px rule colour so photos and text panels read as one sheet."
+    ],
+    "doNotCarryOver": [
+      "Cookie wall over the whole first screen.",
+      "Two h1, images without alt, centred long paragraphs.",
+      "Numbers without clear labels on screen (the meaning of 92 / +315 / +400 is not obvious at a glance).",
+      "Their violet/mint palette and Planeta wordmark."
+    ],
+    "study": "studies/list-general-contractor.md"
+  }
+]
