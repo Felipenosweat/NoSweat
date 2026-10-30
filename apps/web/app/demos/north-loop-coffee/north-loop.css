@@ -1,0 +1,650 @@
+/* North Loop Coffee (demonstração). Superfície "brand-block": papel de jornal frio-quente
+   alternando com blocos grandes de um azul de inverno de Minneapolis; o rodapé é a noite.
+   O creme (crema) só aparece em desenhos, pontos e texto pequeno SOBRE o azul.
+   Contraste (conferido): tinta #14202e sobre papel 14,2:1; tinta-2 #4a5563 sobre papel 6,5:1 e
+   sobre papel-2 5,9:1; papel sobre azul #1c3a5e 10:1; gelo #cfdce8 sobre azul 8,3:1; creme claro
+   #e2ae68 sobre azul 5,8:1 e sobre a noite 8,4:1; azul sobre papel 10:1 (botões). */
+
+/* Tudo na camada "components" do Tailwind: as utilidades (hidden, lg:block...) ganham. */
+@layer components {
+  .northloop {
+    --nl-paper: #f1eee6;
+    --nl-paper-2: #e7e2d6;
+    --nl-ink: #14202e;
+    --nl-ink-2: #4a5563;
+    --nl-blue: #1c3a5e;
+    --nl-blue-2: #24496f;
+    --nl-night: #0f1e31;
+    --nl-frost: #cfdce8;
+    --nl-crema: #c98b3c;
+    --nl-crema-light: #e2ae68;
+    --nl-open: #2f7d5b;
+    --nl-open-light: #8fd3ad;
+    --nl-rule: rgb(20 32 46 / 0.16);
+    --nl-rule-strong: rgb(20 32 46 / 0.4);
+    --nl-rule-on-blue: rgb(207 220 232 / 0.24);
+    --nl-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    background: var(--nl-paper);
+    color: var(--nl-ink);
+    font-family: var(--font-nl-serif), Georgia, serif;
+    font-optical-sizing: auto;
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body:has(.northloop) {
+    background: var(--nl-paper);
+  }
+
+  .northloop ::selection {
+    background: var(--nl-blue);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-display {
+    font-family: var(--font-nl-serif), Georgia, serif;
+    font-weight: 380;
+    letter-spacing: -0.018em;
+  }
+
+  .northloop .nl-em {
+    font-style: italic;
+    font-weight: 330;
+  }
+
+  .northloop .nl-mono {
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.35;
+  }
+
+  .northloop h1,
+  .northloop h2,
+  .northloop h3 {
+    text-wrap: balance;
+  }
+
+  .northloop p {
+    text-wrap: pretty;
+  }
+
+  /* ——— Foco ——— */
+  .northloop .nl-focus:focus-visible,
+  .northloop .nl-link:focus-visible,
+  .northloop .nl-focus-within:has(:focus-visible) {
+    outline: 2px solid var(--nl-blue);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .northloop .nl-block .nl-focus:focus-visible,
+  .northloop .nl-block .nl-link:focus-visible,
+  .northloop .nl-footer .nl-link:focus-visible {
+    outline-color: var(--nl-crema-light);
+  }
+
+  .northloop .nl-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .northloop .nl-skip {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 60;
+    transform: translateY(-160%);
+    background: var(--nl-blue);
+    color: var(--nl-paper);
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+
+  .northloop .nl-skip:focus-visible {
+    transform: none;
+  }
+
+  /* ——— Barra do topo ——— */
+  .northloop .nl-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--nl-paper);
+    border-bottom: 1px solid var(--nl-rule);
+  }
+
+  .northloop .nl-navlink {
+    font-size: 16px;
+    padding: 6px 0;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.4s var(--nl-ease);
+  }
+
+  .northloop .nl-navlink:hover {
+    background-size: 100% 1px;
+  }
+
+  .northloop .nl-iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 8px;
+    border-radius: 999px;
+  }
+
+  .northloop .nl-iconbtn:hover {
+    background: var(--nl-paper-2);
+  }
+
+  .northloop .nl-index-panel {
+    border-top: 1px solid var(--nl-rule);
+    padding: 12px 16px 24px;
+    background: var(--nl-paper);
+  }
+
+  /* ——— Botões ——— */
+  .northloop .nl-btn,
+  .northloop .nl-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition:
+      background-color 0.25s var(--nl-ease),
+      color 0.25s var(--nl-ease);
+  }
+
+  .northloop .nl-btn {
+    background: var(--nl-blue);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-btn:hover:not(:disabled) {
+    background: var(--nl-ink);
+  }
+
+  .northloop .nl-btn-ghost {
+    border: 1px solid var(--nl-ink);
+  }
+
+  .northloop .nl-btn-ghost:hover {
+    background: var(--nl-ink);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-btn-sm {
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 12px;
+  }
+
+  .northloop .nl-btn-light {
+    background: var(--nl-paper);
+    color: var(--nl-blue);
+  }
+
+  .northloop .nl-btn-light:hover {
+    background: #fff;
+  }
+
+  .northloop .nl-btn-ghost-light {
+    border-color: var(--nl-frost);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-btn-ghost-light:hover {
+    background: var(--nl-paper);
+    color: var(--nl-blue);
+  }
+
+  /* ——— Blocos de cor ——— */
+  .northloop .nl-block {
+    background: var(--nl-blue);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-rule {
+    background: currentColor;
+    opacity: 0.35;
+  }
+
+  /* ——— Herói ——— */
+  .northloop .nl-contents {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    min-height: 44px;
+    padding: 10px 0;
+    font-size: 16px;
+  }
+
+  .northloop .nl-contents:hover span:last-child {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Recorte: borda de papel + sombra curta, como papel colado sobre o azul */
+  .northloop .nl-cutout {
+    aspect-ratio: 1;
+    border-radius: 999px;
+    padding: clamp(5px, 0.9vw, 10px);
+    background: var(--nl-paper);
+    box-shadow:
+      0 1px 0 rgb(0 0 0 / 0.08),
+      6px 10px 0 rgb(8 18 32 / 0.28);
+  }
+
+  /* recorte sobre o papel: um fio em volta e sombra mais clara */
+  .northloop .nl-cutout-paper {
+    background: #fbfaf6;
+    box-shadow:
+      0 0 0 1px var(--nl-rule-strong),
+      6px 10px 0 rgb(20 32 46 / 0.12);
+  }
+
+  .northloop .nl-glass {
+    filter: drop-shadow(5px 8px 0 rgb(8 18 32 / 0.28));
+  }
+
+  .northloop .nl-steam path {
+    opacity: 0.55;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .northloop .nl-steam path {
+      animation: nl-steam 5.2s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: 50% 100%;
+    }
+
+    .northloop .nl-steam path:nth-child(2) {
+      animation-delay: -1.8s;
+    }
+
+    .northloop .nl-steam path:nth-child(3) {
+      animation-delay: -3.4s;
+    }
+  }
+
+  @keyframes nl-steam {
+    0% {
+      opacity: 0;
+      transform: translateY(14px) scaleY(0.85);
+    }
+    35% {
+      opacity: 0.6;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-16px) scaleY(1.05);
+    }
+  }
+
+  /* Bilhete "Today": papel com picote em cima */
+  .northloop .nl-ticket {
+    position: relative;
+    background: var(--nl-paper);
+    color: var(--nl-ink);
+    padding: 22px 20px 18px;
+    transform: rotate(-1.5deg);
+    box-shadow: 6px 10px 0 rgb(8 18 32 / 0.28);
+    --nl-perf: radial-gradient(circle at 6px 0, transparent 5px, var(--nl-paper) 5.5px);
+  }
+
+  .northloop .nl-ticket::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -6px;
+    height: 6px;
+    background: var(--nl-perf);
+    background-size: 12px 6px;
+    background-position: 0 6px;
+    transform: rotate(180deg);
+  }
+
+  /* ——— Cardápio ——— */
+  .northloop .nl-leader {
+    border-bottom: 1.5px dotted var(--nl-rule-strong);
+    transform: translateY(-5px);
+  }
+
+  .northloop .nl-price {
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 17px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    padding-top: 4px;
+  }
+
+  .northloop .nl-tag {
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid var(--nl-rule-strong);
+    border-radius: 999px;
+    padding: 3px 9px;
+    color: var(--nl-ink-2);
+  }
+
+  .northloop .nl-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--nl-blue);
+    color: var(--nl-blue);
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition:
+      background-color 0.2s var(--nl-ease),
+      color 0.2s var(--nl-ease);
+  }
+
+  .northloop .nl-add:hover {
+    background: var(--nl-blue);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-check {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--nl-blue);
+  }
+
+  .northloop .nl-choice {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid var(--nl-rule-strong);
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .northloop .nl-choice.is-on {
+    background: var(--nl-ink);
+    border-color: var(--nl-ink);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-slip {
+    position: relative;
+    background: var(--nl-paper-2);
+    padding: 26px 22px 22px;
+    border-top: 3px solid var(--nl-ink);
+  }
+
+  .northloop .nl-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: 1px solid var(--nl-rule-strong);
+  }
+
+  /* alvo de toque de 44 px sem crescer o desenho */
+  .northloop .nl-step::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  .northloop .nl-step {
+    position: relative;
+  }
+
+  .northloop .nl-slip-chip {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background: var(--nl-ink);
+    color: var(--nl-paper);
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgb(8 18 32 / 0.25);
+  }
+
+  /* Cópia impressa colada */
+  .northloop .nl-print {
+    background: #fbfaf6;
+    padding: 12px 12px 14px;
+    box-shadow: 6px 10px 0 rgb(20 32 46 / 0.12);
+  }
+
+  .northloop .nl-print figcaption {
+    color: var(--nl-ink-2);
+  }
+
+  .northloop .nl-print-on-blue {
+    box-shadow: 6px 10px 0 rgb(8 18 32 / 0.35);
+  }
+
+  /* ——— O dia ——— */
+  .northloop .nl-day {
+    position: relative;
+    min-height: 48px;
+    border-radius: 6px;
+    border: 1px solid var(--nl-rule-on-blue);
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background-color 0.2s var(--nl-ease);
+  }
+
+  .northloop .nl-day:hover {
+    background: var(--nl-blue-2);
+  }
+
+  .northloop .nl-day.is-on {
+    background: var(--nl-paper);
+    color: var(--nl-blue);
+    border-color: var(--nl-paper);
+  }
+
+  .northloop .nl-day-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--nl-crema-light);
+    display: inline-block;
+  }
+
+  .northloop .nl-day-dot.static {
+    position: static;
+  }
+
+  .northloop .nl-ruler {
+    position: relative;
+    height: 118px;
+    border-bottom: 1px solid var(--nl-frost);
+  }
+
+  .northloop .nl-band {
+    position: absolute;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow: hidden;
+  }
+
+  .northloop .nl-band-label {
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .northloop .nl-band-open {
+    top: 58px;
+    background: var(--nl-frost);
+    color: var(--nl-blue);
+  }
+
+  .northloop .nl-band-egg {
+    top: 32px;
+    background: var(--nl-crema-light);
+    color: var(--nl-night);
+  }
+
+  .northloop .nl-band-bun {
+    top: 6px;
+    border: 1px dashed var(--nl-crema-light);
+    color: var(--nl-paper);
+  }
+
+  .northloop .nl-tick {
+    position: absolute;
+    bottom: -1px;
+    width: 1px;
+    height: 10px;
+    background: var(--nl-frost);
+  }
+
+  .northloop .nl-tick span {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-nl-mono), ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--nl-frost);
+  }
+
+  .northloop .nl-cursor-track {
+    position: absolute;
+    inset: 0 0 -6px 0;
+    pointer-events: none;
+    transition: transform 0.45s var(--nl-ease);
+  }
+
+  .northloop .nl-cursor {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -1px;
+    width: 2px;
+    background: var(--nl-paper);
+  }
+
+  .northloop .nl-range {
+    appearance: none;
+    height: 44px;
+    margin-top: 22px;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .northloop .nl-range::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--nl-rule-on-blue);
+  }
+
+  .northloop .nl-range::-moz-range-track {
+    height: 2px;
+    background: var(--nl-rule-on-blue);
+  }
+
+  .northloop .nl-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    margin-top: -13px;
+    border-radius: 999px;
+    background: var(--nl-paper);
+    border: 6px solid var(--nl-crema-light);
+  }
+
+  .northloop .nl-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--nl-paper);
+    border: 6px solid var(--nl-crema-light);
+  }
+
+  /* ——— Torra ——— */
+  .northloop .nl-dropcap::first-letter {
+    float: left;
+    font-size: 4.4em;
+    line-height: 0.82;
+    padding: 0.06em 0.12em 0 0;
+    font-weight: 330;
+    font-style: italic;
+    color: var(--nl-blue);
+  }
+
+  /* ——— Perguntas ——— */
+  .northloop .nl-faq summary {
+    list-style: none;
+  }
+
+  .northloop .nl-faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .northloop .nl-faq-icon {
+    transition: transform 0.3s var(--nl-ease);
+  }
+
+  .northloop .nl-faq[open] .nl-faq-icon {
+    transform: rotate(45deg);
+  }
+
+  /* ——— Rodapé ——— */
+  .northloop .nl-footer,
+  .nl-footer {
+    background: var(--nl-night);
+    color: var(--nl-paper);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .northloop .nl-cursor-track,
+    .northloop .nl-navlink,
+    .northloop .nl-faq-icon {
+      transition: none;
+    }
+  }
+}
