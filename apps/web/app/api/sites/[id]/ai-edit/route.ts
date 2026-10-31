@@ -1,4 +1,4 @@
-import { AiEditRequest, AiEditResponse, type AiEditResult } from "@nosweat/schema";
+import { AiEditRequest, AiEditResponse } from "@nosweat/schema";
 import { editSiteSpec, getSiteGenerator } from "@/server/ai";
 import {
   errorResponse,
@@ -49,7 +49,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const overLimit = await reserveUse(actor, "ai_edit", site.id);
     if (overLimit) return overLimit;
 
-    let result: AiEditResult;
+    let result: Awaited<ReturnType<typeof editSiteSpec>>;
     try {
       result = await editSiteSpec(site.spec, input.data.instruction, generator);
     } catch (error) {
@@ -65,6 +65,19 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 
     // Se o dono pediu outra foto do topo (imageQuery mudou), busca uma nova. Nunca falha.
     const spec = await resolveHeroImage(result.spec, { previous: site.spec });
+
+    // A IA não mudou nada (pedido fora do que o site permite, ex.: formato do botão): nada é
+    // salvo e o crédito volta. O editor mostra o resumo sem "Saved" nem "Undo".
+    if (!result.changed) {
+      await refundUse(actor, "ai_edit");
+      return jsonResponse(AiEditResponse, {
+        siteId: site.id,
+        spec: site.spec,
+        summary: result.summary,
+        updatedAt: site.updatedAt,
+        changed: false,
+      });
+    }
 
     const updated = await getSiteStore().update(site.id, spec, "ai_edit");
     if (!updated) return notFound();

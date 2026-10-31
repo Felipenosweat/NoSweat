@@ -170,7 +170,12 @@ export class MemoryExpenseStore implements ExpenseStore {
 
   async insert(expense: NewExpense): Promise<CompanyExpense> {
     const now = new Date().toISOString();
-    const row: CompanyExpense = { ...expense, id: crypto.randomUUID(), createdAt: now, updatedAt: now };
+    const row: CompanyExpense = {
+      ...expense,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    };
     this.rows.set(row.id, row);
     return { ...row };
   }

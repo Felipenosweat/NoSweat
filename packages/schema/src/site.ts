@@ -193,6 +193,11 @@ export const SiteDesign = z.object({
   density: z.enum(["airy", "balanced", "compact"]).optional(),
   /** Tratamento das fotos: natural, com um véu da cor da marca ou em preto e branco. */
   imageTreatment: z.enum(["natural", "tinted", "monochrome"]).optional(),
+  /**
+   * Formato dos botões: "pill" (redondo), "sharp" (cantos retos), "caps" (cantos quase retos,
+   * texto em maiúsculas) ou "line" (link sublinhado). Sem ele, sorteado pelo nome do negócio.
+   */
+  buttons: z.enum(["pill", "sharp", "caps", "line"]).optional(),
   /** Ids das referências de design usadas no plano (docs/design/references.json), para depuração. */
   references: z.array(z.string().max(60)).max(4).optional(),
   /** Por que esta direção foi escolhida (curto, para depuração). */

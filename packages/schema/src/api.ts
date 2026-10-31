@@ -153,6 +153,8 @@ export const AiEditResponse = z.object({
   summary: z.string(),
   /** Novo `updatedAt` do site (ver UpdateSiteRequest.baseUpdatedAt). */
   updatedAt: z.string().optional(),
+  /** `false` = a IA não mudou nada (nenhuma versão salva e o crédito voltou). */
+  changed: z.boolean().optional(),
 });
 export type AiEditResponse = z.infer<typeof AiEditResponse>;
 

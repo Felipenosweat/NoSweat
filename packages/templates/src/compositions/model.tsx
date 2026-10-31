@@ -228,7 +228,9 @@ export function siteStyle(spec: SiteSpec): SiteStyle {
   const seed = hashOf(spec.business.name.trim().toLowerCase());
   return {
     header: HEADER_STYLES[seed % HEADER_STYLES.length] ?? "classic",
-    buttons: BUTTON_STYLES[Math.floor(seed / 7) % BUTTON_STYLES.length] ?? "sharp",
+    // Escolhido pelo dono (ou pela IA) em `design.buttons`; senão, sorteado pelo nome.
+    buttons:
+      spec.design?.buttons ?? BUTTON_STYLES[Math.floor(seed / 7) % BUTTON_STYLES.length] ?? "sharp",
     contact: CONTACT_STYLES[Math.floor(seed / 31) % CONTACT_STYLES.length] ?? "split",
   };
 }

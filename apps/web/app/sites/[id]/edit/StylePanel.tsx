@@ -174,6 +174,31 @@ export function StylePanel({
             ))}
           </select>
         </Field>
+        <Field label="Button shape">
+          <select
+            className={inputClass}
+            value={spec.design?.buttons ?? ""}
+            onChange={(e) =>
+              update((d) => {
+                const value = e.target.value;
+                const design = { ...(d.design ?? { composition: "service-led" as const }) };
+                // Vazio = automático (o estilo sorteado pelo nome do negócio).
+                if (value === "pill" || value === "sharp" || value === "caps" || value === "line") {
+                  design.buttons = value;
+                } else {
+                  delete design.buttons;
+                }
+                d.design = design;
+              })
+            }
+          >
+            <option value="">Automatic</option>
+            <option value="pill">Rounded</option>
+            <option value="sharp">Square corners</option>
+            <option value="caps">Square, all caps</option>
+            <option value="line">Underlined link</option>
+          </select>
+        </Field>
         {spec.design && (
           <Field label="Main button">
             <select
