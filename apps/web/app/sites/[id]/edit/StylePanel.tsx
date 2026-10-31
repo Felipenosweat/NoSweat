@@ -282,7 +282,7 @@ function ColorField({
           onChange={(e) => {
             setText(e.target.value);
             const hex = normalizeHex(e.target.value);
-            if (hex && hex !== value) onChange(hex);
+            if (hex && hex !== value.toUpperCase()) onChange(hex);
           }}
           // Código incompleto ao sair do campo: volta para a cor atual.
           onBlur={() => setText(value)}
@@ -390,8 +390,9 @@ export function StylePanel({
           value={design?.composition ?? "service-led"}
           onChange={(value) => {
             if (!value) return;
+            const composition: Composition = value;
             // Só a composição muda: o resto do plano (referências, motivo) fica para depuração.
-            update((d) => void (designOf(d).composition = value));
+            update((d) => void (designOf(d).composition = composition));
           }}
         />
         <ChoicePicker

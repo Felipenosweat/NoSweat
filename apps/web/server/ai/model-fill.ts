@@ -1,6 +1,15 @@
-import { SiteSpec, type Business, type Section, type SectionOf, type Theme } from "@nosweat/schema";
+import {
+  SiteSpec,
+  Theme,
+  type Business,
+  type Section,
+  type SectionOf,
+  type SectionType,
+  type SiteDesign,
+} from "@nosweat/schema";
 import { z } from "zod";
 import { applyDesignPlan, readBrief, type DesignPlan } from "../design";
+import { DropSections, FillStyle, MiddleSection, pickTheme, SectionOrder } from "./look";
 
 // Geração a partir do modelo (docs/design/model-sites.md, "Geração a partir do modelo").
 // A IA barata devolve só um ModelFill (textos + fatos que estão no pedido); o código junta com o
@@ -33,6 +42,8 @@ export const ModelFill = z.object({
         description: Text(220),
         group: z.string().max(40).optional(),
         detail: z.string().max(80).optional(),
+        /** 2 a 5 palavras em inglês para a foto do serviço (cena genérica, sem pessoas). */
+        imageQuery: z.string().max(80).optional(),
       }),
     )
     .min(3)
@@ -106,6 +117,15 @@ export const ModelFill = z.object({
       .max(12)
       .optional(),
   }),
+  // Aparência (look.ts). Tudo opcional: sem estes campos, vale o visual do modelo.
+  /** Paleta e fonte para ESTE negócio (contraste AA conferido; reprovada → a do modelo). */
+  theme: Theme.optional(),
+  /** Botões, cabeçalho, bloco de contato, respiro e tratamento das fotos. */
+  style: FillStyle.optional(),
+  /** Ordem das seções entre o topo e o contato (as que faltarem seguem na ordem do modelo). */
+  sectionOrder: SectionOrder.optional(),
+  /** Seções que este negócio não precisa (serviços, topo e contato ficam sempre). */
+  dropSections: DropSections.optional(),
 });
 export type ModelFill = z.infer<typeof ModelFill>;
 
@@ -543,7 +563,7 @@ function buildBusiness(fill: ModelFill, facts: BriefFacts): Business {
  * Tema de cada estilo do passo "Colors" do /create (chave = nome do estilo na linha "Style: …",
  * como em STYLE_OPTIONS de app/(dashboard)/create/brief.ts). As cores são as das amostras que o
  * dono viu ao escolher; texto sobre o fundo e cor principal sobre o fundo passam no AA (4,5:1).
- * Sem estilo escolhido, o site fica com o tema do modelo.
+ * Sem estilo escolhido, o site fica com a paleta da IA (conferida) ou com o tema do modelo.
  */
 export const STYLE_THEMES: Record<string, Theme> = {
   "warm & friendly": {
@@ -584,11 +604,19 @@ export const STYLE_THEMES: Record<string, Theme> = {
 };
 
 /**
- * Junta o fill da IA com o site-modelo. Do modelo ficam SÓ a estrutura (tipos e ordem das
- * seções, títulos, contato), o tema (ou o do estilo escolhido pelo dono) e a direção de arte
- * (do plano). Todos os fatos do modelo saem: nome, telefone, e-mail, endereço, horário, selos,
- * links, preços, pessoas, depoimentos, fotos (do topo, do "quem somos", da galeria) e legendas. Seção que fica vazia sai (about
- * null, sem depoimentos, galeria sem fotos do dono). O resultado passa por SiteSpec.parse.
+ * Junta o fill da IA com o site-modelo. O modelo é a BASE, não um molde:
+ * - estrutura: topo primeiro e contato por último sempre; no meio, a ordem que a IA escolheu
+ *   (`sectionOrder`, o que faltar segue a ordem do modelo), menos as seções em `dropSections`.
+ *   Seção que a IA pôs na ordem e o modelo não tinha entra se o fill tiver conteúdo para ela.
+ *   Sem `sectionOrder`, só as seções do modelo, na ordem dele;
+ * - tema: o estilo escolhido pelo dono (passo "Colors") vale sobre tudo; senão a paleta da IA
+ *   se passar no contraste AA (pickTheme), senão a do modelo;
+ * - direção de arte: composição e ação do plano; botões, cabeçalho, contato, respiro e fotos
+ *   da IA (`style`), quando vierem. O visual de botões/cabeçalho do modelo não é copiado.
+ * Todos os fatos do modelo saem: nome, telefone, e-mail, endereço, horário, selos, links,
+ * preços, pessoas, depoimentos, fotos (do topo, do "quem somos", da galeria) e legendas. Seção
+ * que fica vazia sai (about null, sem depoimentos, galeria sem fotos do dono). O resultado
+ * passa por SiteSpec.parse.
  */
 export function applyModelFill(
   model: SiteSpec,
@@ -597,23 +625,13 @@ export function applyModelFill(
   facts: BriefFacts,
 ): SiteSpec {
   const titles = fill.titles ?? {};
-  const sections: Section[] = [];
+  const modelSection = <T extends SectionType>(type: T): SectionOf<T> | undefined =>
+    model.sections.find((section): section is SectionOf<T> => section.type === type);
+  // Portfólio: foto de banco num serviço pareceria trabalho do dono (só fotos dela).
+  const serviceQueries = model.template !== "portfolio";
 
-  for (const section of model.sections) {
-    switch (section.type) {
-      case "hero": {
-        const hero: SectionOf<"hero"> = {
-          type: "hero",
-          title: fill.hero.title,
-          subtitle: fill.hero.subtitle,
-          ctaLabel: fill.hero.ctaLabel,
-        };
-        // Modelo sem busca de foto (portfólio: só foto da dona) continua sem.
-        const query = fill.hero.imageQuery?.trim();
-        if (section.imageQuery && query) hero.imageQuery = query;
-        sections.push(hero);
-        break;
-      }
+  const build = (type: MiddleSection): Section | null => {
+    switch (type) {
       case "services": {
         const items = fill.services.slice(0, 8).map((item) => {
           const out: SectionOf<"services">["items"][number] = {
@@ -624,17 +642,18 @@ export function applyModelFill(
           if (price) out.price = price;
           if (item.detail?.trim()) out.detail = item.detail.trim();
           if (item.group?.trim()) out.group = item.group.trim();
+          const query = item.imageQuery?.trim();
+          if (serviceQueries && query) out.imageQuery = query.slice(0, 80);
           return out;
         });
-        if (items.length === 0) break;
-        const title = titles.services ?? section.title;
-        sections.push({ type: "services", ...(title ? { title } : {}), items });
-        break;
+        if (items.length === 0) return null;
+        const title = titles.services ?? modelSection("services")?.title;
+        return { type: "services", ...(title ? { title } : {}), items };
       }
       case "about": {
-        if (!fill.about) break;
+        if (!fill.about) return null;
         const about: SectionOf<"about"> = { type: "about", body: fill.about.body };
-        const title = fill.about.title ?? titles.about ?? section.title;
+        const title = fill.about.title ?? titles.about ?? modelSection("about")?.title;
         if (title) about.title = title;
         const people = (fill.about.people ?? []).slice(0, 6).map((p) => ({
           name: p.name,
@@ -642,58 +661,121 @@ export function applyModelFill(
           ...(p.note ? { note: p.note } : {}),
         }));
         if (people.length) about.people = people;
-        sections.push(about);
-        break;
+        return about;
       }
       case "testimonials": {
-        if (fill.testimonials.length === 0) break;
-        const title = titles.testimonials ?? section.title;
-        sections.push({
+        if (fill.testimonials.length === 0) return null;
+        const title = titles.testimonials ?? modelSection("testimonials")?.title;
+        return {
           type: "testimonials",
           ...(title ? { title } : {}),
           items: fill.testimonials.slice(0, 6).map((t) => ({ quote: t.quote, author: t.author })),
-        });
-        break;
+        };
       }
       case "faq": {
-        if (fill.faq.length === 0) break;
-        const title = titles.faq ?? section.title;
-        sections.push({
+        if (fill.faq.length === 0) return null;
+        const title = titles.faq ?? modelSection("faq")?.title;
+        return {
           type: "faq",
           ...(title ? { title } : {}),
           items: fill.faq.slice(0, 10).map((item) => ({ q: item.q, a: item.a })),
-        });
-        break;
+        };
       }
-      case "contact": {
-        const title = titles.contact ?? section.title;
-        sections.push({
-          type: "contact",
-          ...(title ? { title } : {}),
-          showForm: section.showForm,
-          showMap: section.showMap,
-        });
-        break;
-      }
-      case "gallery":
-        // As fotos do modelo não são do cliente: galeria vazia sai do site.
-        break;
     }
+  };
+
+  // Ordem do meio: a da IA primeiro, depois o que o modelo tinha e ela não citou. Galerias do
+  // modelo nunca entram (as fotos não são do cliente).
+  const isMiddle = (type: SectionType): type is MiddleSection =>
+    (MiddleSection.options as readonly string[]).includes(type);
+  const dropped = new Set<MiddleSection>(fill.dropSections ?? []);
+  dropped.delete("services");
+  const order: MiddleSection[] = [];
+  for (const type of [...(fill.sectionOrder ?? []), ...model.sections.map((s) => s.type)]) {
+    if (isMiddle(type) && !dropped.has(type) && !order.includes(type)) order.push(type);
   }
+  // Serviços sempre (o fill sempre tem de 3 a 8).
+  if (!order.includes("services")) order.unshift("services");
+
+  const modelHero = modelSection("hero");
+  const hero: SectionOf<"hero"> = {
+    type: "hero",
+    title: fill.hero.title,
+    subtitle: fill.hero.subtitle,
+    ctaLabel: fill.hero.ctaLabel,
+  };
+  // Modelo sem busca de foto (portfólio: só foto da dona) continua sem.
+  const heroQuery = fill.hero.imageQuery?.trim();
+  if (modelHero?.imageQuery && heroQuery) hero.imageQuery = heroQuery;
+
+  // Contato sempre por último (todo site sai com formulário, ver CLAUDE.md).
+  const modelContact = modelSection("contact");
+  const contactTitle = titles.contact ?? modelContact?.title;
+  const contact: SectionOf<"contact"> = {
+    type: "contact",
+    ...(contactTitle ? { title: contactTitle } : {}),
+    showForm: modelContact?.showForm ?? true,
+    showMap: modelContact?.showMap ?? false,
+  };
+
+  const sections: Section[] = [
+    hero,
+    ...order.flatMap((type) => {
+      const section = build(type);
+      return section ? [section] : [];
+    }),
+    contact,
+  ];
+
+  // Estilo escolhido pelo dono (passo "Colors") vale mais que tudo: são as cores que ele viu.
+  const ownerTheme = plan?.signals.style ? STYLE_THEMES[plan.signals.style] : undefined;
+  const theme = ownerTheme ? { ...ownerTheme } : pickTheme(fill.theme, model.theme);
 
   return SiteSpec.parse({
     version: 1,
     template: model.template,
-    ...(plan
-      ? { design: applyDesignPlan(model.design, plan) }
-      : model.design
-        ? { design: { ...model.design } }
-        : {}),
+    ...designFor(model, plan, fill.style),
     business: buildBusiness(fill, facts),
-    // Estilo escolhido pelo dono (passo "Colors") vale mais que o tema do modelo.
-    theme: { ...((plan?.signals.style && STYLE_THEMES[plan.signals.style]) || model.theme) },
+    theme,
     sections,
   });
+}
+
+/**
+ * `design` do site: composição (e ação, respiro, fotos) do plano, ou do modelo sem plano; por
+ * cima, o que a IA escolheu em `style`. Só a COMPOSIÇÃO do modelo é considerada pelo plano.
+ */
+function designFor(
+  model: SiteSpec,
+  plan: DesignPlan | undefined,
+  style: FillStyle | undefined,
+): { design?: SiteDesign } {
+  const base: SiteDesign | undefined = plan
+    ? applyDesignPlan(
+        model.design ? { composition: model.design.composition } : undefined,
+        plan,
+      )
+    : model.design
+      ? { ...model.design }
+      : undefined;
+  const chosen: Partial<SiteDesign> = {
+    ...(style?.buttons ? { buttons: style.buttons } : {}),
+    ...(style?.header ? { header: style.header } : {}),
+    ...(style?.contact ? { contact: style.contact } : {}),
+    ...(style?.density ? { density: style.density } : {}),
+    ...(style?.imageTreatment ? { imageTreatment: style.imageTreatment } : {}),
+  };
+  if (!base && Object.keys(chosen).length === 0) return {};
+  const design: SiteDesign = { composition: "service-led", ...base, ...chosen };
+  // Comida e salão nunca em preto e branco: a cor é o próprio produto.
+  if (
+    design.imageTreatment === "monochrome" &&
+    (model.template === "restaurant" || model.template === "beauty")
+  ) {
+    design.imageTreatment =
+      base?.imageTreatment && base.imageTreatment !== "monochrome" ? base.imageTreatment : "natural";
+  }
+  return { design };
 }
 
 /** Resumo do site-modelo que vai para a IA: estrutura e tom, para ela escrever no mesmo nível. */

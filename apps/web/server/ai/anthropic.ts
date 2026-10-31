@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
-import { designBriefForPrompt, type DesignPlan } from "../design";
+import { designBriefForPrompt, readBrief, type DesignPlan } from "../design";
 import { applyModelFill, lintFill, ModelFill, modelCopyForPrompt, verifyFacts } from "./model-fill";
 import { loadModelPool, pickModel, templateFor } from "./models";
 import {
@@ -9,6 +9,7 @@ import {
   SITE_GENERATION_SYSTEM_PROMPT,
 } from "./prompt";
 import { jsonInstructions, rawJson } from "./json-output";
+import { dropInvalidLook, lookHint, paletteProblems } from "./look";
 import type { SiteGenerator } from "./types";
 
 /**
@@ -94,6 +95,9 @@ export class AnthropicGenerator implements SiteGenerator {
     }
     // Modelos do código + versões aprovadas no estúdio (/admin/models), com cache curto.
     const model = pickModel(await loadModelPool(), template, brief);
+    // Sugestão de visual sorteada pelo pedido: sites da mesma categoria não saem iguais.
+    const ownerStyle = Boolean(plan?.signals.style ?? readBrief(brief).style);
+    const hint = lookHint(brief, template, ownerStyle);
     let problems: string[] = [];
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       let raw: unknown;
@@ -122,7 +126,9 @@ export class AnthropicGenerator implements SiteGenerator {
                 cache_control: { type: "ephemeral" },
               },
             ],
-            messages: [{ role: "user", content: fillRequest(brief, plan, problems) }],
+            messages: [
+              { role: "user", content: `${fillRequest(brief, plan, problems)}\n\n${hint}` },
+            ],
           },
           // Sem nova tentativa do SDK: no pior caso (2 × 30 s) ainda sobra tempo para o completo.
           { timeout: MODEL_FIRST_TIMEOUT_MS, maxRetries: 0 },
@@ -143,7 +149,8 @@ export class AnthropicGenerator implements SiteGenerator {
         continue;
       }
 
-      const parsed = ModelFill.safeParse(raw);
+      // Aparência inválida (cor fora do formato, opção inexistente) sai em vez de reprovar tudo.
+      const parsed = ModelFill.safeParse(dropInvalidLook(raw));
       if (!parsed.success) {
         problems = parsed.error.issues
           .slice(0, 10)
@@ -151,6 +158,10 @@ export class AnthropicGenerator implements SiteGenerator {
         continue;
       }
       const fill = parsed.data;
+      const palette = fill.theme && !ownerStyle ? paletteProblems(fill.theme) : [];
+      if (palette.length > 0) {
+        console.info("[ai] model-first palette rejected; using the model's", { palette });
+      }
       problems = lintFill(fill, brief, model);
       if (problems.length > 0) continue;
 

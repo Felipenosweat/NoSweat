@@ -187,74 +187,120 @@ function Intro({ name, place }: { name: string; place?: string }) {
   );
 }
 
-/** Menu de vidro (liquid glass) flutuando no alto; o formato vem de model.style.header. */
+/**
+ * Menu de vidro (liquid glass) no alto. Três larguras (do site, não da janela: @container):
+ * - celular (< 48rem): uma barra flutuante de ponta a ponta: nome à esquerda; ligar e o botão
+ *   de menu (44 px cada) à direita; respeita o recorte da tela (safe-area);
+ * - tablet (48rem a 80rem): a cápsula de sempre (aprovada pelo dono no iPad): do tamanho do
+ *   conteúdo e no meio (classic/centered) ou duas cápsulas nas pontas (bar/minimal);
+ * - computador (>= 80rem): barra da largura do conteúdo, com o nome alinhado ao texto da página.
+ *   classic: nome | links, telefone, botão. centered: links | nome no meio | telefone, botão.
+ *   bar: faixa de vidro presa no alto, sem flutuar. minimal: sem links; telefone, botão e menu.
+ * O vidro das cápsulas do tablet (bar/minimal) é ligado no CSS (.ns-navpart, styles.css).
+ */
 function GlassNav({ model }: { model: SiteModel }) {
-  const { business, links, ctaHref, ctaLabel, phoneHref } = model;
-  const split = model.style.header === "bar" || model.style.header === "minimal";
+  const { business, links, ctaHref, ctaLabel, ctaExternal, phoneHref } = model;
+  const header = model.style.header;
+  const split = header === "bar" || header === "minimal";
+  const centered = header === "centered";
+  // "minimal" nunca mostra os links em linha: tudo fica no botão de menu.
+  const inline = header !== "minimal" && links.length > 0;
+  const hasPhone = Boolean(phoneHref && business.phone);
+
   const cta = (
     <a
       href={ctaHref}
       {...externalProps(ctaHref)}
-      className={`ns-btn ns-btn-primary inline-flex min-h-11 items-center rounded-full bg-ns-text px-5 text-sm font-medium whitespace-nowrap text-ns-background transition hover:opacity-90 motion-reduce:transition-none ${focus}`}
+      className={`ns-btn ns-btn-primary hidden min-h-11 items-center rounded-full bg-ns-text px-5 text-sm font-medium whitespace-nowrap text-ns-background transition hover:opacity-90 motion-reduce:transition-none @3xl:inline-flex @7xl:min-h-12 @7xl:px-6 @7xl:text-[0.9375rem] ${focus}`}
     >
       {ctaLabel}
     </a>
   );
-  const phone =
-    phoneHref && business.phone ? (
-      <a
-        href={phoneHref}
-        aria-label={`Call ${business.phone}`}
-        className={`inline-flex min-h-11 min-w-11 items-center justify-center gap-2 text-sm tabular-nums ${focus}`}
-      >
-        <PhoneIcon className="size-4 shrink-0" />
-        <span className="hidden @5xl:inline">{business.phone}</span>
-      </a>
-    ) : null;
-  const brand = (
-    <a href="#top" className={`min-w-0 truncate ${display} text-xl leading-none ${focus}`}>
-      {business.name}
+  const phone = hasPhone ? (
+    <a
+      href={phoneHref}
+      aria-label={`Call ${business.phone}`}
+      className={`inline-flex size-11 shrink-0 items-center justify-center gap-2 rounded-full bg-ns-text/[0.07] text-sm tabular-nums @3xl:size-auto @3xl:min-h-11 @3xl:min-w-11 @3xl:bg-transparent @7xl:text-[0.9375rem] ${focus}`}
+    >
+      <PhoneIcon className="size-4 shrink-0" />
+      <span className="hidden @5xl:inline">{business.phone}</span>
     </a>
-  );
-  const menu =
+  ) : null;
+  const menuButton =
     links.length > 0 ? (
-      <nav aria-label="Main" className="hidden @5xl:block">
-        <ul className="flex items-center gap-7 text-sm">
-          {links.map((link) => (
-            <li key={link.anchor}>
-              <a
-                href={`#${link.anchor}`}
-                className={`ns-underline inline-flex min-h-11 items-center ${focus}`}
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <NavMenu
+        links={links}
+        ctaHref={ctaHref}
+        ctaLabel={ctaLabel}
+        ctaExternal={ctaExternal}
+        phoneHref={phoneHref}
+        phone={business.phone}
+        className={inline ? "@5xl:hidden" : ""}
+      />
     ) : null;
+  const menu = inline ? (
+    <nav aria-label="Main" className={`hidden @5xl:block ${centered ? "@7xl:order-1" : ""}`}>
+      <ul className="flex items-center gap-7 text-sm @7xl:gap-9 @7xl:text-[0.9375rem]">
+        {links.map((link) => (
+          <li key={link.anchor}>
+            <a
+              href={`#${link.anchor}`}
+              className={`ns-underline inline-flex min-h-11 items-center whitespace-nowrap ${focus}`}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ) : null;
 
-  if (split) {
-    return (
-      <header className="ns-nav pointer-events-none fixed inset-x-0 top-4 z-40 flex items-start justify-between gap-4 px-4 @min-[40rem]:px-6">
-        <div className="ns-glass pointer-events-auto flex h-14 min-w-0 items-center rounded-full pr-6 pl-6 text-ns-text">
-          {brand}
-        </div>
-        <div className="ns-glass pointer-events-auto flex h-14 items-center gap-5 rounded-full pr-1.5 pl-5 text-ns-text">
-          {menu}
-          {phone}
-          <span className="hidden @3xl:inline-flex">{cta}</span>
-        </div>
-      </header>
-    );
-  }
+  // Classes por formato. Tablet = @3xl até antes de @7xl (o visual aprovado no iPad).
+  const shell = split
+    ? "@3xl:px-6 @3xl:pt-4"
+    : "justify-center @3xl:px-4 @3xl:pt-4";
+  const bar = split
+    ? // No tablet a barra de fora fica transparente e as duas cápsulas ganham o vidro.
+      "@3xl:h-auto @3xl:justify-between @3xl:gap-4 @3xl:p-0"
+    : "@3xl:w-auto @3xl:max-w-full @3xl:gap-5 @3xl:pl-6 @5xl:gap-8";
+  const desktop =
+    header === "bar"
+      ? "ns-navbar-dock @7xl:h-[4.5rem] @7xl:rounded-none @7xl:px-16"
+      : centered
+        ? "@7xl:grid @7xl:grid-cols-[1fr_auto_1fr] @7xl:pr-2 @7xl:pl-6"
+        : "@7xl:pr-2 @7xl:pl-6";
+  const brandPart = split
+    ? "@3xl:h-14 @3xl:flex-none @3xl:rounded-full @3xl:px-6 @7xl:h-auto @7xl:flex-1 @7xl:rounded-none @7xl:px-0"
+    : centered
+      ? "@3xl:flex-none @7xl:order-2 @7xl:justify-center"
+      : "@3xl:flex-none @7xl:flex-1";
+  const actionsPart = split
+    ? "@3xl:h-14 @3xl:gap-5 @3xl:rounded-full @3xl:pr-1.5 @3xl:pl-5 @7xl:h-auto @7xl:gap-6 @7xl:rounded-none @7xl:p-0"
+    : `@3xl:gap-5 @5xl:gap-8 @7xl:gap-6 ${centered ? "@7xl:order-3 @7xl:justify-self-end" : ""}`;
+
   return (
-    <header className="ns-nav pointer-events-none fixed inset-x-0 top-4 z-40 flex justify-center px-4">
-      <div className="ns-glass pointer-events-auto flex h-14 max-w-full items-center gap-5 rounded-full pr-1.5 pl-6 text-ns-text @5xl:gap-8">
-        {brand}
-        {menu}
-        {phone}
-        <span className="hidden @3xl:inline-flex">{cta}</span>
+    <header
+      data-split={split ? "" : undefined}
+      className={`ns-nav pointer-events-none fixed inset-x-0 top-0 z-40 flex px-3 pt-[max(0.625rem,env(safe-area-inset-top))] ${shell} ${header === "bar" ? "@7xl:px-0 @7xl:pt-0" : "@7xl:px-10 @7xl:pt-5"}`}
+    >
+      <div
+        className={`ns-glass ns-navbar pointer-events-auto relative flex h-14 w-full min-w-0 items-center gap-1.5 rounded-full pr-1.5 pl-5 text-ns-text ${bar} @7xl:h-16 @7xl:w-full @7xl:gap-8 ${desktop}`}
+      >
+        <div className={`ns-navpart flex min-w-0 flex-1 items-center ${brandPart}`}>
+          <a
+            href="#top"
+            className={`block min-w-0 truncate py-3.5 ${display} text-lg leading-none @min-[40rem]:text-xl @7xl:text-2xl ${focus}`}
+          >
+            {business.name}
+          </a>
+        </div>
+        {!split && menu}
+        <div className={`ns-navpart flex shrink-0 items-center gap-1.5 ${actionsPart}`}>
+          {split && menu}
+          {phone}
+          {cta}
+          {menuButton}
+        </div>
       </div>
     </header>
   );
