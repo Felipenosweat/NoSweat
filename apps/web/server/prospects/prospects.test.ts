@@ -4,6 +4,7 @@ import { prospectsToCsv } from "./csv";
 import { MockPlacesClient, mockBusinesses } from "./mock";
 import {
   OVERPASS_URL,
+  OVERPASS_URLS,
   OSM_USER_AGENT,
   OverpassClient,
   buildOverpassQuery,
@@ -163,8 +164,7 @@ describe("OverpassClient", () => {
       expect(query).toContain("(around:8000,30,-97)");
       expect(query).toContain('[!"website"][!"contact:website"]');
       expect(query).toContain('[!"brand"]');
-      expect(query).toContain('["phone"]');
-      expect(query).toContain('["contact:phone"]');
+      expect(query).toContain('[~"^(phone|contact:phone)$"~"."]');
     }
   });
 
@@ -236,6 +236,27 @@ describe("OverpassClient", () => {
         email: "office@realplumbing.example.org",
       },
     ]);
+  });
+
+  it("tries the next Overpass server when one is busy or down", async () => {
+    const urls: string[] = [];
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      urls.push(String(url));
+      if (urls.length === 1) return new Response("Bad Gateway", { status: 502 });
+      if (urls.length === 2) throw new TypeError("fetch failed");
+      return Response.json({
+        elements: [{ type: "node", id: 7, tags: { name: "Ann's Bakery", shop: "bakery" } }],
+      });
+    }) as unknown as typeof fetch;
+    const results = await new OverpassClient(fetchImpl).searchText("bakery in Tulsa, OK");
+    expect(urls).toEqual(OVERPASS_URLS);
+    expect(results.map((r) => r.name)).toEqual(["Ann's Bakery"]);
+
+    const down = vi.fn(async () => new Response("", { status: 502 })) as unknown as typeof fetch;
+    await expect(new OverpassClient(down).searchText("bakery in Austin, TX")).rejects.toThrow(
+      /HTTP 502/,
+    );
+    expect(down).toHaveBeenCalledTimes(OVERPASS_URLS.length);
   });
 
   it("refuses too-short trades and unknown cities without calling the API", async () => {

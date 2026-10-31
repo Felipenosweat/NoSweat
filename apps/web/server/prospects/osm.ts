@@ -11,6 +11,15 @@ import type { PlaceBusiness } from "./types";
 // incompleta: vêm menos empresas que no Google, e sem nota/avaliações.
 
 export const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+/**
+ * Servidores públicos do Overpass, em ordem. O principal (overpass-api.de) às vezes responde
+ * 502/504/429 quando está cheio; aí a mesma consulta vai para o próximo.
+ */
+export const OVERPASS_URLS = [
+  OVERPASS_URL,
+  "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
 export const OSM_USER_AGENT = "NoSweatBot/1.0 (+https://www.nosweatfd.com; prospecting)";
 /** Raio em volta do centro da cidade. */
 export const OSM_RADIUS_METERS = 15_000;
@@ -39,10 +48,10 @@ const ANY_KINDS = [
   '["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream|dentist|veterinary|clinic|car_wash|car_rental|childcare|driving_school|beauty|spa)$"]',
   '["leisure"~"^(fitness_centre|sports_centre|dance)$"]',
 ];
-const ANY_TRADE_FILTERS = ANY_KINDS.flatMap((kind) => [
-  `${kind}${NO_SITE}["phone"]`,
-  `${kind}${NO_SITE}["contact:phone"]`,
-]);
+// Telefone em "phone" OU "contact:phone" (filtro por regex de chave: uma linha por tipo).
+const ANY_TRADE_FILTERS = ANY_KINDS.map(
+  (kind) => `${kind}${NO_SITE}[~"^(phone|contact:phone)$"~"."]`,
+);
 
 const TRADES: { match: RegExp; trade: Trade }[] = [
   { match: /plumb/, trade: { label: "Plumber", filters: ['["craft"="plumber"]'] } },
@@ -349,30 +358,7 @@ export class OverpassClient implements PlacesClient {
     const cached = cache.get(query);
     if (cached && Date.now() - cached.at < CACHE_MS) return cached.results.map((r) => ({ ...r }));
 
-    let res: Response;
-    try {
-      res = await this.fetchImpl(OVERPASS_URL, {
-        method: "POST",
-        cache: "no-store",
-        signal: AbortSignal.timeout((QUERY_TIMEOUT_S + 5) * 1000),
-        headers: {
-          "User-Agent": OSM_USER_AGENT,
-          Accept: "application/json",
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({ data: query }).toString(),
-      });
-    } catch (error) {
-      throw new PlacesError(
-        error instanceof Error && error.name === "TimeoutError"
-          ? "OpenStreetMap took too long to answer. Try again in a minute."
-          : "Could not reach OpenStreetMap.",
-      );
-    }
-    if (res.status === 429 || res.status === 504) {
-      throw new PlacesError("OpenStreetMap is busy right now. Try again in a minute.", res.status);
-    }
-    if (!res.ok) throw new PlacesError(`OpenStreetMap error: HTTP ${res.status}`, res.status);
+    const res = await this.fetchFirstAnswer(query);
     const parsed = OverpassJson.safeParse(await res.json().catch(() => null));
     if (!parsed.success) throw new PlacesError("OpenStreetMap sent an unexpected answer.");
 
@@ -387,6 +373,47 @@ export class OverpassClient implements PlacesClient {
     }
     cache.set(query, { at: Date.now(), results });
     return results;
+  }
+
+  /**
+   * Manda a consulta para o primeiro servidor; se ele estiver cheio ou fora (429, 5xx, rede,
+   * demora), tenta o próximo. Erro de pedido (400) não adianta repetir.
+   */
+  private async fetchFirstAnswer(query: string): Promise<Response> {
+    let last: PlacesError | null = null;
+    for (const url of OVERPASS_URLS) {
+      let res: Response;
+      try {
+        res = await this.fetchImpl(url, {
+          method: "POST",
+          cache: "no-store",
+          signal: AbortSignal.timeout((QUERY_TIMEOUT_S + 5) * 1000),
+          headers: {
+            "User-Agent": OSM_USER_AGENT,
+            Accept: "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({ data: query }).toString(),
+        });
+      } catch (error) {
+        last = new PlacesError(
+          error instanceof Error && error.name === "TimeoutError"
+            ? "OpenStreetMap took too long to answer. Try again in a minute."
+            : "Could not reach OpenStreetMap.",
+        );
+        console.warn(`[prospects] ${url} failed: ${last.message}`);
+        continue;
+      }
+      if (res.ok) return res;
+      if (res.status === 400)
+        throw new PlacesError("OpenStreetMap could not read the search.", 400);
+      last =
+        res.status === 429 || res.status === 504
+          ? new PlacesError("OpenStreetMap is busy right now. Try again in a minute.", res.status)
+          : new PlacesError(`OpenStreetMap error: HTTP ${res.status}`, res.status);
+      console.warn(`[prospects] ${url} answered HTTP ${res.status}`);
+    }
+    throw last ?? new PlacesError("Could not reach OpenStreetMap.");
   }
 
   /** O OSM não tem prazo de cache (licença ODbL): nada a renovar. */
