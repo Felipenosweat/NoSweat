@@ -1,0 +1,504 @@
+[
+  {
+    "viewport": "mobile",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/glow-salon",
+    "finalUrl": "https://www.nosweatfd.com/examples/glow-salon",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=vgbpRuP5MX-fRrGR net::ERR_ABORTED",
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "https://www.nosweatfd.com/examples/hale-ortiz",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "https://www.nosweatfd.com/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/vega-photo",
+    "finalUrl": "https://www.nosweatfd.com/examples/vega-photo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "https://www.nosweatfd.com/examples/bright-spark-electric",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "https://www.nosweatfd.com/examples/greenline-landscaping",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "https://www.nosweatfd.com/examples/true-coat-painting",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "https://www.nosweatfd.com/examples/fade-and-co-barbers",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/polished-nail-studio",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=6_ONDrsdc0wPYTH2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "https://www.nosweatfd.com/examples/still-water-spa",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "https://www.nosweatfd.com/examples/arch-and-lash",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "https://www.nosweatfd.com/examples/north-loop-coffee",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "https://www.nosweatfd.com/examples/brick-oven-pizza",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "https://www.nosweatfd.com/examples/sunrise-bakery",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/mercer-law",
+    "finalUrl": "https://www.nosweatfd.com/examples/mercer-law",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "https://www.nosweatfd.com/examples/bayside-family-dental",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "https://www.nosweatfd.com/examples/keystone-insurance",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "https://www.nosweatfd.com/examples/open-door-counseling",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "https://www.nosweatfd.com/examples/hollis-interiors",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "https://www.nosweatfd.com/examples/reel-north-films",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/fieldwork-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/",
+    "finalUrl": "https://www.nosweatfd.com/",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/create",
+    "finalUrl": "https://www.nosweatfd.com/create",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/pricing",
+    "finalUrl": "https://www.nosweatfd.com/pricing",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/login",
+    "finalUrl": "https://www.nosweatfd.com/login",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/signup?_rsc=sW2A7HEmFQnSVIMx net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/signup",
+    "finalUrl": "https://www.nosweatfd.com/signup",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/terms",
+    "finalUrl": "https://www.nosweatfd.com/terms",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/privacy",
+    "finalUrl": "https://www.nosweatfd.com/privacy",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/credits",
+    "finalUrl": "https://www.nosweatfd.com/credits",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/glow-salon",
+    "finalUrl": "https://www.nosweatfd.com/examples/glow-salon",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "https://www.nosweatfd.com/examples/hale-ortiz",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "https://www.nosweatfd.com/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=jDC4t8tqV_24vJ9p net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/vega-photo",
+    "finalUrl": "https://www.nosweatfd.com/examples/vega-photo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "https://www.nosweatfd.com/examples/bright-spark-electric",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "https://www.nosweatfd.com/examples/greenline-landscaping",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "https://www.nosweatfd.com/examples/true-coat-painting",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "https://www.nosweatfd.com/examples/fade-and-co-barbers",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/polished-nail-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "https://www.nosweatfd.com/examples/still-water-spa",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "https://www.nosweatfd.com/examples/arch-and-lash",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "https://www.nosweatfd.com/examples/north-loop-coffee",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "https://www.nosweatfd.com/examples/brick-oven-pizza",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "https://www.nosweatfd.com/examples/smoke-and-rail-bbq",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "https://www.nosweatfd.com/examples/sunrise-bakery",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/mercer-law",
+    "finalUrl": "https://www.nosweatfd.com/examples/mercer-law",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "https://www.nosweatfd.com/examples/bayside-family-dental",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "https://www.nosweatfd.com/examples/keystone-insurance",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "https://www.nosweatfd.com/examples/open-door-counseling",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=wNgj14GIiZW9d-_6 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "https://www.nosweatfd.com/examples/hollis-interiors",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=HbHJZ9RQX4zYVqvX net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "https://www.nosweatfd.com/examples/iron-lotus-tattoo",
+    "status": 200,
+    "issues": [
+      "failed: https://www.nosweatfd.com/create?_rsc=czpHU67w6wA8ixn7 net::ERR_ABORTED",
+      "failed: https://www.nosweatfd.com/create?_rsc=6efBRHK14NOShdid net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "https://www.nosweatfd.com/examples/reel-north-films",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "https://www.nosweatfd.com/examples/fieldwork-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/dashboard",
+    "finalUrl": "https://www.nosweatfd.com/login?next=%2Fdashboard",
+    "status": 200,
+    "issues": []
+  }
+]
