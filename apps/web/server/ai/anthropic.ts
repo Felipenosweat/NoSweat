@@ -1,5 +1,4 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { designBriefForPrompt, type DesignPlan } from "../design";
 import { applyModelFill, lintFill, ModelFill, modelCopyForPrompt, verifyFacts } from "./model-fill";
@@ -9,6 +8,7 @@ import {
   SITE_EDIT_SYSTEM_PROMPT,
   SITE_GENERATION_SYSTEM_PROMPT,
 } from "./prompt";
+import { jsonInstructions, rawJson } from "./json-output";
 import type { SiteGenerator } from "./types";
 
 /**
@@ -107,16 +107,13 @@ export class AnthropicGenerator implements SiteGenerator {
             ...(this.editModel.startsWith("claude-haiku")
               ? { thinking: { type: "disabled" as const } }
               : {}),
-            output_config: {
-              effort: "low",
-              format: zodOutputFormat(ModelFill),
-            },
+            output_config: { effort: "low" },
             // Texto fixo + resumo do modelo da categoria: os dois ficam em cache (iguais para
             // todo cliente da mesma categoria); só o pedido do dono muda.
             system: [
               {
                 type: "text",
-                text: MODEL_FILL_SYSTEM_PROMPT,
+                text: `${MODEL_FILL_SYSTEM_PROMPT}\n\n${jsonInstructions(ModelFill)}`,
                 cache_control: { type: "ephemeral" },
               },
               {
@@ -134,7 +131,7 @@ export class AnthropicGenerator implements SiteGenerator {
           console.warn("[ai] model-first fallback", { reason: response.stop_reason, attempt });
           return null;
         }
-        raw = response.parsed_output;
+        raw = rawJson(response);
       } catch (error) {
         // Erro da API (rede, limite, 5xx): não insiste no caminho barato.
         if (error instanceof Anthropic.APIError) {
@@ -180,49 +177,61 @@ export class AnthropicGenerator implements SiteGenerator {
     plan?: DesignPlan,
     options?: { timeout?: number; maxRetries?: number },
   ): Promise<SiteSpec> {
-    const response = await this.client.messages.parse(
-      {
-        model: this.model,
-        max_tokens: 16000,
-        // Pensamento adaptativo é o padrão neste modelo; "medium" equilibra qualidade e tempo de espera.
-        output_config: {
-          effort: "medium",
-          format: zodOutputFormat(SiteSpec),
+    const deadline = Date.now() + (options?.timeout ?? 240_000);
+    let problems: string[] = [];
+    // Até 2 tentativas: a segunda leva os erros de formato da primeira (se ainda houver tempo).
+    for (let attempt = 1; ; attempt += 1) {
+      const request = fillRequest(brief, plan, problems, 'fill "design" and write the copy for it');
+      const response = await this.client.messages.parse(
+        {
+          model: this.model,
+          max_tokens: 16000,
+          // Pensamento adaptativo é o padrão neste modelo; "medium" equilibra qualidade e espera.
+          output_config: { effort: "medium" },
+          system: [
+            {
+              type: "text",
+              text: `${SITE_GENERATION_SYSTEM_PROMPT}\n\n${jsonInstructions(SiteSpec)}`,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [{ role: "user", content: request }],
         },
-        system: SITE_GENERATION_SYSTEM_PROMPT,
-        messages: [
-          {
-            role: "user",
-            content: generationRequest(brief, plan),
-          },
-        ],
-      },
-      options,
-    );
-
-    if (response.stop_reason === "refusal") {
-      throw new Error(
-        `Claude declined to generate this site (${response.stop_details?.category ?? "unknown"}).`,
+        { ...options, timeout: Math.max(FULL_MIN_TIMEOUT_MS, deadline - Date.now()) },
       );
+
+      if (response.stop_reason === "refusal") {
+        throw new Error(
+          `Claude declined to generate this site (${response.stop_details?.category ?? "unknown"}).`,
+        );
+      }
+      if (response.stop_reason === "max_tokens") {
+        throw new Error("Claude's response was cut off before the site was complete.");
+      }
+      let issues: string[];
+      try {
+        const parsed = SiteSpec.safeParse(rawJson(response));
+        if (parsed.success) return parsed.data;
+        issues = parsed.error.issues
+          .slice(0, 10)
+          .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`);
+      } catch (error) {
+        issues = [`The answer was not valid JSON: ${String(error).slice(0, 300)}`];
+      }
+      if (attempt >= 2 || deadline - Date.now() < FULL_MIN_TIMEOUT_MS) {
+        console.warn("[ai] full generation invalid", { attempt, issues });
+        throw new Error("Claude did not return a valid SiteSpec.");
+      }
+      problems = issues;
     }
-    if (response.stop_reason === "max_tokens") {
-      throw new Error("Claude's response was cut off before the site was complete.");
-    }
-    if (!response.parsed_output) {
-      throw new Error("Claude did not return a valid SiteSpec.");
-    }
-    return response.parsed_output;
   }
 
   async editSite(spec: SiteSpec, instruction: string): Promise<AiEditResult> {
     const response = await this.client.messages.parse({
       model: this.editModel,
       max_tokens: 16000,
-      output_config: {
-        effort: "medium",
-        format: zodOutputFormat(AiEditResult),
-      },
-      system: SITE_EDIT_SYSTEM_PROMPT,
+      output_config: { effort: "medium" },
+      system: `${SITE_EDIT_SYSTEM_PROMPT}\n\n${jsonInstructions(AiEditResult)}`,
       messages: [
         {
           role: "user",
@@ -239,16 +248,26 @@ export class AnthropicGenerator implements SiteGenerator {
     if (response.stop_reason === "max_tokens") {
       throw new Error("Claude's response was cut off before the change was complete.");
     }
-    if (!response.parsed_output) {
+    let raw: unknown;
+    try {
+      raw = rawJson(response);
+    } catch {
       throw new Error("Claude did not return a valid site.");
     }
-    return response.parsed_output;
+    const parsed = AiEditResult.safeParse(raw);
+    if (!parsed.success) throw new Error("Claude did not return a valid site.");
+    return parsed.data;
   }
 }
 
 /** Pedido do caminho barato: a descrição do dono, a direção de arte e os erros da tentativa anterior. */
-export function fillRequest(brief: string, plan?: DesignPlan, problems: string[] = []): string {
-  const parts = [generationRequest(brief, plan, "write the copy for it")];
+export function fillRequest(
+  brief: string,
+  plan?: DesignPlan,
+  problems: string[] = [],
+  planNote = "write the copy for it",
+): string {
+  const parts = [generationRequest(brief, plan, planNote)];
   if (problems.length > 0) {
     parts.push(
       `Your previous answer had these problems. Fix every one:\n\n<problems>\n${problems.map((p) => `- ${p}`).join("\n")}\n</problems>`,
