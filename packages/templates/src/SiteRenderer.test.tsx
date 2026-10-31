@@ -229,6 +229,18 @@ describe("fonts", () => {
   });
 });
 
+describe("theme surface and muted", () => {
+  it("emits them only when the theme sets them (otherwise styles.css derives them)", () => {
+    const theme = fixtures["joes-plumbing"].theme;
+    const plain = themeToCssVars({ ...theme, surface: undefined, muted: undefined });
+    expect(plain).not.toHaveProperty("--ns-surface");
+    expect(plain).not.toHaveProperty("--ns-muted");
+    const set = themeToCssVars({ ...theme, surface: "#F4EFE6", muted: "#5B5B5B" });
+    expect(set["--ns-surface"]).toBe("#F4EFE6");
+    expect(set["--ns-muted"]).toBe("#5B5B5B");
+  });
+});
+
 describe("compositions", () => {
   const plumbing = withoutGallery(fixtures["joes-plumbing"]);
 
