@@ -1,0 +1,1181 @@
+/* Iron Lotus Tattoo (demonstração). Uma folha de flash: papel cor de osso, tinta quase preta e
+   UM vermelho (o da caneta que circula a peça). Contraste medido: tinta sobre papel 15,6:1;
+   tinta suave #595651 sobre papel 6,3:1 e sobre a ficha 6,9:1; vermelho #b8261c sobre papel
+   5,4:1 (papel sobre vermelho 5,4:1); no rodapé escuro o vermelho clareia para #e86a5f (5,8:1).
+   Tudo com prefixo .ironlotus / il- para não vazar para o resto do app. */
+
+.ironlotus {
+  --il-paper: #f2ede3;
+  --il-paper-2: #e9e2d4;
+  --il-card: #fbf8f1;
+  --il-ink: #171513;
+  --il-ink-soft: #595651;
+  --il-rule: rgba(23, 21, 19, 0.18);
+  --il-red: #b8261c;
+  --il-red-on-ink: #e86a5f;
+  --il-on-ink-soft: rgba(242, 237, 227, 0.74);
+  --il-rail: 112px;
+  --il-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  background-color: var(--il-paper);
+  /* Grão de papel: ruído estático em SVG, ladrilho pequeno, rola junto (sem camada fixa). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--il-ink);
+  font-family: var(--font-il), system-ui, sans-serif;
+  font-variation-settings: "wdth" 100;
+  overflow-x: clip;
+}
+
+html:has(.ironlotus) body {
+  background: #f2ede3;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.ironlotus) {
+    scroll-behavior: smooth;
+  }
+}
+
+.ironlotus ::selection {
+  background: var(--il-red);
+  color: var(--il-paper);
+}
+
+.ironlotus a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ironlotus .il-display {
+  font-family: var(--font-il), system-ui, sans-serif;
+  font-weight: 800;
+  font-variation-settings: "wdth" 62;
+  letter-spacing: -0.01em;
+}
+
+.ironlotus .il-mono {
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-variation-settings: normal;
+}
+
+.ironlotus .il-h2 {
+  font-family: var(--font-il), system-ui, sans-serif;
+  font-weight: 800;
+  font-variation-settings: "wdth" 62;
+  font-size: clamp(3rem, 7.2vw, 7rem);
+  line-height: 0.84;
+  letter-spacing: -0.012em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.ironlotus p,
+.ironlotus li {
+  text-wrap: pretty;
+}
+
+/* ---------- Foco, links e botões ---------- */
+
+.ironlotus .il-focus:focus-visible,
+.ironlotus .il-link:focus-visible,
+.ironlotus .il-btn:focus-visible,
+.ironlotus .il-piece:focus-visible,
+.ironlotus .il-x:focus-visible {
+  outline: 2px solid var(--il-ink);
+  outline-offset: 3px;
+}
+
+.ironlotus .il-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+
+.ironlotus .il-link:hover {
+  color: var(--il-red);
+}
+
+.ironlotus .il-btn {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  border: 2px solid var(--il-ink);
+  padding: 0 20px;
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  transition:
+    transform 0.2s var(--il-ease),
+    box-shadow 0.2s var(--il-ease),
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.ironlotus .il-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--il-ink);
+}
+
+.ironlotus .il-btn-sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.ironlotus .il-btn-red {
+  border-color: var(--il-red);
+  background: var(--il-red);
+  color: var(--il-paper);
+}
+
+.ironlotus .il-btn-ink {
+  background: var(--il-ink);
+  color: var(--il-paper);
+}
+
+.ironlotus .il-btn-line {
+  background: transparent;
+  color: var(--il-ink);
+}
+
+.ironlotus .il-chip {
+  border: 1.5px solid var(--il-ink);
+  padding: 4px 8px;
+}
+
+.ironlotus .il-chip-ink {
+  background: var(--il-ink);
+  color: var(--il-paper);
+}
+
+/* ---------- Topo: título e folha de flash ---------- */
+
+.ironlotus .il-title {
+  font-family: var(--font-il), system-ui, sans-serif;
+  font-weight: 900;
+  font-variation-settings: "wdth" 62;
+  text-transform: uppercase;
+}
+
+.ironlotus .il-title-line {
+  display: block;
+  overflow: hidden;
+  font-size: clamp(5.5rem, 34vw, 13.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  padding-top: 0.04em;
+}
+
+.ironlotus .il-title-line > span {
+  display: block;
+}
+
+.ironlotus .il-title-sub {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-title-line {
+    font-size: clamp(7rem, 14vw, 13rem);
+  }
+}
+
+.ironlotus .il-facts > div {
+  border-top: 1.5px solid var(--il-ink);
+  padding-top: 10px;
+}
+
+.ironlotus .il-facts dt {
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--il-ink-soft);
+}
+
+.ironlotus .il-facts dd {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.ironlotus .il-sheet {
+  position: relative;
+  border: 1px solid var(--il-rule);
+  background: var(--il-card);
+  padding: 14px;
+  box-shadow: 0 30px 50px -40px rgba(23, 21, 19, 0.5);
+}
+
+/* Marcas de corte nos cantos (como numa prova de gráfica). */
+.ironlotus .il-crop {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.ironlotus .il-crop-tl {
+  top: -10px;
+  left: -10px;
+  border-top: 1.5px solid var(--il-ink);
+  border-left: 1.5px solid var(--il-ink);
+}
+
+.ironlotus .il-crop-tr {
+  top: -10px;
+  right: -10px;
+  border-top: 1.5px solid var(--il-ink);
+  border-right: 1.5px solid var(--il-ink);
+}
+
+.ironlotus .il-crop-bl {
+  bottom: -10px;
+  left: -10px;
+  border-bottom: 1.5px solid var(--il-ink);
+  border-left: 1.5px solid var(--il-ink);
+}
+
+.ironlotus .il-crop-br {
+  right: -10px;
+  bottom: -10px;
+  border-right: 1.5px solid var(--il-ink);
+  border-bottom: 1.5px solid var(--il-ink);
+}
+
+.ironlotus .il-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: 6px;
+}
+
+.ironlotus .il-cell {
+  aspect-ratio: 1;
+  min-width: 0;
+}
+
+.ironlotus .il-cell[data-big] {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.ironlotus .il-cell[data-wide] {
+  grid-column: span 2;
+  aspect-ratio: 2 / 1;
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-sheet {
+    padding: 18px 20px;
+  }
+
+  .ironlotus .il-sheet-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    aspect-ratio: 7 / 6;
+    gap: 2px;
+  }
+
+  .ironlotus .il-cell,
+  .ironlotus .il-cell[data-big],
+  .ironlotus .il-cell[data-wide] {
+    grid-column: var(--c) / span var(--w);
+    grid-row: var(--r) / span var(--h);
+    aspect-ratio: auto;
+  }
+}
+
+.ironlotus .il-piece-float {
+  width: 100%;
+  height: 100%;
+}
+
+/* A arte fica num retângulo absoluto (tamanho definido): numa célula quadrada o SVG alto do
+   punhal não "estoura" para a célula de baixo. */
+.ironlotus .il-piece {
+  --pt: 16%;
+  --pb: 24%;
+  --px: 10%;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transform: rotate(var(--tilt));
+  transition: transform 0.45s var(--il-ease);
+}
+
+.ironlotus .il-cell[data-big] .il-piece {
+  --pt: 9%;
+  --pb: 14%;
+  --px: 6%;
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-piece,
+  .ironlotus .il-cell[data-big] .il-piece {
+    --pt: 12%;
+    --pb: 12%;
+    --px: 8%;
+  }
+}
+
+.ironlotus .il-piece-art {
+  position: absolute;
+  top: var(--pt);
+  left: var(--px);
+  width: calc(100% - 2 * var(--px));
+  height: calc(100% - var(--pt) - var(--pb));
+  overflow: visible;
+}
+
+.ironlotus .il-piece:hover,
+.ironlotus .il-piece:focus-visible,
+.ironlotus .il-piece[aria-pressed="true"] {
+  transform: rotate(0deg) scale(1.06);
+}
+
+.ironlotus .il-piece-no {
+  position: absolute;
+  top: 4%;
+  left: 5%;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--il-ink-soft);
+  transition: color 0.2s;
+}
+
+.ironlotus .il-piece:hover .il-piece-no,
+.ironlotus .il-piece[aria-pressed="true"] .il-piece-no {
+  color: var(--il-red);
+}
+
+.ironlotus .il-piece-name {
+  position: absolute;
+  right: 4%;
+  bottom: 3%;
+  left: 4%;
+  overflow: hidden;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--il-ink-soft);
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-piece-name {
+    display: none;
+  }
+}
+
+/* O círculo de caneta vermelha em volta da peça escolhida. */
+.ironlotus .il-marker {
+  position: absolute;
+  inset: 2%;
+  width: 96%;
+  height: 96%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Sem vector-effect: com ele o pathLength deixa de valer e o traço aparece pela metade. A
+   espessura acompanha o tamanho da peça, como uma caneta mais grossa numa peça maior. */
+.ironlotus .il-marker path,
+.ironlotus .il-rail-no path {
+  fill: none;
+  stroke: var(--il-red);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.6s var(--il-ease);
+}
+
+.ironlotus .il-rail-no path {
+  stroke-width: 4;
+}
+
+.ironlotus .il-piece[aria-pressed="true"] .il-marker path,
+.ironlotus .il-rail-link[aria-current] .il-rail-no path {
+  stroke-dashoffset: 0;
+}
+
+.ironlotus .il-readout {
+  display: flex;
+  min-height: 78px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 18px;
+  margin-top: 12px;
+  border-top: 2px solid var(--il-ink);
+  padding-top: 14px;
+}
+
+@media (max-width: 767px) {
+  .ironlotus .il-readout {
+    position: sticky;
+    z-index: 5;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    margin: 12px -6px 0;
+    border: 2px solid var(--il-ink);
+    background: var(--il-card);
+    padding: 12px 14px;
+  }
+
+  .ironlotus .il-readout .il-btn {
+    width: 100%;
+  }
+}
+
+/* Entrada do topo em CSS: roda desde a primeira pintura (sem piscar), só com movimento. */
+@media (prefers-reduced-motion: no-preference) {
+  .ironlotus .il-title-line > span {
+    animation: il-line 0.75s var(--il-ease) both;
+  }
+
+  .ironlotus .il-title-line + .il-title-line > span {
+    animation-delay: 0.08s;
+  }
+
+  .ironlotus .il-cell {
+    animation: il-pin 0.6s var(--il-ease) both;
+    animation-delay: calc(0.25s + var(--i) * 55ms);
+  }
+
+  .ironlotus .il-stub {
+    animation: il-stub 0.6s var(--il-ease) both;
+  }
+}
+
+@keyframes il-line {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes il-pin {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) rotate(7deg) scale(1.08);
+  }
+}
+
+@keyframes il-stub {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) rotate(-1.5deg);
+  }
+}
+
+/* ---------- Cabeçalho de folha ---------- */
+
+.ironlotus .il-num-mask {
+  display: inline-block;
+  overflow: hidden;
+  line-height: 0.8;
+  padding-top: 2px;
+}
+
+/* ---------- Recortes de foto ---------- */
+
+.ironlotus .il-cutout {
+  position: relative;
+  margin: 0;
+  background: #fdfbf6;
+  padding: 10px 10px 12px;
+  box-shadow:
+    0 1px 0 rgba(23, 21, 19, 0.08),
+    0 22px 34px -22px rgba(23, 21, 19, 0.55);
+  transform: rotate(var(--tilt));
+}
+
+.ironlotus .il-cutout-photo {
+  overflow: hidden;
+}
+
+.ironlotus .il-cutout img {
+  filter: grayscale(1) contrast(1.06);
+  transition: filter 0.5s;
+}
+
+.ironlotus .il-cutout:hover img {
+  filter: none;
+}
+
+.ironlotus .il-tape {
+  position: absolute;
+  z-index: 2;
+  top: -11px;
+  width: 76px;
+  height: 22px;
+  border: 1px solid rgba(23, 21, 19, 0.08);
+  background: rgba(226, 218, 200, 0.85);
+}
+
+.ironlotus .il-tape-a {
+  left: 14%;
+  transform: rotate(-7deg);
+}
+
+.ironlotus .il-tape-b {
+  right: 12%;
+  transform: rotate(6deg);
+}
+
+/* ---------- Artistas ---------- */
+
+.ironlotus .il-artist-no {
+  color: var(--il-ink);
+  transition: color 0.3s;
+}
+
+.ironlotus .il-artist[data-on] .il-artist-no {
+  color: var(--il-red);
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-artist-name {
+    transition: transform 0.55s var(--il-ease);
+  }
+
+  .ironlotus .il-artist[data-on] .il-artist-name {
+    transform: translateX(14px);
+  }
+}
+
+.ironlotus .il-note {
+  position: relative;
+  border-left: 3px solid var(--il-red);
+  background: var(--il-card);
+  padding: 16px 18px;
+  transform: rotate(-0.6deg);
+}
+
+.ironlotus .il-frame-slot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(18px) rotate(5deg);
+  transition:
+    opacity 0.35s,
+    transform 0.55s var(--il-ease);
+}
+
+.ironlotus .il-frame-slot[data-on] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Preços ---------- */
+
+.ironlotus .il-ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 31px,
+    rgba(23, 21, 19, 0.055) 31px 32px
+  );
+}
+
+.ironlotus .il-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ironlotus .il-plate[data-wide] {
+    grid-column: span 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ironlotus .il-plate {
+  border: 2px solid var(--il-ink);
+  background: var(--il-card);
+  padding: 22px 24px 26px;
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-plate {
+    min-height: 240px;
+  }
+}
+
+.ironlotus .il-plate[data-red] {
+  border-color: var(--il-red);
+  background: var(--il-red);
+  color: var(--il-paper);
+}
+
+.ironlotus .il-plate-key {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1.5px solid currentColor;
+}
+
+/* ---------- Como marcar ---------- */
+
+.ironlotus .il-steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 0;
+  }
+
+  .ironlotus .il-step + .il-step {
+    border-left: 1.5px dashed rgba(23, 21, 19, 0.4);
+    padding-left: 24px;
+  }
+}
+
+.ironlotus .il-step {
+  border-top: 2px solid var(--il-ink);
+  padding: 22px 20px 32px 0;
+}
+
+.ironlotus .il-step-no {
+  display: block;
+  font-size: clamp(5rem, 8vw, 7.5rem);
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--il-ink);
+}
+
+.ironlotus .il-rules li {
+  display: grid;
+  gap: 4px 16px;
+  border-bottom: 1px solid var(--il-rule);
+  padding: 14px 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ironlotus .il-rules li:first-child {
+  border-top: 2px solid var(--il-ink);
+}
+
+.ironlotus .il-rules .il-mono {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--il-ink-soft);
+  padding-top: 3px;
+}
+
+@media (min-width: 640px) {
+  .ironlotus .il-rules li {
+    grid-template-columns: 8.5rem 1fr;
+  }
+}
+
+.ironlotus .il-stamp {
+  width: 210px;
+  height: 210px;
+  stroke: var(--il-red);
+  transform: rotate(-9deg);
+}
+
+.ironlotus .il-stamp-ring {
+  fill: var(--il-red);
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  stroke: none;
+}
+
+.ironlotus .il-stamp-big {
+  fill: var(--il-red);
+  stroke: none;
+  font-family: var(--font-il), sans-serif;
+  font-size: 66px;
+  font-weight: 900;
+  font-variation-settings: "wdth" 62;
+}
+
+/* ---------- Ficha de consulta ---------- */
+
+.ironlotus .il-slip {
+  position: relative;
+  border: 2px solid var(--il-ink);
+  background: var(--il-card);
+  padding: 26px clamp(18px, 3vw, 36px) 32px;
+  box-shadow: 8px 8px 0 var(--il-ink);
+}
+
+/* Picote no alto da ficha. */
+.ironlotus .il-slip::before {
+  position: absolute;
+  top: -2px;
+  right: 10px;
+  left: 10px;
+  height: 9px;
+  background: radial-gradient(circle at 7px 0, var(--il-paper) 4px, transparent 4.5px) 0 0 / 15px
+    9px repeat-x;
+  content: "";
+}
+
+.ironlotus .il-slip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  border-bottom: 2px solid var(--il-ink);
+  padding: 6px 0 14px;
+}
+
+.ironlotus .il-stamp-sm {
+  border: 1.5px solid var(--il-red);
+  padding: 4px 8px;
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--il-red);
+  transform: rotate(-3deg);
+}
+
+.ironlotus .il-slip-row {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-bottom: 1.5px dashed rgba(23, 21, 19, 0.35);
+  padding: 22px 0;
+  outline: none;
+}
+
+.ironlotus .il-slip-row[data-invalid] {
+  box-shadow: inset 3px 0 0 var(--il-red);
+  padding-left: 14px;
+}
+
+.ironlotus .il-slip-legend {
+  display: flex;
+  float: left;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 0;
+}
+
+.ironlotus .il-slip-row > :not(legend) {
+  clear: both;
+}
+
+.ironlotus .il-slip-n {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  place-items: center;
+  border: 1.5px solid var(--il-ink);
+  border-radius: 999px;
+  font-family: var(--font-il-mono), ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.ironlotus .il-opt {
+  position: relative;
+  display: flex;
+}
+
+.ironlotus .il-opt > span {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 1.5px solid var(--il-ink);
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.ironlotus .il-opt:hover > span {
+  background: rgba(23, 21, 19, 0.06);
+}
+
+.ironlotus .il-opt:has(:checked) > span {
+  background: var(--il-ink);
+  color: var(--il-paper);
+}
+
+.ironlotus .il-opt:has(:focus-visible) > span {
+  outline: 2px solid var(--il-red);
+  outline-offset: 2px;
+}
+
+.ironlotus .il-field {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  border: 0;
+  border-bottom: 2px solid var(--il-ink);
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 2px;
+  font-size: 17px;
+  color: var(--il-ink);
+}
+
+.ironlotus textarea.il-field {
+  border: 2px solid var(--il-ink);
+  padding: 10px 12px;
+}
+
+.ironlotus .il-field::placeholder {
+  color: var(--il-ink-soft);
+}
+
+.ironlotus .il-field:focus-visible,
+.ironlotus .il-check input:focus-visible,
+.ironlotus .il-btn:has(input:focus-visible) {
+  outline: 2px solid var(--il-red);
+  outline-offset: 2px;
+}
+
+.ironlotus .il-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.ironlotus .il-check input {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  margin-top: 1px;
+  accent-color: var(--il-red);
+}
+
+.ironlotus .il-x {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.ironlotus .il-guide {
+  margin-top: 22px;
+  border-left: 4px solid var(--il-red);
+  background: var(--il-paper-2);
+  padding: 16px 18px;
+}
+
+.ironlotus .il-slip-errors {
+  border: 2px solid var(--il-red);
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+/* ---------- Visita ---------- */
+
+.ironlotus .il-hours th,
+.ironlotus .il-hours td {
+  border-bottom: 1px solid var(--il-rule);
+  padding: 12px 0;
+  font-size: 17px;
+  text-align: left;
+}
+
+.ironlotus .il-hours th {
+  font-weight: 700;
+}
+
+.ironlotus .il-hours td {
+  text-align: right;
+}
+
+/* ---------- Navegação ---------- */
+
+.ironlotus .il-rail {
+  display: none;
+}
+
+.ironlotus .il-topbar {
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  height: 60px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1.5px solid var(--il-ink);
+  background: var(--il-paper);
+  padding: 0 16px;
+}
+
+.ironlotus .il-index {
+  position: fixed;
+  z-index: 39;
+  inset: 60px 0 0;
+  overflow-y: auto;
+  background: var(--il-paper);
+  padding: 20px 20px 40px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.25s,
+    transform 0.35s var(--il-ease),
+    visibility 0s 0.35s;
+}
+
+.ironlotus .il-index[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.25s,
+    transform 0.35s var(--il-ease);
+}
+
+.ironlotus .il-index li {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s,
+    transform 0.4s var(--il-ease);
+}
+
+.ironlotus .il-index[data-open] li {
+  opacity: 1;
+  transform: none;
+}
+
+.ironlotus .il-dock {
+  position: fixed;
+  z-index: 40;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  border-top: 1.5px solid var(--il-ink);
+  background: var(--il-paper);
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+}
+
+/* No celular a doca de baixo já tem "Call" e "Consult"; no tablet eles sobem para o topo. */
+.ironlotus .il-topbar-cta {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .ironlotus .il-dock {
+    display: none;
+  }
+
+  .ironlotus .il-topbar-cta {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-topbar,
+  .ironlotus .il-index {
+    display: none;
+  }
+
+  .ironlotus .il-page {
+    padding-right: var(--il-rail);
+  }
+
+  .ironlotus .il-rail {
+    position: fixed;
+    z-index: 40;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    width: var(--il-rail);
+    flex-direction: column;
+    border-left: 1.5px solid var(--il-ink);
+    background: var(--il-paper);
+    padding: 18px 0 16px;
+  }
+}
+
+.ironlotus .il-rail-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.ironlotus .il-rail-nav {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.ironlotus .il-rail-track {
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  left: 12px;
+  width: 2px;
+  background: var(--il-rule);
+}
+
+.ironlotus .il-rail-ink {
+  position: absolute;
+  inset: 0;
+  background: var(--il-red);
+  transform: scaleY(var(--il-progress, 0));
+  transform-origin: top;
+}
+
+.ironlotus .il-rail-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 7px 0 8px;
+}
+
+.ironlotus .il-rail-no {
+  position: relative;
+  padding: 4px 9px 2px;
+  font-size: 30px;
+  line-height: 1;
+  transition: color 0.25s;
+}
+
+.ironlotus .il-rail-no svg {
+  position: absolute;
+  inset: -3px -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 6px);
+  overflow: visible;
+}
+
+.ironlotus .il-rail-link:hover .il-rail-no,
+.ironlotus .il-rail-link[aria-current] .il-rail-no {
+  color: var(--il-red);
+}
+
+.ironlotus .il-rail-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.ironlotus .il-rail-call {
+  display: flex;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ironlotus .il-rail-book {
+  width: 100%;
+  min-height: 54px;
+  padding: 6px;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+/* ---------- Rodapé ---------- */
+
+.ironlotus .il-footer {
+  overflow: hidden;
+  background: var(--il-ink);
+  color: var(--il-paper);
+}
+
+.ironlotus .il-footer-mark {
+  --il-ink: #f2ede3;
+  --il-paper: #171513;
+  --il-red: #e86a5f;
+}
+
+.ironlotus .il-footer-word {
+  margin: 0 0 -0.12em;
+  overflow: hidden;
+  font-size: 17vw;
+  line-height: 0.8;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242, 237, 227, 0.28);
+  user-select: none;
+}
+
+.ironlotus .il-footer-word::before {
+  content: attr(data-word);
+}
+
+@media (min-width: 1024px) {
+  .ironlotus .il-footer-word {
+    font-size: calc((100vw - var(--il-rail)) * 0.16);
+  }
+}
+
+/* ---------- Reduzir movimento: nada anda ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ironlotus *,
+  .ironlotus *::before,
+  .ironlotus *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

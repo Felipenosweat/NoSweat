@@ -126,7 +126,7 @@ const ActivityRow = z.object({
   site_id: z.string().nullable(),
   occurred_at: z.string(),
   created_at: z.string(),
-  // Coluna da migration 0023 (antes dela, a linha vem sem o campo).
+  // Coluna da migration 0025 (antes dela, a linha vem sem o campo).
   payment_id: z.string().nullish(),
 });
 

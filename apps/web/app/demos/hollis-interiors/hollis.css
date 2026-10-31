@@ -1,0 +1,554 @@
+/* Hollis Interiors (demonstração). Arquétipo quiet-luxury: um papel de gesso claro, tinta quase
+   preta, UM acento (nogueira) e um bloco nogueira escuro no fim. Um grotesco só (Host Grotesk),
+   letra pequena e precisa; a hierarquia vem do tamanho e do espaço.
+   Contraste (medido): tinta #1f1d1a sobre gesso #f1efea 14,6:1; cinza #625d55 sobre gesso 5,7:1
+   (sobre papel #f8f7f4 6,1:1); nogueira #7a5236 sobre gesso 5,9:1; gesso sobre nogueira escura
+   #2b2622 13:1; cinza claro #b5aca0 sobre nogueira escura 6,7:1. */
+
+.hollis {
+  --h-plaster: #f1efea;
+  --h-paper: #f8f7f4;
+  --h-stone: #e9e6df;
+  --h-ink: #1f1d1a;
+  --h-muted: #625d55;
+  --h-line: rgb(31 29 26 / 0.16);
+  --h-walnut: #7a5236;
+  --h-umber: #2b2622;
+  --h-umber-muted: #b5aca0;
+  --h-umber-line: rgb(241 239 234 / 0.16);
+  --h-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --h-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--h-plaster);
+  color: var(--h-ink);
+  font-family: var(--font-h), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  scroll-padding-top: 5rem;
+}
+
+html:has(.hollis) {
+  scroll-padding-top: 5rem;
+  background: #2b2622;
+}
+
+.hollis .h-wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-inline: 20px;
+}
+
+@media (min-width: 640px) {
+  .hollis .h-wrap {
+    padding-inline: 40px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hollis .h-wrap {
+    padding-inline: 56px;
+  }
+}
+
+/* Tipos: título do topo, títulos de seção e de passo. Aperta conforme cresce. */
+.hollis .h-h1 {
+  font-size: clamp(2.35rem, 4.1vw, 4.1rem);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  max-width: 13ch;
+}
+
+.hollis .h-h2 {
+  font-size: clamp(1.75rem, 2.6vw, 2.6rem);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+
+.hollis .h-h3 {
+  font-size: clamp(1.4rem, 2vw, 1.85rem);
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.hollis p {
+  text-wrap: pretty;
+}
+
+/* Etiqueta: 11 px, caixa-alta aberta. Carrega número e nome, nunca adjetivo. */
+.hollis .h-tag {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.hollis .h-caption {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.hollis .h-wordmark {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.hollis .h-quote p {
+  font-size: clamp(1.3rem, 1.9vw, 1.7rem);
+  font-weight: 300;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  text-indent: -0.4em;
+}
+
+/* Superfícies */
+.hollis .h-section {
+  padding-block: 96px;
+}
+
+@media (min-width: 1024px) {
+  .hollis .h-section {
+    padding-block: 160px;
+  }
+}
+
+.hollis .h-stone {
+  background: var(--h-stone);
+}
+
+.hollis .h-paper {
+  background: var(--h-paper);
+}
+
+.hollis .h-umber {
+  background: var(--h-umber);
+  color: var(--h-plaster);
+  --h-line: var(--h-umber-line);
+}
+
+/* Foco: contorno de 2 px afastado, tinta no claro e gesso no escuro. */
+.hollis .h-focus:focus-visible,
+.hollis .h-focus-within:has(:focus-visible) {
+  outline: 2px solid var(--h-ink);
+  outline-offset: 3px;
+}
+
+.hollis .h-umber .h-focus:focus-visible {
+  outline-color: var(--h-plaster);
+}
+
+.hollis .h-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  transition: text-decoration-color 300ms;
+}
+
+.hollis .h-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.hollis .h-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--h-line);
+  transition: border-color 300ms;
+}
+
+.hollis .h-more:hover {
+  border-color: currentColor;
+}
+
+/* Botão: tinta chapada, letra gesso; sem brilho nem sombra. */
+.hollis .h-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  padding: 0 1.4rem;
+  background: var(--h-ink);
+  color: var(--h-plaster);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 400ms var(--h-ease-out);
+}
+
+.hollis .h-btn:hover {
+  background: #3a3631;
+}
+
+.hollis .h-btn svg {
+  transition: transform 500ms var(--h-ease-out);
+}
+
+.hollis .h-btn:hover svg {
+  transform: translateX(3px);
+}
+
+.hollis .h-btn-sm {
+  min-height: 40px;
+  padding: 0 1rem;
+  font-size: 13px;
+}
+
+.hollis .h-skip {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 60;
+  transform: translateY(-120px);
+}
+
+.hollis .h-skip:focus {
+  transform: none;
+}
+
+/* Barra do topo */
+.hollis .h-bar {
+  background: color-mix(in srgb, var(--h-plaster) 94%, transparent);
+  border-bottom: 1px solid transparent;
+  transition: border-color 500ms;
+}
+
+.hollis .h-bar-scrolled {
+  border-color: var(--h-line);
+  background: var(--h-plaster);
+}
+
+.hollis .h-navlink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13.5px;
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 10px) / 0 1px no-repeat;
+  transition: background-size 600ms var(--h-ease-out);
+}
+
+.hollis .h-navlink:hover {
+  background-size: 100% 1px;
+}
+
+.hollis .h-burger {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 7px;
+  border-block: 1px solid currentColor;
+  transition: transform 300ms;
+}
+
+.hollis .h-burger[data-open] {
+  height: 1px;
+  border-bottom: 0;
+}
+
+.hollis .h-menu {
+  background: var(--h-plaster);
+  max-height: calc(100svh - 4rem);
+  overflow-y: auto;
+}
+
+/* Topo: entrada em CSS (uma vez), a moldura abre e o texto assenta. */
+.hollis .h-hero-frame {
+  aspect-ratio: 4 / 5;
+}
+
+@media (min-width: 640px) {
+  .hollis .h-hero-frame {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hollis .h-hero-frame {
+    aspect-ratio: auto;
+    height: min(calc(100svh - 12rem), 760px);
+    min-height: 460px;
+  }
+}
+
+.hollis .h-in {
+  animation: h-in 1.3s var(--h-ease-out) var(--d, 0s) both;
+}
+
+@keyframes h-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+.hollis .h-hero-frame {
+  animation: h-open 2s var(--h-ease) 0.1s both;
+}
+
+.hollis .h-hero-img {
+  animation: h-settle 3.2s var(--h-ease-out) 0.1s both;
+}
+
+@keyframes h-open {
+  from {
+    clip-path: inset(9% 9% 9% 9%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes h-settle {
+  from {
+    transform: scale(1.14);
+  }
+}
+
+/* Pausa larga */
+.hollis .h-interlude {
+  aspect-ratio: 4 / 5;
+}
+
+@media (min-width: 640px) {
+  .hollis .h-interlude {
+    aspect-ratio: 16 / 8;
+  }
+}
+
+/* ---------- Palco dos cômodos ---------- */
+.hollis .h-rooms {
+  padding-block: 96px;
+}
+
+.hollis .h-rooms[data-pinned] {
+  /* 100svh do palco + um trecho por cômodo (menos o primeiro) + folga */
+  height: calc(100svh + (var(--rooms) - 1) * var(--segment) + 10svh);
+  padding-block: 0;
+}
+
+.hollis .h-rooms[data-pinned] .h-rooms-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  padding-top: calc(4rem + 40px);
+  padding-bottom: 40px;
+}
+
+.hollis .h-room-btn {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 0 6px;
+  border-top: 1px solid var(--h-line);
+  color: var(--h-muted);
+  text-align: left;
+  font-size: 12.5px;
+  transition: color 400ms;
+}
+
+.hollis .h-room-btn[aria-pressed="true"] {
+  color: var(--h-ink);
+  border-top: 2px solid var(--h-walnut);
+  padding-top: 7px;
+}
+
+.hollis .h-room-n {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.hollis .h-room-btn[aria-pressed="true"] .h-room-n {
+  color: var(--h-walnut);
+}
+
+@media (max-width: 1023px) {
+  .hollis .h-room-name {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hollis .h-room-btn {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr auto;
+    align-items: baseline;
+    gap: 0 0.75rem;
+    padding: 13px 0 12px;
+    font-size: 15px;
+  }
+
+  .hollis .h-room-btn[aria-pressed="true"] {
+    padding-top: 12px;
+  }
+
+  .hollis .h-room-price {
+    font-size: 12.5px;
+  }
+
+  .hollis .h-room-btn:hover {
+    color: var(--h-ink);
+  }
+}
+
+.hollis .h-room-index li:last-child .h-room-btn {
+  border-bottom: 1px solid var(--h-line);
+}
+
+.hollis .h-frame {
+  background: var(--h-stone);
+}
+
+.hollis .h-slide {
+  opacity: 0;
+  transition: opacity 1.4s var(--h-ease);
+}
+
+.hollis .h-slide[data-active] {
+  opacity: 1;
+  z-index: 1;
+}
+
+/* A câmera anda devagar no cômodo ativo (por tempo, não pela rolagem). */
+.hollis .h-slide .h-pan {
+  transform: scale(1.06);
+  transition: transform 1.4s var(--h-ease);
+}
+
+.hollis .h-slide[data-active] .h-pan {
+  animation: h-pan 16s ease-in-out 0.2s infinite alternate both;
+}
+
+@keyframes h-pan {
+  from {
+    transform: scale(1.06) translate3d(1.6%, 0.6%, 0);
+  }
+  to {
+    transform: scale(1.1) translate3d(-1.6%, -0.8%, 0);
+  }
+}
+
+.hollis .h-frame-n {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 3px 7px;
+  background: var(--h-plaster);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.hollis .h-swap {
+  animation: h-swap 0.9s var(--h-ease-out) both;
+}
+
+@keyframes h-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.hollis .h-strip {
+  transition: flex-grow 900ms var(--h-ease);
+}
+
+/* Pedido de consulta */
+.hollis .h-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid color-mix(in srgb, var(--h-ink) 30%, transparent);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 300ms,
+    color 300ms,
+    border-color 300ms;
+}
+
+.hollis .h-chip:hover {
+  border-color: var(--h-ink);
+}
+
+.hollis .h-chip:has(input:checked) {
+  background: var(--h-ink);
+  border-color: var(--h-ink);
+  color: var(--h-plaster);
+}
+
+.hollis .h-field:focus {
+  border-color: var(--h-ink);
+}
+
+.hollis .h-field[aria-invalid="true"] {
+  border-color: var(--h-walnut);
+}
+
+.hollis .h-step {
+  animation: h-swap 0.7s var(--h-ease-out) both;
+}
+
+.hollis .h-stepper[aria-current="step"] span:first-child {
+  color: var(--h-walnut);
+}
+
+.hollis .h-consult-aside {
+  align-self: start;
+}
+
+@media (min-width: 1024px) {
+  .hollis .h-consult-aside {
+    position: sticky;
+    top: 7rem;
+  }
+}
+
+/* Telefone grande no bloco de visita */
+.hollis .h-call {
+  display: inline-block;
+  border-bottom: 1px solid var(--h-umber-line);
+  padding-bottom: 10px;
+  transition: border-color 400ms;
+}
+
+.hollis .h-call:hover {
+  border-color: var(--h-plaster);
+}
+
+/* Reduzir movimento: nada entra, nada anda, nada preso (o palco já cai no modo de botões). */
+@media (prefers-reduced-motion: reduce) {
+  .hollis .h-in,
+  .hollis .h-hero-frame,
+  .hollis .h-hero-img,
+  .hollis .h-swap,
+  .hollis .h-step,
+  .hollis .h-slide[data-active] .h-pan {
+    animation: none;
+  }
+
+  .hollis .h-slide,
+  .hollis .h-slide .h-pan,
+  .hollis .h-strip {
+    transition: none;
+  }
+
+  .hollis .h-slide .h-pan {
+    transform: none;
+  }
+}

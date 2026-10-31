@@ -26,6 +26,8 @@ export const ERROR_CODES = [
   "out_of_credits",
   /** A IA ainda não está ligada (produção sem chave): mudanças pela IA respondem 503. */
   "ai_unavailable",
+  /** A busca de empresas (prospecção) falhou no provedor (OpenStreetMap ou Google). */
+  "places_error",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 
@@ -166,6 +168,17 @@ export const PublishSiteResponse = z.object({
   url: z.url(),
   /** Novo `updatedAt` do site (publicar também muda; ver UpdateSiteRequest.baseUpdatedAt). */
   updatedAt: z.string().optional(),
+  /**
+   * Aviso aos buscadores (IndexNow) feito na publicação: "sent" = recebido, "skipped" = fora de
+   * produção ou sem endereço público, "failed" = o IndexNow não respondeu bem (o site publica igual).
+   */
+  searchEngines: z
+    .object({
+      status: z.enum(["sent", "skipped", "failed"]),
+      engines: z.array(z.string()),
+      urls: z.array(z.string()),
+    })
+    .optional(),
 });
 export type PublishSiteResponse = z.infer<typeof PublishSiteResponse>;
 

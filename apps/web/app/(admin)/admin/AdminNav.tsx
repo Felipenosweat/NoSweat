@@ -15,6 +15,7 @@ const SECTIONS = [
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/websites", label: "Websites" },
   { href: "/admin/models", label: "Models" },
+  { href: "/admin/prospects", label: "Prospects" },
   { href: "/admin/usage", label: "Usage" },
 ] as const;
 
@@ -43,7 +44,7 @@ export function AdminNav() {
   }
 
   return (
-    // Até o computador grande as 6 abas não cabem sem cortar o texto: a faixa rola de lado (o
+    // Até o computador grande as 7 abas não cabem sem cortar o texto: a faixa rola de lado (o
     // layout põe as abas numa segunda linha até o `lg`).
     <div
       onClickCapture={onClickCapture}
@@ -53,7 +54,7 @@ export function AdminNav() {
         aria-label="Admin sections"
         size="sm"
         fullWidth
-        className="min-w-[32rem] lg:w-[35rem] [&_a]:min-h-11 lg:[&_a]:min-h-8"
+        className="min-w-[38rem] lg:w-[41rem] [&_a]:min-h-11 lg:[&_a]:min-h-8"
         items={SECTIONS.map((section) => ({
           href: section.href,
           label: section.label,

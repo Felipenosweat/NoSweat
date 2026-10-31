@@ -45,6 +45,9 @@ export function PublishButton({
   /** Publicado agora, antes de o `router.refresh()` trazer o estado novo da página. */
   const [justPublished, setJustPublished] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [searchEngines, setSearchEngines] = useState<PublishSiteResponse["searchEngines"] | null>(
+    null,
+  );
   const shareRef = useRef<HTMLButtonElement>(null);
 
   async function publish() {
@@ -71,6 +74,7 @@ export function PublishButton({
       }
       const published = PublishSiteResponse.parse(body);
       setPublishedUrl(published.url);
+      setSearchEngines(published.searchEngines ?? null);
       setJustPublished(true);
       router.refresh();
     } catch {
@@ -115,6 +119,7 @@ export function PublishButton({
         error={error}
         domain={{ href: "#domain", samePage: true, connected: hasDomain }}
         returnFocusTo={() => shareRef.current}
+        searchEngines={searchEngines}
       />
     </div>
   );

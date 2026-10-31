@@ -1375,7 +1375,7 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
   const credits = pool.filter((image) => image.credit);
   const year = new Date().getFullYear();
   return (
-    <footer className="overflow-hidden bg-ns-text pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] text-ns-background @3xl:pb-0">
+    <footer className="overflow-hidden bg-ns-text pt-20 text-ns-background">
       <div
         data-ns-stagger
         className={`grid grid-cols-2 gap-8 text-sm leading-relaxed @5xl:grid-cols-4 ${wrap}`}
@@ -1457,8 +1457,8 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
         {credits.length > 0 && (
           <span>Photos: {Array.from(new Set(credits.map((i) => i.credit?.name))).join(", ")}</span>
         )}
+        {/* O crédito da No Sweat é o selo (NoSweatBadge) logo abaixo, desenhado pelo SiteRenderer. */}
         <span className="flex gap-4">
-          <span>Website by No Sweat</span>
           <a
             href={VISITOR_PRIVACY_URL}
             target="_blank"

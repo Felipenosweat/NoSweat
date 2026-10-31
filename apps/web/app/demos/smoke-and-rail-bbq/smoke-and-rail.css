@@ -1,0 +1,910 @@
+/* Smoke & Rail BBQ (demonstração). Cores, tipos e os efeitos que não cabem em utilitários.
+   Superfície "monocromática escura": carvão em três tons + UMA brasa. Contraste medido:
+   fumaça #ece6dd sobre carvão 16,6:1; cinza #a39b91 sobre carvão 7:1 (sobre ferro 5,9:1);
+   brasa #ff6a2b sobre carvão 6,3:1 (texto de carvão sobre brasa, idem). A brasa nunca vira
+   fundo de seção: só botão, número, fio e aviso. */
+
+.smoke-rail {
+  --sr-coal: #0d0c0b;
+  --sr-char: #161412;
+  --sr-iron: #221f1c;
+  --sr-smoke: #ece6dd;
+  --sr-ash: #a39b91;
+  --sr-ember: #ff6a2b;
+  --sr-ember-soft: rgba(255, 106, 43, 0.1);
+  --sr-line: rgba(236, 230, 221, 0.14);
+  --sr-line-strong: rgba(236, 230, 221, 0.3);
+  --sr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sr-gutter: 1rem;
+  background: var(--sr-coal);
+  color: var(--sr-smoke);
+  font-family: var(--font-sr-body), system-ui, sans-serif;
+  font-weight: 400;
+  overflow-x: clip;
+}
+
+/* O fundo do documento também é carvão (sem branco ao puxar a página no celular). */
+html:has(.smoke-rail),
+body:has(.smoke-rail) {
+  background: #0d0c0b;
+}
+
+@media (min-width: 640px) {
+  .smoke-rail {
+    --sr-gutter: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .smoke-rail {
+    --sr-gutter: 3rem;
+  }
+}
+
+.smoke-rail .sr-wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1520px;
+  padding-inline: var(--sr-gutter);
+}
+
+.smoke-rail .sr-wrap-bleed {
+  margin-inline: auto;
+  max-width: 1520px;
+}
+
+@media (min-width: 1024px) {
+  .smoke-rail .sr-wrap-bleed {
+    padding-inline: var(--sr-gutter);
+  }
+}
+
+/* Tipos: Big Shoulders pesado e em caixa-alta para nomes, números e placas; Archivo para o
+   texto; rótulos em Archivo semicondensado, caixa-alta e espaçado. */
+.smoke-rail .sr-display {
+  font-family: var(--font-sr-display), "Arial Narrow", sans-serif;
+  font-weight: 800;
+  font-optical-sizing: auto;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.smoke-rail .sr-label {
+  font-family: var(--font-sr-body), system-ui, sans-serif;
+  font-stretch: 85%;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.smoke-rail p {
+  text-wrap: pretty;
+}
+
+/* Botões: brasa chapada com texto de carvão; o fantasma é só contorno. Sem brilho, sem pulsar. */
+.smoke-rail .sr-btn,
+.smoke-rail .sr-btn-ghost {
+  font-family: var(--font-sr-body), system-ui, sans-serif;
+  font-stretch: 85%;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    background-color 300ms var(--sr-ease),
+    color 300ms var(--sr-ease),
+    border-color 300ms var(--sr-ease);
+}
+
+.smoke-rail .sr-btn {
+  background: var(--sr-ember);
+  color: var(--sr-coal);
+}
+
+.smoke-rail .sr-btn:hover {
+  background: var(--sr-smoke);
+}
+
+.smoke-rail .sr-btn-ghost {
+  border: 1px solid var(--sr-line-strong);
+  color: var(--sr-smoke);
+}
+
+.smoke-rail .sr-btn-ghost:hover {
+  border-color: var(--sr-ember);
+  color: var(--sr-ember);
+}
+
+.smoke-rail .sr-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 250ms;
+}
+
+.smoke-rail .sr-link:hover {
+  color: var(--sr-ember);
+}
+
+/* Foco: contorno de brasa com afastamento; dentro de barras (doca, perguntas) vai para dentro. */
+.smoke-rail .sr-focus:focus-visible,
+.smoke-rail .sr-link:focus-visible,
+.smoke-rail .sr-field:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 3px;
+}
+
+.smoke-rail .sr-focus-inset:focus-visible {
+  outline: 2px solid var(--sr-smoke);
+  outline-offset: -4px;
+}
+
+.smoke-rail .sr-focus-within:has(:focus-visible) {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 3px;
+}
+
+.smoke-rail .sr-skip {
+  position: fixed;
+  top: -80px;
+  left: 12px;
+  z-index: 60;
+  background: var(--sr-ember);
+  color: var(--sr-coal);
+  padding: 12px 16px;
+  font-weight: 700;
+}
+
+.smoke-rail .sr-skip:focus {
+  top: 12px;
+}
+
+/* ---------- Cabeçalho, menu em tela cheia e doca do polegar ---------- */
+
+.smoke-rail .sr-header {
+  background: linear-gradient(to bottom, rgba(13, 12, 11, 0.7), rgba(13, 12, 11, 0));
+  transition:
+    background-color 400ms var(--sr-ease),
+    border-color 400ms var(--sr-ease);
+  border-bottom: 1px solid transparent;
+}
+
+.smoke-rail .sr-header[data-solid] {
+  background-color: rgba(13, 12, 11, 0.94);
+  border-bottom-color: var(--sr-line);
+}
+
+.smoke-rail .sr-menu {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--sr-coal);
+  overflow-y: auto;
+}
+
+.smoke-rail .sr-menu::backdrop {
+  background: transparent;
+}
+
+.smoke-rail .sr-menu[open] {
+  animation: sr-fade 380ms var(--sr-ease) both;
+}
+
+.smoke-rail .sr-menu[open] .sr-menu-list li {
+  animation: sr-rise 700ms var(--sr-ease) both;
+  animation-delay: calc(80ms + var(--i, 0) * 55ms);
+}
+
+.smoke-rail .sr-menu-list {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.smoke-rail .sr-dock {
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--sr-coal);
+  border-top: 1px solid var(--sr-line);
+}
+
+/* ---------- O palco ---------- */
+
+/* Modo pilha (sem JS, reduzir movimento, máquina fraca): herói + uma cena por bloco. */
+.smoke-rail .sr-stage-pin {
+  position: relative;
+}
+
+.smoke-rail .sr-stage-anchor {
+  position: absolute;
+  top: 100svh;
+  left: 0;
+  scroll-margin-top: 64px;
+}
+
+.smoke-rail .sr-scene {
+  position: relative;
+  display: flex;
+  min-height: 92svh;
+  align-items: flex-end;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.smoke-rail .sr-scene-hero {
+  min-height: 100svh;
+}
+
+.smoke-rail .sr-scene-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+.smoke-rail .sr-scene-media img {
+  height: 100%;
+  width: 100%;
+}
+
+.smoke-rail .sr-veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      to top,
+      rgba(13, 12, 11, 0.96) 0%,
+      rgba(13, 12, 11, 0.72) 38%,
+      rgba(13, 12, 11, 0) 78%
+    ),
+    linear-gradient(to right, rgba(13, 12, 11, 0.55), rgba(13, 12, 11, 0) 60%);
+}
+
+.smoke-rail .sr-veil-hero {
+  background:
+    linear-gradient(
+      to top,
+      rgba(13, 12, 11, 0.97) 0%,
+      rgba(13, 12, 11, 0.7) 45%,
+      rgba(13, 12, 11, 0.15) 80%
+    ),
+    linear-gradient(to right, rgba(13, 12, 11, 0.6), rgba(13, 12, 11, 0) 65%);
+}
+
+.smoke-rail .sr-scene-copy {
+  position: relative;
+  padding-top: 7rem;
+  padding-bottom: 12svh;
+}
+
+.smoke-rail .sr-scene-hour {
+  margin-bottom: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.smoke-rail .sr-hud,
+.smoke-rail .sr-rail,
+.smoke-rail .sr-smoke-layer {
+  display: none;
+}
+
+/* Modo preso (SmokeMotion): seção alta, palco preso, cenas umas sobre as outras. */
+.smoke-rail .sr-stage[data-staged] {
+  height: 600svh;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-stage-anchor {
+  top: 78svh;
+  scroll-margin-top: 0;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-stage-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-scene {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-scene:not([data-scene="0"]) {
+  opacity: 0;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-scene[data-current] .sr-scene-copy {
+  pointer-events: auto;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-scene-copy {
+  padding-bottom: 9.5rem;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-scene-hour {
+  display: none;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-smoke-layer {
+  display: block;
+  position: absolute;
+  inset: -10% -20%;
+  z-index: 1;
+  opacity: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-hud {
+  display: block;
+  position: absolute;
+  top: 5.5rem;
+  right: var(--sr-gutter);
+  z-index: 2;
+  text-align: right;
+  pointer-events: none;
+}
+
+.smoke-rail .sr-odo {
+  display: inline-flex;
+  margin-top: 0.75rem;
+  font-size: clamp(5.75rem, 24vw, 23rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--sr-ember);
+  font-variant-numeric: tabular-nums;
+  animation: sr-fade 900ms var(--sr-ease) both;
+}
+
+.smoke-rail .sr-odo-win {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+}
+
+.smoke-rail .sr-odo-col {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.smoke-rail .sr-odo-col > span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+.smoke-rail .sr-stage[data-staged] .sr-rail {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  z-index: 3;
+}
+
+@media (min-width: 768px) {
+  .smoke-rail .sr-stage[data-staged] .sr-rail {
+    bottom: 1.75rem;
+  }
+
+  .smoke-rail .sr-stage[data-staged] .sr-scene-copy {
+    padding-bottom: 8rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .smoke-rail .sr-stage[data-staged] .sr-scene-copy {
+    padding-bottom: 11rem;
+  }
+}
+
+/* A linha de trilho: dois trilhos, 15 dormentes (horas 0–14) e a brasa que enche. */
+.smoke-rail .sr-rail-track {
+  position: relative;
+  height: 14px;
+}
+
+.smoke-rail .sr-rail-track::before,
+.smoke-rail .sr-rail-track::after,
+.smoke-rail .sr-rail-fill::before,
+.smoke-rail .sr-rail-fill::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: 2px;
+}
+
+.smoke-rail .sr-rail-track::before,
+.smoke-rail .sr-rail-track::after {
+  background: var(--sr-line-strong);
+}
+
+.smoke-rail .sr-rail-track::before,
+.smoke-rail .sr-rail-fill::before {
+  top: 3px;
+}
+
+.smoke-rail .sr-rail-track::after,
+.smoke-rail .sr-rail-fill::after {
+  bottom: 3px;
+}
+
+.smoke-rail .sr-rail-tie {
+  position: absolute;
+  top: 0;
+  height: 14px;
+  width: 3px;
+  margin-left: -1.5px;
+  background: rgba(236, 230, 221, 0.45);
+}
+
+.smoke-rail .sr-rail-fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.smoke-rail .sr-rail-fill::before,
+.smoke-rail .sr-rail-fill::after {
+  background: var(--sr-ember);
+  box-shadow: 0 0 10px rgba(255, 106, 43, 0.55);
+}
+
+.smoke-rail .sr-rail-stations {
+  position: relative;
+  height: 44px;
+  margin-top: 4px;
+}
+
+.smoke-rail .sr-rail-stations > li {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.smoke-rail .sr-rail-stations > li:last-child {
+  transform: translateX(-100%);
+}
+
+.smoke-rail .sr-station {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 4px;
+  color: var(--sr-ash);
+  transition: color 300ms;
+}
+
+.smoke-rail .sr-station:hover,
+.smoke-rail .sr-station[data-current] {
+  color: var(--sr-ember);
+}
+
+/* Entrada da primeira dobra (CSS: funciona antes do JS; o botão aparece logo). */
+.smoke-rail .sr-hero-title {
+  animation: sr-title 1.1s var(--sr-ease) both;
+}
+
+.smoke-rail .sr-hero-in {
+  animation: sr-rise 900ms var(--sr-ease) 120ms both;
+}
+
+@keyframes sr-title {
+  from {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(0.25em);
+  }
+  to {
+    clip-path: inset(-0.1em -0.1em -0.2em -0.1em);
+    transform: none;
+  }
+}
+
+@keyframes sr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sr-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- Placa de partidas (cardápio) ---------- */
+
+.smoke-rail .sr-menu-frame {
+  background: var(--sr-char);
+}
+
+.smoke-rail .sr-menu-photo {
+  transition: opacity 700ms var(--sr-ease);
+}
+
+.smoke-rail .sr-board {
+  border-top: 2px solid var(--sr-smoke);
+}
+
+.smoke-rail .sr-board-head,
+.smoke-rail .sr-board-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1.25rem;
+}
+
+.smoke-rail .sr-board-head {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-board-row {
+  position: relative;
+  display: grid;
+  align-items: center;
+  row-gap: 0.6rem;
+  padding-block: 1.15rem;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-board-row::before {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  bottom: 1.1rem;
+  left: calc(var(--sr-gutter) * -0.6);
+  width: 3px;
+  background: var(--sr-ember);
+  transform: scaleY(0);
+  transition: transform 450ms var(--sr-ease);
+}
+
+.smoke-rail .sr-board-row[data-active]::before {
+  transform: scaleY(1);
+}
+
+.smoke-rail .sr-board-price {
+  align-self: start;
+  justify-self: end;
+}
+
+.smoke-rail .sr-board-note {
+  grid-column: 1 / -1;
+}
+
+.smoke-rail .sr-board-note:empty {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .smoke-rail .sr-board-head,
+  .smoke-rail .sr-board-row {
+    grid-template-columns: minmax(0, 1fr) 7.5rem 9.5rem;
+  }
+
+  .smoke-rail .sr-board-head > :nth-child(2) {
+    text-align: right;
+  }
+
+  .smoke-rail .sr-board-price {
+    align-self: center;
+  }
+
+  .smoke-rail .sr-board-note {
+    grid-column: auto;
+    justify-self: end;
+  }
+
+  .smoke-rail .sr-board-note:empty {
+    display: block;
+  }
+}
+
+/* Plaquinhas: uma letra por plaquinha, com o vinco no meio. */
+.smoke-rail .sr-flap-cells {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.smoke-rail .sr-flap-cell {
+  position: relative;
+  display: inline-block;
+  min-width: 0.78em;
+  padding: 0.16em 0.1em 0.12em;
+  border-radius: 2px;
+  background: var(--sr-iron);
+  color: var(--sr-smoke);
+  font-family: var(--font-sr-display), "Arial Narrow", sans-serif;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.smoke-rail .sr-flap-cell::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.smoke-rail .sr-flap-gap {
+  display: inline-block;
+  width: 0.35em;
+}
+
+.smoke-rail .sr-flap-ember .sr-flap-cell {
+  color: var(--sr-ember);
+}
+
+.smoke-rail .sr-flap-day .sr-flap-cell {
+  min-width: 0.9em;
+}
+
+/* ---------- Quadro da semana ---------- */
+
+.smoke-rail .sr-veil-find {
+  background: linear-gradient(
+    to bottom,
+    var(--sr-coal) 0%,
+    rgba(13, 12, 11, 0.82) 22%,
+    rgba(13, 12, 11, 0.82) 78%,
+    var(--sr-coal) 100%
+  );
+}
+
+.smoke-rail .sr-timetable {
+  border-collapse: collapse;
+  border-top: 2px solid var(--sr-smoke);
+}
+
+.smoke-rail .sr-timetable th,
+.smoke-rail .sr-timetable td {
+  padding: 0.95rem 1rem 0.95rem 0;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-timetable thead th {
+  padding-block: 0.7rem;
+  font-weight: 600;
+}
+
+.smoke-rail .sr-timetable tbody th {
+  width: 6.5rem;
+  white-space: nowrap;
+}
+
+.smoke-rail .sr-timetable tbody tr[data-today] {
+  background: var(--sr-ember-soft);
+  box-shadow: inset 3px 0 0 var(--sr-ember);
+}
+
+.smoke-rail .sr-timetable tbody tr[data-today] th {
+  padding-left: 0.85rem;
+}
+
+.smoke-rail .sr-today {
+  display: inline-block;
+  padding: 3px 6px;
+  background: var(--sr-ember);
+  color: var(--sr-coal);
+}
+
+@media (max-width: 639px) {
+  .smoke-rail .sr-today {
+    display: block;
+    width: max-content;
+    margin: 6px 0 0;
+  }
+}
+
+/* ---------- Ticket (pit, pedido) ---------- */
+
+.smoke-rail .sr-ticket {
+  position: relative;
+  background: rgba(13, 12, 11, 0.94);
+  border: 1px solid var(--sr-line-strong);
+}
+
+.smoke-rail .sr-ticket::before {
+  content: "";
+  position: absolute;
+  inset-inline: -1px;
+  top: -1px;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--sr-ember) 0 16px, transparent 16px 24px);
+}
+
+.smoke-rail .sr-field {
+  border-radius: 0;
+  color-scheme: dark;
+}
+
+.smoke-rail .sr-field:focus {
+  border-color: var(--sr-ember);
+}
+
+.smoke-rail .sr-choice {
+  display: block;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--sr-line-strong);
+  transition:
+    border-color 250ms,
+    background-color 250ms;
+}
+
+.smoke-rail .sr-choice:hover {
+  border-color: var(--sr-smoke);
+}
+
+.smoke-rail .sr-choice:has(input:checked) {
+  border-color: var(--sr-ember);
+  background: var(--sr-ember-soft);
+  box-shadow: inset 0 0 0 1px var(--sr-ember);
+}
+
+/* ---------- Linha do tempo (trilho vertical com três paradas) ---------- */
+
+.smoke-rail .sr-line-rail {
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 0;
+  width: 14px;
+  background:
+    linear-gradient(var(--sr-line-strong), var(--sr-line-strong)) left / 2px 100% no-repeat,
+    linear-gradient(var(--sr-line-strong), var(--sr-line-strong)) right / 2px 100% no-repeat,
+    repeating-linear-gradient(to bottom, rgba(236, 230, 221, 0.3) 0 3px, transparent 3px 18px);
+}
+
+.smoke-rail .sr-line-fill {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(var(--sr-ember), var(--sr-ember)) left / 2px 100% no-repeat,
+    linear-gradient(var(--sr-ember), var(--sr-ember)) right / 2px 100% no-repeat;
+  transform-origin: top center;
+}
+
+.smoke-rail .sr-line-stops {
+  display: grid;
+  gap: 2.75rem;
+}
+
+.smoke-rail .sr-line-stop {
+  position: relative;
+  padding-left: 3rem;
+}
+
+.smoke-rail .sr-line-stop::before {
+  content: "";
+  position: absolute;
+  top: 0.9rem;
+  left: -4px;
+  width: 22px;
+  height: 22px;
+  background: var(--sr-coal);
+  border: 3px solid var(--sr-ember);
+}
+
+/* ---------- Tarifas (catering e o truck) ---------- */
+
+.smoke-rail .sr-offers {
+  border-top: 2px solid var(--sr-smoke);
+}
+
+.smoke-rail .sr-offer {
+  display: grid;
+  gap: 1rem;
+  padding-block: 1.75rem;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-offer-terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.smoke-rail .sr-offer-terms li {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--sr-line-strong);
+}
+
+@media (min-width: 1024px) {
+  .smoke-rail .sr-offer {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .smoke-rail .sr-offer-terms {
+    justify-content: flex-end;
+  }
+}
+
+/* ---------- Perguntas ---------- */
+
+.smoke-rail .sr-faq {
+  border-top: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-faq:last-child {
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.smoke-rail .sr-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.smoke-rail .sr-faq-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  transition: transform 350ms var(--sr-ease);
+}
+
+.smoke-rail .sr-faq[open] .sr-faq-icon {
+  transform: rotate(45deg);
+}
+
+/* ---------- Rodapé e selo ---------- */
+
+/* Nome gigante em contorno de brasa: vem do CSS (content) para não ser texto da página. */
+.smoke-rail .sr-footer-mark {
+  overflow: hidden;
+  font-size: clamp(3.6rem, 15.6vw, 16.5rem);
+  font-weight: 900;
+  line-height: 0.82;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--sr-ember);
+  user-select: none;
+}
+
+.smoke-rail .sr-footer-mark::before {
+  content: attr(data-word);
+}
+
+.smoke-rail .sr-badge {
+  --nsb-bg: var(--sr-coal);
+  --nsb-fg: var(--sr-smoke);
+  container-type: inline-size;
+  border-top: 1px solid var(--sr-line);
+}
+
+/* ---------- Reduzir movimento: nada preso, nada ligado à rolagem, estados finais ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .smoke-rail *,
+  .smoke-rail *::before,
+  .smoke-rail *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+
+  .smoke-rail .sr-hero-title {
+    clip-path: none;
+  }
+}

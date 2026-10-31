@@ -13,6 +13,7 @@ apps/web/                       Next.js (App Router): telas + API
   app/(dashboard)/              /create e /dashboard (painel do cliente) → front
   app/(dashboard)/social/       /social: calendário de posts do Instagram do cliente → front
   app/(admin)/admin/            painel principal da No Sweat (só admins)  → front
+  app/p/[token]/                prévia pública de um prospect (noindex)   → front
   app/sites/                    /sites/[id] (publicar, domínio, mensagens), /sites/[id]/edit
                                 (editor com prévia ao vivo) e /sites/preview/[id] → front
   app/s/[slug]/                 site publicado no endereço grátis (público) → front
@@ -29,6 +30,8 @@ apps/web/                       Next.js (App Router): telas + API
   server/auth/                  sessão do Supabase Auth (getCurrentUser)  → back
   server/domains/                domínios de clientes (API da Vercel, registros de DNS) → back
   server/social/                Instagram: contas, posts, IA dos posts, publicador e store → back
+  server/prospects/             prospecção: fontes (OSM, Google, mock), conferência de sites,
+                                store, prévias e CSV → back
   server/clients/               Clientes (CRM simples): store, sync dos pedidos do site e regras → back
   server/store/                 persistência (Supabase se configurado, senão memória) → back
   server/http.ts                helpers de resposta/erro das rotas       → back
@@ -94,6 +97,12 @@ Como as peças se ligam:
   abuso; visitantes não usam créditos (limites `GUEST_*`); admins sem limite. Todo uso continua
   em `ai_usage` (custo do /admin). Ajuste manual do admin: `adminAdjustCredits`. Editar à mão é
   grátis.
+- Selo da No Sweat: o `<SiteRenderer>` sempre desenha o `NoSweatBadge` ("Website by nosweatfd",
+  link para nosweatfd.com) depois do rodapé. Fica fora do SiteSpec: nem o editor nem a IA tiram.
+- SEO dos sites publicados: no domínio do cliente, `robots.txt` (proxy.ts) e `sitemap.xml`
+  (`/d/[host]/sitemap.xml`, com a data); no endereço grátis, os sites no ar entram no sitemap da
+  plataforma. Ao publicar, `server/seo` avisa o IndexNow (Bing, Yandex...; o Google não usa) do
+  endereço oficial; a chave pública fica em `/<chave>.txt` em todo host. Só sai em produção.
 - Formulário de contato: sites publicados enviam para `POST /api/sites/[id]/leads` (público, com
   campo-isca anti-robô); o dono vê os pedidos em `/sites/[id]`. No domínio do cliente o
   `proxy.ts` deixa `/api/*` passar sem reescrever.
@@ -146,6 +155,16 @@ Como as peças se ligam:
   premissas mudam pela URL (`?arpu=&var=`).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
+- Prospecção (`/admin/prospects`, `server/prospects/`, migration 0025, `docs/prospecting.md`):
+  o admin busca "ramo em cidade, UF" → empresas do OpenStreetMap/Overpass (grátis, padrão; ©
+  OpenStreetMap contributors, ODbL, atribuição na página) ou do Google Places (só com
+  `GOOGLE_MAPS_API_KEY`); `PROSPECTS_SOURCE=mock` (testes) usa empresas de mentira. Cada site é
+  conferido uma vez (`website.ts`: none/weak/ok/unknown + e-mail público, nunca adivinhado). A
+  prévia é um RASCUNHO do admin gerado pelo caminho do `/api/sites/generate` só com os fatos da
+  fonte (sem nota/avaliações, regra 8) e abre em `/p/<token>` (público, noindex, faixa "não é
+  afiliado"; "do not contact" tira do ar). CSV para a ferramenta de e-mail e lista de ligações;
+  nada de envio de e-mail no app. Google: só o `place_id` é guardado sem prazo; o resto é cache
+  de 30 dias (`last_fetched_at`) renovado antes de usar (`ensureFresh`). Linhas do OSM não vencem.
 
 ## Princípio do produto: o cliente fala pouco, nós entregamos muito
 

@@ -251,6 +251,12 @@ describe("POST /api/sites/[id]/publish", () => {
 
     const slug = body.url.split("/s/")[1] ?? "";
     expect((await getSiteStore().getBySlug(slug))?.id).toBe(site.id);
+    // Fora de produção o aviso aos buscadores (IndexNow) não sai, mas diz qual endereço avisaria.
+    expect(body.searchEngines).toEqual({
+      status: "skipped",
+      engines: [],
+      urls: [`https://www.nosweatfd.com/s/${slug}`],
+    });
   });
 
   it("keeps the same slug when publishing again", async () => {

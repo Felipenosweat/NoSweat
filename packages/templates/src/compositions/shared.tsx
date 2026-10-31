@@ -640,7 +640,6 @@ export function SimpleFooter({
             &copy; {year} {business.name}. All rights reserved.
           </p>
           <p className="flex flex-wrap gap-x-4">
-            <span>Website by No Sweat</span>
             <a
               href={VISITOR_PRIVACY_URL}
               target="_blank"
