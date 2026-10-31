@@ -11,6 +11,7 @@ import {
   clearOverpassCache,
   categoryFromTags,
   formatUsPhone,
+  keepAnyBusiness,
   toBusiness,
   tradeFilters,
 } from "./osm";
@@ -161,11 +162,40 @@ describe("OverpassClient", () => {
       const trade = tradeFilters(text)!;
       expect(trade.any).toBe(true);
       const query = buildOverpassQuery(trade, 30, -97);
-      expect(query).toContain("(around:8000,30,-97)");
-      expect(query).toContain('[!"website"][!"contact:website"]');
-      expect(query).toContain('[!"brand"]');
-      expect(query).toContain('[~"^(phone|contact:phone)$"~"."]');
+      // Retângulo de ~6 km para cada lado, 2 linhas baratas (telefone e sem site).
+      expect(query).toContain("[bbox:29.9461,-97.0622,30.0539,-96.9378]");
+      expect(query).toContain(
+        'nw["phone"][!"website"][!"contact:website"][!"url"][!"brand"]["name"];',
+      );
+      expect(query).toContain('nw["contact:phone"][!"website"]');
+      expect(query).not.toContain("around");
     }
+  });
+
+  it("any trade: keeps local businesses, drops government, churches, gas stations", async () => {
+    expect(keepAnyBusiness({ shop: "bakery" })).toBe(true);
+    expect(keepAnyBusiness({ craft: "plumber" })).toBe(true);
+    expect(keepAnyBusiness({ amenity: "dentist" })).toBe(true);
+    expect(keepAnyBusiness({ office: "lawyer" })).toBe(true);
+    expect(keepAnyBusiness({ office: "government" })).toBe(false);
+    expect(keepAnyBusiness({ amenity: "place_of_worship" })).toBe(false);
+    expect(keepAnyBusiness({ shop: "convenience" })).toBe(false);
+    expect(keepAnyBusiness({})).toBe(false);
+
+    const fetchImpl = vi.fn(async () =>
+      Response.json({
+        elements: [
+          { type: "node", id: 1, tags: { name: "Joe's Barber", shop: "hairdresser", phone: "1" } },
+          { type: "node", id: 2, tags: { name: "City Hall", office: "government", phone: "1" } },
+          { type: "way", id: 3, tags: { name: "Mia Nails", shop: "beauty", phone: "1" } },
+        ],
+      }),
+    ) as unknown as typeof fetch;
+    const results = await new OverpassClient(fetchImpl).searchText("local businesses in Waco, TX");
+    expect(results.map((r) => [r.name, r.category])).toEqual([
+      ["Joe's Barber", "Hairdresser"],
+      ["Mia Nails", "Beauty"],
+    ]);
   });
 
   it("any trade: each business keeps its own category", () => {
@@ -217,8 +247,8 @@ describe("OverpassClient", () => {
     const headers = calls[0]!.headers as Record<string, string>;
     expect(headers["User-Agent"]).toBe(OSM_USER_AGENT);
     const query = new URLSearchParams(String(calls[0]!.body)).get("data")!;
-    expect(query).toContain('nwr["craft"="plumber"]["name"](around:15000,');
-    expect(query).toContain("[timeout:25]");
+    expect(query).toContain('nw["craft"="plumber"]["name"];');
+    expect(query).toMatch(/\[timeout:20\]\[bbox:[\d.,-]+\]/);
 
     expect(results).toEqual([
       {
@@ -242,8 +272,10 @@ describe("OverpassClient", () => {
     const urls: string[] = [];
     const fetchImpl = vi.fn(async (url: string | URL | Request) => {
       urls.push(String(url));
-      if (urls.length === 1) return new Response("Bad Gateway", { status: 502 });
-      if (urls.length === 2) throw new TypeError("fetch failed");
+      if (urls.length < OVERPASS_URLS.length) {
+        if (urls.length % 2) return new Response("Bad Gateway", { status: 502 });
+        throw new TypeError("fetch failed");
+      }
       return Response.json({
         elements: [{ type: "node", id: 7, tags: { name: "Ann's Bakery", shop: "bakery" } }],
       });
