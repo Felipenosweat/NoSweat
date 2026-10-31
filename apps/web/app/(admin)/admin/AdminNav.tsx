@@ -11,6 +11,7 @@ import { GlassSegmentedLinks } from "@/components/glass";
 
 const SECTIONS = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/finance", label: "Finance" },
   { href: "/admin/accounts", label: "Accounts" },
   { href: "/admin/websites", label: "Websites" },
   { href: "/admin/models", label: "Models" },
@@ -42,16 +43,17 @@ export function AdminNav() {
   }
 
   return (
-    // No celular as 5 abas não cabem sem cortar o texto: a faixa rola de lado.
+    // Até o computador grande as 6 abas não cabem sem cortar o texto: a faixa rola de lado (o
+    // layout põe as abas numa segunda linha até o `lg`).
     <div
       onClickCapture={onClickCapture}
-      className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:overflow-visible md:px-0"
+      className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:overflow-visible lg:px-0"
     >
       <GlassSegmentedLinks
         aria-label="Admin sections"
         size="sm"
         fullWidth
-        className="min-w-[27rem] md:w-[30rem] [&_a]:min-h-11 md:[&_a]:min-h-8"
+        className="min-w-[32rem] lg:w-[35rem] [&_a]:min-h-11 lg:[&_a]:min-h-8"
         items={SECTIONS.map((section) => ({
           href: section.href,
           label: section.label,

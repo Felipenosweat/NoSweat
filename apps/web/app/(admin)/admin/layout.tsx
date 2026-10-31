@@ -31,7 +31,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <AdminViewAsBanner />
       </Suspense>
       <header className="glass-bar sticky top-0 z-30">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 md:flex-nowrap">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 lg:flex-nowrap">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {/* Volta para o painel do cliente (a própria conta), sempre à vista na esquerda. */}
             <GlassButton
@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             >
               <span className="max-[359px]:sr-only">Dashboard</span>
             </GlassButton>
-            <span className="hidden lg:inline-flex">
+            <span className="hidden xl:inline-flex">
               <Logo />
             </span>
             <span className="glass-edge rounded-full bg-amber-300/90 px-2.5 py-0.5 text-[11px] font-bold tracking-[0.06em] text-ink">
@@ -50,12 +50,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </span>
           </div>
 
-          {/* Celular: as abas descem para a segunda linha (order-last); computador: no meio. */}
-          <div className="order-last w-full md:order-none md:flex md:w-auto md:flex-1 md:justify-center">
+          {/* Celular e tablet: as abas descem para a segunda linha (order-last); computador: no meio. */}
+          <div className="order-last w-full lg:order-none lg:flex lg:w-auto lg:flex-1 lg:justify-center">
             <AdminNav />
           </div>
 
-          <form action={signOut} className="ml-auto md:ml-0">
+          <form action={signOut} className="ml-auto lg:ml-0">
             <GlassButton type="submit" variant="ghost">
               Log out
             </GlassButton>
