@@ -9,11 +9,12 @@ import {
   GlassButton,
   GlassMenu,
   GlassToolbar,
+  Notice,
   cx,
   focusRing,
   type GlassMenuItem,
 } from "@/components/glass";
-import { Notice, linkClass, mobileCard, rowClass, td, th } from "./AdminUi";
+import { linkClass, mobileCard, rowClass, td, th } from "./AdminUi";
 import { deleteSitesAction, unpublishSiteAction, type AdminActionResult } from "./actions";
 
 // Lista de sites do admin (em /admin/websites e na ficha da conta). Cada linha tem UM menu "⋯"

@@ -362,7 +362,10 @@ function TeamChips({
   const chip = (current: boolean) =>
     cx(
       "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap sm:min-h-9",
-      current ? "bg-ink text-white" : "glass glass-flat glass-interactive text-(--glass-fg)",
+      // Selecionada: vidro tingido de azul-noite (o mesmo das cápsulas de escolha dos clientes).
+      current
+        ? "glass-tint text-white [--glass-tint:#071b33]"
+        : "glass glass-flat glass-interactive text-(--glass-fg)",
       focusRing,
     );
   const items: {

@@ -8,6 +8,7 @@ import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardCh
 import {
   ChevronRightIcon,
   IconTile,
+  StatTile,
   cardClass,
   focusRing,
   insetDivider,
@@ -695,61 +696,29 @@ type Stat = {
   display?: string;
 };
 
-const STAT_NUMBER: Record<IconTone, string> = {
-  brand: "text-brand",
-  amber: "text-amber-700",
-  sky: "text-sky-700",
-  red: "text-red-700",
-  emerald: "text-emerald-700",
-  slate: "text-ink",
-};
-
-/** Quadro de número (como os widgets do iOS): ícone, número grande, rótulo e a linha de apoio. */
-function StatTile({ stat }: { stat: Stat }) {
+/** Quadro de número: o <StatTile /> compartilhado (o mesmo das listas e do /admin). */
+function MoneyTile({ stat }: { stat: Stat }) {
   const { value } = stat;
   const shown =
     stat.display ??
     (value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`);
-  const content = (
-    <>
-      <span className="flex items-start justify-between gap-2">
-        <IconTile tone={stat.tone}>
-          <stat.Icon className="size-[18px]" />
-        </IconTile>
-        {stat.href && (
-          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
-        )}
-      </span>
-      {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
-            fica em cima (ordem visual com `order`). */}
-      <span className="mt-auto flex flex-col pt-4">
-        <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
-        <span
-          className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
-            stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
-          }`}
-        >
-          {shown}
-          {value === null && <span className="sr-only">not available</span>}
-          {value === "unlimited" && <span className="sr-only">unlimited</span>}
-        </span>
-        <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
-      </span>
-    </>
-  );
-  const tile = `flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass}`;
   return (
     <li>
-      {stat.href ? (
-        <Link
-          href={stat.href}
-          className={`group ${tile} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
-        >
-          {content}
-        </Link>
-      ) : (
-        <div className={tile}>{content}</div>
-      )}
+      <StatTile
+        href={stat.href}
+        label={stat.label}
+        value={
+          <>
+            {shown}
+            {value === null && <span className="sr-only">not available</span>}
+            {value === "unlimited" && <span className="sr-only">unlimited</span>}
+          </>
+        }
+        hint={stat.hint}
+        icon={<stat.Icon className="size-[18px]" />}
+        tone={stat.tone}
+        highlight={stat.attention}
+      />
     </li>
   );
 }
@@ -999,7 +968,7 @@ function OfficeSection({ office, readOnly }: { office: OfficeSnapshot; readOnly:
         </h2>
         <ul className="mt-3 grid flex-1 grid-cols-2 gap-3 sm:gap-4">
           {moneyStats(office).map((stat) => (
-            <StatTile key={stat.key} stat={stat} />
+            <MoneyTile key={stat.key} stat={stat} />
           ))}
         </ul>
       </section>

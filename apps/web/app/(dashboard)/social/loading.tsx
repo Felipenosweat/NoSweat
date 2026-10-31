@@ -10,8 +10,14 @@ export default function SocialLoading() {
     <div role="status" aria-live="polite">
       <span className="sr-only">Loading your posts…</span>
       <div aria-hidden="true">
-        <div className={`${block} h-10 w-36 rounded-xl lg:h-12`} />
-        <div className={`${block} mt-2 h-5 w-96 max-w-full rounded-md`} />
+        {/* Mesmo desenho do cabeçalho: título e apoio à esquerda, "New post" à direita. */}
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
+          <div className="min-w-0 flex-1">
+            <div className={`${block} h-10 w-36 rounded-xl lg:h-12`} />
+            <div className={`${block} mt-2 h-5 w-96 max-w-full rounded-md`} />
+          </div>
+          <div className={`${block} h-11 w-32 rounded-full sm:h-10`} />
+        </div>
         <SocialCalendarSkeleton />
       </div>
     </div>

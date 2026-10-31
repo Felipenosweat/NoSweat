@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { PageHeader } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import type { CurrentUser } from "@/server/auth/session";
 import { getViewer } from "@/server/auth/viewer";
 import { getSocialState } from "@/server/social/api";
@@ -76,12 +77,14 @@ async function loadInitialSocial(
 async function PreloadedCalendar({
   user,
   initialMonth,
+  notices,
 }: {
   user: CurrentUser;
   initialMonth: string | null;
+  notices: ReactNode;
 }) {
   const initial = await loadInitialSocial(user, initialMonth);
-  return <SocialCalendar initialMonth={initialMonth} initial={initial} />;
+  return <SocialCalendar initialMonth={initialMonth} initial={initial} notices={notices} />;
 }
 
 export default async function SocialPage({ searchParams }: SocialPageProps) {
@@ -116,26 +119,17 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
   const approvedCount = approved && /^\d{1,3}$/.test(approved) ? Number(approved) : 0;
   const errorText = error ? (CONNECT_ERRORS[error] ?? GENERIC_CONNECT_ERROR) : null;
 
-  return (
-    <div>
-      <PageHeader
-        title="Social"
-        description="Plan a month of Instagram posts in minutes. Nothing goes out until you approve it."
-      />
-
+  // Avisos da volta do Instagram e da revisão: o calendário (client) os mostra embaixo do
+  // cabeçalho, que agora mora nele (o "New post" do cabeçalho abre a gaveta de lá).
+  const notices = (
+    <>
       {connected === "1" && !errorText && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
-        >
+        <Notice tone="success" className="mt-6">
           Instagram connected. Approved posts will go out at their scheduled time.
-        </p>
+        </Notice>
       )}
       {errorText && (
-        <p
-          role="alert"
-          className="glass-edge mt-6 rounded-2xl bg-red-50/85 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-6">
           {errorText}
           {error === "payment_required" && (
             <>
@@ -148,21 +142,21 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
               </Link>
             </>
           )}
-        </p>
+        </Notice>
       )}
       {approvedCount > 0 && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
-        >
+        <Notice tone="success" className="mt-6">
           {approvedCount} post{approvedCount === 1 ? "" : "s"} approved.
-        </p>
+        </Notice>
       )}
+    </>
+  );
 
-      {/* O topo aparece na hora; o calendário chega em streaming, já com os dados. */}
-      <Suspense fallback={<SocialCalendarSkeleton />}>
-        <PreloadedCalendar user={viewer.user} initialMonth={initialMonth} />
-      </Suspense>
-    </div>
+  // O topo (cabeçalho e avisos) aparece na hora no esqueleto; o calendário chega em streaming,
+  // já com os dados.
+  return (
+    <Suspense fallback={<SocialCalendarSkeleton header notices={notices} />}>
+      <PreloadedCalendar user={viewer.user} initialMonth={initialMonth} notices={notices} />
+    </Suspense>
   );
 }

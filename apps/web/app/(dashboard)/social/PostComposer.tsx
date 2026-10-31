@@ -17,8 +17,14 @@ import {
 } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type SyntheticEvent } from "react";
 import { z } from "zod";
-import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
-import { glassButtonClass } from "@/components/glass";
+import {
+  fieldClass,
+  focusRing,
+  primaryButton,
+  secondaryButton,
+  textButton,
+} from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 import { prepareSocialImage, ratioOf, type SocialRatio } from "@/lib/social-image";
 import { ManualPostButton } from "./ManualPostButton";
 import {
@@ -54,9 +60,6 @@ type Busy = "save" | "approve" | "publish" | "retry" | "delete" | "upload" | Cap
 const dangerTextButton = textButton
   .replace("text-slate-600", "text-red-700")
   .replace("hover:text-ink", "hover:text-red-800");
-
-const fieldClass =
-  "w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-ink placeholder:text-slate-500 sm:text-[15px] focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500";
 
 function sameMedia(a: SocialMedia[], b: SocialMedia[]): boolean {
   return a.length === b.length && a.every((item, i) => item.path === b[i]?.path);
@@ -421,11 +424,11 @@ export function PostComposer({
             {/* ---------- formulário ---------- */}
             <div className="min-w-0 space-y-6">
               {current?.lastError && ["failed", "paused", "missed"].includes(current.status) && (
-                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <Notice tone="warning" size="sm" role={null}>
                   {current.status === "missed"
                     ? "This post missed its time. Pick a new date and approve it again."
                     : current.lastError}
-                </p>
+                </Notice>
               )}
 
               <section aria-labelledby={`${ids}-photos`}>
@@ -565,17 +568,14 @@ export function PostComposer({
                   </p>
                 )}
                 {current?.claimsFlagged && (
-                  <p
-                    role="note"
-                    className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"
-                  >
+                  <Notice tone="warning" size="sm" role="note" className="mt-3">
                     This caption mentions things like reviews, ratings, guarantees or licenses. Keep
                     them only if they&rsquo;re true for your business.
-                  </p>
+                  </Notice>
                 )}
 
                 {editable && (
-                  <div className="mt-4 rounded-lg bg-surface p-3 ring-1 ring-slate-200">
+                  <div className="glass-inset mt-4 rounded-xl p-4">
                     <label
                       htmlFor={`${ids}-idea`}
                       className="block text-[13px] font-medium text-ink"

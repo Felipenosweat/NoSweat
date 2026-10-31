@@ -3,7 +3,14 @@
 import { GOOGLE_REVIEW_URL_MESSAGE, ReviewLinkResponse, isGoogleReviewUrl } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
-import { GlassBadge, GlassButton, GlassCard, cx, glassButtonClass } from "@/components/glass";
+import {
+  GlassBadge,
+  GlassButton,
+  GlassCard,
+  Notice,
+  cx,
+  glassButtonClass,
+} from "@/components/glass";
 import { clientsApi, toClientsError } from "../clients/api";
 import {
   OpenIcon,
@@ -256,12 +263,9 @@ export function ReviewLinkManager({
             <p className={hintClass}>You&rsquo;re viewing this account, so changes are off.</p>
           )}
           {error && (
-            <p
-              role="alert"
-              className="glass-edge rounded-xl bg-red-50/90 px-3 py-2 text-sm text-red-700"
-            >
+            <Notice tone="error" size="sm">
               {error}
-            </p>
+            </Notice>
           )}
           <p role="status" className="text-[15px] font-medium text-emerald-700 empty:hidden">
             {notice}

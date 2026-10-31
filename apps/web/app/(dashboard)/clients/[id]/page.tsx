@@ -11,8 +11,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { BackLink } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
-import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { EmptyState, GlassButton, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import {
   STAGE_LABELS,
   dateKeyIn,
@@ -422,13 +423,10 @@ function PaperGroup({
 function PaperworkSection({ client, paperwork }: { client: Client; paperwork: Paperwork | null }) {
   if (!paperwork) {
     return (
-      <p
-        role="alert"
-        className="glass-edge rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-      >
+      <Notice tone="error">
         We couldn&rsquo;t load this client&rsquo;s estimates, jobs and invoices. Please refresh the
         page.
-      </p>
+      </Notice>
     );
   }
   const { estimates, jobs, invoices } = paperwork;
@@ -525,9 +523,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
   return (
     <div>
-      <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2 max-sm:min-h-11">
-        <span aria-hidden="true">‹</span> Clients
-      </GlassButton>
+      <BackLink href="/clients">Clients</BackLink>
 
       <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-8">
         {/* ---------- coluna da esquerda: cartão de contato, etapa, retorno e anotação ---------- */}

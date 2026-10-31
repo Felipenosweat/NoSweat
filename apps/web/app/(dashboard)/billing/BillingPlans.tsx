@@ -17,7 +17,7 @@ import {
   primaryButton,
   secondaryButton,
 } from "@/components/DashboardUi";
-import { GlassBadge, GlassSegmented } from "@/components/glass";
+import { GlassBadge, GlassSegmented, Notice } from "@/components/glass";
 import { CheckIcon } from "@/components/marketing/icons";
 
 export type PlanCard = {
@@ -189,10 +189,7 @@ export function BillingPlans({
   return (
     <div className="mt-8">
       {ended && !current.active && (
-        <section
-          role="status"
-          className="glass-edge mb-8 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
-        >
+        <Notice tone="warning" className="mb-8">
           <p>
             Your {ended.name} plan ended on {dateFormat.format(new Date(ended.endedOn))}, so your
             website is offline. Renew to bring it back.
@@ -203,7 +200,7 @@ export function BillingPlans({
           >
             {contact.whatsapp ? "Renew on WhatsApp" : "Renew by email"}
           </ContactLink>
-        </section>
+        </Notice>
       )}
 
       {manualActive && (

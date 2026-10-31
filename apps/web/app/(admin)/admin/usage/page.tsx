@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { StatTile } from "@/components/DashboardUi";
 import { cx } from "@/components/glass";
 import { requireAdmin } from "@/server/admin";
 import {
@@ -13,7 +14,7 @@ import {
   totalUses,
 } from "@/server/admin/costs";
 import { loadAiUsage } from "@/server/admin/data";
-import { AdminPageHeader, StatTile, rowClass, td, th } from "../AdminUi";
+import { AdminPageHeader, rowClass, td, th } from "../AdminUi";
 import { formatCount } from "../admin-data";
 
 export const metadata: Metadata = { title: "Usage · Admin" };

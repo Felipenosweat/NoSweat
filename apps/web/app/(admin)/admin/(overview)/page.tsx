@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { GlassCard } from "@/components/glass";
+import { StatTile } from "@/components/DashboardUi";
+import { GlassCard, Notice } from "@/components/glass";
 import { requireAdmin } from "@/server/admin";
 import { estimateAiCostUsd, formatUsd, totalUses } from "@/server/admin/costs";
 import {
@@ -15,7 +16,7 @@ import {
 import { PLANS } from "@/server/billing";
 import { getVercelConfig } from "@/server/domains/vercel";
 import { CardSkeleton, TileItemsSkeleton } from "../AdminSkeletons";
-import { AdminPageHeader, StatTile, linkClass, panelText, panelTitle } from "../AdminUi";
+import { AdminPageHeader, linkClass, panelText, panelTitle } from "../AdminUi";
 import { dateFormat, formatCount, withoutPlanCheck } from "../admin-data";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -33,35 +34,34 @@ async function ManualDomainsAlert() {
   const accountById = new Map(accounts.map((account) => [account.id, account]));
 
   return (
-    <section
-      aria-labelledby="domains-heading"
-      className="glass-edge rounded-2xl bg-amber-50/90 px-5 py-4 text-[15px] text-amber-950"
-    >
-      <h2 id="domains-heading" className="font-semibold">
-        VERCEL_TOKEN is not set: add these customer domains by hand in Vercel → Settings → Domains
-      </h2>
-      <p className="mt-1 text-sm text-amber-900">
-        Add each domain and its www version to the project. Until then the customer sees
-        &ldquo;Being set up&rdquo;.
-      </p>
-      <ul className="mt-3 space-y-1 text-sm">
-        {manualDomains.map((site) => {
-          const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
-          return (
-            <li key={site.id} className="flex flex-wrap gap-x-3 gap-y-0.5">
-              <span className="font-mono font-semibold">{site.customDomain}</span>
-              <Link href={`/sites/${site.id}`} className={linkClass}>
-                {site.spec.business.name}
-              </Link>
-              {site.ownerId && (
-                <Link href={`/admin/clients/${site.ownerId}`} className={linkClass}>
-                  {owner?.email ?? site.ownerId}
+    <section aria-labelledby="domains-heading">
+      <Notice tone="warning" role={null}>
+        <h2 id="domains-heading" className="font-semibold">
+          VERCEL_TOKEN is not set: add these customer domains by hand in Vercel → Settings → Domains
+        </h2>
+        <p className="mt-1 text-sm">
+          Add each domain and its www version to the project. Until then the customer sees
+          &ldquo;Being set up&rdquo;.
+        </p>
+        <ul className="mt-3 space-y-1 text-sm">
+          {manualDomains.map((site) => {
+            const owner = site.ownerId ? accountById.get(site.ownerId) : undefined;
+            return (
+              <li key={site.id} className="flex flex-wrap gap-x-3 gap-y-0.5">
+                <span className="font-mono font-semibold">{site.customDomain}</span>
+                <Link href={`/sites/${site.id}`} className={linkClass}>
+                  {site.spec.business.name}
                 </Link>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                {site.ownerId && (
+                  <Link href={`/admin/clients/${site.ownerId}`} className={linkClass}>
+                    {owner?.email ?? site.ownerId}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </Notice>
     </section>
   );
 }
@@ -85,7 +85,7 @@ async function CoreTiles() {
           href="/admin/accounts"
           label="Accounts"
           value={formatCount(accounts.length)}
-          note={`${testAccounts} test · ${adminIds.size} admin`}
+          hint={`${testAccounts} test · ${adminIds.size} admin`}
         />
       </li>
       <li>
@@ -93,7 +93,7 @@ async function CoreTiles() {
           href="/admin/websites"
           label="Websites"
           value={formatCount(ownedSites)}
-          note={`+ ${sites.length - ownedSites} from visitors without an account`}
+          hint={`+ ${sites.length - ownedSites} from visitors without an account`}
         />
       </li>
       <li>
@@ -101,14 +101,14 @@ async function CoreTiles() {
           href="/admin/websites?sf=live"
           label="Live sites"
           value={formatCount(liveSites)}
-          note={`${customDomains} on their own domain`}
+          hint={`${customDomains} on their own domain`}
         />
       </li>
       <li>
         <StatTile
           label="Website requests"
           value={formatCount(leads7d)}
-          note="Contact form · last 7 days"
+          hint="Contact form · last 7 days"
         />
       </li>
     </>
@@ -125,7 +125,7 @@ async function AiTiles() {
           href="/admin/usage"
           label="AI uses · 24h"
           value={ai24h ? formatCount(totalUses(ai24h)) : "—"}
-          note={ai24h ? `≈ ${formatUsd(estimateAiCostUsd(ai24h))} (estimate)` : undefined}
+          hint={ai24h ? `≈ ${formatUsd(estimateAiCostUsd(ai24h))} (estimate)` : undefined}
         />
       </li>
       <li>
@@ -133,7 +133,7 @@ async function AiTiles() {
           href="/admin/usage"
           label="AI uses · 30 days"
           value={ai30d ? formatCount(totalUses(ai30d)) : "—"}
-          note={ai30d ? `≈ ${formatUsd(estimateAiCostUsd(ai30d))} (estimate)` : undefined}
+          hint={ai30d ? `≈ ${formatUsd(estimateAiCostUsd(ai30d))} (estimate)` : undefined}
         />
       </li>
     </>
@@ -158,14 +158,14 @@ async function PlanTiles() {
         <StatTile
           label="Active plans"
           value={plans ? formatCount(plans.accounts) : "—"}
-          note={planNote}
+          hint={planNote}
         />
       </li>
       <li>
         <StatTile
           label="Live without a plan"
           value={ownersWithAccess ? formatCount(liveWithoutPlan) : "—"}
-          note={
+          hint={
             ownersWithAccess
               ? enforced
                 ? "Offline: visitors see “temporarily unavailable”"

@@ -37,6 +37,7 @@ import {
   type UpdateTeamMemberRequest,
 } from "@nosweat/schema";
 import { dateKeyIn, formatCents } from "@/lib/clients";
+import { answeredByCustomer, MARKED_PAID_REFERENCE } from "@/lib/office";
 import {
   addClientPayment,
   clientsTimeZone,
@@ -66,7 +67,8 @@ import {
 // Regras do escritório do dono (as rotas /api/office/* e /api/public/* só chamam isto).
 // - Totais sempre por `computeTotals` aqui no servidor; o que vier do navegador é ignorado.
 // - Números (#1001...) pela RPC `office_next_number` (memória: contadores a partir de 1001).
-// - Status calculados na leitura: orçamento `expired`; fatura `partial` / `overdue`.
+// - Status calculados na leitura: orçamento `expired`; fatura `partial` / `overdue` (e `paid` para
+//   a enviada de US$ 0).
 // - "Hoje" é sempre no fuso da empresa (`settings.timeZone`).
 // Erros de regra saem como `OfficeError` (as rotas viram `{ error: { code, message } }`).
 
@@ -803,9 +805,10 @@ function isOpenEstimate(record: EstimateRecord): boolean {
 /**
  * Muda o orçamento. Linhas, imposto, desconto, textos e validade só em rascunho/enviado (409 nos
  * outros). `status` = o dono marca a resposta que recebeu por fora (aprovar leva o cliente a
- * "won"). A gravação só acontece se o status guardado ainda for o lido (o cliente respondeu no
- * meio: 409). Mudar um orçamento enviado o mantém enviado; o `updatedAt` novo faz o cliente que
- * estava com a versão antiga aberta receber 409 ao responder. `null` se não existir.
+ * "won"; `reopenEstimate` desfaz). A gravação só acontece se o status guardado ainda for o lido
+ * (o cliente respondeu no meio: 409). Mudar um orçamento enviado o mantém enviado; o `updatedAt`
+ * novo faz o cliente que estava com a versão antiga aberta receber 409 ao responder. `null` se não
+ * existir.
  */
 export async function updateEstimate(
   ownerId: string,
@@ -846,6 +849,9 @@ export async function updateEstimate(
     if (!open) throw new OfficeError(409, "conflict", "This estimate was already answered.");
     patch.status = input.status;
     patch.respondedAt = nowIso();
+    // Marcada pelo dono = sem nome e sem motivo (é o que a separa da resposta pelo link).
+    patch.approvedByName = null;
+    patch.declineReason = null;
   }
 
   const updated = await store().updateEstimate(ownerId, id, patch, current.status);
@@ -910,13 +916,17 @@ export async function sendEstimate(
 
 // ---------- faturas ----------
 
-/** Status mostrado: `sent` com saldo vira `overdue` (passou do vencimento) ou `partial`. */
+/**
+ * Status mostrado: `sent` com saldo vira `overdue` (passou do vencimento) ou `partial`; `sent` sem
+ * saldo (total US$ 0, que nenhum pagamento consegue quitar) já é `paid`.
+ */
 export function invoiceStatus(
-  record: Pick<InvoiceRecord, "status" | "dueOn">,
+  record: Pick<InvoiceRecord, "status" | "dueOn" | "totalCents">,
   paidCents: number,
   today: string,
 ): InvoiceStatus {
   if (record.status !== "sent") return record.status;
+  if (paidCents >= record.totalCents) return "paid";
   if (record.dueOn !== null && record.dueOn < today) return "overdue";
   if (paidCents > 0) return "partial";
   return "sent";
@@ -1302,6 +1312,37 @@ export async function deletePayment(
   return invoiceView(ownerId, updated ?? current);
 }
 
+/**
+ * "Mark as paid": fecha a fatura que o cliente pagou a menos (ou que o dono dá por quitada) lançando
+ * o saldo que falta como pagamento `other` com a referência "Marked paid". O contrato não tem
+ * abatimento; o pagamento é o registro (apagar o pagamento desfaz) e segue as regras de
+ * `recordPayment` (rascunho vira enviada, entra no histórico do cliente). O saldo é o do servidor
+ * na hora do pedido. Já sem saldo (clique duplo, fatura de US$ 0): devolve a fatura como está.
+ * Anulada: 409. `null` se não existir.
+ */
+export async function markInvoicePaid(ownerId: string, invoiceId: string): Promise<Invoice | null> {
+  const current = await store().getInvoice(ownerId, invoiceId);
+  if (!current) return null;
+  if (current.status === "void") {
+    throw new OfficeError(409, "conflict", "This invoice is void.");
+  }
+  const balance = current.totalCents - sumPayments(await paymentsOf(ownerId, invoiceId));
+  if (balance <= 0) return invoiceView(ownerId, current);
+  try {
+    return await recordPayment(ownerId, invoiceId, {
+      amountCents: balance,
+      method: "other",
+      reference: MARKED_PAID_REFERENCE,
+    });
+  } catch (error) {
+    // Outro pagamento entrou no meio: se ele quitou a fatura, o pedido já está atendido.
+    if (!(error instanceof OfficeError) || error.status !== 400) throw error;
+    const fresh = await getInvoice(ownerId, invoiceId);
+    if (fresh && fresh.balanceCents <= 0) return fresh;
+    throw error;
+  }
+}
+
 // ---------- orçamento → job / fatura ----------
 
 /** Fatura não anulada criada a partir do orçamento (no máximo uma: índice único da 0023). */
@@ -1410,6 +1451,111 @@ export async function convertEstimate(
       ? toInvoice(invoice, await paymentsOf(ownerId, invoice.id), clientName, today)
       : null,
   };
+}
+
+// ---------- duplicar e reabrir ----------
+
+/**
+ * Cópia de um orçamento (qualquer status) como rascunho novo, pelo mesmo caminho de
+ * `createEstimate` (número da `office_next_number`, link novo, totais recalculados): mesmo
+ * cliente, título, linhas, imposto, desconto e mensagem. `priceItemId` fica se o item ainda
+ * existir na tabela de preços (regra de `cleanItems`). Sem job, sem resposta e sem validade (o
+ * envio define). `null` se o original não existir.
+ */
+export async function duplicateEstimate(ownerId: string, id: string): Promise<Estimate | null> {
+  const source = await store().getEstimate(ownerId, id);
+  if (!source) return null;
+  return createEstimate(ownerId, {
+    clientId: source.clientId,
+    jobId: null,
+    title: source.title,
+    items: source.items,
+    taxRateBps: source.taxRateBps,
+    discountCents: source.discountCents,
+    message: source.message,
+    validUntil: null,
+  });
+}
+
+/**
+ * Cópia de uma fatura (qualquer status, inclusive paga ou anulada) como rascunho novo, pelo mesmo
+ * caminho de `createInvoice`: mesmo cliente, título, linhas, imposto, desconto e mensagem; número
+ * e link novos, sem job, sem orçamento e sem pagamentos; emissão hoje e vencimento pelas
+ * configurações (`invoiceDueDays`). `null` se a original não existir.
+ */
+export async function duplicateInvoice(ownerId: string, id: string): Promise<Invoice | null> {
+  const source = await store().getInvoice(ownerId, id);
+  if (!source) return null;
+  return createInvoice(ownerId, {
+    clientId: source.clientId,
+    jobId: null,
+    title: source.title,
+    items: source.items,
+    taxRateBps: source.taxRateBps,
+    discountCents: source.discountCents,
+    message: source.message,
+  });
+}
+
+/**
+ * Reabre um orçamento que o DONO marcou como aprovado/recusado (engano no "Mark approved"): volta
+ * a enviado (ou a rascunho, se nunca foi enviado) e limpa `respondedAt`, `approvedByName` e
+ * `declineReason`. Recusado (409) quando:
+ * - não está aprovado nem recusado;
+ * - o cliente respondeu pelo link (`answeredByCustomer`): a resposta dele nunca é apagada (para
+ *   mandar outra versão, duplique);
+ * - já tem job ligado ou fatura não anulada criada dele (apague o job / anule a fatura antes).
+ * A gravação só acontece se nada mudou desde a leitura (status, versão e job). A etapa do cliente
+ * não volta (ele pode estar em "won" por outro motivo). `null` se não existir.
+ */
+export async function reopenEstimate(ownerId: string, id: string): Promise<Estimate | null> {
+  const current = await store().getEstimate(ownerId, id);
+  if (!current) return null;
+  if (current.status !== "approved" && current.status !== "declined") {
+    throw new OfficeError(409, "conflict", "Only approved or declined estimates can be reopened.");
+  }
+  if (answeredByCustomer(current)) {
+    const verb = current.status === "approved" ? "approved" : "declined";
+    throw new OfficeError(
+      409,
+      "conflict",
+      `The customer ${verb} this estimate through the link, so it can't be reopened. Duplicate it to send a new one.`,
+    );
+  }
+  if (current.jobId) {
+    throw new OfficeError(
+      409,
+      "conflict",
+      "This estimate has a job. Delete the job first to reopen the estimate.",
+    );
+  }
+  if (await activeInvoiceOf(ownerId, current.id)) {
+    throw new OfficeError(
+      409,
+      "conflict",
+      "This estimate has an invoice. Void or delete the invoice first to reopen the estimate.",
+    );
+  }
+  const updated = await store().updateEstimate(
+    ownerId,
+    id,
+    {
+      status: current.sentAt ? "sent" : "draft",
+      respondedAt: null,
+      approvedByName: null,
+      declineReason: null,
+    },
+    { status: current.status, updatedAt: current.updatedAt, jobId: null },
+  );
+  if (!updated) {
+    if (!(await store().getEstimate(ownerId, id))) return null;
+    throw new OfficeError(
+      409,
+      "conflict",
+      "This estimate was changed meanwhile. Refresh and try again.",
+    );
+  }
+  return estimateView(ownerId, updated);
 }
 
 // ---------- resumo do painel ----------
@@ -1575,10 +1721,12 @@ export async function respondToEstimate(
     throw new OfficeError(409, "conflict", ESTIMATE_CHANGED);
   }
 
+  // Recusa sem motivo grava "" (não `null`): assim a resposta pelo link nunca se confunde com a
+  // marcada pelo dono, que deixa os dois campos `null` (ver `answeredByCustomer` e `reopenEstimate`).
   const patch: EstimatePatch =
     input.decision === "approve"
       ? { status: "approved", approvedByName: input.name.trim(), respondedAt: nowIso() }
-      : { status: "declined", declineReason: input.reason?.trim() || null, respondedAt: nowIso() };
+      : { status: "declined", declineReason: input.reason?.trim() ?? "", respondedAt: nowIso() };
   const updated = await store().updateEstimate(record.ownerId, record.id, patch, {
     status: "sent",
     updatedAt: input.updatedAt,

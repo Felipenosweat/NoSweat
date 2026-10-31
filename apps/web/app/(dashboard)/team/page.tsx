@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader, sectionTitle } from "@/components/DashboardUi";
-import { EmptyState, GlassCard, cx, focusRing } from "@/components/glass";
+import { EmptyState, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import { initialsOf, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { listTeam } from "@/server/office/service";
@@ -94,12 +94,9 @@ export default async function TeamPage() {
       </div>
 
       {members === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your team. Please refresh the page.
-        </p>
+        </Notice>
       ) : members.length === 0 ? (
         <EmptyState
           className="mt-8"

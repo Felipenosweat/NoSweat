@@ -2,6 +2,7 @@
 
 import type { CreditBalance } from "@nosweat/schema";
 import { panelClass, panelText, panelTitle, secondaryButton } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { ContactChannels, ContactLink, contactHref, type SalesContact } from "./BillingPlans";
 
 // Saldo de créditos da IA em /billing: cota do mês (zera todo mês) + créditos comprados (não
@@ -62,19 +63,16 @@ export function CreditsPanel({
       ) : (
         <>
           {low && (
-            <p
-              role="status"
-              className="glass-edge mt-3 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
-            >
+            <Notice tone="warning" size="sm" className="mt-3">
               {balance.total === 0
                 ? "You’re out of AI credits."
                 : "You’re running low on AI credits."}{" "}
               Your monthly credits refill on {refill}, or you can buy more below.
-            </p>
+            </Notice>
           )}
 
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="glass-edge rounded-2xl bg-white/40 p-4">
+            <div className="glass-inset rounded-xl p-4">
               <dt className="text-[13px] font-medium text-slate-500">
                 Monthly credits{planName ? ` (${planName})` : ""}
               </dt>
@@ -94,7 +92,7 @@ export function CreditsPanel({
               </div>
               <p className="mt-2 text-[13px] text-slate-500">Refills on {refill}.</p>
             </div>
-            <div className="glass-edge rounded-2xl bg-white/40 p-4">
+            <div className="glass-inset rounded-xl p-4">
               <dt className="text-[13px] font-medium text-slate-500">Extra credits</dt>
               <dd className="mt-1 text-[15px] text-ink">
                 <span className="font-semibold tabular-nums">{number(balance.topup)}</span>{" "}

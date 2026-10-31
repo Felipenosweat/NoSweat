@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import { getOfficeSettings } from "@/server/office/service";
 import { OfficeTabs } from "../_ui/ui";
@@ -39,12 +40,9 @@ export default async function OfficeSettingsPage() {
         {settings ? (
           <SettingsForm settings={settings} readOnly={readOnly} />
         ) : (
-          <p
-            role="alert"
-            className="glass-edge rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-          >
+          <Notice tone="error">
             We couldn&rsquo;t load your settings. Please refresh the page.
-          </p>
+          </Notice>
         )}
       </div>
     </div>

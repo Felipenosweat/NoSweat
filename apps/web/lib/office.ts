@@ -98,6 +98,35 @@ export function estimateItemsEditable(status: EstimateStatus): boolean {
   return status === "draft" || status === "sent" || status === "expired";
 }
 
+/** O que diz quem respondeu o orçamento (campos opcionais: a lista pode não ter todos). */
+type EstimateAnswer = {
+  status: EstimateStatus;
+  approvedByName?: string | null;
+  declineReason?: string | null;
+};
+
+/**
+ * O cliente respondeu pelo link? Aprovar pelo link exige o nome digitado (`approvedByName`);
+ * recusar pelo link grava o motivo, ou "" quando ele não escreve nenhum. O dono marcando a
+ * resposta à mão não grava nenhum dos dois (ficam `null`). Recusa pelo link sem motivo gravada
+ * antes do "" também ficou `null`: não dá para distinguir e conta como marcada pelo dono.
+ */
+export function answeredByCustomer(estimate: EstimateAnswer): boolean {
+  if (estimate.status === "approved") return typeof estimate.approvedByName === "string";
+  if (estimate.status === "declined") return typeof estimate.declineReason === "string";
+  return false;
+}
+
+/**
+ * O dono pode reabrir (voltar a "Waiting")? Só aprovado/recusado marcado por ele e sem job. A
+ * fatura criada do orçamento só o servidor confere (409 com o motivo); campos ausentes contam como
+ * "talvez" (o servidor decide).
+ */
+export function estimateReopenable(estimate: EstimateAnswer & { jobId?: string | null }): boolean {
+  if (estimate.status !== "approved" && estimate.status !== "declined") return false;
+  return !answeredByCustomer(estimate) && !estimate.jobId;
+}
+
 // ---------- faturas ----------
 
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -214,6 +243,12 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cashapp: "Cash App",
   other: "Other",
 };
+
+/**
+ * Referência do pagamento lançado por "Mark as paid" (o saldo que faltava, forma "other"). Aparece
+ * na lista de pagamentos; apagar esse pagamento desfaz.
+ */
+export const MARKED_PAID_REFERENCE = "Marked paid";
 
 /** Dica do campo "Reference" para cada forma de pagamento. */
 export const PAYMENT_REFERENCE_HINTS: Record<PaymentMethod, string> = {

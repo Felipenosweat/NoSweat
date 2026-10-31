@@ -17,6 +17,7 @@ import {
   GlassBadge,
   GlassButton,
   GlassIconButton,
+  Notice,
   cx,
 } from "@/components/glass";
 import {
@@ -435,13 +436,10 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                 </p>
               )}
               {post.claimsFlagged && (
-                <p
-                  role="note"
-                  className="glass-edge mt-3 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
-                >
+                <Notice tone="warning" size="sm" role="note" className="mt-3">
                   This caption mentions things like reviews, ratings, guarantees or licenses. Keep
                   them only if they&rsquo;re true for your business.
-                </p>
+                </Notice>
               )}
               {blocker && (
                 <p className="mt-3 text-[13px] text-slate-500">

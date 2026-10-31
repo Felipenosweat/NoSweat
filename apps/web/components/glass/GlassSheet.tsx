@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from "react";
 import { GlassButton } from "./GlassButton";
+import { Notice } from "./Notice";
 import { cx } from "./styles";
 
 // Folha de vidro centralizada (modal). Usa o <dialog> nativo com showModal(): o resto da página
@@ -189,12 +190,9 @@ export function ConfirmDialog({
     >
       {children && <div className="text-(--glass-fg-muted)">{children}</div>}
       {error && (
-        <p
-          role="alert"
-          className="mt-3 rounded-xl bg-red-50/90 px-3 py-2 text-sm text-red-700 glass-edge"
-        >
+        <Notice tone="error" size="sm" className="mt-3">
           {error}
-        </p>
+        </Notice>
       )}
     </GlassSheet>
   );

@@ -2,8 +2,14 @@
 
 import { ApiError, DomainResponse, type DomainResponse as DomainState } from "@nosweat/schema";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { StatusBadge, secondaryButton, textButton } from "@/components/DashboardUi";
-import { glassButtonClass } from "@/components/glass";
+import {
+  StatusBadge,
+  fieldClass,
+  labelClass,
+  secondaryButton,
+  textButton,
+} from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 import { DnsGuidePanel } from "./DnsGuidePanel";
 import type { DnsGuideId } from "./dnsGuides";
 
@@ -195,7 +201,7 @@ export function DomainPanel({
   if (!state.domain) {
     return (
       <form onSubmit={connect} className="mt-5">
-        <label htmlFor="domain-input" className="block text-[13px] font-medium text-ink">
+        <label htmlFor="domain-input" className={labelClass}>
           Your domain
         </label>
         <div className="mt-1.5 flex flex-col gap-3 sm:flex-row">
@@ -209,12 +215,13 @@ export function DomainPanel({
             spellCheck={false}
             inputMode="url"
             aria-describedby={!isPublished ? "domain-tip" : undefined}
-            className="h-12 w-full min-w-0 rounded-full border border-slate-300 bg-white/80 px-5 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none sm:h-11 sm:flex-1"
+            className={`${fieldClass} h-11 min-w-0 sm:flex-1`}
           />
+          {/* Na linha (computador) o botão estica até a altura do campo. */}
           <button
             type="submit"
             disabled={pending || input.trim().length === 0}
-            className={`${secondaryButton} min-h-12 sm:min-h-11`}
+            className={secondaryButton}
           >
             {pending ? "Connecting…" : "Connect domain"}
           </button>
@@ -225,10 +232,7 @@ export function DomainPanel({
           </p>
         )}
         {error && (
-          <p
-            role="alert"
-            className="glass-edge mt-3 inline-flex rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700"
-          >
+          <Notice tone="error" size="sm" className="mt-3">
             {error}
             {needsPlan && (
               <>
@@ -241,7 +245,7 @@ export function DomainPanel({
                 </a>
               </>
             )}
-          </p>
+          </Notice>
         )}
       </form>
     );
@@ -260,7 +264,7 @@ export function DomainPanel({
 
   return (
     <div className="mt-5 space-y-5">
-      <div className="glass-edge flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/50 px-4 py-3">
+      <div className="glass-inset flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3">
         <span className="font-display text-[15px] font-semibold break-all text-ink">
           {state.domain}
         </span>
@@ -269,7 +273,7 @@ export function DomainPanel({
       {status && <p className="text-[15px] leading-[1.6] text-slate-600">{status.help}</p>}
 
       {showTable && (
-        <div className="glass-edge overflow-hidden rounded-xl bg-white/50">
+        <div className="glass-inset overflow-hidden rounded-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-900/[0.03] text-[13px] text-slate-500">
@@ -335,19 +339,16 @@ export function DomainPanel({
       </p>
 
       {error && (
-        <p
-          role="alert"
-          className="glass-edge inline-flex rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700"
-        >
+        <Notice tone="error" size="sm">
           {error}
-        </p>
+        </Notice>
       )}
 
       {confirmRemove ? (
         <div
           role="alertdialog"
           aria-label={`Remove ${state.domain}?`}
-          className="glass-edge rounded-2xl bg-white/50 p-4 text-sm"
+          className="glass-inset rounded-xl p-4 text-sm"
         >
           <p className="font-medium text-ink">
             Your site will stop showing at <span className="font-semibold">{state.domain}</span>.

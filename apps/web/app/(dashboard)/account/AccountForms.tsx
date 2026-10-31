@@ -2,21 +2,28 @@
 
 import Link from "next/link";
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import { focusRing, primaryButton, secondaryButton } from "@/components/DashboardUi";
+import {
+  fieldClass,
+  fieldErrorClass,
+  focusRing,
+  labelClass,
+  primaryButton,
+  secondaryButton,
+} from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { PASSWORD_MAX, PASSWORD_RULES } from "@/lib/signup-rules";
 import { changePassword, updateProfile, type PasswordState, type ProfileState } from "./actions";
 
 // Formulários da página /account (nome e senha). Com JavaScript, o envio passa pelo onSubmit
 // (sem o reset automático do <form>), então nada do que foi digitado se perde num erro.
 
-const inputClass = `mt-1.5 block h-12 w-full rounded-xl border border-slate-300 bg-white/80 px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500 aria-invalid:border-red-400`;
-
-const labelClass = "block text-sm font-semibold text-ink";
+// O campo do app inteiro; `font-normal` porque o <label> envolve o campo (o campo herda a fonte).
+const inputClass = `${fieldClass} mt-1.5 block h-11 font-normal`;
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} className="mt-1.5 text-sm text-red-700">
+    <p id={id} className={fieldErrorClass}>
       {message}
     </p>
   );
@@ -26,22 +33,16 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 function FormStatus({ error, saved }: { error?: string; saved?: string }) {
   if (error) {
     return (
-      <p
-        role="alert"
-        className="glass-edge rounded-2xl bg-red-50/85 px-4 py-3 text-sm text-red-700"
-      >
+      <Notice tone="error" size="sm">
         {error}
-      </p>
+      </Notice>
     );
   }
   if (saved) {
     return (
-      <p
-        role="status"
-        className="glass-edge rounded-2xl bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800"
-      >
+      <Notice tone="success" size="sm">
         {saved}
-      </p>
+      </Notice>
     );
   }
   return null;

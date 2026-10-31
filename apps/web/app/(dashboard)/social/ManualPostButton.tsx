@@ -67,7 +67,7 @@ export function ManualPostButton({
   }
 
   return (
-    <div className="glass-edge rounded-2xl bg-white/50 p-4">
+    <div className="glass-inset rounded-xl p-4">
       <p className="text-[15px] font-semibold text-ink">Post it yourself in three taps</p>
       <ol className="mt-3 grid gap-3">
         <li className="flex flex-wrap items-center gap-3">

@@ -2,7 +2,7 @@
 
 import type { DocumentTotals } from "@nosweat/schema";
 import { useId, useRef, useState, type ReactNode } from "react";
-import { GlassButton, GlassIconButton } from "@/components/glass";
+import { GlassButton, GlassIconButton, Notice } from "@/components/glass";
 import {
   formatCents,
   formatQuantity,
@@ -70,7 +70,7 @@ function LineCard({
       : {};
 
   return (
-    <li className="rounded-2xl border border-(--glass-rim) bg-white/55 p-3 sm:p-4">
+    <li className="glass-inset rounded-xl p-4">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <label htmlFor={`${ids}-name`} className="sr-only">
@@ -266,13 +266,9 @@ export function LineItemsEditor({
       )}
       {itemsError && <p className={fieldErrorClass}>{itemsError}</p>}
       {priceWarning && (
-        <p
-          id={warnId}
-          role="alert"
-          className="mt-2 rounded-xl bg-amber-50/90 px-3 py-2 text-[13px] leading-5 font-semibold text-amber-900"
-        >
+        <Notice id={warnId} tone="warning" size="sm" role="alert" className="mt-2 font-semibold">
           {priceWarning}
-        </p>
+        </Notice>
       )}
       <div className="mt-3 flex flex-wrap gap-2">
         <PriceBookPicker

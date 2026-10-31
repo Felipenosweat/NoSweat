@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { markShared, splitSiteUrl } from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 
 // Modal "Publish website": status, endereço grátis (copiar/abrir), domínio próprio e o botão
 // de publicar. Usado na página do site (PublishButton) e no editor (SiteEditor). Quem chama
@@ -26,7 +27,8 @@ export type PublishState = "draft" | "outdated" | "current";
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
-const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
+// Compartilhar: os mesmos botões de vidro do app (44px de toque no celular).
+const shareLink = `${glassButtonClass({ variant: "secondary", size: "sm" })} max-sm:min-h-11`;
 
 type QrDrawing = { value: string; size: number; path: string };
 
@@ -324,7 +326,7 @@ export function PublishDialog({
             {/* ---------- Endereço grátis ---------- */}
             <section
               aria-labelledby="free-address-title"
-              className="glass-edge mt-4 rounded-2xl bg-white/60 p-4"
+              className="glass-inset mt-4 rounded-xl p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 id="free-address-title" className="text-[13px] font-semibold text-ink">
@@ -447,12 +449,9 @@ export function PublishDialog({
 
           <div className="shrink-0 border-t border-slate-900/10 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
             {error && (
-              <p
-                role="alert"
-                className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700"
-              >
+              <Notice tone="error" size="sm" className="mb-3">
                 {error}
-              </p>
+              </Notice>
             )}
             <div className="flex items-start justify-between gap-3">
               <p id="publish-plan-note" className="text-[13px] text-slate-500">

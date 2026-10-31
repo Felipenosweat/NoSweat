@@ -10,9 +10,9 @@ import {
 } from "@nosweat/schema";
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
-import { PageHeader } from "@/components/DashboardUi";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
-import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { GlassButton, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import {
   INVOICE_STATUS_LABELS,
   bpsToPercentInput,
@@ -394,11 +394,7 @@ export function InvoiceEditor({
     <div data-invoice-editor={ids}>
       <PrintStyles />
       <PageHeader
-        back={
-          <GlassButton href="/invoices" variant="ghost" size="sm" className="-ml-2 max-sm:min-h-11">
-            <span aria-hidden="true">‹</span> Invoices
-          </GlassButton>
-        }
+        back={<BackLink href="/invoices">Invoices</BackLink>}
         title={doc ? invoiceLabel(doc.number) : "New invoice"}
         badge={doc ? <InvoiceBadge status={status} /> : undefined}
         description={
@@ -460,7 +456,7 @@ export function InvoiceEditor({
 
       {error && <ErrorNote error={error} className="mt-6" />}
 
-      <div className="mt-8 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
+      <div className="mt-8 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
         {/* ---------- coluna principal ---------- */}
         <div className="grid min-w-0 gap-4">
           {!doc && (
@@ -667,7 +663,7 @@ export function InvoiceEditor({
             status !== "paid" &&
             status !== "void" &&
             missingPaymentInstructions && (
-              <p className="glass-edge rounded-2xl bg-amber-50/85 px-4 py-3 text-[13px] leading-5 text-amber-900">
+              <Notice tone="warning" size="sm" role={null}>
                 Your customer won&rsquo;t see how to pay.{" "}
                 <Link
                   href="/office/settings"
@@ -676,7 +672,7 @@ export function InvoiceEditor({
                   Add payment instructions in Business settings
                 </Link>
                 .
-              </p>
+              </Notice>
             )}
 
           {!detailsEditable && (

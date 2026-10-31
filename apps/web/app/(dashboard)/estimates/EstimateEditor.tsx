@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
-import { PageHeader } from "@/components/DashboardUi";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import { GlassButton, GlassCard, GlassSheet, cx, focusRing } from "@/components/glass";
 import {
@@ -403,16 +403,7 @@ export function EstimateEditor({
     <div data-estimate-editor={ids}>
       <PrintStyles />
       <PageHeader
-        back={
-          <GlassButton
-            href="/estimates"
-            variant="ghost"
-            size="sm"
-            className="-ml-2 max-sm:min-h-11"
-          >
-            <span aria-hidden="true">‹</span> Estimates
-          </GlassButton>
-        }
+        back={<BackLink href="/estimates">Estimates</BackLink>}
         title={title}
         badge={doc ? <EstimateBadge status={status} /> : undefined}
         description={
@@ -468,7 +459,7 @@ export function EstimateEditor({
 
       {error && <ErrorNote error={error} className="mt-6" />}
 
-      <div className="mt-8 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
+      <div className="mt-8 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
         {/* ---------- coluna principal ---------- */}
         <div className="grid min-w-0 gap-4">
           {!doc && (

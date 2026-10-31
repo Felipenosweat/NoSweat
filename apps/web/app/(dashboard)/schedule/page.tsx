@@ -2,6 +2,8 @@ import type { Job, TeamMember } from "@nosweat/schema";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { PageHeader } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import { getClientDetail } from "@/server/clients/service";
 import { getOfficeSettings, listJobs, listTeam } from "@/server/office/service";
@@ -124,15 +126,13 @@ export default async function SchedulePage({ searchParams }: SchedulePageProps) 
   if (data.jobs === null) {
     return (
       <div>
-        <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-ink">
-          Schedule
-        </h1>
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <PageHeader
+          title="Schedule"
+          description="Every job on one calendar. Tap an open time to book it."
+        />
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your schedule. Please refresh the page.
-        </p>
+        </Notice>
       </div>
     );
   }

@@ -36,13 +36,13 @@ export function HeaderSkeleton({ titleWidth = "w-48" }: { titleWidth?: string })
   );
 }
 
-/** Um ladrilho de número (StatTile) em espera. */
+/** Um ladrilho de número (StatTile) em espera: número, rótulo e a linha de apoio. */
 export function TileSkeleton() {
   return (
     <div className="glass flex h-full flex-col rounded-2xl p-4 sm:p-5">
-      <Block className="h-4 w-24 rounded-md" />
-      <Block className="mt-3 h-8 w-16 rounded-lg" />
-      <Block className="mt-3 h-3.5 w-32 max-w-full rounded-md" />
+      <Block className="h-7 w-16 rounded-lg sm:h-8" />
+      <Block className="mt-2 h-4 w-24 rounded-md" />
+      <Block className="mt-2 h-3.5 w-32 max-w-full rounded-md" />
     </div>
   );
 }
@@ -101,7 +101,7 @@ export function TableSkeleton({ rows = 6, columns = 6 }: { rows?: number; column
       </div>
       <ul className="grid gap-2.5 md:hidden">
         {Array.from({ length: Math.min(rows, 4) }, (_, i) => (
-          <li key={i} className="glass-edge grid gap-2 rounded-2xl bg-white/80 p-4">
+          <li key={i} className="glass-inset grid gap-2 rounded-xl p-4">
             <Block className="h-5 w-2/3 rounded-md" />
             <Block className="h-6 w-28 rounded-full" />
             <Block className="h-3.5 w-1/2 rounded-md" />

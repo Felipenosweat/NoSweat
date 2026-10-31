@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { CONTACT_EMAIL } from "@/components/marketing/legal/contact";
 import { focusRing, PageHeader, panelClass, panelText, panelTitle } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { getAccount } from "@/server/admin";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { createSupabaseServerClient } from "@/server/auth/session";
@@ -62,20 +63,14 @@ export default async function AccountPage() {
       <PageHeader title="Account" description="Your name, password and login email." />
 
       {viewer.viewingAs && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
-        >
+        <Notice tone="warning" className="mt-6">
           You’re viewing another account. Account settings are read-only.
-        </p>
+        </Notice>
       )}
       {!authEnabled && (
-        <p
-          role="status"
-          className="glass glass-flat mt-6 rounded-2xl px-4 py-3 text-[15px] text-slate-700"
-        >
+        <Notice tone="info" className="mt-6">
           Login is turned off on this server, so there is nothing to change here.
-        </p>
+        </Notice>
       )}
 
       <div className="mt-8 grid gap-5">

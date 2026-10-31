@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { BackLink } from "@/components/DashboardUi";
 import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
 import { directionsHref, formatCents, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
@@ -207,14 +208,7 @@ export default async function JobPage({ params }: JobPageProps) {
 
   return (
     <div>
-      <GlassButton
-        href={scheduleHref({ view: null, date: day, team: null })}
-        variant="ghost"
-        size="sm"
-        className="-ml-2 max-sm:min-h-11"
-      >
-        <span aria-hidden="true">‹</span> Schedule
-      </GlassButton>
+      <BackLink href={scheduleHref({ view: null, date: day, team: null })}>Schedule</BackLink>
 
       <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-8">
         <GlassCard as="section" aria-labelledby="job-title">

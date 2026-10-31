@@ -4,7 +4,9 @@
  * Como usar
  * - Importe daqui: `import { GlassButton, GlassMenu, ConfirmDialog } from "@/components/glass";`
  *   Os que têm estado ("use client") são GlassSegmented, GlassMenu, GlassSheet e ConfirmDialog; o
- *   resto (botões, cartão, selo, barra, busca, estado vazio, fundo) serve em server components.
+ *   resto (botões, cartão, selo, barra, busca, estado vazio, aviso, fundo) serve em server components.
+ * - Avisos (erro ao carregar, "salvo", alerta): sempre <Notice tone="error|success|warning|info" />,
+ *   nunca uma faixa colorida montada à mão. `size="sm"` dentro de cartões, folhas e formulários.
  * - O vidro só "aparece" com algo atrás: no layout, ponha <GlassBackdrop /> como primeiro filho de
  *   um contêiner `relative isolate` (fundo com manchas suaves da marca). Sem ele, o vidro fica
  *   praticamente branco, o que também está certo.
@@ -16,7 +18,8 @@
  * - Texto em cima do vidro: `text-(--glass-fg)` / `text-(--glass-fg-muted)` (contraste AA). Dentro
  *   de um contêiner com a classe `glass-on-dark` tudo vira vidro escuro com texto claro.
  * - Classes soltas (app/globals.css): glass, glass-strong, glass-bar, glass-edge, glass-tint,
- *   glass-pill, glass-raised, glass-flat, glass-interactive, glass-on-dark. Não junte com shadow-*.
+ *   glass-pill, glass-inset, glass-raised, glass-flat, glass-interactive, glass-on-dark. Não junte
+ *   com shadow-*. `glass-inset` é o painel embutido dentro de um cartão (`glass-inset rounded-xl p-4`).
  * - Acessibilidade já resolvida: foco visível, Esc, foco preso na folha, teclado no menu e no
  *   segmentado; "reduzir transparência", "aumentar contraste" e navegador sem backdrop-filter
  *   viram fundo sólido; "reduzir movimento" desliga as animações.
@@ -51,6 +54,8 @@ export type {
 export { GlassSearchField } from "./GlassSearchField";
 export type { GlassSearchFieldProps } from "./GlassSearchField";
 export { EmptyState } from "./EmptyState";
+export { Notice } from "./Notice";
+export type { NoticeProps, NoticeTone } from "./Notice";
 export { GlassBackdrop } from "./GlassBackdrop";
 export { MoreIcon, SearchIcon, CloseIcon, SpinnerIcon } from "./icons";
 export { cx, focusRing, glassButtonClass } from "./styles";
