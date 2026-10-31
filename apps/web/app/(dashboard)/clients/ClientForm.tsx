@@ -228,7 +228,7 @@ export function ClientForm({
 
         <div>
           <label htmlFor={`${ids}-address`} className={labelClass}>
-            Service address <span className="font-normal text-slate-500">(optional)</span>
+            Service address <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <input
             id={`${ids}-address`}
@@ -262,7 +262,7 @@ export function ClientForm({
             >
               <path d="m9 6 6 6-6 6" />
             </svg>
-            More details <span className="font-normal text-slate-500">(optional)</span>
+            More details <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </summary>
           <div className="mt-3 grid gap-5">
             <fieldset>

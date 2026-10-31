@@ -2,7 +2,7 @@
 
 import { PlanMonthResponse, type PlanMonthRequest, type SocialPost } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { primaryButton, textButton } from "@/components/DashboardUi";
+import { fieldClass, labelClass, primaryButton, textButton } from "@/components/DashboardUi";
 import { GlassSegmented } from "@/components/glass";
 import { SparklesIcon } from "@/components/marketing/icons";
 import {
@@ -110,12 +110,10 @@ export function PlanMonthButton({
           <SparklesIcon className="size-4" aria-hidden="true" />
           Fill my month with AI
         </button>
-        {remainingText && <p className="text-[13px] text-slate-500">{remainingText}</p>}
+        {remainingText && <p className="text-[13px] text-(--glass-fg-muted)">{remainingText}</p>}
       </div>
     );
   }
-
-  const fieldClass = `mt-1.5 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-base text-ink focus:border-brand sm:text-[15px] focus:ring-4 focus:ring-brand/15 focus:outline-none`;
 
   return (
     <form
@@ -125,17 +123,17 @@ export function PlanMonthButton({
         if (event.key === "Escape" && !pending) setOpen(false);
       }}
       aria-label="Fill my month with AI"
-      className="glass-edge w-full rounded-2xl bg-white/50 p-4 sm:p-5"
+      className="glass-inset w-full rounded-xl p-4"
     >
       <div className="grid gap-4 sm:grid-cols-[minmax(0,14rem)_1fr]">
-        <label className="block text-[13px] font-medium text-ink">
+        <label className={labelClass}>
           Month
           <select
             ref={firstFieldRef}
             value={month}
             onChange={(event) => setMonth(event.target.value)}
             disabled={pending}
-            className={fieldClass}
+            className={`${fieldClass} mt-1.5 h-11`}
           >
             {months.map((value) => (
               <option key={value} value={value}>
@@ -145,7 +143,7 @@ export function PlanMonthButton({
           </select>
         </label>
         <fieldset disabled={pending}>
-          <legend className="text-[13px] font-medium text-ink">Posts per week</legend>
+          <legend className={labelClass}>Posts per week</legend>
           <GlassSegmented
             aria-label="Posts per week"
             options={PER_WEEK.map((value) => ({ value: String(value), label: String(value) }))}
@@ -157,7 +155,7 @@ export function PlanMonthButton({
         </fieldset>
       </div>
 
-      <p className="mt-4 text-[13px] leading-5 text-slate-500">
+      <p className="mt-4 text-[13px] leading-5 text-(--glass-fg-muted)">
         We write drafts from your website: your services, area and photos. Nothing goes out until
         you approve it.
         {remainingText ? ` ${remainingText}.` : ""}

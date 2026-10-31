@@ -88,7 +88,9 @@ export function ProviderButtons({
       </div>
       <div className="mt-6 flex items-center gap-4" role="separator" aria-label="or">
         <span className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">or</span>
+        <span className="text-xs font-semibold tracking-[0.14em] text-(--glass-fg-muted) uppercase">
+          or
+        </span>
         <span className="h-px flex-1 bg-slate-200" />
       </div>
     </div>

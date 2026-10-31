@@ -3,14 +3,27 @@
 import { InvoiceResponse, type InvoiceStatus } from "@nosweat/schema";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ConfirmDialog, GlassMenu, SpinnerIcon, type GlassMenuItem } from "@/components/glass";
+import {
+  ConfirmDialog,
+  GlassButton,
+  GlassMenu,
+  GlassSheet,
+  SpinnerIcon,
+  type GlassMenuItem,
+} from "@/components/glass";
 import { invoiceLabel } from "@/lib/office";
-import { invoiceUrl, officeApi, officeApiNoContent, toOfficeError } from "../office/_ui/api";
+import {
+  invoiceUrl,
+  officeApi,
+  officeApiNoContent,
+  toOfficeError,
+  type OfficeApiError,
+} from "../office/_ui/api";
 import { CopyIcon, OpenIcon, SlashIcon, TrashIcon } from "../office/_ui/ui";
 
-// Menu "⋯" de uma fatura (linha da lista e topo da fatura): abrir, copiar o link, anular e apagar
-// (as duas com confirmação, e só sem pagamento registrado). No modo "ver como" do admin
-// (`readOnly`) só ficam os atalhos que não mudam nada.
+// Menu "⋯" de uma fatura (linha da lista e topo da fatura): abrir, copiar o link, duplicar,
+// anular e apagar (as duas com confirmação, e só sem pagamento registrado). No modo "ver como" do
+// admin (`readOnly`) só ficam os atalhos que não mudam nada.
 
 export type InvoiceMenuInvoice = {
   id: string;
@@ -23,6 +36,25 @@ export type InvoiceMenuInvoice = {
 
 type Confirm = "void" | "delete" | null;
 
+/** Dois papéis, um sobre o outro (o mesmo do menu do orçamento). */
+function DuplicateIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M9 3.5h7.5L20 7v10.5h-2.5" />
+      <path d="M4 7h8.5l3.5 3.5v10H4z" />
+    </svg>
+  );
+}
+
 export function InvoiceMenu({
   invoice,
   readOnly = false,
@@ -30,6 +62,7 @@ export function InvoiceMenu({
   extraItems = [],
   triggerVariant = "ghost",
   onVoided,
+  blockedReason,
 }: {
   invoice: InvoiceMenuInvoice;
   readOnly?: boolean;
@@ -39,6 +72,8 @@ export function InvoiceMenu({
   triggerVariant?: "ghost" | "secondary";
   /** O editor atualiza a tela na hora (sem esperar o router.refresh). */
   onVoided?: () => void;
+  /** Com mudanças sem salvar, duplicar fica desligado (a cópia sairia sem as mudanças). */
+  blockedReason?: string | null;
 }) {
   const router = useRouter();
   const [refreshing, startRefresh] = useTransition();
@@ -47,9 +82,12 @@ export function InvoiceMenu({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState("");
+  const [duplicating, setDuplicating] = useState(false);
+  const [problem, setProblem] = useState<OfficeApiError | null>(null);
 
   const label = invoiceLabel(invoice.number);
   const noPayments = invoice.paymentsCount === 0;
+  const busy = refreshing || duplicating;
 
   async function run() {
     setPending(true);
@@ -73,6 +111,22 @@ export function InvoiceMenu({
       setError(toOfficeError(err).message);
     } finally {
       setPending(false);
+    }
+  }
+
+  async function duplicate() {
+    setDuplicating(true);
+    try {
+      const { invoice: copy } = await officeApi(
+        invoiceUrl(invoice.id, "/duplicate"),
+        InvoiceResponse,
+        { method: "POST" },
+      );
+      startRefresh(() => router.push(`/invoices/${encodeURIComponent(copy.id)}`));
+    } catch (err) {
+      setProblem(toOfficeError(err));
+    } finally {
+      setDuplicating(false);
     }
   }
 
@@ -116,6 +170,15 @@ export function InvoiceMenu({
       },
     );
   }
+  if (!readOnly) {
+    items.push({
+      label: "Duplicate",
+      icon: <DuplicateIcon />,
+      onSelect: () => void duplicate(),
+      disabled: busy || Boolean(blockedReason),
+      key: "duplicate",
+    });
+  }
   if (!readOnly && noPayments) {
     const canVoid = invoice.status !== "void" && invoice.status !== "draft";
     items.push({ type: "separator", key: "danger-sep" });
@@ -143,11 +206,12 @@ export function InvoiceMenu({
         items={items}
         label={`More actions for ${label}`}
         triggerVariant={triggerVariant}
-        triggerIcon={refreshing ? <SpinnerIcon /> : undefined}
+        triggerIcon={busy ? <SpinnerIcon /> : undefined}
       />
       <span role="status" className="text-[13px] font-medium text-emerald-700 empty:hidden">
         {copied}
       </span>
+      {blockedReason && !readOnly && <span className="sr-only">{blockedReason}</span>}
 
       {mounted && (
         <ConfirmDialog
@@ -166,6 +230,21 @@ export function InvoiceMenu({
               ? "This draft is erased. This can’t be undone."
               : `${invoice.clientName}’s link stops working and the invoice is erased. To keep a record, void it instead. This can’t be undone.`}
         </ConfirmDialog>
+      )}
+
+      {problem && (
+        <GlassSheet
+          open
+          onClose={() => setProblem(null)}
+          title={`Couldn't duplicate ${label}`}
+          description={problem.message}
+          size="sm"
+          footer={
+            <GlassButton variant="primary" onClick={() => setProblem(null)}>
+              OK
+            </GlassButton>
+          }
+        />
       )}
     </>
   );

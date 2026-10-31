@@ -91,7 +91,7 @@ export function DomainSection({
           ) : (
             <>
               Use your own domain{" "}
-              <span className="font-normal text-slate-500">(like yourbusiness.com)</span>
+              <span className="font-normal text-(--glass-fg-muted)">(like yourbusiness.com)</span>
             </>
           )}
         </h2>
@@ -140,7 +140,7 @@ export function VersionsSection({ children }: { children: ReactNode }) {
           </IconTile>
           <span className="min-w-0 flex-1">Restore an earlier version</span>
           <ChevronRightIcon
-            className={`size-4 shrink-0 text-slate-500 transition-transform duration-150 motion-reduce:transition-none ${
+            className={`size-4 shrink-0 text-(--glass-fg-muted) transition-transform duration-150 motion-reduce:transition-none ${
               open ? "rotate-90" : ""
             }`}
           />

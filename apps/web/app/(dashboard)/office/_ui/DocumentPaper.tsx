@@ -48,7 +48,7 @@ const STAMP_TONES = {
 function PartyBlock({ heading, party }: { heading: string; party: DocumentParty }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold tracking-[0.08em] text-slate-500 uppercase">
+      <p className="text-[11px] font-semibold tracking-[0.08em] text-(--glass-fg-muted) uppercase">
         {heading}
       </p>
       <p className="mt-1.5 text-[15px] font-semibold break-words text-ink">{party.name}</p>
@@ -115,7 +115,7 @@ export function DocumentPaper({
             )}
           </div>
           <div className="shrink-0 sm:text-right">
-            <p className="text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase">
+            <p className="text-[11px] font-semibold tracking-[0.12em] text-(--glass-fg-muted) uppercase">
               {kindLabel}
             </p>
             <p className="font-display text-2xl leading-8 font-semibold tabular-nums">#{number}</p>
@@ -123,7 +123,7 @@ export function DocumentPaper({
               <dl className="mt-2 grid grid-cols-[auto_auto] justify-start gap-x-4 gap-y-0.5 text-sm sm:justify-end">
                 {facts.map((fact) => (
                   <div key={fact.label} className="contents">
-                    <dt className="text-slate-500">{fact.label}</dt>
+                    <dt className="text-(--glass-fg-muted)">{fact.label}</dt>
                     <dd className="font-medium text-ink tabular-nums sm:text-right">
                       {fact.value}
                     </dd>
@@ -138,7 +138,7 @@ export function DocumentPaper({
           <PartyBlock heading={kind === "estimate" ? "Prepared for" : "Bill to"} party={client} />
           {title && (
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold tracking-[0.08em] text-slate-500 uppercase">
+              <p className="text-[11px] font-semibold tracking-[0.08em] text-(--glass-fg-muted) uppercase">
                 {kind === "estimate" ? "Project" : "For"}
               </p>
               <p className="mt-1.5 text-[15px] font-semibold break-words text-ink">{title}</p>
@@ -156,7 +156,7 @@ export function DocumentPaper({
         <table className="mt-8 w-full border-collapse text-left text-[15px]">
           <caption className="sr-only">Items</caption>
           <thead>
-            <tr className="border-b border-slate-300 text-[11px] font-semibold tracking-[0.08em] text-slate-500 uppercase">
+            <tr className="border-b border-slate-300 text-[11px] font-semibold tracking-[0.08em] text-(--glass-fg-muted) uppercase">
               <th scope="col" className="pb-2 font-semibold">
                 Item
               </th>
@@ -174,7 +174,7 @@ export function DocumentPaper({
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-6 text-center text-slate-500">
+                <td colSpan={4} className="py-6 text-center text-(--glass-fg-muted)">
                   No items yet
                 </td>
               </tr>
@@ -188,11 +188,13 @@ export function DocumentPaper({
                         {item.description}
                       </span>
                     )}
-                    <span className="mt-0.5 block text-sm text-slate-500 tabular-nums sm:hidden">
+                    <span className="mt-0.5 block text-sm text-(--glass-fg-muted) tabular-nums sm:hidden">
                       {formatQuantity(item.quantity)} × {formatCents(item.unitPriceCents)}
                     </span>
                     {showTaxNote && !item.taxable && (
-                      <span className="mt-0.5 block text-xs text-slate-500">Not taxed</span>
+                      <span className="mt-0.5 block text-xs text-(--glass-fg-muted)">
+                        Not taxed
+                      </span>
                     )}
                   </td>
                   <td className="hidden py-3 pr-3 text-right text-slate-600 tabular-nums sm:table-cell">
@@ -254,7 +256,7 @@ export function DocumentPaper({
           .filter((note) => note.body.trim())
           .map((note) => (
             <section key={note.title} className="mt-8 border-t border-slate-200 pt-5">
-              <h2 className="text-[11px] font-semibold tracking-[0.08em] text-slate-500 uppercase">
+              <h2 className="text-[11px] font-semibold tracking-[0.08em] text-(--glass-fg-muted) uppercase">
                 {note.title}
               </h2>
               <p className="mt-2 max-w-[70ch] text-sm leading-[1.65] break-words whitespace-pre-line text-slate-700">

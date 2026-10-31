@@ -17,7 +17,7 @@ import {
   primaryButton,
   secondaryButton,
 } from "@/components/DashboardUi";
-import { GlassBadge, GlassSegmented } from "@/components/glass";
+import { GlassBadge, GlassSegmented, Notice } from "@/components/glass";
 import { CheckIcon } from "@/components/marketing/icons";
 
 export type PlanCard = {
@@ -103,7 +103,7 @@ const inlineLink = `rounded-sm font-semibold text-brand underline-offset-4 hover
  */
 export function ContactChannels({ contact, text }: { contact: SalesContact; text: string }) {
   return (
-    <p className="mt-3 text-[13px] text-slate-500">
+    <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
       {contact.whatsapp && (
         <>
           WhatsApp{" "}
@@ -189,10 +189,7 @@ export function BillingPlans({
   return (
     <div className="mt-8">
       {ended && !current.active && (
-        <section
-          role="status"
-          className="glass-edge mb-8 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
-        >
+        <Notice tone="warning" className="mb-8">
           <p>
             Your {ended.name} plan ended on {dateFormat.format(new Date(ended.endedOn))}, so your
             website is offline. Renew to bring it back.
@@ -203,7 +200,7 @@ export function BillingPlans({
           >
             {contact.whatsapp ? "Renew on WhatsApp" : "Renew by email"}
           </ContactLink>
-        </section>
+        </Notice>
       )}
 
       {manualActive && (
@@ -223,7 +220,7 @@ export function BillingPlans({
             </ContactLink>
           </div>
           <ContactChannels contact={contact} text={renewText} />
-          <p className="mt-4 text-[13px] text-slate-500">
+          <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
             To switch plans, pick one below and send us the message. We&rsquo;ll set it up for you.
           </p>
         </section>
@@ -249,7 +246,7 @@ export function BillingPlans({
           >
             {pending === "/api/billing/portal" ? "Opening…" : "Manage billing"}
           </button>
-          <p className="mt-4 text-[13px] text-slate-500">
+          <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
             To change plans, pick a new one below. It starts today, with no setup fee, and the
             unused time on your current plan is credited to your account.
           </p>
@@ -286,7 +283,7 @@ export function BillingPlans({
               </div>
               <p className="mt-3 font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
                 {interval === "annual" ? plan.annual : plan.monthly}
-                <span className="text-base font-medium text-slate-500">
+                <span className="text-base font-medium text-(--glass-fg-muted)">
                   {interval === "annual" ? "/yr" : "/mo"}
                 </span>
               </p>
@@ -366,7 +363,7 @@ export function BillingPlans({
           {error}
         </p>
       )}
-      <p className="mt-6 text-[13px] text-slate-500">
+      <p className="mt-6 text-[13px] text-(--glass-fg-muted)">
         {checkout && !manualActive
           ? "Payments are handled by Stripe. You can change plans or cancel anytime from this page."
           : `Pick a plan and we'll finish with you ${contact.whatsapp ? "on WhatsApp" : "by email"}. As soon as your payment is confirmed, your plan turns on and you can publish in one click.`}

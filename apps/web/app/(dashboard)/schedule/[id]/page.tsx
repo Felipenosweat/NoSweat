@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { BackLink } from "@/components/DashboardUi";
 import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
 import { directionsHref, formatCents, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
@@ -157,7 +158,7 @@ function Paperwork({ job }: { job: Job }) {
     <div>
       <h2 className="text-[15px] font-semibold text-ink">Estimate &amp; invoice</h2>
       {links.length === 0 ? (
-        <p className="mt-1.5 text-[15px] text-slate-500">
+        <p className="mt-1.5 text-[15px] text-(--glass-fg-muted)">
           {job.status === "done"
             ? "No invoice yet. Create one from the button above."
             : "None linked yet. When the job is done, you can bill it in one tap."}
@@ -207,14 +208,7 @@ export default async function JobPage({ params }: JobPageProps) {
 
   return (
     <div>
-      <GlassButton
-        href={scheduleHref({ view: null, date: day, team: null })}
-        variant="ghost"
-        size="sm"
-        className="-ml-2 max-sm:min-h-11"
-      >
-        <span aria-hidden="true">‹</span> Schedule
-      </GlassButton>
+      <BackLink href={scheduleHref({ view: null, date: day, team: null })}>Schedule</BackLink>
 
       <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-8">
         <GlassCard as="section" aria-labelledby="job-title">
@@ -227,24 +221,24 @@ export default async function JobPage({ params }: JobPageProps) {
           <GlassCard as="section" aria-label="Job details">
             <dl className="grid gap-3 text-[15px] leading-6">
               <div>
-                <dt className="text-[13px] font-medium text-slate-500">Address</dt>
+                <dt className="text-[13px] font-medium text-(--glass-fg-muted)">Address</dt>
                 <dd className="break-words text-ink">
-                  {address ?? <span className="text-slate-500">Not added</span>}
+                  {address ?? <span className="text-(--glass-fg-muted)">Not added</span>}
                 </dd>
               </div>
               <div>
-                <dt className="text-[13px] font-medium text-slate-500">Value</dt>
+                <dt className="text-[13px] font-medium text-(--glass-fg-muted)">Value</dt>
                 <dd className="font-semibold text-ink tabular-nums">
                   {job.valueCents !== null ? (
                     formatCents(job.valueCents)
                   ) : (
-                    <span className="font-normal text-slate-500">Not set</span>
+                    <span className="font-normal text-(--glass-fg-muted)">Not set</span>
                   )}
                 </dd>
               </div>
               {job.description.trim() && (
                 <div>
-                  <dt className="text-[13px] font-medium text-slate-500">Details</dt>
+                  <dt className="text-[13px] font-medium text-(--glass-fg-muted)">Details</dt>
                   <dd className="break-words whitespace-pre-line text-ink">{job.description}</dd>
                 </div>
               )}

@@ -2,7 +2,7 @@
 
 import type { DocumentTotals } from "@nosweat/schema";
 import { useId, useRef, useState, type ReactNode } from "react";
-import { GlassButton, GlassIconButton } from "@/components/glass";
+import { GlassButton, GlassIconButton, Notice } from "@/components/glass";
 import {
   formatCents,
   formatQuantity,
@@ -70,7 +70,7 @@ function LineCard({
       : {};
 
   return (
-    <li className="rounded-2xl border border-(--glass-rim) bg-white/55 p-3 sm:p-4">
+    <li className="glass-inset rounded-xl p-4">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <label htmlFor={`${ids}-name`} className="sr-only">
@@ -139,7 +139,10 @@ function LineCard({
         }
       >
         <div>
-          <label htmlFor={`${ids}-qty`} className="block text-[12px] font-medium text-slate-500">
+          <label
+            htmlFor={`${ids}-qty`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
             Qty
           </label>
           <input
@@ -153,13 +156,16 @@ function LineCard({
           />
         </div>
         <div>
-          <label htmlFor={`${ids}-price`} className="block text-[12px] font-medium text-slate-500">
+          <label
+            htmlFor={`${ids}-price`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
             Price
           </label>
           <div className="relative mt-1">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
             >
               $
             </span>
@@ -245,7 +251,7 @@ export function LineItemsEditor({
   return (
     <div>
       {lines.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-slate-500">
+        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-(--glass-fg-muted)">
           Add a service from your price book, or tap Add item.
         </p>
       ) : (
@@ -266,13 +272,9 @@ export function LineItemsEditor({
       )}
       {itemsError && <p className={fieldErrorClass}>{itemsError}</p>}
       {priceWarning && (
-        <p
-          id={warnId}
-          role="alert"
-          className="mt-2 rounded-xl bg-amber-50/90 px-3 py-2 text-[13px] leading-5 font-semibold text-amber-900"
-        >
+        <Notice id={warnId} tone="warning" size="sm" role="alert" className="mt-2 font-semibold">
           {priceWarning}
-        </p>
+        </Notice>
       )}
       <div className="mt-3 flex flex-wrap gap-2">
         <PriceBookPicker
@@ -305,7 +307,7 @@ export function LineItemsView({
   }[];
 }) {
   if (lines.length === 0) {
-    return <p className="py-4 text-[15px] text-slate-500">No items.</p>;
+    return <p className="py-4 text-[15px] text-(--glass-fg-muted)">No items.</p>;
   }
   return (
     <ul aria-label="Items" className="divide-y divide-(--glass-rim)">
@@ -318,7 +320,7 @@ export function LineItemsView({
                 {line.description}
               </p>
             )}
-            <p className="text-[13px] text-slate-500 tabular-nums">
+            <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
               {formatQuantity(line.quantity)} × {formatCents(line.unitPriceCents)}
               {!line.taxable && " · not taxed"}
             </p>
@@ -380,7 +382,7 @@ export function TotalsPanel({
             <div className="relative mt-1.5">
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
               >
                 $
               </span>
@@ -420,7 +422,7 @@ export function TotalsPanel({
               />
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
               >
                 %
               </span>

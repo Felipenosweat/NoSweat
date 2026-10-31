@@ -161,8 +161,18 @@ if (process.env.SEED === "1") {
   }
   await api.close();
 }
+// Nos prints das páginas o tour de boas-vindas não abre por cima (ele tem prints próprios no fim).
+const skipTour = () => {
+  const original = Storage.prototype.getItem;
+  Storage.prototype.getItem = function (key) {
+    return String(key).startsWith("ns_tour_done:")
+      ? new Date().toISOString()
+      : original.call(this, key);
+  };
+};
 for (const vp of VIEWPORTS) {
   const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
+  await context.addInitScript(skipTour);
   for (const path of PAGES) {
     const page = await context.newPage();
     const issues = [];

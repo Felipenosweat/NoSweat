@@ -18,10 +18,14 @@ import { z } from "zod";
 //                                             GET/PATCH/DELETE /api/office/estimates/[id]
 //   POST       /api/office/estimates/[id]/send      (rascunho → enviado; devolve o link)
 //   POST       /api/office/estimates/[id]/convert   (aprovado → job e/ou fatura)
+//   POST       /api/office/estimates/[id]/duplicate (cópia em rascunho → EstimateResponse)
+//   POST       /api/office/estimates/[id]/reopen    (resposta marcada pelo dono → enviado)
 //   GET/POST   /api/office/invoices?status=&clientId=
 //                                             GET/PATCH/DELETE /api/office/invoices/[id]
 //   POST       /api/office/invoices/[id]/send
+//   POST       /api/office/invoices/[id]/duplicate  (cópia em rascunho → InvoiceResponse)
 //   POST       /api/office/invoices/[id]/payments   DELETE /api/office/invoices/[id]/payments/[paymentId]
+//   POST       /api/office/invoices/[id]/mark-paid  (saldo lançado como "Other · Marked paid")
 //   GET        /api/office/summary                  (números do painel)
 //   Públicas:  GET /api/public/estimates/[token]   POST /api/public/estimates/[token]/respond
 //              GET /api/public/invoices/[token]
@@ -358,9 +362,15 @@ export const Estimate = z.object({
   publicToken: z.string(),
   sentAt: z.string().nullable(),
   respondedAt: z.string().nullable(),
-  /** Nome que o cliente digitou ao aprovar (assinatura simples). */
+  /**
+   * Nome que o cliente digitou ao aprovar (assinatura simples). `null` = aprovado marcado pelo
+   * dono (ou ainda sem resposta).
+   */
   approvedByName: z.string().nullable(),
-  /** Motivo que o cliente escreveu ao recusar (só o dono vê). Campo novo: pode faltar. */
+  /**
+   * Motivo que o cliente escreveu ao recusar (só o dono vê). Campo novo: pode faltar. "" = recusou
+   * pelo link sem motivo; `null` = marcado pelo dono (ou sem resposta). Mostre só se tiver texto.
+   */
   declineReason: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -402,7 +412,7 @@ export type EstimateResponse = z.infer<typeof EstimateResponse>;
 
 /**
  * Guardado: draft | sent | paid | void. Na leitura, `sent` com saldo pode virar `partial`
- * (pagou parte) ou `overdue` (passou de `dueOn`).
+ * (pagou parte) ou `overdue` (passou de `dueOn`); `sent` sem saldo (total US$ 0) é `paid`.
  */
 export const InvoiceStatus = z.enum(["draft", "sent", "partial", "overdue", "paid", "void"]);
 export type InvoiceStatus = z.infer<typeof InvoiceStatus>;

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { ConfirmDialog, GlassButton, GlassIconButton, GlassSheet } from "@/components/glass";
 import {
+  MARKED_PAID_REFERENCE,
   PAYMENT_METHODS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_REFERENCE_HINTS,
@@ -36,8 +37,10 @@ import {
 } from "../office/_ui/ui";
 
 // Pagamentos de uma fatura: a folha "Record payment" (valor = saldo, forma de pagamento em
-// cápsulas, referência e data) e a lista dos pagamentos com "apagar" (com confirmação). Depois de
-// cada mudança a página relê a fatura (router.refresh) e o editor pega a versão nova.
+// cápsulas, referência e data; e "Mark as paid", que lança o saldo que falta como "Other · Marked
+// paid" para fechar a fatura que o cliente pagou a menos) e a lista dos pagamentos com "apagar"
+// (com confirmação; apagar o "Marked paid" desfaz). Depois de cada mudança a página relê a fatura
+// (router.refresh) e o editor pega a versão nova.
 
 export function RecordPaymentSheet({
   open,
@@ -61,8 +64,27 @@ export function RecordPaymentSheet({
   const [reference, setReference] = useState("");
   const [receivedOn, setReceivedOn] = useState(today);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+  // Qual botão está gravando: "Record payment" ou "Mark as paid" (um de cada vez).
+  const [saving, setSaving] = useState<"record" | "mark" | null>(null);
   const [error, setError] = useState<OfficeApiError | null>(null);
+  const pending = saving !== null;
+
+  /** Lança o saldo que falta (o do servidor) como "Other · Marked paid" e fecha a fatura. */
+  async function markPaid() {
+    if (pending) return;
+    setError(null);
+    setAmountError(null);
+    setSaving("mark");
+    try {
+      await officeApi(invoiceUrl(invoiceId, "/mark-paid"), InvoiceResponse, { method: "POST" });
+      onClose();
+      router.refresh();
+    } catch (err) {
+      setError(toOfficeError(err));
+    } finally {
+      setSaving(null);
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -90,7 +112,7 @@ export function RecordPaymentSheet({
       return;
     }
     setAmountError(null);
-    setPending(true);
+    setSaving("record");
     try {
       await officeApi(invoiceUrl(invoiceId, "/payments"), InvoiceResponse, {
         method: "POST",
@@ -101,7 +123,7 @@ export function RecordPaymentSheet({
     } catch (err) {
       setError(toOfficeError(err));
     } finally {
-      setPending(false);
+      setSaving(null);
     }
   }
 
@@ -203,11 +225,41 @@ export function RecordPaymentSheet({
           <GlassButton variant="secondary" onClick={onClose} disabled={pending}>
             Cancel
           </GlassButton>
-          <GlassButton type="submit" variant="primary" loading={pending}>
-            {pending ? "Saving…" : "Record payment"}
+          <GlassButton
+            type="submit"
+            variant="primary"
+            loading={saving === "record"}
+            disabled={saving === "mark"}
+          >
+            {saving === "record" ? "Saving…" : "Record payment"}
           </GlassButton>
         </div>
       </form>
+
+      {balanceCents > 0 && (
+        <section
+          aria-labelledby={`${ids}-mark-title`}
+          className="mt-6 border-t border-(--glass-rim) pt-5"
+        >
+          <h3 id={`${ids}-mark-title`} className="text-[15px] font-semibold text-ink">
+            Closing it out for less?
+          </h3>
+          <p className={hintClass}>
+            Mark as paid records the {formatCents(balanceCents)} left as &ldquo;
+            {PAYMENT_METHOD_LABELS.other} · {MARKED_PAID_REFERENCE}&rdquo; and closes the invoice.
+            To undo, delete that payment.
+          </p>
+          <GlassButton
+            variant="secondary"
+            className="mt-3"
+            onClick={() => void markPaid()}
+            loading={saving === "mark"}
+            disabled={saving === "record"}
+          >
+            {saving === "mark" ? "Saving…" : "Mark as paid"}
+          </GlassButton>
+        </section>
+      )}
     </GlassSheet>
   );
 }

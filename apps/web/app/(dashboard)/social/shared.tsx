@@ -3,7 +3,7 @@
 import { ApiError, type SocialPost, type SocialPostStatus } from "@nosweat/schema";
 import Link from "next/link";
 import type { z } from "zod";
-import { GlassBadge, type GlassBadgeTone } from "@/components/glass";
+import { GlassBadge, Notice, type GlassBadgeTone } from "@/components/glass";
 
 // Peças comuns da tela /social: chamada à API validada, fuso da empresa e selos de status.
 
@@ -68,10 +68,7 @@ export function ErrorNote({
   className?: string;
 }) {
   return (
-    <p
-      role="alert"
-      className={`glass-edge rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700 ${className}`}
-    >
+    <Notice tone="error" size="sm" className={className}>
       {error.message}
       {error.code === "payment_required" && (
         <>
@@ -89,7 +86,7 @@ export function ErrorNote({
           </Link>
         </>
       )}
-    </p>
+    </Notice>
   );
 }
 

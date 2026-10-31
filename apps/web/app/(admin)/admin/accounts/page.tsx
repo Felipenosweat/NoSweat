@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { GlassSearchField, GlassSegmentedLinks, GlassToolbar } from "@/components/glass";
+import { GlassSearchField, GlassSegmentedLinks, GlassToolbar, Notice } from "@/components/glass";
 import { accountName, canManageAccounts, requireAdmin } from "@/server/admin";
 import {
   ACCOUNT_SORTS,
@@ -15,7 +15,7 @@ import {
 } from "@/server/admin/accounts";
 import { loadAccountsList } from "@/server/admin/data";
 import { AccountsTable, type AdminAccountRow } from "../AccountsTable";
-import { AdminPageHeader, Notice, linkClass } from "../AdminUi";
+import { AdminPageHeader, linkClass } from "../AdminUi";
 import { CreateTestAccount } from "../CreateTestAccount";
 import { firstParam, formatDate, type Param } from "../admin-data";
 

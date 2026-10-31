@@ -10,6 +10,7 @@ import {
   panelTitle,
   textButton,
 } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import {
   getBillingStatus,
@@ -132,10 +133,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
       />
 
       {status === "success" && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-900"
-        >
+        <Notice tone="success" className="mt-6">
           {billing.active
             ? "Payment received. Your plan is active."
             : "Payment received. It can take a few seconds to show here."}
@@ -147,32 +145,23 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
               </Link>
             </>
           )}
-        </p>
+        </Notice>
       )}
       {status === "cancelled" && (
-        <p
-          role="status"
-          className="glass glass-flat mt-6 rounded-2xl px-4 py-3 text-[15px] text-slate-700"
-        >
+        <Notice tone="info" className="mt-6">
           No payment was made. You can pick a plan whenever you&rsquo;re ready.
-        </p>
+        </Notice>
       )}
 
       {pendingSite && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-sky-50/85 px-4 py-3 text-[15px] text-sky-950"
-        >
+        <Notice tone="info" className="mt-6">
           Pick a plan to put{" "}
           <strong className="font-semibold">{pendingSite.spec.business.name}</strong> live. Your
           draft is saved; building and previewing stay free.
-        </p>
+        </Notice>
       )}
       {planLimit !== null && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-950"
-        >
+        <Notice tone="warning" className="mt-6">
           Your plan allows {planLimit} live {planLimit === 1 ? "website" : "websites"}.{" "}
           {bannerSite ? (
             <>
@@ -187,7 +176,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
             live websites
           </Link>{" "}
           and choose &ldquo;Take website offline&rdquo;.
-        </p>
+        </Notice>
       )}
 
       <CreditsPanel

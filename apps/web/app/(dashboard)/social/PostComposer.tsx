@@ -17,8 +17,14 @@ import {
 } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type SyntheticEvent } from "react";
 import { z } from "zod";
-import { focusRing, primaryButton, secondaryButton, textButton } from "@/components/DashboardUi";
-import { glassButtonClass } from "@/components/glass";
+import {
+  fieldClass,
+  focusRing,
+  primaryButton,
+  secondaryButton,
+  textButton,
+} from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 import { prepareSocialImage, ratioOf, type SocialRatio } from "@/lib/social-image";
 import { ManualPostButton } from "./ManualPostButton";
 import {
@@ -54,9 +60,6 @@ type Busy = "save" | "approve" | "publish" | "retry" | "delete" | "upload" | Cap
 const dangerTextButton = textButton
   .replace("text-slate-600", "text-red-700")
   .replace("hover:text-ink", "hover:text-red-800");
-
-const fieldClass =
-  "w-full rounded-xl border border-slate-300 bg-white px-3 text-base text-ink placeholder:text-slate-500 sm:text-[15px] focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:bg-slate-50 disabled:text-slate-500";
 
 function sameMedia(a: SocialMedia[], b: SocialMedia[]): boolean {
   return a.length === b.length && a.every((item, i) => item.path === b[i]?.path);
@@ -421,11 +424,11 @@ export function PostComposer({
             {/* ---------- formulário ---------- */}
             <div className="min-w-0 space-y-6">
               {current?.lastError && ["failed", "paused", "missed"].includes(current.status) && (
-                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <Notice tone="warning" size="sm" role={null}>
                   {current.status === "missed"
                     ? "This post missed its time. Pick a new date and approve it again."
                     : current.lastError}
-                </p>
+                </Notice>
               )}
 
               <section aria-labelledby={`${ids}-photos`}>
@@ -433,7 +436,7 @@ export function PostComposer({
                   <h3 id={`${ids}-photos`} className="text-[13px] font-medium text-ink">
                     Photos
                   </h3>
-                  <span className="text-[13px] text-slate-500 tabular-nums">
+                  <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     {media.length} / {MAX_SOCIAL_MEDIA}
                   </span>
                 </div>
@@ -520,7 +523,7 @@ export function PostComposer({
                   )}
                 </ul>
                 {editable && (
-                  <p className="mt-2 text-[13px] leading-5 text-slate-500">
+                  <p className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)">
                     Photos of your real work do best. We crop them to Instagram&rsquo;s size.
                   </p>
                 )}
@@ -540,7 +543,7 @@ export function PostComposer({
                     className={`text-[13px] tabular-nums ${
                       count > MAX_CAPTION_LENGTH - 100
                         ? "font-semibold text-red-700"
-                        : "text-slate-500"
+                        : "text-(--glass-fg-muted)"
                     }`}
                   >
                     {count.toLocaleString("en-US")} / {MAX_CAPTION_LENGTH.toLocaleString("en-US")}
@@ -559,29 +562,29 @@ export function PostComposer({
                   className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
                 />
                 {note && (
-                  <p id={`${ids}-note`} className="mt-2 text-[13px] leading-5 text-slate-500">
+                  <p
+                    id={`${ids}-note`}
+                    className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)"
+                  >
                     <span className="font-medium text-slate-600">Note (Portuguese): </span>
                     <span lang="pt-BR">{note}</span>
                   </p>
                 )}
                 {current?.claimsFlagged && (
-                  <p
-                    role="note"
-                    className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"
-                  >
+                  <Notice tone="warning" size="sm" role="note" className="mt-3">
                     This caption mentions things like reviews, ratings, guarantees or licenses. Keep
                     them only if they&rsquo;re true for your business.
-                  </p>
+                  </Notice>
                 )}
 
                 {editable && (
-                  <div className="mt-4 rounded-lg bg-surface p-3 ring-1 ring-slate-200">
+                  <div className="glass-inset mt-4 rounded-xl p-4">
                     <label
                       htmlFor={`${ids}-idea`}
                       className="block text-[13px] font-medium text-ink"
                     >
                       Ask AI{" "}
-                      <span className="font-normal text-slate-500">
+                      <span className="font-normal text-(--glass-fg-muted)">
                         {captionsLeft === null
                           ? ""
                           : `· ${captionsLeft} caption${captionsLeft === 1 ? "" : "s"} left today`}
@@ -635,7 +638,7 @@ export function PostComposer({
                     />
                   </label>
                 </div>
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   Your business time: {zoneName(tz)} ({tz.replace(/_/g, " ")})
                 </p>
               </fieldset>
@@ -689,7 +692,7 @@ export function PostComposer({
                       className="absolute inset-0 size-full object-cover"
                     />
                   ) : (
-                    <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] text-slate-500">
+                    <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] text-(--glass-fg-muted)">
                       Your photo shows here
                     </span>
                   )}
@@ -768,20 +771,20 @@ export function PostComposer({
                         `${caption.slice(0, 125).trimEnd()}… `
                       )
                     ) : (
-                      <span className="text-slate-500">Your caption shows here.</span>
+                      <span className="text-(--glass-fg-muted)">Your caption shows here.</span>
                     )}
                     {longCaption && !expanded && (
                       <button
                         type="button"
                         onClick={() => setExpanded(true)}
-                        className={`text-slate-500 ${focusRing}`}
+                        className={`text-(--glass-fg-muted) ${focusRing}`}
                       >
                         more
                       </button>
                     )}
                   </p>
                   {scheduledAt && (
-                    <p className="mt-2 text-[12px] tracking-wide text-slate-500 uppercase">
+                    <p className="mt-2 text-[12px] tracking-wide text-(--glass-fg-muted) uppercase">
                       {formatWhen(scheduledAt, tz)}
                     </p>
                   )}
@@ -803,7 +806,7 @@ export function PostComposer({
           </div>
           {error && <ErrorNote error={error} className="mb-2" />}
           {showApprove && missing && (
-            <p className="mb-2 text-[13px] text-slate-500">To approve: {missing}</p>
+            <p className="mb-2 text-[13px] text-(--glass-fg-muted)">To approve: {missing}</p>
           )}
           <div className="flex flex-wrap items-center gap-3">
             {showApprove && (

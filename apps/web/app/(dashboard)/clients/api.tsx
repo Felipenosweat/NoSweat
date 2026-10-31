@@ -3,6 +3,7 @@
 import { ApiError } from "@nosweat/schema";
 import Link from "next/link";
 import type { z } from "zod";
+import { Notice } from "@/components/glass";
 
 // Chamadas à API de clientes a partir dos componentes de cliente: fetch + validação da resposta
 // com o schema. Erros (formato `{ error: { code, message } }`) viram `ClientsApiError`.
@@ -84,10 +85,7 @@ export function ErrorNote({
   className?: string;
 }) {
   return (
-    <p
-      role="alert"
-      className={`glass-edge rounded-xl bg-red-50/90 px-3 py-2 text-sm text-red-700 ${className}`}
-    >
+    <Notice tone="error" size="sm" className={className}>
       {error.message}
       {error.code === "payment_required" && (
         <>
@@ -97,7 +95,7 @@ export function ErrorNote({
           </Link>
         </>
       )}
-    </p>
+    </Notice>
   );
 }
 

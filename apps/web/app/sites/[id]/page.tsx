@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { AccountShellForCurrentViewer } from "@/app/(dashboard)/AccountShell";
 import { GlobeIcon, MessagesIcon } from "@/app/(dashboard)/NavIcons";
 import {
+  BackLink,
   IconTile,
   PageHeader,
   SiteUrlLine,
@@ -20,7 +21,7 @@ import {
   textButton,
   type IconTone,
 } from "@/components/DashboardUi";
-import { GlassBadge } from "@/components/glass";
+import { GlassBadge, Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
@@ -117,11 +118,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
     <AccountShellForCurrentViewer>
       <div>
         <PageHeader
-          back={
-            <Link href="/dashboard#sites" className={`${textButton} -ml-1`}>
-              <span aria-hidden="true">‹</span> My sites
-            </Link>
-          }
+          back={<BackLink href="/dashboard#sites">My sites</BackLink>}
           title={business.name}
           badge={
             // Mesmas cores do cartão em "My sites" (SitesGrid): fora do ar = âmbar, não cinza.
@@ -144,10 +141,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
         />
 
         {offline && (
-          <p
-            role="status"
-            className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-900"
-          >
+          <Notice tone="warning" className="mt-6">
             Your plan has ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page.{" "}
             <Link
               href={`/billing?site=${encodeURIComponent(site.id)}`}
@@ -155,7 +149,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             >
               Choose a plan to bring it back →
             </Link>
-          </p>
+          </Notice>
         )}
 
         <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-12 lg:gap-x-8">
@@ -180,7 +174,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     <span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
-                  <p className="text-[15px] leading-6 text-slate-500">
+                  <p className="text-[15px] leading-6 text-(--glass-fg-muted)">
                     Not online yet. Publish to get your free address.
                   </p>
                 )}
@@ -231,7 +225,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 )}
               </p>
               {live && free && live !== free && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   Also available at{" "}
                   <a href={free} target="_blank" rel="noreferrer" className={linkClass}>
                     {free.replace(/^https?:\/\//, "")}
@@ -252,7 +246,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 />
               </div>
               {isPublished && (
-                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-slate-500">
+                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-(--glass-fg-muted)">
                   Need to pause it? Use the{" "}
                   <span className="font-semibold text-slate-600">&ldquo;⋯&rdquo;</span> menu at the
                   top to take it offline. Nothing is deleted.
@@ -300,7 +294,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     <li key={lead.id} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <p className="text-[15px] font-semibold text-ink">{lead.name}</p>
-                        <p className="text-[13px] text-slate-500 tabular-nums">
+                        <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                           <LocalTime iso={lead.createdAt} />
                         </p>
                       </div>
@@ -333,7 +327,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 </p>
               )}
               {emailAlerts && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   We also email you every new message.
                 </p>
               )}

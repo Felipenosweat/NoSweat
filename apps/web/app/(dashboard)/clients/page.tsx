@@ -1,11 +1,10 @@
 import type { Client, ClientStage } from "@nosweat/schema";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
-import { PageHeader } from "@/components/DashboardUi";
-import { EmptyState, GlassButton, cx, focusRing, glassButtonClass } from "@/components/glass";
+import { PageHeader, StatTile, type IconTone } from "@/components/DashboardUi";
+import { EmptyState, GlassButton, Notice, cx, glassButtonClass } from "@/components/glass";
 import { dateKeyIn, sortClients } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import {
@@ -79,16 +78,8 @@ type Tile = {
   hint: string;
   href: string;
   icon: ReactNode;
-  /** Cor do número quando pede atenção. */
-  tone: "brand" | "red" | "amber" | "emerald" | "ink";
-};
-
-const TILE_TONES: Record<Tile["tone"], { number: string; icon: string }> = {
-  brand: { number: "text-brand", icon: "bg-brand/10 text-brand" },
-  red: { number: "text-red-700", icon: "bg-red-500/10 text-red-700" },
-  amber: { number: "text-amber-700", icon: "bg-amber-500/15 text-amber-700" },
-  emerald: { number: "text-emerald-700", icon: "bg-emerald-500/10 text-emerald-700" },
-  ink: { number: "text-ink", icon: "bg-slate-500/10 text-slate-600" },
+  /** Cor do ícone e do número; "slate" = nada pedindo atenção (número em tinta). */
+  tone: IconTone;
 };
 
 function SummaryTiles({ summary }: { summary: ClientsSummary }) {
@@ -100,8 +91,8 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
       value: String(summary.newCount),
       hint: summary.newCount > 0 ? "Waiting to hear back" : "All caught up",
       href: clientsHref({ ...DEFAULTS, stage: "new" }),
-      icon: <InboxIcon />,
-      tone: summary.newCount > 0 ? "brand" : "ink",
+      icon: <InboxIcon className="size-[18px]" />,
+      tone: summary.newCount > 0 ? "brand" : "slate",
     },
     {
       key: "due",
@@ -117,8 +108,8 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
               .filter(Boolean)
               .join(" · "),
       href: clientsHref({ ...DEFAULTS, due: true }),
-      icon: <ClockIcon />,
-      tone: summary.followUpsOverdue > 0 ? "red" : summary.followUpsToday > 0 ? "amber" : "ink",
+      icon: <ClockIcon className="size-[18px]" />,
+      tone: summary.followUpsOverdue > 0 ? "red" : summary.followUpsToday > 0 ? "amber" : "slate",
     },
     {
       key: "won",
@@ -127,8 +118,8 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
       value: String(summary.wonThisMonth),
       hint: monthName(summary.month),
       href: clientsHref({ ...DEFAULTS, stage: "won" }),
-      icon: <TrophyIcon />,
-      tone: summary.wonThisMonth > 0 ? "emerald" : "ink",
+      icon: <TrophyIcon className="size-[18px]" />,
+      tone: summary.wonThisMonth > 0 ? "emerald" : "slate",
     },
     {
       key: "revenue",
@@ -137,8 +128,8 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
       value: money(summary.revenueThisMonthCents),
       hint: `${plural(summary.jobsThisMonth, "job", "jobs")} in ${monthName(summary.month)}`,
       href: clientsHref({ ...DEFAULTS, sort: "value" }),
-      icon: <MoneyIcon />,
-      tone: summary.revenueThisMonthCents > 0 ? "emerald" : "ink",
+      icon: <MoneyIcon className="size-[18px]" />,
+      tone: summary.revenueThisMonthCents > 0 ? "emerald" : "slate",
     },
   ];
   return (
@@ -149,40 +140,15 @@ function SummaryTiles({ summary }: { summary: ClientsSummary }) {
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((tile) => (
           <li key={tile.key} className={tile.desktopOnly ? "max-sm:hidden" : undefined}>
-            <Link
+            <StatTile
               href={tile.href}
-              className={cx(
-                "glass glass-interactive flex h-full min-h-32 flex-col rounded-2xl p-4 motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised sm:p-5",
-                focusRing,
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={cx(
-                  "glass-edge grid size-9 place-items-center rounded-xl [&>svg]:size-[18px]",
-                  TILE_TONES[tile.tone].icon,
-                )}
-              >
-                {tile.icon}
-              </span>
-              {/* Rótulo antes do número para o leitor de tela; na tela o número fica em cima. */}
-              <span className="mt-auto flex flex-col pt-3">
-                <span className="order-2 text-[15px] leading-5 font-semibold text-ink">
-                  {tile.label}
-                </span>
-                <span
-                  className={cx(
-                    "order-1 mb-1 font-display text-[1.75rem] leading-none font-semibold tracking-[-0.02em] tabular-nums",
-                    TILE_TONES[tile.tone].number,
-                  )}
-                >
-                  {tile.value}
-                </span>
-                <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">
-                  {tile.hint}
-                </span>
-              </span>
-            </Link>
+              label={tile.label}
+              value={tile.value}
+              hint={tile.hint}
+              icon={tile.icon}
+              tone={tile.tone}
+              highlight={tile.tone !== "slate"}
+            />
           </li>
         ))}
       </ul>
@@ -256,12 +222,9 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
       />
 
       {clients === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your clients. Please refresh the page.
-        </p>
+        </Notice>
       ) : noClientsAtAll ? (
         <EmptyState
           className="mt-8"

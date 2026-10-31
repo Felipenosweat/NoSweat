@@ -2,8 +2,8 @@
 
 import type { PlanId } from "@nosweat/schema";
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import { ConfirmDialog, GlassButton, GlassSegmented } from "@/components/glass";
-import { Notice, fieldClass, labelClass } from "../../AdminUi";
+import { ConfirmDialog, GlassButton, GlassSegmented, Notice } from "@/components/glass";
+import { fieldClass, labelClass } from "../../AdminUi";
 import type { GrantAccessState } from "./actions";
 
 // Formulários do admin para liberar e cortar o acesso manual (Pix/WhatsApp). Componente de

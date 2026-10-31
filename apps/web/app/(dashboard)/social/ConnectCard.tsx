@@ -3,7 +3,7 @@
 import { SocialStateResponse } from "@nosweat/schema";
 import { useState } from "react";
 import { panelClass, panelText, panelTitle } from "@/components/DashboardUi";
-import { ConfirmDialog, GlassBadge, GlassMenu, glassButtonClass } from "@/components/glass";
+import { ConfirmDialog, GlassBadge, GlassMenu, Notice, glassButtonClass } from "@/components/glass";
 import { ErrorNote, socialApi, toApiError, type SocialApiError } from "./shared";
 
 // Cartão do Instagram. Quatro estados, cada um com o selo e a próxima ação bem claros:
@@ -97,7 +97,7 @@ export function ConnectCard({
               className="size-10 shrink-0 rounded-full object-cover ring-1 ring-(--glass-rim)"
             />
           ) : (
-            <span className="glass-edge flex size-10 shrink-0 items-center justify-center rounded-full bg-white/60 text-ink">
+            <span className="glass-inset flex size-10 shrink-0 items-center justify-center rounded-full text-ink">
               <InstagramGlyph />
             </span>
           )}
@@ -105,7 +105,7 @@ export function ConnectCard({
             <h2 id="instagram-heading" className={panelTitle}>
               Instagram
             </h2>
-            <p className="truncate text-[13px] leading-5 text-slate-500">
+            <p className="truncate text-[13px] leading-5 text-(--glass-fg-muted)">
               {live ? `@${live.username}` : manual ? "You post, we plan" : "Not connected"}
             </p>
           </div>
@@ -132,13 +132,10 @@ export function ConnectCard({
 
       {live?.status === "needs_reconnect" ? (
         <>
-          <p
-            role="status"
-            className="glass-edge mt-4 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
-          >
+          <Notice tone="warning" size="sm" className="mt-4">
             Instagram stopped letting us post for you, so your scheduled posts are paused. Reconnect
             to pick up where you left off.
-          </p>
+          </Notice>
           <div className="mt-4">
             {/* <a> e não <Link>: a rota da API redireciona para o login do Instagram. */}
             <a href={CONNECT_URL} className={glassButtonClass({ variant: "primary" })}>

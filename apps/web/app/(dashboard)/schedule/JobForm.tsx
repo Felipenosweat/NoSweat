@@ -382,7 +382,7 @@ function JobForm({
             )}
           >
             <ChevronRightIcon className="size-4 motion-safe:transition-transform group-open/more:rotate-90" />
-            Add details <span className="font-normal text-slate-500">(optional)</span>
+            Add details <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </summary>
           <div className="mt-3 grid gap-5">
             <div>
@@ -410,7 +410,7 @@ function JobForm({
                 <div className="relative mt-1.5">
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                    className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
                   >
                     $
                   </span>
@@ -559,7 +559,7 @@ function ClientPicker({
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[15px] font-semibold text-ink">{value.name}</span>
             {(value.phone || value.address) && (
-              <span className="block truncate text-[13px] text-slate-500">
+              <span className="block truncate text-[13px] text-(--glass-fg-muted)">
                 {[value.phone, value.address].filter(Boolean).join(" · ")}
               </span>
             )}
@@ -624,7 +624,7 @@ function ClientPicker({
       )}
       <div className="mt-2 grid gap-1">
         {clients === null && !loadError && (
-          <p className="flex min-h-11 items-center gap-2 px-1 text-[15px] text-slate-500">
+          <p className="flex min-h-11 items-center gap-2 px-1 text-[15px] text-(--glass-fg-muted)">
             <SpinnerIcon /> Loading your clients…
           </p>
         )}
@@ -653,7 +653,7 @@ function ClientPicker({
                       {client.name}
                     </span>
                     {(client.phone || client.address) && (
-                      <span className="block truncate text-[13px] text-slate-500">
+                      <span className="block truncate text-[13px] text-(--glass-fg-muted)">
                         {[client.phone, client.address].filter(Boolean).join(" · ")}
                       </span>
                     )}
@@ -662,7 +662,7 @@ function ClientPicker({
               </li>
             ))}
             {found.length === 0 && query.trim() && (
-              <li className="px-2 py-2 text-[15px] text-slate-500">
+              <li className="px-2 py-2 text-[15px] text-(--glass-fg-muted)">
                 No client matches &ldquo;{query.trim()}&rdquo;.
               </li>
             )}

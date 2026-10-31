@@ -1,8 +1,8 @@
-import { GlassBadge, GlassCard } from "@/components/glass";
+import { GlassBadge, GlassCard, Notice } from "@/components/glass";
 import { isGrantActive, PLANS, type AccessGrant } from "@/server/billing";
 import type { SubscriptionRecord } from "@/server/billing/store";
 import { accessEmailConfigured } from "@/server/notify/access-email";
-import { Notice, labelClass, panelText, panelTitle } from "../../AdminUi";
+import { labelClass, panelText, panelTitle } from "../../AdminUi";
 import { grantAccess, revokeAccess } from "./actions";
 import { GrantAccessForm } from "./GrantAccessForm";
 

@@ -178,7 +178,7 @@ export function PromptForm({
 
       {examples && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <p className={`mr-1 text-[13px] ${dark ? "text-slate-300" : "text-slate-500"}`}>
+          <p className={`mr-1 text-[13px] ${dark ? "text-slate-300" : "text-(--glass-fg-muted)"}`}>
             Try an example:
           </p>
           {EXAMPLES.map((example) => (
@@ -203,7 +203,7 @@ export function PromptForm({
 
       <p
         id={`${id}-caption`}
-        className={`mt-4 text-[13px] ${dark ? "text-slate-300" : "text-slate-500"}`}
+        className={`mt-4 text-[13px] ${dark ? "text-slate-300" : "text-(--glass-fg-muted)"}`}
       >
         {caption}
       </p>

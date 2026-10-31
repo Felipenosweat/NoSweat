@@ -137,12 +137,12 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor={`${ids}-amount`} className={labelClass}>
-                Amount <span className="font-normal text-slate-500">(optional)</span>
+                Amount <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
               </label>
               <div className="relative mt-1.5">
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[15px] text-slate-500"
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[15px] text-(--glass-fg-muted)"
                 >
                   $
                 </span>
@@ -166,7 +166,10 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
             </div>
             <div>
               <label htmlFor={`${ids}-date`} className={labelClass}>
-                Date <span className="font-normal text-slate-500">(optional, today if empty)</span>
+                Date{" "}
+                <span className="font-normal text-(--glass-fg-muted)">
+                  (optional, today if empty)
+                </span>
               </label>
               <input
                 id={`${ids}-date`}
@@ -186,7 +189,7 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
         <GlassButton type="submit" variant="primary" loading={pending}>
           {pending ? "Saving…" : kind === "job" ? "Save work" : "Save note"}
         </GlassButton>
-        <p aria-live="polite" className="text-[13px] text-slate-500">
+        <p aria-live="polite" className="text-[13px] text-(--glass-fg-muted)">
           {savedText}
         </p>
       </div>

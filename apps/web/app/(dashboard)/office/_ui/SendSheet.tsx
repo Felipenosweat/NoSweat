@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
-import { GlassButton, GlassSheet, glassButtonClass } from "@/components/glass";
+import { fieldClass, labelClass } from "@/components/DashboardUi";
+import { GlassButton, GlassSheet, Notice, glassButtonClass } from "@/components/glass";
 import { mailtoHref, shareMessage, smsHref } from "@/lib/office";
 import { CopyIcon, MailIcon, OpenIcon, TextIcon } from "./ui";
 
@@ -145,7 +146,7 @@ export function SendSheet({
       }
     >
       {missingPaymentInstructions && (
-        <p className="mb-4 rounded-xl bg-amber-50/90 px-3 py-2 text-[13px] leading-5 text-amber-900">
+        <Notice tone="warning" size="sm" role={null} className="mb-4">
           Your customer won&rsquo;t see how to pay.{" "}
           <Link
             href="/office/settings"
@@ -154,7 +155,7 @@ export function SendSheet({
             Add payment instructions in Business settings
           </Link>
           .
-        </p>
+        </Notice>
       )}
 
       {primary === "text"
@@ -185,7 +186,7 @@ export function SendSheet({
 
       {showUrl && (
         <div className="mt-3">
-          <label htmlFor={`${ids}-url`} className="block text-[13px] font-medium text-ink">
+          <label htmlFor={`${ids}-url`} className={labelClass}>
             Link for your customer
           </label>
           <input
@@ -193,13 +194,13 @@ export function SendSheet({
             readOnly
             value={url}
             onFocus={(event) => event.currentTarget.select()}
-            className="mt-1.5 h-11 w-full min-w-0 rounded-xl border border-slate-300/80 bg-white/80 px-3 text-base text-ink focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none sm:text-[15px]"
+            className={`${fieldClass} mt-1.5 h-11 min-w-0`}
           />
         </div>
       )}
 
       {!client.phone && !client.email && (
-        <p className="mt-3 text-[13px] leading-5 text-slate-500">
+        <p className="mt-3 text-[13px] leading-5 text-(--glass-fg-muted)">
           This client has no phone or email saved. Add them on the client&rsquo;s page to text or
           email in one tap.
         </p>

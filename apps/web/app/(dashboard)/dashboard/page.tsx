@@ -8,6 +8,7 @@ import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardCh
 import {
   ChevronRightIcon,
   IconTile,
+  StatTile,
   cardClass,
   focusRing,
   insetDivider,
@@ -624,7 +625,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
           Needs you
         </h2>
         {rows.length > 0 && (
-          <p className="text-[13px] text-slate-500 tabular-nums">
+          <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
             {rows.length} {plural(rows.length, "item", "items")}
           </p>
         )}
@@ -652,13 +653,13 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
                     </IconTile>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] leading-[1.45] text-ink">{row.text}</span>
-                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+                      <span className="mt-0.5 block text-[13px] leading-5 text-(--glass-fg-muted)">
                         {style.label}
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-slate-500 transition-colors duration-150 group-hover:text-ink"
+                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-(--glass-fg-muted) transition-colors duration-150 group-hover:text-ink"
                     >
                       <span className="max-sm:hidden">{row.action}</span>
                       <ChevronRightIcon className="size-4 text-slate-400" />
@@ -695,61 +696,29 @@ type Stat = {
   display?: string;
 };
 
-const STAT_NUMBER: Record<IconTone, string> = {
-  brand: "text-brand",
-  amber: "text-amber-700",
-  sky: "text-sky-700",
-  red: "text-red-700",
-  emerald: "text-emerald-700",
-  slate: "text-ink",
-};
-
-/** Quadro de número (como os widgets do iOS): ícone, número grande, rótulo e a linha de apoio. */
-function StatTile({ stat }: { stat: Stat }) {
+/** Quadro de número: o <StatTile /> compartilhado (o mesmo das listas e do /admin). */
+function MoneyTile({ stat }: { stat: Stat }) {
   const { value } = stat;
   const shown =
     stat.display ??
     (value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`);
-  const content = (
-    <>
-      <span className="flex items-start justify-between gap-2">
-        <IconTile tone={stat.tone}>
-          <stat.Icon className="size-[18px]" />
-        </IconTile>
-        {stat.href && (
-          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
-        )}
-      </span>
-      {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
-            fica em cima (ordem visual com `order`). */}
-      <span className="mt-auto flex flex-col pt-4">
-        <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
-        <span
-          className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
-            stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
-          }`}
-        >
-          {shown}
-          {value === null && <span className="sr-only">not available</span>}
-          {value === "unlimited" && <span className="sr-only">unlimited</span>}
-        </span>
-        <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
-      </span>
-    </>
-  );
-  const tile = `flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass}`;
   return (
     <li>
-      {stat.href ? (
-        <Link
-          href={stat.href}
-          className={`group ${tile} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
-        >
-          {content}
-        </Link>
-      ) : (
-        <div className={tile}>{content}</div>
-      )}
+      <StatTile
+        href={stat.href}
+        label={stat.label}
+        value={
+          <>
+            {shown}
+            {value === null && <span className="sr-only">not available</span>}
+            {value === "unlimited" && <span className="sr-only">unlimited</span>}
+          </>
+        }
+        hint={stat.hint}
+        icon={<stat.Icon className="size-[18px]" />}
+        tone={stat.tone}
+        highlight={stat.attention}
+      />
     </li>
   );
 }
@@ -903,7 +872,7 @@ function TodayJobRow({ job, timeZone }: { job: Job; timeZone: string }) {
           >
             {job.title}
           </span>
-          <span className="mt-0.5 block truncate text-[13px] leading-5 text-slate-500">
+          <span className="mt-0.5 block truncate text-[13px] leading-5 text-(--glass-fg-muted)">
             {job.clientName}
             {job.startAt && job.endAt && (
               <span className="tabular-nums"> · until {formatTime(job.endAt, timeZone)}</span>
@@ -936,7 +905,10 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="today-heading" className={sectionTitle}>
           Today
-          <span className="font-sans text-[15px] font-normal text-slate-500"> · {dateLabel}</span>
+          <span className="font-sans text-[15px] font-normal text-(--glass-fg-muted)">
+            {" "}
+            · {dateLabel}
+          </span>
         </h2>
         <Link
           href="/schedule"
@@ -999,7 +971,7 @@ function OfficeSection({ office, readOnly }: { office: OfficeSnapshot; readOnly:
         </h2>
         <ul className="mt-3 grid flex-1 grid-cols-2 gap-3 sm:gap-4">
           {moneyStats(office).map((stat) => (
-            <StatTile key={stat.key} stat={stat} />
+            <MoneyTile key={stat.key} stat={stat} />
           ))}
         </ul>
       </section>
@@ -1201,7 +1173,7 @@ function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] })
         <h2 id="sites-heading" className={sectionTitle}>
           Your website
           {sites.length > 1 && (
-            <span className="font-sans font-normal text-slate-500 tabular-nums">
+            <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
               {" "}
               · {sites.length}
             </span>
@@ -1224,6 +1196,8 @@ function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] })
 type QuickAction = {
   key: string;
   label: string;
+  /** Rótulo curto do celular (meia largura: cabe numa linha ao lado do ícone). */
+  short: string;
   hint: string;
   href: string;
   tone: IconTone;
@@ -1234,6 +1208,7 @@ type QuickAction = {
 const QUICK_ACTIONS: readonly QuickAction[] = [
   {
     key: "job",
+    short: "New job",
     label: "Book a job",
     hint: "Put it on the calendar",
     href: "/schedule?new=1",
@@ -1242,6 +1217,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "estimate",
+    short: "New estimate",
     label: "Send an estimate",
     hint: "They approve from their phone",
     href: "/estimates/new",
@@ -1250,6 +1226,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "invoice",
+    short: "New invoice",
     label: "Send an invoice",
     hint: "Get paid, track who paid",
     href: "/invoices/new",
@@ -1258,6 +1235,7 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
   },
   {
     key: "client",
+    short: "New client",
     label: "Add a client",
     hint: "Name and phone is enough",
     href: "/clients/new",
@@ -1275,20 +1253,29 @@ function QuickActions() {
       <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {QUICK_ACTIONS.map((action) => (
           <li key={action.key}>
+            {/* Celular: linha compacta (ícone + rótulo curto). Do sm em diante: cartão com a frase
+                de apoio. */}
             <Link
               href={action.href}
-              className={`group flex h-full min-h-[7.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+              className={`group flex h-full min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 sm:min-h-[7.5rem] sm:flex-col sm:items-start sm:gap-0 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
             >
-              <span className="flex items-start justify-between gap-2">
+              <span className="flex shrink-0 items-start justify-between gap-2 sm:w-full">
                 <IconTile tone={action.tone}>
                   <action.Icon className="size-[18px]" />
                 </IconTile>
-                <PlusIcon className="mt-2 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
+                <PlusIcon className="mt-2 hidden size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600 sm:block" />
               </span>
-              <span className="mt-auto pt-4 text-[17px] leading-6 font-semibold text-ink">
-                {action.label}
+              <span className="min-w-0 sm:mt-auto sm:pt-4">
+                <span className="block text-[15px] leading-5 font-semibold text-ink sm:hidden">
+                  {action.short}
+                </span>
+                <span className="hidden text-[17px] leading-6 font-semibold text-ink sm:block">
+                  {action.label}
+                </span>
+                <span className="mt-0.5 hidden text-[13px] leading-5 text-(--glass-fg-muted) sm:block">
+                  {action.hint}
+                </span>
               </span>
-              <span className="mt-0.5 text-[13px] leading-5 text-slate-500">{action.hint}</span>
             </Link>
           </li>
         ))}

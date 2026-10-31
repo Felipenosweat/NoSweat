@@ -143,6 +143,8 @@ html {
    - glass-edge     só a borda de vidro (brilho de 1px no topo + linha fina), sem fundo
    - glass-tint     vidro "tingido" com uma cor sólida (`--glass-tint`), para botões de ação
    - glass-pill     cápsula clara do controle segmentado
+   - glass-inset    painel embutido DENTRO de um cartão (passo a passo, quadro de números, linha
+                    de item): branco 50% com contorno e brilho por dentro, sem sombra
    Ajustes: glass-raised (sombra mais funda), glass-flat (sem sombra), glass-interactive
    (clareia no hover), glass-on-dark (vale para tudo dentro: vidro escuro e texto claro).
    Texto em cima do vidro: text-(--glass-fg) e text-(--glass-fg-muted) (contraste AA nos dois tons).
@@ -183,6 +185,8 @@ html {
     --glass-groove: rgb(7 27 51 / 0.06);
     --glass-pill: #ffffff;
     --glass-ghost-hover: rgb(7 27 51 / 0.06);
+    --glass-inset: rgb(255 255 255 / 0.5);
+    --glass-inset-solid: #f8fafc;
   }
 
   /* Celular: desfoque menor nas barras, menus e folhas (o custo cresce com o raio; numa tela
@@ -216,6 +220,8 @@ html {
   --glass-groove: rgb(255 255 255 / 0.08);
   --glass-pill: rgb(255 255 255 / 0.2);
   --glass-ghost-hover: rgb(255 255 255 / 0.1);
+  --glass-inset: rgb(255 255 255 / 0.06);
+  --glass-inset-solid: #0b2240;
 }
 
 /* Sem backdrop-filter de propósito (ver o comentário acima). Quem fica sobre uma foto (ex.: o
@@ -237,6 +243,26 @@ html {
     box-shadow:
       inset 0 0 0 1px var(--glass-rim-contrast),
       var(--glass-shadow, var(--glass-depth));
+  }
+  @media (forced-colors: active) {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Painel embutido num cartão de vidro: um degrau mais claro que o cartão, contorno fino e brilho
+   de 1px no topo, sem sombra (não "flutua"). Mesmo fundo sólido do `glass` quando o vidro sai. */
+@utility glass-inset {
+  background-color: var(--glass-inset);
+  box-shadow:
+    inset 0 1px 0 0 var(--glass-specular),
+    inset 0 0 0 1px var(--glass-rim);
+
+  @media (prefers-reduced-transparency: reduce) {
+    background-color: var(--glass-inset-solid);
+  }
+  @media (prefers-contrast: more) {
+    background-color: var(--glass-inset-solid);
+    box-shadow: inset 0 0 0 1px var(--glass-rim-contrast);
   }
   @media (forced-colors: active) {
     border: 1px solid CanvasText;

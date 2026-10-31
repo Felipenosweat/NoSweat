@@ -2,7 +2,8 @@ import type { SocialPostStatus } from "@nosweat/schema";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { GlassBadge, GlassButton, GlassCard } from "@/components/glass";
+import { BackLink, StatTile } from "@/components/DashboardUi";
+import { GlassBadge, GlassButton, GlassCard, Notice } from "@/components/glass";
 import { accountName, canManageAccounts, getAccount, isAdmin, requireAdmin } from "@/server/admin";
 import { loginDisabled, planStatus } from "@/server/admin/accounts";
 import {
@@ -20,7 +21,7 @@ import { getBalance } from "@/server/credits";
 import { getSocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
 import { AccountMenu } from "../../AccountActions";
-import { BackLink, Notice, StatTile, panelText, panelTitle } from "../../AdminUi";
+import { panelText, panelTitle } from "../../AdminUi";
 import { SitesTable } from "../../SitesTable";
 import { formatDate } from "../../admin-data";
 import { toSiteRow } from "../../site-rows";
@@ -210,7 +211,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
           </p>
         )}
         {!targetIsAdmin && !isSelf && !manageEnabled && (
-          <Notice tone="warning" className="mt-4">
+          <Notice tone="warning" size="sm" className="mt-4">
             Disabling login and deleting need Supabase: set NEXT_PUBLIC_SUPABASE_URL and
             SUPABASE_SERVICE_ROLE_KEY, then reload.
           </Notice>
@@ -218,16 +219,16 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
       </GlassCard>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="Websites" value={String(sites.length)} note={`${liveCount} live`} />
+        <StatTile label="Websites" value={String(sites.length)} hint={`${liveCount} live`} />
         <StatTile
           label="Clients"
           value={activity.clients ? String(activity.clients.total) : "—"}
-          note={activity.clients ? `${activity.clients.newCount} new` : "Couldn't load the clients"}
+          hint={activity.clients ? `${activity.clients.newCount} new` : "Couldn't load the clients"}
         />
         <StatTile
           label="Social"
           value={socialAccount ? `@${socialAccount.username}` : "Not connected"}
-          note={
+          hint={
             activity.social
               ? `${activity.social.scheduledThisMonth} scheduled · ${activity.social.publishedThisMonth} published this month`
               : "Couldn't load the posts"

@@ -4,7 +4,7 @@ import { ApiError, type SiteVersionSummary, type VersionSource } from "@nosweat/
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { StatusBadge } from "@/components/DashboardUi";
-import { glassButtonClass } from "@/components/glass";
+import { Notice, glassButtonClass } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 
 const SOURCE_LABELS: Record<VersionSource, string> = {
@@ -60,7 +60,7 @@ export function VersionHistory({
               <span className="block font-medium text-ink sm:inline">
                 {SOURCE_LABELS[version.source]}
               </span>
-              <span className="block text-[13px] text-slate-500 tabular-nums sm:ml-2 sm:inline">
+              <span className="block text-[13px] text-(--glass-fg-muted) tabular-nums sm:ml-2 sm:inline">
                 <LocalTime iso={version.createdAt} />
               </span>
             </span>
@@ -80,12 +80,9 @@ export function VersionHistory({
         ))}
       </ul>
       {error && (
-        <p
-          role="alert"
-          className="glass-edge mt-3 inline-flex rounded-xl bg-red-50/85 px-3 py-2 text-sm text-red-700"
-        >
+        <Notice tone="error" size="sm" className="mt-3">
           {error}
-        </p>
+        </Notice>
       )}
     </div>
   );

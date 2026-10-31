@@ -21,6 +21,8 @@ import {
   deleteInvoice,
   deleteJob,
   deletePayment,
+  duplicateEstimate,
+  duplicateInvoice,
   estimateStatus,
   getEstimate,
   getInvoice,
@@ -33,7 +35,9 @@ import {
   listEstimates,
   listInvoices,
   listJobs,
+  markInvoicePaid,
   recordPayment,
+  reopenEstimate,
   respondToEstimate,
   sendEstimate,
   sendInvoice,
@@ -105,14 +109,28 @@ describe("dates", () => {
     expect(estimateStatus({ status: "approved", validUntil: "2020-01-01" }, "2026-10-26")).toBe(
       "approved",
     );
-    expect(invoiceStatus({ status: "sent", dueOn: "2026-10-27" }, 0, "2026-10-26")).toBe("sent");
-    expect(invoiceStatus({ status: "sent", dueOn: "2026-10-27" }, 100, "2026-10-26")).toBe(
-      "partial",
+    const sent = { status: "sent", totalCents: 1_000 } as const;
+    expect(invoiceStatus({ ...sent, dueOn: "2026-10-27" }, 0, "2026-10-26")).toBe("sent");
+    expect(invoiceStatus({ ...sent, dueOn: "2026-10-27" }, 100, "2026-10-26")).toBe("partial");
+    expect(invoiceStatus({ ...sent, dueOn: "2026-10-25" }, 100, "2026-10-26")).toBe("overdue");
+    expect(
+      invoiceStatus({ status: "paid", dueOn: "2020-01-01", totalCents: 100 }, 100, "2026-10-26"),
+    ).toBe("paid");
+  });
+
+  it("shows a sent $0 invoice as paid (even past due), but keeps a $0 draft a draft", () => {
+    expect(
+      invoiceStatus({ status: "sent", dueOn: "2026-10-27", totalCents: 0 }, 0, "2026-10-26"),
+    ).toBe("paid");
+    expect(
+      invoiceStatus({ status: "sent", dueOn: "2020-01-01", totalCents: 0 }, 0, "2026-10-26"),
+    ).toBe("paid");
+    expect(invoiceStatus({ status: "draft", dueOn: null, totalCents: 0 }, 0, "2026-10-26")).toBe(
+      "draft",
     );
-    expect(invoiceStatus({ status: "sent", dueOn: "2026-10-25" }, 100, "2026-10-26")).toBe(
-      "overdue",
+    expect(invoiceStatus({ status: "void", dueOn: null, totalCents: 0 }, 0, "2026-10-26")).toBe(
+      "void",
     );
-    expect(invoiceStatus({ status: "paid", dueOn: "2020-01-01" }, 100, "2026-10-26")).toBe("paid");
   });
 });
 
@@ -854,5 +872,303 @@ describe("pure reads", () => {
 
     await updateSettings(owner, { companyName: "Saved" });
     expect((await getOfficeStore().getSettings(owner))?.companyName).toBe("Saved");
+  });
+});
+
+// ---------- duplicar, reabrir e "Mark as paid" ----------
+
+describe("duplicate", () => {
+  it("copies an answered estimate into a fresh draft without job, answer or validity", async () => {
+    const client = await newClient();
+    const item = await createPriceItem(OWNER, { name: "Drain clean", unitPriceCents: 12_500 });
+    const source = await createEstimate(OWNER, {
+      clientId: client.id,
+      title: "Kitchen drain",
+      items: [
+        line({ priceItemId: item.id, unitPriceCents: 12_500 }),
+        line({ name: "Parts", taxable: false }),
+      ],
+      taxRateBps: 825,
+      discountCents: 1_500,
+      message: "Thanks for asking!",
+    });
+    await sendEstimate(OWNER, source.id, ORIGIN);
+    await respondToEstimate(source.publicToken, { decision: "approve", name: "Ana Lima" });
+    const converted = await convertEstimate(OWNER, source.id, {
+      createJob: true,
+      createInvoice: false,
+    });
+    expect(converted?.job).not.toBeNull();
+    const before = await getEstimate(OWNER, source.id);
+
+    const copy = await duplicateEstimate(OWNER, source.id);
+    expect(copy).not.toBeNull();
+    expect(copy!.id).not.toBe(source.id);
+    expect(copy!.number).toBe(source.number + 1);
+    expect(copy!.status).toBe("draft");
+    expect(copy!.publicToken).not.toBe(source.publicToken);
+    expect(isPublicToken(copy!.publicToken)).toBe(true);
+    expect(copy!.clientId).toBe(client.id);
+    expect(copy!.title).toBe("Kitchen drain");
+    expect(copy!.items).toEqual(source.items);
+    expect(copy!.items[0]?.priceItemId).toBe(item.id);
+    expect(copy!.taxRateBps).toBe(825);
+    expect(copy!.discountCents).toBe(1_500);
+    expect(copy!.totalCents).toBe(source.totalCents);
+    expect(copy!.message).toBe("Thanks for asking!");
+    expect(copy!.jobId).toBeNull();
+    expect(copy!.validUntil).toBeNull();
+    expect(copy!.sentAt).toBeNull();
+    expect(copy!.respondedAt).toBeNull();
+    expect(copy!.approvedByName).toBeNull();
+    // A cópia é rascunho (fora do link) e o original não muda.
+    expect(await getPublicEstimate(copy!.publicToken)).toBeNull();
+    expect(await getEstimate(OWNER, source.id)).toEqual(before);
+  });
+
+  it("copies a paid invoice into a draft dated today, without links or payments", async () => {
+    await updateSettings(OWNER, { invoiceDueDays: 7 });
+    const client = await newClient();
+    const estimate = await createEstimate(OWNER, {
+      clientId: client.id,
+      title: "Faucet",
+      items: [line()],
+      taxRateBps: 500,
+    });
+    await updateEstimate(OWNER, estimate.id, { status: "approved" });
+    const converted = await convertEstimate(OWNER, estimate.id, {
+      createJob: true,
+      createInvoice: true,
+    });
+    const source = converted!.invoice!;
+    await updateInvoice(OWNER, source.id, {
+      message: "Pay by Zelle",
+      issuedOn: addDays(today(), -40),
+      dueOn: addDays(today(), -30),
+    });
+    await recordPayment(OWNER, source.id, { amountCents: source.totalCents, method: "zelle" });
+
+    const copy = await duplicateInvoice(OWNER, source.id);
+    expect(copy).not.toBeNull();
+    expect(copy!.number).toBe(source.number + 1);
+    expect(copy!.status).toBe("draft");
+    expect(copy!.publicToken).not.toBe(source.publicToken);
+    expect(copy!.clientId).toBe(client.id);
+    expect(copy!.title).toBe("Faucet");
+    expect(copy!.items).toEqual(source.items);
+    expect(copy!.taxRateBps).toBe(500);
+    expect(copy!.totalCents).toBe(source.totalCents);
+    expect(copy!.message).toBe("Pay by Zelle");
+    expect(copy!.jobId).toBeNull();
+    expect(copy!.estimateId).toBeNull();
+    expect(copy!.payments).toEqual([]);
+    expect(copy!.amountPaidCents).toBe(0);
+    expect(copy!.balanceCents).toBe(copy!.totalCents);
+    expect(copy!.issuedOn).toBe(today());
+    expect(copy!.dueOn).toBe(addDays(today(), 7));
+    expect(copy!.sentAt).toBeNull();
+    expect(copy!.paidAt).toBeNull();
+    // O job continua com a fatura original, que continua paga.
+    expect((await getJob(OWNER, converted!.job!.id))?.invoiceId).toBe(source.id);
+    expect((await getInvoice(OWNER, source.id))?.status).toBe("paid");
+  });
+
+  it("copies void invoices and never another owner's documents", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice(OWNER, { clientId: client.id, items: [line()] });
+    await sendInvoice(OWNER, invoice.id, ORIGIN);
+    await updateInvoice(OWNER, invoice.id, { status: "void" });
+    const copy = await duplicateInvoice(OWNER, invoice.id);
+    expect(copy?.status).toBe("draft");
+    expect(copy?.number).toBe(invoice.number + 1);
+
+    const estimate = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    expect(await duplicateInvoice(OTHER, invoice.id)).toBeNull();
+    expect(await duplicateEstimate(OTHER, estimate.id)).toBeNull();
+    expect(await duplicateEstimate(OWNER, "missing")).toBeNull();
+    expect(await listEstimates(OTHER)).toEqual([]);
+    expect(await listInvoices(OTHER)).toEqual([]);
+  });
+});
+
+describe("reopen", () => {
+  it("reopens an answer the owner marked; the customer can answer again", async () => {
+    const { client, estimate } = await sentEstimate();
+    const marked = await updateEstimate(OWNER, estimate.id, { status: "approved" });
+    expect(marked?.status).toBe("approved");
+    expect(marked?.approvedByName).toBeNull();
+
+    const reopened = await reopenEstimate(OWNER, estimate.id);
+    expect(reopened?.status).toBe("sent");
+    expect(reopened?.respondedAt).toBeNull();
+    expect(reopened?.approvedByName).toBeNull();
+    expect(reopened?.declineReason).toBeNull();
+    expect(reopened?.sentAt).toBe(estimate.sentAt);
+    // A etapa do cliente não volta (pode estar em "won" por outro motivo).
+    expect((await getClientStore().getClient(OWNER, client.id))?.stage).toBe("won");
+
+    // O link volta a aceitar resposta; a resposta do cliente não se reabre.
+    const approved = await respondToEstimate(estimate.publicToken, {
+      decision: "approve",
+      name: "Ana Lima",
+    });
+    expect(approved?.status).toBe("approved");
+    await expectOfficeError(reopenEstimate(OWNER, estimate.id), 409);
+    expect((await getEstimate(OWNER, estimate.id))?.approvedByName).toBe("Ana Lima");
+  });
+
+  it("reopens an owner-marked decline, never one sent through the link", async () => {
+    const { estimate } = await sentEstimate();
+    await updateEstimate(OWNER, estimate.id, { status: "declined" });
+    expect((await reopenEstimate(OWNER, estimate.id))?.status).toBe("sent");
+
+    // Recusa pelo link sem motivo grava "" (não se confunde com a marcada pelo dono).
+    await respondToEstimate(estimate.publicToken, { decision: "decline" });
+    expect((await getEstimate(OWNER, estimate.id))?.declineReason).toBe("");
+    await expectOfficeError(reopenEstimate(OWNER, estimate.id), 409);
+
+    const other = await sentEstimate("Bob Stone");
+    await respondToEstimate(other.estimate.publicToken, {
+      decision: "decline",
+      reason: "Too pricey",
+    });
+    await expectOfficeError(reopenEstimate(OWNER, other.estimate.id), 409);
+    expect((await getEstimate(OWNER, other.estimate.id))?.declineReason).toBe("Too pricey");
+  });
+
+  it("refuses while a job or an active invoice came from it", async () => {
+    const { estimate } = await sentEstimate();
+    await updateEstimate(OWNER, estimate.id, { status: "approved" });
+
+    const withJob = await convertEstimate(OWNER, estimate.id, {
+      createJob: true,
+      createInvoice: false,
+    });
+    const jobError = await reopenEstimate(OWNER, estimate.id).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(jobError).toBeInstanceOf(OfficeError);
+    expect((jobError as OfficeError).status).toBe(409);
+    expect((jobError as OfficeError).message).toContain("has a job");
+    await deleteJob(OWNER, withJob!.job!.id);
+
+    const withInvoice = await convertEstimate(OWNER, estimate.id, {
+      createJob: false,
+      createInvoice: true,
+    });
+    await expectOfficeError(reopenEstimate(OWNER, estimate.id), 409);
+    expect((await getEstimate(OWNER, estimate.id))?.status).toBe("approved");
+
+    // Fatura anulada não segura mais o orçamento.
+    await updateInvoice(OWNER, withInvoice!.invoice!.id, { status: "void" });
+    expect((await reopenEstimate(OWNER, estimate.id))?.status).toBe("sent");
+  });
+
+  it("only reopens answered estimates; one never sent goes back to draft", async () => {
+    const client = await newClient();
+    const draft = await createEstimate(OWNER, { clientId: client.id, items: [line()] });
+    await expectOfficeError(reopenEstimate(OWNER, draft.id), 409);
+
+    await updateEstimate(OWNER, draft.id, { status: "approved" });
+    const back = await reopenEstimate(OWNER, draft.id);
+    expect(back?.status).toBe("draft");
+    expect(await getPublicEstimate(draft.publicToken)).toBeNull();
+
+    await sendEstimate(OWNER, draft.id, ORIGIN);
+    await expectOfficeError(reopenEstimate(OWNER, draft.id), 409);
+    expect(await reopenEstimate(OTHER, draft.id)).toBeNull();
+    expect(await reopenEstimate(OWNER, "missing")).toBeNull();
+  });
+
+  it("returns 409 when the estimate changed after it was read", async () => {
+    const { estimate } = await sentEstimate();
+    await updateEstimate(OWNER, estimate.id, { status: "declined" });
+    const stale = await getOfficeStore().getEstimate(OWNER, estimate.id);
+    // Outra aba reabriu e marcou de novo no meio.
+    await reopenEstimate(OWNER, estimate.id);
+    await updateEstimate(OWNER, estimate.id, { status: "declined" });
+    vi.spyOn(getOfficeStore(), "getEstimate").mockResolvedValueOnce(stale);
+    await expectOfficeError(reopenEstimate(OWNER, estimate.id), 409);
+    expect((await getEstimate(OWNER, estimate.id))?.status).toBe("declined");
+  });
+});
+
+describe("mark as paid", () => {
+  it("records the balance left as Other · Marked paid, only once", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line({ unitPriceCents: 30_000 })],
+      taxRateBps: 0,
+    });
+    await sendInvoice(OWNER, invoice.id, ORIGIN);
+    await recordPayment(OWNER, invoice.id, { amountCents: 25_000, method: "cash" });
+
+    const paid = await markInvoicePaid(OWNER, invoice.id);
+    expect(paid?.status).toBe("paid");
+    expect(paid?.paidAt).not.toBeNull();
+    expect(paid?.balanceCents).toBe(0);
+    expect(paid?.payments).toHaveLength(2);
+    const marked = paid!.payments[1]!;
+    expect(marked.amountCents).toBe(5_000);
+    expect(marked.method).toBe("other");
+    expect(marked.reference).toBe("Marked paid");
+    expect(marked.receivedOn).toBe(today());
+
+    // Clique duplo: nada novo.
+    const again = await markInvoicePaid(OWNER, invoice.id);
+    expect(again?.status).toBe("paid");
+    expect(again?.payments).toHaveLength(2);
+
+    // Apagar o "Marked paid" desfaz.
+    const undone = await deletePayment(OWNER, invoice.id, marked.id);
+    expect(undone?.status).toBe("partial");
+    expect(undone?.balanceCents).toBe(5_000);
+  });
+
+  it("closes a draft too, refuses void invoices and other owners", async () => {
+    const client = await newClient();
+    const draft = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line()],
+      taxRateBps: 0,
+    });
+    const paid = await markInvoicePaid(OWNER, draft.id);
+    expect(paid?.status).toBe("paid");
+    expect(paid?.amountPaidCents).toBe(10_000);
+
+    const voided = await createInvoice(OWNER, { clientId: client.id, items: [line()] });
+    await updateInvoice(OWNER, voided.id, { status: "void" });
+    await expectOfficeError(markInvoicePaid(OWNER, voided.id), 409);
+    expect(await markInvoicePaid(OTHER, draft.id)).toBeNull();
+  });
+});
+
+describe("$0 invoices", () => {
+  it("show as paid once sent: lists, summary and the public link", async () => {
+    const client = await newClient();
+    const invoice = await createInvoice(OWNER, {
+      clientId: client.id,
+      items: [line({ unitPriceCents: 0 })],
+      dueOn: "2020-01-01",
+    });
+    expect(invoice.totalCents).toBe(0);
+    expect(invoice.status).toBe("draft");
+
+    const sent = await sendInvoice(OWNER, invoice.id, ORIGIN);
+    expect(sent?.invoice.status).toBe("paid");
+    expect(sent?.invoice.balanceCents).toBe(0);
+    expect((await listInvoices(OWNER, { status: "paid" })).map((i) => i.id)).toEqual([invoice.id]);
+    expect(await listInvoices(OWNER, { status: "overdue" })).toEqual([]);
+    expect((await getPublicInvoice(invoice.publicToken))?.status).toBe("paid");
+    const summary = await getOfficeSummary(OWNER);
+    expect(summary.unpaidInvoices).toBe(0);
+    expect(summary.overdueInvoices).toBe(0);
+
+    // Nada a quitar: "Mark as paid" devolve como está, sem pagamento.
+    const same = await markInvoicePaid(OWNER, invoice.id);
+    expect(same?.status).toBe("paid");
+    expect(same?.payments).toEqual([]);
   });
 });

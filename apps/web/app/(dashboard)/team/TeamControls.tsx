@@ -313,7 +313,7 @@ function MemberForm({
 
         <div>
           <label htmlFor={`${ids}-role`} className={labelClass}>
-            Role <span className="font-normal text-slate-500">(optional)</span>
+            Role <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <input
             id={`${ids}-role`}
@@ -345,7 +345,7 @@ function MemberForm({
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor={`${ids}-phone`} className={labelClass}>
-              Mobile phone <span className="font-normal text-slate-500">(optional)</span>
+              Mobile phone <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
             </label>
             <input
               id={`${ids}-phone`}
@@ -363,7 +363,7 @@ function MemberForm({
           </div>
           <div>
             <label htmlFor={`${ids}-email`} className={labelClass}>
-              Email <span className="font-normal text-slate-500">(optional)</span>
+              Email <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
             </label>
             <input
               id={`${ids}-email`}

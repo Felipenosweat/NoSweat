@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { GlassButton, GlassCard } from "@/components/glass";
-import { Notice, fieldClass, labelClass, panelText, panelTitle } from "./AdminUi";
+import { GlassButton, GlassCard, Notice } from "@/components/glass";
+import { fieldClass, labelClass, panelText, panelTitle } from "./AdminUi";
 import { createTestAccountAction, type CreateTestAccountState } from "./actions";
 
 // Caixa "Test accounts" do /admin/accounts. Depois de criar, mostra o e-mail e a senha UMA vez

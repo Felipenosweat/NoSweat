@@ -11,8 +11,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { BackLink } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
-import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { EmptyState, GlassButton, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import {
   STAGE_LABELS,
   dateKeyIn,
@@ -210,9 +211,9 @@ function ContactView({ client }: { client: Client }) {
     <dl className="mt-5 grid gap-3 border-t border-(--glass-rim) pt-4 text-[15px] leading-6">
       {rows.map((row) => (
         <div key={row.label}>
-          <dt className="text-[13px] font-medium text-slate-500">{row.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{row.label}</dt>
           <dd className="break-words text-ink">
-            {row.value ?? <span className="text-slate-500">Not added</span>}
+            {row.value ?? <span className="text-(--glass-fg-muted)">Not added</span>}
           </dd>
         </div>
       ))}
@@ -289,7 +290,7 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
           </h3>
           <LocalTime
             iso={activity.occurredAt}
-            className="text-[13px] text-slate-500 tabular-nums"
+            className="text-[13px] text-(--glass-fg-muted) tabular-nums"
           />
         </div>
         {body && (
@@ -319,7 +320,7 @@ function ClientStats({ client }: { client: Client }) {
     <dl className="grid grid-cols-3 gap-2 sm:gap-3">
       {stats.map((stat) => (
         <GlassCard key={stat.label} padding="sm" className="min-w-0">
-          <dt className="text-[13px] font-medium text-slate-500">{stat.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{stat.label}</dt>
           <dd
             className={cx(
               "mt-1 font-semibold break-words text-ink tabular-nums",
@@ -372,7 +373,7 @@ function PaperGroup({
   return (
     <div className="border-t border-(--glass-rim) first:border-t-0">
       <div className="flex items-center justify-between gap-3 px-4 pt-3 sm:px-5">
-        <h3 className="text-[13px] font-semibold text-slate-500">
+        <h3 className="text-[13px] font-semibold text-(--glass-fg-muted)">
           {title} <span className="font-normal tabular-nums">{total}</span>
         </h3>
         {more > 0 &&
@@ -384,7 +385,7 @@ function PaperGroup({
               See all {total}
             </Link>
           ) : (
-            <span className="text-[13px] text-slate-500 tabular-nums">+{more} more</span>
+            <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">+{more} more</span>
           ))}
       </div>
       <ul className="pb-1.5">
@@ -398,7 +399,7 @@ function PaperGroup({
                 <span className="block truncate text-[15px] leading-5 font-semibold text-ink">
                   {row.title}
                 </span>
-                <span className="block truncate text-[13px] leading-5 text-slate-500 tabular-nums">
+                <span className="block truncate text-[13px] leading-5 text-(--glass-fg-muted) tabular-nums">
                   {row.meta}
                 </span>
               </span>
@@ -422,13 +423,10 @@ function PaperGroup({
 function PaperworkSection({ client, paperwork }: { client: Client; paperwork: Paperwork | null }) {
   if (!paperwork) {
     return (
-      <p
-        role="alert"
-        className="glass-edge rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-      >
+      <Notice tone="error">
         We couldn&rsquo;t load this client&rsquo;s estimates, jobs and invoices. Please refresh the
         page.
-      </p>
+      </Notice>
     );
   }
   const { estimates, jobs, invoices } = paperwork;
@@ -525,9 +523,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
   return (
     <div>
-      <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2 max-sm:min-h-11">
-        <span aria-hidden="true">‹</span> Clients
-      </GlassButton>
+      <BackLink href="/clients">Clients</BackLink>
 
       <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-8">
         {/* ---------- coluna da esquerda: cartão de contato, etapa, retorno e anotação ---------- */}
@@ -558,7 +554,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
             >
               {client.name}
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">
+            <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>

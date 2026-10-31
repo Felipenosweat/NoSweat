@@ -94,7 +94,7 @@ export function PriceBook({ items, readOnly }: { items: PriceItem[]; readOnly: b
             className="mt-4 overflow-hidden"
           >
             {active.length === 0 ? (
-              <p className="px-5 py-8 text-center text-[15px] text-slate-500">
+              <p className="px-5 py-8 text-center text-[15px] text-(--glass-fg-muted)">
                 {q ? "Nothing matches." : "No active items."}
               </p>
             ) : (
@@ -211,7 +211,7 @@ function PriceRow({
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-center gap-2">
           <span
-            className={`truncate text-[15px] leading-6 font-semibold ${item.active ? "text-ink" : "text-slate-500"}`}
+            className={`truncate text-[15px] leading-6 font-semibold ${item.active ? "text-ink" : "text-(--glass-fg-muted)"}`}
           >
             {item.name}
           </span>
@@ -232,7 +232,7 @@ function PriceRow({
           {formatCents(item.unitPriceCents)}
         </span>
         {item.unit && (
-          <span className="block text-[12px] text-slate-500">{unitLabel(item.unit)}</span>
+          <span className="block text-[12px] text-(--glass-fg-muted)">{unitLabel(item.unit)}</span>
         )}
       </span>
     </>
@@ -377,7 +377,7 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
 
         <div>
           <label htmlFor={`${ids}-description`} className={labelClass}>
-            Description <span className="font-normal text-slate-500">(optional)</span>
+            Description <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <textarea
             id={`${ids}-description`}
@@ -400,7 +400,7 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
             <div className="relative mt-1.5">
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
               >
                 $
               </span>

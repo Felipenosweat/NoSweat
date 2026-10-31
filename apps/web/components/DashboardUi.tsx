@@ -1,14 +1,33 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { focusRing, glassButtonClass } from "./glass/styles";
 
 // Peças visuais compartilhadas do painel do cliente (/dashboard, /clients, /social, /billing e
-// /sites/[id]). Linguagem "Liquid Glass" (iOS/macOS 26): cartões de vidro claro raio 2xl com brilho
-// de 1px no topo e sombra leve, botões em cápsula, hierarquia pelo tamanho e peso do texto.
-// Os componentes de vidro completos (menu "⋯", folha de confirmação, segmentado...) estão em
-// components/glass. Sem "use client" e sem imports do servidor: servem tanto para server quanto
-// para client components.
+// /sites/[id]) e do /admin. Linguagem "Liquid Glass" (iOS/macOS 26): cartões de vidro claro raio
+// 2xl com brilho de 1px no topo e sombra leve, botões em cápsula, hierarquia pelo tamanho e peso do
+// texto. Aqui: campos de formulário, cabeçalho de página, link de volta, quadro de número, selos.
+// Os componentes de vidro completos (menu "⋯", folha de confirmação, segmentado, aviso <Notice />)
+// estão em components/glass. Sem "use client" e sem imports do servidor: servem tanto para server
+// quanto para client components.
 
 export { focusRing };
+
+// ---------- campos de formulário (um visual só no app inteiro) ----------
+
+/**
+ * Campo de texto sobre o vidro: claro e legível, com contorno visível, 16px no celular (o iOS não
+ * dá zoom no campo) e 15px no computador. Os de uma linha (input, select) põem `h-11` (44px de
+ * toque); a área de texto põe `py-2.5`.
+ */
+export const fieldClass =
+  "w-full rounded-xl border border-slate-300/80 bg-white/80 px-3 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-red-500 sm:text-[15px]";
+
+export const labelClass = "block text-[13px] font-medium text-ink";
+
+/** Dica embaixo do campo (cinza do vidro: contraste AA em cima do fundo azul). */
+export const hintClass = "mt-1.5 text-[13px] leading-5 text-(--glass-fg-muted)";
+
+export const fieldErrorClass = "mt-1.5 text-[13px] leading-5 text-red-700";
 
 // Espaço entre palavras dos títulos (`font-display`): vale para o app todo, em app/globals.css.
 
@@ -68,15 +87,18 @@ export function PageHeader({
   actions,
   back,
   badge,
+  count,
   titleId,
 }: {
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
-  /** Link de volta acima do título (ex.: "‹ Clients"). */
+  /** Link de volta acima do título: um <BackLink /> (ex.: "‹ Clients"). */
   back?: ReactNode;
   /** Selo ao lado do título (ex.: "Live"). */
   badge?: ReactNode;
+  /** Contagem pequena e cinza logo depois do título (ex.: "128" contas no admin). */
+  count?: ReactNode;
   titleId?: string;
 }) {
   return (
@@ -86,6 +108,11 @@ export function PageHeader({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <h1 id={titleId} className={`min-w-0 break-words ${pageTitle}`}>
             {title}
+            {count !== undefined && count !== null && (
+              <span className="ml-2 align-middle text-[17px] font-semibold tracking-normal text-(--glass-fg-muted) tabular-nums">
+                {count}
+              </span>
+            )}
           </h1>
           {badge}
         </div>
@@ -93,6 +120,41 @@ export function PageHeader({
       </div>
       {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
     </header>
+  );
+}
+
+/**
+ * Link de volta (como o "‹ Voltar" do iOS): seta e texto na cor da marca, 44px de toque no
+ * celular. Vai no `back` do <PageHeader /> ou sozinho no topo das fichas.
+ */
+export function BackLink({
+  href,
+  children,
+  className = "",
+}: {
+  href: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`-ml-1 inline-flex min-h-11 items-center gap-1 rounded-lg px-1 text-[15px] font-semibold text-brand transition-colors duration-150 hover:text-brand-dark sm:min-h-9 ${focusRing} ${className}`}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2.25}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="size-4 shrink-0"
+      >
+        <path d="m15 6-6 6 6 6" />
+      </svg>
+      {children}
+    </Link>
   );
 }
 
@@ -145,6 +207,92 @@ export function ChevronRightIcon({ className = "size-4" }: { className?: string 
     >
       <path d="m9 6 6 6-6 6" />
     </svg>
+  );
+}
+
+/** Cor do número do quadro quando ele pede atenção (`highlight`). */
+const STAT_NUMBER: Record<IconTone, string> = {
+  brand: "text-brand",
+  amber: "text-amber-700",
+  sky: "text-sky-700",
+  red: "text-red-700",
+  emerald: "text-emerald-700",
+  slate: "text-ink",
+};
+
+/**
+ * Quadro de número (como os widgets do iOS), o mesmo no painel, nas listas e no /admin: ícone
+ * opcional, número grande, rótulo embaixo dele e uma linha de apoio. Com `href`, o quadro inteiro
+ * é um link (com a seta "›"). Vai dentro do <li> da grade de quem usa.
+ */
+export function StatTile({
+  label,
+  value,
+  hint,
+  href,
+  icon,
+  tone = "slate",
+  highlight = false,
+}: {
+  label: ReactNode;
+  /** Número já formatado ("12", "$1,250", "–"); pode trazer um texto só para leitor de tela. */
+  value: ReactNode;
+  /** Linha de apoio embaixo do rótulo (o que fazer ou de onde vem o número). */
+  hint?: ReactNode;
+  /** Sem `href` (ou `null`), o quadro é só informativo: sem link nem seta. */
+  href?: string | null;
+  /** SVG do ícone (vai num <IconTile /> da cor do tom). */
+  icon?: ReactNode;
+  tone?: IconTone;
+  /** Pede atenção: o número fica na cor do tom. */
+  highlight?: boolean;
+}) {
+  const chevron = (offset: string) =>
+    href ? (
+      <ChevronRightIcon
+        className={`${offset} size-4 shrink-0 text-slate-400 transition-colors duration-150 group-hover:text-slate-600`}
+      />
+    ) : null;
+  // Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número fica em
+  // cima (ordem visual com `order`).
+  const figure = (
+    <span className="flex min-w-0 flex-col">
+      <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{label}</span>
+      <span
+        className={`order-1 mb-1 font-display text-[1.75rem] leading-none font-semibold tracking-[-0.02em] break-words tabular-nums sm:text-[2rem] ${
+          highlight ? STAT_NUMBER[tone] : "text-ink"
+        }`}
+      >
+        {value}
+      </span>
+      {hint && (
+        <span className="order-3 mt-0.5 text-[13px] leading-5 text-(--glass-fg-muted)">{hint}</span>
+      )}
+    </span>
+  );
+  const body = icon ? (
+    <>
+      <span className="flex items-start justify-between gap-2">
+        <IconTile tone={tone}>{icon}</IconTile>
+        {chevron("mt-2.5")}
+      </span>
+      <span className="mt-auto pt-4">{figure}</span>
+    </>
+  ) : (
+    <span className="flex items-start justify-between gap-2">
+      {figure}
+      {chevron("mt-1.5")}
+    </span>
+  );
+  const tile = `flex h-full flex-col p-4 sm:p-5 ${icon ? "min-h-[8.5rem]" : ""} ${cardClass}`;
+  if (!href) return <div className={tile}>{body}</div>;
+  return (
+    <Link
+      href={href}
+      className={`group ${tile} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+    >
+      {body}
+    </Link>
   );
 }
 
@@ -201,7 +349,7 @@ export function SiteUrlLine({
     // overflow-wrap:anywhere quebra primeiro nos hífens do endereço (break-all cortava no meio
     // da palavra: "worcester-home-servi / ces").
     <span className={`font-display tracking-[-0.01em] [overflow-wrap:anywhere] ${className}`}>
-      <span className="text-slate-500">{prefix}</span>
+      <span className="text-(--glass-fg-muted)">{prefix}</span>
       <span className="font-semibold text-brand">{name}</span>
       {caret && (
         <span

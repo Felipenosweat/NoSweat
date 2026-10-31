@@ -9,17 +9,19 @@ import {
 } from "@nosweat/schema";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
+  PageHeader,
   cardClass,
+  fieldClass,
   focusRing,
+  labelClass,
   panelClass,
   panelText,
   panelTitle,
   secondaryButton,
 } from "@/components/DashboardUi";
 import {
-  CloseIcon,
   EmptyState,
   GlassBadge,
   GlassButton,
@@ -27,6 +29,7 @@ import {
   GlassSegmented,
   GlassSheet,
   GlassToolbar,
+  Notice,
   cx,
   type GlassSegmentOption,
 } from "@/components/glass";
@@ -58,9 +61,9 @@ const PostComposer = dynamic(() => import("./PostComposer").then((m) => m.PostCo
   ssr: false,
 });
 
-// Tela principal do /social: conta do Instagram, "preencher o mês com IA" e o calendário do mês,
-// tudo no fuso da empresa. Calendário: barra de vidro grudada (mês, "Today", revisar, novo post)
-// + filtro segmentado; no computador, grade do mês com "pílulas" de post; no celular, um mini
+// Tela principal do /social: cabeçalho (com "New post", como o "New job" da agenda), conta do
+// Instagram, "preencher o mês com IA" e o calendário do mês, tudo no fuso da empresa. Calendário:
+// barra de vidro grudada (mês, "Today", revisar) + filtro segmentado (rola de lado no celular); no computador, grade do mês com "pílulas" de post; no celular, um mini
 // calendário com bolinhas + a lista do mês. Tocar num dia abre a folha do dia (GlassSheet), com os
 // posts dele e "New post". Tocar numa pílula abre a gaveta de edição (PostComposer).
 
@@ -184,11 +187,61 @@ export type SocialCalendarInitial = {
 };
 
 /**
- * Esqueleto da tela (antes dos dados): a mesma estrutura e alturas parecidas com a tela pronta,
- * para nada pular quando ela chega. Também serve de fallback do <Suspense> e do loading.tsx.
+ * Cabeçalho do /social. "New post" fica aqui (como o "New job" da agenda); sem `onNewPost` (dados
+ * ainda chegando ou erro), o botão aparece desligado no mesmo lugar, para nada pular.
  */
-export function SocialCalendarSkeleton() {
+function SocialHeader({ onNewPost }: { onNewPost?: () => void }) {
   return (
+    <PageHeader
+      title="Social"
+      description="Plan a month of Instagram posts in minutes. Nothing goes out until you approve it."
+      actions={
+        <GlassButton
+          variant="secondary"
+          icon={<PlusIcon />}
+          onClick={onNewPost}
+          disabled={!onNewPost}
+        >
+          New post
+        </GlassButton>
+      }
+    />
+  );
+}
+
+/** Cabeçalho + avisos da página + o conteúdo (o cabeçalho não remonta ao trocar de estado). */
+function SocialShell({
+  onNewPost,
+  notices,
+  children,
+}: {
+  onNewPost?: () => void;
+  notices?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <SocialHeader onNewPost={onNewPost} />
+      {notices}
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Esqueleto da tela (antes dos dados): a mesma estrutura e alturas parecidas com a tela pronta,
+ * para nada pular quando ela chega. Também serve de fallback do <Suspense> (com `header`: o
+ * cabeçalho e os avisos da página aparecem na hora) e do loading.tsx (sem cabeçalho).
+ */
+export function SocialCalendarSkeleton({
+  header = false,
+  notices,
+}: {
+  header?: boolean;
+  /** Avisos da página (ex.: "Instagram connected"), embaixo do cabeçalho. */
+  notices?: ReactNode;
+}) {
+  const body = (
     <div className="mt-6 grid gap-4" aria-busy="true" aria-label="Loading your calendar">
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="glass h-56 rounded-2xl motion-safe:animate-pulse" />
@@ -199,15 +252,20 @@ export function SocialCalendarSkeleton() {
       <div className="glass h-[22rem] rounded-2xl motion-safe:animate-pulse md:h-[50rem]" />
     </div>
   );
+  if (!header) return body;
+  return <SocialShell notices={notices}>{body}</SocialShell>;
 }
 
 export function SocialCalendar({
   initialMonth,
   initial = null,
+  notices,
 }: {
   initialMonth: string | null;
   /** Dados lidos no servidor: a tela já nasce pronta (sem a ida e volta de /state e /posts). */
   initial?: SocialCalendarInitial | null;
+  /** Avisos da página (volta do Instagram, posts aprovados), embaixo do cabeçalho. */
+  notices?: ReactNode;
 }) {
   const [state, setState] = useState<SocialStateResponse | null>(initial?.state ?? null);
   const [stateError, setStateError] = useState<SocialApiError | null>(null);
@@ -291,16 +349,24 @@ export function SocialCalendar({
   // esqueleto em outra posição (reaproveitar fazia o conteúdo "pular" e contava como CLS).
   if (stateError && !state) {
     return (
-      <div key="error" className="mt-8">
-        <ErrorNote error={stateError} />
-        <GlassButton variant="secondary" onClick={() => void loadState()} className="mt-3">
-          Try again
-        </GlassButton>
-      </div>
+      <SocialShell notices={notices}>
+        <div key="error" className="mt-8">
+          <ErrorNote error={stateError} />
+          <GlassButton variant="secondary" onClick={() => void loadState()} className="mt-3">
+            Try again
+          </GlassButton>
+        </div>
+      </SocialShell>
     );
   }
 
-  if (!state || !month || !tz) return <SocialCalendarSkeleton key="loading" />;
+  if (!state || !month || !tz) {
+    return (
+      <SocialShell notices={notices}>
+        <SocialCalendarSkeleton key="loading" />
+      </SocialShell>
+    );
+  }
 
   const loading = loadedKey !== postsKey;
   // Um relógio só por render: "hoje" na grade e "já passou?" para aprovar.
@@ -377,125 +443,123 @@ export function SocialCalendar({
           : "No problems this month.";
 
   return (
-    <div key="calendar">
-      <div aria-live="polite" className="sr-only">
-        {message}
-      </div>
-      {message && (
-        <p className="glass-edge mt-6 flex items-start justify-between gap-3 rounded-2xl bg-emerald-50/85 py-2 pr-2 pl-4 text-[15px] text-emerald-950">
-          <span className="py-1.5">{message}</span>
-          <GlassIconButton
-            label="Dismiss message"
-            variant="ghost"
-            size="sm"
-            onClick={() => setMessage("")}
-            className="max-sm:size-11"
+    <SocialShell onNewPost={() => openNew(null)} notices={notices}>
+      <div key="calendar">
+        <div aria-live="polite" className="sr-only">
+          {message}
+        </div>
+        {message && (
+          // O texto já é anunciado pela região aria-live acima: o aviso visível não repete o papel.
+          <Notice
+            tone="success"
+            role={null}
+            onDismiss={() => setMessage("")}
+            dismissLabel="Dismiss message"
+            className="mt-6"
           >
-            <CloseIcon />
-          </GlassIconButton>
-        </p>
-      )}
+            {message}
+          </Notice>
+        )}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <ConnectCard state={state} onChange={setState} />
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <ConnectCard state={state} onChange={setState} />
 
-        <section aria-labelledby="month-plan-heading" className={panelClass}>
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 id="month-plan-heading" className={panelTitle}>
-              Your posting plan
-            </h2>
-            {cap === 0 ? (
-              // Sem plano (cobrança ligada): "0 of 0" não diz nada; mostra onde liberar.
-              <p className="text-[13px] font-medium text-slate-500">
-                Posting is included in every plan ·{" "}
-                <Link
-                  href="/billing?from=social"
-                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
-                >
-                  See plans
-                </Link>
-              </p>
-            ) : (
-              <p className="text-[13px] font-medium text-slate-500 tabular-nums">
-                {cap === null
-                  ? `${used} approved this month`
-                  : `${used} of ${cap} posts used this month`}
-              </p>
-            )}
-          </div>
-          {cap !== null && cap > 0 && (
-            <div
-              role="progressbar"
-              aria-label="Posts used this month"
-              aria-valuemin={0}
-              aria-valuemax={cap}
-              aria-valuenow={Math.min(used, cap)}
-              className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[0.08]"
-            >
-              <div
-                className="h-full rounded-full bg-brand"
-                style={{ width: `${Math.min(100, Math.round((used / cap) * 100))}%` }}
-              />
+          <section aria-labelledby="month-plan-heading" className={panelClass}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h2 id="month-plan-heading" className={panelTitle}>
+                Your posting plan
+              </h2>
+              {cap === 0 ? (
+                // Sem plano (cobrança ligada): "0 of 0" não diz nada; mostra onde liberar.
+                <p className="text-[13px] font-medium text-(--glass-fg-muted)">
+                  Posting is included in every plan ·{" "}
+                  <Link
+                    href="/billing?from=social"
+                    className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+                  >
+                    See plans
+                  </Link>
+                </p>
+              ) : (
+                <p className="text-[13px] font-medium text-(--glass-fg-muted) tabular-nums">
+                  {cap === null
+                    ? `${used} approved this month`
+                    : `${used} of ${cap} posts used this month`}
+                </p>
+              )}
             </div>
-          )}
-          <p className={`mt-3 ${panelText}`}>
-            Let AI draft a month of posts from your website. You read, edit and approve each one.
-          </p>
-          <div className="mt-4">
-            <PlanMonthButton
-              thisMonth={thisMonth}
-              shownMonth={month}
-              remaining={state.aiRemaining.plans}
-              onPlanned={(created, plannedMonth) => {
-                setState((s) =>
-                  s && s.aiRemaining.plans !== null
-                    ? {
-                        ...s,
-                        aiRemaining: {
-                          ...s.aiRemaining,
-                          plans: Math.max(0, s.aiRemaining.plans - 1),
-                        },
-                      }
-                    : s,
-                );
-                if (plannedMonth === month) {
-                  setPosts((list) => [
-                    ...list.filter((p) => !created.some((c) => c.id === p.id)),
-                    ...created,
-                  ]);
-                } else {
-                  setMonth(plannedMonth);
-                }
-                setFilter("all");
-                setMessage(
-                  `${created.length} draft${created.length === 1 ? "" : "s"} added to ${monthLabel(plannedMonth)}. Read each one, add photos where needed, then approve.`,
-                );
+            {cap !== null && cap > 0 && (
+              <div
+                role="progressbar"
+                aria-label="Posts used this month"
+                aria-valuemin={0}
+                aria-valuemax={cap}
+                aria-valuenow={Math.min(used, cap)}
+                className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-900/[0.08]"
+              >
+                <div
+                  className="h-full rounded-full bg-brand"
+                  style={{ width: `${Math.min(100, Math.round((used / cap) * 100))}%` }}
+                />
+              </div>
+            )}
+            <p className={`mt-3 ${panelText}`}>
+              Let AI draft a month of posts from your website. You read, edit and approve each one.
+            </p>
+            <div className="mt-4">
+              <PlanMonthButton
+                thisMonth={thisMonth}
+                shownMonth={month}
+                remaining={state.aiRemaining.plans}
+                onPlanned={(created, plannedMonth) => {
+                  setState((s) =>
+                    s && s.aiRemaining.plans !== null
+                      ? {
+                          ...s,
+                          aiRemaining: {
+                            ...s.aiRemaining,
+                            plans: Math.max(0, s.aiRemaining.plans - 1),
+                          },
+                        }
+                      : s,
+                  );
+                  if (plannedMonth === month) {
+                    setPosts((list) => [
+                      ...list.filter((p) => !created.some((c) => c.id === p.id)),
+                      ...created,
+                    ]);
+                  } else {
+                    setMonth(plannedMonth);
+                  }
+                  setFilter("all");
+                  setMessage(
+                    `${created.length} draft${created.length === 1 ? "" : "s"} added to ${monthLabel(plannedMonth)}. Read each one, add photos where needed, then approve.`,
+                  );
+                }}
+              />
+              {cap === 0 && (
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
+                  You can try drafting now; approving needs a plan.
+                </p>
+              )}
+            </div>
+            <SettingsForm
+              settings={state.settings}
+              onSaved={(settings) => {
+                setState((s) => (s ? { ...s, settings } : s));
+                setMessage("Posting settings saved.");
               }}
             />
-            {cap === 0 && (
-              <p className="mt-2 text-[13px] text-slate-500">
-                You can try drafting now; approving needs a plan.
-              </p>
-            )}
-          </div>
-          <SettingsForm
-            settings={state.settings}
-            onSaved={(settings) => {
-              setState((s) => (s ? { ...s, settings } : s));
-              setMessage("Posting settings saved.");
-            }}
-          />
-        </section>
-      </div>
+          </section>
+        </div>
 
-      <section aria-labelledby="calendar-heading" className="mt-10">
-        {/* Barra de vidro grudada: no celular, logo abaixo da barra de cima (3.5rem). */}
-        <GlassToolbar
-          sticky={false}
-          className="sticky top-[4.25rem] z-20 lg:top-3"
-          actions={
-            <>
-              {reviewable.length > 0 && (
+        <section aria-labelledby="calendar-heading" className="mt-10">
+          {/* Barra de vidro grudada: no celular, logo abaixo da barra de cima (3.5rem). */}
+          <GlassToolbar
+            sticky={false}
+            className="sticky top-[4.25rem] z-20 lg:top-3"
+            actions={
+              reviewable.length > 0 ? (
                 <GlassButton
                   href={`/social/review?month=${month}`}
                   variant="secondary"
@@ -511,399 +575,395 @@ export function SocialCalendar({
                     {reviewable.length} {plural(reviewable.length, "draft", "drafts")}
                   </span>
                 </GlassButton>
-              )}
-              <GlassButton
-                variant="secondary"
-                icon={<PlusIcon />}
-                onClick={() => openNew(null)}
-                className="max-sm:px-3.5"
-              >
-                <span className="max-sm:sr-only">New post</span>
-                <span className="sm:hidden" aria-hidden="true">
-                  New
-                </span>
-              </GlassButton>
-            </>
-          }
-        >
-          <GlassIconButton
-            label="Previous month"
-            variant="ghost"
-            onClick={() => setMonth(shiftMonth(month, -1))}
+              ) : undefined
+            }
           >
-            <ChevronIcon direction="left" />
-          </GlassIconButton>
-          <h2
-            id="calendar-heading"
-            className="min-w-0 text-center font-display text-[17px] font-semibold tracking-[-0.012em] whitespace-nowrap text-(--glass-fg) tabular-nums sm:min-w-[9.5rem] sm:text-lg"
-          >
-            {monthLabel(month)}
-          </h2>
-          <GlassIconButton
-            label="Next month"
-            variant="ghost"
-            onClick={() => setMonth(shiftMonth(month, 1))}
-          >
-            <ChevronIcon direction="right" />
-          </GlassIconButton>
-          {month !== thisMonth && (
-            <GlassButton
+            <GlassIconButton
+              label="Previous month"
               variant="ghost"
-              size="sm"
-              className="max-sm:min-h-11"
-              onClick={() => setMonth(thisMonth)}
+              onClick={() => setMonth(shiftMonth(month, -1))}
             >
-              Today
-            </GlassButton>
-          )}
-        </GlassToolbar>
+              <ChevronIcon direction="left" />
+            </GlassIconButton>
+            <h2
+              id="calendar-heading"
+              className="min-w-0 text-center font-display text-[17px] font-semibold tracking-[-0.012em] whitespace-nowrap text-(--glass-fg) tabular-nums sm:min-w-[9.5rem] sm:text-lg"
+            >
+              {monthLabel(month)}
+            </h2>
+            <GlassIconButton
+              label="Next month"
+              variant="ghost"
+              onClick={() => setMonth(shiftMonth(month, 1))}
+            >
+              <ChevronIcon direction="right" />
+            </GlassIconButton>
+            {month !== thisMonth && (
+              <GlassButton
+                variant="ghost"
+                size="sm"
+                className="max-sm:min-h-11"
+                onClick={() => setMonth(thisMonth)}
+              >
+                Today
+              </GlassButton>
+            )}
+          </GlassToolbar>
 
-        <div className="mt-4 overflow-x-auto pb-1">
-          <GlassSegmented
-            aria-label="Show posts"
-            options={filterOptions}
-            value={filter}
-            onChange={setFilter}
-            className="min-w-full sm:min-w-0"
-          />
-        </div>
+          {/* No celular o filtro rola de lado, de ponta a ponta (como o das listas do escritório). */}
+          <div className="mt-4 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <GlassSegmented
+              aria-label="Show posts"
+              options={filterOptions}
+              value={filter}
+              onChange={setFilter}
+              className="min-w-max"
+            />
+          </div>
 
-        {postsError && <ErrorNote error={postsError} className="mt-4" />}
+          {postsError && <ErrorNote error={postsError} className="mt-4" />}
 
-        <div
-          aria-busy={loading}
-          className={loading ? "opacity-60 motion-safe:transition-opacity" : undefined}
-        >
-          {/* ---------- grade do mês (md+) ---------- */}
-          <div className={`mt-4 hidden overflow-hidden md:block ${cardClass}`}>
-            <div className="grid grid-cols-7 border-b border-(--glass-rim)" aria-hidden="true">
-              {WEEKDAYS.map((day) => (
-                <div
-                  key={day}
-                  className="px-3 py-2.5 text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-            <ol className="grid grid-cols-7">
-              {monthCells(month).map((dateKey, index) => {
-                if (!dateKey) {
+          <div
+            aria-busy={loading}
+            className={loading ? "opacity-60 motion-safe:transition-opacity" : undefined}
+          >
+            {/* ---------- grade do mês (md+) ---------- */}
+            <div className={`mt-4 hidden overflow-hidden md:block ${cardClass}`}>
+              <div className="grid grid-cols-7 border-b border-(--glass-rim)" aria-hidden="true">
+                {WEEKDAYS.map((day) => (
+                  <div
+                    key={day}
+                    className="px-3 py-2.5 text-[12px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase"
+                  >
+                    {day}
+                  </div>
+                ))}
+              </div>
+              <ol className="grid grid-cols-7">
+                {monthCells(month).map((dateKey, index) => {
+                  if (!dateKey) {
+                    return (
+                      <li
+                        key={`blank-${index}`}
+                        aria-hidden="true"
+                        className="min-h-32 border-r border-b border-(--glass-rim) bg-slate-900/[0.02] [&:nth-child(7n)]:border-r-0"
+                      />
+                    );
+                  }
+                  const dayPosts = byDay.get(dateKey) ?? [];
+                  const past = dateKey < todayKey;
+                  const isToday = dateKey === todayKey;
+                  const day = Number(dateKey.slice(8));
+                  const extra = dayPosts.length - MAX_CHIPS;
                   return (
                     <li
-                      key={`blank-${index}`}
-                      aria-hidden="true"
-                      className="min-h-32 border-r border-b border-(--glass-rim) bg-slate-900/[0.02] [&:nth-child(7n)]:border-r-0"
-                    />
+                      key={dateKey}
+                      className={cx(
+                        "group flex min-h-32 flex-col gap-1 border-r border-b border-(--glass-rim) p-1.5 [&:nth-child(7n)]:border-r-0",
+                        past && "bg-slate-900/[0.02]",
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => openDay(dateKey)}
+                          aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}. Open day`}
+                          className={cx(
+                            "inline-flex size-8 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums transition-colors duration-150",
+                            isToday
+                              ? "bg-brand text-white hover:bg-brand-dark"
+                              : past
+                                ? "text-(--glass-fg-muted) hover:bg-(--glass-ghost-hover)"
+                                : "text-ink hover:bg-(--glass-ghost-hover)",
+                            focusRing,
+                          )}
+                        >
+                          {day}
+                        </button>
+                        {!past && (
+                          <button
+                            type="button"
+                            onClick={() => openNew(dateKey)}
+                            aria-label={`New post on ${dayHeading(dateKey)}`}
+                            className={`inline-flex size-8 items-center justify-center rounded-full text-(--glass-fg-muted) opacity-0 transition-opacity group-hover:opacity-100 hover:bg-(--glass-ghost-hover) hover:text-ink focus-visible:opacity-100 ${focusRing}`}
+                          >
+                            <PlusIcon />
+                          </button>
+                        )}
+                      </div>
+                      <ul className="flex flex-col gap-1">
+                        {dayPosts.slice(0, MAX_CHIPS).map((post) => {
+                          const info = statusInfo(post);
+                          return (
+                            <li key={post.id}>
+                              <button
+                                type="button"
+                                onClick={() => openPost(post)}
+                                className={cx(
+                                  "glass-edge flex w-full items-start gap-1.5 rounded-lg px-1.5 py-1 text-left transition-[filter] duration-150 hover:brightness-[0.97]",
+                                  CHIP_TONE[info.tone],
+                                  focusRing,
+                                )}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className={`mt-1.5 size-1.5 shrink-0 rounded-full ${statusDot(post)}`}
+                                />
+                                <span className="min-w-0">
+                                  <span className="block text-[12px] leading-4 font-semibold tabular-nums">
+                                    {post.scheduledAt ? formatTime(post.scheduledAt, tz) : ""}
+                                    <span className="sr-only">, {info.label}: </span>
+                                  </span>
+                                  <span className="line-clamp-2 text-[12px] leading-4 opacity-90">
+                                    {shortCaption(post)}
+                                  </span>
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      {extra > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => openDay(dateKey)}
+                          className={`self-start rounded-md px-1.5 text-[12px] leading-5 font-semibold text-slate-600 hover:bg-(--glass-ghost-hover) hover:text-ink ${focusRing}`}
+                        >
+                          +{extra} more
+                        </button>
+                      )}
+                    </li>
                   );
-                }
-                const dayPosts = byDay.get(dateKey) ?? [];
-                const past = dateKey < todayKey;
-                const isToday = dateKey === todayKey;
-                const day = Number(dateKey.slice(8));
-                const extra = dayPosts.length - MAX_CHIPS;
-                return (
-                  <li
-                    key={dateKey}
-                    className={cx(
-                      "group flex min-h-32 flex-col gap-1 border-r border-b border-(--glass-rim) p-1.5 [&:nth-child(7n)]:border-r-0",
-                      past && "bg-slate-900/[0.02]",
-                    )}
+                })}
+              </ol>
+            </div>
+
+            {/* ---------- mini calendário (celular) ---------- */}
+            <div className={`mt-4 p-2 md:hidden ${cardClass}`}>
+              <div className="grid grid-cols-7" aria-hidden="true">
+                {WEEKDAYS.map((day) => (
+                  <div
+                    key={day}
+                    className="py-1.5 text-center text-[11px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase"
                   >
-                    <div className="flex items-center justify-between">
+                    {day.charAt(0)}
+                  </div>
+                ))}
+              </div>
+              <ol className="grid grid-cols-7">
+                {monthCells(month).map((dateKey, index) => {
+                  if (!dateKey) return <li key={`blank-${index}`} aria-hidden="true" />;
+                  const dayPosts = byDay.get(dateKey) ?? [];
+                  const past = dateKey < todayKey;
+                  const isToday = dateKey === todayKey;
+                  return (
+                    <li key={dateKey}>
                       <button
                         type="button"
                         onClick={() => openDay(dateKey)}
-                        aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}. Open day`}
+                        aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}`}
                         className={cx(
-                          "inline-flex size-8 items-center justify-center rounded-full text-[13px] font-semibold tabular-nums transition-colors duration-150",
-                          isToday
-                            ? "bg-brand text-white hover:bg-brand-dark"
-                            : past
-                              ? "text-slate-500 hover:bg-(--glass-ghost-hover)"
-                              : "text-ink hover:bg-(--glass-ghost-hover)",
+                          "flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-xl transition-colors duration-150 hover:bg-(--glass-ghost-hover)",
                           focusRing,
                         )}
                       >
-                        {day}
-                      </button>
-                      {!past && (
-                        <button
-                          type="button"
-                          onClick={() => openNew(dateKey)}
-                          aria-label={`New post on ${dayHeading(dateKey)}`}
-                          className={`inline-flex size-8 items-center justify-center rounded-full text-slate-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-(--glass-ghost-hover) hover:text-ink focus-visible:opacity-100 ${focusRing}`}
+                        <span
+                          className={cx(
+                            "inline-flex size-7 items-center justify-center rounded-full text-[15px] tabular-nums",
+                            isToday
+                              ? "bg-brand font-semibold text-white"
+                              : past
+                                ? "text-(--glass-fg-muted)"
+                                : "font-medium text-ink",
+                          )}
                         >
-                          <PlusIcon />
-                        </button>
-                      )}
-                    </div>
-                    <ul className="flex flex-col gap-1">
-                      {dayPosts.slice(0, MAX_CHIPS).map((post) => {
-                        const info = statusInfo(post);
-                        return (
-                          <li key={post.id}>
-                            <button
-                              type="button"
-                              onClick={() => openPost(post)}
-                              className={cx(
-                                "glass-edge flex w-full items-start gap-1.5 rounded-lg px-1.5 py-1 text-left transition-[filter] duration-150 hover:brightness-[0.97]",
-                                CHIP_TONE[info.tone],
-                                focusRing,
-                              )}
-                            >
-                              <span
-                                aria-hidden="true"
-                                className={`mt-1.5 size-1.5 shrink-0 rounded-full ${statusDot(post)}`}
-                              />
-                              <span className="min-w-0">
-                                <span className="block text-[12px] leading-4 font-semibold tabular-nums">
-                                  {post.scheduledAt ? formatTime(post.scheduledAt, tz) : ""}
-                                  <span className="sr-only">, {info.label}: </span>
-                                </span>
-                                <span className="line-clamp-2 text-[12px] leading-4 opacity-90">
-                                  {shortCaption(post)}
-                                </span>
-                              </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    {extra > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => openDay(dateKey)}
-                        className={`self-start rounded-md px-1.5 text-[12px] leading-5 font-semibold text-slate-600 hover:bg-(--glass-ghost-hover) hover:text-ink ${focusRing}`}
-                      >
-                        +{extra} more
+                          {Number(dateKey.slice(8))}
+                        </span>
+                        <span aria-hidden="true" className="flex h-1.5 gap-0.5">
+                          {dayPosts.slice(0, 3).map((post) => (
+                            <span
+                              key={post.id}
+                              className={`size-1.5 rounded-full ${statusDot(post)}`}
+                            />
+                          ))}
+                        </span>
                       </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-
-          {/* ---------- mini calendário (celular) ---------- */}
-          <div className={`mt-4 p-2 md:hidden ${cardClass}`}>
-            <div className="grid grid-cols-7" aria-hidden="true">
-              {WEEKDAYS.map((day) => (
-                <div
-                  key={day}
-                  className="py-1.5 text-center text-[11px] font-semibold tracking-wide text-slate-500 uppercase"
-                >
-                  {day.charAt(0)}
-                </div>
-              ))}
-            </div>
-            <ol className="grid grid-cols-7">
-              {monthCells(month).map((dateKey, index) => {
-                if (!dateKey) return <li key={`blank-${index}`} aria-hidden="true" />;
-                const dayPosts = byDay.get(dateKey) ?? [];
-                const past = dateKey < todayKey;
-                const isToday = dateKey === todayKey;
-                return (
-                  <li key={dateKey}>
-                    <button
-                      type="button"
-                      onClick={() => openDay(dateKey)}
-                      aria-label={`${dayHeading(dateKey)}${isToday ? ", today" : ""}: ${dayPosts.length} ${plural(dayPosts.length, "post", "posts")}`}
-                      className={cx(
-                        "flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-xl transition-colors duration-150 hover:bg-(--glass-ghost-hover)",
-                        focusRing,
-                      )}
-                    >
-                      <span
-                        className={cx(
-                          "inline-flex size-7 items-center justify-center rounded-full text-[15px] tabular-nums",
-                          isToday
-                            ? "bg-brand font-semibold text-white"
-                            : past
-                              ? "text-slate-500"
-                              : "font-medium text-ink",
-                        )}
-                      >
-                        {Number(dateKey.slice(8))}
-                      </span>
-                      <span aria-hidden="true" className="flex h-1.5 gap-0.5">
-                        {dayPosts.slice(0, 3).map((post) => (
-                          <span
-                            key={post.id}
-                            className={`size-1.5 rounded-full ${statusDot(post)}`}
-                          />
-                        ))}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-
-          {/* ---------- lista do mês (celular) ---------- */}
-          <div className="mt-6 md:hidden">
-            {shown.length === 0 ? (
-              <EmptyState
-                icon={<CalendarIcon />}
-                title={emptyText}
-                description={
-                  filter === "all" ? "Fill the month with AI or add a post yourself." : undefined
-                }
-                actions={
-                  filter === "all" ? (
-                    <GlassButton
-                      variant="secondary"
-                      icon={<PlusIcon />}
-                      onClick={() => openNew(null)}
-                    >
-                      New post
-                    </GlassButton>
-                  ) : (
-                    <GlassButton variant="ghost" onClick={() => setFilter("all")}>
-                      Show all posts
-                    </GlassButton>
-                  )
-                }
-              />
-            ) : (
-              <ol className="grid gap-5">
-                {[...byDay.entries()].map(([dateKey, dayPosts]) => (
-                  <li key={dateKey}>
-                    <h3
-                      className={`text-[13px] font-semibold ${dateKey === todayKey ? "text-brand" : "text-slate-500"}`}
-                    >
-                      {dateKey === todayKey
-                        ? `Today · ${dayHeading(dateKey)}`
-                        : dayHeading(dateKey)}
-                    </h3>
-                    <ul className="mt-2 grid gap-2">
-                      {dayPosts.map((post) => (
-                        <li key={post.id}>
-                          <AgendaRow post={post} tz={tz} onOpen={openPost} />
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ol>
+            </div>
+
+            {/* ---------- lista do mês (celular) ---------- */}
+            <div className="mt-6 md:hidden">
+              {shown.length === 0 ? (
+                <EmptyState
+                  icon={<CalendarIcon />}
+                  title={emptyText}
+                  description={
+                    filter === "all" ? "Fill the month with AI or add a post yourself." : undefined
+                  }
+                  actions={
+                    filter === "all" ? (
+                      <GlassButton
+                        variant="secondary"
+                        icon={<PlusIcon />}
+                        onClick={() => openNew(null)}
+                      >
+                        New post
+                      </GlassButton>
+                    ) : (
+                      <GlassButton variant="ghost" onClick={() => setFilter("all")}>
+                        Show all posts
+                      </GlassButton>
+                    )
+                  }
+                />
+              ) : (
+                <ol className="grid gap-5">
+                  {[...byDay.entries()].map(([dateKey, dayPosts]) => (
+                    <li key={dateKey}>
+                      <h3
+                        className={`text-[13px] font-semibold ${dateKey === todayKey ? "text-brand" : "text-(--glass-fg-muted)"}`}
+                      >
+                        {dateKey === todayKey
+                          ? `Today · ${dayHeading(dateKey)}`
+                          : dayHeading(dateKey)}
+                      </h3>
+                      <ul className="mt-2 grid gap-2">
+                        {dayPosts.map((post) => (
+                          <li key={post.id}>
+                            <AgendaRow post={post} tz={tz} onOpen={openPost} />
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+
+            {/* Mês vazio no computador: a grade fica, com uma linha de apoio embaixo. */}
+            {shown.length === 0 && (
+              <p className="mt-4 hidden text-center text-[15px] text-slate-600 md:block">
+                {emptyText}{" "}
+                {filter === "all" ? (
+                  <button
+                    type="button"
+                    onClick={() => openNew(null)}
+                    className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+                  >
+                    Add a post
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setFilter("all")}
+                    className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+                  >
+                    Show all posts
+                  </button>
+                )}
+              </p>
+            )}
+
+            {/* ---------- rascunhos sem data ---------- */}
+            {undated.length > 0 && (filter === "all" || filter === "todo") && (
+              <div className="mt-8">
+                <h3 className="text-[13px] font-semibold text-(--glass-fg-muted)">
+                  Drafts without a date
+                </h3>
+                <ul className="mt-2 grid gap-2 md:grid-cols-2">
+                  {undated.map((post) => (
+                    <li key={post.id}>
+                      <AgendaRow post={post} tz={tz} onOpen={openPost} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
+        </section>
 
-          {/* Mês vazio no computador: a grade fica, com uma linha de apoio embaixo. */}
-          {shown.length === 0 && (
-            <p className="mt-4 hidden text-center text-[15px] text-slate-600 md:block">
-              {emptyText}{" "}
-              {filter === "all" ? (
-                <button
-                  type="button"
-                  onClick={() => openNew(null)}
-                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
-                >
-                  Add a post
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setFilter("all")}
-                  className={`rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
-                >
-                  Show all posts
-                </button>
-              )}
-            </p>
-          )}
-
-          {/* ---------- rascunhos sem data ---------- */}
-          {undated.length > 0 && (filter === "all" || filter === "todo") && (
-            <div className="mt-8">
-              <h3 className="text-[13px] font-semibold text-slate-500">Drafts without a date</h3>
-              <ul className="mt-2 grid gap-2 md:grid-cols-2">
-                {undated.map((post) => (
-                  <li key={post.id}>
-                    <AgendaRow post={post} tz={tz} onOpen={openPost} />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ---------- folha do dia ---------- */}
-      <GlassSheet
-        open={sheet.open}
-        onClose={() => setSheet((s) => ({ ...s, open: false }))}
-        title={sheet.day ? dayHeading(sheet.day) : "Day"}
-        description={
-          sheetPosts.length === 0
-            ? sheetPast
-              ? "Nothing was planned for this day."
-              : "Nothing planned yet."
-            : `${sheetPosts.length} ${plural(sheetPosts.length, "post", "posts")}`
-        }
-        footer={
-          <>
-            <GlassButton
-              variant="secondary"
-              onClick={() => setSheet((s) => ({ ...s, open: false }))}
-            >
-              Close
-            </GlassButton>
-            {!sheetPast && sheet.day && (
-              <GlassButton variant="primary" icon={<PlusIcon />} onClick={() => openNew(sheet.day)}>
-                New post on this day
-              </GlassButton>
-            )}
-          </>
-        }
-      >
-        {sheetPosts.length > 0 && (
-          <ul className="grid gap-2">
-            {sheetPosts.map((post) => (
-              <li key={post.id}>
-                <AgendaRow post={post} tz={tz} onOpen={openPost} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </GlassSheet>
-
-      {composer && (
-        <PostComposer
-          key={composer.post?.id ?? `new-${composer.date ?? ""}`}
-          post={composer.post}
-          defaultDate={composer.date}
-          state={state}
-          onClose={() => setComposer(null)}
-          onSynced={upsertPost}
-          onDone={(post, text) => {
-            upsertPost(post);
-            setMessage(text);
-            // O uso do plano muda ao aprovar/publicar.
-            void loadState();
-          }}
-          onDeleted={(id) => {
-            setPosts((list) => list.filter((p) => p.id !== id));
-            setMessage("Post deleted.");
-            void loadState();
-          }}
-          onAiUsed={() =>
-            setState((s) =>
-              s && s.aiRemaining.captions !== null
-                ? {
-                    ...s,
-                    aiRemaining: {
-                      ...s.aiRemaining,
-                      captions: Math.max(0, s.aiRemaining.captions - 1),
-                    },
-                  }
-                : s,
-            )
+        {/* ---------- folha do dia ---------- */}
+        <GlassSheet
+          open={sheet.open}
+          onClose={() => setSheet((s) => ({ ...s, open: false }))}
+          title={sheet.day ? dayHeading(sheet.day) : "Day"}
+          description={
+            sheetPosts.length === 0
+              ? sheetPast
+                ? "Nothing was planned for this day."
+                : "Nothing planned yet."
+              : `${sheetPosts.length} ${plural(sheetPosts.length, "post", "posts")}`
           }
-        />
-      )}
-    </div>
+          footer={
+            <>
+              <GlassButton
+                variant="secondary"
+                onClick={() => setSheet((s) => ({ ...s, open: false }))}
+              >
+                Close
+              </GlassButton>
+              {!sheetPast && sheet.day && (
+                <GlassButton
+                  variant="primary"
+                  icon={<PlusIcon />}
+                  onClick={() => openNew(sheet.day)}
+                >
+                  New post on this day
+                </GlassButton>
+              )}
+            </>
+          }
+        >
+          {sheetPosts.length > 0 && (
+            <ul className="grid gap-2">
+              {sheetPosts.map((post) => (
+                <li key={post.id}>
+                  <AgendaRow post={post} tz={tz} onOpen={openPost} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </GlassSheet>
+
+        {composer && (
+          <PostComposer
+            key={composer.post?.id ?? `new-${composer.date ?? ""}`}
+            post={composer.post}
+            defaultDate={composer.date}
+            state={state}
+            onClose={() => setComposer(null)}
+            onSynced={upsertPost}
+            onDone={(post, text) => {
+              upsertPost(post);
+              setMessage(text);
+              // O uso do plano muda ao aprovar/publicar.
+              void loadState();
+            }}
+            onDeleted={(id) => {
+              setPosts((list) => list.filter((p) => p.id !== id));
+              setMessage("Post deleted.");
+              void loadState();
+            }}
+            onAiUsed={() =>
+              setState((s) =>
+                s && s.aiRemaining.captions !== null
+                  ? {
+                      ...s,
+                      aiRemaining: {
+                        ...s.aiRemaining,
+                        captions: Math.max(0, s.aiRemaining.captions - 1),
+                      },
+                    }
+                  : s,
+              )
+            }
+          />
+        )}
+      </div>
+    </SocialShell>
   );
 }
 
@@ -932,7 +992,7 @@ function AgendaRow({
           className="size-16 shrink-0 rounded-xl object-cover ring-1 ring-(--glass-rim)"
         />
       ) : (
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-slate-900/[0.04] text-center text-[11px] leading-4 text-slate-500 ring-1 ring-(--glass-rim)">
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-slate-900/[0.04] text-center text-[11px] leading-4 text-(--glass-fg-muted) ring-1 ring-(--glass-rim)">
           No photo
         </span>
       )}
@@ -989,8 +1049,7 @@ function SettingsForm({
     }
   }
 
-  const field =
-    "mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white/80 px-3 text-base text-ink focus:border-brand sm:text-[15px] focus:ring-4 focus:ring-brand/15 focus:outline-none";
+  const field = `${fieldClass} mt-1.5 h-11`;
 
   return (
     <details className="group mt-5 border-t border-(--glass-rim) pt-3">
@@ -1016,7 +1075,7 @@ function SettingsForm({
         onSubmit={(event) => void save(event)}
         className="mt-3 grid gap-3 sm:grid-cols-[1fr_9rem_auto] sm:items-end"
       >
-        <label className="block text-[13px] font-medium text-ink">
+        <label className={labelClass}>
           Business time zone
           <select
             value={timezone}
@@ -1030,7 +1089,7 @@ function SettingsForm({
             ))}
           </select>
         </label>
-        <label className="block text-[13px] font-medium text-ink">
+        <label className={labelClass}>
           Usual time
           <input
             type="time"

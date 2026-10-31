@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { markShared, splitSiteUrl } from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 
 // Modal "Publish website": status, endereço grátis (copiar/abrir), domínio próprio e o botão
 // de publicar. Usado na página do site (PublishButton) e no editor (SiteEditor). Quem chama
@@ -26,7 +27,8 @@ export type PublishState = "draft" | "outdated" | "current";
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
-const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
+// Compartilhar: os mesmos botões de vidro do app (44px de toque no celular).
+const shareLink = `${glassButtonClass({ variant: "secondary", size: "sm" })} max-sm:min-h-11`;
 
 type QrDrawing = { value: string; size: number; path: string };
 
@@ -299,13 +301,13 @@ export function PublishDialog({
                 >
                   Publish website
                 </h2>
-                <p className="mt-0.5 truncate text-[13px] text-slate-500">{siteName}</p>
+                <p className="mt-0.5 truncate text-[13px] text-(--glass-fg-muted)">{siteName}</p>
               </div>
               <button
                 type="button"
                 onClick={() => dialogRef.current?.close()}
                 aria-label="Close"
-                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
+                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-(--glass-fg-muted) transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
               >
                 <Svg className="size-5">
                   <path d="M6 18 18 6M6 6l12 12" />
@@ -318,23 +320,23 @@ export function PublishDialog({
                 <span aria-hidden="true" className={`size-2 rounded-full ${status.dot}`} />
                 {status.label}
               </p>
-              <p className="mt-0.5 text-[13px] text-slate-500">{status.text}</p>
+              <p className="mt-0.5 text-[13px] text-(--glass-fg-muted)">{status.text}</p>
             </div>
 
             {/* ---------- Endereço grátis ---------- */}
             <section
               aria-labelledby="free-address-title"
-              className="glass-edge mt-4 rounded-2xl bg-white/60 p-4"
+              className="glass-inset mt-4 rounded-xl p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 id="free-address-title" className="text-[13px] font-semibold text-ink">
                   Free address
                 </h3>
                 {/* Com plano obrigatório, "Free" confundiria: o endereço é grátis, publicar não. */}
-                {!needsPlan && <span className="text-[12px] text-slate-500">Free</span>}
+                {!needsPlan && <span className="text-[12px] text-(--glass-fg-muted)">Free</span>}
               </div>
               <p className="mt-2 font-mono text-[14px] leading-6 break-all">
-                <span className="text-slate-500">{prefix}</span>
+                <span className="text-(--glass-fg-muted)">{prefix}</span>
                 <span className="font-semibold text-ink">{name}</span>
               </p>
               {live ? (
@@ -350,7 +352,7 @@ export function PublishDialog({
                   </a>
                 </div>
               ) : (
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   Your site goes live at this address when you publish.
                 </p>
               )}
@@ -426,7 +428,7 @@ export function PublishDialog({
                   </div>
                 </>
               ) : (
-                <p className="mt-0.5 text-[13px] leading-snug text-slate-500">
+                <p className="mt-0.5 text-[13px] leading-snug text-(--glass-fg-muted)">
                   Use your own address. We walk you through DNS and set up HTTPS for you.
                 </p>
               )}
@@ -440,22 +442,19 @@ export function PublishDialog({
               </a>
             </section>
 
-            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-slate-500">
+            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-(--glass-fg-muted)">
               Once published, anyone with the link can see your site.
             </p>
           </div>
 
           <div className="shrink-0 border-t border-slate-900/10 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
             {error && (
-              <p
-                role="alert"
-                className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700"
-              >
+              <Notice tone="error" size="sm" className="mb-3">
                 {error}
-              </p>
+              </Notice>
             )}
             <div className="flex items-start justify-between gap-3">
-              <p id="publish-plan-note" className="text-[13px] text-slate-500">
+              <p id="publish-plan-note" className="text-[13px] text-(--glass-fg-muted)">
                 {state === "current"
                   ? "Your site already has the latest version."
                   : needsPlan

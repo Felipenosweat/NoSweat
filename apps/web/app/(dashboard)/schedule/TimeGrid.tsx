@@ -101,7 +101,7 @@ export const TimeGrid = memo(function TimeGrid({
             const isToday = day === today;
             const label = (
               <>
-                <span className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase">
+                <span className="text-[12px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase">
                   {weekdayShort(day)}
                 </span>
                 <span
@@ -142,7 +142,7 @@ export const TimeGrid = memo(function TimeGrid({
               <span
                 key={hour}
                 className={cx(
-                  "absolute right-2 text-[11px] font-medium whitespace-nowrap text-slate-500 tabular-nums",
+                  "absolute right-2 text-[11px] font-medium whitespace-nowrap text-(--glass-fg-muted) tabular-nums",
                   i > 0 && "-translate-y-1/2",
                 )}
                 style={{ top: i === 0 ? 4 : i * HOUR_PX }}

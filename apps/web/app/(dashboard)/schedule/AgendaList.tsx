@@ -54,7 +54,7 @@ export function AgendaList({
                 )}
               >
                 {heading}
-                {named && <span className="font-normal text-slate-500"> · {full}</span>}
+                {named && <span className="font-normal text-(--glass-fg-muted)"> · {full}</span>}
               </h3>
               {onAdd && day >= today && (
                 <GlassButton
@@ -71,7 +71,7 @@ export function AgendaList({
             </div>
 
             {dayJobs.length === 0 ? (
-              <p className="mt-1 px-1 text-[13px] text-slate-500">Nothing scheduled</p>
+              <p className="mt-1 px-1 text-[13px] text-(--glass-fg-muted)">Nothing scheduled</p>
             ) : (
               <ul className="glass mt-2 overflow-hidden rounded-2xl">
                 {dayJobs.map(({ job }) => {
@@ -115,7 +115,7 @@ export function AgendaList({
                               <span className="tabular-nums"> · {formatCents(job.valueCents)}</span>
                             )}
                           </span>
-                          <span className="block truncate text-[13px] leading-5 text-slate-500">
+                          <span className="block truncate text-[13px] leading-5 text-(--glass-fg-muted)">
                             {assigneeNames(job, team)}
                           </span>
                         </span>
@@ -148,7 +148,7 @@ export function AgendaList({
               ›
             </span>
             Earlier this week
-            <span className="font-normal text-slate-500 tabular-nums">
+            <span className="font-normal text-(--glass-fg-muted) tabular-nums">
               · {earlierCount} {earlierCount === 1 ? "job" : "jobs"}
             </span>
           </summary>

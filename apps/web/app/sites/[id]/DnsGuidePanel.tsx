@@ -2,7 +2,7 @@
 
 import type { DnsProvider, DnsRecord } from "@nosweat/schema";
 import { focusRing, secondaryButton } from "@/components/DashboardUi";
-import { glassButtonClass } from "@/components/glass";
+import { Notice, cx, glassButtonClass } from "@/components/glass";
 import { DNS_GUIDES, guideById, type DnsGuideId } from "./dnsGuides";
 
 /**
@@ -33,14 +33,11 @@ export function DnsGuidePanel({
   const dnsUrl = guide?.dnsUrl(domain) ?? null;
 
   return (
-    <section
-      aria-labelledby="dns-guide-title"
-      className="glass-edge rounded-2xl bg-white/40 p-4 sm:p-5"
-    >
+    <section aria-labelledby="dns-guide-title" className="glass-inset rounded-xl p-4">
       <h3 id="dns-guide-title" className="font-display text-[15px] font-semibold text-ink">
         Where did you buy your domain?
       </h3>
-      <p className="mt-1 text-[13px] text-slate-500">
+      <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
         {detected
           ? `We checked: ${domain} is managed at ${guideById(detected).name}. Follow the steps below.`
           : "Pick the company and we'll show you exactly where to click."}
@@ -53,11 +50,14 @@ export function DnsGuidePanel({
             type="button"
             aria-pressed={selected === option.id}
             onClick={() => onSelect(option.id)}
-            className={`min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
+            className={cx(
+              "min-h-11 rounded-full px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10",
+              // Escolhida: o mesmo vidro tingido das cápsulas de filtro do painel.
               selected === option.id
-                ? "border-ink bg-ink text-white"
-                : "border-slate-300 bg-white/80 text-slate-700 hover:border-slate-400 hover:bg-white"
-            }`}
+                ? "glass-tint text-white [--glass-tint:#071b33]"
+                : "glass glass-flat glass-interactive text-(--glass-fg)",
+              focusRing,
+            )}
           >
             {option.name}
           </button>
@@ -74,7 +74,7 @@ export function DnsGuidePanel({
 
           {/* Os registros vêm antes dos passos: os passos falam da "table above". */}
           <div>
-            <p className="text-[13px] font-medium text-slate-500">
+            <p className="text-[13px] font-medium text-(--glass-fg-muted)">
               What to type in {guide.id === "other" ? "the form" : `${guide.name}'s form`}:
             </p>
             <div className="mt-2 space-y-3">
@@ -114,11 +114,13 @@ export function DnsGuidePanel({
           </ol>
 
           {guide.tips.length > 0 && (
-            <ul className="space-y-1.5 rounded-lg bg-amber-50 px-4 py-3 text-[13px] leading-normal text-amber-900">
-              {guide.tips.map((tip) => (
-                <li key={tip}>• {tip}</li>
-              ))}
-            </ul>
+            <Notice tone="warning" size="sm" role={null}>
+              <ul className="space-y-1.5">
+                {guide.tips.map((tip) => (
+                  <li key={tip}>{tip}</li>
+                ))}
+              </ul>
+            </Notice>
           )}
 
           {guide.helpUrl && (
@@ -176,14 +178,14 @@ function Field({
 }) {
   return (
     <div className="min-w-0">
-      <span className="block truncate text-[11px] font-medium tracking-wide text-slate-500 uppercase">
+      <span className="block truncate text-[11px] font-medium tracking-wide text-(--glass-fg-muted) uppercase">
         {label}
       </span>
       <span
         // Valor (ex.: o código TXT de 47 letras) quebra a linha em vez de cortar com "…":
         // as pessoas copiam o que veem.
         className={`mt-1 block rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] ${
-          value ? "text-ink" : "text-slate-500 italic"
+          value ? "text-ink" : "text-(--glass-fg-muted) italic"
         } ${mono ? "font-mono break-all" : "truncate font-semibold"}`}
       >
         {value || placeholder}

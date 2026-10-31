@@ -24,7 +24,7 @@ function menuClient(client: Client): ClientMenuClient {
 
 function contactLine(client: Client): ReactNode {
   const contact = [client.phone, client.email].filter(Boolean).join(" · ");
-  return contact || <span className="text-slate-500">No contact info</span>;
+  return contact || <span className="text-(--glass-fg-muted)">No contact info</span>;
 }
 
 /** Retorno marcado (só para quem ainda está no funil). */
@@ -83,7 +83,7 @@ function ClientRow({
               {client.jobsCount} {client.jobsCount === 1 ? "job" : "jobs"}
             </span>
           ) : null}
-          <span className="block text-[13px] text-slate-500">
+          <span className="block text-[13px] text-(--glass-fg-muted)">
             <span className="sr-only">Last activity </span>
             <LocalTime iso={client.lastActivityAt} className="tabular-nums" />
           </span>
@@ -204,7 +204,7 @@ export function ClientsBoard({
                 )}
               </div>
               {column.length === 0 ? (
-                <p className="mt-1 rounded-2xl border border-dashed border-slate-300/80 px-3 py-6 text-center text-[13px] text-slate-500">
+                <p className="mt-1 rounded-2xl border border-dashed border-slate-300/80 px-3 py-6 text-center text-[13px] text-(--glass-fg-muted)">
                   No {STAGE_LABELS[stage].toLowerCase()} clients
                 </p>
               ) : (

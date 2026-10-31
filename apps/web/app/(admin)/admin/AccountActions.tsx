@@ -6,9 +6,10 @@ import {
   GlassButton,
   GlassMenu,
   GlassSheet,
+  Notice,
   type GlassMenuItem,
 } from "@/components/glass";
-import { Notice, fieldClass, labelClass } from "./AdminUi";
+import { fieldClass, labelClass } from "./AdminUi";
 import { deleteAccountAction, type DeleteAccountState } from "./actions";
 import {
   setLoginDisabledAction,
@@ -259,12 +260,9 @@ export function useAccountActions({ manageEnabled }: { manageEnabled: boolean })
           />
         </label>
         {dialogError && (
-          <p
-            role="alert"
-            className="glass-edge mt-3 rounded-xl bg-red-50/90 px-3 py-2 text-sm text-red-700"
-          >
+          <Notice tone="error" size="sm" className="mt-3">
             {dialogError}
-          </p>
+          </Notice>
         )}
       </GlassSheet>
     </>
