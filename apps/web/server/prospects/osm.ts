@@ -10,20 +10,23 @@ import type { PlaceBusiness } from "./types";
 // e cache de 1 hora na memória para a mesma busca. A cobertura de pequenos negócios no OSM é
 // incompleta: vêm menos empresas que no Google, e sem nota/avaliações.
 
-export const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 /**
- * Servidores públicos do Overpass, em ordem. O principal (overpass-api.de) às vezes responde
- * 502/504/429 quando está cheio; aí a mesma consulta vai para o próximo.
+ * Servidores públicos do Overpass, em ordem. z. e lz4. são as duas máquinas por trás do
+ * overpass-api.de (o endereço principal às vezes responde 502 do balanceador, em produção);
+ * cheio ou fora (429, 5xx, rede, demora) → a mesma consulta vai para o próximo.
  */
 export const OVERPASS_URLS = [
-  OVERPASS_URL,
+  "https://z.overpass-api.de/api/interpreter",
+  "https://lz4.overpass-api.de/api/interpreter",
+  "https://overpass-api.de/api/interpreter",
   "https://overpass.private.coffee/api/interpreter",
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
+export const OVERPASS_URL = OVERPASS_URLS[0]!;
 export const OSM_USER_AGENT = "NoSweatBot/1.0 (+https://www.nosweatfd.com; prospecting)";
 /** Raio em volta do centro da cidade. */
 export const OSM_RADIUS_METERS = 15_000;
-const QUERY_TIMEOUT_S = 25;
+const QUERY_TIMEOUT_S = 20;
 const MAX_RESULTS = 80;
 const CACHE_MS = 60 * 60 * 1000;
 
@@ -31,27 +34,45 @@ const CACHE_MS = 60 * 60 * 1000;
  * Filtros do Overpass por ramo. Cada item vira um `nwr[...]` dentro do raio.
  * `any`: qualquer ramo (a categoria de cada empresa sai das tags dela) e só quem NÃO tem site.
  */
-type Trade = { label: string; filters: string[]; any?: boolean; radius?: number };
+type Trade = {
+  label: string;
+  filters: string[];
+  any?: boolean;
+  radius?: number;
+  /** Filtro feito aqui, depois da resposta (o que é caro de pedir ao Overpass). */
+  keep?: (tags: Record<string, string>) => boolean;
+};
 
 /** O ramo da busca "qualquer empresa" (botão "Find leads" sem nada digitado). */
 export const ANY_TRADE = "local businesses";
 const ANY_MATCH = /^(any|all|any business(es)?|all business(es)?|local business(es)?|businesses)$/;
 
 // Qualquer empresa pequena SEM site e COM telefone (dá para ligar ou mandar a prévia), fora redes
-// (tag brand). Tipos que não compram site (governo, igreja, escola, banco...) ficam de fora.
-const NO_SITE = '[!"website"][!"contact:website"][!"url"][!"brand"][!"brand:wikidata"]';
-const ANY_KINDS = [
-  '["shop"]["shop"!~"^(vacant|yes|no|kiosk|mall|department_store|supermarket|convenience|gas|fuel|ticket|lottery)$"]',
-  '["craft"]',
-  '["office"]["office"!~"^(government|ngo|association|religion|political_party|diplomatic|educational_institution|union|yes)$"]',
-  '["healthcare"]["healthcare"!~"^(hospital|centre|blood_donation|laboratory)$"]',
-  '["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream|dentist|veterinary|clinic|car_wash|car_rental|childcare|driving_school|beauty|spa)$"]',
-  '["leisure"~"^(fitness_centre|sports_centre|dance)$"]',
-];
-// Telefone em "phone" OU "contact:phone" (filtro por regex de chave: uma linha por tipo).
-const ANY_TRADE_FILTERS = ANY_KINDS.map(
-  (kind) => `${kind}${NO_SITE}[~"^(phone|contact:phone)$"~"."]`,
-);
+// (tag brand). A consulta é a mais barata possível para o servidor (empresas com telefone e sem
+// site dentro de um retângulo, 2 linhas); o tipo de negócio é conferido aqui (keepAnyBusiness):
+// governo, igreja, escola, banco, posto, supermercado... ficam de fora.
+const NO_SITE = '[!"website"][!"contact:website"][!"url"][!"brand"]';
+const ANY_TRADE_FILTERS = [`["phone"]${NO_SITE}`, `["contact:phone"]${NO_SITE}`];
+
+const SKIP_SHOP =
+  /^(vacant|yes|no|kiosk|mall|department_store|supermarket|convenience|gas|fuel|ticket|lottery|e-cigarette|tobacco|alcohol)$/;
+const SKIP_OFFICE =
+  /^(government|ngo|association|religion|political_party|diplomatic|educational_institution|union|yes|company)$/;
+const SKIP_HEALTHCARE = /^(hospital|centre|blood_donation|laboratory)$/;
+const AMENITY =
+  /^(restaurant|cafe|fast_food|bar|pub|ice_cream|dentist|veterinary|clinic|doctors|car_wash|car_rental|childcare|driving_school|beauty|spa)$/;
+const LEISURE = /^(fitness_centre|sports_centre|dance)$/;
+
+/** Na busca "qualquer empresa": é um negócio local que pode comprar um site? */
+export function keepAnyBusiness(tags: Record<string, string>): boolean {
+  if (tags.shop) return !SKIP_SHOP.test(tags.shop);
+  if (tags.craft) return tags.craft !== "yes";
+  if (tags.healthcare) return !SKIP_HEALTHCARE.test(tags.healthcare);
+  if (tags.amenity) return AMENITY.test(tags.amenity);
+  if (tags.office) return !SKIP_OFFICE.test(tags.office);
+  if (tags.leisure) return LEISURE.test(tags.leisure);
+  return false;
+}
 
 const TRADES: { match: RegExp; trade: Trade }[] = [
   { match: /plumb/, trade: { label: "Plumber", filters: ['["craft"="plumber"]'] } },
@@ -218,7 +239,13 @@ export function tradeFilters(trade: string): Trade | null {
   const text = trade.trim().toLowerCase();
   if (!text || ANY_MATCH.test(text)) {
     // Raio menor: numa cidade grande, "todas as lojas em 15 km" estoura o tempo do Overpass.
-    return { label: "Local business", filters: ANY_TRADE_FILTERS, any: true, radius: 8_000 };
+    return {
+      label: "Local business",
+      filters: ANY_TRADE_FILTERS,
+      any: true,
+      radius: 6_000,
+      keep: keepAnyBusiness,
+    };
   }
   const known = TRADES.find(({ match }) => match.test(text))?.trade;
   if (known) return known;
@@ -254,11 +281,24 @@ export function categoryFromTags(tags: Record<string, string>): string | null {
   return null;
 }
 
-/** Consulta Overpass QL: todos os filtros do ramo, num raio em volta do centro da cidade. */
+/** Retângulo em volta do centro (s,w,n,e), com `meters` para cada lado. */
+export function boundingBox(lat: number, lon: number, meters: number): string {
+  const dLat = meters / 111_320;
+  const dLon = meters / (111_320 * Math.cos((lat * Math.PI) / 180));
+  const f = (n: number) => n.toFixed(4);
+  return [f(lat - dLat), f(lon - dLon), f(lat + dLat), f(lon + dLon)].join(",");
+}
+
+/**
+ * Consulta Overpass QL: os filtros do ramo dentro de um retângulo em volta do centro da cidade.
+ * Retângulo global ([bbox:...]) em vez de "around": o servidor usa o índice de área e responde
+ * bem mais rápido. Na busca "qualquer empresa" vêm mais linhas, porque parte sai no keep().
+ */
 export function buildOverpassQuery(trade: Trade, lat: number, lon: number): string {
-  const around = `(around:${trade.radius ?? OSM_RADIUS_METERS},${lat},${lon})`;
-  const parts = trade.filters.map((filter) => `  nwr${filter}["name"]${around};`);
-  return `[out:json][timeout:${QUERY_TIMEOUT_S}];\n(\n${parts.join("\n")}\n);\nout center tags ${MAX_RESULTS};`;
+  const bbox = boundingBox(lat, lon, trade.radius ?? OSM_RADIUS_METERS);
+  const parts = trade.filters.map((filter) => `  nw${filter}["name"];`);
+  const limit = trade.keep ? MAX_RESULTS * 4 : MAX_RESULTS;
+  return `[out:json][timeout:${QUERY_TIMEOUT_S}][bbox:${bbox}];\n(\n${parts.join("\n")}\n);\nout center tags ${limit};`;
 }
 
 const Element = z.object({
@@ -366,6 +406,11 @@ export class OverpassClient implements PlacesClient {
     const seen = new Set<string>();
     const results: PlaceBusiness[] = [];
     for (const element of parsed.data.elements) {
+      if (results.length >= MAX_RESULTS) break;
+      if (trade.keep) {
+        const tags = Element.safeParse(element).data?.tags ?? {};
+        if (!trade.keep(tags)) continue;
+      }
       const business = toBusiness(element, context);
       if (!business || seen.has(business.placeId)) continue;
       seen.add(business.placeId);
