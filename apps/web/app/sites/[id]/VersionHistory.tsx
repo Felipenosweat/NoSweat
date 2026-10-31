@@ -60,7 +60,7 @@ export function VersionHistory({
               <span className="block font-medium text-ink sm:inline">
                 {SOURCE_LABELS[version.source]}
               </span>
-              <span className="block text-[13px] text-slate-500 tabular-nums sm:ml-2 sm:inline">
+              <span className="block text-[13px] text-(--glass-fg-muted) tabular-nums sm:ml-2 sm:inline">
                 <LocalTime iso={version.createdAt} />
               </span>
             </span>

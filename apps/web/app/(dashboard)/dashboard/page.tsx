@@ -625,7 +625,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
           Needs you
         </h2>
         {rows.length > 0 && (
-          <p className="text-[13px] text-slate-500 tabular-nums">
+          <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
             {rows.length} {plural(rows.length, "item", "items")}
           </p>
         )}
@@ -653,13 +653,13 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
                     </IconTile>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] leading-[1.45] text-ink">{row.text}</span>
-                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+                      <span className="mt-0.5 block text-[13px] leading-5 text-(--glass-fg-muted)">
                         {style.label}
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-slate-500 transition-colors duration-150 group-hover:text-ink"
+                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-(--glass-fg-muted) transition-colors duration-150 group-hover:text-ink"
                     >
                       <span className="max-sm:hidden">{row.action}</span>
                       <ChevronRightIcon className="size-4 text-slate-400" />
@@ -872,7 +872,7 @@ function TodayJobRow({ job, timeZone }: { job: Job; timeZone: string }) {
           >
             {job.title}
           </span>
-          <span className="mt-0.5 block truncate text-[13px] leading-5 text-slate-500">
+          <span className="mt-0.5 block truncate text-[13px] leading-5 text-(--glass-fg-muted)">
             {job.clientName}
             {job.startAt && job.endAt && (
               <span className="tabular-nums"> · until {formatTime(job.endAt, timeZone)}</span>
@@ -905,7 +905,10 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="today-heading" className={sectionTitle}>
           Today
-          <span className="font-sans text-[15px] font-normal text-slate-500"> · {dateLabel}</span>
+          <span className="font-sans text-[15px] font-normal text-(--glass-fg-muted)">
+            {" "}
+            · {dateLabel}
+          </span>
         </h2>
         <Link
           href="/schedule"
@@ -1170,7 +1173,7 @@ function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] })
         <h2 id="sites-heading" className={sectionTitle}>
           Your website
           {sites.length > 1 && (
-            <span className="font-sans font-normal text-slate-500 tabular-nums">
+            <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
               {" "}
               · {sites.length}
             </span>

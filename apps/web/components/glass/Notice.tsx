@@ -84,7 +84,8 @@ export function Notice({
 }: NoticeProps) {
   const style = TONES[tone];
   const small = size === "sm";
-  const ariaRole = role === undefined ? (tone === "error" ? "alert" : "status") : (role ?? undefined);
+  const ariaRole =
+    role === undefined ? (tone === "error" ? "alert" : "status") : (role ?? undefined);
   return (
     <div
       id={id}

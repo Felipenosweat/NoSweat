@@ -522,7 +522,7 @@ export function EstimateEditor({
             >
               <div>
                 <label htmlFor={`${ids}-title`} className={labelClass}>
-                  Title <span className="font-normal text-slate-500">(optional)</span>
+                  Title <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
                 </label>
                 <input
                   id={`${ids}-title`}
@@ -544,7 +544,8 @@ export function EstimateEditor({
 
               <div>
                 <label htmlFor={`${ids}-message-field`} className={labelClass}>
-                  Message to customer <span className="font-normal text-slate-500">(optional)</span>
+                  Message to customer{" "}
+                  <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
                 </label>
                 <textarea
                   id={`${ids}-message-field`}
@@ -606,7 +607,7 @@ export function EstimateEditor({
             <GlassCard as="section" aria-labelledby={`${ids}-message`}>
               <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
               <p className="text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
-                {doc?.message || <span className="text-slate-500">No message.</span>}
+                {doc?.message || <span className="text-(--glass-fg-muted)">No message.</span>}
               </p>
             </GlassCard>
           )}

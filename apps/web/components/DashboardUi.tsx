@@ -349,7 +349,7 @@ export function SiteUrlLine({
     // overflow-wrap:anywhere quebra primeiro nos hífens do endereço (break-all cortava no meio
     // da palavra: "worcester-home-servi / ces").
     <span className={`font-display tracking-[-0.01em] [overflow-wrap:anywhere] ${className}`}>
-      <span className="text-slate-500">{prefix}</span>
+      <span className="text-(--glass-fg-muted)">{prefix}</span>
       <span className="font-semibold text-brand">{name}</span>
       {caret && (
         <span

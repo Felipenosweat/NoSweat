@@ -219,7 +219,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
               </ul>
               {group.note && (
                 <p
-                  className={`mt-2 max-w-[28ch] text-[13px] leading-normal ${dark ? "text-slate-400" : "text-slate-500"}`}
+                  className={`mt-2 max-w-[28ch] text-[13px] leading-normal ${dark ? "text-slate-400" : "text-(--glass-fg-muted)"}`}
                 >
                   {group.note}
                 </p>
@@ -230,7 +230,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
       </div>
       <div className={`border-t ${dark ? "border-white/10" : "border-slate-200"}`}>
         <div
-          className={`${container} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:justify-between ${dark ? "text-slate-400" : "text-slate-500"}`}
+          className={`${container} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:justify-between ${dark ? "text-slate-400" : "text-(--glass-fg-muted)"}`}
         >
           <p>&copy; {new Date().getFullYear()} No Sweat. All rights reserved.</p>
           <p>nosweatfd.com</p>

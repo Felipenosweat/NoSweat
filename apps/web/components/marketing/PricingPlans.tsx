@@ -84,7 +84,7 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
   { value: "annual", label: "Annual", note: "2 months free" },
 ];
 
-const captionClass = "text-[13px] text-slate-500";
+const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
 export function PricingPlans({ checkout }: { checkout: boolean }) {
   // Anual por padrão: sem taxa de implantação e 2 meses grátis.
@@ -147,7 +147,9 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
               <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
                 {annual ? plan.annual : plan.monthly}
               </span>
-              <span className="text-base font-normal text-slate-500">{annual ? "/yr" : "/mo"}</span>
+              <span className="text-base font-normal text-(--glass-fg-muted)">
+                {annual ? "/yr" : "/mo"}
+              </span>
             </p>
             <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
               {annual ? `${plan.annualPerMonth}/mo, billed yearly` : "Billed monthly · no contract"}
@@ -186,7 +188,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
                 renova sozinho e como cancelar, antes de qualquer cobrança. */}
             <p
               id={`renewal-${plan.id}`}
-              className="mt-3 text-[13px] leading-relaxed text-pretty text-slate-500"
+              className="mt-3 text-[13px] leading-relaxed text-pretty text-(--glass-fg-muted)"
             >
               {renewalTerms(plan, annual, checkout)}{" "}
               <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">

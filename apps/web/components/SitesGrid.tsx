@@ -55,7 +55,7 @@ function DefaultEmptyState() {
               style={{ objectPosition: photo.focus }}
             />
           </div>
-          <figcaption className="mt-2 text-xs text-slate-500">
+          <figcaption className="mt-2 text-xs text-(--glass-fg-muted)">
             Photo:{" "}
             <a
               href={photo.credit.url}
@@ -72,12 +72,14 @@ function DefaultEmptyState() {
         <ol className="border-t border-(--glass-rim) p-6 sm:p-10 lg:col-span-6 lg:border-t-0 lg:border-l lg:p-12">
           {STEPS.map((step, index) => (
             <li key={step.title} className="flex gap-4 py-3 first:pt-0 last:pb-0">
-              <span className="font-display text-[15px] leading-6 font-semibold text-slate-500 tabular-nums">
+              <span className="font-display text-[15px] leading-6 font-semibold text-(--glass-fg-muted) tabular-nums">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>
                 <p className="text-[15px] leading-6 font-semibold text-ink">{step.title}</p>
-                <p className="mt-0.5 text-[13px] leading-normal text-slate-500">{step.caption}</p>
+                <p className="mt-0.5 text-[13px] leading-normal text-(--glass-fg-muted)">
+                  {step.caption}
+                </p>
               </div>
             </li>
           ))}
@@ -158,7 +160,7 @@ export function SitesGrid({
                     {business.name}
                   </Link>
                 </CardHeading>
-                <p className="mt-0.5 flex flex-wrap gap-x-2 text-[13px] leading-5 text-slate-500 tabular-nums">
+                <p className="mt-0.5 flex flex-wrap gap-x-2 text-[13px] leading-5 text-(--glass-fg-muted) tabular-nums">
                   {where && (
                     <>
                       <span>{where}</span>
@@ -168,7 +170,7 @@ export function SitesGrid({
                   <span>Updated {dateFormat.format(new Date(site.updatedAt))}</span>
                 </p>
                 {(leads !== undefined || pending) && (
-                  <p className="mt-1 flex flex-wrap gap-x-2 text-[13px] leading-5 text-slate-500">
+                  <p className="mt-1 flex flex-wrap gap-x-2 text-[13px] leading-5 text-(--glass-fg-muted)">
                     {leads !== undefined && (
                       <span className={leads > 0 ? "font-semibold text-ink" : undefined}>
                         {leadsLabel(leads)}

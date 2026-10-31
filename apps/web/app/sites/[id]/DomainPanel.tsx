@@ -227,7 +227,7 @@ export function DomainPanel({
           </button>
         </div>
         {!isPublished && (
-          <p id="domain-tip" className="mt-2 text-[13px] text-slate-500">
+          <p id="domain-tip" className="mt-2 text-[13px] text-(--glass-fg-muted)">
             Tip: publish your website first so it shows up as soon as the domain is ready.
           </p>
         )}
@@ -276,7 +276,7 @@ export function DomainPanel({
         <div className="glass-inset overflow-hidden rounded-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-900/[0.03] text-[13px] text-slate-500">
+              <thead className="bg-slate-900/[0.03] text-[13px] text-(--glass-fg-muted)">
                 <tr>
                   <th scope="col" className="px-4 py-2 font-medium">
                     Type
@@ -315,13 +315,13 @@ export function DomainPanel({
               </tbody>
             </table>
           </div>
-          <p className="border-t border-(--glass-rim) px-4 py-3 text-[13px] leading-normal text-slate-500">
+          <p className="border-t border-(--glass-rim) px-4 py-3 text-[13px] leading-normal text-(--glass-fg-muted)">
             {recordsWarning}
           </p>
         </div>
       )}
       {state.status !== "active" && !showTable && (
-        <p className="text-[13px] leading-normal text-slate-500">{recordsWarning}</p>
+        <p className="text-[13px] leading-normal text-(--glass-fg-muted)">{recordsWarning}</p>
       )}
       {state.status !== "active" && (
         <DnsGuidePanel
@@ -409,7 +409,7 @@ export function DomainPanel({
         </div>
       )}
       {autoChecking && !confirmRemove && (
-        <p className="text-[13px] text-slate-500">
+        <p className="text-[13px] text-(--glass-fg-muted)">
           We check again automatically every 30 seconds for the next few minutes.
         </p>
       )}

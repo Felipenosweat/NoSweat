@@ -139,7 +139,10 @@ function LineCard({
         }
       >
         <div>
-          <label htmlFor={`${ids}-qty`} className="block text-[12px] font-medium text-slate-500">
+          <label
+            htmlFor={`${ids}-qty`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
             Qty
           </label>
           <input
@@ -153,13 +156,16 @@ function LineCard({
           />
         </div>
         <div>
-          <label htmlFor={`${ids}-price`} className="block text-[12px] font-medium text-slate-500">
+          <label
+            htmlFor={`${ids}-price`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
             Price
           </label>
           <div className="relative mt-1">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
             >
               $
             </span>
@@ -245,7 +251,7 @@ export function LineItemsEditor({
   return (
     <div>
       {lines.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-slate-500">
+        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-(--glass-fg-muted)">
           Add a service from your price book, or tap Add item.
         </p>
       ) : (
@@ -301,7 +307,7 @@ export function LineItemsView({
   }[];
 }) {
   if (lines.length === 0) {
-    return <p className="py-4 text-[15px] text-slate-500">No items.</p>;
+    return <p className="py-4 text-[15px] text-(--glass-fg-muted)">No items.</p>;
   }
   return (
     <ul aria-label="Items" className="divide-y divide-(--glass-rim)">
@@ -314,7 +320,7 @@ export function LineItemsView({
                 {line.description}
               </p>
             )}
-            <p className="text-[13px] text-slate-500 tabular-nums">
+            <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
               {formatQuantity(line.quantity)} × {formatCents(line.unitPriceCents)}
               {!line.taxable && " · not taxed"}
             </p>
@@ -376,7 +382,7 @@ export function TotalsPanel({
             <div className="relative mt-1.5">
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
               >
                 $
               </span>
@@ -416,7 +422,7 @@ export function TotalsPanel({
               />
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
               >
                 %
               </span>

@@ -471,7 +471,7 @@ export function SocialCalendar({
               </h2>
               {cap === 0 ? (
                 // Sem plano (cobrança ligada): "0 of 0" não diz nada; mostra onde liberar.
-                <p className="text-[13px] font-medium text-slate-500">
+                <p className="text-[13px] font-medium text-(--glass-fg-muted)">
                   Posting is included in every plan ·{" "}
                   <Link
                     href="/billing?from=social"
@@ -481,7 +481,7 @@ export function SocialCalendar({
                   </Link>
                 </p>
               ) : (
-                <p className="text-[13px] font-medium text-slate-500 tabular-nums">
+                <p className="text-[13px] font-medium text-(--glass-fg-muted) tabular-nums">
                   {cap === null
                     ? `${used} approved this month`
                     : `${used} of ${cap} posts used this month`}
@@ -538,7 +538,7 @@ export function SocialCalendar({
                 }}
               />
               {cap === 0 && (
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   You can try drafting now; approving needs a plan.
                 </p>
               )}
@@ -633,7 +633,7 @@ export function SocialCalendar({
                 {WEEKDAYS.map((day) => (
                   <div
                     key={day}
-                    className="px-3 py-2.5 text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+                    className="px-3 py-2.5 text-[12px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase"
                   >
                     {day}
                   </div>
@@ -673,7 +673,7 @@ export function SocialCalendar({
                             isToday
                               ? "bg-brand text-white hover:bg-brand-dark"
                               : past
-                                ? "text-slate-500 hover:bg-(--glass-ghost-hover)"
+                                ? "text-(--glass-fg-muted) hover:bg-(--glass-ghost-hover)"
                                 : "text-ink hover:bg-(--glass-ghost-hover)",
                             focusRing,
                           )}
@@ -685,7 +685,7 @@ export function SocialCalendar({
                             type="button"
                             onClick={() => openNew(dateKey)}
                             aria-label={`New post on ${dayHeading(dateKey)}`}
-                            className={`inline-flex size-8 items-center justify-center rounded-full text-slate-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-(--glass-ghost-hover) hover:text-ink focus-visible:opacity-100 ${focusRing}`}
+                            className={`inline-flex size-8 items-center justify-center rounded-full text-(--glass-fg-muted) opacity-0 transition-opacity group-hover:opacity-100 hover:bg-(--glass-ghost-hover) hover:text-ink focus-visible:opacity-100 ${focusRing}`}
                           >
                             <PlusIcon />
                           </button>
@@ -744,7 +744,7 @@ export function SocialCalendar({
                 {WEEKDAYS.map((day) => (
                   <div
                     key={day}
-                    className="py-1.5 text-center text-[11px] font-semibold tracking-wide text-slate-500 uppercase"
+                    className="py-1.5 text-center text-[11px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase"
                   >
                     {day.charAt(0)}
                   </div>
@@ -773,7 +773,7 @@ export function SocialCalendar({
                             isToday
                               ? "bg-brand font-semibold text-white"
                               : past
-                                ? "text-slate-500"
+                                ? "text-(--glass-fg-muted)"
                                 : "font-medium text-ink",
                           )}
                         >
@@ -824,7 +824,7 @@ export function SocialCalendar({
                   {[...byDay.entries()].map(([dateKey, dayPosts]) => (
                     <li key={dateKey}>
                       <h3
-                        className={`text-[13px] font-semibold ${dateKey === todayKey ? "text-brand" : "text-slate-500"}`}
+                        className={`text-[13px] font-semibold ${dateKey === todayKey ? "text-brand" : "text-(--glass-fg-muted)"}`}
                       >
                         {dateKey === todayKey
                           ? `Today · ${dayHeading(dateKey)}`
@@ -870,7 +870,9 @@ export function SocialCalendar({
             {/* ---------- rascunhos sem data ---------- */}
             {undated.length > 0 && (filter === "all" || filter === "todo") && (
               <div className="mt-8">
-                <h3 className="text-[13px] font-semibold text-slate-500">Drafts without a date</h3>
+                <h3 className="text-[13px] font-semibold text-(--glass-fg-muted)">
+                  Drafts without a date
+                </h3>
                 <ul className="mt-2 grid gap-2 md:grid-cols-2">
                   {undated.map((post) => (
                     <li key={post.id}>
@@ -990,7 +992,7 @@ function AgendaRow({
           className="size-16 shrink-0 rounded-xl object-cover ring-1 ring-(--glass-rim)"
         />
       ) : (
-        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-slate-900/[0.04] text-center text-[11px] leading-4 text-slate-500 ring-1 ring-(--glass-rim)">
+        <span className="flex size-16 shrink-0 items-center justify-center rounded-xl bg-slate-900/[0.04] text-center text-[11px] leading-4 text-(--glass-fg-muted) ring-1 ring-(--glass-rim)">
           No photo
         </span>
       )}

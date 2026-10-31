@@ -79,7 +79,7 @@ export function ManualPostButton({
             {copied ? "Caption copied to the clipboard." : ""}
           </span>
           {copyFailed && (
-            <span className="text-[13px] text-slate-500">
+            <span className="text-[13px] text-(--glass-fg-muted)">
               Your browser blocked copying. Select the caption and copy it.
             </span>
           )}
@@ -87,7 +87,7 @@ export function ManualPostButton({
         <li className="flex flex-wrap items-center gap-3">
           <StepNumber n={2} />
           {post.media.length === 0 ? (
-            <span className="text-[13px] text-slate-500">This post has no photo yet.</span>
+            <span className="text-[13px] text-(--glass-fg-muted)">This post has no photo yet.</span>
           ) : (
             post.media.map((media, index) => (
               <a
@@ -125,7 +125,9 @@ export function ManualPostButton({
         >
           {pending ? "Saving…" : "I posted it"}
         </button>
-        <span className="text-[13px] text-slate-500">We&rsquo;ll mark it as posted manually.</span>
+        <span className="text-[13px] text-(--glass-fg-muted)">
+          We&rsquo;ll mark it as posted manually.
+        </span>
       </div>
       {error && <ErrorNote error={error} className="mt-3" />}
     </div>

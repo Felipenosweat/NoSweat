@@ -53,7 +53,7 @@ export function CreditsPanel({
         <p className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
           {balance.unlimited ? "Unlimited" : number(balance.total)}
           {!balance.unlimited && (
-            <span className="ml-1.5 text-base font-medium text-slate-500">left</span>
+            <span className="ml-1.5 text-base font-medium text-(--glass-fg-muted)">left</span>
           )}
         </p>
       </div>
@@ -73,7 +73,7 @@ export function CreditsPanel({
 
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="glass-inset rounded-xl p-4">
-              <dt className="text-[13px] font-medium text-slate-500">
+              <dt className="text-[13px] font-medium text-(--glass-fg-muted)">
                 Monthly credits{planName ? ` (${planName})` : ""}
               </dt>
               <dd className="mt-1 text-[15px] text-ink">
@@ -90,15 +90,15 @@ export function CreditsPanel({
               >
                 <div className="h-full rounded-full bg-brand" style={{ width: `${usedShare}%` }} />
               </div>
-              <p className="mt-2 text-[13px] text-slate-500">Refills on {refill}.</p>
+              <p className="mt-2 text-[13px] text-(--glass-fg-muted)">Refills on {refill}.</p>
             </div>
             <div className="glass-inset rounded-xl p-4">
-              <dt className="text-[13px] font-medium text-slate-500">Extra credits</dt>
+              <dt className="text-[13px] font-medium text-(--glass-fg-muted)">Extra credits</dt>
               <dd className="mt-1 text-[15px] text-ink">
                 <span className="font-semibold tabular-nums">{number(balance.topup)}</span>{" "}
                 {balance.topup === 1 ? "credit" : "credits"}
               </dd>
-              <p className="mt-2 text-[13px] text-slate-500">
+              <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                 Never expire. Used after your monthly credits run out.
               </p>
             </div>
@@ -112,7 +112,7 @@ export function CreditsPanel({
         always free.
       </p>
 
-      <h3 className="mt-5 text-[13px] font-semibold text-slate-500">What uses credits</h3>
+      <h3 className="mt-5 text-[13px] font-semibold text-(--glass-fg-muted)">What uses credits</h3>
       <ul className="mt-2 divide-y divide-(--glass-rim) text-[15px]">
         {costs.map((cost) => (
           <li key={cost.label} className="flex items-center justify-between gap-4 py-2">
@@ -123,13 +123,15 @@ export function CreditsPanel({
           </li>
         ))}
       </ul>
-      <p className="mt-1 text-[13px] text-slate-500">
+      <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
         If the AI can&rsquo;t finish a request, the credits go back to you.
       </p>
 
       {!balance.unlimited && packs.length > 0 && (
         <>
-          <h3 className="mt-5 text-[13px] font-semibold text-slate-500">Buy more credits</h3>
+          <h3 className="mt-5 text-[13px] font-semibold text-(--glass-fg-muted)">
+            Buy more credits
+          </h3>
           <div className="mt-2 flex flex-wrap gap-3">
             {packs.map((pack) => (
               <ContactLink
@@ -144,7 +146,7 @@ export function CreditsPanel({
               </ContactLink>
             ))}
           </div>
-          <p className="mt-3 text-[13px] text-slate-500">
+          <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
             We&rsquo;ll finish with you {contact.whatsapp ? "on WhatsApp" : "by email"}. The credits
             show up here as soon as your payment is confirmed.
           </p>

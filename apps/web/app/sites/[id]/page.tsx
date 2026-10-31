@@ -174,7 +174,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     <span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
-                  <p className="text-[15px] leading-6 text-slate-500">
+                  <p className="text-[15px] leading-6 text-(--glass-fg-muted)">
                     Not online yet. Publish to get your free address.
                   </p>
                 )}
@@ -225,7 +225,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 )}
               </p>
               {live && free && live !== free && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   Also available at{" "}
                   <a href={free} target="_blank" rel="noreferrer" className={linkClass}>
                     {free.replace(/^https?:\/\//, "")}
@@ -246,7 +246,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 />
               </div>
               {isPublished && (
-                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-slate-500">
+                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-(--glass-fg-muted)">
                   Need to pause it? Use the{" "}
                   <span className="font-semibold text-slate-600">&ldquo;⋯&rdquo;</span> menu at the
                   top to take it offline. Nothing is deleted.
@@ -294,7 +294,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     <li key={lead.id} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <p className="text-[15px] font-semibold text-ink">{lead.name}</p>
-                        <p className="text-[13px] text-slate-500 tabular-nums">
+                        <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                           <LocalTime iso={lead.createdAt} />
                         </p>
                       </div>
@@ -327,7 +327,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 </p>
               )}
               {emailAlerts && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   We also email you every new message.
                 </p>
               )}

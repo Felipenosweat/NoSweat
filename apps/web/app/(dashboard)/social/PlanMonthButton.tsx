@@ -110,7 +110,7 @@ export function PlanMonthButton({
           <SparklesIcon className="size-4" aria-hidden="true" />
           Fill my month with AI
         </button>
-        {remainingText && <p className="text-[13px] text-slate-500">{remainingText}</p>}
+        {remainingText && <p className="text-[13px] text-(--glass-fg-muted)">{remainingText}</p>}
       </div>
     );
   }
@@ -155,7 +155,7 @@ export function PlanMonthButton({
         </fieldset>
       </div>
 
-      <p className="mt-4 text-[13px] leading-5 text-slate-500">
+      <p className="mt-4 text-[13px] leading-5 text-(--glass-fg-muted)">
         We write drafts from your website: your services, area and photos. Nothing goes out until
         you approve it.
         {remainingText ? ` ${remainingText}.` : ""}

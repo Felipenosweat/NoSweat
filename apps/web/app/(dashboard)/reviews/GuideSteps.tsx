@@ -28,7 +28,7 @@ function Chip({ children, on = false }: { children: ReactNode; on?: boolean }) {
         "inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-semibold whitespace-nowrap",
         on
           ? "bg-brand text-white ring-4 ring-brand/20"
-          : "border border-slate-200 bg-white text-slate-500",
+          : "border border-slate-200 bg-white text-(--glass-fg-muted)",
       )}
     >
       {children}
@@ -77,7 +77,7 @@ const SKETCHES: Record<number, ReactNode> = {
   4: (
     <Sketch>
       <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
-        <span className="min-w-0 flex-1 truncate text-[11px] text-slate-500">
+        <span className="min-w-0 flex-1 truncate text-[11px] text-(--glass-fg-muted)">
           g.page/r/…/review
         </span>
       </div>

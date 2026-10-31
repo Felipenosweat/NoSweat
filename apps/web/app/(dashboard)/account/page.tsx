@@ -117,7 +117,7 @@ export default async function AccountPage() {
             You can delete a single website anytime from its page.
           </p>
           {readOnly ? (
-            <p className="mt-4 text-sm text-slate-500">
+            <p className="mt-4 text-sm text-(--glass-fg-muted)">
               {viewer.viewingAs
                 ? "Not available while viewing another account."
                 : "Not available on this server."}

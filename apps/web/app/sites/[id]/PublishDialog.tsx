@@ -301,13 +301,13 @@ export function PublishDialog({
                 >
                   Publish website
                 </h2>
-                <p className="mt-0.5 truncate text-[13px] text-slate-500">{siteName}</p>
+                <p className="mt-0.5 truncate text-[13px] text-(--glass-fg-muted)">{siteName}</p>
               </div>
               <button
                 type="button"
                 onClick={() => dialogRef.current?.close()}
                 aria-label="Close"
-                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
+                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-(--glass-fg-muted) transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
               >
                 <Svg className="size-5">
                   <path d="M6 18 18 6M6 6l12 12" />
@@ -320,7 +320,7 @@ export function PublishDialog({
                 <span aria-hidden="true" className={`size-2 rounded-full ${status.dot}`} />
                 {status.label}
               </p>
-              <p className="mt-0.5 text-[13px] text-slate-500">{status.text}</p>
+              <p className="mt-0.5 text-[13px] text-(--glass-fg-muted)">{status.text}</p>
             </div>
 
             {/* ---------- Endereço grátis ---------- */}
@@ -333,10 +333,10 @@ export function PublishDialog({
                   Free address
                 </h3>
                 {/* Com plano obrigatório, "Free" confundiria: o endereço é grátis, publicar não. */}
-                {!needsPlan && <span className="text-[12px] text-slate-500">Free</span>}
+                {!needsPlan && <span className="text-[12px] text-(--glass-fg-muted)">Free</span>}
               </div>
               <p className="mt-2 font-mono text-[14px] leading-6 break-all">
-                <span className="text-slate-500">{prefix}</span>
+                <span className="text-(--glass-fg-muted)">{prefix}</span>
                 <span className="font-semibold text-ink">{name}</span>
               </p>
               {live ? (
@@ -352,7 +352,7 @@ export function PublishDialog({
                   </a>
                 </div>
               ) : (
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   Your site goes live at this address when you publish.
                 </p>
               )}
@@ -428,7 +428,7 @@ export function PublishDialog({
                   </div>
                 </>
               ) : (
-                <p className="mt-0.5 text-[13px] leading-snug text-slate-500">
+                <p className="mt-0.5 text-[13px] leading-snug text-(--glass-fg-muted)">
                   Use your own address. We walk you through DNS and set up HTTPS for you.
                 </p>
               )}
@@ -442,7 +442,7 @@ export function PublishDialog({
               </a>
             </section>
 
-            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-slate-500">
+            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-(--glass-fg-muted)">
               Once published, anyone with the link can see your site.
             </p>
           </div>
@@ -454,7 +454,7 @@ export function PublishDialog({
               </Notice>
             )}
             <div className="flex items-start justify-between gap-3">
-              <p id="publish-plan-note" className="text-[13px] text-slate-500">
+              <p id="publish-plan-note" className="text-[13px] text-(--glass-fg-muted)">
                 {state === "current"
                   ? "Your site already has the latest version."
                   : needsPlan

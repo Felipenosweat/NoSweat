@@ -105,7 +105,7 @@ export function ConnectCard({
             <h2 id="instagram-heading" className={panelTitle}>
               Instagram
             </h2>
-            <p className="truncate text-[13px] leading-5 text-slate-500">
+            <p className="truncate text-[13px] leading-5 text-(--glass-fg-muted)">
               {live ? `@${live.username}` : manual ? "You post, we plan" : "Not connected"}
             </p>
           </div>

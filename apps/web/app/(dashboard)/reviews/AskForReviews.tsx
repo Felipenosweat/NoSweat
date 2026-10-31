@@ -66,7 +66,8 @@ export function AskForReviews({ link, businessName }: { link: string; businessNa
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div className="min-w-0">
           <label htmlFor={nameId} className={labelClass}>
-            Client&rsquo;s first name <span className="font-normal text-slate-500">(optional)</span>
+            Client&rsquo;s first name{" "}
+            <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <input
             id={nameId}

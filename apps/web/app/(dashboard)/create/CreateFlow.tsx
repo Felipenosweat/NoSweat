@@ -607,7 +607,7 @@ function Flow({
             className="block max-h-[50vh] min-h-32 w-full resize-none rounded-t-2xl bg-transparent px-5 pt-5 pb-2 text-base leading-[1.6] text-ink [field-sizing:content] placeholder:text-slate-400 focus:outline-none"
           />
           <div className="flex items-center justify-between gap-3 px-3 pb-3 sm:pl-5">
-            <p id="create-prompt-hint" className="min-w-0 text-[13px] text-slate-500">
+            <p id="create-prompt-hint" className="min-w-0 text-[13px] text-(--glass-fg-muted)">
               <span className="hidden sm:inline">Your draft stays private until you publish.</span>
             </p>
             <button type="submit" className={`${primaryButtonCompact} shrink-0 max-sm:flex-1`}>
@@ -649,7 +649,7 @@ function Flow({
             </button>
           ))}
         </div>
-        <p className="mt-4 text-[13px] text-slate-500 sm:hidden">
+        <p className="mt-4 text-[13px] text-(--glass-fg-muted) sm:hidden">
           Your draft stays private until you publish.
         </p>
       </div>
@@ -672,7 +672,7 @@ function Flow({
                 <span className="h-1 w-9 rounded-full bg-slate-300" />
               </div>
               <div className="flex items-center gap-3">
-                <p className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
+                <p className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-(--glass-fg-muted) uppercase">
                   <Image
                     src="/brand/nosweat-mark-64.png"
                     alt=""
@@ -683,7 +683,7 @@ function Flow({
                   Create website
                 </p>
                 {!quickReview && (
-                  <p className="text-[13px] text-slate-500 tabular-nums">
+                  <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     Step {step + 1} of {STEPS.length}
                   </p>
                 )}
@@ -691,7 +691,7 @@ function Flow({
                   type="button"
                   onClick={() => setWizardOpen(false)}
                   aria-label="Close"
-                  className={`-mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+                  className={`-mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-(--glass-fg-muted) transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
                 >
                   <CloseIcon />
                 </button>
@@ -777,7 +777,7 @@ function Flow({
                                   <span className="sr-only">Use example: </span>
                                   {example.label}
                                 </span>
-                                <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-slate-500">
+                                <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-(--glass-fg-muted)">
                                   {example.text}
                                 </span>
                               </button>
@@ -796,7 +796,7 @@ function Flow({
                         >
                           <span className="flex-1">
                             Business details
-                            <span className="font-normal text-slate-500"> (optional)</span>
+                            <span className="font-normal text-(--glass-fg-muted)"> (optional)</span>
                           </span>
                           <ChevronIcon className="size-4 text-slate-500 transition-transform duration-150 group-open/more:rotate-180 motion-reduce:transition-none" />
                         </summary>
@@ -977,7 +977,7 @@ function SummaryRow({
 }) {
   return (
     <div className="grid grid-cols-[6.5rem_minmax(0,1fr)_auto] items-start gap-x-3 py-2 sm:grid-cols-[8rem_minmax(0,1fr)_auto]">
-      <dt className="pt-2.5 text-[13px] text-slate-500">{label}</dt>
+      <dt className="pt-2.5 text-[13px] text-(--glass-fg-muted)">{label}</dt>
       <dd className="pt-2 text-[15px] leading-[1.5] break-words text-ink">{children}</dd>
       <dd>
         {onChange && (
@@ -1011,7 +1011,7 @@ function Field({ id, label, optional, hint, error, children }: FieldProps) {
     <div>
       <label htmlFor={id} className="block text-[13px] font-medium text-ink">
         {label}
-        {optional && <span className="font-normal text-slate-500"> (optional)</span>}
+        {optional && <span className="font-normal text-(--glass-fg-muted)"> (optional)</span>}
       </label>
       {children(describedBy)}
       {error && (
@@ -1021,7 +1021,7 @@ function Field({ id, label, optional, hint, error, children }: FieldProps) {
         </p>
       )}
       {hint && (
-        <p id={`${id}-hint`} className="mt-2 text-[13px] text-slate-500">
+        <p id={`${id}-hint`} className="mt-2 text-[13px] text-(--glass-fg-muted)">
           {hint}
         </p>
       )}

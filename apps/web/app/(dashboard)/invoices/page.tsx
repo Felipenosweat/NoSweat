@@ -257,7 +257,7 @@ function InvoiceRow({
             {formatCents(unpaid ? Math.max(0, invoice.balanceCents) : invoice.totalCents)}
           </span>
           {invoice.status === "partial" && (
-            <span className="block text-[12px] text-slate-500">
+            <span className="block text-[12px] text-(--glass-fg-muted)">
               of {formatCents(invoice.totalCents)}
             </span>
           )}

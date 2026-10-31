@@ -84,7 +84,7 @@ function Field({
     <div>
       <label htmlFor={id} className={labelClass}>
         {label}
-        {optional && <span className="font-normal text-slate-500"> (optional)</span>}
+        {optional && <span className="font-normal text-(--glass-fg-muted)"> (optional)</span>}
       </label>
       {children}
       {error ? (
@@ -313,7 +313,7 @@ export function SettingsForm({
                   />
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                    className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
                   >
                     %
                   </span>
@@ -337,7 +337,7 @@ export function SettingsForm({
                   />
                   <span
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                    className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
                   >
                     days
                   </span>
@@ -395,7 +395,7 @@ export function SettingsForm({
                       />
                       <span
                         aria-hidden="true"
-                        className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                        className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
                       >
                         days
                       </span>

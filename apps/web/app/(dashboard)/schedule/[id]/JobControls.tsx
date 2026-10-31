@@ -438,7 +438,7 @@ export function JobHero({
                 <span
                   className={cx(
                     "text-[13px] leading-4 font-semibold",
-                    done ? "text-ink" : "text-slate-500",
+                    done ? "text-ink" : "text-(--glass-fg-muted)",
                   )}
                 >
                   {step.label}
@@ -767,7 +767,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
           <div className="relative mt-1.5">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
             >
               $
             </span>
@@ -844,14 +844,16 @@ export function AssigneesCard({
         )}
       </div>
       {assigned.length === 0 ? (
-        <p className="mt-1.5 text-[15px] text-slate-500">No one assigned yet.</p>
+        <p className="mt-1.5 text-[15px] text-(--glass-fg-muted)">No one assigned yet.</p>
       ) : (
         <ul className="mt-2 grid gap-1.5">
           {assigned.map((member) => (
             <li key={member.id} className="flex min-h-9 items-center gap-2.5 text-[15px] text-ink">
               <TeamDot color={member.color} />
               <span className="font-medium">{member.name}</span>
-              {member.role && <span className="text-[13px] text-slate-500">{member.role}</span>}
+              {member.role && (
+                <span className="text-[13px] text-(--glass-fg-muted)">{member.role}</span>
+              )}
             </li>
           ))}
         </ul>

@@ -122,7 +122,7 @@ export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
             {posts.map((post) => (
               <li key={post.id} className="flex flex-col gap-1.5 px-4 py-3 sm:px-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[13px] text-slate-500 tabular-nums">
+                  <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     {post.scheduledAt ? <LocalTime iso={post.scheduledAt} /> : "No date yet"}
                     {post.media.length > 0 &&
                       ` · ${post.media.length} ${post.media.length === 1 ? "photo" : "photos"}`}

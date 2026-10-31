@@ -43,7 +43,7 @@ function MemberRow({ member, readOnly }: { member: TeamMember; readOnly: boolean
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] leading-5 font-semibold text-ink">{member.name}</p>
-        <p className="mt-0.5 truncate text-[13px] leading-5 text-slate-500">
+        <p className="mt-0.5 truncate text-[13px] leading-5 text-(--glass-fg-muted)">
           {member.role || "Team member"}
           <span className="sr-only">, color {style.label}</span>
           {member.phone && (
@@ -115,7 +115,7 @@ export default async function TeamPage() {
           <section aria-labelledby="team-active">
             <h2 id="team-active" className={sectionTitle}>
               Active
-              <span className="font-sans font-normal text-slate-500 tabular-nums">
+              <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
                 {" "}
                 · {active.length}
               </span>
@@ -148,12 +148,12 @@ export default async function TeamPage() {
             <section aria-labelledby="team-inactive">
               <h2 id="team-inactive" className={sectionTitle}>
                 Inactive
-                <span className="font-sans font-normal text-slate-500 tabular-nums">
+                <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
                   {" "}
                   · {inactive.length}
                 </span>
               </h2>
-              <p className="mt-1 text-[13px] text-slate-500">
+              <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
                 They keep their name on old jobs but can&rsquo;t be assigned to new ones.
               </p>
               <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">

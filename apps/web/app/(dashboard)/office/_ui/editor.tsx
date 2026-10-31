@@ -278,13 +278,13 @@ export function MoreOptions({
             <span className="block font-display text-[17px] leading-6 font-semibold tracking-[-0.01em] text-ink">
               More options
             </span>
-            <span className="block truncate text-[13px] leading-5 font-normal text-slate-500">
+            <span className="block truncate text-[13px] leading-5 font-normal text-(--glass-fg-muted)">
               {summary}
             </span>
           </span>
           <ChevronIcon
             className={cx(
-              "size-5 shrink-0 text-slate-500 motion-safe:transition-transform motion-safe:duration-200",
+              "size-5 shrink-0 text-(--glass-fg-muted) motion-safe:transition-transform motion-safe:duration-200",
               open && "rotate-180",
             )}
           />

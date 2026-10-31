@@ -211,9 +211,9 @@ function ContactView({ client }: { client: Client }) {
     <dl className="mt-5 grid gap-3 border-t border-(--glass-rim) pt-4 text-[15px] leading-6">
       {rows.map((row) => (
         <div key={row.label}>
-          <dt className="text-[13px] font-medium text-slate-500">{row.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{row.label}</dt>
           <dd className="break-words text-ink">
-            {row.value ?? <span className="text-slate-500">Not added</span>}
+            {row.value ?? <span className="text-(--glass-fg-muted)">Not added</span>}
           </dd>
         </div>
       ))}
@@ -290,7 +290,7 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
           </h3>
           <LocalTime
             iso={activity.occurredAt}
-            className="text-[13px] text-slate-500 tabular-nums"
+            className="text-[13px] text-(--glass-fg-muted) tabular-nums"
           />
         </div>
         {body && (
@@ -320,7 +320,7 @@ function ClientStats({ client }: { client: Client }) {
     <dl className="grid grid-cols-3 gap-2 sm:gap-3">
       {stats.map((stat) => (
         <GlassCard key={stat.label} padding="sm" className="min-w-0">
-          <dt className="text-[13px] font-medium text-slate-500">{stat.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{stat.label}</dt>
           <dd
             className={cx(
               "mt-1 font-semibold break-words text-ink tabular-nums",
@@ -373,7 +373,7 @@ function PaperGroup({
   return (
     <div className="border-t border-(--glass-rim) first:border-t-0">
       <div className="flex items-center justify-between gap-3 px-4 pt-3 sm:px-5">
-        <h3 className="text-[13px] font-semibold text-slate-500">
+        <h3 className="text-[13px] font-semibold text-(--glass-fg-muted)">
           {title} <span className="font-normal tabular-nums">{total}</span>
         </h3>
         {more > 0 &&
@@ -385,7 +385,7 @@ function PaperGroup({
               See all {total}
             </Link>
           ) : (
-            <span className="text-[13px] text-slate-500 tabular-nums">+{more} more</span>
+            <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">+{more} more</span>
           ))}
       </div>
       <ul className="pb-1.5">
@@ -399,7 +399,7 @@ function PaperGroup({
                 <span className="block truncate text-[15px] leading-5 font-semibold text-ink">
                   {row.title}
                 </span>
-                <span className="block truncate text-[13px] leading-5 text-slate-500 tabular-nums">
+                <span className="block truncate text-[13px] leading-5 text-(--glass-fg-muted) tabular-nums">
                   {row.meta}
                 </span>
               </span>
@@ -554,7 +554,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
             >
               {client.name}
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">
+            <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>

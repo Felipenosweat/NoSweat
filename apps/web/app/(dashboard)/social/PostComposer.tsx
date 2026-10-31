@@ -436,7 +436,7 @@ export function PostComposer({
                   <h3 id={`${ids}-photos`} className="text-[13px] font-medium text-ink">
                     Photos
                   </h3>
-                  <span className="text-[13px] text-slate-500 tabular-nums">
+                  <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     {media.length} / {MAX_SOCIAL_MEDIA}
                   </span>
                 </div>
@@ -523,7 +523,7 @@ export function PostComposer({
                   )}
                 </ul>
                 {editable && (
-                  <p className="mt-2 text-[13px] leading-5 text-slate-500">
+                  <p className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)">
                     Photos of your real work do best. We crop them to Instagram&rsquo;s size.
                   </p>
                 )}
@@ -543,7 +543,7 @@ export function PostComposer({
                     className={`text-[13px] tabular-nums ${
                       count > MAX_CAPTION_LENGTH - 100
                         ? "font-semibold text-red-700"
-                        : "text-slate-500"
+                        : "text-(--glass-fg-muted)"
                     }`}
                   >
                     {count.toLocaleString("en-US")} / {MAX_CAPTION_LENGTH.toLocaleString("en-US")}
@@ -562,7 +562,10 @@ export function PostComposer({
                   className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
                 />
                 {note && (
-                  <p id={`${ids}-note`} className="mt-2 text-[13px] leading-5 text-slate-500">
+                  <p
+                    id={`${ids}-note`}
+                    className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)"
+                  >
                     <span className="font-medium text-slate-600">Note (Portuguese): </span>
                     <span lang="pt-BR">{note}</span>
                   </p>
@@ -581,7 +584,7 @@ export function PostComposer({
                       className="block text-[13px] font-medium text-ink"
                     >
                       Ask AI{" "}
-                      <span className="font-normal text-slate-500">
+                      <span className="font-normal text-(--glass-fg-muted)">
                         {captionsLeft === null
                           ? ""
                           : `· ${captionsLeft} caption${captionsLeft === 1 ? "" : "s"} left today`}
@@ -635,7 +638,7 @@ export function PostComposer({
                     />
                   </label>
                 </div>
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   Your business time: {zoneName(tz)} ({tz.replace(/_/g, " ")})
                 </p>
               </fieldset>
@@ -689,7 +692,7 @@ export function PostComposer({
                       className="absolute inset-0 size-full object-cover"
                     />
                   ) : (
-                    <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] text-slate-500">
+                    <span className="absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] text-(--glass-fg-muted)">
                       Your photo shows here
                     </span>
                   )}
@@ -768,20 +771,20 @@ export function PostComposer({
                         `${caption.slice(0, 125).trimEnd()}… `
                       )
                     ) : (
-                      <span className="text-slate-500">Your caption shows here.</span>
+                      <span className="text-(--glass-fg-muted)">Your caption shows here.</span>
                     )}
                     {longCaption && !expanded && (
                       <button
                         type="button"
                         onClick={() => setExpanded(true)}
-                        className={`text-slate-500 ${focusRing}`}
+                        className={`text-(--glass-fg-muted) ${focusRing}`}
                       >
                         more
                       </button>
                     )}
                   </p>
                   {scheduledAt && (
-                    <p className="mt-2 text-[12px] tracking-wide text-slate-500 uppercase">
+                    <p className="mt-2 text-[12px] tracking-wide text-(--glass-fg-muted) uppercase">
                       {formatWhen(scheduledAt, tz)}
                     </p>
                   )}
@@ -803,7 +806,7 @@ export function PostComposer({
           </div>
           {error && <ErrorNote error={error} className="mb-2" />}
           {showApprove && missing && (
-            <p className="mb-2 text-[13px] text-slate-500">To approve: {missing}</p>
+            <p className="mb-2 text-[13px] text-(--glass-fg-muted)">To approve: {missing}</p>
           )}
           <div className="flex flex-wrap items-center gap-3">
             {showApprove && (

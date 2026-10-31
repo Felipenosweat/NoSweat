@@ -15,7 +15,7 @@ export function ExampleSiteEmpty() {
         <p className="max-w-[16ch] font-display text-[1.75rem] leading-[1.15] font-bold tracking-[-0.022em] text-balance text-ink lg:text-[2rem]">
           Your first site takes about a minute.
         </p>
-        <p className="mt-3 max-w-[44ch] text-base leading-[1.6] text-slate-500">
+        <p className="mt-3 max-w-[44ch] text-base leading-[1.6] text-(--glass-fg-muted)">
           Describe your business in a sentence or two. We&rsquo;ll write the pages, pick the colors
           and set up a contact form. You can change anything before it goes live.
         </p>
@@ -40,7 +40,7 @@ export function ExampleSiteEmpty() {
             <StatusBadge tone="neutral">Example</StatusBadge>
           </span>
         </div>
-        <figcaption className="mt-3 text-xs text-slate-500">
+        <figcaption className="mt-3 text-xs text-(--glass-fg-muted)">
           Example site for Still Water Spa, a fictional business.
         </figcaption>
       </figure>

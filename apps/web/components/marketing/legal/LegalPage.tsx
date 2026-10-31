@@ -31,7 +31,7 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
     <div className="bg-white">
       <header className="border-b border-slate-200 bg-surface">
         <div className={`${container} pt-12 pb-10 lg:pt-20 lg:pb-14`}>
-          <p className="font-display text-sm font-semibold text-slate-500">
+          <p className="font-display text-sm font-semibold text-(--glass-fg-muted)">
             Last updated: <time dateTime={updatedIso}>{updatedLabel}</time>
           </p>
           <h1 className="mt-3 max-w-[18ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl">
@@ -61,7 +61,9 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
                     href={`#${section.id}`}
                     className="-ml-px flex gap-2 border-l border-transparent py-1.5 pl-4 leading-snug text-slate-600 transition-colors hover:border-slate-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
-                    <span className="w-5 shrink-0 text-slate-500 tabular-nums">{index + 1}.</span>
+                    <span className="w-5 shrink-0 text-(--glass-fg-muted) tabular-nums">
+                      {index + 1}.
+                    </span>
                     {section.title}
                   </a>
                 </li>
@@ -81,7 +83,7 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
                 id={section.id}
                 className="flex scroll-mt-24 gap-3 font-display text-2xl leading-tight font-bold tracking-[-0.02em] text-balance text-ink"
               >
-                <span className="text-slate-500 tabular-nums">{index + 1}.</span>
+                <span className="text-(--glass-fg-muted) tabular-nums">{index + 1}.</span>
                 {section.title}
               </h2>
               <div className={proseClass}>{section.content}</div>

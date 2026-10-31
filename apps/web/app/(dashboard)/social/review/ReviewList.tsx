@@ -331,7 +331,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   return (
     <div className="mt-8">
       {deleteDialog}
-      <p className="text-[13px] font-semibold text-slate-500 tabular-nums">
+      <p className="text-[13px] font-semibold text-(--glass-fg-muted) tabular-nums">
         {monthLabel(data.month)} · {data.posts.length} draft{data.posts.length === 1 ? "" : "s"}
         {ready.length > 0 && ` · ${selected.length} of ${ready.length} selected`}
       </p>
@@ -361,7 +361,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                   >
                     {post.scheduledAt ? formatWhen(post.scheduledAt, tz) : ""}
                   </h2>
-                  <p className="text-[13px] text-slate-500">
+                  <p className="text-[13px] text-(--glass-fg-muted)">
                     Post {index + 1} of {data.posts.length}
                   </p>
                 </div>
@@ -430,7 +430,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                 {post.caption}
               </p>
               {post.ownerNotePt && (
-                <p className="mt-2 text-[13px] leading-5 text-slate-500">
+                <p className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)">
                   <span className="font-medium text-slate-600">Note (Portuguese): </span>
                   <span lang="pt-BR">{post.ownerNotePt}</span>
                 </p>
@@ -442,7 +442,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                 </Notice>
               )}
               {blocker && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   Open it from the{" "}
                   <Link
                     href={`/social?month=${data.month}`}
@@ -459,7 +459,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
       </ol>
 
       {blocked.length > 0 && ready.length > 0 && (
-        <p className="mt-4 text-[13px] text-slate-500">
+        <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
           {blocked.length} draft{blocked.length === 1 ? "" : "s"} can&rsquo;t be approved yet.
         </p>
       )}
@@ -505,7 +505,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
               ? "Approving…"
               : `Approve ${selected.length} post${selected.length === 1 ? "" : "s"}`}
           </GlassButton>
-          <span aria-live="polite" className="text-[13px] text-slate-500">
+          <span aria-live="polite" className="text-[13px] text-(--glass-fg-muted)">
             {auto
               ? "They'll go out on Instagram at the times shown."
               : "They'll show as Ready to post. You share each one in a few taps."}

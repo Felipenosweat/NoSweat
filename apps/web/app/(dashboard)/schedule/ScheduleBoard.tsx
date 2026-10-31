@@ -326,7 +326,7 @@ export function ScheduleBoard({
           </>
         )}
         {jobs.length === 0 && (
-          <p className="mt-3 px-1 text-[13px] text-slate-500">
+          <p className="mt-3 px-1 text-[13px] text-(--glass-fg-muted)">
             {readOnly
               ? "No jobs in this period."
               : "No jobs in this period yet. Tap an open time or “New job” to book one."}
@@ -460,7 +460,7 @@ function JobTray({
         <ChevronRightIcon className="size-4 text-(--glass-fg-muted) transition-transform group-open:rotate-90" />
       </summary>
       <div className="mt-3">
-        <p className="px-1 text-[13px] text-slate-500">{hint}</p>
+        <p className="px-1 text-[13px] text-(--glass-fg-muted)">{hint}</p>
         <ul className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {jobs.map((job) => (
             <li key={job.id}>
@@ -480,7 +480,7 @@ function JobTray({
                     <span className="tabular-nums"> · {formatCents(job.valueCents)}</span>
                   )}
                 </span>
-                <span className="truncate text-[13px] leading-5 text-slate-500">
+                <span className="truncate text-[13px] leading-5 text-(--glass-fg-muted)">
                   {assigneeNames(job, team)}
                 </span>
               </Link>
