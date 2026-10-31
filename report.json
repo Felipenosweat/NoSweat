@@ -1,0 +1,1532 @@
+[
+  {
+    "viewport": "mobile",
+    "path": "/",
+    "finalUrl": "http://localhost:3000/",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=D-NMPOYFu0BufuuH net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/create",
+    "finalUrl": "http://localhost:3000/create",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/dashboard?_rsc=6V5J-4OocZmNU7xj net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/pricing",
+    "finalUrl": "http://localhost:3000/pricing",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=bME4Q4px3YJ1rAzL net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=QfGAi45GEo5r5lpu net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/login",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?new=1&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=bV4I79oJKGMKxeO3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=wONGJTq9kaAmjWg4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?new=1&_rsc=NqnPqVJTiWuuZo-S net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=-7d6gZASm-JGGMwL net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=rXBRzY9r05ppfEr3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=G9nWn_r4exdJrPKa net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/signup",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=rXBRzY9r05ppfEr3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=wONGJTq9kaAmjWg4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=bV4I79oJKGMKxeO3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=G9nWn_r4exdJrPKa net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/terms",
+    "finalUrl": "http://localhost:3000/terms",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=pfWg1qw4uMxqj7N2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=Jm_KudBfn_F9em99 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/privacy",
+    "finalUrl": "http://localhost:3000/privacy",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=WzUDN3am5ctH078F net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=UnGutxUMZihRxjHi net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=WzUDN3am5ctH078F net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=Mtdd3Gm7iKq9bOlM net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/credits",
+    "finalUrl": "http://localhost:3000/credits",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=_4Y0yW1cxT8ue9Y8 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "http://localhost:3000/examples/joes-plumbing",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/glow-salon",
+    "finalUrl": "http://localhost:3000/examples/glow-salon",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "http://localhost:3000/examples/rosas-kitchen",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=1DY_lptkga00lIiz net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "http://localhost:3000/examples/hale-ortiz",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=Gb1Kh1ZVnXD-Ivub net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "http://localhost:3000/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/vega-photo",
+    "finalUrl": "http://localhost:3000/examples/vega-photo",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=-giWTZSAe5sVYHvn net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "http://localhost:3000/examples/bright-spark-electric",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=2WRcda6nMDDgI1pW net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "http://localhost:3000/examples/greenline-landscaping",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=f5ytbWKWHP-_HXPG net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "http://localhost:3000/examples/true-coat-painting",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=g4EO1q4ljaT5e2kU net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "http://localhost:3000/examples/fade-and-co-barbers",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=xwgRrDgRCTWVCjxe net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "http://localhost:3000/examples/polished-nail-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "http://localhost:3000/examples/still-water-spa",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=pycBKrKEJLfu-isQ net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "http://localhost:3000/examples/arch-and-lash",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=poXi0V5WwK2g1Y_X net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "http://localhost:3000/examples/north-loop-coffee",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=lZ5NFxOZuQ74Dcf8 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "http://localhost:3000/examples/brick-oven-pizza",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "http://localhost:3000/examples/smoke-and-rail-bbq",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=wweDzn632LyGdiFz net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "http://localhost:3000/examples/sunrise-bakery",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=bkTwBCsQbo5aZbzB net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/mercer-law",
+    "finalUrl": "http://localhost:3000/examples/mercer-law",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=X-_PghgGLwII4Ya2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "http://localhost:3000/examples/bayside-family-dental",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=BwFhmiN0y6Ohpc2T net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "http://localhost:3000/examples/keystone-insurance",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=YmpTdfKVmKkitrW4 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "http://localhost:3000/examples/open-door-counseling",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=RZXYKgGz9zxHS2ex net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "http://localhost:3000/examples/hollis-interiors",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=-wL8umEL93Hs_N5P net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "http://localhost:3000/examples/iron-lotus-tattoo",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=6efBRHK14NOShdid net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "http://localhost:3000/examples/reel-north-films",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=5jSkj29ZYCaOZQp9 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "http://localhost:3000/examples/fieldwork-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/dashboard",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/schedule?new=1&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=G9nWn_r4exdJrPKa net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=paaVlGqK2RYZREVd net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=NqnPqVJTiWuuZo-S net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=q-m2w9E4NMINY1Tl net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=skG2iPKIADJtJXod net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?new=1&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=Ledfqbs1XgNJvGz2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=fD0w84EDXjDB_AWX net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/schedule",
+    "finalUrl": "http://localhost:3000/schedule",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-10-24&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-11-07&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=week&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=list&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=HaOUWI2STEX7pjJ1 net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=dMDPrXnOG9kl8Xzv net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=Stab_BYRT0358qcm net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/estimates",
+    "finalUrl": "http://localhost:3000/estimates",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=IsMtyqYoN5H7Sl-_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=waiting&_rsc=fGf510hcd3qLmIjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=approved&_rsc=fGf510hcd3qLmIjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=msvUosrse5yw4Evk net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721?_rsc=WzFjg391dxaXuU-E net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=8JBFXVPJ4779V-od net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=rKj-ocdtDcC1efAY net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=KZQy32WDbNbUrDQl net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/invoices",
+    "finalUrl": "http://localhost:3000/invoices",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/invoices/new?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=Q0awr4tlz0uHkD2H net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=wzrUXTRSAS-DJAag net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=dmilGK4Yd_PKCx09 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=dmilGK4Yd_PKCx09 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=VxEcRFbPpcduRE5h net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=RxxWkU01pe7i7smt net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=kp-bfmhimn0Bkyq5 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/office/settings",
+    "finalUrl": "http://localhost:3000/office/settings",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=yubH2TXbs35frL1k net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=vqYtF_VuQzw5VfOs net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=BHMnnkVhk5_v1pq8 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=lHZC2nxvtlWhFHwO net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=pHk-WcuAzcn5KvkE net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/office/price-book",
+    "finalUrl": "http://localhost:3000/office/price-book",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=GDyqq-UieCMWoEm7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=qG-pG5RboOy_yl9n net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=LmogGgvp8OhisAfj net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=9MjTXmqJPprIc7Z2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/team",
+    "finalUrl": "http://localhost:3000/team",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=X7oZvOQSAm0glrc0 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=vT-0frzwcqZSXDuT net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=pcDoPJh05vFjsz3e net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=ff-xH054LrXttwFE net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=xs5BdihkfKcr59As net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/reviews",
+    "finalUrl": "http://localhost:3000/reviews",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=PFUcKBTM3X7JljPS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=tTJCp8n11zeGPNji net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=DjMqpqFPYQBgjfHq net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/guide",
+    "finalUrl": "http://localhost:3000/guide",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/dashboard?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=Byt_LW8EFjYZohxx net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=PTQZhlVJ2CPM0qdj net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=lj8rrhlztZYo1BsM net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=P0rto9WMunL8aJGu net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff",
+    "finalUrl": "http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-10-31&_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-31&_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=3UmqdwtfzTAk6dK9 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=Am3YbhR5zWcpQF3C net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=NNjWdWd1yS5HNRaU net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/estimates/c9b4341b-6766-4845-b5d7-5937de058721",
+    "finalUrl": "http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=Nlsw5VhF-6k_6zan net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=W8HF0bKgJbN8q_qr net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=-qQV4Hs83rK3NR_E net::ERR_ABORTED",
+      "horizontal overflow: 19px"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/q/diR1QAq3bnU-MaVtF9rWmkxTdr8hViN0",
+    "finalUrl": "http://localhost:3000/q/diR1QAq3bnU-MaVtF9rWmkxTdr8hViN0",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773",
+    "finalUrl": "http://localhost:3000/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=0Dv_2VUeC16MjV-o net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=DT-lW-7sJ2XP6rS5 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=0Dv_2VUeC16MjV-o net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=HA86UBxNX8BBAM8W net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=hfXRThof8na5_jiE net::ERR_ABORTED",
+      "horizontal overflow: 63px",
+      "failed: http://localhost:3000/office/settings?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=yGYYgU7QUS-O9aZ_ net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/i/CM2VFeF9tg9dF5Yi_jyCEl-GaJN4TMGG",
+    "finalUrl": "http://localhost:3000/i/CM2VFeF9tg9dF5Yi_jyCEl-GaJN4TMGG",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/sites/556e985f-9006-409c-8f87-9aae045b66b1",
+    "finalUrl": "http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/preview/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=6RGWuFFLWzDmjS4H net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=xLQUtyovZ0ekBd8P net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/preview/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=6RGWuFFLWzDmjS4H net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=A34jRf0nHuBvtEaE net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit",
+    "finalUrl": "http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "mobile",
+    "path": "/clients",
+    "finalUrl": "http://localhost:3000/clients",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/3f2f2b35-e7ce-43f3-9305-e57d0f57dd38?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=gJ_ysRhZ5TZ2ZQQN net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?due=1&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/3f2f2b35-e7ce-43f3-9305-e57d0f57dd38?_rsc=NsbVCtzlK7fmXov_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=iykgUMbRmmeozV87 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=zLlrYa1MOBR8Rc46 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/social",
+    "finalUrl": "http://localhost:3000/social",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=hE99WeNArtnC_DQt net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=bFkjPqgwExMuTCP1 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=XsJaVxOKsTbxcCkD net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/social/review",
+    "finalUrl": "http://localhost:3000/social/review",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?month=2026-10&_rsc=bOdEXjGlfncXA80s net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/billing",
+    "finalUrl": "http://localhost:3000/billing",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=zo0bir7sViSrxq4A net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=oVYAHmHBwIAVqMkv net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=x0-u7vkPQpExdcxX net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "mobile",
+    "path": "/admin",
+    "finalUrl": "http://localhost:3000/admin",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/dashboard?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/finance?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/accounts?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/models?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?sf=live&_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/usage?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?sf=live&_rsc=we3ubxF55xroP6U0 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/usage?_rsc=41D_coC8SM9CLo8Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=x4sGYSZaJL0OGGJ5 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/models?_rsc=EyxpMfJkx_KOuUgh net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/finance?_rsc=3fqqzFgdyEEdAzIv net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/",
+    "finalUrl": "http://localhost:3000/",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/login?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=D-NMPOYFu0BufuuH net::ERR_ABORTED",
+      "failed: http://localhost:3000/data-deletion?_rsc=5CB68i4pnAekjehf net::ERR_ABORTED",
+      "failed: http://localhost:3000/data-deletion?_rsc=tXyZJ52UQVBCVsD3 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/create",
+    "finalUrl": "http://localhost:3000/create",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/dashboard?_rsc=6V5J-4OocZmNU7xj net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/pricing",
+    "finalUrl": "http://localhost:3000/pricing",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=bME4Q4px3YJ1rAzL net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=bME4Q4px3YJ1rAzL net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=4uavnN5mX1q-K87W net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=QfGAi45GEo5r5lpu net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/login",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/schedule?new=1&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=G9nWn_r4exdJrPKa net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=q-m2w9E4NMINY1Tl net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=NqnPqVJTiWuuZo-S net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?new=1&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=37aptA8YOX3Js1DE net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=Ledfqbs1XgNJvGz2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=vIpHU-Wn6YKAPyme net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=xkrLo08Kf3bZcROz net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/signup",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=G9nWn_r4exdJrPKa net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=skG2iPKIADJtJXod net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=Ledfqbs1XgNJvGz2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=37aptA8YOX3Js1DE net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=e400FcatTH8vHPSz net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=fD0w84EDXjDB_AWX net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=xkrLo08Kf3bZcROz net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=Y28tungisRl8f3BW net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=5jdK1L4-RMvs6FYK net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/terms",
+    "finalUrl": "http://localhost:3000/terms",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/login?_rsc=pfWg1qw4uMxqj7N2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=pfWg1qw4uMxqj7N2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/privacy",
+    "finalUrl": "http://localhost:3000/privacy",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/login?_rsc=WzUDN3am5ctH078F net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=WzUDN3am5ctH078F net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=UnGutxUMZihRxjHi net::ERR_ABORTED",
+      "failed: http://localhost:3000/create?_rsc=UnGutxUMZihRxjHi net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=Mtdd3Gm7iKq9bOlM net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/credits",
+    "finalUrl": "http://localhost:3000/credits",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/login?_rsc=ugXsJSxmACn7GPPL net::ERR_ABORTED",
+      "failed: http://localhost:3000/login?_rsc=_4Y0yW1cxT8ue9Y8 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/joes-plumbing",
+    "finalUrl": "http://localhost:3000/examples/joes-plumbing",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=Ttf-lLNpP9wWk-0q net::ERR_ABORTED",
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/glow-salon",
+    "finalUrl": "http://localhost:3000/examples/glow-salon",
+    "status": 200,
+    "issues": [
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/rosas-kitchen",
+    "finalUrl": "http://localhost:3000/examples/rosas-kitchen",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hale-ortiz",
+    "finalUrl": "http://localhost:3000/examples/hale-ortiz",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sparkle-cleaning",
+    "finalUrl": "http://localhost:3000/examples/sparkle-cleaning",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/vega-photo",
+    "finalUrl": "http://localhost:3000/examples/vega-photo",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bright-spark-electric",
+    "finalUrl": "http://localhost:3000/examples/bright-spark-electric",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=2WRcda6nMDDgI1pW net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/greenline-landscaping",
+    "finalUrl": "http://localhost:3000/examples/greenline-landscaping",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/true-coat-painting",
+    "finalUrl": "http://localhost:3000/examples/true-coat-painting",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=g4EO1q4ljaT5e2kU net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fade-and-co-barbers",
+    "finalUrl": "http://localhost:3000/examples/fade-and-co-barbers",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=xwgRrDgRCTWVCjxe net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/polished-nail-studio",
+    "finalUrl": "http://localhost:3000/examples/polished-nail-studio",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=6_ONDrsdc0wPYTH2 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/still-water-spa",
+    "finalUrl": "http://localhost:3000/examples/still-water-spa",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/arch-and-lash",
+    "finalUrl": "http://localhost:3000/examples/arch-and-lash",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/north-loop-coffee",
+    "finalUrl": "http://localhost:3000/examples/north-loop-coffee",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=lZ5NFxOZuQ74Dcf8 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/brick-oven-pizza",
+    "finalUrl": "http://localhost:3000/examples/brick-oven-pizza",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=A0qKjYDuwUNcsvMp net::ERR_ABORTED",
+      "still invisible after scrolling: div.ns-float-inner relative aspect-[4/5] w-72 overflow-hidden ro | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | div.absolute inset-0 | figure.ns-quote"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/smoke-and-rail-bbq",
+    "finalUrl": "http://localhost:3000/examples/smoke-and-rail-bbq",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=wweDzn632LyGdiFz net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/sunrise-bakery",
+    "finalUrl": "http://localhost:3000/examples/sunrise-bakery",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=bkTwBCsQbo5aZbzB net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/mercer-law",
+    "finalUrl": "http://localhost:3000/examples/mercer-law",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/bayside-family-dental",
+    "finalUrl": "http://localhost:3000/examples/bayside-family-dental",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/keystone-insurance",
+    "finalUrl": "http://localhost:3000/examples/keystone-insurance",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/open-door-counseling",
+    "finalUrl": "http://localhost:3000/examples/open-door-counseling",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=RZXYKgGz9zxHS2ex net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/hollis-interiors",
+    "finalUrl": "http://localhost:3000/examples/hollis-interiors",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/iron-lotus-tattoo",
+    "finalUrl": "http://localhost:3000/examples/iron-lotus-tattoo",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/create?_rsc=6efBRHK14NOShdid net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/reel-north-films",
+    "finalUrl": "http://localhost:3000/examples/reel-north-films",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/examples/fieldwork-studio",
+    "finalUrl": "http://localhost:3000/examples/fieldwork-studio",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/dashboard",
+    "finalUrl": "http://localhost:3000/dashboard",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=NqnPqVJTiWuuZo-S net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=paaVlGqK2RYZREVd net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=fD0w84EDXjDB_AWX net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=skG2iPKIADJtJXod net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=37aptA8YOX3Js1DE net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=ZcFuFPnZe_Qai4Jb net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=xkrLo08Kf3bZcROz net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=Y28tungisRl8f3BW net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=5jdK1L4-RMvs6FYK net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=sent&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=j79Vj4yH5aoiafxS net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=IOe_mmh6jQxP6_Ru net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/schedule",
+    "finalUrl": "http://localhost:3000/schedule",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/invoices?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=7lMAxnFtzw9iDzvv net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-11-07&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=week&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-10-24&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=list&date=2026-10-31&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-25&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-26&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-27&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-28&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-29&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-30&_rsc=GkXPKcN2pE2Ai3h7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff?_rsc=LO9qfxsTXVrvfFJb net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=dMDPrXnOG9kl8Xzv net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=HaOUWI2STEX7pjJ1 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=WpuBoxvinZprv6tA net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=Stab_BYRT0358qcm net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=v1nuNulTEb3J1RTX net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=2Xe6aCDbDzuU2p31 net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=lsss60aLiQ-HUxQE net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=hsVsvLs32D16_ITu net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=z6uaYP54ouKTDuGi net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=evnueyXSQYpQYagd net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/estimates",
+    "finalUrl": "http://localhost:3000/estimates",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=Gy6LSkiBXNQJ8DbF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=waiting&_rsc=fGf510hcd3qLmIjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/new?_rsc=msvUosrse5yw4Evk net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=draft&_rsc=fGf510hcd3qLmIjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?status=approved&_rsc=fGf510hcd3qLmIjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721?_rsc=WzFjg391dxaXuU-E net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=rKj-ocdtDcC1efAY net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=HN1GEGxCSKf5y3sK net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=8JBFXVPJ4779V-od net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=KZQy32WDbNbUrDQl net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=DbwZRN1PHR6fn4WA net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=e7fzstpX_-CDVD5w net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=Dmwv2RHfOEELGG59 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=MPzm6waxlmvcd7WD net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/invoices",
+    "finalUrl": "http://localhost:3000/invoices",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=-XSqmL1x_N5W0ql_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=unpaid&_rsc=dmilGK4Yd_PKCx09 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?status=overdue&_rsc=dmilGK4Yd_PKCx09 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices/new?_rsc=VxEcRFbPpcduRE5h net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=wzrUXTRSAS-DJAag net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=RxxWkU01pe7i7smt net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=kp-bfmhimn0Bkyq5 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=qrGtTUG-4hWnbBOJ net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=HvGyntprnnSLMpnb net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=3-2FzqOdqj6nBNIL net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Wrr4Fmuu_pcSWQjj net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=Nx3qqPRk2nKnQfo5 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/office/settings",
+    "finalUrl": "http://localhost:3000/office/settings",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=Mu9X_LHoyBoMPe9X net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=lHZC2nxvtlWhFHwO net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=BHMnnkVhk5_v1pq8 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=pHk-WcuAzcn5KvkE net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=yubH2TXbs35frL1k net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=IFSD28s33ZFD1FZa net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=vqYtF_VuQzw5VfOs net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=IezA_VSwytpwuLIG net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=e3KCRnR74UNx8lcD net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=wyXIHk2snvRBGXDc net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=ENrPhv_MeWLGZ9I2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=a0o3kqzO6X16boEq net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/office/price-book",
+    "finalUrl": "http://localhost:3000/office/price-book",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=LyQ5t69GbFlwCTRQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=qG-pG5RboOy_yl9n net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=GDyqq-UieCMWoEm7 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=FqtxUC1bWG0WVgEw net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=9MjTXmqJPprIc7Z2 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=jE2hhkuFFKsZxT0I net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=SgPwO6xvuc80rDS_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=qjT7Grp-pwlZ64uU net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=ZO8D2b1wYURquYXo net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/team",
+    "finalUrl": "http://localhost:3000/team",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=JKKNhOGQ9Ze3zsGw net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/price-book?_rsc=WrKi_lf5Z1bw3_m- net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=X7oZvOQSAm0glrc0 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=ff-xH054LrXttwFE net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=xs5BdihkfKcr59As net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=r5TyOlzoLF-IqB5Z net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=kPlmqJOG6M67ZL5x net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=hZQe9BNx7q5akSFj net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=j6DTSKT9YSdk2LwP net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=4H52ZX346fJJdCNl net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/reviews",
+    "finalUrl": "http://localhost:3000/reviews",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=s8hIq-_fDwZDx3yq net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=PFUcKBTM3X7JljPS net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=7vLOvRQRELmSlevh net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=H-pQEc88aoI-Qe0A net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=vXfJFCkMbHCJ-_qy net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=IDSo4JbcnmIfM6-i net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=L94EaO86lWf7_gbx net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=tLxCnvWg51y1ADso net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/guide",
+    "finalUrl": "http://localhost:3000/guide",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=fQvRp1aDr6SbBDdK net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=lj8rrhlztZYo1BsM net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=PTQZhlVJ2CPM0qdj net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=wz248_8dnk6dKKCu net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=-qj7UdoOTgcgXbgl net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=P0rto9WMunL8aJGu net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=CG4a3bRgXA1uorLy net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=tsnElDb_pPXCRIh8 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=CautcSmnE6y2pNxN net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=kdgoJn327fa2KOa7 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff",
+    "finalUrl": "http://localhost:3000/schedule/3d67e8ca-6710-4ff1-95b2-a6ccb13a53ff",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=VHX3vj_sMlpJAG_S net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?date=2026-10-31&_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?view=day&date=2026-10-31&_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=3UmqdwtfzTAk6dK9 net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=NNjWdWd1yS5HNRaU net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=Am3YbhR5zWcpQF3C net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=dxpfJ0LW84cdd3jC net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=X52zjMePqkjMU9Fq net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=PaDe-gSBB1AeeYKD net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=ph1LKLmC1Rm_m7xK net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=snRahMcGGbU-nyUd net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Ni39yfc3SWfA7dgG net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=V4lo4A5Zd5aVAzPh net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=rE8H2fMn9J7U5CPn net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/estimates/c9b4341b-6766-4845-b5d7-5937de058721",
+    "finalUrl": "http://localhost:3000/estimates/c9b4341b-6766-4845-b5d7-5937de058721",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/estimates?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=vY7BB6zcBn8I0-13 net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=U6sZ-IxHq3sS9DXF net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=Nlsw5VhF-6k_6zan net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=W8HF0bKgJbN8q_qr net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=-qQV4Hs83rK3NR_E net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=RJTuUC1I4-3mNqHR net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=c_Aq_Cx_hCtZ9SBO net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=O6zqiQhG0ReuxY-L net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=DyMi0OIpeyLiE9OL net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=M__MY6UHcfuXC5ux net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=BzOhAfBQmdwHj-3R net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=4q1Uoa63kboR4LNb net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/q/diR1QAq3bnU-MaVtF9rWmkxTdr8hViN0",
+    "finalUrl": "http://localhost:3000/q/diR1QAq3bnU-MaVtF9rWmkxTdr8hViN0",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773",
+    "finalUrl": "http://localhost:3000/invoices/6af58284-c105-4ba3-ac90-5e4d47f38773",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=zm4UGO6KCsCf_nTA net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=FGKincfKB7Qrs2SB net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=hfXRThof8na5_jiE net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=0Dv_2VUeC16MjV-o net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=4f2guEtABxD3fssa net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=gzfQ38U8vFx9PV5r net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=EoOz0dbZwDVX9TJy net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=opgIR8KwZknymVSx net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=xK0fEqqD-AYOVPtg net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/i/CM2VFeF9tg9dF5Yi_jyCEl-GaJN4TMGG",
+    "finalUrl": "http://localhost:3000/i/CM2VFeF9tg9dF5Yi_jyCEl-GaJN4TMGG",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/sites/556e985f-9006-409c-8f87-9aae045b66b1",
+    "finalUrl": "http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/admin?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/preview/556e985f-9006-409c-8f87-9aae045b66b1?_rsc=-znlJlWED19jTq_Q net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=WoWeOdlGUpkTROzo net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=A34jRf0nHuBvtEaE net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=la7LhhcHGOD4S2HZ net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=X7tmAcF8H1egpZgy net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=uXmJyDAPNmwqY4TR net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=GOOFTCd1MepuK_Ai net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=mTXyAH2vIduMVC_L net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=Uem5JIfY_pPYESNj net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=v7g0dXYIdkDrtMNm net::ERR_ABORTED",
+      "failed: http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit?_rsc=6RGWuFFLWzDmjS4H net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=82DM-zRbwdmIJ471 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit",
+    "finalUrl": "http://localhost:3000/sites/556e985f-9006-409c-8f87-9aae045b66b1/edit",
+    "status": 200,
+    "issues": []
+  },
+  {
+    "viewport": "desktop",
+    "path": "/clients",
+    "finalUrl": "http://localhost:3000/clients",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/social?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/3f2f2b35-e7ce-43f3-9305-e57d0f57dd38?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=J7zho40XcKFpLFOY net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=new&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?due=1&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?sort=value&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?stage=won&_rsc=AygU50LPSbPSmmog net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/3f2f2b35-e7ce-43f3-9305-e57d0f57dd38?_rsc=NsbVCtzlK7fmXov_ net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients/54374afd-33f3-4e51-8ede-7fdf929b64e9?_rsc=iykgUMbRmmeozV87 net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=Dl_DAaXKTRc2NV1W net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=zLlrYa1MOBR8Rc46 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=rD2Nlbx3f2ftIEUS net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=gJ_ysRhZ5TZ2ZQQN net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=FWbTzKUJYDGDbDiQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=fospLhuWcxSNswYA net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=p7cwT8x6h6QYomtH net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=3uhZ1XWOO9TB63jQ net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=4J2K7hMoBh7duThz net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=oj7UFB1yLt0vNzOz net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/social",
+    "finalUrl": "http://localhost:3000/social",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/estimates?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=3zHwCduneSYaczaw net::ERR_ABORTED",
+      "failed: http://localhost:3000/dashboard?_rsc=KEGCHBFOTQUwLDli net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=XsJaVxOKsTbxcCkD net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=hE99WeNArtnC_DQt net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=bFkjPqgwExMuTCP1 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=gl9jDjUBIwm0FDwF net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=Tm8u6r3V-pqa0MSq net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=dTlAn9YYvQNfRnbj net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=Vw1HoQOsJOm2hP6y net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=I6oF2IBsbvwdovI8 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=4kBhzIp5bWExGky1 net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/social/review",
+    "finalUrl": "http://localhost:3000/social/review",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/billing?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=bOdEXjGlfncXA80s net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=9G5X1nT__r8s_Pr4 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=rQd2hI97WuJnyPap net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=6oD-_S6IJS6V8_if net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=DSdreKTtGlUaeY3R net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=_aUGwsnzxdGproIZ net::ERR_ABORTED",
+      "failed: http://localhost:3000/social/review?month=2026-11&_rsc=bOdEXjGlfncXA80s net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?month=2026-10&_rsc=bOdEXjGlfncXA80s net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/billing",
+    "finalUrl": "http://localhost:3000/billing",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/clients?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=thv1twb_ekybfkeG net::ERR_ABORTED",
+      "failed: http://localhost:3000/schedule?_rsc=Rm5xgHDkZBxJ_-WF net::ERR_ABORTED",
+      "failed: http://localhost:3000/estimates?_rsc=mqeDnXlGl7rcSrkc net::ERR_ABORTED",
+      "failed: http://localhost:3000/clients?_rsc=x0-u7vkPQpExdcxX net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin?_rsc=oVYAHmHBwIAVqMkv net::ERR_ABORTED",
+      "failed: http://localhost:3000/reviews?_rsc=jYhvoJ2OEYBPLQxj net::ERR_ABORTED",
+      "failed: http://localhost:3000/invoices?_rsc=Qk6JDsqMsRUaQ1tX net::ERR_ABORTED",
+      "failed: http://localhost:3000/social?_rsc=Ty6u6_I__pjhD3-8 net::ERR_ABORTED",
+      "failed: http://localhost:3000/team?_rsc=xn0QysQ1NlDzphFJ net::ERR_ABORTED",
+      "failed: http://localhost:3000/office/settings?_rsc=QFPat4ZfoxY1DNbV net::ERR_ABORTED"
+    ]
+  },
+  {
+    "viewport": "desktop",
+    "path": "/admin",
+    "finalUrl": "http://localhost:3000/admin",
+    "status": 200,
+    "issues": [
+      "failed: http://localhost:3000/dashboard?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/finance?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/accounts?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/prospects?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/usage?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/models?_rsc=xFVjKFL12UrVWmwy net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/accounts?_rsc=HhC2amILmDeqikFh net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?sf=live&_rsc=we3ubxF55xroP6U0 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/websites?_rsc=eRnWk9_rdKovB891 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/finance?_rsc=3fqqzFgdyEEdAzIv net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/prospects?_rsc=we3ubxF55xroP6U0 net::ERR_ABORTED",
+      "failed: http://localhost:3000/admin/models?_rsc=EyxpMfJkx_KOuUgh net::ERR_ABORTED"
+    ]
+  }
+]
