@@ -548,7 +548,7 @@ describe("drafts, publishing and versions", () => {
 });
 
 describe("POST /api/sites/[id]/ai-edit", () => {
-  it("applies the request to the draft and records an ai_edit version", async () => {
+  it("saves nothing when the AI changed nothing (no ai_edit version)", async () => {
     const site = await ownSite();
     const res = await aiEdit(
       jsonRequest(`/x`, "POST", { instruction: "Change my hours to Mon–Sat 8 AM to 6 PM" }),
@@ -556,12 +556,14 @@ describe("POST /api/sites/[id]/ai-edit", () => {
     );
     expect(res.status).toBe(200);
     const body = AiEditResponse.parse(await res.json());
+    // A IA de mentira devolve o site igual: nenhuma versão nova, crédito devolvido.
     expect(body.summary).toMatch(/Demo mode/);
+    expect(body.changed).toBe(false);
 
     const { versions } = VersionsResponse.parse(
       await (await listVersions(new Request(`${BASE}/x`), ctx(site.id))).json(),
     );
-    expect(versions[0]?.source).toBe("ai_edit");
+    expect(versions[0]?.source).not.toBe("ai_edit");
   });
 
   it("returns 404 for someone else's site", async () => {

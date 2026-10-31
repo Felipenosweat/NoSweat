@@ -203,6 +203,11 @@
 .ns-site[data-buttons="line"] .ns-btn-secondary {
   border-bottom-color: color-mix(in srgb, currentColor 40%, transparent);
 }
+/* Botão dentro de um menu de vidro em cápsula: acompanha a cápsula (canto reto dentro de uma
+   pílula fica com cara de erro), qualquer que seja o estilo dos botões. */
+.ns-site .ns-glass.rounded-full .ns-btn {
+  border-radius: 9999px;
+}
 
 /* ------------------------------------------------------------------------------------------
    Molde SIGNATURE (compositions/Signature.tsx): padrão de site premiado aprovado pelo dono.

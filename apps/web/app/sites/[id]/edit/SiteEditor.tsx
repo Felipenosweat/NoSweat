@@ -603,6 +603,12 @@ export function SiteEditor({
         return;
       }
       const result = AiEditResponse.parse(body);
+      if (result.changed === false) {
+        // Nada mudou: sem "Saved"/"Undo" e sem gastar crédito (o servidor devolveu).
+        say({ role: "assistant", kind: "note", text: result.summary });
+        if (options.fromPrompt) setInstruction("");
+        return;
+      }
       if (result.updatedAt) baseUpdatedAt.current = result.updatedAt;
       setSpec(result.spec);
       setDirty(false);

@@ -66,6 +66,19 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     // Se o dono pediu outra foto do topo (imageQuery mudou), busca uma nova. Nunca falha.
     const spec = await resolveHeroImage(result.spec, { previous: site.spec });
 
+    // A IA não mudou nada (pedido fora do que o site permite, ex.: formato do botão): nada é
+    // salvo e o crédito volta. O editor mostra o resumo sem "Saved" nem "Undo".
+    if (JSON.stringify(spec) === JSON.stringify(site.spec)) {
+      await refundUse(actor, "ai_edit");
+      return jsonResponse(AiEditResponse, {
+        siteId: site.id,
+        spec: site.spec,
+        summary: result.summary,
+        updatedAt: site.updatedAt,
+        changed: false,
+      });
+    }
+
     const updated = await getSiteStore().update(site.id, spec, "ai_edit");
     if (!updated) return notFound();
     return jsonResponse(AiEditResponse, {
