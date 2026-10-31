@@ -20,6 +20,8 @@ export default defineConfig({
       // Cota de créditos alta para a conta sem plano (DEV_USER); os testes de créditos usam
       // contas próprias e baixam o valor quando precisam.
       CREDITS_MONTHLY_NO_PLAN: "1000000",
+      // Prospecção: empresas de mentira (nada de Overpass/Google nos testes).
+      PROSPECTS_SOURCE: "mock",
     },
   },
 });

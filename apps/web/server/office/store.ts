@@ -132,7 +132,7 @@ function toGuard(guard: StoredEstimateStatus | EstimateGuard | undefined): Estim
   return typeof guard === "string" ? { status: guard } : guard;
 }
 
-/** Mensagens que a RPC `office_record_payment` usa nos erros (migration 0023). */
+/** Mensagens que a RPC `office_record_payment` usa nos erros (migration 0025). */
 const RPC_ERRORS = {
   notFound: "office_invoice_not_found",
   void: "office_invoice_void",
