@@ -26,6 +26,8 @@ export const ERROR_CODES = [
   "out_of_credits",
   /** A IA ainda não está ligada (produção sem chave): mudanças pela IA respondem 503. */
   "ai_unavailable",
+  /** A busca de empresas (prospecção) falhou no provedor (OpenStreetMap ou Google). */
+  "places_error",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 

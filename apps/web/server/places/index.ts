@@ -101,6 +101,17 @@ export function findPlace(city: string, state: string): PlaceSuggestion | null {
   return place ? toSuggestion(place) : null;
 }
 
+/** Centro aproximado da cidade (lat/lon do Census) e o nome oficial. `null` se não conhece. */
+export function cityCoordinates(
+  city: string,
+  state: string,
+): { name: string; state: string; lat: number; lon: number } | null {
+  const key = normalize(city);
+  const st = state.toUpperCase();
+  const place = places().find((p) => p.state === st && p.key === key);
+  return place ? { name: place.name, state: place.state, lat: place.lat, lon: place.lon } : null;
+}
+
 /**
  * Cidades vizinhas para a área atendida: dentro de `radiusMiles`, inclusive de estados ao lado,
  * com pelo menos 2.000 moradores (para não sugerir povoados), da mais perto para a mais longe.

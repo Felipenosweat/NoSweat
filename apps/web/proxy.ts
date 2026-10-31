@@ -13,6 +13,7 @@ import { GUEST_COOKIE } from "@/server/guest-cookie";
 import { INDEXNOW_KEY, INDEXNOW_KEY_PATH } from "@/server/seo/indexnow";
 
 // Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
+// Fora desta lista e públicas de propósito: /s, /d, /q, /i e /p (prévia de prospect, só pelo token).
 const PROTECTED_PATHS = [
   "/dashboard",
   "/sites",

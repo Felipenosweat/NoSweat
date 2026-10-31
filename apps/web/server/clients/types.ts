@@ -13,7 +13,7 @@ export type ClientRecord = Client & { ownerId: string };
 
 export type ClientActivityRecord = ClientActivity & {
   ownerId: string;
-  /** Só em `payment`: o pagamento do escritório que gerou o item (coluna da migration 0023). */
+  /** Só em `payment`: o pagamento do escritório que gerou o item (coluna da migration 0025). */
   paymentId?: string | null;
 };
 
