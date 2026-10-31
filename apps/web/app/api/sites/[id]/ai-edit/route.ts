@@ -1,4 +1,4 @@
-import { AiEditRequest, AiEditResponse, type AiEditResult } from "@nosweat/schema";
+import { AiEditRequest, AiEditResponse } from "@nosweat/schema";
 import { editSiteSpec, getSiteGenerator } from "@/server/ai";
 import {
   errorResponse,
@@ -49,7 +49,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     const overLimit = await reserveUse(actor, "ai_edit", site.id);
     if (overLimit) return overLimit;
 
-    let result: AiEditResult;
+    let result: Awaited<ReturnType<typeof editSiteSpec>>;
     try {
       result = await editSiteSpec(site.spec, input.data.instruction, generator);
     } catch (error) {
@@ -68,7 +68,7 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
 
     // A IA não mudou nada (pedido fora do que o site permite, ex.: formato do botão): nada é
     // salvo e o crédito volta. O editor mostra o resumo sem "Saved" nem "Undo".
-    if (JSON.stringify(spec) === JSON.stringify(site.spec)) {
+    if (!result.changed) {
       await refundUse(actor, "ai_edit");
       return jsonResponse(AiEditResponse, {
         siteId: site.id,

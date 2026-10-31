@@ -102,11 +102,30 @@ export async function editSiteSpec(
   spec: SiteSpec,
   instruction: string,
   generator: SiteGenerator = getSiteGenerator(),
-): Promise<AiEditResult> {
+): Promise<AiEditResult & { changed: boolean }> {
   const raw: unknown = await generator.editSite(spec, instruction);
   const result = AiEditResult.parse(raw);
+  // A IA devolveu o mesmo site (pedido impossível ou já atendido): quem chama não salva nada.
+  const changed = stableJson(result.spec) !== stableJson(SiteSpec.parse(spec));
   // Fotos e galerias voltam como estavam (regras em server/images/sanitize.ts). O link de
   // avaliações do Google também: só o dono muda (página /reviews).
   const edited = keepReviewUrl(sanitizeAiImages(result.spec, spec), spec);
-  return AiEditResult.parse({ ...result, spec: edited });
+  return { ...AiEditResult.parse({ ...result, spec: edited }), changed };
+}
+
+/** JSON com as chaves em ordem (o Zod e a IA podem reordenar campos): compara só o conteúdo. */
+function stableJson(value: unknown): string {
+  const sort = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(sort);
+    if (v && typeof v === "object") {
+      return Object.fromEntries(
+        Object.entries(v as Record<string, unknown>)
+          .filter(([, item]) => item !== undefined)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([k, item]) => [k, sort(item)]),
+      );
+    }
+    return v;
+  };
+  return JSON.stringify(sort(value));
 }
