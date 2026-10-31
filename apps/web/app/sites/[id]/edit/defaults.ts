@@ -14,10 +14,8 @@ export function newSection(type: SectionType): Section {
     case "services":
       return { type, items: [{ name: P.serviceName, description: P.serviceDescription }] };
     case "testimonials":
-      return {
-        type,
-        items: [{ quote: P.reviewQuote, author: P.reviewAuthor }],
-      };
+      // Começa vazia: avaliação só aparece se o dono colar uma de verdade (regra 8).
+      return { type, items: [] };
     case "faq":
       return { type, items: [{ q: P.faqQuestion, a: P.faqAnswer }] };
     case "contact":

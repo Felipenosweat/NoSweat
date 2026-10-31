@@ -237,18 +237,30 @@ export function designBriefForPrompt(plan: DesignPlan): string {
 
 /**
  * Grava o plano no SiteSpec gerado. A composição da IA só vale se estiver entre as permitidas;
- * as referências e o motivo vêm sempre do plano (para depuração, ficam salvos com o site).
+ * a ação principal, as referências e o motivo vêm sempre do plano (para depuração, ficam salvos
+ * com o site). Respiro, fotos, botões, cabeçalho e contato escolhidos pela IA são mantidos.
  */
 export function applyDesignPlan(design: SiteDesign | undefined, plan: DesignPlan): SiteDesign {
   const composition =
     design?.composition && plan.allowed.includes(design.composition)
       ? design.composition
       : plan.composition;
+  // Respiro e fotos escolhidos para ESTE site (pela IA, ver server/ai/look.ts) ficam; sem eles,
+  // os do plano. Comida e salão nunca em preto e branco: a cor é o próprio produto.
+  const noMonochrome = plan.signals.industry === "food" || plan.signals.industry === "beauty";
+  const imageTreatment =
+    design?.imageTreatment && !(design.imageTreatment === "monochrome" && noMonochrome)
+      ? design.imageTreatment
+      : plan.imageTreatment;
   return {
     composition,
     primaryAction: plan.primaryAction,
-    density: plan.density,
-    imageTreatment: plan.imageTreatment,
+    density: design?.density ?? plan.density,
+    imageTreatment,
+    // Visual do site (botões, cabeçalho, contato): não é do plano, fica como veio.
+    ...(design?.buttons ? { buttons: design.buttons } : {}),
+    ...(design?.header ? { header: design.header } : {}),
+    ...(design?.contact ? { contact: design.contact } : {}),
     references: plan.references.map((ref) => ref.id),
     rationale:
       composition === plan.composition

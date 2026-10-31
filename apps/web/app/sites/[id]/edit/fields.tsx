@@ -66,11 +66,14 @@ export function ItemList<T>({
 
 /** Botão só com ícone: 44px no celular, 36px no computador (com mouse). */
 export function IconButton({
+  id,
   label,
   disabled,
   onClick,
   children,
 }: {
+  /** Para devolver o foco a este botão depois de uma ação (ex.: mover seção). */
+  id?: string;
   label: string;
   disabled?: boolean;
   onClick: () => void;
@@ -78,6 +81,7 @@ export function IconButton({
 }) {
   return (
     <button
+      id={id}
       type="button"
       title={label}
       aria-label={label}

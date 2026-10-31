@@ -190,7 +190,15 @@ for (const vp of VIEWPORTS) {
       );
       if (overflow > 1) issues.push(`horizontal overflow: ${overflow}px`);
       const slug = path === "/" ? "-home" : path.replaceAll("/", "-");
-      if (path === "/") {
+      // Rolagem real (prints da tela, não da página inteira) na home e em 3 sites de exemplo:
+      // mostra o menu fixo e as animações de entrada como uma pessoa veria.
+      const scrollShots = [
+        "/",
+        "/examples/glow-salon",
+        "/examples/joes-plumbing",
+        "/examples/brick-oven-pizza",
+      ];
+      if (scrollShots.includes(path)) {
         // Rola como uma pessoa (as animações aparecem com a rolagem) e tira um print por tela.
         const total = await page.evaluate(() => document.documentElement.scrollHeight);
         let shot = 0;
@@ -198,7 +206,7 @@ for (const vp of VIEWPORTS) {
           await page.evaluate((top) => window.scrollTo(0, top), y);
           await page.waitForTimeout(900);
           await page.screenshot({
-            path: `${OUT}/${vp.name}-home-scroll-${String(shot).padStart(2, "0")}.png`,
+            path: `${OUT}/${vp.name}${slug}-scroll-${String(shot).padStart(2, "0")}.png`,
           });
           shot += 1;
         }

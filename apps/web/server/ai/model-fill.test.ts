@@ -1,11 +1,12 @@
 import { exampleBriefs, fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import { SiteSpec } from "@nosweat/schema";
 import { describe, expect, it, vi } from "vitest";
-import { planDesign } from "../design";
+import { applyDesignPlan, planDesign } from "../design";
 import { AnthropicGenerator, modelFirstEnabled } from "./anthropic";
 import { generateSiteSpec } from "./index";
+import { paletteProblems } from "./look";
 import { MockGenerator } from "./mock";
-import { applyModelFill, lintFill, STYLE_THEMES, verifyFacts, type ModelFill } from "./model-fill";
+import { applyModelFill, lintFill, ModelFill, STYLE_THEMES, verifyFacts } from "./model-fill";
 import { ALL_MODELS, CLEANING_MODEL, MODELS, modelFor, templateFor } from "./models";
 
 const SAMPLE_BRIEF =
@@ -197,6 +198,140 @@ describe("applyModelFill", () => {
   });
 });
 
+describe("applyModelFill, a look of its own", () => {
+  const LOOK: Pick<ModelFill, "theme" | "style" | "sectionOrder" | "dropSections"> = {
+    theme: {
+      primary: "#6B2D5C",
+      secondary: "#E8B4BC",
+      background: "#FBF6F4",
+      surface: "#F3E9EA",
+      text: "#2A1626",
+      muted: "#6A5562",
+      font: "editorial",
+    },
+    style: {
+      buttons: "caps",
+      header: "centered",
+      contact: "letter",
+      density: "airy",
+      imageTreatment: "tinted",
+    },
+    sectionOrder: ["faq", "services"],
+    dropSections: ["about"],
+  };
+  const build = (fill: ModelFill, brief = SAMPLE_BRIEF, model = MODELS["home-services"]) =>
+    applyModelFill(model, fill, planDesign(brief), verifyFacts(fill.business, brief));
+
+  it("accepts the look fields in the fill", () => {
+    expect(ModelFill.safeParse(sampleFill(LOOK)).success).toBe(true);
+    expect(ModelFill.safeParse(sampleFill()).success).toBe(true);
+  });
+
+  it("uses the AI's palette, style and section order instead of copying the model", () => {
+    const brief = `${SAMPLE_BRIEF} I'm Dana Fox, I run the shop.`;
+    const spec = build(sampleFill({ ...LOOK, about: { body: "Dana Fox runs the shop." } }), brief);
+    expect(spec.theme).toEqual(LOOK.theme);
+    expect(spec.design).toMatchObject(LOOK.style ?? {});
+    // A composição continua sendo a do plano.
+    expect(planDesign(brief).allowed).toContain(spec.design?.composition);
+    // Topo primeiro, contato por último; "quem somos" tirado; sem depoimentos, sem a seção.
+    expect(spec.sections.map((s) => s.type)).toEqual(["hero", "faq", "services", "contact"]);
+  });
+
+  it("falls back to the model's colors when the AI palette is unreadable", () => {
+    const model = MODELS["home-services"];
+    const theme = { ...LOOK.theme!, text: "#E0E0E0", font: "luxe" as const };
+    expect(paletteProblems(theme).length).toBeGreaterThan(0);
+    const spec = build(sampleFill({ theme }));
+    expect(spec.theme).toEqual({ ...model.theme, font: "luxe" });
+  });
+
+  it("keeps the colors of the style the owner picked over the AI palette", () => {
+    const brief = `${SAMPLE_BRIEF}\n\nStyle: elegant.`;
+    expect(build(sampleFill(LOOK), brief).theme).toEqual(STYLE_THEMES.elegant);
+  });
+
+  it("adds a section the AI ordered when there is content for it", () => {
+    const brief = `${SAMPLE_BRIEF} "They fixed it in an hour." (Sam K.)`;
+    const testimonials = [{ quote: "They fixed it in an hour.", author: "Sam K." }];
+    // O modelo de limpeza não tem depoimentos.
+    expect(CLEANING_MODEL.sections.some((s) => s.type === "testimonials")).toBe(false);
+    const plain = build(sampleFill({ testimonials }), brief, CLEANING_MODEL);
+    expect(plain.sections.some((s) => s.type === "testimonials")).toBe(false);
+    const ordered = build(
+      sampleFill({ testimonials, sectionOrder: ["testimonials", "services"] }),
+      brief,
+      CLEANING_MODEL,
+    );
+    expect(ordered.sections.map((s) => s.type)).toEqual([
+      "hero",
+      "testimonials",
+      "services",
+      "faq",
+      "contact",
+    ]);
+  });
+
+  it("keeps a photo query for every service, except on portfolios", () => {
+    const base = sampleFill();
+    const fill = sampleFill({
+      services: base.services.map((item, i) => ({ ...item, imageQuery: `service photo ${i}` })),
+    });
+    const queries = (spec: SiteSpec) =>
+      spec.sections.flatMap((s) => (s.type === "services" ? s.items.map((i) => i.imageQuery) : []));
+    expect(queries(build(fill))).toEqual(["service photo 0", "service photo 1", "service photo 2"]);
+    expect(queries(build(fill, SAMPLE_BRIEF, fixtures["vega-photo"]))).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it("the plan keeps the chosen style when the pipeline applies it again", () => {
+    const plan = planDesign(SAMPLE_BRIEF);
+    const spec = build(sampleFill(LOOK));
+    expect(applyDesignPlan(spec.design, plan)).toMatchObject(LOOK.style ?? {});
+    // Comida nunca em preto e branco, nem se a IA pedir.
+    const food = planDesign(exampleBriefs["rosas-kitchen"]);
+    const design = applyDesignPlan(
+      { composition: food.composition, imageTreatment: "monochrome" },
+      food,
+    );
+    expect(design.imageTreatment).toBe(food.imageTreatment);
+    expect(design.imageTreatment).not.toBe("monochrome");
+  });
+
+  it("the mock gives two businesses of the same kind different looks", async () => {
+    const make = (name: string) =>
+      generateSiteSpec(`${name}, a plumber in Tulsa, OK.`, new MockGenerator({ delayMs: 0 }));
+    const [a, b] = await Promise.all([make("Bright Path Plumbing"), make("Blue Ox Plumbing")]);
+    expect(a.business.name).toBe("Bright Path Plumbing");
+    expect(b.business.name).toBe("Blue Ox Plumbing");
+    const lookOf = (spec: SiteSpec) =>
+      JSON.stringify([
+        spec.theme,
+        spec.design?.buttons,
+        spec.design?.header,
+        spec.design?.contact,
+        spec.sections.map((s) => s.type),
+      ]);
+    expect(lookOf(a)).not.toBe(lookOf(b));
+    expect(a.theme).not.toEqual(MODELS["home-services"].theme);
+    expect(paletteProblems(a.theme)).toEqual([]);
+    expect(paletteProblems(b.theme)).toEqual([]);
+    // Mesmo nome, mesmo visual.
+    expect(lookOf(await make("Bright Path Plumbing"))).toBe(lookOf(a));
+  });
+
+  it("the mock keeps the colors of the owner's style", async () => {
+    const spec = await generateSiteSpec(
+      exampleBriefs["glow-salon"],
+      new MockGenerator({ delayMs: 0 }),
+    );
+    expect(spec.theme).toEqual(STYLE_THEMES.elegant);
+  });
+});
+
 describe("verifyFacts", () => {
   it("drops contact details and links that are not in the brief", () => {
     const facts = verifyFacts(
@@ -372,11 +507,30 @@ describe("AnthropicGenerator, model-first", () => {
     expect(parse).toHaveBeenCalledTimes(1);
     const [request] = parse.mock.calls[0] as unknown as [Request];
     expect(request.model).toBe("small-model");
-    expect(request.max_tokens).toBeLessThanOrEqual(2000);
+    expect(request.max_tokens).toBeLessThanOrEqual(2600);
     expect(request.system.every((block) => block.cache_control)).toBe(true);
     expect(request.messages[0]?.content).toContain(SAMPLE_BRIEF);
     expect(spec.business.name).toBe("Bright Path Services");
     expect(JSON.stringify(spec)).not.toContain("Joe");
+    // Sugestão de visual sorteada pelo pedido, fora do texto em cache.
+    expect(request.messages[0]?.content).toContain("<look_suggestion>");
+  });
+
+  it("drops an invalid look instead of rejecting the whole fill", async () => {
+    const fill = {
+      ...sampleFill(),
+      theme: { primary: "blue", secondary: "#FFFFFF", background: "#FFFFFF", text: "#000000" },
+      style: { buttons: "rounded" },
+    };
+    const parse = vi.fn(async () => ({ stop_reason: "end_turn", parsed_output: fill }));
+    const generator = new AnthropicGenerator(clientWith(parse), "big-model", "small-model", true);
+    const spec = await generator.generateSite(SAMPLE_BRIEF, planDesign(SAMPLE_BRIEF));
+    expect(generator.lastPath).toBe("model-first");
+    expect(parse).toHaveBeenCalledTimes(1);
+    // A paleta inválida saiu: vale a do modelo.
+    expect(spec.theme.primary).toMatch(/^#[0-9a-fA-F]{6}$/);
+    expect(SiteSpec.safeParse(spec).success).toBe(true);
+    expect(spec.design?.buttons).toBeUndefined();
   });
 
   it("retries once with the problems, then falls back to the full path", async () => {

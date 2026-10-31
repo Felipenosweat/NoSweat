@@ -101,7 +101,6 @@
    Assinatura de site premiado (Awwwards): movimento ligado à rolagem, sem sequestrar a rolagem.
    - .ns-rise: o bloco sobe quando entra na tela (nunca fica invisível).
    - .ns-unclip: a foto se abre de dentro para fora quando entra na tela.
-   - .ns-hero-zoom: a foto do topo assenta devagar (zoom de 1,1 para 1) ao abrir a página.
    - .ns-marquee: faixa corrida com os serviços (o conteúdo vem duplicado, a cópia é aria-hidden).
    Só com "reduzir movimento" desligado; sem suporte a animation-timeline, tudo fica parado e
    visível (nada some). */
@@ -125,15 +124,6 @@
   }
 }
 
-@keyframes ns-settle {
-  from {
-    transform: scale(1.12);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
 @keyframes ns-marquee {
   to {
     transform: translateX(-50%);
@@ -153,9 +143,6 @@
       animation-range: entry 0% cover 45%;
     }
   }
-  .ns-site .ns-hero-zoom img {
-    animation: ns-settle 2.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  }
   .ns-site .ns-marquee-track {
     animation: ns-marquee 48s linear infinite;
   }
@@ -168,6 +155,105 @@
 .ns-site .ns-marquee-track {
   display: inline-flex;
   width: max-content;
+}
+
+/* ------------------------------------------------------------------------------------------
+   Revelação ao rolar (Motion.tsx, data-ns-rise / data-ns-fade / data-ns-stagger): só opacidade
+   e transform, sem mudar o layout. Só esconde com data-ns-motion no site, que o JavaScript liga
+   (sem JavaScript, robôs de busca, impressão: tudo visível). --ns-d = degrau do escalonamento.
+   O ritmo muda por composição (temperamentos de docs/design/motion.md), para os 5 layouts não
+   se moverem do mesmo jeito:
+   - service-led: "quiet" (sobe pouco, rápido);
+   - editorial: "ceremonial" (quase sem subir, longo e macio);
+   - immersive: "cinematic" (sobe mais, devagar);
+   - typographic: "kinetic" (sobe muito, rápido, degraus curtos);
+   - modular: blocos que assentam (sobe pouco e cresce de 0,96 para 1). */
+.ns-site {
+  --ns-reveal-y: 24px;
+  --ns-reveal-scale: 1;
+  --ns-reveal-dur: 0.8s;
+  --ns-reveal-ease: cubic-bezier(0.19, 1, 0.22, 1);
+  --ns-stagger: 80ms;
+}
+.ns-site[data-composition="editorial"] {
+  --ns-reveal-y: 14px;
+  --ns-reveal-dur: 1.3s;
+  --ns-reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ns-stagger: 130ms;
+}
+.ns-site[data-composition="immersive"] {
+  --ns-reveal-y: 48px;
+  --ns-reveal-dur: 1.4s;
+  --ns-stagger: 110ms;
+}
+.ns-site[data-composition="typographic"] {
+  --ns-reveal-y: 64px;
+  --ns-reveal-dur: 0.75s;
+  --ns-reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ns-stagger: 45ms;
+}
+.ns-site[data-composition="modular"] {
+  --ns-reveal-y: 16px;
+  --ns-reveal-scale: 0.96;
+  --ns-reveal-dur: 0.7s;
+  --ns-stagger: 60ms;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* A transição só entra junto com a marca de "entrou": esconder no começo é instantâneo. */
+  .ns-site[data-ns-motion]
+    :is([data-ns-rise], [data-ns-fade], [data-ns-stagger] > *)[data-ns-in]:not([data-ns-done]) {
+    transition:
+      opacity var(--ns-reveal-dur) var(--ns-reveal-ease) var(--ns-d, 0s),
+      transform var(--ns-reveal-dur) var(--ns-reveal-ease) var(--ns-d, 0s);
+  }
+  .ns-site[data-ns-motion] :is([data-ns-fade], [data-ns-stagger] > *):not([data-ns-in]) {
+    opacity: 0;
+    transform: translate3d(0, var(--ns-reveal-y), 0) scale(var(--ns-reveal-scale));
+  }
+  /* Títulos e linhas grandes sobem mais que o resto. */
+  .ns-site[data-ns-motion] [data-ns-rise]:not([data-ns-in]) {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--ns-reveal-y) * 1.8), 0);
+  }
+}
+@media print {
+  .ns-site [data-ns-rise],
+  .ns-site [data-ns-fade],
+  .ns-site [data-ns-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Micro-interações (só com mouse de verdade e movimento ligado): o botão sobe 2 px, a foto do
+   cartão cresce devagar. `translate`/`scale` são propriedades próprias: não brigam com o
+   `transform` do botão magnético nem com a paralaxe. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .ns-site .ns-btn:hover {
+    translate: 0 -2px;
+  }
+  .ns-site .ns-btn:active {
+    translate: 0;
+    scale: 0.98;
+  }
+  .ns-site .ns-card-img {
+    transition: scale 1.1s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  .ns-site :is(.ns-card, .ns-row):hover .ns-card-img {
+    scale: 1.06;
+  }
+  .ns-site [data-gallery="rail"] .ns-photo img {
+    transition: scale 1.1s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  .ns-site [data-gallery="rail"] figure:hover .ns-photo img {
+    scale: 1.04;
+  }
+}
+
+/* A seção que recebe o foco depois de um clique no menu não ganha contorno (Motion.tsx). */
+.ns-site [tabindex="-1"]:focus {
+  outline: none;
 }
 
 /* ------------------------------------------------------------------------------------------
@@ -203,9 +289,9 @@
 .ns-site[data-buttons="line"] .ns-btn-secondary {
   border-bottom-color: color-mix(in srgb, currentColor 40%, transparent);
 }
-/* Botão dentro de um menu de vidro em cápsula: acompanha a cápsula (canto reto dentro de uma
-   pílula fica com cara de erro), qualquer que seja o estilo dos botões. */
-.ns-site .ns-glass.rounded-full .ns-btn {
+/* Botão dentro do menu de vidro: acompanha a cápsula (canto reto dentro de uma pílula fica com
+   cara de erro), qualquer que seja o estilo dos botões. */
+.ns-site .ns-nav .ns-btn {
   border-radius: 9999px;
 }
 
@@ -213,13 +299,15 @@
    Molde SIGNATURE (compositions/Signature.tsx): padrão de site premiado aprovado pelo dono.
    Tudo aqui funciona sem JavaScript; Motion.tsx só acrescenta o movimento da rolagem. */
 
-/* Vidro líquido (menu e botão de agendar): translúcido, com brilho na borda. */
+/* Vidro líquido (menu e botão de agendar): translúcido, com brilho na borda. A tinta
+   (--ns-glass-a/b, quanto do fundo do tema entra) sobe no menu para o texto ler bem sobre foto
+   clara ou escura. O elemento com vidro precisa de `position` (relative/absolute) no próprio
+   componente: o brilho (::before) se apoia nele. */
 .ns-site .ns-glass {
-  position: relative;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--ns-background) 70%, transparent),
-    color-mix(in srgb, var(--ns-background) 42%, transparent)
+    color-mix(in srgb, var(--ns-background) var(--ns-glass-a, 70%), transparent),
+    color-mix(in srgb, var(--ns-background) var(--ns-glass-b, 42%), transparent)
   );
   /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
   -webkit-backdrop-filter: blur(14px) saturate(160%);
@@ -242,6 +330,127 @@
     transparent 45%
   );
   mix-blend-mode: soft-light;
+}
+
+/* Menu: no celular e no computador o texto fica sobre a foto do topo, então a tinta é mais
+   forte. No tablet (48rem a 80rem) fica como sempre foi (o visual aprovado no iPad). */
+.ns-site .ns-navbar {
+  --ns-glass-a: 80%;
+  --ns-glass-b: 62%;
+}
+@container (48rem <= width < 80rem) {
+  .ns-site .ns-navbar {
+    --ns-glass-a: 70%;
+    --ns-glass-b: 42%;
+  }
+  /* bar/minimal no tablet: a barra de fora some e as duas cápsulas (nome; ações) viram vidro. */
+  .ns-site .ns-nav[data-split] .ns-navbar {
+    background: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  .ns-site .ns-nav[data-split] .ns-navbar::before {
+    content: none;
+  }
+  .ns-site .ns-nav[data-split] .ns-navpart {
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--ns-background) 70%, transparent),
+      color-mix(in srgb, var(--ns-background) 42%, transparent)
+    );
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid color-mix(in srgb, var(--ns-background) 70%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
+      inset 0 -1px 0 color-mix(in srgb, var(--ns-background) 25%, transparent),
+      0 12px 40px color-mix(in srgb, var(--ns-text) 18%, transparent);
+  }
+}
+/* "bar" no computador: faixa presa no alto, de ponta a ponta, sem flutuar. */
+@container (width >= 80rem) {
+  .ns-site .ns-navbar-dock {
+    border-width: 0 0 1px;
+    border-color: color-mix(in srgb, var(--ns-text) 10%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
+      0 10px 30px -18px color-mix(in srgb, var(--ns-text) 35%, transparent);
+  }
+}
+/* Painel do menu: quase sólido (abre sobre qualquer foto; o desfoque não alcança a página por
+   baixo porque a barra também tem desfoque). */
+.ns-site .ns-menu-panel {
+  --ns-glass-a: 96%;
+  --ns-glass-b: 90%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ns-site .ns-menu[open] .ns-menu-panel {
+    animation: ns-menu-in 0.32s cubic-bezier(0.19, 1, 0.22, 1) both;
+    transform-origin: top right;
+  }
+}
+@keyframes ns-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+/* Sem desfoque no navegador, transparência reduzida ou contraste alto: vidro vira cor sólida. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .ns-site .ns-glass {
+    background: color-mix(in srgb, var(--ns-background) 94%, transparent);
+  }
+  @container (48rem <= width < 80rem) {
+    .ns-site .ns-nav[data-split] .ns-navpart {
+      background: color-mix(in srgb, var(--ns-background) 94%, transparent);
+    }
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .ns-site .ns-glass {
+    background: var(--ns-background);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .ns-site .ns-glass::before {
+    content: none;
+  }
+  @container (48rem <= width < 80rem) {
+    .ns-site .ns-nav[data-split] .ns-navpart {
+      background: var(--ns-background);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
+@media (prefers-contrast: more) {
+  .ns-site .ns-glass {
+    background: var(--ns-background);
+    border-color: color-mix(in srgb, var(--ns-text) 55%, transparent);
+  }
+  .ns-site .ns-glass::before {
+    content: none;
+  }
+  @container (48rem <= width < 80rem) {
+    .ns-site .ns-nav[data-split] .ns-navpart {
+      background: var(--ns-background);
+      border-color: color-mix(in srgb, var(--ns-text) 55%, transparent);
+    }
+  }
+}
+@media (forced-colors: active) {
+  .ns-site .ns-glass {
+    border: 1px solid CanvasText;
+  }
+  @container (48rem <= width < 80rem) {
+    .ns-site .ns-nav[data-split] .ns-navpart {
+      border: 1px solid CanvasText;
+    }
+  }
 }
 
 .ns-site .ns-underline {
@@ -396,9 +605,6 @@
 }
 .ns-site .ns-hero[data-intro] .ns-hero-fade {
   animation: ns-fade-up 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.4s both;
-}
-.ns-site .ns-hero[data-intro] .ns-hero-zoom img {
-  animation-delay: 0.25s;
 }
 .ns-site .ns-nav {
   animation: ns-nav-in 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s both;

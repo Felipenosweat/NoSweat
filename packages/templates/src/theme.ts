@@ -41,5 +41,9 @@ export function themeToCssVars(theme: Theme): CSSProperties & NsCssVars {
     "--ns-text": theme.text,
     "--ns-font-heading": fonts.heading,
     "--ns-font-body": fonts.body,
+    // Opcionais: sem eles, valem os derivados do fundo e do texto (styles.css, .ns-site). O
+    // estilo inline ganha da folha de estilos, então basta não emitir quando faltam.
+    ...(theme.surface ? { "--ns-surface": theme.surface } : {}),
+    ...(theme.muted ? { "--ns-muted": theme.muted } : {}),
   };
 }

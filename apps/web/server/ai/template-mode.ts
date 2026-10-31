@@ -1,5 +1,7 @@
 import type { SiteSpec, TemplateId } from "@nosweat/schema";
+import { readBrief } from "../design";
 import { factsFromBrief, servicesFromWhat, whatFromBrief } from "./brief-facts";
+import { variedLook } from "./look";
 import { lintFill, type BriefFacts, type ModelFill } from "./model-fill";
 
 // Modo modelo (produção sem chave de IA): o site parte do site-modelo mais parecido, mas TODO o
@@ -949,6 +951,11 @@ export function templateFill(brief: string, profile: TemplateProfile, model: Sit
     category: profile.category,
     business: { ...facts, name: facts.name ?? fallbackName(profile, facts.city) },
   };
+  // Visual sorteado pelo nome (paleta só sem estilo do dono): sites do mesmo tipo não saem
+  // com a cara do mesmo modelo. A ordem das seções fica a do modelo.
+  const look = variedLook(fill.business.name ?? brief, model.template);
+  if (!readBrief(brief).style) fill.theme = look.theme;
+  fill.style = look.style;
   const problems = lintFill(fill, brief, model);
   if (problems.length === 0) return fill;
   const generic: ModelFill = { ...fill, services: genericServices(profile), testimonials: [] };

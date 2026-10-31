@@ -1,7 +1,8 @@
 import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import { SiteSpec, type AiEditResult, type TemplateId } from "@nosweat/schema";
-import type { DesignPlan } from "../design";
+import { readBrief, type DesignPlan } from "../design";
 import { factsFromBrief } from "./brief-facts";
+import { variedLook } from "./look";
 import { applyModelFill, verifyFacts, type ModelFill } from "./model-fill";
 import { modelBySlug, modelFor, templateFor } from "./models";
 import { profileFor, templateFill, type TemplateProfile } from "./template-mode";
@@ -149,6 +150,9 @@ const MOCK_COPY: Record<
 /**
  * Um ModelFill de mentira, montado só com o que está na descrição (sem IA, sem rede): textos
  * genéricos da categoria, nomes de serviço do modelo e fatos tirados do texto (brief-facts.ts).
+ * O visual (paleta, fonte, botões, cabeçalho, contato e ordem das seções) é sorteado pelo nome
+ * do negócio (variedLook): dois negócios diferentes não saem com a cara do mesmo modelo. Com
+ * estilo escolhido pelo dono ("Style: ..."), a paleta é a do estilo.
  * Passa pelo mesmo applyModelFill da IA de verdade. Só no dev e nos testes: em produção sem IA
  * vale o modo modelo (template-mode.ts), que nunca copia serviços do modelo.
  */
@@ -161,21 +165,28 @@ export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): Mo
   );
   const imageQuery = slug ? IMAGE_QUERIES[slug] : undefined;
   const city = facts.city;
+  const name = facts.name ?? (city ? `${city} ${copy.word}` : `Main Street ${copy.word}`);
+  const look = variedLook(name, model.template);
+  // Só reordena as seções que o modelo tem (o mock não escreve "quem somos").
+  const modelTypes = new Set<string>(model.sections.map((s) => s.type));
   return {
     hero: { ...copy.hero, ...(imageQuery ? { imageQuery } : {}) },
     services: services.slice(0, 8).map((item) => ({
       name: item.name,
       description: copy.description,
       ...(item.group ? { group: item.group } : {}),
+      ...(model.template === "portfolio"
+        ? {}
+        : { imageQuery: item.name.toLowerCase().slice(0, 80) }),
     })),
     faq: copy.faq,
     about: null,
     testimonials: testimonials.slice(0, 6),
     category: copy.category,
-    business: {
-      ...facts,
-      name: facts.name ?? (city ? `${city} ${copy.word}` : `Main Street ${copy.word}`),
-    },
+    business: { ...facts, name },
+    ...(readBrief(brief).style ? {} : { theme: look.theme }),
+    style: look.style,
+    sectionOrder: look.sectionOrder.filter((type) => modelTypes.has(type)),
   };
 }
 

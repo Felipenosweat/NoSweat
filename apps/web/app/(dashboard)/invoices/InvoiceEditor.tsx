@@ -458,7 +458,7 @@ export function InvoiceEditor({
 
       <div className="mt-8 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
         {/* ---------- coluna principal ---------- */}
-        <div className="grid min-w-0 gap-4">
+        <div className="grid min-w-0 grid-cols-1 gap-4">
           {!doc && (
             <GlassCard as="section" aria-labelledby={`${ids}-client`}>
               <CardHeading id={`${ids}-client`}>Client</CardHeading>
