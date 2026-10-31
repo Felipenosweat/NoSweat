@@ -35,8 +35,11 @@ describe("CreateCompanyExpenseRequest", () => {
     });
     expect(result.success).toBe(false);
     expect(
-      CreateCompanyExpenseRequest.safeParse({ ...base, startsOn: "2026-05-01", endsOn: "2026-05-01" })
-        .success,
+      CreateCompanyExpenseRequest.safeParse({
+        ...base,
+        startsOn: "2026-05-01",
+        endsOn: "2026-05-01",
+      }).success,
     ).toBe(true);
   });
 });

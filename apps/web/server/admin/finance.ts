@@ -205,8 +205,7 @@ export function resolveAssumptions(input: {
   const customArpu = parseMoneyParam(input.arpu);
   const actualArpu = paying > 0 ? Math.round(revenue.mrrCents / paying) : 0;
   const arpuCents = customArpu ?? (actualArpu > 0 ? actualArpu : PLANS.pro.monthlyCents);
-  const arpuSource =
-    customArpu !== null ? "custom" : actualArpu > 0 ? "actual" : "pro_price";
+  const arpuSource = customArpu !== null ? "custom" : actualArpu > 0 ? "actual" : "pro_price";
 
   const fee = stripeFeeCents(arpuCents);
   const ai = aiPerClient && aiPerClient.sample > 0 ? aiPerClient : null;

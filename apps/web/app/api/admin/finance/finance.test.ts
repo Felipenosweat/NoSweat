@@ -27,7 +27,12 @@ async function errorCode(res: Response): Promise<string> {
   return ApiError.parse(await res.json()).error.code;
 }
 
-const hosting = { name: "Vercel Pro", category: "hosting", amountCents: 2000, frequency: "monthly" };
+const hosting = {
+  name: "Vercel Pro",
+  category: "hosting",
+  amountCents: 2000,
+  frequency: "monthly",
+};
 
 beforeEach(() => resetMemoryExpenseStore());
 afterEach(() => {
@@ -44,8 +49,12 @@ describe("/api/admin/finance/expenses for someone who isn't an admin", () => {
     expect(create.status).toBe(404);
 
     const id = crypto.randomUUID();
-    expect((await patchRoute(jsonRequest(`${BASE}/${id}`, "PATCH", { amountCents: 1 }), ctx(id))).status).toBe(404);
-    expect((await deleteRoute(new Request(`${BASE}/${id}`, { method: "DELETE" }), ctx(id))).status).toBe(404);
+    expect(
+      (await patchRoute(jsonRequest(`${BASE}/${id}`, "PATCH", { amountCents: 1 }), ctx(id))).status,
+    ).toBe(404);
+    expect(
+      (await deleteRoute(new Request(`${BASE}/${id}`, { method: "DELETE" }), ctx(id))).status,
+    ).toBe(404);
 
     process.env.DEV_ADMIN = "true";
     const after = CompanyExpensesResponse.parse(await (await listRoute()).json());
@@ -64,7 +73,12 @@ describe("/api/admin/finance/expenses for an admin", () => {
     );
     expect(create.status).toBe(201);
     const { expense } = CompanyExpenseResponse.parse(await create.json());
-    expect(expense).toMatchObject({ ...hosting, startsOn: "2026-01-01", endsOn: null, notes: "Team plan" });
+    expect(expense).toMatchObject({
+      ...hosting,
+      startsOn: "2026-01-01",
+      endsOn: null,
+      notes: "Team plan",
+    });
 
     const list = CompanyExpensesResponse.parse(await (await listRoute()).json());
     expect(list.expenses.map((item) => item.id)).toEqual([expense.id]);
@@ -117,7 +131,10 @@ describe("/api/admin/finance/expenses for an admin", () => {
     expect(backwards.status).toBe(400);
     expect(await errorCode(backwards)).toBe("invalid_request");
 
-    const empty = await patchRoute(jsonRequest(`${BASE}/${created.id}`, "PATCH", {}), ctx(created.id));
+    const empty = await patchRoute(
+      jsonRequest(`${BASE}/${created.id}`, "PATCH", {}),
+      ctx(created.id),
+    );
     expect(empty.status).toBe(400);
 
     const missing = crypto.randomUUID();

@@ -63,7 +63,7 @@ export async function loadFinance(params: {
 }): Promise<FinanceView> {
   const [expenses, data] = await Promise.all([listExpenses(), loadAccountsData()]);
   // Admins e contas de teste podem ter plano liberado, mas não pagam: ficam fora da receita.
-  const excluded = new Set(data.adminIds);
+  const excluded = new Set<string>(data.adminIds);
   for (const account of data.accounts) if (account.testAccount) excluded.add(account.id);
 
   const revenue = revenueModel(data.subscriptions ?? [], data.grants, excluded, data.now);

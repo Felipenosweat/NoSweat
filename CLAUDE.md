@@ -139,6 +139,11 @@ Como as peças se ligam:
   Google" no contato e no rodapé (`templates/.../ReviewLink.tsx`, sem estrelas nem números). A IA
   e "restaurar versão" nunca mudam o link (`keepReviewUrl`). Pedir avaliação: SMS, e-mail e QR
   em `/reviews` e no ⋯ da ficha do cliente.
+- Finanças da No Sweat (`/admin/finance`, só admins; migration 0024 `company_expenses`,
+  `server/admin/finance*.ts`, rotas `/api/admin/finance/expenses`): gastos únicos, mensais e anuais
+  (anual ÷ 12), receita mensal real (Stripe + liberações manuais, preços de `billing/plans.ts`) e
+  break-even = custos fixos ÷ (receita média por cliente − custo variável por cliente). As
+  premissas mudam pela URL (`?arpu=&var=`).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 

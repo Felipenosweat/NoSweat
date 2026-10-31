@@ -24,7 +24,12 @@ export function BreakEvenChart({
 }: {
   summary: Pick<
     FinanceSummary,
-    "fixedMonthlyCents" | "assumptions" | "maxClients" | "breakEven" | "payingClients" | "projection"
+    | "fixedMonthlyCents"
+    | "assumptions"
+    | "maxClients"
+    | "breakEven"
+    | "payingClients"
+    | "projection"
   >;
 }) {
   const { fixedMonthlyCents: fixed, maxClients, breakEven, payingClients, projection } = summary;
@@ -226,7 +231,9 @@ export function BreakEvenChart({
         </summary>
         <div className="mt-2 overflow-x-auto">
           <table className="w-full min-w-[28rem] text-left tabular-nums">
-            <caption className="sr-only">Monthly revenue, costs and profit by paying clients</caption>
+            <caption className="sr-only">
+              Monthly revenue, costs and profit by paying clients
+            </caption>
             <thead className="text-[13px] text-(--glass-fg-muted)">
               <tr>
                 <th scope="col" className="py-2 font-semibold">

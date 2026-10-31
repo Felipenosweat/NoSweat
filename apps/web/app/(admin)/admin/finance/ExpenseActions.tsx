@@ -89,13 +89,7 @@ export function AddExpenseButton({
 }
 
 /** Menu "⋯" de uma linha: Edit e Delete. */
-export function ExpenseRowActions({
-  expense,
-  today,
-}: {
-  expense: CompanyExpense;
-  today: string;
-}) {
+export function ExpenseRowActions({ expense, today }: { expense: CompanyExpense; today: string }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [confirming, setConfirming] = useState(false);

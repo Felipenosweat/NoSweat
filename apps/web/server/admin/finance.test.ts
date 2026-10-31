@@ -139,7 +139,12 @@ describe("revenueModel", () => {
   });
 
   it("leaves admins and test accounts out", () => {
-    const model = revenueModel([sub("admin"), sub("a")], [grant("test", "pro", 30)], new Set(["admin", "test"]), NOW);
+    const model = revenueModel(
+      [sub("admin"), sub("a")],
+      [grant("test", "pro", 30)],
+      new Set(["admin", "test"]),
+      NOW,
+    );
     expect(model.accounts.map((account) => account.userId)).toEqual(["a"]);
     expect(model.mrrCents).toBe(6900);
   });
@@ -242,7 +247,12 @@ describe("break-even and projection", () => {
   it("computes revenue, cost and profit for every client count", () => {
     const series = projectionSeries(10_000, 6900, 900, 20);
     expect(series).toHaveLength(21);
-    expect(series[0]).toEqual({ clients: 0, revenueCents: 0, costCents: 10_000, profitCents: -10_000 });
+    expect(series[0]).toEqual({
+      clients: 0,
+      revenueCents: 0,
+      costCents: 10_000,
+      profitCents: -10_000,
+    });
     expect(series[2]).toEqual({
       clients: 2,
       revenueCents: 13_800,
@@ -323,7 +333,13 @@ describe("expenses in the store", () => {
     expect(created.endsOn).toBeNull();
 
     const recurring = await createExpense(
-      { name: "Google Workspace", category: "email", amountCents: 700, frequency: "monthly", endsOn: "2027-01-01" },
+      {
+        name: "Google Workspace",
+        category: "email",
+        amountCents: 700,
+        frequency: "monthly",
+        endsOn: "2027-01-01",
+      },
       TODAY,
     );
     const changed = await updateExpense(recurring.id, { frequency: "one_time" });
@@ -333,13 +349,25 @@ describe("expenses in the store", () => {
   it("refuses an end date before the start, checking what was already saved", async () => {
     await expect(
       createExpense(
-        { name: "X", category: "other", amountCents: 1, frequency: "monthly", endsOn: "2026-01-01" },
+        {
+          name: "X",
+          category: "other",
+          amountCents: 1,
+          frequency: "monthly",
+          endsOn: "2026-01-01",
+        },
         TODAY,
       ),
     ).rejects.toBeInstanceOf(ExpenseInputError);
 
     const created = await createExpense(
-      { name: "X", category: "other", amountCents: 1, frequency: "monthly", startsOn: "2026-05-01" },
+      {
+        name: "X",
+        category: "other",
+        amountCents: 1,
+        frequency: "monthly",
+        startsOn: "2026-05-01",
+      },
       TODAY,
     );
     await expect(updateExpense(created.id, { endsOn: "2026-04-30" })).rejects.toBeInstanceOf(
