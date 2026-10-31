@@ -3,10 +3,31 @@
 import type { Section, SectionType } from "@nosweat/schema";
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { SECTION_LABELS } from "./defaults";
-import { Field, IconButton } from "./fields";
-import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, SparklesIcon, TrashIcon } from "./icons";
+import { IconButton } from "./fields";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronDownIcon,
+  PlusIcon,
+  SparklesIcon,
+  TrashIcon,
+} from "./icons";
 import { SectionFields } from "./SectionFields";
-import { focusRing, inputClass, panelTitle, secondaryButton } from "./ui";
+import { focusRing, panelTitle, secondaryButton } from "./ui";
+
+/** O que cada tipo de seção traz, no bloco "Add a section". */
+const SECTION_HINTS: Record<SectionType, string> = {
+  hero: "Headline and main button",
+  services: "What you offer, prices optional",
+  testimonials: "Real reviews you paste in",
+  faq: "Answers to common questions",
+  contact: "Phone, form and map",
+  gallery: "Photos you upload",
+  about: "Who you are and how you work",
+};
+
+/** Limite de seções por página (o mesmo do schema). */
+const MAX_SECTIONS = 10;
 
 export type RewriteTone = "friendlier" | "shorter" | "professional";
 
@@ -104,21 +125,45 @@ export function SectionsPanel({
     onRewrite: (index: number, tone: RewriteTone) => void;
   };
 }) {
-  const [newType, setNewType] = useState<SectionType>("faq");
+  const ids = useId();
+  const [announcement, setAnnouncement] = useState("");
   const count = sections.length;
-  // Uma galeria por página: com uma já adicionada, a opção some da lista.
-  const hasGallery = sections.some((s) => s.type === "gallery");
+  const full = count >= MAX_SECTIONS;
+  // Só os tipos que ainda não estão na página (uma galeria, um topo, um contato...).
+  const present = new Set(sections.map((s) => s.type));
   const addableTypes = (Object.keys(SECTION_LABELS) as SectionType[]).filter(
-    (type) => type !== "gallery" || !hasGallery,
+    (type) => !present.has(type),
   );
-  const typeToAdd = addableTypes.includes(newType) ? newType : (addableTypes[0] ?? "faq");
+  const moveButtonId = (index: number, delta: -1 | 1) =>
+    `${ids}-move-${index}-${delta < 0 ? "up" : "down"}`;
+
+  /**
+   * Move e mantém o foco na MESMA seção (no novo lugar): sem isso, o foco ficaria no botão da
+   * linha antiga, que agora é outra seção, e o próximo Enter moveria a seção errada.
+   */
+  function move(index: number, delta: -1 | 1) {
+    const section = sections[index];
+    if (!section) return;
+    const target = index + delta;
+    onMove(index, delta);
+    setAnnouncement(`${SECTION_LABELS[section.type]} moved to position ${target + 1} of ${count}.`);
+    requestAnimationFrame(() => {
+      const same = document.getElementById(moveButtonId(target, delta));
+      const other = document.getElementById(moveButtonId(target, delta < 0 ? 1 : -1));
+      const button = same instanceof HTMLButtonElement && !same.disabled ? same : other;
+      button?.focus();
+    });
+  }
 
   return (
     <div>
       <div className="px-5 pt-5 pb-3">
         <h2 className={panelTitle}>Sections</h2>
         <p className="mt-1 text-[13px] text-slate-500">
-          Click a section in the preview, or open one here.
+          Click a section in the preview, or open one here. Use the arrows to change the order.
+        </p>
+        <p aria-live="polite" className="sr-only">
+          {announcement}
         </p>
       </div>
       <ol className="border-t border-slate-200">
@@ -157,16 +202,18 @@ export function SectionsPanel({
                   </span>
                 </button>
                 <IconButton
+                  id={moveButtonId(index, -1)}
                   label={`Move ${SECTION_LABELS[section.type]} up`}
                   disabled={index === 0}
-                  onClick={() => onMove(index, -1)}
+                  onClick={() => move(index, -1)}
                 >
                   <ArrowUpIcon className="size-4" />
                 </IconButton>
                 <IconButton
+                  id={moveButtonId(index, 1)}
                   label={`Move ${SECTION_LABELS[section.type]} down`}
                   disabled={index === count - 1}
-                  onClick={() => onMove(index, 1)}
+                  onClick={() => move(index, 1)}
                 >
                   <ArrowDownIcon className="size-4" />
                 </IconButton>
@@ -200,40 +247,42 @@ export function SectionsPanel({
         })}
       </ol>
 
-      <div className="space-y-3 px-5 py-6">
-        <h3 className={panelTitle}>Add a section</h3>
-        <div className="flex items-end gap-2">
-          <div className="min-w-0 flex-1">
-            <Field label="Section type">
-              <select
-                className={inputClass}
-                value={typeToAdd}
-                onChange={(e) => {
-                  const type = addableTypes.find((t) => t === e.target.value);
-                  if (type) setNewType(type);
-                }}
-              >
-                {addableTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {SECTION_LABELS[type]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <button
-            type="button"
-            disabled={count >= 10}
-            onClick={() => onAdd(typeToAdd)}
-            className={`${secondaryButton} shrink-0`}
-          >
-            Add
-          </button>
-        </div>
-        {count >= 10 && (
-          <p className="text-[13px] text-slate-500">A page can have up to 10 sections.</p>
+      <section aria-labelledby={`${ids}-add`} className="space-y-3 px-5 py-6">
+        <h3 id={`${ids}-add`} className={panelTitle}>
+          Add a section
+        </h3>
+        {addableTypes.length === 0 ? (
+          <p className="text-[13px] text-slate-500">Every kind of section is on your page.</p>
+        ) : (
+          <>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+              {addableTypes.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  disabled={full}
+                  onClick={() => onAdd(type)}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-slate-200 disabled:hover:bg-white motion-reduce:transition-none ${focusRing}`}
+                >
+                  <PlusIcon className="size-4 shrink-0 text-brand" />
+                  <span className="min-w-0">
+                    <span className="block text-[15px] font-medium text-ink">
+                      <span className="sr-only">Add </span>
+                      {SECTION_LABELS[type]}
+                    </span>
+                    <span className="block text-[13px] text-slate-500">{SECTION_HINTS[type]}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            {full && (
+              <p className="text-[13px] text-slate-500">
+                A page can have up to {MAX_SECTIONS} sections. Remove one to add another.
+              </p>
+            )}
+          </>
         )}
-      </div>
+      </section>
     </div>
   );
 }

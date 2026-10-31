@@ -3,7 +3,7 @@ import { generateSiteSpec, getSiteGenerator } from "@/server/ai";
 import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
-import { hasImageProvider, resolveHeroImage } from "@/server/images";
+import { hasImageProvider, resolveSiteImages } from "@/server/images";
 import { RateLimiter, clientIp } from "@/server/notify";
 import { refundUse, reserveUse } from "@/server/quota";
 import { getActor, type Actor } from "@/server/sites";
@@ -61,8 +61,9 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Foto do topo a partir de hero.imageQuery (sem chave, erro ou demora: segue sem foto).
-    spec = fitDesignToPhoto(await resolveHeroImage(spec));
+    // Fotos do topo e dos serviços a partir dos imageQuery (sem chave, erro ou demora: segue
+    // sem foto).
+    spec = fitDesignToPhoto(await resolveSiteImages(spec));
 
     const site = await getSiteStore().create(
       spec,

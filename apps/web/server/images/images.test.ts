@@ -3,7 +3,14 @@ import { SiteSpec, type Section, type SiteImage } from "@nosweat/schema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetUnsplashTracking } from "./providers";
 import { sanitizeAiImages } from "./sanitize";
-import { clearImageCache, resolveHeroImage, searchImages } from "./search";
+import {
+  clearImageCache,
+  MAX_SERVICE_IMAGES,
+  resolveHeroImage,
+  resolveServiceImages,
+  resolveSiteImages,
+  searchImages,
+} from "./search";
 
 const pexelsBody = {
   photos: [
@@ -213,7 +220,156 @@ describe("resolveHeroImage", () => {
   });
 });
 
+type ServiceItem = Extract<Section, { type: "services" }>["items"][number];
+
+/** Fixture com a lista de serviços trocada (topo sem foto nem busca). */
+function specWithServices(items: ServiceItem[], template?: SiteSpec["template"]): SiteSpec {
+  const base = specWith({});
+  return {
+    ...base,
+    ...(template ? { template } : {}),
+    sections: base.sections.map((s) => (s.type === "services" ? { ...s, items } : s)),
+  };
+}
+
+function servicesOf(spec: SiteSpec): ServiceItem[] {
+  const services = spec.sections.find((s) => s.type === "services");
+  if (services?.type !== "services") throw new Error("no services");
+  return services.items;
+}
+
+/** Pexels de mentira: uma foto diferente por busca (a URL leva a busca). */
+const perQueryFetch = () =>
+  fakeFetch((url) => {
+    const query = new URL(url).searchParams.get("query") ?? "x";
+    const slug = query.replace(/\W+/g, "-");
+    return {
+      body: {
+        photos: [{ ...pexelsBody.photos[0], src: { original: `https://images.pexels.com/${slug}.jpeg` } }],
+      },
+    };
+  });
+
+describe("resolveServiceImages", () => {
+  const items = (queries: (string | undefined)[]): ServiceItem[] =>
+    queries.map((imageQuery, i) => ({
+      name: `Service ${i + 1}`,
+      description: "Done right.",
+      ...(imageQuery ? { imageQuery } : {}),
+    }));
+
+  it("fills each service photo from its imageQuery, in parallel and without repeats", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const spec = specWithServices(items(["drain snake", "water heater tank", undefined]));
+    const result = await resolveServiceImages(spec, { fetch: perQueryFetch() });
+    const [first, second, third] = servicesOf(result);
+    expect(first?.image?.url).toContain("drain-snake");
+    expect(second?.image?.url).toContain("water-heater-tank");
+    expect(first?.image?.credit?.name).toBe("Ana Lee");
+    expect(third?.image).toBeUndefined();
+    expect(SiteSpec.safeParse(result).success).toBe(true);
+    expect(servicesOf(spec)[0]?.image).toBeUndefined(); // não altera o original
+  });
+
+  it("never uses the same photo twice on a site", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const fetch = fakeFetch(() => ({ body: pexelsBody }));
+    const spec = specWithServices(items(["pipes", "pipes"]));
+    const [first, second] = servicesOf(await resolveServiceImages(spec, { fetch }));
+    expect(first?.image).toBeDefined();
+    expect(second?.image).toBeUndefined();
+  });
+
+  it(`searches at most ${MAX_SERVICE_IMAGES} photos`, async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const fetch = perQueryFetch();
+    const spec = specWithServices(items(["a b", "c d", "e f", "g h"]));
+    const result = await resolveServiceImages(spec, { fetch, max: 2 });
+    expect(servicesOf(result).filter((item) => item.image)).toHaveLength(2);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("skips without image keys, for portfolios and on network errors", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "");
+    vi.stubEnv("UNSPLASH_ACCESS_KEY", "");
+    const fetch = perQueryFetch();
+    const spec = specWithServices(items(["pipes"]));
+    expect(await resolveServiceImages(spec, { fetch })).toBe(spec);
+    expect(fetch).not.toHaveBeenCalled();
+
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const portfolio = specWithServices(items(["camera lens"]), "portfolio");
+    expect(await resolveServiceImages(portfolio, { fetch })).toBe(portfolio);
+    expect(fetch).not.toHaveBeenCalled();
+
+    const failing = vi.fn(async () => {
+      throw new DOMException("The operation timed out.", "TimeoutError");
+    });
+    const result = await resolveServiceImages(spec, { fetch: failing });
+    expect(servicesOf(result)[0]?.image).toBeUndefined();
+  });
+
+  it("on edits only searches for new or changed queries", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const fetch = perQueryFetch();
+    const previous = specWithServices(items(["pipes", "water heater"]));
+    const next = specWithServices(items(["pipes", "new faucet sink"]));
+    const [same, changed] = servicesOf(await resolveServiceImages(next, { fetch, previous }));
+    expect(same?.image).toBeUndefined();
+    expect(changed?.image?.url).toContain("new-faucet-sink");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("resolveSiteImages fills the hero and the services together", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const base = specWithServices(items(["drain snake"]));
+    const spec: SiteSpec = {
+      ...base,
+      sections: base.sections.map((s) =>
+        s.type === "hero" ? { ...s, imageQuery: "plumber tools" } : s,
+      ),
+    };
+    const result = await resolveSiteImages(spec, { fetch: perQueryFetch() });
+    expect(heroOf(result).image?.url).toContain("plumber-tools");
+    expect(servicesOf(result)[0]?.image?.url).toContain("drain-snake");
+  });
+});
+
 describe("sanitizeAiImages", () => {
+  it("drops service photos the AI wrote and keeps the platform's on edit", () => {
+    const item = (extra: Partial<ServiceItem>): ServiceItem => ({
+      name: "Drain cleaning",
+      description: "Cleared.",
+      imageQuery: "drain snake",
+      ...extra,
+    });
+    // Geração: nenhuma foto de serviço vem da IA (só a busca).
+    const generated = sanitizeAiImages(specWithServices([item({ image: stockPhoto })]));
+    expect(servicesOf(generated)[0]?.image).toBeUndefined();
+    expect(servicesOf(generated)[0]?.imageQuery).toBe("drain snake");
+
+    const previous = specWithServices([item({ image: stockPhoto })]);
+    // Edição: a IA trocou a foto ou a tirou → volta a anterior.
+    const swapped = specWithServices([
+      item({ image: { ...stockPhoto, url: "https://evil.example/x.jpg" } }),
+    ]);
+    expect(servicesOf(sanitizeAiImages(swapped, previous))[0]?.image).toEqual(stockPhoto);
+    const dropped = specWithServices([item({ description: "Cleared fast." })]);
+    expect(servicesOf(sanitizeAiImages(dropped, previous))[0]?.image).toEqual(stockPhoto);
+    // A IA nunca põe foto num serviço que não tinha.
+    const added = sanitizeAiImages(
+      specWithServices([item({ image: stockPhoto })]),
+      specWithServices([item({})]),
+    );
+    expect(servicesOf(added)[0]?.image).toBeUndefined();
+    // Busca mudou: a foto antiga sai (a nova é buscada depois).
+    const changed = specWithServices([item({ imageQuery: "clogged sink" })]);
+    expect(servicesOf(sanitizeAiImages(changed, previous))[0]?.image).toBeUndefined();
+    // Sem foto e sem busca: o dono pediu para tirar a foto.
+    const removed = specWithServices([{ name: "Drain cleaning", description: "Cleared." }]);
+    expect(servicesOf(sanitizeAiImages(removed, previous))[0]?.image).toBeUndefined();
+  });
+
   it("on generate, strips hero images and gallery sections from the AI output", () => {
     const base = specWith({ imageQuery: "pipes", image: stockPhoto });
     const ai = {

@@ -71,7 +71,14 @@ export const Theme = z.object({
   primary: Hex,
   secondary: Hex,
   background: Hex,
+  /**
+   * Fundo de cartões e faixas (opcional; sem ele, o template mistura texto e fundo). O texto
+   * precisa ter contraste AA (4,5:1) sobre ele.
+   */
+  surface: Hex.optional(),
   text: Hex,
+  /** Texto secundário (descrições, legendas). Opcional; contraste AA sobre o fundo. */
+  muted: Hex.optional(),
   font: FontId,
 });
 export type Theme = z.infer<typeof Theme>;
@@ -106,6 +113,13 @@ export const Section = z.discriminatedUnion("type", [
           detail: z.string().max(80).optional(),
           /** Grupo do cardápio de preços (ex.: "Color", "Tacos"). Itens seguidos se juntam. */
           group: z.string().max(40).optional(),
+          /**
+           * 2 a 5 palavras em inglês para uma foto genérica do serviço, sem pessoas (escrito pela
+           * IA; ex.: "sparkling clean bathroom tiles"). A plataforma busca no banco de imagens.
+           */
+          imageQuery: z.string().max(80).optional(),
+          /** Foto do serviço (banco de imagens "scene" ou do dono; preenchida pela plataforma). */
+          image: SiteImage.optional(),
         }),
       )
       .max(8),
@@ -198,6 +212,10 @@ export const SiteDesign = z.object({
    * texto em maiúsculas) ou "line" (link sublinhado). Sem ele, sorteado pelo nome do negócio.
    */
   buttons: z.enum(["pill", "sharp", "caps", "line"]).optional(),
+  /** Cabeçalho: "classic", "centered", "bar" ou "minimal". Sem ele, sorteado pelo nome. */
+  header: z.enum(["classic", "centered", "bar", "minimal"]).optional(),
+  /** Bloco de contato: "split", "stacked" ou "letter". Sem ele, sorteado pelo nome. */
+  contact: z.enum(["split", "stacked", "letter"]).optional(),
   /** Ids das referências de design usadas no plano (docs/design/references.json), para depuração. */
   references: z.array(z.string().max(60)).max(4).optional(),
   /** Por que esta direção foi escolhida (curto, para depuração). */

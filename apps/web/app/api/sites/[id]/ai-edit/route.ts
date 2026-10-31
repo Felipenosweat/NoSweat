@@ -8,7 +8,7 @@ import {
   readJson,
   unauthorized,
 } from "@/server/http";
-import { resolveHeroImage } from "@/server/images";
+import { resolveSiteImages } from "@/server/images";
 import { refundUse, reserveUse } from "@/server/quota";
 import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -63,8 +63,9 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       );
     }
 
-    // Se o dono pediu outra foto do topo (imageQuery mudou), busca uma nova. Nunca falha.
-    const spec = await resolveHeroImage(result.spec, { previous: site.spec });
+    // Se o dono pediu outra foto (imageQuery do topo ou de um serviço mudou), busca uma nova.
+    // Nunca falha.
+    const spec = await resolveSiteImages(result.spec, { previous: site.spec });
 
     // A IA não mudou nada (pedido fora do que o site permite, ex.: formato do botão): nada é
     // salvo e o crédito volta. O editor mostra o resumo sem "Saved" nem "Undo".

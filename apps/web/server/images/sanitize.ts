@@ -8,6 +8,8 @@ const MAX_SECTIONS = 10;
 type About = SectionOf<"about">;
 type Gallery = SectionOf<"gallery">;
 type Hero = SectionOf<"hero">;
+type Services = SectionOf<"services">;
+type ServiceItem = Services["items"][number];
 
 /** Último índice que passa no teste, ou -1 (o lib do projeto é ES2022, sem findLastIndex). */
 function lastIndexWhere(sections: Section[], test: (section: Section) => boolean): number {
@@ -88,6 +90,38 @@ function restoreAbout(next: About, previous: About | undefined): About {
   return clean;
 }
 
+/** Item de serviço sem `image`. */
+function withoutItemImage(item: ServiceItem): ServiceItem {
+  const rest = { ...item };
+  delete rest.image;
+  return rest;
+}
+
+/**
+ * Regra das fotos dos serviços (as mesmas do hero, item por item): a IA só escreve
+ * `imageQuery`; a foto é da plataforma (busca) ou do dono. Numa edição, cada item recupera a
+ * foto do item anterior de mesmo nome (senão, de mesma posição, se a lista tem o mesmo tamanho),
+ * menos quando a IA mudou o `imageQuery` (uma nova foto é buscada) ou tirou `image` e
+ * `imageQuery` juntos (o dono pediu para tirar a foto).
+ */
+function restoreServices(next: Services, previous: Services | undefined): Services {
+  const previousItems = previous?.items ?? [];
+  const items = next.items.map((item, i) => {
+    const clean = withoutItemImage(item);
+    const byName = previousItems.find((p) => personKey(p.name) === personKey(item.name));
+    const match =
+      byName ?? (previousItems.length === next.items.length ? previousItems[i] : undefined);
+    if (!match?.image) return clean;
+    const queryCleared = !item.image && !item.imageQuery?.trim();
+    if (queryCleared) return clean;
+    const queryChanged =
+      Boolean(item.imageQuery?.trim()) && item.imageQuery !== match.imageQuery;
+    if (queryChanged) return clean;
+    return { ...clean, image: match.image };
+  });
+  return { ...next, items };
+}
+
 /** Chave da âncora de uma galeria: a seção (tipo + ordem entre as do mesmo tipo) logo antes dela. */
 function anchorKeys(sections: Section[]): (string | null)[] {
   const counts = new Map<string, number>();
@@ -155,11 +189,12 @@ function fitSectionLimit(sections: Section[]): Section[] {
 
 /**
  * Limpa as fotos da saída da IA.
- * - Geração (sem `previousSpec`): tira `image` de todo hero, as fotos do "quem somos" (seção e
- *   pessoas) e descarta galerias.
+ * - Geração (sem `previousSpec`): tira `image` de todo hero, dos serviços, as fotos do "quem
+ *   somos" (seção e pessoas) e descarta galerias (as fotos são buscadas depois pela plataforma).
  * - Edição (com `previousSpec`): o hero recupera a foto anterior (ver restoreHero), galerias
  *   inventadas pela IA saem e as galerias do site anterior voltam exatamente como eram, na
- *   mesma posição relativa, e as fotos do "quem somos" voltam (ver restoreAbout). A IA não
+ *   mesma posição relativa, e as fotos do "quem somos" e dos serviços voltam (ver
+ *   restoreAbout e restoreServices). A IA não
  *   apaga nem muda galerias nem fotos: isso é feito no editor.
  */
 export function sanitizeAiImages(newSpec: SiteSpec, previousSpec?: SiteSpec): SiteSpec {
@@ -169,8 +204,12 @@ export function sanitizeAiImages(newSpec: SiteSpec, previousSpec?: SiteSpec): Si
   const previousAbouts = (previousSpec?.sections ?? []).filter(
     (section): section is About => section.type === "about",
   );
+  const previousServices = (previousSpec?.sections ?? []).filter(
+    (section): section is Services => section.type === "services",
+  );
   let heroIndex = 0;
   let aboutIndex = 0;
+  let servicesIndex = 0;
   const sections = newSpec.sections
     .filter((section) => !isGallery(section))
     .map((section) => {
@@ -178,6 +217,11 @@ export function sanitizeAiImages(newSpec: SiteSpec, previousSpec?: SiteSpec): Si
         const previous = previousSpec ? previousAbouts[aboutIndex] : undefined;
         aboutIndex += 1;
         return restoreAbout(section, previous);
+      }
+      if (section.type === "services") {
+        const previous = previousSpec ? previousServices[servicesIndex] : undefined;
+        servicesIndex += 1;
+        return restoreServices(section, previous);
       }
       if (section.type !== "hero") return section;
       const previous = previousSpec ? previousHeroes[heroIndex] : undefined;

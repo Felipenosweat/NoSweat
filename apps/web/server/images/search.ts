@@ -103,3 +103,104 @@ export async function resolveHeroImage(
     return spec;
   }
 }
+
+/** Máximo de fotos de serviço buscadas numa geração ou edição (limite dos bancos de imagens). */
+export const MAX_SERVICE_IMAGES = 8;
+
+/** Chave para comparar buscas de foto ("Clean  Kitchen" = "clean kitchen"). */
+const queryKey = (query: string) => query.trim().toLowerCase().replace(/\s+/g, " ");
+
+/**
+ * Preenche a foto de cada serviço (`services[].items[].image`) a partir do `imageQuery` dele:
+ * buscas em paralelo, no máximo MAX_SERVICE_IMAGES, sem repetir a mesma foto no site. Nunca
+ * lança erro: sem chave, sem resultado, erro ou demora, o serviço segue sem foto.
+ * - Portfólio fica sem: foto de banco num portfólio pareceria trabalho do dono.
+ * - Com `previous` (edição), só busca para buscas que não existiam antes (a IA mudou ou criou
+ *   o `imageQuery` do item). Assim uma foto que o dono tirou no editor não volta sozinha.
+ */
+export async function resolveServiceImages(
+  spec: SiteSpec,
+  options: ProviderOptions & { previous?: SiteSpec; max?: number } = {},
+): Promise<SiteSpec> {
+  if (spec.template === "portfolio" || !hasImageProvider()) return spec;
+
+  const before = new Set(
+    (options.previous?.sections ?? []).flatMap((section) =>
+      section.type === "services"
+        ? section.items.flatMap((item) => (item.imageQuery ? [queryKey(item.imageQuery)] : []))
+        : [],
+    ),
+  );
+  const targets: { section: number; item: number; query: string }[] = [];
+  spec.sections.forEach((section, sectionIndex) => {
+    if (section.type !== "services") return;
+    section.items.forEach((item, itemIndex) => {
+      const query = item.imageQuery?.trim();
+      if (!query || item.image || before.has(queryKey(query))) return;
+      targets.push({ section: sectionIndex, item: itemIndex, query });
+    });
+  });
+  const picked = targets.slice(0, options.max ?? MAX_SERVICE_IMAGES);
+  if (picked.length === 0) return spec;
+
+  const found = await Promise.all(
+    picked.map(async (target) => {
+      try {
+        return await searchImages(target.query, "landscape", options);
+      } catch (error) {
+        console.warn("[images] service image lookup failed; continuing without it", error);
+        return [];
+      }
+    }),
+  );
+
+  // Fotos já usadas no site (topo e outros serviços) não se repetem.
+  const used = new Set<string>();
+  for (const section of spec.sections) {
+    if (section.type === "hero" && section.image) used.add(section.image.url);
+    if (section.type === "services") {
+      for (const item of section.items) if (item.image) used.add(item.image.url);
+    }
+  }
+
+  const sections = spec.sections.slice();
+  const chosen: SiteImage[] = [];
+  picked.forEach((target, i) => {
+    const image = (found[i] ?? []).find((candidate) => !used.has(candidate.url));
+    const section = sections[target.section];
+    if (!image || section?.type !== "services") return;
+    used.add(image.url);
+    chosen.push(image);
+    const items = section.items.slice();
+    const item = items[target.item];
+    if (!item) return;
+    items[target.item] = { ...item, image };
+    sections[target.section] = { ...section, items };
+  });
+  if (chosen.length === 0) return spec;
+  await Promise.all(chosen.map((image) => trackImageChosen(image, options)));
+  return { ...spec, sections };
+}
+
+/**
+ * Todas as fotos que a plataforma busca para o site (topo + serviços), em paralelo. Nunca
+ * lança erro. Com `previous` (edição), só busca o que mudou (ver as duas funções acima).
+ */
+export async function resolveSiteImages(
+  spec: SiteSpec,
+  options: ProviderOptions & { previous?: SiteSpec } = {},
+): Promise<SiteSpec> {
+  const [withHero, withServices] = await Promise.all([
+    resolveHeroImage(spec, options),
+    resolveServiceImages(spec, options),
+  ]);
+  if (withServices === spec) return withHero;
+  if (withHero === spec) return withServices;
+  // As duas só trocam elementos da lista (mesmos índices): o topo de uma, os serviços da outra.
+  return {
+    ...withHero,
+    sections: withHero.sections.map((section, i) =>
+      section.type === "services" ? (withServices.sections[i] ?? section) : section,
+    ),
+  };
+}

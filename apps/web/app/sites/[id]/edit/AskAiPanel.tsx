@@ -34,13 +34,24 @@ export type ChatMessage =
   | { id: number; role: "assistant"; kind: "note"; text: string }
   | { id: number; role: "assistant"; kind: "error"; text: string };
 
-/** Sugestões que preenchem o campo (o dono revisa antes de enviar; cada pedido conta no limite). */
+/**
+ * Sugestões que preenchem o campo (o dono revisa antes de enviar; cada pedido conta no limite).
+ * Misturam texto e visual, para mostrar que a IA também muda cores, botões, ordem e layout.
+ */
 const SUGGESTIONS: { label: string; text: string }[] = [
-  { label: "Make it warmer", text: "Make the tone of the whole site warmer and more personal." },
   { label: "Shorter headline", text: "Make the headline at the top shorter and punchier." },
+  { label: "Make the buttons rounded", text: "Make the buttons rounded." },
+  {
+    label: "Try a darker, bolder look",
+    text: "Try a darker, bolder look: stronger colors and a bolder font.",
+  },
+  { label: "Move reviews above services", text: "Move the reviews section above the services." },
+  {
+    label: "Big photo at the top",
+    text: "Switch to a layout with a big, full-width photo at the top.",
+  },
+  { label: "Make it warmer", text: "Make the tone of the whole site warmer and more personal." },
   { label: "Add a service", text: "Add a service: " },
-  { label: "More professional", text: "Make the wording more professional throughout the site." },
-  { label: "Friendlier FAQ", text: "Rewrite the FAQ answers to sound friendlier." },
 ];
 
 function Mark() {
@@ -229,14 +240,14 @@ export function AskAiPanel({
           <Mark />
           {aiEnabled ? (
             <p className="text-[15px] leading-[1.55] text-ink">
-              Your site is ready. Tell me what to change, in your own words, and I&rsquo;ll update
-              the draft.
+              Your site is ready. Tell me what to change in your own words: the text, colors,
+              buttons, section order or layout. I&rsquo;ll update the draft.
             </p>
           ) : (
             <div>
               <p className="text-[15px] leading-[1.55] text-ink">
                 Your site is ready. AI changes aren&rsquo;t switched on yet. You can edit every
-                text, color and photo yourself.
+                text, color, photo and layout yourself.
               </p>
               {onEditYourself && (
                 <button type="button" onClick={onEditYourself} className={`${primaryButton} mt-3`}>
