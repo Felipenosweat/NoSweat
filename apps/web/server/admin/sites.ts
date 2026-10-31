@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { deleteSiteForever } from "../sites";
-import { getSiteStore, type SiteRecord } from "../store";
+import { getSiteStore, type SiteRecord, type SiteSummary } from "../store";
+import { revalidatePublicSite } from "../store/revalidate";
 
 // Sites no painel do admin: filtros, busca e as ações (tirar do ar, apagar, faxina dos rascunhos
 // de visitantes). As ações reaproveitam os mesmos caminhos das rotas da API:
@@ -58,7 +59,7 @@ export function siteAddress(site: Pick<SiteRecord, "customDomain" | "slug">): st
 }
 
 function siteMatchesFilter(
-  site: SiteRecord,
+  site: SiteSummary,
   filter: SiteFilter,
   owners: Map<string, SiteOwnerInfo>,
 ): boolean {
@@ -80,11 +81,11 @@ function siteMatchesFilter(
  * Sites que passam no filtro e na busca (nome do negócio, e-mail do dono, slug, domínio ou id;
  * sem diferença de maiúsculas). Mantém a ordem recebida (mais novos primeiro, como o store).
  */
-export function filterSites(
-  sites: SiteRecord[],
+export function filterSites<T extends SiteSummary>(
+  sites: T[],
   options: { filter: SiteFilter; query: string },
   owners: Map<string, SiteOwnerInfo>,
-): SiteRecord[] {
+): T[] {
   const needle = options.query.trim().toLowerCase();
   return sites.filter((site) => {
     if (!siteMatchesFilter(site, options.filter, owners)) return false;
@@ -98,7 +99,7 @@ export function filterSites(
 
 /** Quantos sites há em cada filtro (para os números nas abas). */
 export function countSitesByFilter(
-  sites: SiteRecord[],
+  sites: SiteSummary[],
   owners: Map<string, SiteOwnerInfo>,
 ): Record<SiteFilter, number> {
   const counts = { all: 0, drafts: 0, live: 0, guest: 0, test: 0 } satisfies Record<
@@ -144,7 +145,11 @@ function defaultDeps(): AdminSiteDeps {
   const store = getSiteStore();
   return {
     getSite: (id) => store.get(id),
-    unpublish: (id) => store.updateMeta(id, { status: "draft" }),
+    unpublish: async (id) => {
+      const updated = await store.updateMeta(id, { status: "draft" });
+      if (updated) revalidatePublicSite(updated);
+      return updated;
+    },
     deleteSite: deleteSiteForever,
     deleteGuestSitesBefore: (beforeIso) => store.deleteAbandonedGuestSites(beforeIso),
   };
@@ -215,11 +220,11 @@ export function guestCutoff(days: number, now: Date = new Date()): string {
 }
 
 /** Rascunhos de visitante (sem conta) mais velhos que `days` dias, como a faxina os escolhe. */
-export function guestDraftsOlderThan(
-  sites: SiteRecord[],
+export function guestDraftsOlderThan<T extends SiteSummary>(
+  sites: T[],
   days: number,
   now: Date = new Date(),
-): SiteRecord[] {
+): T[] {
   const cutoff = Date.parse(guestCutoff(days, now));
   return sites.filter(
     (site) => site.ownerId === null && site.guestId !== null && Date.parse(site.createdAt) < cutoff,

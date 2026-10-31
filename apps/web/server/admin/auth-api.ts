@@ -62,6 +62,16 @@ async function call(
   init: { method?: string; body?: unknown },
   fetchImpl: typeof fetch,
 ): Promise<unknown> {
+  return (await callWithHeaders(config, path, init, fetchImpl)).json;
+}
+
+/** Como `call`, mas devolve também os cabeçalhos (a lista de contas traz o total neles). */
+async function callWithHeaders(
+  config: ServiceConfig,
+  path: string,
+  init: { method?: string; body?: unknown },
+  fetchImpl: typeof fetch,
+): Promise<{ json: unknown; headers: Headers }> {
   const res = await fetchImpl(`${config.url}/auth/v1${path}`, {
     method: init.method ?? "GET",
     cache: "no-store",
@@ -90,16 +100,42 @@ async function call(
       body.error_code ?? null,
     );
   }
-  return json;
+  return { json, headers: res.headers };
 }
 
-/** Todas as contas (até 1000; TODO: paginar quando houver mais). */
+/** Contas por página na listagem (o máximo que o painel pede de uma vez). */
+export const AUTH_USERS_PER_PAGE = 1000;
+/** Teto de páginas (50 mil contas), para nunca ficar em laço se a API responder estranho. */
+const MAX_USER_PAGES = 50;
+
+/**
+ * Todas as contas, em páginas de 1000 (normalmente uma chamada só). Para quando já leu o total
+ * do cabeçalho `X-Total-Count` ou quando uma página vem incompleta.
+ */
 export async function listAuthUsers(
   config: ServiceConfig,
   fetchImpl: typeof fetch = fetch,
 ): Promise<AuthUser[]> {
-  const json = await call(config, "/admin/users?per_page=1000", {}, fetchImpl);
-  return AuthUserList.parse(json).users;
+  const users: AuthUser[] = [];
+  for (let page = 1; page <= MAX_USER_PAGES; page++) {
+    const { json, headers } = await callWithHeaders(
+      config,
+      `/admin/users?page=${page}&per_page=${AUTH_USERS_PER_PAGE}`,
+      {},
+      fetchImpl,
+    );
+    const batch = AuthUserList.parse(json).users;
+    users.push(...batch);
+    const totalHeader = headers.get("x-total-count");
+    const total = totalHeader === null ? Number.NaN : Number(totalHeader);
+    if (batch.length === 0) break;
+    if (Number.isFinite(total)) {
+      if (users.length >= total) break;
+    } else if (batch.length < AUTH_USERS_PER_PAGE) {
+      break;
+    }
+  }
+  return users;
 }
 
 /** Uma conta pelo id, ou `null` se não existir. */

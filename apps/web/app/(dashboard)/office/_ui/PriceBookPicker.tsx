@@ -11,7 +11,7 @@ import {
   cx,
   focusRing,
 } from "@/components/glass";
-import { formatCents } from "@/lib/office";
+import { formatCents, unitLabel } from "@/lib/office";
 import { ErrorNote, officeApi, toOfficeError, type OfficeApiError } from "./api";
 import { BookIcon } from "./ui";
 
@@ -85,7 +85,10 @@ export function PriceBookPicker({
         />
         {error && <ErrorNote error={error} className="mt-3" />}
         {loading ? (
-          <p role="status" className="flex items-center gap-2 py-8 text-[15px] text-slate-500">
+          <p
+            role="status"
+            className="flex items-center gap-2 py-8 text-[15px] text-(--glass-fg-muted)"
+          >
             <SpinnerIcon className="size-5" /> Loading your price book…
           </p>
         ) : items && items.length === 0 ? (
@@ -102,7 +105,7 @@ export function PriceBookPicker({
             </Link>
           </div>
         ) : items && shown.length === 0 ? (
-          <p className="py-8 text-center text-[15px] text-slate-500">Nothing matches.</p>
+          <p className="py-8 text-center text-[15px] text-(--glass-fg-muted)">Nothing matches.</p>
         ) : (
           <ul className="mt-3 max-h-[55dvh] divide-y divide-(--glass-rim) overflow-y-auto">
             {shown.map((item) => (
@@ -131,8 +134,8 @@ export function PriceBookPicker({
                   <span className="shrink-0 text-right text-[15px] font-semibold text-ink tabular-nums">
                     {formatCents(item.unitPriceCents)}
                     {item.unit && (
-                      <span className="block text-[12px] font-normal text-slate-500">
-                        per {item.unit}
+                      <span className="block text-[12px] font-normal text-(--glass-fg-muted)">
+                        {unitLabel(item.unit)}
                       </span>
                     )}
                   </span>

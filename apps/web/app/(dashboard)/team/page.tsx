@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader, sectionTitle } from "@/components/DashboardUi";
-import { EmptyState, GlassCard, cx, focusRing } from "@/components/glass";
+import { EmptyState, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import { initialsOf, phoneHref } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
 import { listTeam } from "@/server/office/service";
+import { OfficeTabs } from "../office/_ui/ui";
 import { PersonIcon, TEAM_COLOR_STYLES, nextFreeColor } from "../schedule/ui";
 import { AddMemberButton, MemberMenu } from "./TeamControls";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Team", robots: { index: false } };
 
@@ -41,7 +43,7 @@ function MemberRow({ member, readOnly }: { member: TeamMember; readOnly: boolean
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] leading-5 font-semibold text-ink">{member.name}</p>
-        <p className="mt-0.5 truncate text-[13px] leading-5 text-slate-500">
+        <p className="mt-0.5 truncate text-[13px] leading-5 text-(--glass-fg-muted)">
           {member.role || "Team member"}
           <span className="sr-only">, color {style.label}</span>
           {member.phone && (
@@ -76,7 +78,8 @@ export default async function TeamPage() {
   const defaultColor = nextFreeColor(members ?? []);
 
   return (
-    <div>
+    // Mesma largura e abas das outras telas do escritório (Settings, Price book).
+    <div className="max-w-3xl">
       <PageHeader
         title="Team"
         description="Team members don’t log in yet. Add them here so you can assign them to jobs and see who’s where on your schedule."
@@ -86,14 +89,14 @@ export default async function TeamPage() {
           ) : undefined
         }
       />
+      <div className="mt-6 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+        <OfficeTabs current="team" />
+      </div>
 
       {members === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your team. Please refresh the page.
-        </p>
+        </Notice>
       ) : members.length === 0 ? (
         <EmptyState
           className="mt-8"
@@ -105,21 +108,31 @@ export default async function TeamPage() {
               <AddMemberButton defaultColor={defaultColor} label="Add your first team member" />
             )
           }
+          footnote={<GuideHint section="team" />}
         />
       ) : (
         <div className="mt-8 grid gap-8">
           <section aria-labelledby="team-active">
             <h2 id="team-active" className={sectionTitle}>
               Active
-              <span className="font-sans font-normal text-slate-500 tabular-nums">
+              <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
                 {" "}
                 · {active.length}
               </span>
             </h2>
             {active.length === 0 ? (
-              <p className="mt-3 text-[15px] text-slate-500">
-                No one is active. Reactivate someone below or add a new person.
-              </p>
+              <EmptyState
+                framed={false}
+                headingLevel={3}
+                className="mt-3"
+                icon={<PersonIcon />}
+                title="No one is active"
+                description={
+                  readOnly
+                    ? "Everyone on this team is inactive."
+                    : "Reactivate someone below or add a new person."
+                }
+              />
             ) : (
               <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">
                 <ul>
@@ -135,12 +148,12 @@ export default async function TeamPage() {
             <section aria-labelledby="team-inactive">
               <h2 id="team-inactive" className={sectionTitle}>
                 Inactive
-                <span className="font-sans font-normal text-slate-500 tabular-nums">
+                <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
                   {" "}
                   · {inactive.length}
                 </span>
               </h2>
-              <p className="mt-1 text-[13px] text-slate-500">
+              <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
                 They keep their name on old jobs but can&rsquo;t be assigned to new ones.
               </p>
               <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">

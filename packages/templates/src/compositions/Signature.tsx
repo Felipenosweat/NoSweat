@@ -159,13 +159,19 @@ export function SignatureComposition({
   );
 }
 
-/** Abertura: o nome sobe letra por letra e a cortina sobe. Só CSS (styles.css, .ns-intro). */
+/** Atraso de cada letra da abertura: 20 ms por letra, no máximo 100 ms (nome comprido não atrasa). */
+const introDelay = (index: number) => `${Math.min(index * 0.02, 0.1).toFixed(2)}s`;
+
+/**
+ * Abertura: o nome sobe letra por letra e a cortina sobe. Só CSS (styles.css, .ns-intro), tudo
+ * em até 0,6 s para não atrasar o topo (LCP); com "reduzir movimento", não aparece.
+ */
 function Intro({ name, place }: { name: string; place?: string }) {
   return (
     <div aria-hidden="true" className="ns-intro bg-ns-text text-ns-background">
       <p className={`ns-intro-word ${display} text-[length:clamp(3rem,10cqw,10rem)] leading-none`}>
         {Array.from(name).map((char, i) => (
-          <span key={i} style={{ animationDelay: `${0.05 * i}s` }}>
+          <span key={i} style={{ "--ns-intro-delay": introDelay(i) } as CSSProperties}>
             {char === " " ? " " : char}
           </span>
         ))}
@@ -398,7 +404,7 @@ function SignatureHero({
           >
             <Photo
               image={image}
-              loading="eager"
+              priority
               sizes="100vw"
               className="absolute inset-0 size-full object-cover"
             />
@@ -475,7 +481,7 @@ function SignatureHero({
             <div className="absolute inset-[-8%_0]" data-ns-parallax="0.15">
               <Photo
                 image={image}
-                loading="eager"
+                priority
                 sizes="(min-width: 1024px) 40vw, 100vw"
                 className="absolute inset-0 size-full object-cover"
               />
@@ -527,7 +533,7 @@ function SignatureHero({
           <div className="absolute inset-[-10%_0]" data-ns-parallax="0.25">
             <Photo
               image={image}
-              loading="eager"
+              priority
               sizes="100vw"
               className="absolute inset-0 size-full object-cover"
             />

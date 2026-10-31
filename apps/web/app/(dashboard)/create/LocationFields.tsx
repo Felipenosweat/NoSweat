@@ -245,7 +245,7 @@ function ServiceAreaField({
   return (
     <div>
       <label htmlFor="create-serviceArea" className="block text-[13px] font-medium text-ink">
-        Service area <span className="font-normal text-slate-500">(optional)</span>
+        Service area <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
       </label>
       <input
         id="create-serviceArea"
@@ -257,14 +257,15 @@ function ServiceAreaField({
         aria-describedby={hintId}
         className={`${inputClass(false)} h-12`}
       />
-      <p id={hintId} className="mt-2 text-[13px] text-slate-500">
+      <p id={hintId} className="mt-2 text-[13px] text-(--glass-fg-muted)">
         Towns or neighborhoods you cover.
       </p>
 
       {chips.length > 0 && (
         <div role="group" aria-labelledby={groupId} className="ns-fan mt-4">
           <p id={groupId} className="text-[13px] font-medium text-ink">
-            Near {city.trim()} <span className="font-normal text-slate-500">· tap to add</span>
+            Near {city.trim()}{" "}
+            <span className="font-normal text-(--glass-fg-muted)">· tap to add</span>
           </p>
           <ul className="mt-2.5 flex flex-wrap gap-2">
             {chips.map((place, index) => {
@@ -285,7 +286,7 @@ function ServiceAreaField({
                       {on ? "✓" : "+"}
                     </span>
                     {place.name}
-                    <span className={on ? "text-white" : "text-slate-500"}>
+                    <span className={on ? "text-white" : "text-(--glass-fg-muted)"}>
                       {place.state !== state ? `${place.state} · ` : ""}
                       {place.miles} mi
                     </span>
@@ -388,9 +389,9 @@ function Combobox({
 
   let body: ReactNode;
   if (loading) {
-    body = <li className="px-4 py-3 text-sm text-slate-500">Looking up places…</li>;
+    body = <li className="px-4 py-3 text-sm text-(--glass-fg-muted)">Looking up places…</li>;
   } else if (options.length === 0) {
-    body = <li className="px-4 py-3 text-sm text-slate-500">{emptyText}</li>;
+    body = <li className="px-4 py-3 text-sm text-(--glass-fg-muted)">{emptyText}</li>;
   } else {
     body = options.map((option, index) => {
       const selected = option.id === selectedId;
@@ -413,7 +414,7 @@ function Combobox({
             {option.label}
           </span>
           {option.detail && (
-            <span className="shrink-0 text-[13px] text-slate-500">{option.detail}</span>
+            <span className="shrink-0 text-[13px] text-(--glass-fg-muted)">{option.detail}</span>
           )}
         </li>
       );
@@ -464,7 +465,7 @@ function Combobox({
           {heading && options.length > 0 && !loading && (
             <li
               role="presentation"
-              className="px-4 pt-1.5 pb-1 text-[12px] font-semibold tracking-wide text-slate-500 uppercase"
+              className="px-4 pt-1.5 pb-1 text-[12px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase"
             >
               {heading}
             </li>

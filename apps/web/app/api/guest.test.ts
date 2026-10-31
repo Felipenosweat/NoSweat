@@ -31,7 +31,7 @@ vi.mock("@/server/auth/session", () => ({
 
 // A IA de mentira responde na hora (o mock de verdade espera 1,5 s).
 vi.mock("@/server/ai", () => ({
-  getSiteGenerator: () => ({}),
+  getSiteGenerator: () => ({ usesAi: true }),
   generateSiteSpec: async () => fixtures["joes-plumbing"],
   editSiteSpec: async () => ({ summary: "Done.", spec: fixtures["joes-plumbing"] }),
 }));

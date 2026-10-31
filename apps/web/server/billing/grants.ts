@@ -1,5 +1,6 @@
 import type { PlanId } from "@nosweat/schema";
 import { z } from "zod";
+import { revalidateOwnerSites } from "../store/revalidate";
 import { normalizeSupabaseUrl } from "../store/supabase";
 
 // Acesso liberado à mão pelo admin (tabela public.access_grants, migration 0012): quem pagou
@@ -148,6 +149,8 @@ export class SupabaseGrantStore implements GrantStore {
         ...(grant.remindedFor !== undefined ? { reminded_for: grant.remindedFor } : {}),
       }),
     });
+    // Acesso liberado, trocado ou cortado: os sites no ar da conta aparecem/somem já.
+    revalidateOwnerSites(grant.userId);
   }
 
   async listExpiringOrExpired(beforeIso: string, afterIso?: string): Promise<AccessGrant[]> {
@@ -169,11 +172,14 @@ export class SupabaseGrantStore implements GrantStore {
       method: "PATCH",
       body: JSON.stringify({ reminder_stage: stage, reminded_for: remindedFor }),
     });
+    // Aviso "acabou" (cron): o acesso venceu, então o site sai do ar já (sem esperar o cache).
+    if (stage === "ended") revalidateOwnerSites(userId);
   }
 
   async remove(userId: string): Promise<void> {
     if (!UUID.test(userId)) return;
     await this.call(`?user_id=eq.${userId}`, { method: "DELETE" });
+    revalidateOwnerSites(userId);
   }
 }
 
@@ -205,6 +211,7 @@ export class MemoryGrantStore implements GrantStore {
       remindedFor:
         grant.remindedFor !== undefined ? grant.remindedFor : (previous?.remindedFor ?? null),
     });
+    revalidateOwnerSites(grant.userId);
   }
 
   async listExpiringOrExpired(beforeIso: string, afterIso?: string): Promise<AccessGrant[]> {
@@ -225,10 +232,12 @@ export class MemoryGrantStore implements GrantStore {
   ): Promise<void> {
     const row = this.rows.get(userId);
     if (row) this.rows.set(userId, { ...row, reminderStage: stage, remindedFor });
+    if (stage === "ended") revalidateOwnerSites(userId);
   }
 
   async remove(userId: string): Promise<void> {
     this.rows.delete(userId);
+    revalidateOwnerSites(userId);
   }
 }
 

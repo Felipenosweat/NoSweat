@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { PageHeader } from "@/components/DashboardUi";
-import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { PageHeader, StatTile } from "@/components/DashboardUi";
+import { EmptyState, GlassButton, GlassCard, Notice, cx } from "@/components/glass";
 import {
   INVOICE_FILTERS,
   INVOICE_FILTER_LABELS,
@@ -25,6 +25,7 @@ import { getOfficeSettings, listInvoices } from "@/server/office/service";
 import { DocumentsToolbar } from "../office/_ui/DocumentsToolbar";
 import { InvoiceBadge, InvoiceIcon, PlusIcon } from "../office/_ui/ui";
 import { InvoiceMenu } from "./InvoiceMenu";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Invoices", robots: { index: false } };
 
@@ -48,7 +49,12 @@ async function loadInvoices(ownerId: string) {
 
 function NewInvoiceButton({ label = "New invoice" }: { label?: string }) {
   return (
-    <GlassButton href="/invoices/new" variant="primary" icon={<PlusIcon />}>
+    <GlassButton
+      href="/invoices/new"
+      variant="primary"
+      icon={<PlusIcon />}
+      data-tour="invoices-new"
+    >
       {label}
     </GlassButton>
   );
@@ -79,12 +85,9 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
       />
 
       {invoices === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your invoices. Please refresh the page.
-        </p>
+        </Notice>
       ) : empty ? (
         <EmptyState
           className="mt-8"
@@ -92,6 +95,7 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
           title="Get paid faster"
           description="Send an invoice link by text or email, then mark it paid when the cash, check or Zelle comes in."
           actions={readOnly ? undefined : <NewInvoiceButton label="Create an invoice" />}
+          footnote={<GuideHint section="invoices" />}
         />
       ) : (
         <InvoicesContent
@@ -133,42 +137,34 @@ function InvoicesContent({
 
   return (
     <>
-      {/* "$X unpaid · $Y overdue": o número que o dono abre a tela para ver. */}
-      <section
-        aria-labelledby="invoices-summary"
-        className="glass mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl px-5 py-4"
-      >
+      {/* "$X unpaid · $Y overdue": o número que o dono abre a tela para ver. Os mesmos quadros
+          dos orçamentos (mesma grade, mesma largura). */}
+      <section aria-labelledby="invoices-summary" data-tour="invoices-summary" className="mt-8">
         <h2 id="invoices-summary" className="sr-only">
           Money owed to you
         </h2>
-        <Link
-          href={officeListHref("/invoices", { status: "unpaid", q: "" })}
-          className={cx("flex min-h-11 flex-col justify-center rounded-lg", focusRing)}
-        >
-          <span className="font-display text-[1.6rem] leading-tight font-semibold tracking-[-0.02em] text-ink tabular-nums">
-            {formatCents(balances.unpaidCents)}
-          </span>
-          <span className="text-[13px] text-slate-600">
-            unpaid · {balances.unpaidCount} {balances.unpaidCount === 1 ? "invoice" : "invoices"}
-          </span>
-        </Link>
-        <span aria-hidden="true" className="hidden h-10 w-px bg-(--glass-rim) sm:block" />
-        <Link
-          href={officeListHref("/invoices", { status: "overdue", q: "" })}
-          className={cx("flex min-h-11 flex-col justify-center rounded-lg", focusRing)}
-        >
-          <span
-            className={cx(
-              "font-display text-[1.6rem] leading-tight font-semibold tracking-[-0.02em] tabular-nums",
-              balances.overdueCents > 0 ? "text-red-700" : "text-ink",
-            )}
-          >
-            {formatCents(balances.overdueCents)}
-          </span>
-          <span className="text-[13px] text-slate-600">
-            overdue · {balances.overdueCount} {balances.overdueCount === 1 ? "invoice" : "invoices"}
-          </span>
-        </Link>
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <li>
+            <StatTile
+              href={officeListHref("/invoices", { status: "unpaid", q: "" })}
+              label="Unpaid"
+              value={formatCents(balances.unpaidCents)}
+              hint={`${balances.unpaidCount} ${balances.unpaidCount === 1 ? "invoice" : "invoices"}`}
+              tone="brand"
+              highlight={balances.unpaidCents > 0}
+            />
+          </li>
+          <li>
+            <StatTile
+              href={officeListHref("/invoices", { status: "overdue", q: "" })}
+              label="Overdue"
+              value={formatCents(balances.overdueCents)}
+              hint={`${balances.overdueCount} ${balances.overdueCount === 1 ? "invoice" : "invoices"}`}
+              tone="red"
+              highlight={balances.overdueCents > 0}
+            />
+          </li>
+        </ul>
       </section>
 
       <div className="mt-8">
@@ -261,7 +257,7 @@ function InvoiceRow({
             {formatCents(unpaid ? Math.max(0, invoice.balanceCents) : invoice.totalCents)}
           </span>
           {invoice.status === "partial" && (
-            <span className="block text-[12px] text-slate-500">
+            <span className="block text-[12px] text-(--glass-fg-muted)">
               of {formatCents(invoice.totalCents)}
             </span>
           )}

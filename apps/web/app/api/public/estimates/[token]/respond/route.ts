@@ -1,8 +1,8 @@
 import { PublicEstimateResponse, RespondEstimateRequest } from "@nosweat/schema";
 import { errorResponse, jsonResponse, notFound, readJson } from "@/server/http";
-import { RateLimiter, clientIp } from "@/server/notify";
+import { RateLimiter, appOrigin, clientIp, notifyOwnerOfEstimateAnswer } from "@/server/notify";
 import { officeHandle } from "@/server/office/api";
-import { respondToEstimate } from "@/server/office/service";
+import { estimateOwnerByToken, respondToEstimate } from "@/server/office/service";
 import { isPublicToken } from "@/server/office/tokens";
 
 type Context = { params: Promise<{ token: string }> };
@@ -13,9 +13,10 @@ type Context = { params: Promise<{ token: string }> };
 const limiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
- * POST /api/public/estimates/[token]/respond { decision: "approve", name } |
- * { decision: "decline", reason? }: resposta do cliente final pelo link. Público, sem conta.
- * Já respondido ou vencido → 409; rascunho ou token desconhecido → 404.
+ * POST /api/public/estimates/[token]/respond { decision: "approve", name, updatedAt? } |
+ * { decision: "decline", reason?, updatedAt? }: resposta do cliente final pelo link. Público, sem
+ * conta. `updatedAt` = o `PublicEstimate.updatedAt` que a página mostrou. Já respondido, vencido
+ * ou mudado depois da versão vista → 409; rascunho ou token desconhecido → 404.
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
   return officeHandle("/api/public/estimates/[token]/respond", async () => {
@@ -28,6 +29,23 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     if (!input.ok) return input.response;
     const estimate = await respondToEstimate(token, input.data);
     if (!estimate) return notFound("Estimate");
+    // Avisa o dono por e-mail (depois da resposta; erro aqui nunca derruba a aprovação).
+    const owner = await estimateOwnerByToken(token).catch(() => null);
+    if (owner) {
+      notifyOwnerOfEstimateAnswer({
+        ownerId: owner.ownerId,
+        estimateId: owner.estimateId,
+        number: estimate.number,
+        title: estimate.title,
+        clientName: estimate.client.name,
+        decision: input.data.decision === "approve" ? "approved" : "declined",
+        approvedByName: estimate.approvedByName,
+        declineReason: input.data.decision === "decline" ? input.data.reason?.trim() || null : null,
+        totalCents: estimate.totalCents,
+        fallbackEmail: owner.companyEmail,
+        appOrigin: appOrigin(request.url),
+      });
+    }
     return jsonResponse(PublicEstimateResponse, { estimate });
   });
 }

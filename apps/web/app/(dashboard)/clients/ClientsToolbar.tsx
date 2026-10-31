@@ -24,6 +24,7 @@ import { BoardIcon, ListIcon } from "./ui";
 // Barra de filtros da lista de clientes: busca, etapa, ordem e lista/quadro. Tudo fica na URL
 // (?q=&stage=&sort=&view=&due=), então dá para voltar, recarregar e compartilhar o link; a página
 // (server component) filtra. Sem JavaScript a busca continua funcionando como um <form> GET.
+// No celular só a busca e a etapa: a ordem e "List/Board" aparecem a partir do `sm`.
 
 type StageValue = ClientStage | "all";
 
@@ -136,7 +137,7 @@ export function ClientsToolbar({
         <label htmlFor={`${ids}-sort`} className="sr-only">
           Sort clients
         </label>
-        <div className="relative">
+        <div className="relative max-sm:hidden">
           <select
             id={`${ids}-sort`}
             value={params.sort}
@@ -174,9 +175,12 @@ export function ClientsToolbar({
           options={viewOptions}
           value={params.view}
           onChange={(view) => go({ view })}
+          // Chegou no quadro pelo link (ex.: do computador): no celular a troca fica, para voltar.
+          className={params.view === "board" ? undefined : "max-sm:hidden"}
         />
 
-        <span aria-hidden="true" className={cx("size-5", pending ? "" : "invisible")}>
+        {/* No celular a rodinha ficaria sozinha numa linha (a busca ocupa a de cima). */}
+        <span aria-hidden="true" className={cx("size-5 max-sm:hidden", pending ? "" : "invisible")}>
           <SpinnerIcon className="size-5 text-(--glass-fg-muted)" />
         </span>
       </div>

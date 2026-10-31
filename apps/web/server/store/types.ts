@@ -57,6 +57,35 @@ export type LeadRecord = {
 
 export type NewLead = Pick<LeadRecord, "name" | "email" | "phone" | "message">;
 
+/** Só o id e o dono do site de um endereço (primeiro passo das páginas públicas). */
+export type SiteRef = Pick<SiteRecord, "id" | "ownerId">;
+
+/**
+ * O que a página pública de um site no ar precisa, sem o rascunho: `liveSpec` é a versão
+ * publicada (ou, em site antigo publicado antes de existir `published_spec`, o rascunho).
+ */
+export type PublishedSiteRecord = Pick<SiteRecord, "id" | "ownerId" | "slug" | "customDomain"> & {
+  liveSpec: SiteSpec;
+};
+
+/**
+ * Linha leve de um site para as listas do painel do admin: sem `spec` e `published_spec`
+ * inteiros. `spec` aqui tem só o nome do negócio e o template, na mesma forma do SiteRecord,
+ * para as funções das listas aceitarem os dois (um SiteRecord também é um SiteSummary).
+ */
+export type SiteSummary = Pick<
+  SiteRecord,
+  | "id"
+  | "ownerId"
+  | "guestId"
+  | "status"
+  | "slug"
+  | "customDomain"
+  | "publishedAt"
+  | "createdAt"
+  | "updatedAt"
+> & { spec: { business: { name: string }; template: string } };
+
 export class DomainTakenError extends Error {
   constructor(domain: string) {
     super(`Domain ${domain} is already connected to another site.`);
@@ -86,8 +115,14 @@ export interface SiteStore {
   list(ownerId: string): Promise<SiteRecord[]>;
   /** Todos os sites de todos os clientes (só para o painel do admin). */
   listAll(): Promise<SiteRecord[]>;
+  /** Todos os sites, só com as colunas das listas do admin (mais novos primeiro). */
+  listAllSummaries(): Promise<SiteSummary[]>;
   getBySlug(slug: string): Promise<SiteRecord | null>;
   getByDomain(domain: string): Promise<SiteRecord | null>;
+  /** Id e dono do site com este endereço grátis ou domínio (consulta leve, sem as specs). */
+  findRef(by: { slug: string } | { domain: string }): Promise<SiteRef | null>;
+  /** O site `id` se estiver no ar, só com o que a página pública usa (nunca o rascunho). */
+  getPublished(id: string): Promise<PublishedSiteRecord | null>;
   /** Pedidos de contato do formulário do site (mais recentes primeiro). */
   addLead(siteId: string, lead: NewLead, ipHash?: string | null): Promise<LeadRecord>;
   /** Mensagens recebidas pelo site desde `sinceIso` (só do IP `ipHash`, se informado). */

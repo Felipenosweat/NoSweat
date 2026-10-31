@@ -1,13 +1,14 @@
-import type { Client, CreditBalance, Job, OfficeSummary } from "@nosweat/schema";
+import type { Client, Estimate, Job, OfficeSummary } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import type { ReactNode } from "react";
+import { Suspense, cache, type ReactNode } from "react";
 import { DashboardChecklist, type ChecklistStep } from "@/components/DashboardChecklist";
 import {
   ChevronRightIcon,
   IconTile,
+  StatTile,
   cardClass,
   focusRing,
   insetDivider,
@@ -20,11 +21,10 @@ import { LocalTime } from "@/components/LocalTime";
 import { SitesGrid } from "@/components/SitesGrid";
 import { CLIENTS_TIME_ZONE, dateKeyIn, formatDateOnly } from "@/lib/clients";
 import { getAccount } from "@/server/admin";
-import { createSupabaseServerClient } from "@/server/auth/session";
-import { getViewer, type Viewer, type ViewingAs } from "@/server/auth/viewer";
+import { getSessionClaims } from "@/server/auth/session";
+import { getViewer, type ViewingAs } from "@/server/auth/viewer";
 import { accessSummary, ownerHasCustomDomainAccess, type AccessSummary } from "@/server/billing";
-import { clientsNeedingAttention, listClients } from "@/server/clients/service";
-import { getBalance } from "@/server/credits";
+import { attentionFromClients, listOwnerClients } from "@/server/clients/service";
 import { socialCapability } from "@/server/social/config";
 import { isValidTimeZone, monthOf } from "@/server/social/service";
 import { getSocialStore } from "@/server/social/store";
@@ -33,8 +33,14 @@ import type {
   SocialPostRecord,
   SocialSettingsRecord,
 } from "@/server/social/types";
-import { getOfficeSettings, getOfficeSummary } from "@/server/office/service";
-import { getSiteStore, type SiteRecord } from "@/server/store";
+import {
+  getOfficeSettings,
+  getOfficeSummary,
+  listEstimates,
+  listInvoices,
+} from "@/server/office/service";
+import { listOwnerSites, listSiteLeads } from "@/server/owner-sites";
+import type { SiteRecord } from "@/server/store";
 import {
   AlertIcon,
   ApproveIcon,
@@ -53,6 +59,7 @@ import { MoneyIcon, PlusIcon } from "../clients/ui";
 import { formatTime, safeTimeZone, zonedParts } from "../schedule/time";
 import { JobStatusBadge } from "../schedule/ui";
 import { Greeting } from "./Greeting";
+import { GreetingSummarySkeleton, NeedsSkeleton, OfficeSkeleton, SitesSkeleton } from "./skeletons";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -108,10 +115,9 @@ function checklistSteps(site: SiteRecord, leads: number, domainIncluded: boolean
 async function getFirstName(viewingAs: ViewingAs | null): Promise<string | null> {
   try {
     if (viewingAs) return (await getAccount(viewingAs.id))?.firstName?.slice(0, 40) ?? null;
-    const supabase = await createSupabaseServerClient();
-    if (!supabase) return null;
-    const { data } = await supabase.auth.getClaims();
-    const metadata: unknown = data?.claims?.user_metadata;
+    // As mesmas claims que o getCurrentUser já leu neste request (sem nova ida ao Supabase).
+    const claims = await getSessionClaims();
+    const metadata: unknown = claims?.user_metadata;
     if (!metadata || typeof metadata !== "object") return null;
     const raw: unknown = (metadata as Record<string, unknown>).first_name;
     if (typeof raw !== "string") return null;
@@ -124,8 +130,14 @@ async function getFirstName(viewingAs: ViewingAs | null): Promise<string | null>
 
 type SocialSnapshot = { account: SocialAccountRecord | null; posts: SocialPostRecord[] };
 
+// Os loaders abaixo usam `cache()` do React: cada seção da página (em seu próprio <Suspense>) chama
+// o que precisa e, no mesmo request, cada leitura acontece uma vez só.
+
+/** O "agora" do request: todas as seções contam o tempo a partir do mesmo instante. */
+const requestNow = cache((): number => Date.now());
+
 /** Conta do Instagram e posts de 90 dias para trás a 90 para a frente. Erro = vazio. */
-async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot> {
+const loadSocial = cache(async (ownerId: string, now: number): Promise<SocialSnapshot> => {
   try {
     const social = getSocialStore();
     const [account, posts] = await Promise.all([
@@ -140,16 +152,16 @@ async function loadSocial(ownerId: string, now: number): Promise<SocialSnapshot>
   } catch {
     return { account: null, posts: [] };
   }
-}
+});
 
 /** Configurações de posts do dono (fuso da empresa e liberação de testador). Erro = `null`. */
-async function loadSettings(ownerId: string): Promise<SocialSettingsRecord | null> {
+const loadSettings = cache(async (ownerId: string): Promise<SocialSettingsRecord | null> => {
   try {
     return await getSocialStore().getSettings(ownerId);
   } catch {
     return null;
   }
-}
+});
 
 /**
  * O dono consegue postar sozinho pelo Instagram? Usa a conta MOSTRADA (no "ver como", a conta
@@ -168,13 +180,13 @@ async function loadAutoPublish(
 }
 
 /** Erro ao ler o plano = sem aviso e passo do domínio normal (como `ownerHasLiveAccess`). */
-async function loadAccess(ownerId: string): Promise<AccessSummary> {
+const loadAccess = cache(async (ownerId: string): Promise<AccessSummary> => {
   try {
     return await accessSummary(ownerId);
   } catch {
     return { enforced: false, live: true, endsAt: null, source: null };
   }
-}
+});
 
 type ClientsSnapshot = {
   total: number;
@@ -197,9 +209,9 @@ async function loadClients(
 ): Promise<ClientsSnapshot | null> {
   const today = dateKeyIn(timeZone, new Date(now));
   try {
-    // Um depois do outro: os dois importam os pedidos do site, e em paralelo poderiam duplicar.
-    const clients = await listClients(ownerId, { ownerEmail });
-    const attention = await clientsNeedingAttention(ownerId, today, ownerEmail);
+    // Uma leitura só (o sync roda uma vez por request); o resumo sai da mesma lista.
+    const clients = await listOwnerClients(ownerId, ownerEmail);
+    const attention = attentionFromClients(clients, today);
     return {
       total: clients.length,
       newCount: attention.newCount,
@@ -225,6 +237,9 @@ type NeedKind =
   | "clients"
   | "problem"
   | "messages"
+  | "overdue"
+  | "approved"
+  | "to-bill"
   | "next";
 
 type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; action: string };
@@ -242,26 +257,11 @@ const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconC
   clients: { tone: "brand", label: "Clients", Icon: ClientsIcon },
   problem: { tone: "red", label: "Social posts", Icon: AlertIcon },
   messages: { tone: "brand", label: "Website messages", Icon: MessagesIcon },
+  overdue: { tone: "red", label: "Invoices", Icon: InvoicesIcon },
+  approved: { tone: "emerald", label: "Estimates", Icon: EstimatesIcon },
+  "to-bill": { tone: "emerald", label: "Ready to bill", Icon: InvoicesIcon },
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
-
-/** Brilho (créditos da IA), no traço dos ícones da navegação. */
-function SparkIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 3.5 13.9 9a2 2 0 0 0 1.2 1.2l5.4 1.8-5.4 1.8a2 2 0 0 0-1.2 1.2L12 20.5 10.1 15a2 2 0 0 0-1.2-1.2L3.5 12l5.4-1.8A2 2 0 0 0 10.1 9z" />
-    </svg>
-  );
-}
 
 /** Número em destaque dentro de uma frase (peso, não cor). */
 function Count({ value }: { value: number }) {
@@ -296,6 +296,7 @@ function needsRows({
   social,
   clients,
   access,
+  office,
   timeZone,
   now,
 }: {
@@ -304,6 +305,8 @@ function needsRows({
   social: SocialSnapshot;
   clients: ClientsSnapshot | null;
   access: AccessSummary;
+  /** Escritório (faturas vencidas e orçamentos aprovados); `null` = erro ao ler. */
+  office: OfficeSnapshot | null;
   /** Fuso da empresa (meses do calendário e datas do plano). */
   timeZone: string;
   now: number;
@@ -347,6 +350,71 @@ function needsRows({
         action: "Renew",
       });
     }
+  }
+
+  // Dinheiro parado: faturas vencidas e orçamentos aprovados que ainda não viraram serviço/fatura.
+  if (office && office.summary.overdueInvoices > 0) {
+    const count = office.summary.overdueInvoices;
+    rows.push({
+      key: "overdue-invoices",
+      kind: "overdue",
+      href: "/invoices?status=overdue",
+      text: (
+        <>
+          <Count value={count} /> {plural(count, "invoice is", "invoices are")} past due (
+          <span className="font-medium tabular-nums">{money(office.summary.overdueCents)}</span>).
+          Send a reminder.
+        </>
+      ),
+      action: "Open",
+    });
+  }
+  // Serviço feito sem fatura: dinheiro que ninguém cobrou ainda.
+  if (office && office.summary.jobsToInvoice > 0) {
+    const count = office.summary.jobsToInvoice;
+    rows.push({
+      key: "jobs-to-invoice",
+      kind: "to-bill",
+      href: "/schedule#to-invoice",
+      text: (
+        <>
+          <Count value={count} /> finished {plural(count, "job hasn’t", "jobs haven’t")} been
+          invoiced yet.
+        </>
+      ),
+      action: "Bill",
+    });
+  }
+  const toConvert = office?.toConvert ?? [];
+  const firstToConvert = toConvert[0];
+  if (firstToConvert) {
+    rows.push(
+      toConvert.length === 1
+        ? {
+            key: "approved-estimates",
+            kind: "approved",
+            href: `/estimates/${encodeURIComponent(firstToConvert.id)}`,
+            text: (
+              <>
+                <span className="font-medium">{firstToConvert.clientName}</span> approved estimate #
+                {firstToConvert.number}. Create the job or invoice.
+              </>
+            ),
+            action: "Open",
+          }
+        : {
+            key: "approved-estimates",
+            kind: "approved",
+            href: "/estimates?status=approved",
+            text: (
+              <>
+                <Count value={toConvert.length} /> approved estimates are waiting to become jobs or
+                invoices.
+              </>
+            ),
+            action: "Open",
+          },
+    );
   }
 
   // Só rascunhos com data ainda no futuro: a revisão não mostra (nem aprova) os outros.
@@ -557,7 +625,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
           Needs you
         </h2>
         {rows.length > 0 && (
-          <p className="text-[13px] text-slate-500 tabular-nums">
+          <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
             {rows.length} {plural(rows.length, "item", "items")}
           </p>
         )}
@@ -585,13 +653,13 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
                     </IconTile>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[15px] leading-[1.45] text-ink">{row.text}</span>
-                      <span className="mt-0.5 block text-[13px] leading-5 text-slate-500">
+                      <span className="mt-0.5 block text-[13px] leading-5 text-(--glass-fg-muted)">
                         {style.label}
                       </span>
                     </span>
                     <span
                       aria-hidden="true"
-                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-slate-500 transition-colors duration-150 group-hover:text-ink"
+                      className="flex shrink-0 items-center gap-1 text-[15px] whitespace-nowrap text-(--glass-fg-muted) transition-colors duration-150 group-hover:text-ink"
                     >
                       <span className="max-sm:hidden">{row.action}</span>
                       <ChevronRightIcon className="size-4 text-slate-400" />
@@ -616,7 +684,8 @@ type Stat = {
   value: StatValue;
   /** Linha de apoio embaixo do número (o que fazer ou de onde vem). */
   hint: string;
-  href: string;
+  /** `null` = quadro só informativo (sem link nem seta). */
+  href: string | null;
   tone: IconTone;
   Icon: IconComponent;
   /** Pede atenção (número > 0): o número fica na cor do tom. */
@@ -627,65 +696,30 @@ type Stat = {
   display?: string;
 };
 
-const STAT_NUMBER: Record<IconTone, string> = {
-  brand: "text-brand",
-  amber: "text-amber-700",
-  sky: "text-sky-700",
-  red: "text-red-700",
-  emerald: "text-emerald-700",
-  slate: "text-ink",
-};
-
-/** Quadro de número (como os widgets do iOS): ícone, número grande, rótulo e a linha de apoio. */
-function StatTile({ stat }: { stat: Stat }) {
+/** Quadro de número: o <StatTile /> compartilhado (o mesmo das listas e do /admin). */
+function MoneyTile({ stat }: { stat: Stat }) {
   const { value } = stat;
   const shown =
     stat.display ??
     (value === null ? "–" : value === "unlimited" ? "∞" : `${value}${stat.capped ? "+" : ""}`);
   return (
     <li>
-      <Link
+      <StatTile
         href={stat.href}
-        className={`group flex h-full min-h-[8.5rem] flex-col rounded-2xl p-4 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
-      >
-        <span className="flex items-start justify-between gap-2">
-          <IconTile tone={stat.tone}>
-            <stat.Icon className="size-[18px]" />
-          </IconTile>
-          <ChevronRightIcon className="mt-2.5 size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600" />
-        </span>
-        {/* Rótulo antes do número para o leitor de tela ("New requests, 3"); na tela, o número
-            fica em cima (ordem visual com `order`). */}
-        <span className="mt-auto flex flex-col pt-4">
-          <span className="order-2 text-[15px] leading-5 font-semibold text-ink">{stat.label}</span>
-          <span
-            className={`order-1 mb-1 font-display text-[2rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${
-              stat.attention ? STAT_NUMBER[stat.tone] : "text-ink"
-            }`}
-          >
+        label={stat.label}
+        value={
+          <>
             {shown}
             {value === null && <span className="sr-only">not available</span>}
             {value === "unlimited" && <span className="sr-only">unlimited</span>}
-          </span>
-          <span className="order-3 mt-0.5 text-[13px] leading-5 text-slate-500">{stat.hint}</span>
-        </span>
-      </Link>
+          </>
+        }
+        hint={stat.hint}
+        icon={<stat.Icon className="size-[18px]" />}
+        tone={stat.tone}
+        highlight={stat.attention}
+      />
     </li>
-  );
-}
-
-function QuickStats({ stats }: { stats: Stat[] }) {
-  return (
-    <section aria-labelledby="stats-heading">
-      <h2 id="stats-heading" className="sr-only">
-        At a glance
-      </h2>
-      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <StatTile key={stat.key} stat={stat} />
-        ))}
-      </ul>
-    </section>
   );
 }
 
@@ -693,6 +727,8 @@ function QuickStats({ stats }: { stats: Stat[] }) {
 
 type OfficeSnapshot = {
   summary: OfficeSummary;
+  /** Orçamentos aprovados sem serviço nem fatura (mais novos primeiro). */
+  toConvert: Estimate[];
   /** Fuso da agenda (configurações do escritório). */
   timeZone: string;
   /** "Hoje" e o mês corrente no fuso da agenda. */
@@ -703,17 +739,41 @@ type OfficeSnapshot = {
  * Resumo do escritório (serviços de hoje e dinheiro). `null` = erro ou módulo ainda sem dados:
  * a seção some e o resto da página continua igual.
  */
-async function loadOffice(ownerId: string, now: number): Promise<OfficeSnapshot | null> {
+const loadOffice = cache(async (ownerId: string, now: number): Promise<OfficeSnapshot | null> => {
   try {
-    const [summary, settings] = await Promise.all([
+    const [summary, settings, toConvert] = await Promise.all([
       getOfficeSummary(ownerId),
       getOfficeSettings(ownerId).catch(() => null),
+      loadEstimatesToConvert(ownerId),
     ]);
     const timeZone = safeTimeZone(settings?.timeZone);
-    return { summary, timeZone, today: zonedParts(new Date(now), timeZone).dateKey };
+    return { summary, toConvert, timeZone, today: zonedParts(new Date(now), timeZone).dateKey };
   } catch (error) {
     console.error("[dashboard] could not load the office summary", error);
     return null;
+  }
+});
+
+/**
+ * Orçamentos aprovados que ainda não viraram serviço nem fatura. Barato: as faturas só são lidas
+ * quando há aprovado sem serviço. Erro = lista vazia (a linha "Needs you" só não aparece).
+ */
+async function loadEstimatesToConvert(ownerId: string): Promise<Estimate[]> {
+  try {
+    const approved = (await listEstimates(ownerId, { status: "approved" })).filter(
+      (estimate) => estimate.jobId === null,
+    );
+    if (approved.length === 0) return [];
+    const invoices = await listInvoices(ownerId, {});
+    const invoiced = new Set(
+      invoices
+        .filter((invoice) => invoice.status !== "void" && invoice.estimateId !== null)
+        .map((invoice) => invoice.estimateId),
+    );
+    return approved.filter((estimate) => !invoiced.has(estimate.id));
+  } catch (error) {
+    console.error("[dashboard] could not list approved estimates", error);
+    return [];
   }
 }
 
@@ -748,7 +808,7 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
         summary.unpaidInvoices > 0
           ? `${summary.unpaidInvoices} ${plural(summary.unpaidInvoices, "invoice", "invoices")} out`
           : "All paid up",
-      href: "/invoices",
+      href: "/invoices?status=unpaid",
       tone: "brand",
       Icon: InvoicesIcon,
       attention: summary.unpaidCents > 0,
@@ -784,7 +844,8 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
       value: summary.collectedThisMonthCents,
       display: money(summary.collectedThisMonthCents),
       hint: `In ${monthLong(today)}`,
-      href: "/invoices?status=paid",
+      // Pagamentos do mês (inclui parciais): a lista "Paid" não é o mesmo número, então sem link.
+      href: null,
       tone: "emerald",
       Icon: MoneyIcon,
       attention: summary.collectedThisMonthCents > 0,
@@ -811,7 +872,7 @@ function TodayJobRow({ job, timeZone }: { job: Job; timeZone: string }) {
           >
             {job.title}
           </span>
-          <span className="mt-0.5 block truncate text-[13px] leading-5 text-slate-500">
+          <span className="mt-0.5 block truncate text-[13px] leading-5 text-(--glass-fg-muted)">
             {job.clientName}
             {job.startAt && job.endAt && (
               <span className="tabular-nums"> · until {formatTime(job.endAt, timeZone)}</span>
@@ -836,11 +897,18 @@ function TodayCard({ office, readOnly }: { office: OfficeSnapshot; readOnly: boo
     timeZone: "UTC",
   }).format(new Date(`${today}T12:00:00Z`));
   return (
-    <section aria-labelledby="today-heading" className="flex min-w-0 flex-col">
+    <section
+      aria-labelledby="today-heading"
+      data-tour="home-today"
+      className="flex min-w-0 flex-col"
+    >
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="today-heading" className={sectionTitle}>
           Today
-          <span className="font-sans text-[15px] font-normal text-slate-500"> · {dateLabel}</span>
+          <span className="font-sans text-[15px] font-normal text-(--glass-fg-muted)">
+            {" "}
+            · {dateLabel}
+          </span>
         </h2>
         <Link
           href="/schedule"
@@ -893,13 +961,17 @@ function OfficeSection({ office, readOnly }: { office: OfficeSnapshot; readOnly:
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
       <TodayCard office={office} readOnly={readOnly} />
-      <section aria-labelledby="money-heading" className="flex min-w-0 flex-col">
+      <section
+        aria-labelledby="money-heading"
+        data-tour="home-money"
+        className="flex min-w-0 flex-col"
+      >
         <h2 id="money-heading" className={sectionTitle}>
           Money
         </h2>
         <ul className="mt-3 grid flex-1 grid-cols-2 gap-3 sm:gap-4">
           {moneyStats(office).map((stat) => (
-            <StatTile key={stat.key} stat={stat} />
+            <MoneyTile key={stat.key} stat={stat} />
           ))}
         </ul>
       </section>
@@ -917,43 +989,11 @@ function pendingDrafts(posts: SocialPostRecord[], now: number): SocialPostRecord
     .sort(byScheduledAt);
 }
 
-/** Saldo de créditos da IA da conta mostrada. Erro = `null` (o quadro mostra "–"). */
-async function loadCredits(ownerId: string): Promise<CreditBalance | null> {
-  try {
-    return await getBalance({ id: ownerId });
-  } catch {
-    return null;
-  }
-}
-
-/** Tudo o que a página inicial mostra, lido de uma vez (fora do componente: usa o relógio). */
-async function loadHome(viewer: Viewer) {
-  const { ownerId, viewingAs } = viewer;
-  // A conta MOSTRADA: no "ver como", a conta vista (nunca o e-mail ou a liberação do admin).
-  const shown = { id: ownerId, email: viewingAs ? viewingAs.email : viewer.user.email };
-  const now = Date.now();
-  const store = getSiteStore();
-  const [sites, firstName, social, settings, access, credits, office] = await Promise.all([
-    store.list(ownerId),
-    getFirstName(viewingAs),
-    loadSocial(ownerId, now),
-    loadSettings(ownerId),
-    loadAccess(ownerId),
-    loadCredits(ownerId),
-    loadOffice(ownerId, now),
-  ]);
-  // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
-  const timeZone =
-    settings?.timezone && isValidTimeZone(settings.timezone)
-      ? settings.timezone
-      : CLIENTS_TIME_ZONE;
-  const [clients, autoPublish, domainIncluded, leadLists] = await Promise.all([
-    loadClients(ownerId, shown.email, now, timeZone),
-    loadAutoPublish(shown, settings),
-    // Erro ao ler o plano já vira `true` lá dentro (o passo segue para o domínio, como antes).
-    ownerHasCustomDomainAccess(ownerId),
-    Promise.all(sites.map((site) => store.listLeads(site.id))),
-  ]);
+/** Pedidos por site: o total (checklist e cards) e os dos últimos 7 dias. */
+const loadLeadStats = cache(async (ownerId: string, now: number) => {
+  const sites = await listOwnerSites(ownerId);
+  // Mesmas leituras (com dedupe) que o sync dos clientes faz neste request.
+  const leadLists = await Promise.all(sites.map((site) => listSiteLeads(site.id)));
   const weekAgo = now - 7 * DAY_MS;
   const leadCounts: Record<string, number> = {};
   const weekLeads: Record<string, number> = {};
@@ -962,10 +1002,58 @@ async function loadHome(viewer: Viewer) {
     leadCounts[site.id] = leads.length;
     weekLeads[site.id] = leads.filter((lead) => Date.parse(lead.createdAt) >= weekAgo).length;
   });
+  return { leadCounts, weekLeads };
+});
+
+/** O que toda seção da página precisa saber (só valores simples: viram chave do `cache()`). */
+type HomeContext = {
+  ownerId: string;
+  /** E-mail da conta MOSTRADA: no "ver como", o da conta vista (nunca o do admin). */
+  shownEmail: string | null;
+  now: number;
+  /** "Ver como" do admin: só leitura (sem o atalho "New job"). */
+  readOnly: boolean;
+};
+
+/**
+ * Tudo o que "Needs you", o checklist e a saudação mostram. Cada leitura começa na
+ * hora e com dedupe: o escritório e a lista de sites (lidos também por outras seções e pela
+ * moldura) não vão ao banco duas vezes.
+ */
+const loadHome = cache(async (ownerId: string, shownEmail: string | null, now: number) => {
+  const shown = { id: ownerId, email: shownEmail };
+  const [sites, social, settings, access, office, leadStats] = await Promise.all([
+    listOwnerSites(ownerId),
+    loadSocial(ownerId, now),
+    loadSettings(ownerId),
+    loadAccess(ownerId),
+    loadOffice(ownerId, now),
+    loadLeadStats(ownerId, now),
+  ]);
+  // Fuso da empresa (configurações de posts); sem ele, Nova York como antes.
+  const timeZone =
+    settings?.timezone && isValidTimeZone(settings.timezone)
+      ? settings.timezone
+      : CLIENTS_TIME_ZONE;
+  const [clients, autoPublish, domainIncluded] = await Promise.all([
+    loadClients(ownerId, shownEmail, now, timeZone),
+    loadAutoPublish(shown, settings),
+    // Erro ao ler o plano já vira `true` lá dentro (o passo segue para o domínio, como antes).
+    ownerHasCustomDomainAccess(ownerId),
+  ]);
+  const { leadCounts, weekLeads } = leadStats;
+  const needRows = needsRows({
+    sites,
+    weekLeads,
+    social,
+    clients,
+    access,
+    office,
+    timeZone,
+    now,
+  });
   return {
-    now,
     sites,
-    firstName,
     social,
     clients,
     leadCounts,
@@ -974,42 +1062,20 @@ async function loadHome(viewer: Viewer) {
     timeZone,
     autoPublish,
     domainIncluded,
-    credits,
     office,
+    needRows,
   };
-}
+});
 
-export default async function DashboardPage() {
-  // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
-  await connection();
-  // No modo "ver como" do admin, os dados da conta vista (só leitura).
-  const viewer = await getViewer();
-  if (!viewer) redirect("/login?next=/dashboard");
-  const {
-    now,
-    sites,
-    firstName,
-    social,
-    clients,
-    leadCounts,
-    weekLeads,
-    access,
-    timeZone,
-    autoPublish,
-    domainIncluded,
-    credits,
-    office,
-  } = await loadHome(viewer);
-  // "Ver como" do admin: só leitura (sem o atalho "New job").
-  const readOnly = viewer.viewingAs !== null;
-  // `list` já vem do mais recente para o mais antigo.
-  const latest = sites[0];
-  // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
-  const offline = access.enforced && !access.live;
+type HomeData = Awaited<ReturnType<typeof loadHome>>;
 
-  // "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
-  // manual não há botão de conectar e o passo nunca terminaria.
-  const socialSteps: ChecklistStep[] = [
+/**
+ * "Connect Instagram" só quando a conta pode postar sozinha (ou já tem conta ligada): no modo
+ * manual não há botão de conectar e o passo nunca terminaria.
+ */
+function socialSteps(home: HomeData): ChecklistStep[] {
+  const { autoPublish, social } = home;
+  return [
     ...(autoPublish || social.account !== null
       ? [
           {
@@ -1027,153 +1093,242 @@ export default async function DashboardPage() {
       hint: "A month of posts in minutes",
     },
   ];
+}
 
-  const needRows = needsRows({ sites, weekLeads, social, clients, access, timeZone, now });
-  const needs = <NeedsYou rows={needRows} />;
-
-  // Quadros de número: pedidos novos, retornos para hoje, posts esperando aprovação e créditos.
-  const drafts = pendingDrafts(social.posts, now);
-  const firstDraft = drafts[0];
-  const weekTotal = Object.values(weekLeads).reduce((sum, n) => sum + n, 0);
-  const followUps = clients?.followUpsDue.length ?? null;
-  const stats: Stat[] = [
-    clients
-      ? {
-          key: "requests",
-          label: "New requests",
-          value: clients.newCount,
-          hint: clients.newCount > 0 ? "Waiting for a reply" : "All caught up",
-          href: clients.newCount > 0 ? "/clients?stage=new" : "/clients",
-          tone: "brand",
-          Icon: ClientsIcon,
-          attention: clients.newCount > 0,
-        }
-      : {
-          // Sem o módulo de clientes (erro ao ler): as mensagens do site nos últimos 7 dias.
-          key: "requests",
-          label: "New requests",
-          value: weekTotal,
-          hint: "Last 7 days",
-          href: latest ? `/sites/${latest.id}#messages` : "/dashboard#sites",
-          tone: "brand",
-          Icon: MessagesIcon,
-          attention: weekTotal > 0,
-        },
-    {
-      key: "follow-ups",
-      label: "Follow-ups due",
-      value: followUps,
-      // O serviço manda no máximo 5 retornos.
-      capped: followUps !== null && followUps >= 5,
-      hint:
-        followUps === null
-          ? "Open clients"
-          : followUps > 0
-            ? "Due today or earlier"
-            : "Nothing due",
-      href: "/clients",
-      tone: "sky",
-      Icon: ClockIcon,
-      attention: Boolean(followUps),
-    },
-    {
-      key: "approvals",
-      label: "Posts to approve",
-      value: drafts.length,
-      hint: drafts.length > 0 ? "Read and approve" : "Nothing waiting",
-      href: firstDraft?.scheduledAt
-        ? `/social/review?${monthQuery(firstDraft.scheduledAt, timeZone)}`
-        : "/social",
-      tone: "amber",
-      Icon: ApproveIcon,
-      attention: drafts.length > 0,
-    },
-    {
-      key: "credits",
-      label: "AI credits left",
-      value: credits === null ? null : credits.unlimited ? "unlimited" : credits.total,
-      hint:
-        credits === null || credits.unlimited
-          ? "Plans and billing"
-          : `Refills ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(credits.resetsAt))}`,
-      href: "/billing#credits",
-      tone: credits !== null && !credits.unlimited && credits.total === 0 ? "red" : "emerald",
-      Icon: SparkIcon,
-      attention: credits !== null && !credits.unlimited && credits.total === 0,
-    },
-  ];
-  const quickStats = <QuickStats stats={stats} />;
-  // O escritório vem primeiro: o dono abre o painel e vê o dia e o dinheiro.
-  const officeSection = office ? <OfficeSection office={office} readOnly={readOnly} /> : null;
+/** Serviços de hoje (sem os cancelados), para a frase da saudação. */
+function jobsTodayText(office: OfficeSnapshot | null): string {
   const todayCount =
     office?.summary.todayJobs.filter((job) => job.status !== "canceled").length ?? 0;
-  const jobsToday =
-    todayCount > 0
-      ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
-      : "";
+  return todayCount > 0
+    ? `${todayCount} ${plural(todayCount, "job", "jobs")} on today’s schedule. `
+    : "";
+}
 
-  const yourSites = (
-    <section id="sites" aria-labelledby="sites-heading">
-      <h2 id="sites-heading" className={sectionTitle}>
-        Your sites
-        {sites.length > 0 && (
-          <span className="font-sans font-normal text-slate-500 tabular-nums">
-            {" "}
-            · {sites.length}
-          </span>
-        )}
-      </h2>
-      <SitesGrid
-        sites={sites}
-        leadCounts={leadCounts}
-        headingLevel={3}
-        offline={offline}
-        emptyState={
+// ---------- seções em streaming (cada uma no seu <Suspense>) ----------
+
+/** Linha de resumo da saudação ("2 things need you."): espera os dados de "Needs you". */
+async function GreetingSummary({ ctx }: { ctx: HomeContext }) {
+  const { sites, office, needRows } = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  const jobsToday = jobsTodayText(office);
+  if (!sites[0] && !jobsToday) return <>Let’s get your business online.</>;
+  if (needRows.length === 0) return <>{jobsToday}You’re all caught up.</>;
+  return (
+    <>
+      {jobsToday}
+      {needRows.length} {plural(needRows.length, "thing needs", "things need")} you.
+    </>
+  );
+}
+
+/** O escritório primeiro: os serviços de hoje e o dinheiro. Erro = a seção some. */
+async function OfficeBlock({ ctx }: { ctx: HomeContext }) {
+  const office = await loadOffice(ctx.ownerId, ctx.now);
+  return office ? <OfficeSection office={office} readOnly={ctx.readOnly} /> : null;
+}
+
+/** "Needs you": o que pede uma ação agora (pedidos novos, retornos, faturas vencidas, posts...). */
+async function NeedsBlock({ ctx }: { ctx: HomeContext }) {
+  const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  return <NeedsYou rows={home.needRows} />;
+}
+
+/** Os cards dos sites: espera os pedidos por site e o plano (selo "Offline"). */
+async function SitesCards({ ctx }: { ctx: HomeContext }) {
+  const [sites, { leadCounts }, access] = await Promise.all([
+    listOwnerSites(ctx.ownerId),
+    loadLeadStats(ctx.ownerId, ctx.now),
+    loadAccess(ctx.ownerId),
+  ]);
+  // Planos valendo e o acesso acabou: o site publicado mostra "temporarily unavailable".
+  const offline = access.enforced && !access.live;
+  return <SitesGrid sites={sites} leadCounts={leadCounts} headingLevel={3} offline={offline} />;
+}
+
+/** Checklist "deixar o site no ar" (some sozinho quando tudo está feito). */
+async function SiteChecklist({ ctx, site }: { ctx: HomeContext; site: SiteRecord }) {
+  const home = await loadHome(ctx.ownerId, ctx.shownEmail, ctx.now);
+  return (
+    <DashboardChecklist
+      siteId={site.id}
+      siteName={site.spec.business.name}
+      steps={checklistSteps(site, home.leadCounts[site.id] ?? 0, home.domainIncluded)}
+      extraSteps={socialSteps(home)}
+      shareHref={site.status === "published" ? `/sites/${site.id}#publish` : null}
+    />
+  );
+}
+
+/** "Your sites": o checklist do site mais recente e os cards (ou o convite para criar o primeiro). */
+function SitesSection({ ctx, sites }: { ctx: HomeContext; sites: SiteRecord[] }) {
+  // `list` já vem do mais recente para o mais antigo.
+  const latest = sites[0];
+  return (
+    <>
+      {latest && (
+        <Suspense fallback={null}>
+          <SiteChecklist ctx={ctx} site={latest} />
+        </Suspense>
+      )}
+      <section id="sites" aria-labelledby="sites-heading" data-tour="home-sites">
+        <h2 id="sites-heading" className={sectionTitle}>
+          Your website
+          {sites.length > 1 && (
+            <span className="font-sans font-normal text-(--glass-fg-muted) tabular-nums">
+              {" "}
+              · {sites.length}
+            </span>
+          )}
+        </h2>
+        {sites.length === 0 ? (
           <div className="mt-4">
             <ExampleSiteEmpty />
           </div>
-        }
-      />
+        ) : (
+          <Suspense fallback={<SitesSkeleton count={sites.length} />}>
+            <SitesCards ctx={ctx} />
+          </Suspense>
+        )}
+      </section>
+    </>
+  );
+}
+
+type QuickAction = {
+  key: string;
+  label: string;
+  /** Rótulo curto do celular (meia largura: cabe numa linha ao lado do ícone). */
+  short: string;
+  hint: string;
+  href: string;
+  tone: IconTone;
+  Icon: IconComponent;
+};
+
+/** As quatro coisas do dia a dia, a um toque (as mesmas do "+ New" do menu). */
+const QUICK_ACTIONS: readonly QuickAction[] = [
+  {
+    key: "job",
+    short: "New job",
+    label: "Book a job",
+    hint: "Put it on the calendar",
+    href: "/schedule?new=1",
+    tone: "brand",
+    Icon: ScheduleIcon,
+  },
+  {
+    key: "estimate",
+    short: "New estimate",
+    label: "Send an estimate",
+    hint: "They approve from their phone",
+    href: "/estimates/new",
+    tone: "amber",
+    Icon: EstimatesIcon,
+  },
+  {
+    key: "invoice",
+    short: "New invoice",
+    label: "Send an invoice",
+    hint: "Get paid, track who paid",
+    href: "/invoices/new",
+    tone: "emerald",
+    Icon: InvoicesIcon,
+  },
+  {
+    key: "client",
+    short: "New client",
+    label: "Add a client",
+    hint: "Name and phone is enough",
+    href: "/clients/new",
+    tone: "sky",
+    Icon: ClientsIcon,
+  },
+];
+
+function QuickActions() {
+  return (
+    <section aria-labelledby="actions-heading" data-tour="home-actions">
+      <h2 id="actions-heading" className="sr-only">
+        Quick actions
+      </h2>
+      <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {QUICK_ACTIONS.map((action) => (
+          <li key={action.key}>
+            {/* Celular: linha compacta (ícone + rótulo curto). Do sm em diante: cartão com a frase
+                de apoio. */}
+            <Link
+              href={action.href}
+              className={`group flex h-full min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 sm:min-h-[7.5rem] sm:flex-col sm:items-start sm:gap-0 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+            >
+              <span className="flex shrink-0 items-start justify-between gap-2 sm:w-full">
+                <IconTile tone={action.tone}>
+                  <action.Icon className="size-[18px]" />
+                </IconTile>
+                <PlusIcon className="mt-2 hidden size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600 sm:block" />
+              </span>
+              <span className="min-w-0 sm:mt-auto sm:pt-4">
+                <span className="block text-[15px] leading-5 font-semibold text-ink sm:hidden">
+                  {action.short}
+                </span>
+                <span className="hidden text-[17px] leading-6 font-semibold text-ink sm:block">
+                  {action.label}
+                </span>
+                <span className="mt-0.5 hidden text-[13px] leading-5 text-(--glass-fg-muted) sm:block">
+                  {action.hint}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
+}
 
+export default async function DashboardPage() {
+  // Sempre renderiza na hora do request (os dados mudam a cada site gerado).
+  await connection();
+  // No modo "ver como" do admin, os dados da conta vista (só leitura).
+  const viewer = await getViewer();
+  if (!viewer) redirect("/login?next=/dashboard");
+  const { ownerId, viewingAs } = viewer;
+  const ctx: HomeContext = {
+    ownerId,
+    // A conta MOSTRADA: no "ver como", a conta vista (nunca o e-mail ou a liberação do admin).
+    shownEmail: viewingAs ? viewingAs.email : viewer.user.email,
+    now: requestNow(),
+    readOnly: viewingAs !== null,
+  };
+  // Rápido: as claims da sessão já lidas (ou a conta vista, já lida pelo getViewer). A lista de
+  // sites é a mesma que a moldura já leu neste request (dedupe), então não custa nada.
+  const [firstName, sites] = await Promise.all([getFirstName(viewingAs), listOwnerSites(ownerId)]);
+  const sitesSection = <SitesSection ctx={ctx} sites={sites} />;
+
+  // Ordem pensada para ser simples: o que fazer (atalhos), o que precisa de você, o dia e o
+  // dinheiro, e por fim o site. Conta sem site: o convite para criar o site vem logo depois dos
+  // atalhos.
   return (
     <div>
       <Greeting
         firstName={firstName}
-        nowIso={new Date(now).toISOString()}
+        nowIso={new Date(ctx.now).toISOString()}
         summary={
-          !latest && !jobsToday
-            ? "Let’s get your business online."
-            : needRows.length === 0
-              ? `${jobsToday}You’re all caught up.`
-              : `${jobsToday}${needRows.length} ${plural(needRows.length, "thing needs", "things need")} you.`
+          <Suspense fallback={<GreetingSummarySkeleton />}>
+            <GreetingSummary ctx={ctx} />
+          </Suspense>
         }
       />
 
-      {latest ? (
-        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
-          {officeSection}
-          {quickStats}
-          {needs}
-          <DashboardChecklist
-            siteId={latest.id}
-            siteName={latest.spec.business.name}
-            steps={checklistSteps(latest, leadCounts[latest.id] ?? 0, domainIncluded)}
-            extraSteps={socialSteps}
-            shareHref={latest.status === "published" ? `/sites/${latest.id}#publish` : null}
-          />
-          {yourSites}
-        </div>
-      ) : (
-        // Conta sem sites: primeiro o convite para criar, depois o resto.
-        <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
-          {officeSection}
-          {yourSites}
-          {needs}
-          {quickStats}
-        </div>
-      )}
+      <div className="mt-6 grid gap-10 sm:gap-12 lg:mt-8 lg:gap-14">
+        {!ctx.readOnly && <QuickActions />}
+        {sites.length === 0 && sitesSection}
+        <Suspense fallback={<NeedsSkeleton />}>
+          <NeedsBlock ctx={ctx} />
+        </Suspense>
+        <Suspense fallback={<OfficeSkeleton />}>
+          <OfficeBlock ctx={ctx} />
+        </Suspense>
+        {sites.length > 0 && sitesSection}
+      </div>
     </div>
   );
 }

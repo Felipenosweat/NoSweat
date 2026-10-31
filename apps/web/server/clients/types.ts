@@ -11,7 +11,11 @@ import type {
 
 export type ClientRecord = Client & { ownerId: string };
 
-export type ClientActivityRecord = ClientActivity & { ownerId: string };
+export type ClientActivityRecord = ClientActivity & {
+  ownerId: string;
+  /** Só em `payment`: o pagamento do escritório que gerou o item (coluna da migration 0023). */
+  paymentId?: string | null;
+};
 
 export type NewClient = {
   ownerId: string;
@@ -56,6 +60,8 @@ export type NewClientActivity = {
   amountCents: number | null;
   leadId: string | null;
   siteId: string | null;
+  /** Só em `payment`: o id do pagamento (para apagar o item junto com ele). */
+  paymentId?: string | null;
   /** Padrão: agora. */
   occurredAt?: string;
 };

@@ -2,13 +2,15 @@
 
 import { ClientResponse, CreateClientRequest, type ClientStage } from "@nosweat/schema";
 import { useId, useState, type FormEvent, type ReactNode } from "react";
-import { GlassButton } from "@/components/glass";
+import { GlassButton, cx, focusRing } from "@/components/glass";
 import { CLIENT_STAGES, STAGE_LABELS, parseTagsInput } from "@/lib/clients";
 import { ErrorNote, clientsApi, toClientsError, type ClientsApiError } from "./api";
 import { choicePill, fieldClass, fieldErrorClass, hintClass, labelClass } from "./ui";
 
 // Cadastro manual de um cliente: valida com o contrato antes de enviar e avisa quem chamou com o
-// cliente novo. Serve na folha "Add client" da lista e na página /clients/new.
+// cliente novo. Serve na folha "Add client" da lista e na página /clients/new. À vista só nome,
+// telefone, e-mail e endereço; etapa, retorno, etiquetas e notas ficam em "More details
+// (optional)", fechado (abre sozinho se um desses campos tiver erro).
 
 type Field = "name" | "phone" | "email" | "address" | "notes" | "tags" | "followUpOn";
 
@@ -21,6 +23,9 @@ const FIELDS: readonly Field[] = [
   "tags",
   "followUpOn",
 ];
+
+/** Campos dentro de "More details (optional)". */
+const MORE_FIELDS: readonly Field[] = ["notes", "tags", "followUpOn"];
 
 /** Etiquetas comuns de pequenos negócios dos EUA (um toque para acrescentar). */
 export const SUGGESTED_TAGS = ["Repeat", "VIP", "Referral", "Commercial", "Residential"] as const;
@@ -124,6 +129,11 @@ export function ClientForm({
         next.name = parsed.error.issues[0]?.message ?? "Please check the form.";
       }
       setErrors(next);
+      // Erro num campo da seção fechada: abre antes de levar o foco (nada de erro escondido).
+      if (MORE_FIELDS.some((field) => next[field])) {
+        const more = document.getElementById(`${ids}-more`);
+        if (more instanceof HTMLDetailsElement) more.open = true;
+      }
       document.getElementById(`${ids}-${Object.keys(next)[0]}`)?.focus();
       return;
     }
@@ -218,7 +228,7 @@ export function ClientForm({
 
         <div>
           <label htmlFor={`${ids}-address`} className={labelClass}>
-            Service address <span className="font-normal text-slate-500">(optional)</span>
+            Service address <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <input
             id={`${ids}-address`}
@@ -233,85 +243,109 @@ export function ClientForm({
           {errorText("address")}
         </div>
 
-        <fieldset>
-          <legend className={labelClass}>Stage</legend>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {CLIENT_STAGES.map((option) => (
-              <label key={option} className={choicePill}>
-                <input
-                  type="radio"
-                  name={`${ids}-stage`}
-                  value={option}
-                  checked={stage === option}
-                  onChange={() => setStage(option)}
-                  className="sr-only"
-                />
-                {STAGE_LABELS[option]}
-              </label>
-            ))}
-          </div>
-          <p className={hintClass}>
-            Pick &ldquo;New&rdquo; only if they&rsquo;re still waiting to hear back from you.
-          </p>
-        </fieldset>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <label htmlFor={`${ids}-followUpOn`} className={labelClass}>
-              Follow up on <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <input
-              id={`${ids}-followUpOn`}
-              type="date"
-              value={followUpOn}
-              onChange={(event) => setFollowUpOn(event.target.value)}
-              className={`${fieldClass} mt-1.5 h-11`}
-              {...errorProps("followUpOn")}
-            />
-            {errorText("followUpOn")}
-          </div>
-          <div>
-            <label htmlFor={`${ids}-tags`} className={labelClass}>
-              Tags <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <input
-              id={`${ids}-tags`}
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-              autoComplete="off"
-              placeholder="VIP, Referral"
-              maxLength={340}
-              className={`${fieldClass} mt-1.5 h-11`}
-              aria-describedby={errors.tags ? `${ids}-tags-error` : `${ids}-tags-hint`}
-              aria-invalid={errors.tags ? true : undefined}
-            />
-            {errors.tags ? (
-              errorText("tags")
-            ) : (
-              <p id={`${ids}-tags-hint`} className={hintClass}>
-                Separate tags with commas.
-              </p>
+        <details id={`${ids}-more`} className="group/more">
+          <summary
+            className={cx(
+              "-mx-1 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl px-1 text-[15px] font-semibold text-brand [&::-webkit-details-marker]:hidden",
+              focusRing,
             )}
-            <TagSuggestions value={tags} onChange={setTags} disabled={pending} />
-          </div>
-        </div>
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="size-4 motion-safe:transition-transform group-open/more:rotate-90"
+            >
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+            More details <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
+          </summary>
+          <div className="mt-3 grid gap-5">
+            <fieldset>
+              <legend className={labelClass}>Stage</legend>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {CLIENT_STAGES.map((option) => (
+                  <label key={option} className={choicePill}>
+                    <input
+                      type="radio"
+                      name={`${ids}-stage`}
+                      value={option}
+                      checked={stage === option}
+                      onChange={() => setStage(option)}
+                      className="sr-only"
+                    />
+                    {STAGE_LABELS[option]}
+                  </label>
+                ))}
+              </div>
+              <p className={hintClass}>
+                Pick &ldquo;New&rdquo; only if they&rsquo;re still waiting to hear back from you.
+              </p>
+            </fieldset>
 
-        <div>
-          <label htmlFor={`${ids}-notes`} className={labelClass}>
-            Notes <span className="font-normal text-slate-500">(optional)</span>
-          </label>
-          <textarea
-            id={`${ids}-notes`}
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            rows={3}
-            maxLength={5000}
-            placeholder="Gate code, pets, how they like things done…"
-            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
-            {...errorProps("notes")}
-          />
-          {errorText("notes")}
-        </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label htmlFor={`${ids}-followUpOn`} className={labelClass}>
+                  Follow up on
+                </label>
+                <input
+                  id={`${ids}-followUpOn`}
+                  type="date"
+                  value={followUpOn}
+                  onChange={(event) => setFollowUpOn(event.target.value)}
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  {...errorProps("followUpOn")}
+                />
+                {errorText("followUpOn")}
+              </div>
+              <div>
+                <label htmlFor={`${ids}-tags`} className={labelClass}>
+                  Tags
+                </label>
+                <input
+                  id={`${ids}-tags`}
+                  value={tags}
+                  onChange={(event) => setTags(event.target.value)}
+                  autoComplete="off"
+                  placeholder="VIP, Referral"
+                  maxLength={340}
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-describedby={errors.tags ? `${ids}-tags-error` : `${ids}-tags-hint`}
+                  aria-invalid={errors.tags ? true : undefined}
+                />
+                {errors.tags ? (
+                  errorText("tags")
+                ) : (
+                  <p id={`${ids}-tags-hint`} className={hintClass}>
+                    Like VIP or Referral.
+                  </p>
+                )}
+                <TagSuggestions value={tags} onChange={setTags} disabled={pending} />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor={`${ids}-notes`} className={labelClass}>
+                Notes
+              </label>
+              <textarea
+                id={`${ids}-notes`}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                rows={3}
+                maxLength={5000}
+                placeholder="Gate code, pets, how they like things done…"
+                className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+                {...errorProps("notes")}
+              />
+              {errorText("notes")}
+            </div>
+          </div>
+        </details>
       </fieldset>
 
       {error && <ErrorNote error={error} className="mt-5" />}

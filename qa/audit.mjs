@@ -99,7 +99,7 @@ if (process.env.SEED === "1") {
     });
     await post("/api/office/team", { name: "Ana Souza", role: "Cleaner", color: "teal" });
     const extraPages = ["/schedule", "/estimates", "/invoices", "/office/settings"];
-    extraPages.push("/office/price-book", "/team", "/reviews");
+    extraPages.push("/office/price-book", "/team", "/reviews", "/guide");
     if (client?.id) {
       const start = new Date();
       start.setUTCHours(18, 0, 0, 0);
@@ -161,8 +161,18 @@ if (process.env.SEED === "1") {
   }
   await api.close();
 }
+// Nos prints das páginas o tour de boas-vindas não abre por cima (ele tem prints próprios no fim).
+const skipTour = () => {
+  const original = Storage.prototype.getItem;
+  Storage.prototype.getItem = function (key) {
+    return String(key).startsWith("ns_tour_done:")
+      ? new Date().toISOString()
+      : original.call(this, key);
+  };
+};
 for (const vp of VIEWPORTS) {
   const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
+  await context.addInitScript(skipTour);
   for (const path of PAGES) {
     const page = await context.newPage();
     const issues = [];
@@ -225,6 +235,31 @@ for (const vp of VIEWPORTS) {
     await page.close();
   }
   await context.close();
+}
+// Tutorial com destaque: abre o painel, toca em "Show me around" e tira um print por passo.
+if (process.env.SEED === "1") {
+  for (const vp of VIEWPORTS) {
+    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
+    const page = await context.newPage();
+    try {
+      await page.goto(`${BASE}/dashboard`, { waitUntil: "networkidle", timeout: 45000 });
+      const start = page.getByRole("button", { name: /show me around/i });
+      await start.waitFor({ timeout: 8000 });
+      await start.click();
+      for (let step = 0; step < 8; step += 1) {
+        await page.waitForTimeout(1800);
+        await page.screenshot({
+          path: `${OUT}/${vp.name}-tour-${String(step).padStart(2, "0")}.png`,
+        });
+        const next = page.getByRole("button", { name: /^(next|finish)$/i });
+        if (!(await next.count())) break;
+        await next.first().click();
+      }
+    } catch (e) {
+      report.push({ viewport: vp.name, path: "tour", issues: [`tour: ${e.message}`] });
+    }
+    await context.close();
+  }
 }
 await browser.close();
 writeFileSync(`${OUT}/report.json`, JSON.stringify(report, null, 2));

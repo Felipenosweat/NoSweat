@@ -3,12 +3,15 @@ import {
   DomainTakenError,
   type LeadRecord,
   type NewLead,
+  type PublishedSiteRecord,
   type SiteMeta,
+  type SiteRef,
   type SiteRecord,
   type AiUsageKind,
   type GuestUsage,
   type GuestUsageFilter,
   type SiteStore,
+  type SiteSummary,
   type VersionRecord,
 } from "./types";
 
@@ -175,6 +178,21 @@ export class MemorySiteStore implements SiteStore {
     return [...sites().values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(clone);
   }
 
+  async listAllSummaries(): Promise<SiteSummary[]> {
+    return (await this.listAll()).map((site) => ({
+      id: site.id,
+      ownerId: site.ownerId,
+      guestId: site.guestId,
+      status: site.status,
+      slug: site.slug,
+      customDomain: site.customDomain,
+      publishedAt: site.publishedAt,
+      createdAt: site.createdAt,
+      updatedAt: site.updatedAt,
+      spec: { business: { name: site.spec.business.name }, template: site.spec.template },
+    }));
+  }
+
   async getBySlug(slug: string): Promise<SiteRecord | null> {
     const record = [...sites().values()].find((s) => s.slug === slug);
     return record ? clone(record) : null;
@@ -183,6 +201,25 @@ export class MemorySiteStore implements SiteStore {
   async getByDomain(domain: string): Promise<SiteRecord | null> {
     const record = [...sites().values()].find((s) => s.customDomain === domain);
     return record ? clone(record) : null;
+  }
+
+  async findRef(by: { slug: string } | { domain: string }): Promise<SiteRef | null> {
+    const record = [...sites().values()].find((s) =>
+      "slug" in by ? s.slug === by.slug : s.customDomain === by.domain,
+    );
+    return record ? { id: record.id, ownerId: record.ownerId } : null;
+  }
+
+  async getPublished(id: string): Promise<PublishedSiteRecord | null> {
+    const record = sites().get(id);
+    if (!record || record.status !== "published") return null;
+    return {
+      id: record.id,
+      ownerId: record.ownerId,
+      slug: record.slug,
+      customDomain: record.customDomain,
+      liveSpec: clone(record.publishedSpec ?? record.spec),
+    };
   }
 
   async addLead(siteId: string, lead: NewLead, ipHash: string | null = null): Promise<LeadRecord> {

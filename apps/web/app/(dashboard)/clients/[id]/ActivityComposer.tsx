@@ -8,13 +8,14 @@ import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientUrl, clientsApi, toClientsError, type ClientsApiError } from "../api";
 import { fieldClass, fieldErrorClass, labelClass } from "../ui";
 
-// Caixa para registrar no histórico: uma nota ou um serviço feito (com valor e data opcionais).
+// Caixa para registrar no histórico: uma nota ou um serviço já feito, fora da agenda ("Log past
+// work", com valor e data opcionais). Serviço novo se marca pela agenda ("Book a job").
 
 type Kind = "note" | "job";
 
 const KINDS: { value: Kind; label: string }[] = [
   { value: "note", label: "Add note" },
-  { value: "job", label: "Log a job" },
+  { value: "job", label: "Log past work" },
 ];
 
 /** "AAAA-MM-DD" de hoje no relógio de quem está usando. */
@@ -71,7 +72,7 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
       setBody("");
       setAmount("");
       setDate("");
-      setSavedText(kind === "job" ? "Job saved." : "Note saved.");
+      setSavedText(kind === "job" ? "Work saved." : "Note saved.");
       router.refresh();
     } catch (err) {
       setError(toClientsError(err));
@@ -136,12 +137,12 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor={`${ids}-amount`} className={labelClass}>
-                Amount <span className="font-normal text-slate-500">(optional)</span>
+                Amount <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
               </label>
               <div className="relative mt-1.5">
                 <span
                   aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[15px] text-slate-500"
+                  className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[15px] text-(--glass-fg-muted)"
                 >
                   $
                 </span>
@@ -165,7 +166,10 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
             </div>
             <div>
               <label htmlFor={`${ids}-date`} className={labelClass}>
-                Date <span className="font-normal text-slate-500">(optional, today if empty)</span>
+                Date{" "}
+                <span className="font-normal text-(--glass-fg-muted)">
+                  (optional, today if empty)
+                </span>
               </label>
               <input
                 id={`${ids}-date`}
@@ -183,9 +187,9 @@ export function ActivityComposer({ clientId }: { clientId: string }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <GlassButton type="submit" variant="primary" loading={pending}>
-          {pending ? "Saving…" : kind === "job" ? "Save job" : "Save note"}
+          {pending ? "Saving…" : kind === "job" ? "Save work" : "Save note"}
         </GlassButton>
-        <p aria-live="polite" className="text-[13px] text-slate-500">
+        <p aria-live="polite" className="text-[13px] text-(--glass-fg-muted)">
           {savedText}
         </p>
       </div>

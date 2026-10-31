@@ -155,10 +155,18 @@ export function weekDays(start: string): string[] {
 }
 
 /** Formata uma data sem hora (o dia não muda com o fuso: a data já é da empresa). */
+const dateKeyFormatters = new Map<string, Intl.DateTimeFormat>();
+
 export function formatDateKey(key: string, options: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(
-    keyToUtcDate(key),
-  );
+  // Um formatador por combinação de opções: criar um Intl.DateTimeFormat é caro, e a grade da
+  // semana formata centenas de rótulos por render.
+  const cacheKey = JSON.stringify(options);
+  let format = dateKeyFormatters.get(cacheKey);
+  if (!format) {
+    format = new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" });
+    dateKeyFormatters.set(cacheKey, format);
+  }
+  return format.format(keyToUtcDate(key));
 }
 
 /** "Mon" */

@@ -8,7 +8,7 @@ import {
   GlassToolbar,
 } from "@/components/glass";
 import { requireAdmin } from "@/server/admin";
-import { loadOverview } from "@/server/admin/metrics";
+import { loadAccountsData, loadSiteSummaries, planState } from "@/server/admin/data";
 import {
   SITE_FILTERS,
   SITE_FILTER_LABELS,
@@ -55,11 +55,14 @@ export default async function AdminWebsitesPage({ searchParams }: WebsitesPagePr
     sl: parseSiteLimit(firstParam(params.sl)),
   };
 
-  const overview = await loadOverview();
-  const { accounts, sites, enforced, now } = overview;
+  // Linhas leves dos sites (sem os SiteSpecs) + contas e planos para o dono e o selo "sem plano".
+  const [data, sites] = await Promise.all([loadAccountsData(), loadSiteSummaries()]);
+  const { accounts, now } = data;
+  const plan = planState(data);
+  const { enforced } = plan;
   const accountById = new Map(accounts.map((account) => [account.id, account]));
-  const owners = ownerInfo(overview);
-  const withoutPlan = withoutPlanCheck(overview);
+  const owners = ownerInfo(data);
+  const withoutPlan = withoutPlanCheck(plan);
   // Rascunhos de visitante (sem conta, nunca publicados): a faxina escolhe estes.
   const guestCreatedAt = sites
     .filter((site) => site.ownerId === null && site.guestId !== null)

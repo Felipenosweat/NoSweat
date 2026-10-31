@@ -101,7 +101,7 @@ function OptionCard({
         <span className="block font-display text-[15px] font-semibold tracking-[-0.01em] text-ink">
           {label}
         </span>
-        <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-slate-500">
+        <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-(--glass-fg-muted)">
           {note}
         </span>
         {extra && (
@@ -198,7 +198,7 @@ export function PhotoPlanBox({ layout }: { layout: LayoutChoice }) {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[13px] leading-snug text-slate-500">{PHOTO_PLAN_NOTE}</p>
+      <p className="mt-3 text-[13px] leading-snug text-(--glass-fg-muted)">{PHOTO_PLAN_NOTE}</p>
     </section>
   );
 }

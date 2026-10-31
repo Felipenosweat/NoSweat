@@ -1,36 +1,43 @@
 "use client";
 
 import type { DnsProvider, DnsRecord } from "@nosweat/schema";
-import { useState } from "react";
 import { focusRing, secondaryButton } from "@/components/DashboardUi";
+import { Notice, cx, glassButtonClass } from "@/components/glass";
 import { DNS_GUIDES, guideById, type DnsGuideId } from "./dnsGuides";
 
 /**
  * "Onde você comprou seu domínio?": o cliente escolhe a empresa (ou já vem marcada, descoberta
  * pelos nameservers) e vê o passo a passo dela, com um desenho do formulário já preenchido.
+ * A escolha fica no DomainPanel (com o passo a passo aberto, ele esconde a tabela de registros),
+ * e por isso os valores também podem ser copiados daqui.
  */
 export function DnsGuidePanel({
   domain,
   records,
   detected,
+  selected,
+  onSelect,
+  copied,
+  onCopy,
 }: {
   domain: string;
   records: DnsRecord[];
   detected: DnsProvider | null;
+  selected: DnsGuideId | null;
+  onSelect: (id: DnsGuideId) => void;
+  /** Valor copiado agora há pouco (mostra "Copied" no botão dele). */
+  copied: string | null;
+  onCopy: (value: string) => void;
 }) {
-  const [selected, setSelected] = useState<DnsGuideId | null>(detected);
   const guide = selected ? guideById(selected) : null;
   const dnsUrl = guide?.dnsUrl(domain) ?? null;
 
   return (
-    <section
-      aria-labelledby="dns-guide-title"
-      className="glass-edge rounded-2xl bg-white/40 p-4 sm:p-5"
-    >
+    <section aria-labelledby="dns-guide-title" className="glass-inset rounded-xl p-4">
       <h3 id="dns-guide-title" className="font-display text-[15px] font-semibold text-ink">
         Where did you buy your domain?
       </h3>
-      <p className="mt-1 text-[13px] text-slate-500">
+      <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
         {detected
           ? `We checked: ${domain} is managed at ${guideById(detected).name}. Follow the steps below.`
           : "Pick the company and we'll show you exactly where to click."}
@@ -42,12 +49,15 @@ export function DnsGuidePanel({
             key={option.id}
             type="button"
             aria-pressed={selected === option.id}
-            onClick={() => setSelected(option.id)}
-            className={`min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10 ${focusRing} ${
+            onClick={() => onSelect(option.id)}
+            className={cx(
+              "min-h-11 rounded-full px-3.5 text-[13px] font-semibold transition-colors duration-150 sm:min-h-10",
+              // Escolhida: o mesmo vidro tingido das cápsulas de filtro do painel.
               selected === option.id
-                ? "border-ink bg-ink text-white"
-                : "border-slate-300 bg-white/80 text-slate-700 hover:border-slate-400 hover:bg-white"
-            }`}
+                ? "glass-tint text-white [--glass-tint:#071b33]"
+                : "glass glass-flat glass-interactive text-(--glass-fg)",
+              focusRing,
+            )}
           >
             {option.name}
           </button>
@@ -61,6 +71,33 @@ export function DnsGuidePanel({
               Open {guide.name} DNS settings ↗
             </a>
           )}
+
+          {/* Os registros vêm antes dos passos: os passos falam da "table above". */}
+          <div>
+            <p className="text-[13px] font-medium text-(--glass-fg-muted)">
+              What to type in {guide.id === "other" ? "the form" : `${guide.name}'s form`}:
+            </p>
+            <div className="mt-2 space-y-3">
+              {records.map((record) => (
+                <div key={`${record.type}-${record.name}`}>
+                  <FormPreview
+                    record={record}
+                    nameLabel={guide.fields.name}
+                    valueLabel={guide.fields.value}
+                    blankRoot={guide.rootName === "blank"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => onCopy(record.value)}
+                    className={`mt-2 ${glassButtonClass({ variant: "secondary", size: "sm" })}`}
+                  >
+                    {copied === record.value ? "Copied" : "Copy"}
+                    <span className="sr-only"> {record.type} value</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <ol className="space-y-2.5">
             {guide.steps.map((step, index) => (
@@ -76,29 +113,14 @@ export function DnsGuidePanel({
             ))}
           </ol>
 
-          <div>
-            <p className="text-[13px] font-medium text-slate-500">
-              What to type in {guide.id === "other" ? "the form" : `${guide.name}'s form`}:
-            </p>
-            <div className="mt-2 space-y-2">
-              {records.map((record) => (
-                <FormPreview
-                  key={`${record.type}-${record.name}`}
-                  record={record}
-                  nameLabel={guide.fields.name}
-                  valueLabel={guide.fields.value}
-                  blankRoot={guide.rootName === "blank"}
-                />
-              ))}
-            </div>
-          </div>
-
           {guide.tips.length > 0 && (
-            <ul className="space-y-1.5 rounded-lg bg-amber-50 px-4 py-3 text-[13px] leading-normal text-amber-900">
-              {guide.tips.map((tip) => (
-                <li key={tip}>• {tip}</li>
-              ))}
-            </ul>
+            <Notice tone="warning" size="sm" role={null}>
+              <ul className="space-y-1.5">
+                {guide.tips.map((tip) => (
+                  <li key={tip}>{tip}</li>
+                ))}
+              </ul>
+            </Notice>
           )}
 
           {guide.helpUrl && (
@@ -156,14 +178,14 @@ function Field({
 }) {
   return (
     <div className="min-w-0">
-      <span className="block truncate text-[11px] font-medium tracking-wide text-slate-500 uppercase">
+      <span className="block truncate text-[11px] font-medium tracking-wide text-(--glass-fg-muted) uppercase">
         {label}
       </span>
       <span
         // Valor (ex.: o código TXT de 47 letras) quebra a linha em vez de cortar com "…":
         // as pessoas copiam o que veem.
         className={`mt-1 block rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-[13px] ${
-          value ? "text-ink" : "text-slate-500 italic"
+          value ? "text-ink" : "text-(--glass-fg-muted) italic"
         } ${mono ? "font-mono break-all" : "truncate font-semibold"}`}
       >
         {value || placeholder}

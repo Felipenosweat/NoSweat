@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { PageHeader } from "@/components/DashboardUi";
-import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { PageHeader, StatTile, type IconTone } from "@/components/DashboardUi";
+import { EmptyState, GlassButton, GlassCard, Notice } from "@/components/glass";
 import {
   ESTIMATE_FILTERS,
   ESTIMATE_FILTER_LABELS,
@@ -24,6 +24,7 @@ import { getOfficeSettings, listEstimates } from "@/server/office/service";
 import { DocumentsToolbar } from "../office/_ui/DocumentsToolbar";
 import { EstimateBadge, EstimateIcon, PlusIcon } from "../office/_ui/ui";
 import { EstimateMenu } from "./EstimateMenu";
+import { GuideHint } from "../GuideHint";
 
 export const metadata: Metadata = { title: "Estimates", robots: { index: false } };
 
@@ -47,7 +48,12 @@ async function loadEstimates(ownerId: string) {
 
 function NewEstimateButton({ label = "New estimate" }: { label?: string }) {
   return (
-    <GlassButton href="/estimates/new" variant="primary" icon={<PlusIcon />}>
+    <GlassButton
+      href="/estimates/new"
+      variant="primary"
+      icon={<PlusIcon />}
+      data-tour="estimates-new"
+    >
       {label}
     </GlassButton>
   );
@@ -78,12 +84,9 @@ export default async function EstimatesPage({ searchParams }: EstimatesPageProps
       />
 
       {estimates === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your estimates. Please refresh the page.
-        </p>
+        </Notice>
       ) : empty ? (
         <EmptyState
           className="mt-8"
@@ -91,6 +94,7 @@ export default async function EstimatesPage({ searchParams }: EstimatesPageProps
           title="Send your first estimate"
           description="Pick a client, add your services and prices, and text them a link. They can approve it from their phone."
           actions={readOnly ? undefined : <NewEstimateButton label="Create an estimate" />}
+          footnote={<GuideHint section="estimates" />}
         />
       ) : (
         <EstimatesContent
@@ -132,14 +136,23 @@ function EstimatesContent({
   const waiting = estimates.filter((e) => e.status === "sent");
   const approved = estimates.filter((e) => e.status === "approved");
   const drafts = estimates.filter((e) => e.status === "draft");
-  const tiles = [
+  const tiles: {
+    key: string;
+    label: string;
+    value: string;
+    hint: string;
+    href: string;
+    tone: IconTone;
+    highlight: boolean;
+  }[] = [
     {
       key: "waiting",
       label: "Waiting on customers",
       value: formatCents(sumTotals(waiting)),
       hint: `${waiting.length} ${waiting.length === 1 ? "estimate" : "estimates"}`,
       href: officeListHref("/estimates", { status: "waiting", q: "" }),
-      tone: waiting.length > 0 ? "text-brand" : "text-ink",
+      tone: "brand",
+      highlight: waiting.length > 0,
     },
     {
       key: "approved",
@@ -147,7 +160,8 @@ function EstimatesContent({
       value: formatCents(sumTotals(approved)),
       hint: `${approved.length} ${approved.length === 1 ? "estimate" : "estimates"}`,
       href: officeListHref("/estimates", { status: "approved", q: "" }),
-      tone: approved.length > 0 ? "text-emerald-700" : "text-ink",
+      tone: "emerald",
+      highlight: approved.length > 0,
     },
     {
       key: "draft",
@@ -155,7 +169,8 @@ function EstimatesContent({
       value: String(drafts.length),
       hint: drafts.length > 0 ? "Not sent yet" : "All sent",
       href: officeListHref("/estimates", { status: "draft", q: "" }),
-      tone: "text-ink",
+      tone: "slate",
+      highlight: false,
     },
   ];
 
@@ -168,24 +183,14 @@ function EstimatesContent({
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {tiles.map((tile, index) => (
             <li key={tile.key} className={index === 2 ? "col-span-2 sm:col-span-1" : undefined}>
-              <Link
+              <StatTile
                 href={tile.href}
-                className={cx(
-                  "glass glass-interactive flex h-full flex-col rounded-2xl p-4 motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised sm:p-5",
-                  focusRing,
-                )}
-              >
-                <span className="text-[13px] font-medium text-slate-600">{tile.label}</span>
-                <span
-                  className={cx(
-                    "mt-1 font-display text-[1.6rem] leading-tight font-semibold tracking-[-0.02em] tabular-nums",
-                    tile.tone,
-                  )}
-                >
-                  {tile.value}
-                </span>
-                <span className="text-[13px] text-slate-500">{tile.hint}</span>
-              </Link>
+                label={tile.label}
+                value={tile.value}
+                hint={tile.hint}
+                tone={tile.tone}
+                highlight={tile.highlight}
+              />
             </li>
           ))}
         </ul>

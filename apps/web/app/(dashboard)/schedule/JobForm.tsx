@@ -11,7 +11,14 @@ import {
   type TeamMember,
 } from "@nosweat/schema";
 import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
-import { GlassButton, GlassSearchField, GlassSheet, SpinnerIcon, cx } from "@/components/glass";
+import {
+  GlassButton,
+  GlassSearchField,
+  GlassSheet,
+  SpinnerIcon,
+  cx,
+  focusRing,
+} from "@/components/glass";
 import { parseDollars } from "@/lib/clients";
 import { ErrorNote, clientsApi, toClientsError, type ClientsApiError } from "../clients/api";
 import {
@@ -23,25 +30,41 @@ import {
   labelClass,
 } from "../clients/ui";
 import { addMinutesToTime, zonedToUtc } from "./time";
-import { TeamDot } from "./ui";
+import { ChevronRightIcon, TeamDot } from "./ui";
 
 // Folha "New job": escolher (ou cadastrar rápido) o cliente, título, dia e horário (1 hora por
-// padrão), endereço (vem do cliente), quem vai, valor e notas. Valida com o contrato antes de
-// enviar. As horas digitadas são do fuso da empresa (settings.timeZone).
+// padrão), endereço (vem do cliente) e quem vai (só com 2+ pessoas na equipe). Detalhes, preço e
+// notas ficam em "Add details (optional)", fechado. Valida com o contrato antes de enviar. As
+// horas digitadas são do fuso da empresa (settings.timeZone).
 
 type PickedClient = Pick<Client, "id" | "name" | "phone" | "address">;
 
-type Field = "clientId" | "title" | "startAt" | "endAt" | "address" | "valueCents" | "notes";
+/** Cliente que a folha já traz escolhido (ex.: "Book a job" da ficha do cliente). */
+export type NewJobClient = PickedClient;
+
+type Field =
+  | "clientId"
+  | "title"
+  | "description"
+  | "startAt"
+  | "endAt"
+  | "address"
+  | "valueCents"
+  | "notes";
 
 const FIELDS: readonly Field[] = [
   "clientId",
   "title",
+  "description",
   "startAt",
   "endAt",
   "address",
   "valueCents",
   "notes",
 ];
+
+/** Campos dentro de "Add details (optional)": com erro em um deles, a seção abre sozinha. */
+const DETAIL_FIELDS: readonly Field[] = ["description", "valueCents", "notes"];
 
 /** Quantos clientes a busca mostra de uma vez. */
 const MAX_MATCHES = 6;
@@ -62,6 +85,8 @@ export type NewJobDefaults = {
   date: string | null;
   /** Início "HH:MM"; `null` = 9h. */
   time: string | null;
+  /** Cliente já escolhido; sem ele (ou `null`) o dono escolhe na folha. */
+  client?: NewJobClient | null;
 };
 
 /** Folha com o formulário (monta o formulário de novo a cada abertura: começa vazio). */
@@ -126,13 +151,14 @@ function JobForm({
   onCreated: (job: Job) => void;
 }) {
   const ids = useId();
-  const [client, setClient] = useState<PickedClient | null>(null);
+  const [client, setClient] = useState<PickedClient | null>(defaults.client ?? null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [later, setLater] = useState(false);
   const [date, setDate] = useState(defaults.date ?? today);
   const [start, setStart] = useState(defaults.time ?? "09:00");
   const [end, setEnd] = useState(addMinutesToTime(defaults.time ?? "09:00", 60));
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState(defaults.client?.address ?? "");
   const [assignees, setAssignees] = useState<string[]>(
     // Equipe de uma pessoa só: já vem marcada.
     team.length === 1 && team[0] ? [team[0].id] : [],
@@ -177,6 +203,7 @@ function JobForm({
     const body = {
       clientId: client?.id ?? "",
       title,
+      description: description.trim() || undefined,
       startAt: later || next.startAt ? null : zonedToUtc(date, start, timeZone).toISOString(),
       endAt: later || next.startAt ? null : zonedToUtc(date, end, timeZone).toISOString(),
       address: address.trim() || null,
@@ -197,6 +224,11 @@ function JobForm({
     setErrors(next);
     const firstField = Object.keys(next)[0];
     if (!parsed.success || firstField) {
+      // Erro num campo da seção fechada: abre antes de levar o foco (nada de erro escondido).
+      if (DETAIL_FIELDS.some((field) => next[field])) {
+        const more = document.getElementById(`${ids}-more`);
+        if (more instanceof HTMLDetailsElement) more.open = true;
+      }
       document.getElementById(`${ids}-${firstField ?? "title"}`)?.focus();
       return;
     }
@@ -313,7 +345,7 @@ function JobForm({
               onChange={(event) => setLater(event.target.checked)}
               className="size-5 accent-brand"
             />
-            No date yet (keep it in Unscheduled)
+            I&rsquo;ll pick a time later
           </label>
         </fieldset>
 
@@ -337,53 +369,84 @@ function JobForm({
           )}
         </div>
 
-        {team.length > 0 && (
+        {/* Uma pessoa só: já vai marcada (estado inicial), sem perguntar. */}
+        {team.length > 1 && (
           <AssigneePicker team={team} value={assignees} onChange={setAssignees} />
         )}
 
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
-          <div>
-            <label htmlFor={`${ids}-valueCents`} className={labelClass}>
-              Value <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <div className="relative mt-1.5">
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
-              >
-                $
-              </span>
-              <input
-                id={`${ids}-valueCents`}
-                inputMode="decimal"
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-                autoComplete="off"
-                placeholder="0.00"
-                maxLength={12}
-                className={`${fieldClass} h-11 pl-7 tabular-nums`}
-                {...errorProps("valueCents")}
+        <details id={`${ids}-more`} className="group/more">
+          <summary
+            className={cx(
+              "-mx-1 inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-xl px-1 text-[15px] font-semibold text-brand [&::-webkit-details-marker]:hidden",
+              focusRing,
+            )}
+          >
+            <ChevronRightIcon className="size-4 motion-safe:transition-transform group-open/more:rotate-90" />
+            Add details <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
+          </summary>
+          <div className="mt-3 grid gap-5">
+            <div>
+              <label htmlFor={`${ids}-description`} className={labelClass}>
+                Details
+              </label>
+              <textarea
+                id={`${ids}-description`}
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                rows={2}
+                maxLength={4000}
+                placeholder="What needs to be done"
+                className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+                {...errorProps("description")}
               />
+              {errorText("description")}
             </div>
-            {errorText("valueCents")}
+
+            <div className="grid gap-5 sm:grid-cols-[minmax(0,12rem)_minmax(0,1fr)]">
+              <div>
+                <label htmlFor={`${ids}-valueCents`} className={labelClass}>
+                  Price
+                </label>
+                <div className="relative mt-1.5">
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
+                  >
+                    $
+                  </span>
+                  <input
+                    id={`${ids}-valueCents`}
+                    inputMode="decimal"
+                    value={value}
+                    onChange={(event) => setValue(event.target.value)}
+                    autoComplete="off"
+                    placeholder="0.00"
+                    maxLength={12}
+                    className={`${fieldClass} h-11 pl-7 tabular-nums`}
+                    {...errorProps("valueCents")}
+                  />
+                </div>
+                {errorText("valueCents")}
+              </div>
+              <div>
+                <label htmlFor={`${ids}-notes`} className={labelClass}>
+                  Notes for the team
+                </label>
+                <textarea
+                  id={`${ids}-notes`}
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  rows={2}
+                  maxLength={4000}
+                  placeholder="Gate code, parts to bring…"
+                  className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+                  {...errorProps("notes")}
+                />
+                {errorText("notes")}
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor={`${ids}-notes`} className={labelClass}>
-              Notes for the team <span className="font-normal text-slate-500">(optional)</span>
-            </label>
-            <textarea
-              id={`${ids}-notes`}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={2}
-              maxLength={4000}
-              placeholder="Gate code, parts to bring…"
-              className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
-              {...errorProps("notes")}
-            />
-            {errorText("notes")}
-          </div>
-        </div>
+        </details>
       </fieldset>
 
       {error && <ErrorNote error={error} className="mt-5" />}
@@ -496,12 +559,17 @@ function ClientPicker({
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[15px] font-semibold text-ink">{value.name}</span>
             {(value.phone || value.address) && (
-              <span className="block truncate text-[13px] text-slate-500">
+              <span className="block truncate text-[13px] text-(--glass-fg-muted)">
                 {[value.phone, value.address].filter(Boolean).join(" · ")}
               </span>
             )}
           </span>
-          <GlassButton variant="ghost" size="sm" onClick={() => onChange(null)}>
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange(null)}
+            className="max-sm:min-h-11"
+          >
             Change
           </GlassButton>
         </div>
@@ -534,6 +602,15 @@ function ClientPicker({
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         onClear={() => setQuery("")}
+        onKeyDown={(event) => {
+          // Enter na busca não envia o formulário do serviço: com um só resultado, escolhe ele.
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          const only = found.length === 1 ? found[0] : undefined;
+          if (only) {
+            onChange({ id: only.id, name: only.name, phone: only.phone, address: only.address });
+          }
+        }}
         placeholder="Search name or phone"
         autoComplete="off"
         className="mt-1.5"
@@ -547,7 +624,7 @@ function ClientPicker({
       )}
       <div className="mt-2 grid gap-1">
         {clients === null && !loadError && (
-          <p className="flex min-h-11 items-center gap-2 px-1 text-[15px] text-slate-500">
+          <p className="flex min-h-11 items-center gap-2 px-1 text-[15px] text-(--glass-fg-muted)">
             <SpinnerIcon /> Loading your clients…
           </p>
         )}
@@ -576,7 +653,7 @@ function ClientPicker({
                       {client.name}
                     </span>
                     {(client.phone || client.address) && (
-                      <span className="block truncate text-[13px] text-slate-500">
+                      <span className="block truncate text-[13px] text-(--glass-fg-muted)">
                         {[client.phone, client.address].filter(Boolean).join(" · ")}
                       </span>
                     )}
@@ -585,7 +662,7 @@ function ClientPicker({
               </li>
             ))}
             {found.length === 0 && query.trim() && (
-              <li className="px-2 py-2 text-[15px] text-slate-500">
+              <li className="px-2 py-2 text-[15px] text-(--glass-fg-muted)">
                 No client matches &ldquo;{query.trim()}&rdquo;.
               </li>
             )}

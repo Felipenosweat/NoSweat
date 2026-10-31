@@ -6,6 +6,7 @@ import { errorResponse, handle, jsonResponse, notFound, unauthorized } from "@/s
 import { announcePublishedSite } from "@/server/seo/announce";
 import { freeUrl, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
+import { revalidatePublicSite } from "@/server/store/revalidate";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -55,6 +56,8 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
       publishedAt: site.publishedAt ?? new Date().toISOString(),
     });
     if (!published) return notFound();
+    // A página pública (/s/<slug> e o domínio) mostra a versão nova já na próxima visita.
+    revalidatePublicSite(published);
 
     // Avisa Bing & cia. (IndexNow) do endereço oficial; nunca impede a publicação (ver seo/).
     const searchEngines = await announcePublishedSite(published);

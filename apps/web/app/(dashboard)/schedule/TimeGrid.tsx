@@ -2,7 +2,7 @@
 
 import type { TeamMember } from "@nosweat/schema";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { memo, useCallback, useMemo, type CSSProperties, type MouseEvent } from "react";
 import { cx, focusRing } from "@/components/glass";
 import { layoutDay, type PlacedJob } from "./layout-jobs";
 import { scheduleHref } from "./params";
@@ -29,9 +29,16 @@ const HOURS = Array.from(
   (_, i) => GRID_START_HOUR + i,
 );
 const GRID_HEIGHT = HOURS.length * HOUR_PX;
+// Rótulos das horas calculados uma vez (a grade da semana tem 7 × 15 horários).
+const HOUR_LABELS = HOURS.map(hourLabel);
+const HOUR_VALUES = HOURS.map(hourValue);
 const minutesToPx = (minutes: number) => (minutes / 60) * HOUR_PX;
 
-export function TimeGrid({
+/**
+ * `memo`: abrir ou fechar a folha "New job" (estado da agenda) não redesenha a grade inteira.
+ * Quem chama passa `onSlot` estável (useCallback) para isso valer.
+ */
+export const TimeGrid = memo(function TimeGrid({
   days,
   jobs,
   team,
@@ -59,6 +66,27 @@ export function TimeGrid({
   const nowTop = minutesToPx(nowMinutes - GRID_START_HOUR * 60);
   const showNow = nowTop >= 0 && nowTop <= GRID_HEIGHT;
 
+  // Por dia, uma vez: os blocos já posicionados e o rótulo dos horários vazios.
+  const columnsByDay = useMemo(
+    () =>
+      days.map((day) => ({
+        day,
+        blocks: layoutDay(jobs.filter((placed) => placed.dateKey === day)),
+        slotDay: formatDateKey(day, { weekday: "long", month: "short", day: "numeric" }),
+        label: longDay(day),
+      })),
+    [days, jobs],
+  );
+
+  // Um só handler para todos os horários (o dia e a hora vêm do próprio botão).
+  const handleSlot = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      const { day, hour } = event.currentTarget.dataset;
+      if (onSlot && day && hour) onSlot(day, hour);
+    },
+    [onSlot],
+  );
+
   return (
     // No celular a semana inteira não cabe: rola de lado (a coluna das horas fica fixa).
     <div className={cx("glass rounded-2xl", single ? "overflow-hidden" : "overflow-x-auto")}>
@@ -73,7 +101,7 @@ export function TimeGrid({
             const isToday = day === today;
             const label = (
               <>
-                <span className="text-[12px] font-semibold tracking-wide text-slate-500 uppercase">
+                <span className="text-[12px] font-semibold tracking-wide text-(--glass-fg-muted) uppercase">
                   {weekdayShort(day)}
                 </span>
                 <span
@@ -114,24 +142,23 @@ export function TimeGrid({
               <span
                 key={hour}
                 className={cx(
-                  "absolute right-2 text-[11px] font-medium whitespace-nowrap text-slate-500 tabular-nums",
+                  "absolute right-2 text-[11px] font-medium whitespace-nowrap text-(--glass-fg-muted) tabular-nums",
                   i > 0 && "-translate-y-1/2",
                 )}
                 style={{ top: i === 0 ? 4 : i * HOUR_PX }}
               >
-                {hourLabel(hour)}
+                {HOUR_LABELS[i]}
               </span>
             ))}
           </div>
 
-          {days.map((day) => {
-            const blocks = layoutDay(jobs.filter((placed) => placed.dateKey === day));
+          {columnsByDay.map(({ day, blocks, slotDay, label }) => {
             const isToday = day === today;
             return (
               <div
                 key={day}
                 role="group"
-                aria-label={longDay(day)}
+                aria-label={label}
                 className={cx(
                   "relative border-l border-(--glass-rim)",
                   isToday && "bg-brand/[0.035]",
@@ -144,8 +171,10 @@ export function TimeGrid({
                     <button
                       key={hour}
                       type="button"
-                      onClick={() => onSlot(day, hourValue(hour))}
-                      aria-label={`New job ${formatDateKey(day, { weekday: "long", month: "short", day: "numeric" })} at ${hourLabel(hour)}`}
+                      data-day={day}
+                      data-hour={HOUR_VALUES[i]}
+                      onClick={handleSlot}
+                      aria-label={`New job ${slotDay} at ${HOUR_LABELS[i]}`}
                       className={cx(
                         "group absolute inset-x-0 border-t border-slate-200/70 hover:bg-brand/[0.06] focus-visible:z-[1] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand",
                         i === 0 && "border-t-0",
@@ -156,7 +185,7 @@ export function TimeGrid({
                         aria-hidden="true"
                         className="pointer-events-none absolute top-1 left-1.5 text-[12px] font-semibold text-brand opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
                       >
-                        + {hourLabel(hour)}
+                        + {HOUR_LABELS[i]}
                       </span>
                     </button>
                   ) : (
@@ -237,4 +266,4 @@ export function TimeGrid({
       </div>
     </div>
   );
-}
+});

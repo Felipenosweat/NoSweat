@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
 
 /**
  * PATCH /api/office/estimates/[id]: linhas e textos (só rascunho/enviado; senão 409) ou a
- * resposta marcada pelo dono (`status: approved | declined`).
+ * resposta marcada pelo dono (`status: approved | declined`). Respondido/mudado no meio → 409.
  */
 export async function PATCH(request: Request, { params }: Context): Promise<Response> {
   return ownerRoute("/api/office/estimates/[id]", async (user) => {

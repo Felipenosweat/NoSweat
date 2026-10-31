@@ -9,10 +9,10 @@ import {
   type Invoice,
 } from "@nosweat/schema";
 import Link from "next/link";
-import { useId, useState } from "react";
-import { PageHeader } from "@/components/DashboardUi";
+import { useId, useRef, useState } from "react";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
-import { GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { GlassButton, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import {
   INVOICE_STATUS_LABELS,
   bpsToPercentInput,
@@ -31,11 +31,19 @@ import {
   formFromDocument,
   formSignature,
   toLineItems,
+  unpricedWarning,
   validateForm,
   type DocumentForm,
   type FormProblems,
 } from "../office/_ui/draft";
-import { CardHeading, SaveBar, useUnsavedWarning } from "../office/_ui/editor";
+import {
+  CardHeading,
+  DraftBar,
+  MoreOptions,
+  SaveBar,
+  optionsSummary,
+  useUnsavedWarning,
+} from "../office/_ui/editor";
 import { LineItemsEditor, LineItemsView, TotalsPanel } from "../office/_ui/LineItemsEditor";
 import { PrintStyles } from "../office/_ui/PrintStyles";
 import { SendSheet } from "../office/_ui/SendSheet";
@@ -56,7 +64,9 @@ import { PaymentsList, RecordPaymentSheet } from "./RecordPayment";
 
 // Fatura (nova e existente): itens (editáveis só sem pagamento), vencimento, mensagem, "Send"
 // com o link, "Record payment", lista de pagamentos e impressão / PDF. Salvar é explícito, como no
-// orçamento. Pagamentos e "Void" relêem a página (router.refresh) e o editor pega a versão nova.
+// orçamento: no rascunho a barra de baixo tem "Send invoice" (azul) e "Save draft", e linha sem
+// preço ($0) não vai para o cliente. Título, mensagem e vencimento ficam em "More options".
+// Pagamentos e "Void" relêem a página (router.refresh) e o editor pega a versão nova.
 
 export type InvoiceEditorProps = {
   /** null = fatura nova. */
@@ -74,6 +84,8 @@ export type InvoiceEditorProps = {
   };
   paymentInstructions: string;
   today: string;
+  /** Fuso da empresa. A fatura hoje só mostra datas sem hora (emissão, vencimento). */
+  timeZone?: string;
   readOnly: boolean;
 };
 
@@ -133,6 +145,12 @@ export function InvoiceEditor({
   const [shareOpen, setShareOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentKey, setPaymentKey] = useState(0);
+  // "More options" (título, mensagem, vencimento) aberto.
+  const [moreOpen, setMoreOpen] = useState(false);
+  // O dono tentou mandar/salvar com linha sem preço: o aviso fica até todas terem preço.
+  const [priceCheck, setPriceCheck] = useState(false);
+  // Trava contra dois pedidos ao mesmo tempo (ex.: "Send" e "Save" juntos criariam 2 faturas).
+  const savingRef = useRef(false);
 
   const signature = formSignature(form);
   const dirty = signature !== baseline;
@@ -174,6 +192,9 @@ export function InvoiceEditor({
       : draftTotals(form.lines, form.taxRate, form.discount);
   const paidCents = doc?.amountPaidCents ?? 0;
   const balanceCents = itemsEditable ? totals.totalCents - paidCents : (doc?.balanceCents ?? 0);
+  const priceWarning = itemsEditable && priceCheck ? unpricedWarning(form.lines) : null;
+  // Sem "How to pay" nas configurações, o cliente não vê como pagar.
+  const missingPaymentInstructions = !paymentInstructions.trim();
 
   function update(patch: Partial<DocumentForm>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -195,7 +216,25 @@ export function InvoiceEditor({
     });
   }
 
+  function focusFirstUnpriced() {
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(`[data-invoice-editor="${ids}"] [data-unpriced]`)
+        ?.focus();
+    });
+  }
+
   async function save(): Promise<Invoice | null> {
+    if (savingRef.current) return null;
+    savingRef.current = true;
+    try {
+      return await saveOnce();
+    } finally {
+      savingRef.current = false;
+    }
+  }
+
+  async function saveOnce(): Promise<Invoice | null> {
     setError(null);
     if (!doc && !client) {
       setClientError("Choose a client.");
@@ -206,6 +245,8 @@ export function InvoiceEditor({
     const checked = validateForm(form);
     if (itemsEditable && !checked.ok) {
       setProblems(checked.problems);
+      // Erro no título ou na mensagem: abre "More options" para o campo aparecer.
+      if (checked.problems.title || checked.problems.message) setMoreOpen(true);
       focusFirstProblem();
       return null;
     }
@@ -255,12 +296,27 @@ export function InvoiceEditor({
   }
 
   async function onSave() {
+    if (busy !== null || savingRef.current) return;
+    // Linha sem preço: o rascunho salva assim mesmo, só com o aviso.
+    if (itemsEditable && unpricedWarning(form.lines)) setPriceCheck(true);
     setBusy("save");
     await save();
     setBusy(null);
   }
 
   async function onSend() {
+    if (busy !== null || savingRef.current) return;
+    // Fatura sem nenhuma linha não vai para o cliente (nem chega a ser salva).
+    if (itemsEditable && form.lines.length === 0) {
+      setError(validationError("Add at least one line first."));
+      return;
+    }
+    // Linha sem preço ($0) não vai para o cliente: avisa e leva ao campo.
+    if (itemsEditable && unpricedWarning(form.lines)) {
+      setPriceCheck(true);
+      focusFirstUnpriced();
+      return;
+    }
     setBusy("send");
     try {
       const saved = dirty || !doc ? await save() : doc;
@@ -292,44 +348,53 @@ export function InvoiceEditor({
     client ?? (doc ? { id: doc.clientId, name: doc.clientName, phone: null, email: null } : null);
   const lineItems = itemsEditable ? toLineItems(form.lines).items : (doc?.items ?? []);
 
-  // Uma ação azul por vez: rascunho → Send; em aberto → Record payment; com mudanças sem salvar,
-  // o azul é o "Save" da barra de baixo.
+  // Rascunho editável: a barra de baixo tem o "Send invoice" azul (e o "Save draft").
+  const draftBar = detailsEditable && status === "draft";
+
+  // Uma ação azul por vez: rascunho → o "Send" da barra de baixo (o do topo fica secundário e some
+  // no celular); em aberto → Record payment; com mudanças sem salvar, o "Save" da barra.
   const canSend = !readOnly && (status === "draft" || unpaid);
   const sendButton = canSend ? (
     <GlassButton
-      variant={status === "draft" && !dirty ? "primary" : "secondary"}
+      variant="secondary"
       icon={<SendIcon />}
       onClick={() => void onSend()}
       loading={busy === "send"}
       disabled={busy === "save"}
+      className={draftBar ? "max-sm:hidden" : undefined}
     >
       {status === "draft" ? "Send invoice" : "Send again"}
     </GlassButton>
   ) : null;
+  // Com mudanças sem salvar, o pagamento espera: o saldo da tela ainda não é o do servidor.
   const paymentButton =
     !readOnly && doc && unpaid ? (
-      <GlassButton
-        variant={dirty ? "secondary" : "primary"}
-        icon={<CashIcon />}
-        onClick={() => {
-          setPaymentKey((key) => key + 1);
-          setPaymentOpen(true);
-        }}
-        disabled={busy !== null}
-      >
-        Record payment
-      </GlassButton>
+      <span className="inline-flex flex-col items-end gap-1">
+        <GlassButton
+          variant={dirty ? "secondary" : "primary"}
+          icon={<CashIcon />}
+          onClick={() => {
+            setPaymentKey((key) => key + 1);
+            setPaymentOpen(true);
+          }}
+          disabled={busy !== null || dirty}
+          aria-describedby={dirty ? `${ids}-payment-hint` : undefined}
+        >
+          Record payment
+        </GlassButton>
+        {dirty && (
+          <span id={`${ids}-payment-hint`} className="text-[13px] text-slate-600">
+            Save your changes first.
+          </span>
+        )}
+      </span>
     ) : null;
 
   return (
     <div data-invoice-editor={ids}>
       <PrintStyles />
       <PageHeader
-        back={
-          <GlassButton href="/invoices" variant="ghost" size="sm" className="-ml-2">
-            <span aria-hidden="true">‹</span> Invoices
-          </GlassButton>
-        }
+        back={<BackLink href="/invoices">Invoices</BackLink>}
         title={doc ? invoiceLabel(doc.number) : "New invoice"}
         badge={doc ? <InvoiceBadge status={status} /> : undefined}
         description={
@@ -391,7 +456,7 @@ export function InvoiceEditor({
 
       {error && <ErrorNote error={error} className="mt-6" />}
 
-      <div className="mt-8 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
+      <div className="mt-8 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
         {/* ---------- coluna principal ---------- */}
         <div className="grid min-w-0 gap-4">
           {!doc && (
@@ -416,35 +481,21 @@ export function InvoiceEditor({
 
           <GlassCard as="section" aria-labelledby={`${ids}-items`}>
             <CardHeading id={`${ids}-items`}>What you did</CardHeading>
-            {detailsEditable ? (
-              <>
-                <label htmlFor={`${ids}-title`} className={labelClass}>
-                  Title <span className="font-normal text-slate-500">(optional)</span>
-                </label>
-                <input
-                  id={`${ids}-title`}
-                  value={form.title}
-                  onChange={(event) => update({ title: event.target.value })}
-                  placeholder="Water heater install"
-                  maxLength={160}
-                  autoComplete="off"
-                  className={`${fieldClass} mt-1.5 mb-5 h-11`}
-                  aria-invalid={problems?.title ? true : undefined}
-                />
-                {problems?.title && (
-                  <p className={`${fieldErrorClass} -mt-4 mb-5`}>{problems.title}</p>
-                )}
-              </>
-            ) : (
-              doc?.title && <p className="mb-2 text-[15px] font-semibold text-ink">{doc.title}</p>
+            {!detailsEditable && doc?.title && (
+              <p className="mb-2 text-[15px] font-semibold text-ink">{doc.title}</p>
             )}
             {itemsEditable ? (
               <LineItemsEditor
                 lines={form.lines}
-                onChange={(lines) => update({ lines })}
+                onChange={(lines) => {
+                  update({ lines });
+                  // Todas as linhas com preço: o aviso some e só volta num novo "Send".
+                  if (!unpricedWarning(lines)) setPriceCheck(false);
+                }}
                 errors={problems?.lines ?? {}}
                 showTax={taxRateBps > 0}
                 itemsError={problems?.items}
+                priceWarning={priceWarning}
               />
             ) : (
               <>
@@ -459,12 +510,45 @@ export function InvoiceEditor({
             )}
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-message`}>
-            <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
-            {detailsEditable ? (
-              <>
-                <label htmlFor={`${ids}-message-field`} className="sr-only">
-                  Message to customer
+          {detailsEditable ? (
+            <MoreOptions
+              id={`${ids}-more`}
+              open={moreOpen}
+              onToggle={() => setMoreOpen((open) => !open)}
+              summary={optionsSummary({
+                kind: "invoice",
+                title: form.title,
+                message: form.message,
+                date: form.date,
+                today,
+              })}
+            >
+              <div>
+                <label htmlFor={`${ids}-title`} className={labelClass}>
+                  Title <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
+                </label>
+                <input
+                  id={`${ids}-title`}
+                  value={form.title}
+                  onChange={(event) => update({ title: event.target.value })}
+                  placeholder="Water heater install"
+                  maxLength={160}
+                  autoComplete="off"
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-invalid={problems?.title ? true : undefined}
+                  aria-describedby={problems?.title ? `${ids}-title-error` : undefined}
+                />
+                {problems?.title && (
+                  <p id={`${ids}-title-error`} className={fieldErrorClass}>
+                    {problems.title}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor={`${ids}-message-field`} className={labelClass}>
+                  Message to customer{" "}
+                  <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
                 </label>
                 <textarea
                   id={`${ids}-message-field`}
@@ -473,33 +557,63 @@ export function InvoiceEditor({
                   rows={3}
                   maxLength={4000}
                   placeholder="Thanks for your business!"
-                  className={`${fieldClass} resize-y py-2.5 leading-[1.55]`}
+                  className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
                   aria-invalid={problems?.message ? true : undefined}
-                  aria-describedby={`${ids}-message-hint`}
+                  aria-describedby={
+                    problems?.message
+                      ? `${ids}-message-error`
+                      : missingPaymentInstructions
+                        ? undefined
+                        : `${ids}-message-hint`
+                  }
                 />
                 {problems?.message ? (
-                  <p className={fieldErrorClass}>{problems.message}</p>
-                ) : (
+                  <p id={`${ids}-message-error`} className={fieldErrorClass}>
+                    {problems.message}
+                  </p>
+                ) : missingPaymentInstructions ? null : (
+                  // Só promete "como pagar" no rodapé se o dono escreveu as instruções.
                   <p id={`${ids}-message-hint`} className={hintClass}>
                     Your payment instructions from{" "}
                     <Link
                       href="/office/settings"
                       className="font-semibold text-brand underline-offset-4 hover:underline"
                     >
-                      Office settings
+                      Business settings
                     </Link>{" "}
                     show at the bottom.
                   </p>
                 )}
-              </>
-            ) : (
-              <p className="text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
-                {doc?.message || <span className="text-slate-500">No message.</span>}
-              </p>
-            )}
-          </GlassCard>
+              </div>
 
-          {doc && (
+              <div>
+                <label htmlFor={`${ids}-date`} className={labelClass}>
+                  Due date
+                </label>
+                <input
+                  id={`${ids}-date`}
+                  type="date"
+                  value={form.date}
+                  onChange={(event) => update({ date: event.target.value })}
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-describedby={`${ids}-date-hint`}
+                />
+                <p id={`${ids}-date-hint`} className={hintClass}>
+                  {form.date ? "After this date it shows as overdue." : "Due on receipt."}
+                </p>
+              </div>
+            </MoreOptions>
+          ) : (
+            <GlassCard as="section" aria-labelledby={`${ids}-message`}>
+              <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
+              <p className="text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
+                {doc?.message || <span className="text-(--glass-fg-muted)">No message.</span>}
+              </p>
+            </GlassCard>
+          )}
+
+          {/* Rascunho sem pagamento: ainda não há o que listar. */}
+          {doc && (status !== "draft" || doc.payments.length > 0) && (
             <GlassCard as="section" aria-labelledby={`${ids}-payments`}>
               <CardHeading id={`${ids}-payments`}>Payments</CardHeading>
               <PaymentsList
@@ -514,7 +628,8 @@ export function InvoiceEditor({
 
         {/* ---------- lateral: situação, totais e vencimento ---------- */}
         <div className="grid min-w-0 gap-4 lg:sticky lg:top-6">
-          <InvoiceStatusCard invoice={doc} today={today} />
+          {/* No rascunho, a frase "Only you see this…" fica na barra de baixo. */}
+          {!draftBar && <InvoiceStatusCard invoice={doc} today={today} />}
 
           <GlassCard as="section" aria-labelledby={`${ids}-totals`}>
             <CardHeading id={`${ids}-totals`}>Total</CardHeading>
@@ -545,42 +660,56 @@ export function InvoiceEditor({
             />
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-due`}>
-            <CardHeading id={`${ids}-due`}>Due date</CardHeading>
-            {detailsEditable ? (
-              <>
-                <label htmlFor={`${ids}-date`} className="sr-only">
-                  Due date
-                </label>
-                <input
-                  id={`${ids}-date`}
-                  type="date"
-                  value={form.date}
-                  onChange={(event) => update({ date: event.target.value })}
-                  className={`${fieldClass} h-11`}
-                />
-                <p className={hintClass}>
-                  {form.date ? "After this date it shows as overdue." : "Due on receipt."}
-                </p>
-              </>
-            ) : (
+          {detailsEditable &&
+            status !== "paid" &&
+            status !== "void" &&
+            missingPaymentInstructions && (
+              <Notice tone="warning" size="sm" role={null}>
+                Your customer won&rsquo;t see how to pay.{" "}
+                <Link
+                  href="/office/settings"
+                  className={`font-semibold underline underline-offset-4 hover:no-underline ${focusRing}`}
+                >
+                  Add payment instructions in Business settings
+                </Link>
+                .
+              </Notice>
+            )}
+
+          {!detailsEditable && (
+            <GlassCard as="section" aria-labelledby={`${ids}-due`}>
+              <CardHeading id={`${ids}-due`}>Due date</CardHeading>
               <p className="text-[15px] text-ink">
                 {doc?.dueOn ? formatDateOnly(doc.dueOn, today) : "Due on receipt"}
               </p>
-            )}
-          </GlassCard>
+            </GlassCard>
+          )}
         </div>
       </div>
 
-      {detailsEditable && (
-        <SaveBar
-          show={doc ? dirty : true}
+      {draftBar ? (
+        <DraftBar
+          sendLabel="Send invoice"
+          onSend={() => void onSend()}
+          sending={busy === "send"}
+          onSave={!doc || dirty ? () => void onSave() : undefined}
           saving={busy === "save"}
-          onSave={() => void onSave()}
-          onDiscard={doc ? discard : undefined}
-          label={doc ? "Save" : "Save draft"}
-          message={doc ? "Unsaved changes" : "New invoice, not saved yet"}
+          onDiscard={doc && dirty ? discard : undefined}
+          busy={busy !== null}
+          message={doc && dirty ? "Unsaved changes" : undefined}
+          warning={priceWarning}
         />
+      ) : (
+        detailsEditable && (
+          <SaveBar
+            show={dirty}
+            saving={busy !== null}
+            onSave={() => void onSave()}
+            onDiscard={discard}
+            label="Save"
+            message="Unsaved changes"
+          />
+        )
       )}
 
       {/* Só na impressão / PDF: o mesmo papel do link público. */}
@@ -636,6 +765,7 @@ export function InvoiceEditor({
           companyName={company.companyName}
           client={sendTarget}
           totalCents={Math.max(0, doc.balanceCents)}
+          missingPaymentInstructions={missingPaymentInstructions}
         />
       )}
 
@@ -656,15 +786,8 @@ export function InvoiceEditor({
 
 /** Onde a fatura está e o que acontece agora. */
 function InvoiceStatusCard({ invoice, today }: { invoice: Invoice | null; today: string }) {
-  if (!invoice) {
-    return (
-      <GlassCard padding="sm">
-        <p className="text-[15px] leading-[1.6] text-slate-600">
-          Only you can see this until you send it.
-        </p>
-      </GlassCard>
-    );
-  }
+  // Sem fatura salva, não há o que contar (a barra de baixo já diz "Only you see this…").
+  if (!invoice) return null;
   const status = invoice.status;
   const tone =
     status === "paid"

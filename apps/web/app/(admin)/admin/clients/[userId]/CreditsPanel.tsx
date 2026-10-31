@@ -2,8 +2,8 @@
 
 import type { CreditBalance } from "@nosweat/schema";
 import { useActionState } from "react";
-import { GlassButton, GlassCard } from "@/components/glass";
-import { Notice, fieldClass, labelClass, panelText, panelTitle } from "../../AdminUi";
+import { GlassButton, GlassCard, Notice } from "@/components/glass";
+import { fieldClass, labelClass, panelText, panelTitle } from "../../AdminUi";
 import type { GrantAccessState } from "./actions";
 
 // Créditos da IA da conta: saldo (cota do mês + comprados) e o ajuste manual do admin (bônus,

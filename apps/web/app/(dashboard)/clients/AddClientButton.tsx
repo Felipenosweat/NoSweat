@@ -40,6 +40,7 @@ export function AddClientButton({
         icon={<PlusIcon />}
         onClick={onClick}
         prefetch={false}
+        data-tour="clients-add"
       >
         {label}
       </GlassButton>

@@ -9,8 +9,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { focusRing, textButton } from "@/components/DashboardUi";
-import { EmptyState, GlassBadge, GlassButton, cx } from "@/components/glass";
+import {
+  ConfirmDialog,
+  EmptyState,
+  GlassBadge,
+  GlassButton,
+  GlassIconButton,
+  Notice,
+  cx,
+} from "@/components/glass";
 import {
   ErrorNote,
   approveBlocker,
@@ -64,6 +73,25 @@ function SkipGlyph() {
     </svg>
   );
 }
+
+function TrashGlyph() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="size-5"
+    >
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+    </svg>
+  );
+}
+
+const DeleteResponse = z.object({ ok: z.literal(true) });
 
 function InboxGlyph() {
   return (
@@ -152,6 +180,10 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
   const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<SocialApiError | null>(null);
+  /** Post que o dono pediu para apagar (abre a confirmação). */
+  const [toDelete, setToDelete] = useState<SocialPost | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -226,6 +258,46 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
     }
   }
 
+  /** Apaga a sugestão da IA de vez (some do calendário; nada vai ao Instagram). */
+  async function removePost() {
+    if (!toDelete) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await socialApi(`/api/social/posts/${encodeURIComponent(toDelete.id)}`, DeleteResponse, {
+        method: "DELETE",
+      });
+      const id = toDelete.id;
+      setData((current) =>
+        current ? { ...current, posts: current.posts.filter((post) => post.id !== id) } : current,
+      );
+      setToDelete(null);
+    } catch (err) {
+      setDeleteError(toApiError(err).message);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const deleteDialog = (
+    <ConfirmDialog
+      open={toDelete !== null}
+      title="Delete this post?"
+      confirmLabel="Delete post"
+      pendingLabel="Deleting…"
+      pending={deleting}
+      error={deleteError}
+      onConfirm={() => void removePost()}
+      onCancel={() => {
+        setToDelete(null);
+        setDeleteError(null);
+      }}
+    >
+      It will be removed from your calendar and won&rsquo;t be posted. You can always ask AI for
+      more posts later.
+    </ConfirmDialog>
+  );
+
   const laterLink = later ? (
     <Link href={`/social/review?month=${later.month}`} className={textButton}>
       You have {later.count} draft{later.count === 1 ? "" : "s"} in {monthLabel(later.month)}
@@ -258,7 +330,8 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
 
   return (
     <div className="mt-8">
-      <p className="text-[13px] font-semibold text-slate-500 tabular-nums">
+      {deleteDialog}
+      <p className="text-[13px] font-semibold text-(--glass-fg-muted) tabular-nums">
         {monthLabel(data.month)} · {data.posts.length} draft{data.posts.length === 1 ? "" : "s"}
         {ready.length > 0 && ` · ${selected.length} of ${ready.length} selected`}
       </p>
@@ -288,44 +361,54 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                   >
                     {post.scheduledAt ? formatWhen(post.scheduledAt, tz) : ""}
                   </h2>
-                  <p className="text-[13px] text-slate-500">
+                  <p className="text-[13px] text-(--glass-fg-muted)">
                     Post {index + 1} of {data.posts.length}
                   </p>
                 </div>
-                {blocker ? (
-                  <GlassBadge tone="pending">{BLOCKER_BADGE[blocker]}</GlassBadge>
-                ) : (
-                  // Aprovar / pular: dois botões de vidro com estado (aria-pressed).
-                  <div
-                    role="group"
-                    aria-label={`Post ${index + 1}`}
-                    className="flex items-center gap-2"
+                <div className="flex items-center gap-2">
+                  {blocker ? (
+                    <GlassBadge tone="pending">{BLOCKER_BADGE[blocker]}</GlassBadge>
+                  ) : (
+                    // Aprovar / pular: dois botões de vidro com estado (aria-pressed).
+                    <div
+                      role="group"
+                      aria-label={`Post ${index + 1}`}
+                      className="flex items-center gap-2"
+                    >
+                      <GlassButton
+                        variant="secondary"
+                        icon={<CheckGlyph />}
+                        aria-pressed={checked}
+                        disabled={pending}
+                        onClick={() => choose(post.id, true)}
+                        className={
+                          checked
+                            ? "bg-emerald-700! text-white! [--glass-specular:rgb(255_255_255/0.35)] hover:bg-emerald-800!"
+                            : undefined
+                        }
+                      >
+                        Approve
+                      </GlassButton>
+                      <GlassButton
+                        variant={checked ? "ghost" : "secondary"}
+                        icon={<SkipGlyph />}
+                        aria-pressed={!checked}
+                        disabled={pending}
+                        onClick={() => choose(post.id, false)}
+                      >
+                        Skip
+                      </GlassButton>
+                    </div>
+                  )}
+                  <GlassIconButton
+                    variant="ghost"
+                    label={`Delete post ${index + 1}`}
+                    disabled={pending}
+                    onClick={() => setToDelete(post)}
                   >
-                    <GlassButton
-                      variant="secondary"
-                      icon={<CheckGlyph />}
-                      aria-pressed={checked}
-                      disabled={pending}
-                      onClick={() => choose(post.id, true)}
-                      className={
-                        checked
-                          ? "bg-emerald-700! text-white! [--glass-specular:rgb(255_255_255/0.35)] hover:bg-emerald-800!"
-                          : undefined
-                      }
-                    >
-                      Approve
-                    </GlassButton>
-                    <GlassButton
-                      variant={checked ? "ghost" : "secondary"}
-                      icon={<SkipGlyph />}
-                      aria-pressed={!checked}
-                      disabled={pending}
-                      onClick={() => choose(post.id, false)}
-                    >
-                      Skip
-                    </GlassButton>
-                  </div>
-                )}
+                    <TrashGlyph />
+                  </GlassIconButton>
+                </div>
               </div>
 
               {post.media.length > 0 && (
@@ -347,22 +430,19 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
                 {post.caption}
               </p>
               {post.ownerNotePt && (
-                <p className="mt-2 text-[13px] leading-5 text-slate-500">
+                <p className="mt-2 text-[13px] leading-5 text-(--glass-fg-muted)">
                   <span className="font-medium text-slate-600">Note (Portuguese): </span>
                   <span lang="pt-BR">{post.ownerNotePt}</span>
                 </p>
               )}
               {post.claimsFlagged && (
-                <p
-                  role="note"
-                  className="glass-edge mt-3 rounded-xl bg-amber-50/85 px-3 py-2 text-sm text-amber-950"
-                >
+                <Notice tone="warning" size="sm" role="note" className="mt-3">
                   This caption mentions things like reviews, ratings, guarantees or licenses. Keep
                   them only if they&rsquo;re true for your business.
-                </p>
+                </Notice>
               )}
               {blocker && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   Open it from the{" "}
                   <Link
                     href={`/social?month=${data.month}`}
@@ -379,7 +459,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
       </ol>
 
       {blocked.length > 0 && ready.length > 0 && (
-        <p className="mt-4 text-[13px] text-slate-500">
+        <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
           {blocked.length} draft{blocked.length === 1 ? "" : "s"} can&rsquo;t be approved yet.
         </p>
       )}
@@ -425,7 +505,7 @@ export function ReviewList({ initialMonth }: { initialMonth: string | null }) {
               ? "Approving…"
               : `Approve ${selected.length} post${selected.length === 1 ? "" : "s"}`}
           </GlassButton>
-          <span aria-live="polite" className="text-[13px] text-slate-500">
+          <span aria-live="polite" className="text-[13px] text-(--glass-fg-muted)">
             {auto
               ? "They'll go out on Instagram at the times shown."
               : "They'll show as Ready to post. You share each one in a few taps."}

@@ -182,16 +182,21 @@ export function ClientPicker({
             {error && <ErrorNote error={error} className="mt-3" />}
 
             {loading ? (
-              <p className="flex items-center gap-2 py-8 text-[15px] text-slate-500" role="status">
+              <p
+                className="flex items-center gap-2 py-8 text-[15px] text-(--glass-fg-muted)"
+                role="status"
+              >
                 <SpinnerIcon className="size-5" /> Loading your clients…
               </p>
             ) : clients && clients.length === 0 ? (
-              <p className="py-8 text-center text-[15px] text-slate-500">
+              <p className="py-8 text-center text-[15px] text-(--glass-fg-muted)">
                 No clients yet. Tap &ldquo;New client&rdquo; to add one.
               </p>
             ) : clients ? (
               shown.length === 0 ? (
-                <p className="py-8 text-center text-[15px] text-slate-500">No clients match.</p>
+                <p className="py-8 text-center text-[15px] text-(--glass-fg-muted)">
+                  No clients match.
+                </p>
               ) : (
                 <ul className="mt-3 max-h-[50dvh] divide-y divide-(--glass-rim) overflow-y-auto">
                   {shown.map((client) => (

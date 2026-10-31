@@ -13,22 +13,16 @@ import {
 // Peças visuais do módulo de clientes (Liquid Glass). Sem "use client": servem para server e
 // client components.
 
+// Campos: os mesmos do app inteiro (components/DashboardUi). Reexportados aqui porque o módulo de
+// clientes, a agenda, o escritório e as avaliações importam deste arquivo.
+export { fieldClass, fieldErrorClass, hintClass, labelClass } from "@/components/DashboardUi";
+
 /**
- * Campo de texto sobre o vidro: claro e legível, 16px no celular (o iOS não dá zoom no campo) e
- * 44px de altura mínima nos de uma linha (quem usa põe `h-11`).
+ * Opção em cápsula (rádio escondido dentro do <label>): etapa, tipo de registro. Marcada = vidro
+ * tingido de azul-noite (o mesmo das cápsulas de filtro da agenda).
  */
-export const fieldClass =
-  "w-full rounded-xl border border-slate-300/80 bg-white/80 px-3 text-base text-ink placeholder:text-slate-500 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-red-500 sm:text-[15px]";
-
-export const labelClass = "block text-[13px] font-medium text-ink";
-
-export const hintClass = "mt-1.5 text-[13px] leading-5 text-slate-500";
-
-export const fieldErrorClass = "mt-1.5 text-[13px] leading-5 text-red-700";
-
-/** Opção em cápsula (rádio escondido dentro do <label>): etapa, tipo de registro. */
 export const choicePill =
-  "glass glass-flat glass-interactive flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 text-sm font-semibold text-(--glass-fg) has-checked:bg-ink has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed has-disabled:opacity-60";
+  "glass glass-flat glass-interactive flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 text-sm font-semibold text-(--glass-fg) has-checked:glass-tint has-checked:text-white has-checked:[--glass-tint:#071b33] has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-brand has-disabled:cursor-not-allowed has-disabled:opacity-60";
 
 // Título de seção: o mesmo do painel inteiro (DashboardUi).
 export const sectionTitle = baseSectionTitle;

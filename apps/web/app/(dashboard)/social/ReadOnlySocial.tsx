@@ -6,6 +6,7 @@ import {
   panelText,
   panelTitle,
 } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { getSocialStore } from "@/server/social/store";
 import type {
@@ -87,12 +88,9 @@ function caption(post: SocialPostRecord): string {
 export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
   if (!data) {
     return (
-      <p
-        role="alert"
-        className="glass-edge mt-8 rounded-2xl bg-red-50/85 px-4 py-3 text-[15px] text-red-700"
-      >
+      <Notice tone="error" className="mt-8">
         We couldn&rsquo;t load this account&rsquo;s posts. Please refresh the page.
-      </p>
+      </Notice>
     );
   }
   const { account, settings, posts } = data;
@@ -124,7 +122,7 @@ export function ReadOnlySocial({ data }: { data: ReadOnlySocialData | null }) {
             {posts.map((post) => (
               <li key={post.id} className="flex flex-col gap-1.5 px-4 py-3 sm:px-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-[13px] text-slate-500 tabular-nums">
+                  <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     {post.scheduledAt ? <LocalTime iso={post.scheduledAt} /> : "No date yet"}
                     {post.media.length > 0 &&
                       ` · ${post.media.length} ${post.media.length === 1 ? "photo" : "photos"}`}

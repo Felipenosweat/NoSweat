@@ -42,6 +42,7 @@ export default async function EstimatePage({ params }: EstimatePageProps) {
       company={office.company}
       terms={office.settings.estimateTerms}
       today={office.today}
+      timeZone={office.settings.timeZone}
       readOnly={readOnly}
     />
   );

@@ -3,7 +3,8 @@ import { cx, focusRing } from "@/components/glass";
 
 // Passo a passo para achar o link de avaliações no Google. Cada passo tem um desenho pequeno
 // feito só com HTML/CSS (nada de imagem de fora nem captura de tela do Google): sugere a tela
-// sem copiar a marca. Sem "use client".
+// sem copiar a marca. Sem "use client". `collapsed` (o dono já salvou um link): o passo a passo
+// fica fechado num <details>, para consulta.
 
 const line = "h-1.5 rounded-full bg-slate-300/70";
 
@@ -27,7 +28,7 @@ function Chip({ children, on = false }: { children: ReactNode; on?: boolean }) {
         "inline-flex h-6 shrink-0 items-center rounded-full px-2.5 text-[11px] font-semibold whitespace-nowrap",
         on
           ? "bg-brand text-white ring-4 ring-brand/20"
-          : "border border-slate-200 bg-white text-slate-500",
+          : "border border-slate-200 bg-white text-(--glass-fg-muted)",
       )}
     >
       {children}
@@ -65,16 +66,18 @@ const SKETCHES: Record<number, ReactNode> = {
   3: (
     <Sketch>
       <span className={cx(line, "w-1/2")} />
-      <div className="flex gap-1.5">
-        <Chip>Edit profile</Chip>
+      {/* Só o botão certo inteiro (com o outro botão do lado, o desenho cortava em "Ask for r…"
+          nos cartões estreitos); a linha ao lado ocupa o que sobrar. */}
+      <div className="flex min-w-0 items-center gap-1.5">
         <Chip on>Ask for reviews</Chip>
+        <span className={cx(line, "min-w-0 flex-1")} />
       </div>
     </Sketch>
   ),
   4: (
     <Sketch>
       <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
-        <span className="min-w-0 flex-1 truncate text-[11px] text-slate-500">
+        <span className="min-w-0 flex-1 truncate text-[11px] text-(--glass-fg-muted)">
           g.page/r/…/review
         </span>
       </div>
@@ -121,8 +124,15 @@ const STEPS: { title: string; body: ReactNode }[] = [
   },
 ];
 
-export function GuideSteps({ headingId }: { headingId: string }) {
-  return (
+export function GuideSteps({
+  headingId,
+  collapsed = false,
+}: {
+  headingId: string;
+  /** Link já salvo: o passo a passo vem fechado ("Show the steps"). */
+  collapsed?: boolean;
+}) {
+  const steps = (
     <div>
       <ol
         aria-labelledby={headingId}
@@ -162,5 +172,22 @@ export function GuideSteps({ headingId }: { headingId: string }) {
         Google lets you create one for free.
       </p>
     </div>
+  );
+  if (!collapsed) return steps;
+  return (
+    <details className="group">
+      <summary
+        className={cx(
+          "glass glass-interactive inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full px-4 text-[15px] font-semibold text-(--glass-fg) [&::-webkit-details-marker]:hidden",
+          focusRing,
+        )}
+      >
+        <span aria-hidden="true" className="inline-block transition-transform group-open:rotate-90">
+          ›
+        </span>
+        Show the steps
+      </summary>
+      <div className="mt-4">{steps}</div>
+    </details>
   );
 }

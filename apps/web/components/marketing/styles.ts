@@ -26,8 +26,8 @@ export const leadClass =
   "max-w-[52ch] text-lg leading-[1.55] text-pretty text-slate-600 lg:text-xl";
 export const bodyClass =
   "max-w-[65ch] text-base leading-[1.65] text-pretty text-slate-600 lg:text-[17px]";
-export const eyebrowClass = "text-[13px] font-semibold tracking-[0.02em] text-slate-500";
-export const captionClass = "text-[13px] leading-normal text-slate-500";
+export const eyebrowClass = "text-[13px] font-semibold tracking-[0.02em] text-(--glass-fg-muted)";
+export const captionClass = "text-[13px] leading-normal text-(--glass-fg-muted)";
 
 /** Título de painel do app (15px Jakarta 600), usado nos mini-UIs do bento. */
 export const panelTitleClass = "font-display text-[15px] font-semibold tracking-[-0.01em] text-ink";

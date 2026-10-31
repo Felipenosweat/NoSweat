@@ -37,6 +37,15 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
     // IA) vira 500 sem descontar nada do cliente.
     const generator = getSiteGenerator();
+    // Modo modelo (produção sem chave de IA): não há IA para mudar o site. Responde antes de
+    // gastar crédito ou salvar versão (o editor já esconde o pedido, ver aiEnabled()).
+    if (!generator.usesAi) {
+      return errorResponse(
+        503,
+        "ai_unavailable",
+        "AI changes aren't switched on yet. You can edit every text, color and photo yourself.",
+      );
+    }
     const overLimit = await reserveUse(actor, "ai_edit", site.id);
     if (overLimit) return overLimit;
 

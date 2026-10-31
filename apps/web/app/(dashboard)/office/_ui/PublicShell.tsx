@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { phoneHref } from "@/lib/office";
+import { companyLabel, phoneHref } from "@/lib/office";
 
 // Moldura das páginas públicas do orçamento (/q/...) e da fatura (/i/...): fundo cinza bem claro,
 // papel branco no centro, contato da empresa embaixo. Sem o painel, sem vidro pesado. Na
@@ -21,7 +21,7 @@ export function PublicShell({
         {children}
         {(company.phone || company.email) && (
           <p className="px-2 text-center text-sm leading-6 text-slate-600 print:hidden">
-            Questions? Contact {company.companyName}
+            Questions? Contact {companyLabel(company.companyName)}
             {company.phone && (
               <>
                 {" · "}

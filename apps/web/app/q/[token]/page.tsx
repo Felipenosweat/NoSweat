@@ -5,7 +5,8 @@ import { cache } from "react";
 import { DocumentPaper } from "@/app/(dashboard)/office/_ui/DocumentPaper";
 import { PrintButton } from "@/app/(dashboard)/office/_ui/PrintButton";
 import { PublicShell, StatusBanner } from "@/app/(dashboard)/office/_ui/PublicShell";
-import { formatCents, formatDateOnly } from "@/lib/office";
+import type { PublicEstimate } from "@nosweat/schema";
+import { companyLabel, formatCents, formatDateOnly, isoDateIn } from "@/lib/office";
 import { getPublicEstimate } from "@/server/office/service";
 import { RespondPanel } from "./RespondPanel";
 
@@ -34,7 +35,11 @@ export async function generateMetadata({ params }: PublicEstimatePageProps): Pro
   const estimate = await load(token);
   return {
     title: estimate
-      ? { absolute: `Estimate #${estimate.number} · ${estimate.company.companyName}` }
+      ? {
+          absolute: estimate.company.companyName.trim()
+            ? `Estimate #${estimate.number} · ${estimate.company.companyName.trim()}`
+            : `Estimate #${estimate.number}`,
+        }
       : "Estimate",
     robots: NO_INDEX,
     // O token não vaza para outros sites pelo Referer.
@@ -42,8 +47,8 @@ export async function generateMetadata({ params }: PublicEstimatePageProps): Pro
   };
 }
 
-/** "2026-10-26T15:00:00Z" → "Oct 26, 2026". */
-const day = (iso: string) => formatDateOnly(iso.slice(0, 10));
+/** Campos novos do contrato (podem ainda não vir do servidor). */
+type PublicEstimateExtras = { timeZone?: string | null; updatedAt?: string | null };
 
 export default async function PublicEstimatePage({ params }: PublicEstimatePageProps) {
   // Sempre na hora do request (o cliente pode ter acabado de aprovar).
@@ -52,6 +57,11 @@ export default async function PublicEstimatePage({ params }: PublicEstimatePageP
   const estimate = await load(token);
   // Rascunho (ainda não enviado) também não abre.
   if (!estimate || estimate.status === "draft") notFound();
+  const extras = estimate as PublicEstimate & PublicEstimateExtras;
+  /** "2026-10-27T01:30:00Z" → "Oct 26, 2026" (o dia no fuso da empresa, não o de UTC). */
+  const day = (iso: string) => formatDateOnly(isoDateIn(iso, extras.timeZone));
+  const company = companyLabel(estimate.company.companyName);
+  const companyStart = companyLabel(estimate.company.companyName, true);
 
   const total = formatCents(estimate.totalCents);
   const facts = [
@@ -66,20 +76,20 @@ export default async function PublicEstimatePage({ params }: PublicEstimatePageP
       {estimate.status === "approved" && (
         <StatusBanner tone="emerald" title="Approved — thank you!">
           {estimate.approvedByName ? `Approved by ${estimate.approvedByName}` : "Approved"}
-          {estimate.respondedAt ? ` on ${day(estimate.respondedAt)}` : ""}.{" "}
-          {estimate.company.companyName} will be in touch to schedule.
+          {estimate.respondedAt ? ` on ${day(estimate.respondedAt)}` : ""}. {companyStart} will be
+          in touch to schedule.
         </StatusBanner>
       )}
       {estimate.status === "declined" && (
         <StatusBanner tone="slate" title="You declined this estimate">
           {estimate.respondedAt ? `On ${day(estimate.respondedAt)}. ` : ""}Changed your mind?
-          Contact {estimate.company.companyName}.
+          Contact {company}.
         </StatusBanner>
       )}
       {estimate.status === "expired" && (
         <StatusBanner tone="amber" title="This estimate has expired">
           {estimate.validUntil ? `It was good until ${formatDateOnly(estimate.validUntil)}. ` : ""}
-          Contact {estimate.company.companyName} for an updated price.
+          Contact {company} for an updated price.
         </StatusBanner>
       )}
 
@@ -120,7 +130,12 @@ export default async function PublicEstimatePage({ params }: PublicEstimatePageP
       />
 
       {estimate.status === "sent" && (
-        <RespondPanel token={token} companyName={estimate.company.companyName} total={total} />
+        <RespondPanel
+          token={token}
+          companyName={estimate.company.companyName}
+          total={total}
+          updatedAt={typeof extras.updatedAt === "string" ? extras.updatedAt : null}
+        />
       )}
 
       <div className="flex justify-center print:hidden">

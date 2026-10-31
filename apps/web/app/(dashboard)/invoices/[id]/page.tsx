@@ -43,6 +43,7 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
       company={office.company}
       paymentInstructions={office.settings.paymentInstructions}
       today={office.today}
+      timeZone={office.settings.timeZone}
       readOnly={readOnly}
     />
   );

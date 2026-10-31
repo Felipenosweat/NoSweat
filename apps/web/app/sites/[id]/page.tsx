@@ -4,8 +4,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { AccountShellForCurrentViewer } from "@/app/(dashboard)/AccountShell";
-import { ClockIcon, GlobeIcon, LinkIcon, MessagesIcon } from "@/app/(dashboard)/NavIcons";
+import { GlobeIcon, MessagesIcon } from "@/app/(dashboard)/NavIcons";
 import {
+  BackLink,
   IconTile,
   PageHeader,
   SiteUrlLine,
@@ -20,6 +21,7 @@ import {
   textButton,
   type IconTone,
 } from "@/components/DashboardUi";
+import { GlassBadge, Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
@@ -27,9 +29,9 @@ import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "
 import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
-import { DomainPanel } from "./DomainPanel";
 import { PublishButton } from "./PublishButton";
 import { SiteActionsMenu } from "./SiteActionsMenu";
+import { DomainSection, VersionsSection } from "./SiteSections";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
@@ -44,6 +46,9 @@ async function requestOrigin(): Promise<string> {
 }
 
 const linkClass = `rounded-sm font-medium text-brand underline-offset-4 hover:underline ${focusRing}`;
+
+/** Quantos pedidos aparecem aqui; o resto fica em /clients (o CRM junta todos). */
+const RECENT_LEADS = 3;
 
 /** Título de painel com o quadradinho do ícone na frente (como os grupos dos Ajustes do iOS). */
 function PanelHeading({
@@ -113,16 +118,13 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
     <AccountShellForCurrentViewer>
       <div>
         <PageHeader
-          back={
-            <Link href="/dashboard#sites" className={`${textButton} -ml-1`}>
-              <span aria-hidden="true">‹</span> My sites
-            </Link>
-          }
+          back={<BackLink href="/dashboard#sites">My sites</BackLink>}
           title={business.name}
           badge={
-            <StatusBadge tone={isPublished && !offline ? "live" : "draft"}>
-              {offline ? "Offline" : isPublished ? "Live" : "Draft"}
-            </StatusBadge>
+            // Mesmas cores do cartão em "My sites" (SitesGrid): fora do ar = âmbar, não cinza.
+            <GlassBadge tone={isPublished ? (offline ? "pending" : "live") : "draft"}>
+              {isPublished ? (offline ? "Offline" : "Live") : "Draft"}
+            </GlassBadge>
           }
           description={where || undefined}
           actions={
@@ -139,10 +141,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
         />
 
         {offline && (
-          <p
-            role="status"
-            className="glass-edge mt-6 rounded-2xl bg-amber-50/85 px-4 py-3 text-[15px] text-amber-900"
-          >
+          <Notice tone="warning" className="mt-6">
             Your plan has ended, so visitors see a &ldquo;temporarily unavailable&rdquo; page.{" "}
             <Link
               href={`/billing?site=${encodeURIComponent(site.id)}`}
@@ -150,7 +149,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             >
               Choose a plan to bring it back →
             </Link>
-          </p>
+          </Notice>
         )}
 
         <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-12 lg:gap-x-8">
@@ -175,7 +174,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                     <span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
-                  <p className="text-[15px] leading-6 text-slate-500">
+                  <p className="text-[15px] leading-6 text-(--glass-fg-muted)">
                     Not online yet. Publish to get your free address.
                   </p>
                 )}
@@ -226,7 +225,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 )}
               </p>
               {live && free && live !== free && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   Also available at{" "}
                   <a href={free} target="_blank" rel="noreferrer" className={linkClass}>
                     {free.replace(/^https?:\/\//, "")}
@@ -247,7 +246,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 />
               </div>
               {isPublished && (
-                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-slate-500">
+                <p className="mt-4 border-t border-(--glass-rim) pt-3 text-[13px] text-(--glass-fg-muted)">
                   Need to pause it? Use the{" "}
                   <span className="font-semibold text-slate-600">&ldquo;⋯&rdquo;</span> menu at the
                   top to take it offline. Nothing is deleted.
@@ -291,11 +290,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 </p>
               ) : (
                 <ul className="mt-4 divide-y divide-(--glass-rim) border-t border-(--glass-rim)">
-                  {leads.map((lead) => (
+                  {leads.slice(0, RECENT_LEADS).map((lead) => (
                     <li key={lead.id} className="py-4">
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                         <p className="text-[15px] font-semibold text-ink">{lead.name}</p>
-                        <p className="text-[13px] text-slate-500 tabular-nums">
+                        <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                           <LocalTime iso={lead.createdAt} />
                         </p>
                       </div>
@@ -320,46 +319,24 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   ))}
                 </ul>
               )}
+              {leads.length > 0 && (
+                <p className="mt-1 border-t border-(--glass-rim) pt-3 text-[15px]">
+                  <Link href="/clients" className={linkClass}>
+                    See all in Clients <span aria-hidden="true">→</span>
+                  </Link>
+                </p>
+              )}
               {emailAlerts && (
-                <p className="mt-3 text-[13px] text-slate-500">
+                <p className="mt-3 text-[13px] text-(--glass-fg-muted)">
                   We also email you every new message.
                 </p>
               )}
             </section>
 
-            <section
-              id="domain"
-              tabIndex={-1}
-              aria-labelledby="domain-title"
-              className={`${panelClass} scroll-mt-24 focus:outline-none`}
-            >
-              <PanelHeading id="domain-title" icon={<LinkIcon className="size-[18px]" />}>
-                Your own domain
-              </PanelHeading>
-              <p className={`mt-3 max-w-[60ch] ${panelText}`}>
-                Already own a domain like{" "}
-                <span className="font-medium text-ink">yourbusiness.com</span>? Connect it here.
-                Don&rsquo;t have one yet? Buy it at any registrar (GoDaddy, Namecheap,
-                Hostinger&hellip;) and come back.
-              </p>
-              <DomainPanel siteId={site.id} initial={domain} isPublished={isPublished} />
-            </section>
+            {/* Domínio e versões ficam recolhidos (uma linha cada); #domain e #versions abrem. */}
+            <DomainSection siteId={site.id} initial={domain} isPublished={isPublished} />
 
-            <section
-              id="versions"
-              aria-labelledby="versions-title"
-              className={`${panelClass} scroll-mt-24`}
-            >
-              <PanelHeading
-                id="versions-title"
-                tone="slate"
-                icon={<ClockIcon className="size-[18px]" />}
-              >
-                Version history
-              </PanelHeading>
-              <p className={`mt-3 max-w-[60ch] ${panelText}`}>
-                Every time you save, we keep a copy. Restore an older one if you change your mind.
-              </p>
+            <VersionsSection>
               <VersionHistory
                 siteId={site.id}
                 versions={versions.map(({ id: versionId, source, createdAt }) => ({
@@ -368,7 +345,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                   createdAt,
                 }))}
               />
-            </section>
+            </VersionsSection>
           </div>
         </div>
       </div>

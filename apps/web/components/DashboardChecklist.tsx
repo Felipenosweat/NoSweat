@@ -77,7 +77,7 @@ export function DashboardChecklist({
           <h2 id="checklist-heading" className={`${sectionTitle} text-balance`}>
             Get {siteName} ready for customers
           </h2>
-          <p className="mt-0.5 text-[13px] leading-5 text-slate-500 tabular-nums">
+          <p className="mt-0.5 text-[13px] leading-5 text-(--glass-fg-muted) tabular-nums">
             {doneCount} of {all.length} done · {all.length - doneCount} to go
           </p>
         </div>
@@ -110,14 +110,16 @@ export function DashboardChecklist({
             <span className="min-w-0 flex-1">
               <span
                 className={`block text-[15px] leading-6 font-medium ${
-                  step.done ? "text-slate-500" : "text-ink"
+                  step.done ? "text-(--glass-fg-muted)" : "text-ink"
                 }`}
               >
                 {step.label}
                 <span className="sr-only">{step.done ? " (done)" : " (to do)"}</span>
               </span>
               {!step.done && step.hint && (
-                <span className="block text-[13px] leading-5 text-slate-500">{step.hint}</span>
+                <span className="block text-[13px] leading-5 text-(--glass-fg-muted)">
+                  {step.hint}
+                </span>
               )}
             </span>
           );

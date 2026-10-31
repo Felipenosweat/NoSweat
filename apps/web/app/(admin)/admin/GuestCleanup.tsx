@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ConfirmDialog, GlassButton, GlassCard } from "@/components/glass";
-import { Notice, fieldClass, labelClass, panelText, panelTitle } from "./AdminUi";
+import { ConfirmDialog, GlassButton, GlassCard, Notice } from "@/components/glass";
+import { fieldClass, labelClass, panelText, panelTitle } from "./AdminUi";
 import { deleteGuestDraftsAction, type AdminActionResult } from "./actions";
 
 // Faxina dos rascunhos de visitantes (sites criados sem conta que nunca foram para uma conta).

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { signOut } from "@/app/(auth)/login/actions";
 import { GlassBackdrop, GlassButton } from "@/components/glass";
 import { Logo } from "@/components/Logo";
@@ -8,18 +8,28 @@ import { getViewer } from "@/server/auth/viewer";
 import { AdminNav } from "./AdminNav";
 
 /**
+ * Modo "ver como" ainda ligado: avisa aqui também (o /dashboard está mostrando a outra conta).
+ * Em Suspense: achar a conta vista pode chamar o Supabase Auth, e a barra do painel não espera.
+ */
+async function AdminViewAsBanner() {
+  const viewer = await getViewer();
+  return viewer?.viewingAs ? <ViewAsBanner email={viewer.viewingAs.email} /> : null;
+}
+
+/**
  * Painel principal da No Sweat. Só admins (public.platform_admins); para os outros, 404.
  * Barra de vidro grudada no topo (o conteúdo passa por baixo, desfocado) com as abas do painel.
  */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // Segurança primeiro: nada do painel é enviado antes de confirmar que é admin.
   await requireAdmin();
-  // Modo "ver como" ainda ligado: avisa aqui também (o /dashboard está mostrando a outra conta).
-  const viewer = await getViewer();
 
   return (
     <div className="relative isolate min-h-screen bg-surface text-(--glass-fg)">
       <GlassBackdrop />
-      {viewer?.viewingAs && <ViewAsBanner email={viewer.viewingAs.email} />}
+      <Suspense fallback={null}>
+        <AdminViewAsBanner />
+      </Suspense>
       <header className="glass-bar sticky top-0 z-30">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6 md:flex-nowrap">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">

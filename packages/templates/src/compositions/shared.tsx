@@ -112,12 +112,7 @@ export function PhotoFrame({
         data-kind={image.kind}
         className={`ns-photo relative size-full overflow-hidden bg-ns-border ${eager ? "ns-hero-zoom" : "ns-unclip"} ${radius}`}
       >
-        <Photo
-          image={image}
-          loading={eager ? "eager" : "lazy"}
-          sizes={sizes}
-          className={imgClassName}
-        />
+        <Photo image={image} priority={eager} sizes={sizes} className={imgClassName} />
         {hasCredit && credit === "overlay" && (
           <figcaption className="absolute right-3 bottom-3 z-10 max-w-[calc(100%-1.5rem)] rounded-md bg-ns-background/90 px-2 py-1 text-[0.6875rem] leading-tight text-ns-text">
             <PhotoCredit image={image} />

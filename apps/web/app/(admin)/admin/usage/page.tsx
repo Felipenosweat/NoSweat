@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
+import { StatTile } from "@/components/DashboardUi";
 import { cx } from "@/components/glass";
 import { requireAdmin } from "@/server/admin";
 import {
@@ -12,8 +13,8 @@ import {
   formatUsdPerUse,
   totalUses,
 } from "@/server/admin/costs";
-import { loadOverview } from "@/server/admin/metrics";
-import { AdminPageHeader, StatTile, rowClass, td, th } from "../AdminUi";
+import { loadAiUsage } from "@/server/admin/data";
+import { AdminPageHeader, rowClass, td, th } from "../AdminUi";
 import { formatCount } from "../admin-data";
 
 export const metadata: Metadata = { title: "Usage · Admin" };
@@ -22,7 +23,8 @@ export const metadata: Metadata = { title: "Usage · Admin" };
 export default async function AdminUsagePage() {
   await connection();
   await requireAdmin();
-  const { ai24h, ai30d } = await loadOverview();
+  // Só as contagens da IA (antes esta aba lia também todas as contas e todos os sites).
+  const { ai24h, ai30d } = await loadAiUsage();
 
   return (
     <div className="grid grid-cols-1 gap-6">

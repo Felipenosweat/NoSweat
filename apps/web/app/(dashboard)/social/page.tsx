@@ -2,10 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { Suspense, type ReactNode } from "react";
 import { PageHeader } from "@/components/DashboardUi";
+import { Notice } from "@/components/glass";
+import type { CurrentUser } from "@/server/auth/session";
 import { getViewer } from "@/server/auth/viewer";
+import { getSocialState } from "@/server/social/api";
+import { currentMonth, monthRangeUtc, toPublicPost } from "@/server/social/service";
+import { getSocialStore } from "@/server/social/store";
 import { ReadOnlySocial, loadReadOnlySocial } from "./ReadOnlySocial";
-import { SocialCalendar } from "./SocialCalendar";
+import {
+  SocialCalendar,
+  SocialCalendarSkeleton,
+  type SocialCalendarInitial,
+} from "./SocialCalendar";
 
 export const metadata: Metadata = { title: "Social", robots: { index: false } };
 
@@ -31,6 +41,51 @@ const CONNECT_ERRORS: Record<string, string> = {
 };
 
 const GENERIC_CONNECT_ERROR = "We couldn't connect Instagram. Please try again in a minute.";
+
+/**
+ * A primeira tela do calendário lida no servidor: o mesmo que /api/social/state e
+ * /api/social/posts devolvem para o mês mostrado. Sem isto o navegador fazia duas idas e voltas
+ * (estado, depois posts) antes de desenhar qualquer coisa. Erro = `null`: o calendário busca pela
+ * API como antes (e mostra o erro e o "Try again" de sempre).
+ */
+async function loadInitialSocial(
+  user: CurrentUser,
+  initialMonth: string | null,
+): Promise<SocialCalendarInitial | null> {
+  try {
+    const store = getSocialStore();
+    // Em paralelo: as configurações (fuso) para achar o mês dos posts, e o estado completo.
+    const [state, posts] = await Promise.all([
+      getSocialState(user),
+      store.getSettings(user.id).then((settings) => {
+        const month = initialMonth ?? currentMonth(settings.timezone);
+        const { fromIso, toIso } = monthRangeUtc(month, settings.timezone);
+        return store
+          .listPosts(user.id, fromIso, toIso)
+          .then((list) => ({ month, timezone: settings.timezone, list }));
+      }),
+    ]);
+    // As duas leituras das configurações discordaram (salvou no meio): deixa o navegador buscar.
+    if (posts.timezone !== state.settings.timezone) return null;
+    return { state, month: posts.month, posts: posts.list.map(toPublicPost) };
+  } catch (error) {
+    console.error("[social] could not preload the calendar", error);
+    return null;
+  }
+}
+
+async function PreloadedCalendar({
+  user,
+  initialMonth,
+  notices,
+}: {
+  user: CurrentUser;
+  initialMonth: string | null;
+  notices: ReactNode;
+}) {
+  const initial = await loadInitialSocial(user, initialMonth);
+  return <SocialCalendar initialMonth={initialMonth} initial={initial} notices={notices} />;
+}
 
 export default async function SocialPage({ searchParams }: SocialPageProps) {
   // Sempre na hora do request (dados do dono e da sessão).
@@ -64,26 +119,17 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
   const approvedCount = approved && /^\d{1,3}$/.test(approved) ? Number(approved) : 0;
   const errorText = error ? (CONNECT_ERRORS[error] ?? GENERIC_CONNECT_ERROR) : null;
 
-  return (
-    <div>
-      <PageHeader
-        title="Social"
-        description="Plan a month of Instagram posts in minutes. Nothing goes out until you approve it."
-      />
-
+  // Avisos da volta do Instagram e da revisão: o calendário (client) os mostra embaixo do
+  // cabeçalho, que agora mora nele (o "New post" do cabeçalho abre a gaveta de lá).
+  const notices = (
+    <>
       {connected === "1" && !errorText && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
-        >
+        <Notice tone="success" className="mt-6">
           Instagram connected. Approved posts will go out at their scheduled time.
-        </p>
+        </Notice>
       )}
       {errorText && (
-        <p
-          role="alert"
-          className="glass-edge mt-6 rounded-2xl bg-red-50/85 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-6">
           {errorText}
           {error === "payment_required" && (
             <>
@@ -96,18 +142,21 @@ export default async function SocialPage({ searchParams }: SocialPageProps) {
               </Link>
             </>
           )}
-        </p>
+        </Notice>
       )}
       {approvedCount > 0 && (
-        <p
-          role="status"
-          className="glass-edge mt-6 rounded-2xl bg-emerald-50/85 px-4 py-3 text-[15px] text-emerald-950"
-        >
+        <Notice tone="success" className="mt-6">
           {approvedCount} post{approvedCount === 1 ? "" : "s"} approved.
-        </p>
+        </Notice>
       )}
+    </>
+  );
 
-      <SocialCalendar initialMonth={initialMonth} />
-    </div>
+  // O topo (cabeçalho e avisos) aparece na hora no esqueleto; o calendário chega em streaming,
+  // já com os dados.
+  return (
+    <Suspense fallback={<SocialCalendarSkeleton header notices={notices} />}>
+      <PreloadedCalendar user={viewer.user} initialMonth={initialMonth} notices={notices} />
+    </Suspense>
   );
 }

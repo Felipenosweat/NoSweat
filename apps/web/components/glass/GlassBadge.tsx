@@ -35,7 +35,9 @@ export function GlassBadge({
     <span
       className={cx(
         "inline-flex shrink-0 items-center gap-1.5 rounded-full font-medium whitespace-nowrap",
-        style.glass ? "glass glass-flat" : "glass-edge",
+        // `glass` não desfoca mais (desempenho): o selo pequeno pode ficar sobre uma foto (miniatura
+        // do site), então leva um desfoque leve só dele.
+        style.glass ? "glass glass-flat backdrop-blur-sm" : "glass-edge",
         size === "sm" ? "px-2 py-px text-xs leading-5" : "px-2.5 py-0.5 text-[13px] leading-5",
         style.chip,
         className,

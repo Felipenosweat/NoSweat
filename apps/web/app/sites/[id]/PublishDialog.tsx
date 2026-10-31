@@ -1,9 +1,7 @@
 "use client";
 
-import { create as createQr } from "qrcode";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -12,6 +10,7 @@ import {
 } from "react";
 import type { PublishSiteResponse } from "@nosweat/schema";
 import { markShared, splitSiteUrl } from "@/components/DashboardUi";
+import { Notice, glassButtonClass } from "@/components/glass";
 
 // Modal "Publish website": status, endereço grátis (copiar/abrir), domínio próprio e o botão
 // de publicar. Usado na página do site (PublishButton) e no editor (SiteEditor). Quem chama
@@ -29,31 +28,57 @@ export type PublishState = "draft" | "outdated" | "current";
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-[13px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
-const shareLink = `inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3.5 text-[13px] font-medium text-ink transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50 motion-reduce:transition-none sm:min-h-9 ${focusRing}`;
+// Compartilhar: os mesmos botões de vidro do app (44px de toque no celular).
+const shareLink = `${glassButtonClass({ variant: "secondary", size: "sm" })} max-sm:min-h-11`;
 
-/** QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem. */
+type QrDrawing = { value: string; size: number; path: string };
+
+/**
+ * QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem.
+ * A biblioteca `qrcode` só baixa quando o QR aparece (o modal aberto): fora do JS da primeira
+ * carga da página do site e do editor. Até chegar, um quadrado branco do mesmo tamanho.
+ */
 function QrCode({ value, className = "" }: { value: string; className?: string }) {
-  const { size, path } = useMemo(() => {
-    const { modules } = createQr(value, { errorCorrectionLevel: "M" });
-    let d = "";
-    for (let row = 0; row < modules.size; row++) {
-      for (let col = 0; col < modules.size; col++) {
-        if (modules.get(row, col)) d += `M${col} ${row}h1v1h-1z`;
-      }
-    }
-    return { size: modules.size, path: d };
+  const [drawing, setDrawing] = useState<QrDrawing | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    import("qrcode")
+      .then(({ create }) => {
+        if (!alive) return;
+        const { modules } = create(value, { errorCorrectionLevel: "M" });
+        let d = "";
+        for (let row = 0; row < modules.size; row++) {
+          for (let col = 0; col < modules.size; col++) {
+            if (modules.get(row, col)) d += `M${col} ${row}h1v1h-1z`;
+          }
+        }
+        setDrawing({ value, size: modules.size, path: d });
+      })
+      .catch((error: unknown) => {
+        // Sem QR (falhou ao baixar): o resto do modal continua funcionando.
+        console.error("[publish] could not load the QR code", error);
+      });
+    return () => {
+      alive = false;
+    };
   }, [value]);
+
+  // Outro endereço do que o desenhado: espera o novo (nunca mostra o QR errado).
+  const ready = drawing?.value === value ? drawing : null;
+  const size = ready?.size ?? 25;
 
   return (
     <svg
       viewBox={`-2 -2 ${size + 4} ${size + 4}`}
       role="img"
       aria-label={`QR code for ${value}`}
+      aria-busy={ready ? undefined : true}
       shapeRendering="crispEdges"
       className={className}
     >
       <rect x={-2} y={-2} width={size + 4} height={size + 4} className="fill-white" />
-      <path d={path} className="fill-ink" />
+      {ready && <path d={ready.path} className="fill-ink" />}
     </svg>
   );
 }
@@ -130,7 +155,7 @@ function SearchEnginesNote({
   return (
     <p
       role="status"
-      className="mt-3 flex items-start gap-2 rounded-xl bg-white/60 px-3 py-2 text-[13px] leading-5 text-slate-600"
+      className="mt-3 flex items-start gap-2 rounded-xl bg-white/60 px-3 py-2 text-[13px] leading-5 text-(--glass-fg-muted)"
     >
       <span
         aria-hidden="true"
@@ -309,13 +334,13 @@ export function PublishDialog({
                 >
                   Publish website
                 </h2>
-                <p className="mt-0.5 truncate text-[13px] text-slate-500">{siteName}</p>
+                <p className="mt-0.5 truncate text-[13px] text-(--glass-fg-muted)">{siteName}</p>
               </div>
               <button
                 type="button"
                 onClick={() => dialogRef.current?.close()}
                 aria-label="Close"
-                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
+                className={`-mt-2 -mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-(--glass-fg-muted) transition-colors duration-150 hover:bg-slate-900/[0.06] hover:text-ink ${focusRing}`}
               >
                 <Svg className="size-5">
                   <path d="M6 18 18 6M6 6l12 12" />
@@ -328,24 +353,24 @@ export function PublishDialog({
                 <span aria-hidden="true" className={`size-2 rounded-full ${status.dot}`} />
                 {status.label}
               </p>
-              <p className="mt-0.5 text-[13px] text-slate-500">{status.text}</p>
+              <p className="mt-0.5 text-[13px] text-(--glass-fg-muted)">{status.text}</p>
               {searchEngines && <SearchEnginesNote notice={searchEngines} />}
             </div>
 
             {/* ---------- Endereço grátis ---------- */}
             <section
               aria-labelledby="free-address-title"
-              className="glass-edge mt-4 rounded-2xl bg-white/60 p-4"
+              className="glass-inset mt-4 rounded-xl p-4"
             >
               <div className="flex items-center justify-between gap-3">
                 <h3 id="free-address-title" className="text-[13px] font-semibold text-ink">
                   Free address
                 </h3>
                 {/* Com plano obrigatório, "Free" confundiria: o endereço é grátis, publicar não. */}
-                {!needsPlan && <span className="text-[12px] text-slate-500">Free</span>}
+                {!needsPlan && <span className="text-[12px] text-(--glass-fg-muted)">Free</span>}
               </div>
               <p className="mt-2 font-mono text-[14px] leading-6 break-all">
-                <span className="text-slate-500">{prefix}</span>
+                <span className="text-(--glass-fg-muted)">{prefix}</span>
                 <span className="font-semibold text-ink">{name}</span>
               </p>
               {live ? (
@@ -361,7 +386,7 @@ export function PublishDialog({
                   </a>
                 </div>
               ) : (
-                <p className="mt-2 text-[13px] text-slate-500">
+                <p className="mt-2 text-[13px] text-(--glass-fg-muted)">
                   Your site goes live at this address when you publish.
                 </p>
               )}
@@ -437,7 +462,7 @@ export function PublishDialog({
                   </div>
                 </>
               ) : (
-                <p className="mt-0.5 text-[13px] leading-snug text-slate-500">
+                <p className="mt-0.5 text-[13px] leading-snug text-(--glass-fg-muted)">
                   Use your own address. We walk you through DNS and set up HTTPS for you.
                 </p>
               )}
@@ -451,22 +476,19 @@ export function PublishDialog({
               </a>
             </section>
 
-            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-slate-500">
+            <p className="mt-4 border-t border-slate-200 pt-4 text-[13px] text-(--glass-fg-muted)">
               Once published, anyone with the link can see your site.
             </p>
           </div>
 
           <div className="shrink-0 border-t border-slate-900/10 px-5 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">
             {error && (
-              <p
-                role="alert"
-                className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-[13px] font-medium text-red-700"
-              >
+              <Notice tone="error" size="sm" className="mb-3">
                 {error}
-              </p>
+              </Notice>
             )}
             <div className="flex items-start justify-between gap-3">
-              <p id="publish-plan-note" className="text-[13px] text-slate-500">
+              <p id="publish-plan-note" className="text-[13px] text-(--glass-fg-muted)">
                 {state === "current"
                   ? "Your site already has the latest version."
                   : needsPlan

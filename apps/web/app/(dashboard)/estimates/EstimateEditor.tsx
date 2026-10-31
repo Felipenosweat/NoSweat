@@ -11,8 +11,8 @@ import {
 } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
-import { PageHeader } from "@/components/DashboardUi";
+import { useId, useRef, useState } from "react";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
 import { GlassButton, GlassCard, GlassSheet, cx, focusRing } from "@/components/glass";
 import {
@@ -21,6 +21,7 @@ import {
   estimateItemsEditable,
   estimateLabel,
   formatDateOnly,
+  isoDateIn,
   parsePercentToBps,
 } from "@/lib/office";
 import {
@@ -37,11 +38,19 @@ import {
   formFromDocument,
   formSignature,
   toLineItems,
+  unpricedWarning,
   validateForm,
   type DocumentForm,
   type FormProblems,
 } from "../office/_ui/draft";
-import { CardHeading, SaveBar, useUnsavedWarning } from "../office/_ui/editor";
+import {
+  CardHeading,
+  DraftBar,
+  MoreOptions,
+  SaveBar,
+  optionsSummary,
+  useUnsavedWarning,
+} from "../office/_ui/editor";
 import { LineItemsEditor, LineItemsView, TotalsPanel } from "../office/_ui/LineItemsEditor";
 import { PrintStyles } from "../office/_ui/PrintStyles";
 import { SendSheet } from "../office/_ui/SendSheet";
@@ -58,10 +67,12 @@ import {
 } from "../office/_ui/ui";
 import { EstimateMenu } from "./EstimateMenu";
 
-// Editor do orçamento (novo e existente). Salvar é explícito: a barra "Unsaved changes" aparece
-// quando algo mudou, e "Send" salva antes de gerar o link. Os totais na tela usam o mesmo
-// `computeTotals` do servidor (que recalcula ao salvar). Depois de criado, o endereço muda para
-// /estimates/<id> sem recarregar (history.replaceState), para a folha "Send" continuar aberta.
+// Editor do orçamento (novo e existente). Salvar é explícito: no rascunho a barra de baixo tem
+// "Send estimate" (azul) e "Save draft"; depois de enviado, a barra "Unsaved changes" aparece
+// quando algo mudou. "Send" salva antes de gerar o link e não manda linha sem preço ($0). Título,
+// mensagem e validade ficam em "More options" (fechado, com um resumo). Os totais na tela usam o
+// mesmo `computeTotals` do servidor (que recalcula ao salvar). Depois de criado, o endereço muda
+// para /estimates/<id> sem recarregar (history.replaceState), para a folha "Send" continuar aberta.
 
 export type EstimateEditorProps = {
   /** null = orçamento novo. */
@@ -80,8 +91,16 @@ export type EstimateEditorProps = {
   };
   terms: string;
   today: string;
+  /** Fuso da empresa (datas da impressão). Sem ele: America/New_York. */
+  timeZone?: string;
   readOnly: boolean;
 };
+
+/** Motivo da recusa (campo novo do contrato; pode não existir ainda). */
+function declineReasonOf(estimate: Estimate): string | null {
+  const value = (estimate as Estimate & { declineReason?: string | null }).declineReason;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
 
 function formFromEstimate(estimate: Estimate): DocumentForm {
   return formFromDocument({
@@ -124,6 +143,7 @@ export function EstimateEditor({
   company,
   terms,
   today,
+  timeZone,
   readOnly,
 }: EstimateEditorProps) {
   const router = useRouter();
@@ -145,6 +165,12 @@ export function EstimateEditor({
   const [createInvoice, setCreateInvoice] = useState(true);
   const [convertError, setConvertError] = useState<OfficeApiError | null>(null);
   const [jobCreated, setJobCreated] = useState(false);
+  // "More options" (título, mensagem, validade) aberto.
+  const [moreOpen, setMoreOpen] = useState(false);
+  // O dono tentou mandar/salvar com linha sem preço: o aviso fica até todas terem preço.
+  const [priceCheck, setPriceCheck] = useState(false);
+  // Trava contra dois pedidos ao mesmo tempo (ex.: "Send" e "Save" juntos criariam 2 orçamentos).
+  const savingRef = useRef(false);
 
   // O servidor mandou uma versão nova (ex.: "Mark approved" no menu ⋯ + router.refresh()).
   const [seenUpdatedAt, setSeenUpdatedAt] = useState(estimate?.updatedAt ?? null);
@@ -166,6 +192,7 @@ export function EstimateEditor({
   const taxRateBps = parsePercentToBps(form.taxRate) ?? 0;
   const totals = draftTotals(form.lines, form.taxRate, form.discount);
   const lineErrors = problems?.lines ?? {};
+  const priceWarning = editable && priceCheck ? unpricedWarning(form.lines) : null;
 
   function update(patch: Partial<DocumentForm>) {
     setForm((current) => ({ ...current, ...patch }));
@@ -188,7 +215,25 @@ export function EstimateEditor({
     });
   }
 
+  function focusFirstUnpriced() {
+    window.requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(`[data-estimate-editor="${ids}"] [data-unpriced]`)
+        ?.focus();
+    });
+  }
+
   async function save(): Promise<Estimate | null> {
+    if (savingRef.current) return null;
+    savingRef.current = true;
+    try {
+      return await saveOnce();
+    } finally {
+      savingRef.current = false;
+    }
+  }
+
+  async function saveOnce(): Promise<Estimate | null> {
     setError(null);
     if (!doc && !client) {
       setClientError("Choose a client.");
@@ -199,6 +244,8 @@ export function EstimateEditor({
     const checked = validateForm(form);
     if (!checked.ok) {
       setProblems(checked.problems);
+      // Erro no título ou na mensagem: abre "More options" para o campo aparecer.
+      if (checked.problems.title || checked.problems.message) setMoreOpen(true);
       focusFirstProblem();
       return null;
     }
@@ -243,12 +290,27 @@ export function EstimateEditor({
   }
 
   async function onSave() {
+    if (busy !== null || savingRef.current) return;
+    // Linha sem preço: o rascunho salva assim mesmo, só com o aviso.
+    if (editable && unpricedWarning(form.lines)) setPriceCheck(true);
     setBusy("save");
     await save();
     setBusy(null);
   }
 
   async function onSend() {
+    if (busy !== null || savingRef.current) return;
+    // Orçamento sem nenhuma linha não vai para o cliente (nem chega a ser salvo).
+    if (editable && form.lines.length === 0) {
+      setError(validationError("Add at least one line first."));
+      return;
+    }
+    // Linha sem preço ($0) não vai para o cliente: avisa e leva ao campo.
+    if (editable && unpricedWarning(form.lines)) {
+      setPriceCheck(true);
+      focusFirstUnpriced();
+      return;
+    }
     setBusy("send");
     try {
       const saved = dirty || !doc ? await save() : doc;
@@ -304,7 +366,11 @@ export function EstimateEditor({
     client ?? (doc ? { id: doc.clientId, name: doc.clientName, phone: null, email: null } : null);
   const blocked = dirty ? "Save your changes first." : null;
 
-  // Uma ação azul por vez: com mudanças sem salvar, o azul é o "Save" da barra de baixo.
+  // Rascunho editável: a barra de baixo tem o "Send estimate" azul (e o "Save draft").
+  const draftBar = editable && status === "draft";
+
+  // Uma ação azul por vez: no rascunho, o azul é o "Send" da barra de baixo (o do topo fica
+  // secundário e some no celular); com mudanças sem salvar, o azul é o "Save" da barra.
   const sendable = !readOnly && (status === "draft" || status === "sent" || status === "expired");
   const primaryAction = readOnly ? null : status === "approved" ? (
     <GlassButton
@@ -320,11 +386,12 @@ export function EstimateEditor({
     </GlassButton>
   ) : sendable ? (
     <GlassButton
-      variant={dirty ? "secondary" : "primary"}
+      variant={dirty || draftBar ? "secondary" : "primary"}
       icon={<SendIcon />}
       onClick={() => void onSend()}
       loading={busy === "send"}
       disabled={busy !== null && busy !== "send"}
+      className={draftBar ? "max-sm:hidden" : undefined}
     >
       {status === "draft" ? "Send estimate" : "Send again"}
     </GlassButton>
@@ -336,11 +403,7 @@ export function EstimateEditor({
     <div data-estimate-editor={ids}>
       <PrintStyles />
       <PageHeader
-        back={
-          <GlassButton href="/estimates" variant="ghost" size="sm" className="-ml-2">
-            <span aria-hidden="true">‹</span> Estimates
-          </GlassButton>
-        }
+        back={<BackLink href="/estimates">Estimates</BackLink>}
         title={title}
         badge={doc ? <EstimateBadge status={status} /> : undefined}
         description={
@@ -396,7 +459,7 @@ export function EstimateEditor({
 
       {error && <ErrorNote error={error} className="mt-6" />}
 
-      <div className="mt-8 grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
+      <div className="mt-8 grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6 print:hidden">
         {/* ---------- coluna principal ---------- */}
         <div className="grid min-w-0 gap-4">
           {!doc && (
@@ -422,31 +485,18 @@ export function EstimateEditor({
           <GlassCard as="section" aria-labelledby={`${ids}-items`}>
             <CardHeading id={`${ids}-items`}>What you&rsquo;ll do</CardHeading>
             {editable ? (
-              <>
-                <label htmlFor={`${ids}-title`} className={labelClass}>
-                  Title <span className="font-normal text-slate-500">(optional)</span>
-                </label>
-                <input
-                  id={`${ids}-title`}
-                  value={form.title}
-                  onChange={(event) => update({ title: event.target.value })}
-                  placeholder="Kitchen faucet replacement"
-                  maxLength={160}
-                  autoComplete="off"
-                  className={`${fieldClass} mt-1.5 mb-5 h-11`}
-                  aria-invalid={problems?.title ? true : undefined}
-                />
-                {problems?.title && (
-                  <p className={`${fieldErrorClass} -mt-4 mb-5`}>{problems.title}</p>
-                )}
-                <LineItemsEditor
-                  lines={form.lines}
-                  onChange={(lines) => update({ lines })}
-                  errors={lineErrors}
-                  showTax={taxRateBps > 0}
-                  itemsError={problems?.items}
-                />
-              </>
+              <LineItemsEditor
+                lines={form.lines}
+                onChange={(lines) => {
+                  update({ lines });
+                  // Todas as linhas com preço: o aviso some e só volta num novo "Send".
+                  if (!unpricedWarning(lines)) setPriceCheck(false);
+                }}
+                errors={lineErrors}
+                showTax={taxRateBps > 0}
+                itemsError={problems?.items}
+                priceWarning={priceWarning}
+              />
             ) : (
               <>
                 {doc?.title && (
@@ -457,12 +507,45 @@ export function EstimateEditor({
             )}
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-message`}>
-            <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
-            {editable ? (
-              <>
-                <label htmlFor={`${ids}-message-field`} className="sr-only">
-                  Message to customer
+          {editable ? (
+            <MoreOptions
+              id={`${ids}-more`}
+              open={moreOpen}
+              onToggle={() => setMoreOpen((open) => !open)}
+              summary={optionsSummary({
+                kind: "estimate",
+                title: form.title,
+                message: form.message,
+                date: form.date,
+                today,
+              })}
+            >
+              <div>
+                <label htmlFor={`${ids}-title`} className={labelClass}>
+                  Title <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
+                </label>
+                <input
+                  id={`${ids}-title`}
+                  value={form.title}
+                  onChange={(event) => update({ title: event.target.value })}
+                  placeholder="Kitchen faucet replacement"
+                  maxLength={160}
+                  autoComplete="off"
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-invalid={problems?.title ? true : undefined}
+                  aria-describedby={problems?.title ? `${ids}-title-error` : undefined}
+                />
+                {problems?.title && (
+                  <p id={`${ids}-title-error`} className={fieldErrorClass}>
+                    {problems.title}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor={`${ids}-message-field`} className={labelClass}>
+                  Message to customer{" "}
+                  <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
                 </label>
                 <textarea
                   id={`${ids}-message-field`}
@@ -471,36 +554,69 @@ export function EstimateEditor({
                   rows={4}
                   maxLength={4000}
                   placeholder="Thanks for having us out. Here's the price we talked about…"
-                  className={`${fieldClass} resize-y py-2.5 leading-[1.55]`}
+                  className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
                   aria-invalid={problems?.message ? true : undefined}
-                  aria-describedby={`${ids}-message-hint`}
+                  aria-describedby={
+                    problems?.message ? `${ids}-message-error` : `${ids}-message-hint`
+                  }
                 />
                 {problems?.message ? (
-                  <p className={fieldErrorClass}>{problems.message}</p>
+                  <p id={`${ids}-message-error`} className={fieldErrorClass}>
+                    {problems.message}
+                  </p>
                 ) : (
                   <p id={`${ids}-message-hint`} className={hintClass}>
-                    Shows at the top of the estimate. Your terms from{" "}
-                    <Link
-                      href="/office/settings"
-                      className="font-semibold text-brand underline-offset-4 hover:underline"
-                    >
-                      Office settings
-                    </Link>{" "}
-                    show at the bottom.
+                    Shows at the top of the estimate.
+                    {/* Só promete as condições no rodapé se o dono escreveu alguma. */}
+                    {terms.trim() ? (
+                      <>
+                        {" "}
+                        Your terms from{" "}
+                        <Link
+                          href="/office/settings"
+                          className="font-semibold text-brand underline-offset-4 hover:underline"
+                        >
+                          Business settings
+                        </Link>{" "}
+                        show at the bottom.
+                      </>
+                    ) : null}
                   </p>
                 )}
-              </>
-            ) : (
+              </div>
+
+              <div>
+                <label htmlFor={`${ids}-date`} className={labelClass}>
+                  Valid until
+                </label>
+                <input
+                  id={`${ids}-date`}
+                  type="date"
+                  value={form.date}
+                  min={today}
+                  onChange={(event) => update({ date: event.target.value })}
+                  className={`${fieldClass} mt-1.5 h-11`}
+                  aria-describedby={`${ids}-date-hint`}
+                />
+                <p id={`${ids}-date-hint`} className={hintClass}>
+                  {form.date ? "After this date the customer can't approve it." : "No end date."}
+                </p>
+              </div>
+            </MoreOptions>
+          ) : (
+            <GlassCard as="section" aria-labelledby={`${ids}-message`}>
+              <CardHeading id={`${ids}-message`}>Message to customer</CardHeading>
               <p className="text-[15px] leading-[1.6] whitespace-pre-line text-slate-700">
-                {doc?.message || <span className="text-slate-500">No message.</span>}
+                {doc?.message || <span className="text-(--glass-fg-muted)">No message.</span>}
               </p>
-            )}
-          </GlassCard>
+            </GlassCard>
+          )}
         </div>
 
         {/* ---------- lateral: situação, totais e validade ---------- */}
         <div className="grid min-w-0 gap-4 lg:sticky lg:top-6">
-          <StatusCard estimate={doc} today={today} jobCreated={jobCreated} />
+          {/* No rascunho, a frase "Only you see this…" fica na barra de baixo. */}
+          {!draftBar && <StatusCard estimate={doc} today={today} jobCreated={jobCreated} />}
 
           <GlassCard as="section" aria-labelledby={`${ids}-totals`}>
             <CardHeading id={`${ids}-totals`}>Total</CardHeading>
@@ -516,43 +632,40 @@ export function EstimateEditor({
             />
           </GlassCard>
 
-          <GlassCard as="section" aria-labelledby={`${ids}-valid`}>
-            <CardHeading id={`${ids}-valid`}>Valid until</CardHeading>
-            {editable ? (
-              <>
-                <label htmlFor={`${ids}-date`} className="sr-only">
-                  Valid until
-                </label>
-                <input
-                  id={`${ids}-date`}
-                  type="date"
-                  value={form.date}
-                  min={today}
-                  onChange={(event) => update({ date: event.target.value })}
-                  className={`${fieldClass} h-11`}
-                />
-                <p className={hintClass}>
-                  {form.date ? "After this date the customer can't approve it." : "No end date."}
-                </p>
-              </>
-            ) : (
+          {!editable && (
+            <GlassCard as="section" aria-labelledby={`${ids}-valid`}>
+              <CardHeading id={`${ids}-valid`}>Valid until</CardHeading>
               <p className="text-[15px] text-ink">
                 {doc?.validUntil ? formatDateOnly(doc.validUntil, today) : "No end date"}
               </p>
-            )}
-          </GlassCard>
+            </GlassCard>
+          )}
         </div>
       </div>
 
-      {editable && (
-        <SaveBar
-          show={doc ? dirty : true}
+      {draftBar ? (
+        <DraftBar
+          sendLabel="Send estimate"
+          onSend={() => void onSend()}
+          sending={busy === "send"}
+          onSave={!doc || dirty ? () => void onSave() : undefined}
           saving={busy === "save"}
-          onSave={() => void onSave()}
-          onDiscard={doc ? discard : undefined}
-          label={doc ? "Save" : "Save draft"}
-          message={doc ? "Unsaved changes" : "New estimate, not saved yet"}
+          onDiscard={doc && dirty ? discard : undefined}
+          busy={busy !== null}
+          message={doc && dirty ? "Unsaved changes" : undefined}
+          warning={priceWarning}
         />
+      ) : (
+        editable && (
+          <SaveBar
+            show={dirty}
+            saving={busy !== null}
+            onSave={() => void onSave()}
+            onDiscard={discard}
+            label="Save"
+            message="Unsaved changes"
+          />
+        )
       )}
 
       {/* Só na impressão / PDF. */}
@@ -577,7 +690,7 @@ export function EstimateEditor({
           facts={[
             {
               label: "Date",
-              value: formatDateOnly((doc?.sentAt ?? doc?.createdAt ?? today).slice(0, 10)),
+              value: formatDateOnly(isoDateIn(doc?.sentAt ?? doc?.createdAt ?? today, timeZone)),
             },
             ...(form.date ? [{ label: "Valid until", value: formatDateOnly(form.date) }] : []),
           ]}
@@ -704,16 +817,10 @@ function StatusCard({
   today: string;
   jobCreated: boolean;
 }) {
-  if (!estimate) {
-    return (
-      <GlassCard padding="sm">
-        <p className="text-[15px] leading-[1.6] text-slate-600">
-          Only you can see this until you send it.
-        </p>
-      </GlassCard>
-    );
-  }
+  // Sem orçamento salvo, não há o que contar (a barra de baixo já diz "Only you see this…").
+  if (!estimate) return null;
   const status = estimate.status;
+  const declineReason = declineReasonOf(estimate);
   const tone =
     status === "approved"
       ? "bg-emerald-50/85 text-emerald-900"
@@ -762,26 +869,35 @@ function StatusCard({
               <p className="mt-1">
                 Job created.{" "}
                 <Link
-                  href="/schedule"
+                  href={
+                    estimate.jobId ? `/schedule/${encodeURIComponent(estimate.jobId)}` : "/schedule"
+                  }
                   className={`font-semibold underline underline-offset-4 ${focusRing}`}
                 >
-                  Open schedule
+                  Open job
                 </Link>
               </p>
             )}
           </>
         )}
         {status === "declined" && (
-          <p>
-            {estimate.clientName} declined
-            {estimate.respondedAt ? (
-              <>
-                {" "}
-                · <LocalTime iso={estimate.respondedAt} />
-              </>
-            ) : null}
-            .
-          </p>
+          <>
+            <p>
+              {estimate.clientName} declined
+              {estimate.respondedAt ? (
+                <>
+                  {" "}
+                  · <LocalTime iso={estimate.respondedAt} />
+                </>
+              ) : null}
+              .
+            </p>
+            {declineReason && (
+              <blockquote className="mt-2 border-l-2 border-red-900/25 pl-3 whitespace-pre-line break-words">
+                <span className="sr-only">Their reason: </span>&ldquo;{declineReason}&rdquo;
+              </blockquote>
+            )}
+          </>
         )}
       </div>
     </div>

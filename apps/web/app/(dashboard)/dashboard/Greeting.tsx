@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { pageLead, pageTitle } from "@/components/DashboardUi";
 
 const subscribe = () => () => {};
@@ -24,8 +24,11 @@ export function Greeting({
 }: {
   firstName: string | null;
   nowIso: string;
-  /** Resumo do dia embaixo da saudação (montado no servidor). */
-  summary?: string;
+  /**
+   * Resumo do dia embaixo da saudação (montado no servidor; pode chegar em streaming dentro de um
+   * <Suspense>, com um esqueleto do tamanho da linha).
+   */
+  summary?: ReactNode;
 }) {
   const onClient = useSyncExternalStore(
     subscribe,
@@ -47,7 +50,7 @@ export function Greeting({
   // Como a tela "Hoje" do iOS: a data pequena em cima, a saudação grande embaixo.
   return (
     <div>
-      <p className="text-[13px] leading-5 font-semibold tracking-[0.04em] text-slate-500 uppercase tabular-nums">
+      <p className="text-[13px] leading-5 font-semibold tracking-[0.04em] text-(--glass-fg-muted) uppercase tabular-nums">
         <time dateTime={nowIso}>{date}</time>
       </p>
       <h1 className={`mt-1 ${pageTitle}`}>

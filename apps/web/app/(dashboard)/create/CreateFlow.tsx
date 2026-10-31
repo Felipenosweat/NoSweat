@@ -18,7 +18,6 @@ import {
   type ReactNode,
 } from "react";
 import {
-  BUSINESS_KINDS,
   CHOICES_KEY,
   DRAFT_KEY,
   EMPTY_CHOICES,
@@ -34,7 +33,6 @@ import {
   parseChoices,
   parseDraft,
   slugBase,
-  type BusinessKind,
   type CreateChoices,
   type CreateFields,
   type StoredDraft,
@@ -45,9 +43,11 @@ import { LocationFields } from "./LocationFields";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
-// Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um assistente
-// de 4 passos num <dialog> (pedido → layout → cores → revisão). O pedido vai no campo `what`
-// do CreateFields (o `details` fica vazio); tudo vira UM texto para POST /api/sites/generate.
+// Fluxo /create: um cartão com o pedido ("Start with your idea.") e, ao criar, um <dialog> que
+// já abre na revisão (layout e cores automáticos, como "Let AI decide the rest"). Os links
+// "Change" da revisão levam aos passos do assistente (pedido → layout → cores → revisão).
+// O pedido vai no campo `what` do CreateFields (o `details` fica vazio); tudo vira UM texto
+// para POST /api/sites/generate.
 
 const STEPS = [
   {
@@ -69,6 +69,10 @@ const STEPS = [
 ] as const;
 
 const LAST_STEP = STEPS.length - 1;
+
+/** Linha de apoio da revisão no atalho (layout e cores ficam com a No Sweat). */
+const QUICK_REVIEW_LEAD =
+  "We’ll pick the style and colors. Change anything below, or create it now.";
 
 // Exemplos de pedido (limpeza primeiro, nicho inicial). Sem telefone nem nota inventados.
 const PROMPT_EXAMPLES = [
@@ -199,7 +203,9 @@ function initialState(initialBrief: string, canReadStorage: boolean): InitialSta
   try {
     if (!source) source = sessionStorage.getItem(LANDING_BRIEF_KEY)?.trim().slice(0, 2000) ?? "";
     draft = parseDraft(sessionStorage.getItem(DRAFT_KEY));
-    choices = parseChoices(sessionStorage.getItem(CHOICES_KEY));
+    // O tipo de negócio não é mais perguntado (a IA deduz pelo pedido): um valor antigo da aba
+    // não pode entrar escondido no brief.
+    choices = { ...parseChoices(sessionStorage.getItem(CHOICES_KEY)), kind: "auto" };
   } catch {
     // Armazenamento bloqueado (modo privado restrito): segue sem rascunho.
   }
@@ -267,6 +273,9 @@ function Flow({
   const [cardError, setCardError] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [step, setStep] = useState(0);
+  // Atalho do cartão / "Let AI decide the rest": a revisão sem "Step X of 4" e com a frase própria.
+  // Vira `false` quando a pessoa abre um dos passos (aí ela está percorrendo o assistente).
+  const [quick, setQuick] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<FormError | null>(null);
@@ -365,6 +374,7 @@ function Flow({
   }
 
   function goTo(next: number) {
+    if (next !== LAST_STEP) setQuick(false);
     setDirection(next > step ? "forward" : "back");
     setFieldErrors({});
     shouldFocusHeading.current = true;
@@ -387,6 +397,10 @@ function Flow({
     return true;
   }
 
+  /**
+   * "Create website" do cartão: como o "Let AI decide the rest", vai direto à revisão. Layout e
+   * cores já começam em "auto"; se a pessoa escolheu algum antes (nesta aba), a escolha fica.
+   */
   function openWizard(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const error = promptError(fields, choices);
@@ -397,8 +411,9 @@ function Flow({
     }
     setCardError(null);
     setFieldErrors({});
+    setQuick(true);
     setDirection("forward");
-    setStep(0);
+    setStep(LAST_STEP);
     shouldFocusHeading.current = true;
     setWizardOpen(true);
   }
@@ -467,6 +482,8 @@ function Flow({
     const errors = validateFirstStep(fields, choices);
     if (errors.what || errors.state) {
       goTo(0);
+      // O atalho do cartão chega aqui sem passar pelo passo 1: mostra o erro no campo.
+      setFieldErrors(errors);
       return;
     }
     void generate();
@@ -477,6 +494,7 @@ function Flow({
     if (!firstStepIsValid()) return;
     setChoices((current) => ({ ...current, layout: "auto" }));
     update("style", "auto");
+    setQuick(true);
     goTo(LAST_STEP);
   }
 
@@ -533,9 +551,12 @@ function Flow({
   }
 
   const meta = STEPS[step] ?? STEPS[0];
-  const kindLabel =
-    BUSINESS_KINDS.find((option) => option.id === choices.kind)?.label ??
-    "No Sweat detects it from your description";
+  // Revisão aberta pelo atalho: sem "Step X of 4" (a pessoa não passou pelos passos).
+  const quickReview = quick && step === LAST_STEP;
+  const lead =
+    quickReview && choices.layout === "auto" && fields.style === "auto"
+      ? QUICK_REVIEW_LEAD
+      : meta.lead;
   const layoutLabel =
     LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
   const colorLabel =
@@ -586,7 +607,7 @@ function Flow({
             className="block max-h-[50vh] min-h-32 w-full resize-none rounded-t-2xl bg-transparent px-5 pt-5 pb-2 text-base leading-[1.6] text-ink [field-sizing:content] placeholder:text-slate-400 focus:outline-none"
           />
           <div className="flex items-center justify-between gap-3 px-3 pb-3 sm:pl-5">
-            <p id="create-prompt-hint" className="min-w-0 text-[13px] text-slate-500">
+            <p id="create-prompt-hint" className="min-w-0 text-[13px] text-(--glass-fg-muted)">
               <span className="hidden sm:inline">Your draft stays private until you publish.</span>
             </p>
             <button type="submit" className={`${primaryButtonCompact} shrink-0 max-sm:flex-1`}>
@@ -628,7 +649,7 @@ function Flow({
             </button>
           ))}
         </div>
-        <p className="mt-4 text-[13px] text-slate-500 sm:hidden">
+        <p className="mt-4 text-[13px] text-(--glass-fg-muted) sm:hidden">
           Your draft stays private until you publish.
         </p>
       </div>
@@ -651,7 +672,7 @@ function Flow({
                 <span className="h-1 w-9 rounded-full bg-slate-300" />
               </div>
               <div className="flex items-center gap-3">
-                <p className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase">
+                <p className="flex min-w-0 flex-1 items-center gap-2 text-[11px] font-semibold tracking-[0.14em] text-(--glass-fg-muted) uppercase">
                   <Image
                     src="/brand/nosweat-mark-64.png"
                     alt=""
@@ -661,28 +682,32 @@ function Flow({
                   />
                   Create website
                 </p>
-                <p className="text-[13px] text-slate-500 tabular-nums">
-                  Step {step + 1} of {STEPS.length}
-                </p>
+                {!quickReview && (
+                  <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
+                    Step {step + 1} of {STEPS.length}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={() => setWizardOpen(false)}
                   aria-label="Close"
-                  className={`-mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+                  className={`-mr-3 inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-(--glass-fg-muted) transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
                 >
                   <CloseIcon />
                 </button>
               </div>
-              <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
-                {STEPS.map((item, index) => (
-                  <li
-                    key={item.title}
-                    className={`h-1 rounded-full transition-colors duration-200 motion-reduce:transition-none ${
-                      index <= step ? "bg-brand" : "bg-slate-200"
-                    }`}
-                  />
-                ))}
-              </ol>
+              {!quickReview && (
+                <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
+                  {STEPS.map((item, index) => (
+                    <li
+                      key={item.title}
+                      className={`h-1 rounded-full transition-colors duration-200 motion-reduce:transition-none ${
+                        index <= step ? "bg-brand" : "bg-slate-200"
+                      }`}
+                    />
+                  ))}
+                </ol>
+              )}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-6 pb-6 sm:px-8">
@@ -699,7 +724,7 @@ function Flow({
                   {meta.title}
                 </h2>
                 <p className="mt-1.5 text-[15px] leading-[1.6] text-pretty text-slate-600">
-                  {meta.lead}
+                  {lead}
                 </p>
 
                 <div className="mt-6 space-y-5">
@@ -723,32 +748,6 @@ function Flow({
                             aria-invalid={fieldErrors.what ? true : undefined}
                             className={`${inputClass(Boolean(fieldErrors.what))} max-h-64 min-h-28 resize-none py-3 leading-[1.55] [field-sizing:content]`}
                           />
-                        )}
-                      </Field>
-
-                      <Field id="wizard-kind" label="Type of business" optional>
-                        {(describedBy) => (
-                          <div className="relative">
-                            <select
-                              id="wizard-kind"
-                              value={choices.kind}
-                              onChange={(event) =>
-                                choose("kind", event.target.value as BusinessKind)
-                              }
-                              aria-describedby={describedBy}
-                              className={`${inputClass(false)} h-12 cursor-pointer appearance-none pr-11`}
-                            >
-                              <option value="auto">
-                                No Sweat detects it from your description
-                              </option>
-                              {BUSINESS_KINDS.map((option) => (
-                                <option key={option.id} value={option.id}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronIcon className="pointer-events-none absolute top-1/2 right-4 mt-1 size-4 -translate-y-1/2 text-slate-500" />
-                          </div>
                         )}
                       </Field>
 
@@ -778,7 +777,7 @@ function Flow({
                                   <span className="sr-only">Use example: </span>
                                   {example.label}
                                 </span>
-                                <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-slate-500">
+                                <span className="mt-0.5 line-clamp-2 block text-[13px] leading-snug text-(--glass-fg-muted)">
                                   {example.text}
                                 </span>
                               </button>
@@ -797,7 +796,7 @@ function Flow({
                         >
                           <span className="flex-1">
                             Business details
-                            <span className="font-normal text-slate-500"> (optional)</span>
+                            <span className="font-normal text-(--glass-fg-muted)"> (optional)</span>
                           </span>
                           <ChevronIcon className="size-4 text-slate-500 transition-transform duration-150 group-open/more:rotate-180 motion-reduce:transition-none" />
                         </summary>
@@ -920,9 +919,6 @@ function Flow({
                             {nameAndPlace}
                           </SummaryRow>
                         )}
-                        <SummaryRow label="Business type" onChange={() => goTo(0)}>
-                          {kindLabel}
-                        </SummaryRow>
                         <SummaryRow label="Style" onChange={() => goTo(1)}>
                           {layoutLabel}
                         </SummaryRow>
@@ -950,7 +946,8 @@ function Flow({
               ) : (
                 <button
                   type="button"
-                  onClick={() => goTo(step - 1)}
+                  // Na revisão do atalho, "Back" volta ao cartão (a pessoa não viu os passos).
+                  onClick={() => (quickReview ? setWizardOpen(false) : goTo(step - 1))}
                   className={secondaryButtonCompact}
                 >
                   Back
@@ -980,7 +977,7 @@ function SummaryRow({
 }) {
   return (
     <div className="grid grid-cols-[6.5rem_minmax(0,1fr)_auto] items-start gap-x-3 py-2 sm:grid-cols-[8rem_minmax(0,1fr)_auto]">
-      <dt className="pt-2.5 text-[13px] text-slate-500">{label}</dt>
+      <dt className="pt-2.5 text-[13px] text-(--glass-fg-muted)">{label}</dt>
       <dd className="pt-2 text-[15px] leading-[1.5] break-words text-ink">{children}</dd>
       <dd>
         {onChange && (
@@ -1014,7 +1011,7 @@ function Field({ id, label, optional, hint, error, children }: FieldProps) {
     <div>
       <label htmlFor={id} className="block text-[13px] font-medium text-ink">
         {label}
-        {optional && <span className="font-normal text-slate-500"> (optional)</span>}
+        {optional && <span className="font-normal text-(--glass-fg-muted)"> (optional)</span>}
       </label>
       {children(describedBy)}
       {error && (
@@ -1024,7 +1021,7 @@ function Field({ id, label, optional, hint, error, children }: FieldProps) {
         </p>
       )}
       {hint && (
-        <p id={`${id}-hint`} className="mt-2 text-[13px] text-slate-500">
+        <p id={`${id}-hint`} className="mt-2 text-[13px] text-(--glass-fg-muted)">
           {hint}
         </p>
       )}

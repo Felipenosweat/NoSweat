@@ -15,8 +15,8 @@ function isVercelProduction(): boolean {
 }
 
 /** Sem IA configurada: monta o site a partir do site-modelo mais parecido (sem chamar API). */
-function templateMode(reason: string): SiteGenerator {
-  console.warn(`[ai] template mode (no AI): ${reason}`);
+function templateMode(reason: string, quiet = false): SiteGenerator {
+  if (!quiet) console.warn(`[ai] template mode (no AI): ${reason}`);
   return new MockGenerator({ delayMs: 800, templateMode: true });
 }
 
@@ -27,20 +27,42 @@ function templateMode(reason: string): SiteGenerator {
  * com textos genéricos do ramo e só os fatos que estão no pedido. A IA de verdade entra quando a
  * chave for configurada; até lá, mudanças pela IA respondem que ainda não estão ligadas.
  */
-export function getSiteGenerator(provider = process.env.AI_PROVIDER || "mock"): SiteGenerator {
+export function getSiteGenerator(
+  provider = process.env.AI_PROVIDER || "mock",
+  options: { quiet?: boolean } = {},
+): SiteGenerator {
   switch (provider) {
     case "mock":
-      if (isVercelProduction()) return templateMode("AI_PROVIDER is mock or not set");
+      if (isVercelProduction()) {
+        return templateMode("AI_PROVIDER is mock or not set", options.quiet);
+      }
       return new MockGenerator();
     case "anthropic":
       if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) {
-        return templateMode("AI_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set");
+        return templateMode(
+          "AI_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set",
+          options.quiet,
+        );
       }
       return new AnthropicGenerator();
     case "openai":
       return new OpenAIGenerator();
     default:
       throw new Error(`Unknown AI_PROVIDER "${provider}". Use mock, anthropic or openai.`);
+  }
+}
+
+/**
+ * As mudanças pela IA estão ligadas? `false` no modo modelo (produção sem chave de IA): o
+ * editor esconde o pedido à IA e o "Rewrite with AI". O mock do dev local conta como ligado
+ * (simula a IA, com créditos e limites, para testar o fluxo inteiro). Configuração inválida =
+ * desligado (a rota responde o erro de configuração quando alguém tentar).
+ */
+export function aiEnabled(provider = process.env.AI_PROVIDER || "mock"): boolean {
+  try {
+    return getSiteGenerator(provider, { quiet: true }).usesAi;
+  } catch {
+    return false;
   }
 }
 

@@ -42,7 +42,17 @@ function normalize(text: string): string {
 
 /** Comida "forte": estas palavras sozinhas já dizem que é restaurante, café, bar etc. */
 const FOOD_WORDS =
-  /\b(restaurant|cafe|coffee|bakery|bakeries|pizza|taco|taqueria|food truck|diner|bistro|brewery|cater|caters|catering|caterer|deli|eatery|ice cream|donut|cocktail|cocktails|tavern|pub|wine bar|sports bar|rooftop bar|juice bar)\b/;
+  /\b(restaurant|cafe|coffee|bakery|bakeries|pizza|taco|taqueria|food truck|diner|bistro|brewery|deli|eatery|ice cream|donut|cocktail|cocktails|tavern|pub|wine bar|sports bar|rooftop bar|juice bar)\b/;
+/**
+ * "Cater" sozinho é fraco: "we cater to busy families" é um jeito de falar, não um bufê. Só
+ * conta como comida com palavras de comida ou de evento por perto e nunca em "cater(s) to".
+ */
+const CATER_WORDS = /\bcater(?:s|ed|ing|er|ers)?\b/;
+const CATER_FIGURE_OF_SPEECH = /\bcater(?:s|ed|ing)? to\b/;
+const FOOD_CONTEXT =
+  /\b(food|foods|meal|meals|menu|menus|dish|dishes|cuisine|chef|lunch|lunches|dinner|dinners|breakfast|brunch|buffet|banquet|platters?|trays?|appetizers?|desserts?|tacos?|bbq|party|parties|events?|weddings?|receptions?|corporate)\b/;
+const isCatering = (body: string) =>
+  CATER_WORDS.test(body) && !CATER_FIGURE_OF_SPEECH.test(body) && FOOD_CONTEXT.test(body);
 /**
  * "kitchen" e "bar" sozinhos são fracos: reforma de cozinha, pia da cozinha, limpeza da
  * cozinha e barra de apoio ("grab bar") são serviços de casa. Só contam como comida quando
@@ -55,24 +65,24 @@ const HOME_JOB_WORDS =
 const CLEANING_WORDS =
   /\b(clean|cleaning|cleaners|maid|janitorial|pressure wash|window washing|organiz)/;
 const TRADES_WORDS =
-  /\b(plumb|electric|hvac|heating|cooling|roof|landscap|lawn|handyman|contractor|remodel|carpent|paint|pest|mover|moving|garage door|locksmith|auto repair|mechanic|towing|pool|fence|concrete|flooring|tree service|gutter|drain|sewer|water heater|clog|leak|faucet|grab bar)/;
+  /\b(plumb|electric|hvac|heating|cooling|air condition|furnace|heat pump|roof|landscap|lawn|handyman|contractor|remodel|carpent|paint|pest|mover|moving|garage door|locksmith|auto repair|auto body|car repair|oil change|mechanic|towing|pool|fence|concrete|flooring|tree service|gutter|drain|sewer|water heater|clog|leak|faucet|grab bar)/;
 
 const has = (re: RegExp) => (body: string) => re.test(body);
 
 // A primeira que casar vence. Reparo vem antes de limpeza ("drain cleaning" de um encanador é
 // conserto, não faxina) e a comida "fraca" vem depois dos dois.
 const INDUSTRY_TESTS: [Industry, (body: string) => boolean][] = [
-  ["food", has(FOOD_WORDS)],
+  ["food", (body) => FOOD_WORDS.test(body) || isCatering(body)],
   [
     "beauty",
     has(
-      /\b(salon|barber|barbershop|hair|nail|lash|brow|makeup|beauty|tattoo|esthetic|aesthetic|waxing)\b/,
+      /\b(salon|barber|barbershop|hair|nail|lash|brow|makeup|beauty|tattoo|esthetic|aesthetic|waxing|grooming|groomer|groomers|pet groomer|dog groomer)\b/,
     ),
   ],
   [
     "wellness",
     has(
-      /\b(spa|massage|yoga|pilates|wellness|therapy|therapist|chiropract|acupunct|fitness|gym|trainer|dentist|dental|clinic)\b/,
+      /\b(spa|massage|yoga|pilates|wellness|therapy|therapist|chiropract\w*|acupunct\w*|fitness|gym|trainer|dentist|dental|clinic)\b/,
     ),
   ],
   ["trades", has(TRADES_WORDS)],
@@ -81,7 +91,7 @@ const INDUSTRY_TESTS: [Industry, (body: string) => boolean][] = [
   [
     "professional",
     has(
-      /\b(law|lawyer|attorney|accountant|accounting|cpa|tax|bookkeep|insurance|real estate|realtor|consult|financial|advisor|notary|tutor|architect)/,
+      /\b(law|lawyer|attorney|accountant|accounting|cpa|tax|bookkeep|insurance|real estate|realtor|realty|consult|financial|advisor|notary|tutor|test prep|architect)/,
     ),
   ],
   [

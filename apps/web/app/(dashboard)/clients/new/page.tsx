@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
-import { PageHeader } from "@/components/DashboardUi";
-import { GlassButton, GlassCard } from "@/components/glass";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
+import { GlassCard } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import { NewClientForm } from "./NewClientForm";
 
@@ -22,11 +22,7 @@ export default async function NewClientPage() {
   return (
     <div className="max-w-2xl">
       <PageHeader
-        back={
-          <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2">
-            <span aria-hidden="true">‹</span> Clients
-          </GlassButton>
-        }
+        back={<BackLink href="/clients">Clients</BackLink>}
         title="Add client"
         description={
           <>

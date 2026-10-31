@@ -342,7 +342,9 @@
 }
 
 /* Abertura: o nome sobe letra por letra, sai, e a cortina sobe. Só CSS e só na primeira tela
-   do site publicado; some sozinha mesmo sem JavaScript. */
+   do site publicado; some sozinha mesmo sem JavaScript. Tudo acaba em 0,6 s (a cortina sai de
+   0,3 s a 0,6 s) para não atrasar o topo: título e foto aparecem logo (LCP). O atraso de cada
+   letra vem em --ns-intro-delay (Signature.tsx, no máximo 0,1 s). */
 .ns-site .ns-intro {
   position: fixed;
   inset: 0;
@@ -350,7 +352,7 @@
   display: grid;
   place-items: center;
   pointer-events: none;
-  animation: ns-intro-out 1.1s cubic-bezier(0.87, 0, 0.13, 1) 1.6s both;
+  animation: ns-intro-out 0.3s cubic-bezier(0.87, 0, 0.13, 1) 0.3s both;
 }
 .ns-site .ns-intro-word {
   display: flex;
@@ -360,8 +362,9 @@
   display: inline-block;
   white-space: pre;
   animation:
-    ns-intro-in 1s cubic-bezier(0.19, 1, 0.22, 1) both,
-    ns-intro-leave 0.7s cubic-bezier(0.7, 0, 0.84, 0) 1.2s forwards;
+    ns-intro-in 0.3s cubic-bezier(0.19, 1, 0.22, 1) var(--ns-intro-delay, 0s) both,
+    ns-intro-leave 0.2s cubic-bezier(0.7, 0, 0.84, 0) calc(0.3s + var(--ns-intro-delay, 0s))
+      forwards;
 }
 @keyframes ns-intro-in {
   from {
@@ -379,21 +382,21 @@
     visibility: hidden;
   }
 }
-/* O topo entra depois da cortina. */
+/* O topo entra junto com a cortina saindo (nenhum atraso passa de 0,4 s). */
 .ns-site .ns-hero[data-intro] .ns-hero-line > span {
-  animation: ns-line-in 1.4s cubic-bezier(0.19, 1, 0.22, 1) 2s both;
+  animation: ns-line-in 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.3s both;
 }
 .ns-site .ns-hero[data-intro] .ns-hero-line + .ns-hero-line > span {
-  animation-delay: 2.12s;
+  animation-delay: 0.36s;
 }
 .ns-site .ns-hero[data-intro] .ns-hero-fade {
-  animation: ns-fade-up 1s cubic-bezier(0.19, 1, 0.22, 1) 2.35s both;
+  animation: ns-fade-up 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.4s both;
 }
 .ns-site .ns-hero[data-intro] .ns-hero-zoom img {
-  animation-delay: 1.8s;
+  animation-delay: 0.25s;
 }
 .ns-site .ns-nav {
-  animation: ns-nav-in 1.2s cubic-bezier(0.19, 1, 0.22, 1) 2.2s both;
+  animation: ns-nav-in 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s both;
 }
 @keyframes ns-line-in {
   from {

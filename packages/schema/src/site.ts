@@ -212,6 +212,8 @@ const isMapsOrSearchPath = (path: string) => /^\/(maps|search)(\/|$)/.test(path)
  * - www.google.com e google.com: só /maps... e /search... (perfil aberto no Maps ou na busca);
  * - maps.google.com, maps.app.goo.gl e goo.gl/maps/...: links do Google Maps. No goo.gl só
  *   /maps (o encurtador antigo levava a qualquer lugar).
+ * - g.co/kgs/...: o link curto de "Compartilhar" do perfil na busca. No g.co só /kgs/ (o
+ *   encurtador g.co também leva a outras páginas do Google).
  * Um Map (e não um objeto) para "__proto__" e afins nunca contarem como host.
  */
 const GOOGLE_REVIEW_HOSTS = new Map<string, (path: string) => boolean>([
@@ -220,6 +222,7 @@ const GOOGLE_REVIEW_HOSTS = new Map<string, (path: string) => boolean>([
   ["maps.google.com", () => true],
   ["maps.app.goo.gl", () => true],
   ["goo.gl", (path) => /^\/maps(\/|$)/.test(path)],
+  ["g.co", (path) => /^\/kgs\/[^/]+/.test(path)],
   ["www.google.com", isMapsOrSearchPath],
   ["google.com", isMapsOrSearchPath],
 ]);

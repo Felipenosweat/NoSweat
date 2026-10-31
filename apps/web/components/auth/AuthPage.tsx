@@ -124,7 +124,7 @@ export async function AuthPage({
                 after={
                   // O formulário de e-mail tem a própria caixa de aceite; este aviso é do login social.
                   hasProviders && (
-                    <p className="mt-6 text-sm leading-relaxed text-slate-500">
+                    <p className="mt-6 text-sm leading-relaxed text-(--glass-fg-muted)">
                       Signing up with Google or Apple? You’ll add your name and date of birth next.
                       By continuing, you agree to our{" "}
                       <Link href="/terms" className={textLink}>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { GlassSearchField, GlassSegmentedLinks, GlassToolbar } from "@/components/glass";
+import { GlassSearchField, GlassSegmentedLinks, GlassToolbar, Notice } from "@/components/glass";
 import { accountName, canManageAccounts, requireAdmin } from "@/server/admin";
 import {
   ACCOUNT_SORTS,
@@ -13,12 +13,11 @@ import {
   sortAccounts,
   type AccountSort,
 } from "@/server/admin/accounts";
-import { leadsByOwner } from "@/server/admin/leads";
-import { loadOverview } from "@/server/admin/metrics";
+import { loadAccountsList } from "@/server/admin/data";
 import { AccountsTable, type AdminAccountRow } from "../AccountsTable";
-import { AdminPageHeader, Notice, linkClass } from "../AdminUi";
+import { AdminPageHeader, linkClass } from "../AdminUi";
 import { CreateTestAccount } from "../CreateTestAccount";
-import { firstParam, formatDate, sitesByOwner, type Param } from "../admin-data";
+import { firstParam, formatDate, type Param } from "../admin-data";
 
 export const metadata: Metadata = { title: "Accounts · Admin" };
 
@@ -43,17 +42,16 @@ export default async function AdminAccountsPage({ searchParams }: AccountsPagePr
   const query = firstParam(params.aq).trim().slice(0, 100);
   const sort = parseAccountSort(firstParam(params.as));
 
-  const overview = await loadOverview();
-  const { accounts, adminIds, sites, grants, subscriptions, leadsBySite, now } = overview;
+  // Só o que a lista usa: contas, admins, planos e os números por conta (sem os SiteSpecs).
+  const { accounts, adminIds, grants, subscriptions, siteStats, requestsByOwner, now } =
+    await loadAccountsList();
   const grantByUser = new Map(grants.map((grant) => [grant.userId, grant]));
   const subscriptionByUser = new Map((subscriptions ?? []).map((sub) => [sub.userId, sub]));
-  const ownSites = sitesByOwner(sites);
-  const leadsPerOwner = leadsBySite ? leadsByOwner(sites, leadsBySite) : null;
   const manageEnabled = canManageAccounts();
 
   const shown = sortAccounts(filterAccounts(accounts, query), sort);
   const rows: AdminAccountRow[] = shown.map((account) => {
-    const own = ownSites.get(account.id) ?? [];
+    const stats = siteStats.get(account.id);
     const name = accountName(account);
     const isAdmin = adminIds.has(account.id);
     const self = account.id === admin.id;
@@ -67,9 +65,9 @@ export default async function AdminAccountsPage({ searchParams }: AccountsPagePr
       testAccount: account.testAccount,
       loginDisabled: loginDisabled(account, now),
       canModify: !isAdmin && !self,
-      websites: own.length,
-      live: own.filter((site) => site.status === "published").length,
-      requests: leadsPerOwner ? (leadsPerOwner.get(account.id) ?? 0) : null,
+      websites: stats?.websites ?? 0,
+      live: stats?.live ?? 0,
+      requests: requestsByOwner ? (requestsByOwner.get(account.id) ?? 0) : null,
       signedUp: formatDate(account.createdAt),
       lastLogin: formatDate(account.lastSignInAt),
       plan: planStatus(subscriptionByUser.get(account.id), grantByUser.get(account.id), now),

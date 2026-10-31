@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { ConvertEstimateRequest, LineItem, RespondEstimateRequest, computeTotals } from "./index";
+import {
+  ClientActivityKind,
+  ConvertEstimateRequest,
+  CreateInvoiceRequest,
+  CreateJobRequest,
+  Estimate,
+  LineItem,
+  RecordPaymentRequest,
+  RespondEstimateRequest,
+  UpdatePriceItemRequest,
+  UpdateTeamMemberRequest,
+  computeTotals,
+  isCalendarDate,
+} from "./index";
 
 const item = (quantity: number, unitPriceCents: number, taxable = true) => ({
   quantity,
@@ -81,5 +94,72 @@ describe("office request schemas", () => {
       false,
     );
     expect(RespondEstimateRequest.safeParse({ decision: "decline" }).success).toBe(true);
+  });
+});
+
+describe("office fixes (0023)", () => {
+  it("rejects dates that are not on the calendar", () => {
+    expect(isCalendarDate("2028-02-29")).toBe(true);
+    expect(isCalendarDate("2026-02-29")).toBe(false);
+    expect(isCalendarDate("2026-02-30")).toBe(false);
+    expect(isCalendarDate("2026-13-01")).toBe(false);
+    expect(isCalendarDate("2026-04-31")).toBe(false);
+    expect(
+      RecordPaymentRequest.safeParse({ amountCents: 1, method: "cash", receivedOn: "2026-02-30" })
+        .success,
+    ).toBe(false);
+    expect(CreateInvoiceRequest.safeParse({ clientId: "c", dueOn: "2026-12-31" }).success).toBe(
+      true,
+    );
+    const bad = CreateInvoiceRequest.safeParse({ clientId: "c", issuedOn: "2026-02-30" });
+    expect(bad.success).toBe(false);
+    expect(bad.error?.issues.map((i) => i.message)).toContain("That date doesn't exist.");
+    // Formato errado continua com a mensagem do formato (e sem exceção).
+    const format = CreateInvoiceRequest.safeParse({ clientId: "c", issuedOn: "soon" });
+    expect(format.error?.issues.map((i) => i.message)).toContain("Use the YYYY-MM-DD format.");
+  });
+
+  it("compares job times as instants, not as text", () => {
+    // 11:00+05:00 = 06:00Z, antes do início (10:00Z): o texto "11" > "10" enganava.
+    expect(
+      CreateJobRequest.safeParse({
+        clientId: "c",
+        title: "x",
+        startAt: "2030-01-15T10:00:00Z",
+        endAt: "2030-01-15T11:00:00+05:00",
+      }).success,
+    ).toBe(false);
+    // 10:00+05:00 = 05:00Z, antes do fim (09:00Z).
+    expect(
+      CreateJobRequest.safeParse({
+        clientId: "c",
+        title: "x",
+        startAt: "2030-01-15T10:00:00+05:00",
+        endAt: "2030-01-15T09:00:00Z",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects empty price item and team updates", () => {
+    const priceItem = UpdatePriceItemRequest.safeParse({});
+    expect(priceItem.success).toBe(false);
+    expect(priceItem.error?.issues[0]?.message).toBe("Nothing to update.");
+    expect(UpdatePriceItemRequest.safeParse({ active: false }).success).toBe(true);
+    expect(UpdateTeamMemberRequest.safeParse({}).success).toBe(false);
+    expect(UpdateTeamMemberRequest.safeParse({ role: "Tech" }).success).toBe(true);
+  });
+
+  it("accepts the version the customer saw and the new optional fields", () => {
+    const parsed = RespondEstimateRequest.parse({
+      decision: "approve",
+      name: "Ana Lima",
+      updatedAt: "2026-10-26T12:00:00.000Z",
+    });
+    expect(parsed.updatedAt).toBe("2026-10-26T12:00:00.000Z");
+    expect(
+      RespondEstimateRequest.safeParse({ decision: "decline", updatedAt: "x".repeat(65) }).success,
+    ).toBe(false);
+    expect(Estimate.shape.declineReason.safeParse(undefined).success).toBe(true);
+    expect(ClientActivityKind.options).toContain("payment");
   });
 });

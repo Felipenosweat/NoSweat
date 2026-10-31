@@ -43,11 +43,12 @@ export const MessagesIcon = (props: IconProps) => (
   </Icon>
 );
 
-// Calendário: posts agendados.
+// Foto de post (quadrado com lente): redes sociais. Diferente do calendário da agenda.
 export const SocialIcon = (props: IconProps) => (
   <Icon {...props}>
-    <rect x="3" y="5" width="18" height="16" rx="2" />
-    <path d="M3 10h18M8 3v4M16 3v4" />
+    <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
+    <circle cx="12" cy="12" r="3.75" />
+    <path d="M16.9 7.1h.01" />
   </Icon>
 );
 
@@ -139,6 +140,14 @@ export const HelpIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="12" r="9" />
     <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.4M12 17h.01" />
+  </Icon>
+);
+
+// Bússola: rever o tour de boas-vindas ("Take the tour") e o guia.
+export const TourIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.5 8.5-2 5-5 2 2-5z" />
   </Icon>
 );
 

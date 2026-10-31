@@ -1,6 +1,6 @@
 import type { EstimateStatus, InvoiceStatus } from "@nosweat/schema";
 import type { ReactNode, SVGProps } from "react";
-import { GlassBadge, GlassSegmentedLinks } from "@/components/glass";
+import { GlassBadge, GlassSegmentedLinks, focusRing } from "@/components/glass";
 import {
   ESTIMATE_STATUS_LABELS,
   ESTIMATE_STATUS_TONES,
@@ -32,6 +32,12 @@ export {
 /** Esqueleto (bloco cinza pulsando) das telas de carregamento. */
 export const skeletonBlock = "rounded-2xl bg-(--glass-groove) motion-safe:animate-pulse";
 
+/**
+ * Botão só de texto, azul ("+ Add description", "Add discount or tax"): para o que é opcional e
+ * fica escondido até o dono pedir. Altura de toque de 44px.
+ */
+export const textButtonClass = `inline-flex min-h-11 items-center gap-1.5 rounded-lg text-[15px] font-semibold text-brand hover:text-brand-dark disabled:cursor-not-allowed disabled:opacity-50 [&>svg]:size-[1.1em] ${focusRing}`;
+
 export function EstimateBadge({ status, size }: { status: EstimateStatus; size?: "sm" | "md" }) {
   return (
     <GlassBadge tone={ESTIMATE_STATUS_TONES[status]} size={size}>
@@ -49,14 +55,14 @@ export function InvoiceBadge({ status, size }: { status: InvoiceStatus; size?: "
 }
 
 /** Abas "Settings · Price book · Team" do escritório. */
-export function OfficeTabs({ current }: { current: "settings" | "price-book" }) {
+export function OfficeTabs({ current }: { current: "settings" | "price-book" | "team" }) {
   return (
     <GlassSegmentedLinks
       aria-label="Office"
       items={[
         { href: "/office/settings", label: "Settings", current: current === "settings" },
         { href: "/office/price-book", label: "Price book", current: current === "price-book" },
-        { href: "/team", label: "Team" },
+        { href: "/team", label: "Team", current: current === "team" },
       ]}
     />
   );

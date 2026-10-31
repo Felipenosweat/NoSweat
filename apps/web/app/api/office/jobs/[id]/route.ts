@@ -15,7 +15,10 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
   });
 }
 
-/** PATCH /api/office/jobs/[id]: dados, horário, equipe ou status. */
+/**
+ * PATCH /api/office/jobs/[id]: dados, horário, equipe ou status. "scheduled"/"in_progress" sem
+ * horário de início → 400.
+ */
 export async function PATCH(request: Request, { params }: Context): Promise<Response> {
   return ownerRoute("/api/office/jobs/[id]", async (user) => {
     const { id } = await params;

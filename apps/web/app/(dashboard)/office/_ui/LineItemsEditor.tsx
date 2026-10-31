@@ -1,23 +1,39 @@
 "use client";
 
 import type { DocumentTotals } from "@nosweat/schema";
-import { useId, useRef, type ReactNode } from "react";
-import { GlassButton, GlassIconButton } from "@/components/glass";
+import { useId, useRef, useState, type ReactNode } from "react";
+import { GlassButton, GlassIconButton, Notice } from "@/components/glass";
 import {
   formatCents,
   formatQuantity,
   formatTaxRate,
   lineTotalCents,
   parseDollars,
+  parsePercentToBps,
   parseQuantity,
 } from "@/lib/office";
-import { blankLine, lineFromPriceItem, type DraftLine, type LineErrors } from "./draft";
+import {
+  blankLine,
+  isUnpricedLine,
+  lineFromPriceItem,
+  type DraftLine,
+  type LineErrors,
+} from "./draft";
 import { PriceBookPicker } from "./PriceBookPicker";
-import { PlusIcon, TotalRow, TrashIcon, fieldClass, fieldErrorClass, hintClass } from "./ui";
+import {
+  PlusIcon,
+  TotalRow,
+  TrashIcon,
+  fieldClass,
+  fieldErrorClass,
+  hintClass,
+  textButtonClass,
+} from "./ui";
 
 // Itens e totais de um orçamento/fatura. Cada linha é um cartão (no celular os campos empilham):
-// nome, descrição opcional, quantidade × preço, "Tax" e o valor da linha. Linhas novas vêm da
-// tabela de preços (um toque) ou em branco. Sem reordenar (não precisa no começo).
+// nome, descrição (só quando o dono pede ou já existe), quantidade × preço, "Taxable" (só com
+// imposto) e o valor da linha. Linhas novas vêm da tabela de preços (um toque) ou em branco. Sem
+// reordenar (não precisa no começo).
 
 const smallField = `${fieldClass} h-11`;
 
@@ -26,6 +42,7 @@ function LineCard({
   index,
   errors,
   showTax,
+  warnId,
   onChange,
   onRemove,
 }: {
@@ -33,10 +50,16 @@ function LineCard({
   index: number;
   errors: LineErrors | undefined;
   showTax: boolean;
+  /** Id do aviso "sem preço" quando ele está na tela (a linha sem preço aponta para ele). */
+  warnId: string | undefined;
   onChange: (next: DraftLine) => void;
   onRemove: () => void;
 }) {
   const ids = useId();
+  // Descrição fechada até o dono pedir; linha que já tem descrição mostra a caixa.
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const showDescription = descriptionOpen || line.description !== "";
+  const unpriced = warnId !== undefined && !errors?.unitPrice && isUnpricedLine(line);
   const quantity = parseQuantity(line.quantity) ?? 0;
   const price = parseDollars(line.unitPrice) ?? 0;
   const amount = lineTotalCents({ quantity, unitPriceCents: price });
@@ -47,7 +70,7 @@ function LineCard({
       : {};
 
   return (
-    <li className="rounded-2xl border border-(--glass-rim) bg-white/55 p-3 sm:p-4">
+    <li className="glass-inset rounded-xl p-4">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <label htmlFor={`${ids}-name`} className="sr-only">
@@ -75,22 +98,51 @@ function LineCard({
         </GlassIconButton>
       </div>
 
-      <label htmlFor={`${ids}-description`} className="sr-only">
-        Description, line {index + 1}
-      </label>
-      <textarea
-        id={`${ids}-description`}
-        value={line.description}
-        onChange={(event) => onChange({ ...line, description: event.target.value })}
-        placeholder="Description (optional)"
-        rows={1}
-        maxLength={1000}
-        className={`${fieldClass} mt-2 min-h-11 resize-y py-2.5 text-[15px] leading-[1.5]`}
-      />
+      {showDescription ? (
+        <>
+          <label htmlFor={`${ids}-description`} className="sr-only">
+            Description, line {index + 1}
+          </label>
+          <textarea
+            id={`${ids}-description`}
+            value={line.description}
+            onChange={(event) => onChange({ ...line, description: event.target.value })}
+            placeholder="Description (optional)"
+            rows={1}
+            maxLength={1000}
+            className={`${fieldClass} mt-2 min-h-11 resize-y py-2.5 text-[15px] leading-[1.5]`}
+          />
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setDescriptionOpen(true);
+            // Depois de desenhar a caixa.
+            window.requestAnimationFrame(() => {
+              document.getElementById(`${ids}-description`)?.focus();
+            });
+          }}
+          className={`${textButtonClass} mt-0.5`}
+        >
+          <PlusIcon />
+          Add description
+          <span className="sr-only">, line {index + 1}</span>
+        </button>
+      )}
 
-      <div className="mt-2 grid grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[6rem_9rem_auto_1fr] sm:items-center">
+      <div
+        className={
+          showTax
+            ? "mt-2 grid grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)] items-start gap-2 sm:grid-cols-[6rem_9rem_auto_1fr] sm:items-center"
+            : "mt-2 grid grid-cols-[minmax(0,4.5rem)_minmax(0,1fr)_auto] items-end gap-2 sm:grid-cols-[6rem_9rem_1fr]"
+        }
+      >
         <div>
-          <label htmlFor={`${ids}-qty`} className="block text-[12px] font-medium text-slate-500">
+          <label
+            htmlFor={`${ids}-qty`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
             Qty
           </label>
           <input
@@ -104,13 +156,16 @@ function LineCard({
           />
         </div>
         <div>
-          <label htmlFor={`${ids}-price`} className="block text-[12px] font-medium text-slate-500">
-            Unit price
+          <label
+            htmlFor={`${ids}-price`}
+            className="block text-[12px] font-medium text-(--glass-fg-muted)"
+          >
+            Price
           </label>
           <div className="relative mt-1">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
             >
               $
             </span>
@@ -121,23 +176,28 @@ function LineCard({
               onChange={(event) => onChange({ ...line, unitPrice: event.target.value })}
               placeholder="0.00"
               autoComplete="off"
-              className={`${smallField} pl-7 tabular-nums`}
+              className={`${smallField} pl-7 tabular-nums data-unpriced:border-amber-500 data-unpriced:bg-amber-50/80`}
+              data-unpriced={unpriced ? "" : undefined}
+              {...(unpriced ? { "aria-describedby": warnId } : {})}
               {...invalid("unitPrice")}
             />
           </div>
         </div>
-        <label
-          className={`flex min-h-11 cursor-pointer items-center gap-2 text-[15px] text-ink sm:mt-5 ${showTax ? "" : "opacity-70"}`}
+        {/* "Taxable" só pesa com imposto: sem taxa, a caixa some (o valor guardado não muda). */}
+        {showTax && (
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-[15px] text-ink sm:mt-5">
+            <input
+              type="checkbox"
+              checked={line.taxable}
+              onChange={(event) => onChange({ ...line, taxable: event.target.checked })}
+              className="size-5 accent-brand"
+            />
+            Taxable
+          </label>
+        )}
+        <p
+          className={`flex min-h-11 items-center justify-end text-right text-[15px] font-semibold text-ink tabular-nums ${showTax ? "sm:mt-5" : ""}`}
         >
-          <input
-            type="checkbox"
-            checked={line.taxable}
-            onChange={(event) => onChange({ ...line, taxable: event.target.checked })}
-            className="size-5 accent-brand"
-          />
-          Taxable
-        </label>
-        <p className="flex min-h-11 items-center justify-end text-right text-[15px] font-semibold text-ink tabular-nums sm:mt-5">
           <span className="sr-only">Line total </span>
           {formatCents(amount)}
         </p>
@@ -160,14 +220,19 @@ export function LineItemsEditor({
   errors,
   showTax,
   itemsError,
+  priceWarning,
 }: {
   lines: DraftLine[];
   onChange: (lines: DraftLine[]) => void;
   errors: Record<string, LineErrors>;
-  /** Há imposto no documento (a caixa "Taxable" só pesa com taxa > 0). */
+  /** Há imposto no documento (a caixa "Taxable" só aparece com taxa > 0). */
   showTax: boolean;
   itemsError?: string;
+  /** Aviso "linha sem preço" (o editor liga ao tentar mandar); as linhas sem preço ficam marcadas. */
+  priceWarning?: string | null;
 }) {
+  const ids = useId();
+  const warnId = priceWarning ? `${ids}-price-warning` : undefined;
   const listRef = useRef<HTMLOListElement>(null);
 
   function focusLine(key: string) {
@@ -186,8 +251,8 @@ export function LineItemsEditor({
   return (
     <div>
       {lines.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-slate-500">
-          No items yet. Add a service from your price book or type a custom line.
+        <p className="rounded-2xl border border-dashed border-slate-300/80 px-4 py-8 text-center text-[15px] text-(--glass-fg-muted)">
+          Add a service from your price book, or tap Add item.
         </p>
       ) : (
         <ol ref={listRef} aria-label="Items" className="grid gap-2">
@@ -198,6 +263,7 @@ export function LineItemsEditor({
               index={index}
               errors={errors[line.key]}
               showTax={showTax}
+              warnId={warnId}
               onChange={(next) => onChange(lines.map((l) => (l.key === line.key ? next : l)))}
               onRemove={() => onChange(lines.filter((l) => l.key !== line.key))}
             />
@@ -205,6 +271,11 @@ export function LineItemsEditor({
         </ol>
       )}
       {itemsError && <p className={fieldErrorClass}>{itemsError}</p>}
+      {priceWarning && (
+        <Notice id={warnId} tone="warning" size="sm" role="alert" className="mt-2 font-semibold">
+          {priceWarning}
+        </Notice>
+      )}
       <div className="mt-3 flex flex-wrap gap-2">
         <PriceBookPicker
           disabled={lines.length >= 100}
@@ -216,7 +287,7 @@ export function LineItemsEditor({
           onClick={addBlank}
           disabled={lines.length >= 100}
         >
-          Custom line
+          Add item
         </GlassButton>
       </div>
     </div>
@@ -236,7 +307,7 @@ export function LineItemsView({
   }[];
 }) {
   if (lines.length === 0) {
-    return <p className="py-4 text-[15px] text-slate-500">No items.</p>;
+    return <p className="py-4 text-[15px] text-(--glass-fg-muted)">No items.</p>;
   }
   return (
     <ul aria-label="Items" className="divide-y divide-(--glass-rim)">
@@ -249,7 +320,7 @@ export function LineItemsView({
                 {line.description}
               </p>
             )}
-            <p className="text-[13px] text-slate-500 tabular-nums">
+            <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
               {formatQuantity(line.quantity)} × {formatCents(line.unitPriceCents)}
               {!line.taxable && " · not taxed"}
             </p>
@@ -265,7 +336,8 @@ export function LineItemsView({
 
 /**
  * Totais ao vivo. Com `onDiscountChange`/`onTaxChange`, desconto e imposto são campos; sem eles,
- * só leitura. "Estimated" porque o servidor recalcula ao salvar.
+ * só leitura. "Estimated" porque o servidor recalcula ao salvar. Sem desconto e com imposto 0%,
+ * os campos ficam atrás de "Add discount or tax" (e continuam abertos se algum tiver valor).
  */
 export function TotalsPanel({
   totals,
@@ -292,10 +364,16 @@ export function TotalsPanel({
   extra?: ReactNode;
 }) {
   const ids = useId();
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const editable = Boolean(onTaxChange && onDiscountChange);
+  // Valor que não é vazio nem zero (inclui texto inválido, para o erro aparecer no campo).
+  const discountSet = discount.trim() !== "" && parseDollars(discount) !== 0;
+  const taxSet = taxRate.trim() !== "" && parsePercentToBps(taxRate) !== 0;
+  const showInputs =
+    editable && (adjustOpen || discountSet || taxSet || Boolean(taxError || discountError));
   return (
     <div>
-      {editable && (
+      {showInputs && (
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor={`${ids}-discount`} className="block text-[13px] font-medium text-ink">
@@ -304,7 +382,7 @@ export function TotalsPanel({
             <div className="relative mt-1.5">
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
               >
                 $
               </span>
@@ -344,7 +422,7 @@ export function TotalsPanel({
               />
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-(--glass-fg-muted)"
               >
                 %
               </span>
@@ -362,7 +440,7 @@ export function TotalsPanel({
         </div>
       )}
 
-      <dl className={editable ? "mt-5 grid gap-2" : "grid gap-2"} aria-live="polite">
+      <dl className={showInputs ? "mt-5 grid gap-2" : "grid gap-2"} aria-live="polite">
         <TotalRow label="Subtotal" value={formatCents(totals.subtotalCents)} />
         {totals.discountCents > 0 && (
           <TotalRow label="Discount" value={`−${formatCents(totals.discountCents)}`} />
@@ -376,6 +454,22 @@ export function TotalsPanel({
         <TotalRow label="Total" value={formatCents(totals.totalCents)} strong />
         {extra}
       </dl>
+      {editable && !showInputs && (
+        <button
+          type="button"
+          onClick={() => {
+            setAdjustOpen(true);
+            // Depois de desenhar os campos.
+            window.requestAnimationFrame(() => {
+              document.getElementById(`${ids}-discount`)?.focus();
+            });
+          }}
+          className={`${textButtonClass} mt-2`}
+        >
+          <PlusIcon />
+          Add discount or tax
+        </button>
+      )}
     </div>
   );
 }

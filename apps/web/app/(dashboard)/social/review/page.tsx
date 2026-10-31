@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { PageHeader, textButton } from "@/components/DashboardUi";
+import { BackLink, PageHeader } from "@/components/DashboardUi";
 import { getViewer } from "@/server/auth/viewer";
 import { ReviewList } from "./ReviewList";
 
@@ -24,12 +23,9 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     <div className="max-w-3xl">
       <PageHeader
         back={
-          <Link
-            href={initialMonth ? `/social?month=${initialMonth}` : "/social"}
-            className={`${textButton} -ml-1`}
-          >
-            <span aria-hidden="true">&larr;</span> Back to calendar
-          </Link>
+          <BackLink href={initialMonth ? `/social?month=${initialMonth}` : "/social"}>
+            Social
+          </BackLink>
         }
         title="Review your posts"
         description={

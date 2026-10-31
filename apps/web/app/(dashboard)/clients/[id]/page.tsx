@@ -1,10 +1,19 @@
-import type { Client, ClientActivity } from "@nosweat/schema";
+import type {
+  Client,
+  ClientActivity,
+  Estimate,
+  Invoice,
+  InvoiceStatus,
+  Job,
+} from "@nosweat/schema";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
+import { BackLink } from "@/components/DashboardUi";
 import { LocalTime } from "@/components/LocalTime";
-import { EmptyState, GlassButton, GlassCard, cx, focusRing } from "@/components/glass";
+import { EmptyState, GlassButton, GlassCard, Notice, cx, focusRing } from "@/components/glass";
 import {
   STAGE_LABELS,
   dateKeyIn,
@@ -14,16 +23,23 @@ import {
   isClientStage,
   phoneHref,
 } from "@/lib/clients";
+import { estimateLabel, invoiceLabel } from "@/lib/office";
 import { getViewer } from "@/server/auth/viewer";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
+import { listEstimates, listInvoices, listJobs } from "@/server/office/service";
+import { listOwnerSites } from "@/server/owner-sites";
 import { accountReviewLink } from "@/server/reviews";
-import { getSiteStore } from "@/server/store";
+import { EstimateBadge, EstimateIcon, InvoiceBadge, InvoiceIcon } from "../../office/_ui/ui";
+import { scheduleHref } from "../../schedule/params";
+import { JobStatusBadge } from "../../schedule/ui";
 import { ClientMenu } from "../ClientMenu";
 import {
   Avatar,
+  CalendarIcon,
   DirectionsIcon,
   JobIcon,
   MailIcon,
+  MoneyIcon,
   NoteIcon,
   PhoneIcon,
   StageBadge,
@@ -56,9 +72,27 @@ async function loadClient(ownerId: string, id: string) {
 /** Link de avaliações do Google da conta (para "pedir avaliação" no menu). Erro = sem atalho. */
 async function loadReviewLink(ownerId: string) {
   try {
-    return accountReviewLink(await getSiteStore().list(ownerId));
+    return accountReviewLink(await listOwnerSites(ownerId));
   } catch (error) {
     console.error("[clients] could not read the review link", error);
+    return null;
+  }
+}
+
+/** Orçamentos, serviços e faturas do cliente (mais novos primeiro). `null` = erro ao ler. */
+type Paperwork = { estimates: Estimate[]; jobs: Job[]; invoices: Invoice[] };
+
+async function loadPaperwork(ownerId: string, clientId: string): Promise<Paperwork | null> {
+  try {
+    const [estimates, jobs, invoices] = await Promise.all([
+      listEstimates(ownerId, { clientId }),
+      listJobs(ownerId, { clientId }),
+      listInvoices(ownerId, { clientId }),
+    ]);
+    // A agenda devolve os serviços por horário; aqui o mais novo (maior número) vem primeiro.
+    return { estimates, jobs: [...jobs].sort((a, b) => b.number - a.number), invoices };
+  } catch (error) {
+    console.error("[clients] could not read the client's paperwork", error);
     return null;
   }
 }
@@ -177,9 +211,9 @@ function ContactView({ client }: { client: Client }) {
     <dl className="mt-5 grid gap-3 border-t border-(--glass-rim) pt-4 text-[15px] leading-6">
       {rows.map((row) => (
         <div key={row.label}>
-          <dt className="text-[13px] font-medium text-slate-500">{row.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{row.label}</dt>
           <dd className="break-words text-ink">
-            {row.value ?? <span className="text-slate-500">Not added</span>}
+            {row.value ?? <span className="text-(--glass-fg-muted)">Not added</span>}
           </dd>
         </div>
       ))}
@@ -200,26 +234,35 @@ function activityTitle(activity: ClientActivity): string {
     const stage = activity.body.trim();
     return `Moved to ${isClientStage(stage) ? STAGE_LABELS[stage] : stage}`;
   }
+  // Pagamento registrado numa fatura (tipo novo do servidor; comparação por texto até o contrato
+  // ter o tipo).
+  if (activity.kind === "payment") {
+    return activity.amountCents !== null && activity.amountCents > 0
+      ? `Payment · ${formatCents(activity.amountCents)}`
+      : "Payment";
+  }
   return "Note";
 }
 
-const ACTIVITY_ICONS: Record<ClientActivity["kind"], (props: { className?: string }) => ReactNode> =
-  {
-    lead: MailIcon,
-    note: NoteIcon,
-    job: JobIcon,
-    stage: StageIcon,
-  };
+// Por texto (não `Record<kind>`): um tipo novo do servidor cai no ícone e na cor da nota.
+const ACTIVITY_ICONS: Partial<Record<string, (props: { className?: string }) => ReactNode>> = {
+  lead: MailIcon,
+  note: NoteIcon,
+  job: JobIcon,
+  stage: StageIcon,
+  payment: MoneyIcon,
+};
 
-const ACTIVITY_TONES: Record<ClientActivity["kind"], string> = {
+const ACTIVITY_TONES: Partial<Record<string, string>> = {
   lead: "bg-brand/10 text-brand",
   note: "bg-slate-500/10 text-slate-600",
   job: "bg-emerald-500/10 text-emerald-700",
   stage: "bg-amber-500/15 text-amber-700",
+  payment: "bg-emerald-500/10 text-emerald-700",
 };
 
 function TimelineItem({ activity, last }: { activity: ClientActivity; last: boolean }) {
-  const Icon = ACTIVITY_ICONS[activity.kind];
+  const Icon = ACTIVITY_ICONS[activity.kind] ?? NoteIcon;
   // Na mudança de etapa o texto já está no título.
   const body = activity.kind === "stage" ? "" : activity.body.trim();
   return (
@@ -235,7 +278,7 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
         aria-hidden="true"
         className={cx(
           "glass-edge relative grid size-8 shrink-0 place-items-center rounded-full",
-          ACTIVITY_TONES[activity.kind],
+          ACTIVITY_TONES[activity.kind] ?? ACTIVITY_TONES.note,
         )}
       >
         <Icon className="size-4" />
@@ -247,7 +290,7 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
           </h3>
           <LocalTime
             iso={activity.occurredAt}
-            className="text-[13px] text-slate-500 tabular-nums"
+            className="text-[13px] text-(--glass-fg-muted) tabular-nums"
           />
         </div>
         {body && (
@@ -260,11 +303,14 @@ function TimelineItem({ activity, last }: { activity: ClientActivity; last: bool
   );
 }
 
-/** Números da ficha: serviços, total e último contato. */
+/**
+ * Números da ficha: serviços registrados à mão, o que entrou (pagamentos das faturas + serviços
+ * registrados com valor, ver `clientTotals`) e último contato.
+ */
 function ClientStats({ client }: { client: Client }) {
   const stats: { label: string; value: ReactNode }[] = [
-    { label: "Jobs", value: client.jobsCount },
-    { label: "Total billed", value: formatCents(client.totalJobsCents) },
+    { label: "Past work", value: client.jobsCount },
+    { label: "Collected", value: formatCents(client.totalJobsCents) },
     {
       label: "Last contact",
       value: <LocalTime iso={client.lastActivityAt} className="tabular-nums" />,
@@ -274,7 +320,7 @@ function ClientStats({ client }: { client: Client }) {
     <dl className="grid grid-cols-3 gap-2 sm:gap-3">
       {stats.map((stat) => (
         <GlassCard key={stat.label} padding="sm" className="min-w-0">
-          <dt className="text-[13px] font-medium text-slate-500">{stat.label}</dt>
+          <dt className="text-[13px] font-medium text-(--glass-fg-muted)">{stat.label}</dt>
           <dd
             className={cx(
               "mt-1 font-semibold break-words text-ink tabular-nums",
@@ -289,6 +335,171 @@ function ClientStats({ client }: { client: Client }) {
   );
 }
 
+// ---------- papéis: orçamentos, serviços e faturas ----------
+
+/** Quantos de cada tipo a ficha mostra (o resto fica na lista própria). */
+const PAPERWORK_LIMIT = 5;
+
+/** Faturas enviadas que ainda têm saldo (rascunho ainda não é cobrança; anulada não conta). */
+const OPEN_INVOICE: ReadonlySet<InvoiceStatus> = new Set<InvoiceStatus>([
+  "sent",
+  "partial",
+  "overdue",
+]);
+
+type PaperRow = {
+  key: string;
+  href: string;
+  title: string;
+  meta: string;
+  amount: string | null;
+  badge: ReactNode;
+};
+
+function PaperGroup({
+  title,
+  rows,
+  total,
+  seeAllHref,
+}: {
+  title: string;
+  rows: PaperRow[];
+  /** Quantos existem (pode ser mais do que os mostrados). */
+  total: number;
+  seeAllHref?: string;
+}) {
+  if (rows.length === 0) return null;
+  const more = total - rows.length;
+  return (
+    <div className="border-t border-(--glass-rim) first:border-t-0">
+      <div className="flex items-center justify-between gap-3 px-4 pt-3 sm:px-5">
+        <h3 className="text-[13px] font-semibold text-(--glass-fg-muted)">
+          {title} <span className="font-normal tabular-nums">{total}</span>
+        </h3>
+        {more > 0 &&
+          (seeAllHref ? (
+            <Link
+              href={seeAllHref}
+              className={`inline-flex min-h-11 items-center text-[13px] font-semibold text-brand underline-offset-4 hover:underline sm:min-h-0 ${focusRing}`}
+            >
+              See all {total}
+            </Link>
+          ) : (
+            <span className="text-[13px] text-(--glass-fg-muted) tabular-nums">+{more} more</span>
+          ))}
+      </div>
+      <ul className="pb-1.5">
+        {rows.map((row) => (
+          <li key={row.key}>
+            <Link
+              href={row.href}
+              className="flex min-h-14 items-center gap-3 px-4 py-2.5 hover:bg-(--glass-ghost-hover) focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand sm:px-5"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[15px] leading-5 font-semibold text-ink">
+                  {row.title}
+                </span>
+                <span className="block truncate text-[13px] leading-5 text-(--glass-fg-muted) tabular-nums">
+                  {row.meta}
+                </span>
+              </span>
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                {row.amount && (
+                  <span className="text-[15px] leading-5 font-semibold text-ink tabular-nums">
+                    {row.amount}
+                  </span>
+                )}
+                {row.badge}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Tudo o que foi feito no papel para o cliente, com o saldo em aberto em cima. */
+function PaperworkSection({ client, paperwork }: { client: Client; paperwork: Paperwork | null }) {
+  if (!paperwork) {
+    return (
+      <Notice tone="error">
+        We couldn&rsquo;t load this client&rsquo;s estimates, jobs and invoices. Please refresh the
+        page.
+      </Notice>
+    );
+  }
+  const { estimates, jobs, invoices } = paperwork;
+  if (estimates.length + jobs.length + invoices.length === 0) return null;
+
+  const openBalance = invoices
+    .filter((invoice) => OPEN_INVOICE.has(invoice.status))
+    .reduce((sum, invoice) => sum + Math.max(0, invoice.balanceCents), 0);
+  // As listas próprias buscam pelo nome do cliente.
+  const byName = `?q=${encodeURIComponent(client.name.slice(0, 100))}`;
+
+  const estimateRows: PaperRow[] = estimates.slice(0, PAPERWORK_LIMIT).map((estimate) => ({
+    key: estimate.id,
+    href: `/estimates/${encodeURIComponent(estimate.id)}`,
+    title: estimate.title || estimateLabel(estimate.number),
+    meta: estimateLabel(estimate.number),
+    amount: formatCents(estimate.totalCents),
+    badge: <EstimateBadge status={estimate.status} size="sm" />,
+  }));
+  const jobRows: PaperRow[] = jobs.slice(0, PAPERWORK_LIMIT).map((job) => ({
+    key: job.id,
+    href: `/schedule/${encodeURIComponent(job.id)}`,
+    title: job.title,
+    meta: `Job #${job.number}`,
+    amount: job.valueCents !== null && job.valueCents > 0 ? formatCents(job.valueCents) : null,
+    badge: <JobStatusBadge status={job.status} size="sm" />,
+  }));
+  const invoiceRows: PaperRow[] = invoices.slice(0, PAPERWORK_LIMIT).map((invoice) => ({
+    key: invoice.id,
+    href: `/invoices/${encodeURIComponent(invoice.id)}`,
+    title: invoice.title || invoiceLabel(invoice.number),
+    meta:
+      OPEN_INVOICE.has(invoice.status) && invoice.balanceCents > 0
+        ? `${invoiceLabel(invoice.number)} · ${formatCents(invoice.balanceCents)} due`
+        : invoiceLabel(invoice.number),
+    amount: formatCents(invoice.totalCents),
+    badge: <InvoiceBadge status={invoice.status} size="sm" />,
+  }));
+
+  return (
+    <section aria-labelledby="paperwork-heading">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2 id="paperwork-heading" className={sectionTitle}>
+          Paperwork
+        </h2>
+        {openBalance > 0 && (
+          <p className="text-[15px] text-slate-600">
+            Open balance{" "}
+            <span className="font-semibold text-amber-700 tabular-nums">
+              {formatCents(openBalance)}
+            </span>
+          </p>
+        )}
+      </div>
+      <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">
+        <PaperGroup
+          title="Estimates"
+          rows={estimateRows}
+          total={estimates.length}
+          seeAllHref={`/estimates${byName}`}
+        />
+        <PaperGroup title="Jobs" rows={jobRows} total={jobs.length} />
+        <PaperGroup
+          title="Invoices"
+          rows={invoiceRows}
+          total={invoices.length}
+          seeAllHref={`/invoices${byName}`}
+        />
+      </GlassCard>
+    </section>
+  );
+}
+
 export default async function ClientPage({ params }: ClientPageProps) {
   // Sempre na hora do request (dados do dono).
   await connection();
@@ -298,9 +509,10 @@ export default async function ClientPage({ params }: ClientPageProps) {
   if (!viewer) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
   const readOnly = viewer.viewingAs !== null;
 
-  const [{ today, detail, since }, review] = await Promise.all([
+  const [{ today, detail, since }, review, paperwork] = await Promise.all([
     loadClient(viewer.ownerId, id),
     loadReviewLink(viewer.ownerId),
+    loadPaperwork(viewer.ownerId, id),
   ]);
   if (!detail) notFound();
   const { client, activities } = detail;
@@ -311,9 +523,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
 
   return (
     <div>
-      <GlassButton href="/clients" variant="ghost" size="sm" className="-ml-2">
-        <span aria-hidden="true">‹</span> Clients
-      </GlassButton>
+      <BackLink href="/clients">Clients</BackLink>
 
       <div className="mt-3 grid items-start gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-8">
         {/* ---------- coluna da esquerda: cartão de contato, etapa, retorno e anotação ---------- */}
@@ -344,12 +554,49 @@ export default async function ClientPage({ params }: ClientPageProps) {
             >
               {client.name}
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">
+            <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>
             <TagList tags={client.tags} className="mt-3" />
             <QuickActions client={client} />
+            {!readOnly && (
+              // Três seguidos só onde cabem sem cortar o texto (no celular e na coluna estreita do
+              // computador, "Book a job" ocupa a linha de cima).
+              <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-2">
+                <GlassButton
+                  href={scheduleHref({
+                    view: null,
+                    date: null,
+                    team: null,
+                    openNew: true,
+                    clientId: client.id,
+                  })}
+                  variant="secondary"
+                  icon={<CalendarIcon />}
+                  fullWidth
+                  className="col-span-2 sm:col-span-1 lg:col-span-2"
+                >
+                  Book a job
+                </GlassButton>
+                <GlassButton
+                  href={`/estimates/new?clientId=${encodeURIComponent(client.id)}`}
+                  variant="secondary"
+                  icon={<EstimateIcon />}
+                  fullWidth
+                >
+                  Estimate
+                </GlassButton>
+                <GlassButton
+                  href={`/invoices/new?clientId=${encodeURIComponent(client.id)}`}
+                  variant="secondary"
+                  icon={<InvoiceIcon />}
+                  fullWidth
+                >
+                  Invoice
+                </GlassButton>
+              </div>
+            )}
             <ContactDetails
               key={contactKey}
               readOnly={readOnly}
@@ -396,6 +643,8 @@ export default async function ClientPage({ params }: ClientPageProps) {
         <section aria-labelledby="history-heading" className="grid min-w-0 gap-4">
           <ClientStats client={client} />
 
+          <PaperworkSection client={client} paperwork={paperwork} />
+
           {!readOnly && <ActivityComposer clientId={client.id} />}
 
           <div>
@@ -408,7 +657,7 @@ export default async function ClientPage({ params }: ClientPageProps) {
                 headingLevel={3}
                 icon={<NoteIcon />}
                 title="No activity yet"
-                description="Add a note after you talk to them, or log a job when it’s done. Stage changes show up here too."
+                description="Add a note after you talk to them, or log past work when it’s done. Stage changes show up here too."
               />
             ) : (
               <GlassCard as="div" padding="none" className="mt-3 overflow-hidden">

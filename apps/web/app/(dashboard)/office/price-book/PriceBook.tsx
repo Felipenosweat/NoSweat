@@ -15,7 +15,7 @@ import {
   focusRing,
   type GlassMenuItem,
 } from "@/components/glass";
-import { centsToInput, formatCents, parseDollars } from "@/lib/office";
+import { centsToInput, formatCents, parseDollars, unitLabel } from "@/lib/office";
 import { ErrorNote, officeApi, priceItemUrl, toOfficeError, type OfficeApiError } from "../_ui/api";
 import {
   BookIcon,
@@ -28,6 +28,7 @@ import {
   hintClass,
   labelClass,
 } from "../_ui/ui";
+import { GuideHint } from "../../GuideHint";
 
 // Tabela de preços (price book): os serviços e peças que o dono cobra sempre, para montar
 // orçamentos e faturas em poucos toques. Lista com busca; "Add item" e "Edit" abrem a mesma folha.
@@ -69,6 +70,7 @@ export function PriceBook({ items, readOnly }: { items: PriceItem[]; readOnly: b
           title="Add the work you do most"
           description="Save your usual services and parts with their prices once. Then build estimates and invoices in a few taps."
           actions={addButton}
+          footnote={<GuideHint section="settings" />}
         />
       ) : (
         <>
@@ -92,7 +94,7 @@ export function PriceBook({ items, readOnly }: { items: PriceItem[]; readOnly: b
             className="mt-4 overflow-hidden"
           >
             {active.length === 0 ? (
-              <p className="px-5 py-8 text-center text-[15px] text-slate-500">
+              <p className="px-5 py-8 text-center text-[15px] text-(--glass-fg-muted)">
                 {q ? "Nothing matches." : "No active items."}
               </p>
             ) : (
@@ -196,7 +198,7 @@ function PriceRow({
               key: "deactivate",
             }
           : {
-              label: "Make active again",
+              label: "Reactivate",
               icon: <CheckIcon />,
               onSelect: () => void setActive(true),
               disabled: busy,
@@ -209,7 +211,7 @@ function PriceRow({
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-center gap-2">
           <span
-            className={`truncate text-[15px] leading-6 font-semibold ${item.active ? "text-ink" : "text-slate-500"}`}
+            className={`truncate text-[15px] leading-6 font-semibold ${item.active ? "text-ink" : "text-(--glass-fg-muted)"}`}
           >
             {item.name}
           </span>
@@ -229,7 +231,9 @@ function PriceRow({
         <span className="block text-[15px] font-semibold text-ink">
           {formatCents(item.unitPriceCents)}
         </span>
-        {item.unit && <span className="block text-[12px] text-slate-500">per {item.unit}</span>}
+        {item.unit && (
+          <span className="block text-[12px] text-(--glass-fg-muted)">{unitLabel(item.unit)}</span>
+        )}
       </span>
     </>
   );
@@ -373,7 +377,7 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
 
         <div>
           <label htmlFor={`${ids}-description`} className={labelClass}>
-            Description <span className="font-normal text-slate-500">(optional)</span>
+            Description <span className="font-normal text-(--glass-fg-muted)">(optional)</span>
           </label>
           <textarea
             id={`${ids}-description`}
@@ -396,7 +400,7 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
             <div className="relative mt-1.5">
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+                className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
               >
                 $
               </span>

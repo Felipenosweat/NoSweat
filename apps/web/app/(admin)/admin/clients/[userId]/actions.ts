@@ -7,6 +7,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { getAccount, requireAdmin } from "@/server/admin";
 import { AccountAccessError, setLoginDisabled } from "@/server/admin/account-access";
+import { revalidateAdmin } from "@/server/admin/cache";
 import { VIEW_AS_COOKIE, signViewAsToken, viewAsCookieOptions } from "@/server/auth/view-as-token";
 import { extendExpiry, getGrantStore, isGrantActive, PLANS } from "@/server/billing";
 import { sameInstant } from "@/server/billing/grants";
@@ -43,7 +44,9 @@ async function requireClient(userId: string) {
   return admin;
 }
 
+/** Limpa o cache do admin (contas, planos, números) e recarrega a ficha e as abas. */
 function refresh(userId: string) {
+  revalidateAdmin();
   revalidatePath(`/admin/clients/${userId}`);
   revalidatePath("/admin", "layout");
 }

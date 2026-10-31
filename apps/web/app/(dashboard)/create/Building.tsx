@@ -1,13 +1,20 @@
 "use client";
 
 import type { SiteSpec } from "@nosweat/schema";
-import { SiteRenderer } from "@nosweat/templates";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from "react";
 import { publishedSlug } from "./brief";
 import styles from "./create.module.css";
 import { focusRing, primaryButton, secondaryButton } from "./ui";
 import { PhotoPlanBox } from "./WizardPickers";
+
+// O desenho do site (pacote de templates: todas as composições e seções) só baixa quando a prévia
+// aparece, no fim da geração: fora do JS da primeira carga do /create. A caixa da prévia já
+// reserva o espaço (aspect-ratio), então nada pula quando ele chega.
+const SiteRenderer = dynamic(() => import("@nosweat/templates").then((m) => m.SiteRenderer), {
+  ssr: false,
+});
 
 /** Etapas mostradas enquanto o site é gerado. A última só fecha quando a resposta chega. */
 export const BUILD_STEPS = [
@@ -53,7 +60,7 @@ function useTypedText(text: string): string {
 function UrlLine({ slug, className }: { slug: string; className: string }) {
   return (
     <span className={`font-display font-semibold tracking-[-0.01em] ${className}`}>
-      <span className="text-slate-500">nosweatfd.com/s/</span>
+      <span className="text-(--glass-fg-muted)">nosweatfd.com/s/</span>
       <span className="text-brand">{slug}</span>
       <span
         aria-hidden="true"
@@ -114,6 +121,10 @@ type BuildingPanelProps = {
 
 export function BuildingPanel({ progress, slug, slow = false, headingRef }: BuildingPanelProps) {
   const current = BUILD_STEPS[Math.min(progress, BUILD_STEPS.length - 1)];
+  // Enquanto a IA escreve, já baixa o desenho do site: a prévia aparece na hora ao terminar.
+  useEffect(() => {
+    void import("@nosweat/templates");
+  }, []);
   return (
     <div className="flex min-h-[calc(100svh-10rem)] items-center justify-center lg:min-h-[calc(100svh-13rem)]">
       <section
@@ -140,7 +151,11 @@ export function BuildingPanel({ progress, slug, slow = false, headingRef }: Buil
             return (
               <li key={label} className="flex items-center gap-3 py-2.5 text-[15px]">
                 <StepIcon state={state} />
-                <span className={state === "pending" ? "text-slate-500" : "font-medium text-ink"}>
+                <span
+                  className={
+                    state === "pending" ? "text-(--glass-fg-muted)" : "font-medium text-ink"
+                  }
+                >
                   {label}
                 </span>
                 <span className="sr-only">
@@ -151,7 +166,9 @@ export function BuildingPanel({ progress, slug, slow = false, headingRef }: Buil
           })}
         </ol>
 
-        <p className={`mt-4 text-[13px] ${slow ? "font-medium text-ink" : "text-slate-500"}`}>
+        <p
+          className={`mt-4 text-[13px] ${slow ? "font-medium text-ink" : "text-(--glass-fg-muted)"}`}
+        >
           {slow ? SLOW_NOTE : "Keep this tab open. It usually takes less than a minute."}
         </p>
         <p className="sr-only" aria-live="polite">
@@ -266,7 +283,7 @@ export function ReadyPanel({ siteId, spec, signedIn = true, headingRef }: ReadyP
         </div>
         <SiteThumbnail spec={spec} />
       </div>
-      <p className="mt-3 text-center text-[13px] text-slate-500">
+      <p className="mt-3 text-center text-[13px] text-(--glass-fg-muted)">
         Your address once you publish. You can connect your own domain later.
       </p>
       <div className="mx-auto mt-8 max-w-[36rem]">

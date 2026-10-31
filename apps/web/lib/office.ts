@@ -36,7 +36,14 @@ export const ESTIMATE_STATUS_TONES: Record<EstimateStatus, StatusTone> = {
 };
 
 /** Filtros da lista de orçamentos (`?status=` na URL). */
-export const ESTIMATE_FILTERS = ["all", "draft", "waiting", "approved", "declined"] as const;
+export const ESTIMATE_FILTERS = [
+  "all",
+  "draft",
+  "waiting",
+  "approved",
+  "declined",
+  "expired",
+] as const;
 export type EstimateFilter = (typeof ESTIMATE_FILTERS)[number];
 
 export const ESTIMATE_FILTER_LABELS: Record<EstimateFilter, string> = {
@@ -45,6 +52,7 @@ export const ESTIMATE_FILTER_LABELS: Record<EstimateFilter, string> = {
   waiting: "Waiting",
   approved: "Approved",
   declined: "Declined",
+  expired: "Expired",
 };
 
 export function isEstimateFilter(value: string): value is EstimateFilter {
@@ -53,16 +61,18 @@ export function isEstimateFilter(value: string): value is EstimateFilter {
 
 /**
  * `?status=` da URL → filtro. Aceita também os status do contrato (o painel inicial linka
- * `?status=sent`): sent → Waiting, expired → Declined. Desconhecido = "all".
+ * `?status=sent`): sent → Waiting; expired tem filtro próprio. Desconhecido = "all".
  */
 export function parseEstimateFilter(value: string): EstimateFilter {
   if (isEstimateFilter(value)) return value;
   if (value === "sent") return "waiting";
-  if (value === "expired") return "declined";
   return "all";
 }
 
-/** O orçamento entra no filtro? "Declined" junta recusados e vencidos (não viraram serviço). */
+/**
+ * O orçamento entra no filtro? "Declined" é só o que o cliente recusou; "Expired" é o que passou
+ * da validade sem resposta (o dono ainda pode dar mais prazo e mandar de novo).
+ */
 export function matchesEstimateFilter(status: EstimateStatus, filter: EstimateFilter): boolean {
   switch (filter) {
     case "all":
@@ -74,7 +84,9 @@ export function matchesEstimateFilter(status: EstimateStatus, filter: EstimateFi
     case "approved":
       return status === "approved";
     case "declined":
-      return status === "declined" || status === "expired";
+      return status === "declined";
+    case "expired":
+      return status === "expired";
   }
 }
 
@@ -84,6 +96,35 @@ export function matchesEstimateFilter(status: EstimateStatus, filter: EstimateFi
  */
 export function estimateItemsEditable(status: EstimateStatus): boolean {
   return status === "draft" || status === "sent" || status === "expired";
+}
+
+/** O que diz quem respondeu o orçamento (campos opcionais: a lista pode não ter todos). */
+type EstimateAnswer = {
+  status: EstimateStatus;
+  approvedByName?: string | null;
+  declineReason?: string | null;
+};
+
+/**
+ * O cliente respondeu pelo link? Aprovar pelo link exige o nome digitado (`approvedByName`);
+ * recusar pelo link grava o motivo, ou "" quando ele não escreve nenhum. O dono marcando a
+ * resposta à mão não grava nenhum dos dois (ficam `null`). Recusa pelo link sem motivo gravada
+ * antes do "" também ficou `null`: não dá para distinguir e conta como marcada pelo dono.
+ */
+export function answeredByCustomer(estimate: EstimateAnswer): boolean {
+  if (estimate.status === "approved") return typeof estimate.approvedByName === "string";
+  if (estimate.status === "declined") return typeof estimate.declineReason === "string";
+  return false;
+}
+
+/**
+ * O dono pode reabrir (voltar a "Waiting")? Só aprovado/recusado marcado por ele e sem job. A
+ * fatura criada do orçamento só o servidor confere (409 com o motivo); campos ausentes contam como
+ * "talvez" (o servidor decide).
+ */
+export function estimateReopenable(estimate: EstimateAnswer & { jobId?: string | null }): boolean {
+  if (estimate.status !== "approved" && estimate.status !== "declined") return false;
+  return !answeredByCustomer(estimate) && !estimate.jobId;
 }
 
 // ---------- faturas ----------
@@ -203,6 +244,12 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   other: "Other",
 };
 
+/**
+ * Referência do pagamento lançado por "Mark as paid" (o saldo que faltava, forma "other"). Aparece
+ * na lista de pagamentos; apagar esse pagamento desfaz.
+ */
+export const MARKED_PAID_REFERENCE = "Marked paid";
+
 /** Dica do campo "Reference" para cada forma de pagamento. */
 export const PAYMENT_REFERENCE_HINTS: Record<PaymentMethod, string> = {
   cash: "Optional note",
@@ -266,6 +313,13 @@ export function centsToInput(cents: number, emptyWhenZero = false): string {
   return (cents / 100).toFixed(2);
 }
 
+/** Unidade do preço: "each" fica "each" (nunca "per each"); as outras ganham "per" ("per hour"). */
+export function unitLabel(unit: string): string {
+  const clean = unit.trim();
+  if (!clean) return "";
+  return clean.toLowerCase() === "each" ? "each" : `per ${clean}`;
+}
+
 // ---------- datas ----------
 
 /** "2026-10-26" + 30 dias → "2026-11-25" (sem fuso: conta em UTC). */
@@ -273,6 +327,40 @@ export function addDays(date: string, days: number): string {
   const [y = 2000, m = 1, d = 1] = date.split("-").map(Number);
   const next = new Date(Date.UTC(y, m - 1, d + days));
   return next.toISOString().slice(0, 10);
+}
+
+/** Fuso padrão quando a empresa não tem um (ou o salvo é inválido). */
+export const DEFAULT_TIME_ZONE = "America/New_York";
+
+/** Fuso válido para o Intl (inválido, vazio ou ausente → o padrão). */
+export function safeOfficeTimeZone(timeZone: string | null | undefined): string {
+  if (!timeZone) return DEFAULT_TIME_ZONE;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return timeZone;
+  } catch {
+    return DEFAULT_TIME_ZONE;
+  }
+}
+
+/**
+ * Dia ("AAAA-MM-DD") de um instante ISO no fuso da empresa. `iso.slice(0, 10)` daria o dia em
+ * UTC (à noite nos EUA já é o dia seguinte). Data sem hora ("2026-10-26") volta igual.
+ */
+export function isoDateIn(iso: string, timeZone?: string | null): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return iso.slice(0, 10);
+  return dateKeyIn(safeOfficeTimeZone(timeZone), at);
+}
+
+// ---------- empresa ----------
+
+/** Nome da empresa para frases ("the business" quando o dono ainda não preencheu). */
+export function companyLabel(name: string | null | undefined, capitalize = false): string {
+  const clean = name?.trim();
+  if (clean) return clean;
+  return capitalize ? "The business" : "the business";
 }
 
 // ---------- listas ----------

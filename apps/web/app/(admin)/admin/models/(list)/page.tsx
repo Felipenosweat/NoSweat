@@ -6,8 +6,8 @@ import { SiteThumb } from "@/components/SiteThumb";
 import { CATEGORY_LABELS } from "@/lib/model-studio";
 import { requireAdmin } from "@/server/admin";
 import { listModels, summarize, type StudioModel } from "@/server/models";
-import { AdminPageHeader, panelText } from "../AdminUi";
-import { ModelActions } from "./ModelActions";
+import { AdminPageHeader, panelText } from "../../AdminUi";
+import { ModelActions } from "../ModelActions";
 
 export const metadata: Metadata = { title: "Model studio", robots: { index: false } };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ConvertEstimateResponse,
   CreateInvoiceRequest,
   InvoiceResponse,
   JobResponse,
@@ -11,7 +12,7 @@ import {
 } from "@nosweat/schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   ConfirmDialog,
   GlassButton,
@@ -128,6 +129,7 @@ export function JobHero({
   const [confirmError, setConfirmError] = useState<string | null>(null);
   const [invoicing, setInvoicing] = useState(false);
   const [invoiceError, setInvoiceError] = useState<ClientsApiError | null>(null);
+  const invoicingRef = useRef(false);
 
   const canceled = job.status === "canceled";
   const current = stepIndex(job.status);
@@ -144,13 +146,41 @@ export function JobHero({
   }
 
   async function createInvoice() {
+    if (invoicingRef.current) return;
+    invoicingRef.current = true;
     setInvoicing(true);
     setInvoiceError(null);
-    // Uma linha com o título e o valor do serviço (o dono ajusta na fatura).
+    // Serviço que veio de um orçamento: a fatura sai do orçamento (mesmos itens, imposto e
+    // desconto), sem somar imposto de novo em cima do valor que já tem imposto.
+    if (job.estimateId) {
+      try {
+        const result = await clientsApi(
+          `/api/office/estimates/${encodeURIComponent(job.estimateId)}/convert`,
+          ConvertEstimateResponse,
+          { method: "POST", body: { createJob: false, createInvoice: true } },
+        );
+        if (result.invoice) {
+          router.push(`/invoices/${encodeURIComponent(result.invoice.id)}`);
+          return;
+        }
+      } catch (err) {
+        const apiError = toClientsError(err);
+        // 409 = o orçamento não está aprovado: cai na fatura de uma linha abaixo.
+        if (apiError.status !== 409) {
+          setInvoiceError(apiError);
+          setInvoicing(false);
+          invoicingRef.current = false;
+          return;
+        }
+      }
+    }
+    // Uma linha com o título e o valor do serviço (o dono ajusta na fatura). O valor do serviço
+    // já é o final (pode vir de um orçamento com imposto): a linha não recebe imposto.
     const parsed = CreateInvoiceRequest.safeParse({
       clientId: job.clientId,
       jobId: job.id,
       title: job.title,
+      taxRateBps: 0,
       items: [
         {
           priceItemId: null,
@@ -158,13 +188,14 @@ export function JobHero({
           description: "",
           quantity: 1,
           unitPriceCents: job.valueCents ?? 0,
-          taxable: true,
+          taxable: false,
         },
       ],
     });
     if (!parsed.success) {
       setInvoiceError(toClientsError(null));
       setInvoicing(false);
+      invoicingRef.current = false;
       return;
     }
     try {
@@ -176,6 +207,7 @@ export function JobHero({
     } catch (err) {
       setInvoiceError(toClientsError(err));
       setInvoicing(false);
+      invoicingRef.current = false;
     }
   }
 
@@ -218,6 +250,21 @@ export function JobHero({
           Restore job
         </GlassButton>
       );
+    } else if (job.status === "done") {
+      // Feito (mesmo sem data): o próximo passo é cobrar, nunca "Pick a time".
+      if (!job.invoiceId) {
+        next = (
+          <GlassButton
+            variant="primary"
+            icon={<InvoiceIcon />}
+            loading={invoicing}
+            onClick={() => void createInvoice()}
+            fullWidth
+          >
+            {invoicing ? "Creating invoice…" : "Create invoice"}
+          </GlassButton>
+        );
+      }
     } else if (job.status === "unscheduled" || !job.startAt) {
       next = (
         <GlassButton
@@ -249,18 +296,6 @@ export function JobHero({
           fullWidth
         >
           Mark as done
-        </GlassButton>
-      );
-    } else if (job.status === "done" && !job.invoiceId) {
-      next = (
-        <GlassButton
-          variant="primary"
-          icon={<InvoiceIcon />}
-          loading={invoicing}
-          onClick={() => void createInvoice()}
-          fullWidth
-        >
-          {invoicing ? "Creating invoice…" : "Create invoice"}
         </GlassButton>
       );
     }
@@ -358,7 +393,12 @@ export function JobHero({
           )}
         </p>
         {!readOnly && !canceled && job.startAt && (
-          <GlassButton variant="ghost" size="sm" onClick={() => setRescheduleOpen(true)}>
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            onClick={() => setRescheduleOpen(true)}
+            className="max-sm:min-h-11"
+          >
             Reschedule
           </GlassButton>
         )}
@@ -367,6 +407,7 @@ export function JobHero({
             href={scheduleHref({ view: "day", date: day, team: null })}
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
           >
             See day
           </GlassButton>
@@ -397,7 +438,7 @@ export function JobHero({
                 <span
                   className={cx(
                     "text-[13px] leading-4 font-semibold",
-                    done ? "text-ink" : "text-slate-500",
+                    done ? "text-ink" : "text-(--glass-fg-muted)",
                   )}
                 >
                   {step.label}
@@ -646,6 +687,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
   const { save, pending, error } = useJobPatch(job.id);
   const [title, setTitle] = useState(job.title);
   const [address, setAddress] = useState(job.address ?? "");
+  const [description, setDescription] = useState(job.description);
   const [value, setValue] = useState(
     job.valueCents !== null ? (job.valueCents / 100).toFixed(2) : "",
   );
@@ -662,6 +704,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
     const ok = await save({
       title: title.trim(),
       address: address.trim() || null,
+      description: description.trim(),
       valueCents: cents,
     });
     if (ok) onDone();
@@ -703,6 +746,20 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
             className={`${fieldClass} mt-1.5 h-11`}
           />
         </div>
+        <div>
+          <label htmlFor={`${ids}-description`} className={labelClass}>
+            Details
+          </label>
+          <textarea
+            id={`${ids}-description`}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            maxLength={4000}
+            rows={3}
+            placeholder="What the job is about"
+            className={`${fieldClass} mt-1.5 resize-y py-2.5 leading-[1.55]`}
+          />
+        </div>
         <div className="max-w-[12rem]">
           <label htmlFor={`${ids}-value`} className={labelClass}>
             Value
@@ -710,7 +767,7 @@ function EditDetailsForm({ job, onDone }: { job: Job; onDone: () => void }) {
           <div className="relative mt-1.5">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500"
+              className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-(--glass-fg-muted)"
             >
               $
             </span>
@@ -776,6 +833,7 @@ export function AssigneesCard({
           <GlassButton
             variant="ghost"
             size="sm"
+            className="max-sm:min-h-11"
             onClick={() => {
               setValue(job.assigneeIds);
               setOpen(true);
@@ -786,14 +844,16 @@ export function AssigneesCard({
         )}
       </div>
       {assigned.length === 0 ? (
-        <p className="mt-1.5 text-[15px] text-slate-500">No one assigned yet.</p>
+        <p className="mt-1.5 text-[15px] text-(--glass-fg-muted)">No one assigned yet.</p>
       ) : (
         <ul className="mt-2 grid gap-1.5">
           {assigned.map((member) => (
             <li key={member.id} className="flex min-h-9 items-center gap-2.5 text-[15px] text-ink">
               <TeamDot color={member.color} />
               <span className="font-medium">{member.name}</span>
-              {member.role && <span className="text-[13px] text-slate-500">{member.role}</span>}
+              {member.role && (
+                <span className="text-[13px] text-(--glass-fg-muted)">{member.role}</span>
+              )}
             </li>
           ))}
         </ul>

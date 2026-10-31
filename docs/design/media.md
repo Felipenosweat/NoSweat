@@ -18,7 +18,7 @@ O que foi olhado, o que mudou e de onde vem cada imagem. Todas as fotos ficam em
 ## Imagens da landing
 
 - `public/landing/wall/*.webp` (parede do topo e galeria) e `public/landing/build/*.webp`
-  (montagem do site): **capturas do nosso próprio renderer** (`/examples/<slug>?embed=1`), refeitas
+  (montagem do site): **capturas do nosso próprio renderer** (`/examples/<slug>/embed`), refeitas
   depois das composições novas. Direitos: nossos; as fotos dentro delas são as da tabela acima.
 - Demonstrações de recursos (`components/landing/Features.tsx`): nenhuma imagem de interface. O
   celular e o navegador mostram o `<SiteRenderer>` de verdade; e-mail, painel de pedido e busca são

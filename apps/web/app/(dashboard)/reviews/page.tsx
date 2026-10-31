@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/DashboardUi";
-import { EmptyState, GlassButton } from "@/components/glass";
+import { EmptyState, GlassButton, Notice } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import { StarIcon } from "../NavIcons";
@@ -58,7 +58,7 @@ export default async function ReviewsPage() {
         It takes about a minute. You only do this once.
       </p>
       <div className="mt-4">
-        <GuideSteps headingId="how-to-heading" />
+        <GuideSteps headingId="how-to-heading" collapsed={hasLink} />
       </div>
     </section>
   );
@@ -76,12 +76,9 @@ export default async function ReviewsPage() {
       />
 
       {sites === null ? (
-        <p
-          role="alert"
-          className="glass-edge mt-8 rounded-2xl bg-red-50/90 px-4 py-3 text-[15px] text-red-700"
-        >
+        <Notice tone="error" className="mt-8">
           We couldn&rsquo;t load your websites. Please refresh the page.
-        </p>
+        </Notice>
       ) : sites.length === 0 ? (
         <>
           <EmptyState
