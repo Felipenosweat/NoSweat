@@ -282,8 +282,8 @@ function GlassNav({ model }: { model: SiteModel }) {
     header === "bar"
       ? "ns-navbar-dock @7xl:h-[4.5rem] @7xl:rounded-none @7xl:px-16"
       : centered
-        ? "@7xl:grid @7xl:grid-cols-[1fr_auto_1fr] @7xl:pr-2 @7xl:pl-6"
-        : "@7xl:pr-2 @7xl:pl-6";
+        ? "@7xl:grid @7xl:h-16 @7xl:grid-cols-[1fr_auto_1fr] @7xl:pr-2 @7xl:pl-6"
+        : "@7xl:h-16 @7xl:pr-2 @7xl:pl-6";
   const brandPart = split
     ? "@3xl:h-14 @3xl:flex-initial @3xl:rounded-full @3xl:px-6 @7xl:h-auto @7xl:flex-1 @7xl:rounded-none @7xl:px-0"
     : centered
@@ -299,7 +299,7 @@ function GlassNav({ model }: { model: SiteModel }) {
       className={`ns-nav pointer-events-none fixed inset-x-0 top-0 z-40 flex px-3 pt-[max(0.625rem,env(safe-area-inset-top))] ${shell} ${header === "bar" ? "@7xl:px-0 @7xl:pt-0" : "@7xl:px-10 @7xl:pt-5"}`}
     >
       <div
-        className={`ns-glass ns-navbar pointer-events-auto relative flex h-14 w-full min-w-0 items-center gap-1.5 rounded-full pr-1.5 pl-5 text-ns-text ${bar} @7xl:h-16 @7xl:w-full @7xl:gap-8 ${desktop}`}
+        className={`ns-glass ns-navbar pointer-events-auto relative flex h-14 w-full min-w-0 items-center gap-1.5 rounded-full pr-1.5 pl-5 text-ns-text ${bar} @7xl:w-full @7xl:gap-8 ${desktop}`}
       >
         <div className={`ns-navpart flex min-w-0 flex-1 items-center ${brandPart}`}>
           <a
