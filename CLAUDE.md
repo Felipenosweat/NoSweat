@@ -156,7 +156,7 @@ Como as peças se ligam:
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 - Prospecção (`/admin/prospects`, `server/prospects/`, migration 0025, `docs/prospecting.md`):
-  o admin busca "ramo em cidade, UF" → empresas do OpenStreetMap/Overpass (grátis, padrão; ©
+  o admin clica "Find leads" (sem digitar nada: cidade dos EUA sorteada entre as ainda não buscadas, qualquer ramo, só empresas com telefone e sem site) ou busca "ramo em cidade, UF" → empresas do OpenStreetMap/Overpass (grátis, padrão; ©
   OpenStreetMap contributors, ODbL, atribuição na página) ou do Google Places (só com
   `GOOGLE_MAPS_API_KEY`); `PROSPECTS_SOURCE=mock` (testes) usa empresas de mentira. Cada site é
   conferido uma vez (`website.ts`: none/weak/ok/unknown + e-mail público, nunca adivinhado). A

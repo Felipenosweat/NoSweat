@@ -79,11 +79,24 @@ function parseQuery(textQuery: string): { trade: string; city: string; state: st
   };
 }
 
+/** Busca "qualquer empresa": cada empresa de mentira ganha um ramo diferente. */
+const ANY_TRADES = [
+  "Plumber",
+  "Bakery",
+  "Barber",
+  "Roofer",
+  "Nail Salon",
+  "Auto Repair",
+  "Florist",
+  "Dentist",
+];
+
 export function mockBusinesses(textQuery: string): PlaceBusiness[] {
   const { trade, city, state } = parseQuery(textQuery);
-  const tradeName = titleCase(trade);
+  const any = trade.toLowerCase() === "local businesses";
   const cityName = titleCase(city);
   return SEEDS.map((seed, index) => {
+    const tradeName = any ? ANY_TRADES[index % ANY_TRADES.length]! : titleCase(trade);
     const name = seed.name(tradeName, cityName);
     const n = String(index + 1).padStart(2, "0");
     return {

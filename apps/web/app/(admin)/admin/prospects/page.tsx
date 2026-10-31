@@ -208,7 +208,7 @@ export default async function AdminProspectsPage({ searchParams }: ProspectsPage
             emptyDescription={
               narrowed
                 ? "Try another filter."
-                : "Search a trade and a city above. Businesses without a website come first in line for a preview."
+                : "Click Find leads above. Businesses without a website come first in line for a preview."
             }
           />
         </>

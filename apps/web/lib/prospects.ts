@@ -59,19 +59,34 @@ const US_STATE = /^[A-Za-z]{2}$/;
 export const PROSPECT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** POST /api/admin/prospects/search */
-export const ProspectSearchRequest = z.object({
-  trade: z
+// Tudo opcional: vazio = "Find leads" (qualquer ramo, cidade dos EUA sorteada). Cidade só vale
+// com o estado junto.
+const optionalText = (max: number, message: string) =>
+  z
     .string()
     .trim()
-    .min(2, "Type a trade, like “plumber”.")
-    .max(60, "Keep the trade under 60 characters."),
-  city: z.string().trim().min(2, "Type a city.").max(60, "Keep the city under 60 characters."),
-  state: z
-    .string()
-    .trim()
-    .regex(US_STATE, "Use the two-letter state, like TX.")
-    .transform((value) => value.toUpperCase()),
-});
+    .max(max, message)
+    .optional()
+    .transform((value) => value || undefined);
+
+export const ProspectSearchRequest = z
+  .object({
+    trade: optionalText(60, "Keep the trade under 60 characters."),
+    city: optionalText(60, "Keep the city under 60 characters."),
+    state: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => value?.toUpperCase() || undefined)
+      .refine(
+        (value) => value === undefined || US_STATE.test(value),
+        "Use the two-letter state, like TX.",
+      ),
+  })
+  .refine((v) => Boolean(v.city) === Boolean(v.state), {
+    message: "Type the city and the state together, or leave both empty.",
+    path: ["city"],
+  });
 export type ProspectSearchRequest = z.infer<typeof ProspectSearchRequest>;
 
 export const ProspectSearchResponse = z.object({
