@@ -25,7 +25,8 @@ const DEFAULT_EDIT_MODEL = "claude-haiku-5-5";
  * Geração a partir do modelo (padrão ligado; AI_MODEL_FIRST=false desliga): o modelo barato
  * (o mesmo da edição) escreve só o ModelFill; se falhar duas vezes, volta para o caminho completo.
  */
-const MODEL_FIRST_MAX_TOKENS = 2000;
+// Folga para o visual (tema, estilo, ordem) e a busca de foto de cada serviço.
+const MODEL_FIRST_MAX_TOKENS = 2600;
 /** Tempo máximo de cada chamada do caminho barato: sobra tempo para o caminho completo. */
 const MODEL_FIRST_TIMEOUT_MS = 30_000;
 /**

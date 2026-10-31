@@ -175,7 +175,9 @@ export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): Mo
       name: item.name,
       description: copy.description,
       ...(item.group ? { group: item.group } : {}),
-      ...(model.template === "portfolio" ? {} : { imageQuery: item.name.toLowerCase().slice(0, 80) }),
+      ...(model.template === "portfolio"
+        ? {}
+        : { imageQuery: item.name.toLowerCase().slice(0, 80) }),
     })),
     faq: copy.faq,
     about: null,

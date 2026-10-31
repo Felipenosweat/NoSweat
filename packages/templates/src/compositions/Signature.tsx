@@ -4,6 +4,7 @@ import { PhoneIcon } from "../components/icons";
 import { Photo, PhotoCredit } from "../components/photo";
 import type { TemplateProps } from "../types";
 import { Motion } from "./Motion";
+import { NavMenu } from "./NavMenu";
 import { ReviewUsLink } from "./ReviewLink";
 import {
   buildModel,
@@ -106,7 +107,16 @@ export function SignatureComposition({
       case "about":
         return <Statement key={key} id={id} model={model} data={section} pool={pool} />;
       case "services":
-        return <ServiceIndex key={key} id={id} model={model} data={section} pool={pool} />;
+        return (
+          <ServiceIndex
+            key={key}
+            id={id}
+            model={model}
+            data={section}
+            pool={pool}
+            variant={composition}
+          />
+        );
       case "gallery":
         return <Rail key={key} id={id} model={model} data={section} motion={motion} />;
       case "testimonials":
@@ -121,17 +131,21 @@ export function SignatureComposition({
               >
                 <Accent text={model.titleOf(section)} />
               </h2>
-              <FaqList data={section} className="@5xl:col-span-7 @5xl:col-start-6" />
+              <div data-ns-fade className="@5xl:col-span-7 @5xl:col-start-6">
+                <FaqList data={section} />
+              </div>
             </div>
           </section>
         );
       case "contact":
         return (
           <div key={key}>
-            <ServiceAreaList
-              model={model}
-              className={`border-t border-ns-border py-(--ns-section-y) ${wrap}`}
-            />
+            <div data-ns-fade>
+              <ServiceAreaList
+                model={model}
+                className={`border-t border-ns-border py-(--ns-section-y) ${wrap}`}
+              />
+            </div>
             <Booking id={id} model={model} data={section} pool={pool} endpoint={contactEndpoint} />
           </div>
         );
@@ -239,7 +253,10 @@ function GlassNav({ model }: { model: SiteModel }) {
       />
     ) : null;
   const menu = inline ? (
-    <nav aria-label="Main" className={`hidden @5xl:block ${centered ? "@7xl:order-1" : ""}`}>
+    <nav
+      aria-label="Main"
+      className={`hidden @5xl:block ${centered ? "@7xl:col-start-1 @7xl:row-start-1" : ""}`}
+    >
       <ul className="flex items-center gap-7 text-sm @7xl:gap-9 @7xl:text-[0.9375rem]">
         {links.map((link) => (
           <li key={link.anchor}>
@@ -256,9 +273,7 @@ function GlassNav({ model }: { model: SiteModel }) {
   ) : null;
 
   // Classes por formato. Tablet = @3xl até antes de @7xl (o visual aprovado no iPad).
-  const shell = split
-    ? "@3xl:px-6 @3xl:pt-4"
-    : "justify-center @3xl:px-4 @3xl:pt-4";
+  const shell = split ? "@3xl:px-6 @3xl:pt-4" : "justify-center @3xl:px-4 @3xl:pt-4";
   const bar = split
     ? // No tablet a barra de fora fica transparente e as duas cápsulas ganham o vidro.
       "@3xl:h-auto @3xl:justify-between @3xl:gap-4 @3xl:p-0"
@@ -270,13 +285,13 @@ function GlassNav({ model }: { model: SiteModel }) {
         ? "@7xl:grid @7xl:grid-cols-[1fr_auto_1fr] @7xl:pr-2 @7xl:pl-6"
         : "@7xl:pr-2 @7xl:pl-6";
   const brandPart = split
-    ? "@3xl:h-14 @3xl:flex-none @3xl:rounded-full @3xl:px-6 @7xl:h-auto @7xl:flex-1 @7xl:rounded-none @7xl:px-0"
+    ? "@3xl:h-14 @3xl:flex-initial @3xl:rounded-full @3xl:px-6 @7xl:h-auto @7xl:flex-1 @7xl:rounded-none @7xl:px-0"
     : centered
-      ? "@3xl:flex-none @7xl:order-2 @7xl:justify-center"
-      : "@3xl:flex-none @7xl:flex-1";
+      ? "@3xl:flex-initial @7xl:col-start-2 @7xl:row-start-1 @7xl:justify-center"
+      : "@3xl:flex-initial @7xl:flex-1";
   const actionsPart = split
     ? "@3xl:h-14 @3xl:gap-5 @3xl:rounded-full @3xl:pr-1.5 @3xl:pl-5 @7xl:h-auto @7xl:gap-6 @7xl:rounded-none @7xl:p-0"
-    : `@3xl:gap-5 @5xl:gap-8 @7xl:gap-6 ${centered ? "@7xl:order-3 @7xl:justify-self-end" : ""}`;
+    : `@3xl:gap-5 @5xl:gap-8 @7xl:gap-6 ${centered ? "@7xl:col-start-3 @7xl:row-start-1 @7xl:justify-self-end" : ""}`;
 
   return (
     <header
@@ -444,10 +459,7 @@ function SignatureHero({
           className="absolute inset-x-0 -top-[6%] bottom-0 -z-10 bg-ns-text"
           data-ns-parallax="0.35"
         >
-          <div
-            data-kind={image.kind}
-            className="ns-photo ns-hero-zoom absolute inset-0 overflow-hidden"
-          >
+          <div data-kind={image.kind} className="ns-photo absolute inset-0 overflow-hidden">
             <Photo
               image={image}
               priority
@@ -519,8 +531,8 @@ function SignatureHero({
           />
         </div>
         <figure className="@5xl:col-span-5">
+          {/* Foto do LCP: sem revelação (não some nem pisca ao carregar), só a paralaxe. */}
           <div
-            data-ns-reveal
             data-kind={image.kind}
             className="ns-photo relative aspect-[4/5] overflow-hidden bg-ns-surface"
           >
@@ -571,8 +583,8 @@ function SignatureHero({
           highlights={business.highlights}
           className="ns-hero-fade mt-6 text-ns-muted"
         />
+        {/* Foto do LCP: sem revelação (não some nem pisca ao carregar), só a paralaxe. */}
         <div
-          data-ns-reveal
           data-kind={image.kind}
           className="ns-photo relative mt-12 aspect-[4/3] overflow-hidden bg-ns-surface @3xl:aspect-[21/9]"
         >
@@ -659,7 +671,7 @@ function Statement({
   return (
     <section id={id} className="scroll-mt-28">
       <div className={`grid gap-8 py-(--ns-section-y) @5xl:grid-cols-12 ${wrap}`}>
-        <h2 className={`text-ns-muted @5xl:col-span-3 @5xl:pt-4 ${label}`}>
+        <h2 data-ns-fade className={`text-ns-muted @5xl:col-span-3 @5xl:pt-4 ${label}`}>
           {model.titleOf(data)}
         </h2>
         <p
@@ -732,28 +744,56 @@ function Statement({
   );
 }
 
-/** Serviços: faixa corrida e a lista grande num bloco escuro, com a foto que segue o mouse. */
+type ServiceItem = SectionOf<"services">["items"][number];
+type ServiceEntry = { item: ServiceItem; n: number };
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Serviços: faixa corrida e a lista grande num bloco escuro. Itens com foto (`item.image`, foto
+ * de banco "scene" ou do dono) viram cartões com foto, num arranjo diferente por composição
+ * (ver ServiceCards); itens sem foto continuam na lista, com a foto que segue o mouse. Sem
+ * nenhuma foto nos itens, a seção fica como sempre foi.
+ */
 function ServiceIndex({
   id,
   model,
   data,
   pool,
+  variant,
 }: {
   id?: string;
   model: SiteModel;
   data: SectionOf<"services">;
   pool: SiteImage[];
+  variant: Composition;
 }) {
   if (data.items.length === 0) return null;
   const names = serviceNames(model);
-  const groups: { name?: string; items: typeof data.items }[] = [];
-  for (const item of data.items) {
+  // Foto de cada nome na faixa corrida (no lugar da estrela).
+  const thumbs = new Map<string, SiteImage>();
+  for (const item of data.items) if (item.image) thumbs.set(item.name.trim(), item.image);
+  const groups: { name?: string; entries: ServiceEntry[] }[] = [];
+  data.items.forEach((item, i) => {
     const name = item.group?.trim() || undefined;
     const last = groups.at(-1);
-    if (last && last.name === name) last.items.push(item);
-    else groups.push({ name, items: [item] });
-  }
-  let n = 0;
+    const entry = { item, n: i + 1 };
+    if (last && last.name === name) last.entries.push(entry);
+    else groups.push({ name, entries: [entry] });
+  });
+  // Tipográfica: tudo em lista (a letra manda); a foto entra como uma pílula no nome.
+  const listOnly = variant === "typographic";
+  const rowsOf = (entries: ServiceEntry[]) =>
+    listOnly ? entries : entries.filter((entry) => !entry.item.image);
+  const rows = groups.flatMap((group) => rowsOf(group.entries));
+  // Foto que segue o mouse: a do próprio item; sem ela, uma das fotos do site.
+  const floatImages =
+    pool.length > 0
+      ? rows.map((entry, i) => entry.item.image ?? pool[i % pool.length] ?? pool[0])
+      : rows.every((entry) => entry.item.image)
+        ? rows.map((entry) => entry.item.image)
+        : [];
+  const floating = floatImages.filter((image): image is SiteImage => Boolean(image));
   return (
     <section id={id} className="scroll-mt-28">
       {names.length >= 3 && (
@@ -762,12 +802,28 @@ function ServiceIndex({
             className={`ns-marquee-track ${display} text-[length:clamp(2.75rem,7cqw,7.5rem)] leading-none`}
           >
             {[0, 1].map((copy) =>
-              names.map((name, i) => (
-                <span key={`${copy}-${i}`} className="flex items-center">
-                  <span className="px-[0.3em]">{name}</span>
-                  <span className="text-[0.4em] text-ns-primary">✦</span>
-                </span>
-              )),
+              names.map((name, i) => {
+                const thumb = thumbs.get(name);
+                return (
+                  <span key={`${copy}-${i}`} className="flex items-center">
+                    <span className="px-[0.3em]">{name}</span>
+                    {thumb ? (
+                      <span
+                        data-kind={thumb.kind}
+                        className="ns-photo relative mx-[0.15em] inline-block h-[0.78em] w-[1.25em] overflow-hidden rounded-full bg-ns-surface"
+                      >
+                        <Photo
+                          image={thumb}
+                          sizes="160px"
+                          className="absolute inset-0 size-full object-cover"
+                        />
+                      </span>
+                    ) : (
+                      <span className="text-[0.4em] text-ns-primary">✦</span>
+                    )}
+                  </span>
+                );
+              }),
             )}
           </div>
         </div>
@@ -784,62 +840,34 @@ function ServiceIndex({
             <Accent text={model.titleOf(data)} />
           </h2>
         </div>
-        {groups.map((group, g) => (
-          <div key={`${group.name ?? "items"}-${g}`} className="mt-12 first:mt-0">
-            {group.name && <h3 className={`mb-3 opacity-55 ${label}`}>{group.name}</h3>}
-            <ul className="border-b border-ns-background/15">
-              {group.items.map((item, i) => {
-                n += 1;
-                return (
-                  <li
-                    key={`${item.name}-${i}`}
-                    data-ns-float-row
-                    data-ns-rise
-                    className="ns-row group grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-2 border-t border-ns-background/15 py-6 @3xl:grid-cols-[4rem_1fr_1.1fr_10rem]"
-                  >
-                    <span className="hidden text-xs tabular-nums opacity-50 @3xl:block">
-                      {String(n).padStart(2, "0")}
-                    </span>
-                    {group.name ? (
-                      <h4
-                        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none transition duration-700 group-hover:translate-x-4 motion-reduce:transition-none`}
-                      >
-                        {item.name}
-                      </h4>
-                    ) : (
-                      <h3
-                        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none transition duration-700 group-hover:translate-x-4 motion-reduce:transition-none`}
-                      >
-                        {item.name}
-                      </h3>
-                    )}
-                    <p className="col-span-2 text-sm leading-relaxed opacity-70 @3xl:col-span-1">
-                      {item.description}
-                    </p>
-                    {(item.price || item.detail) && (
-                      <p className="row-start-1 text-right text-[0.9375rem] tabular-nums @3xl:row-auto">
-                        {item.price}
-                        {item.detail && (
-                          <span className="mt-1 block text-xs opacity-55">{item.detail}</span>
-                        )}
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-        {pool.length > 0 && (
+        {groups.map((group, g) => {
+          const level = group.name ? "h4" : "h3";
+          const cards = listOnly ? [] : group.entries.filter((entry) => entry.item.image);
+          const list = rowsOf(group.entries);
+          return (
+            <div key={`${group.name ?? "items"}-${g}`} className="mt-12 first:mt-0">
+              {group.name && <h3 className={`mb-3 opacity-55 ${label}`}>{group.name}</h3>}
+              <ServiceCards entries={cards} variant={variant} level={level} />
+              {list.length > 0 && (
+                <ul className={`border-b border-ns-background/15 ${cards.length ? "mt-12" : ""}`}>
+                  {list.map(({ item, n }) => (
+                    <ServiceRow key={`${item.name}-${n}`} item={item} n={n} level={level} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+        {floating.length > 0 && (
           <div
             aria-hidden="true"
             data-ns-float-box
             className="ns-float pointer-events-none fixed top-0 left-0 z-30"
           >
             <div className="ns-float-inner relative aspect-[4/5] w-72 overflow-hidden rounded-sm">
-              {pool.map((image, i) => (
+              {floating.map((image, i) => (
                 <div
-                  key={image.url}
+                  key={`${image.url}-${i}`}
                   data-ns-float-img
                   className="absolute inset-0"
                   style={{ opacity: i === 0 ? 1 : 0 }}
@@ -856,6 +884,255 @@ function ServiceIndex({
         )}
       </div>
     </section>
+  );
+}
+
+/** Linha da lista de serviços (número, nome grande, descrição, preço). */
+function ServiceRow({ item, n, level }: ServiceEntry & { level: "h3" | "h4" }) {
+  const Heading = level;
+  return (
+    <li
+      data-ns-float-row
+      data-ns-rise
+      className="ns-row group grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-2 border-t border-ns-background/15 py-6 @3xl:grid-cols-[4rem_1fr_1.1fr_10rem]"
+    >
+      <span className="hidden text-xs tabular-nums opacity-50 @3xl:block">{pad(n)}</span>
+      <Heading
+        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none transition duration-700 group-hover:translate-x-4 motion-reduce:transition-none`}
+      >
+        {item.name}
+        {item.image && (
+          // Pílula de foto no fim do nome (composição tipográfica: a letra continua mandando).
+          <span
+            aria-hidden="true"
+            data-kind={item.image.kind}
+            className="ns-photo ns-card-pill relative ml-[0.3em] inline-block h-[0.8em] w-[1.5em] overflow-hidden rounded-full bg-ns-background/10 align-[-0.06em]"
+          >
+            <Photo
+              image={item.image}
+              sizes="120px"
+              className="ns-card-img absolute inset-0 size-full object-cover"
+            />
+          </span>
+        )}
+      </Heading>
+      <div className="col-span-2 @3xl:col-span-1">
+        <p className="text-sm leading-relaxed opacity-70">{item.description}</p>
+        {item.image && (
+          <PhotoCredit image={item.image} className="mt-2 text-[0.6875rem] opacity-55" />
+        )}
+      </div>
+      {(item.price || item.detail) && (
+        <p className="row-start-1 text-right text-[0.9375rem] tabular-nums @3xl:row-auto">
+          {item.price}
+          {item.detail && <span className="mt-1 block text-xs opacity-55">{item.detail}</span>}
+        </p>
+      )}
+    </li>
+  );
+}
+
+/** Moldura de foto dos cartões: carrega sob demanda, assenta com a rolagem e cresce no hover. */
+function CardPhoto({
+  image,
+  sizes,
+  className = "",
+}: {
+  image: SiteImage;
+  sizes: string;
+  className?: string;
+}) {
+  return (
+    <div
+      data-kind={image.kind}
+      className={`ns-photo relative overflow-hidden bg-ns-background/10 ${className}`}
+    >
+      <div data-ns-zoom className="absolute inset-0">
+        <Photo
+          image={image}
+          sizes={sizes}
+          className="ns-card-img absolute inset-0 size-full object-cover"
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Nome, preço, descrição e crédito da foto de um cartão. */
+function CardText({
+  item,
+  n,
+  level,
+  big = false,
+  credit = true,
+}: ServiceEntry & { level: "h3" | "h4"; big?: boolean; credit?: boolean }) {
+  const Heading = level;
+  return (
+    <>
+      <div className="flex items-baseline justify-between gap-4">
+        <Heading
+          className={`${display} leading-[1.02] ${big ? "text-[length:clamp(2.25rem,4.4cqw,4.5rem)]" : "text-[length:clamp(1.625rem,2.4cqw,2.5rem)]"}`}
+        >
+          <span
+            aria-hidden="true"
+            className="mr-3 align-top font-ns-body text-xs tracking-normal tabular-nums opacity-50"
+          >
+            {pad(n)}
+          </span>
+          {item.name}
+        </Heading>
+        {item.price && <p className="shrink-0 text-[0.9375rem] tabular-nums">{item.price}</p>}
+      </div>
+      {item.detail && <p className="mt-1 text-xs opacity-55">{item.detail}</p>}
+      <p className="mt-3 max-w-prose text-sm leading-relaxed opacity-70">{item.description}</p>
+      {credit && item.image && (
+        <PhotoCredit image={item.image} className="mt-4 text-[0.6875rem] opacity-55" />
+      )}
+    </>
+  );
+}
+
+/**
+ * Cartões com foto dos serviços. Cada composição tem um ritmo próprio:
+ * - service-led: grade de cartões (2 ou 3 colunas, pela quantidade);
+ * - editorial: faixas de foto e texto alternando os lados;
+ * - immersive: fotos grandes com o texto por cima (a primeira de ponta a ponta se sobrar uma);
+ * - modular: mosaico (bento), a primeira foto ocupando dois andares.
+ */
+function ServiceCards({
+  entries,
+  variant,
+  level,
+}: {
+  entries: ServiceEntry[];
+  variant: Composition;
+  level: "h3" | "h4";
+}) {
+  if (entries.length === 0) return null;
+  const count = entries.length;
+
+  if (variant === "editorial" || count === 1) {
+    return (
+      <ul className="grid gap-16 @3xl:gap-24">
+        {entries.map((entry, i) => {
+          const flip = i % 2 === 1;
+          const image = entry.item.image;
+          if (!image) return null;
+          return (
+            <li
+              key={`${entry.item.name}-${entry.n}`}
+              data-ns-fade
+              className="ns-card grid items-center gap-6 @3xl:grid-cols-12 @3xl:gap-10"
+            >
+              <CardPhoto
+                image={image}
+                sizes="(min-width: 768px) 58vw, 100vw"
+                className={`aspect-[4/3] @3xl:col-span-7 @3xl:row-start-1 ${flip ? "@3xl:col-start-6" : "@3xl:col-start-1"}`}
+              />
+              <div
+                className={`@3xl:col-span-4 @3xl:row-start-1 ${flip ? "@3xl:col-start-1" : "@3xl:col-start-9"}`}
+              >
+                <CardText {...entry} level={level} big />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  if (variant === "immersive") {
+    const featureFirst = count % 2 === 1;
+    return (
+      <ul data-ns-stagger className="grid gap-4 @3xl:grid-cols-2 @3xl:gap-5">
+        {entries.map((entry, i) => {
+          const image = entry.item.image;
+          if (!image) return null;
+          const feature = featureFirst && i === 0;
+          return (
+            <li key={`${entry.item.name}-${entry.n}`} className={feature ? "@3xl:col-span-2" : ""}>
+              <figure className="ns-card relative isolate overflow-hidden">
+                <CardPhoto
+                  image={image}
+                  sizes={feature ? "100vw" : "(min-width: 768px) 50vw, 100vw"}
+                  className={`aspect-[4/5] ${feature ? "@3xl:aspect-[21/9]" : "@5xl:aspect-[6/5]"}`}
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-ns-text/90 via-ns-text/25 to-transparent"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 p-6 @3xl:p-8">
+                  <CardText {...entry} level={level} big={feature} credit={false} />
+                </figcaption>
+              </figure>
+              <PhotoCredit image={image} className="mt-2 text-[0.6875rem] opacity-55" />
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  if (variant === "modular") {
+    const bento = count >= 3;
+    return (
+      <ul data-ns-stagger className="grid gap-3 @3xl:grid-cols-2 @5xl:grid-cols-4">
+        {entries.map((entry, i) => {
+          const image = entry.item.image;
+          if (!image) return null;
+          const big = bento && i === 0;
+          return (
+            <li
+              key={`${entry.item.name}-${entry.n}`}
+              className={`ns-card flex flex-col border border-ns-background/15 p-3 ${big ? "@5xl:col-span-2 @5xl:row-span-2" : ""}`}
+            >
+              <CardPhoto
+                image={image}
+                sizes={
+                  big
+                    ? "(min-width: 1024px) 50vw, 100vw"
+                    : "(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                }
+                className={`aspect-[4/3] ${big ? "@5xl:aspect-auto @5xl:min-h-[22rem] @5xl:flex-1" : ""}`}
+              />
+              <div className="px-2 pt-5 pb-2">
+                <CardText {...entry} level={level} big={big} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+
+  // service-led (e qualquer outra): grade de cartões.
+  const two = count === 2 || count === 4;
+  return (
+    <ul
+      data-ns-stagger
+      className={`grid gap-x-6 gap-y-14 @3xl:grid-cols-2 ${two ? "" : "@5xl:grid-cols-3"}`}
+    >
+      {entries.map((entry) => {
+        const image = entry.item.image;
+        if (!image) return null;
+        return (
+          <li key={`${entry.item.name}-${entry.n}`} className="ns-card">
+            <CardPhoto
+              image={image}
+              sizes={
+                two
+                  ? "(min-width: 768px) 50vw, 100vw"
+                  : "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+              }
+              className={two ? "aspect-[4/3]" : "aspect-[4/5]"}
+            />
+            <div className="mt-6">
+              <CardText {...entry} level={level} />
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -876,7 +1153,10 @@ function Rail({
   const widths = ["w-[62vh]", "w-[92vh]", "w-[46vh]"];
   const head = (
     <div className={`mb-8 flex items-baseline justify-between gap-6 ${wrap}`}>
-      <h2 className={`${display} text-[length:clamp(2.75rem,6cqw,6.5rem)] leading-[0.9]`}>
+      <h2
+        data-ns-fade
+        className={`${display} text-[length:clamp(2.75rem,6cqw,6.5rem)] leading-[0.9]`}
+      >
         <Accent text={model.titleOf(data)} />
       </h2>
       <p className={`hidden text-ns-muted @3xl:block ${label}`}>
@@ -951,8 +1231,10 @@ function Quotes({
       id={id}
       className={`scroll-mt-28 border-t border-ns-border py-(--ns-section-y) text-center ${wrap}`}
     >
-      <h2 className={`mb-12 text-ns-muted ${label}`}>{model.titleOf(data)}</h2>
-      <div data-ns-quotes className="ns-quotes">
+      <h2 data-ns-fade className={`mb-12 text-ns-muted ${label}`}>
+        {model.titleOf(data)}
+      </h2>
+      <div data-ns-quotes data-ns-fade className="ns-quotes">
         {data.items.map((item, i) => (
           <figure key={`${item.author}-${i}`} data-ns-quote className="ns-quote">
             <blockquote
@@ -983,7 +1265,12 @@ function Booking({
   endpoint?: string;
 }) {
   const { business, phoneHref, ctaHref, ctaLabel, ctaExternal } = model;
-  const backdrop = pool.at(-1) ?? pool[0];
+  // Fundo: a última foto do dono; com só a foto do topo, a primeira foto de serviço (para não
+  // repetir a do topo), senão a do topo.
+  const serviceShot = model.spec.sections
+    .flatMap((section) => (section.type === "services" ? section.items.map((i) => i.image) : []))
+    .find((image): image is SiteImage => Boolean(image));
+  const backdrop = pool.length > 1 ? pool.at(-1) : (serviceShot ?? pool[0]);
   const hours = business.hours?.length ? business.hours : null;
   const callHref = phoneHref ?? (ctaExternal ? ctaHref : undefined);
   return (
@@ -1013,13 +1300,16 @@ function Booking({
             href={callHref}
             {...externalProps(callHref)}
             data-ns-magnetic
-            className={`ns-glass mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-text ${focus}`}
+            className={`ns-glass relative mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-text ${focus}`}
           >
             <span aria-hidden="true" className="size-2 rounded-full bg-ns-primary" />
             {phoneHref && business.phone ? `Call ${business.phone}` : ctaLabel}
           </a>
         )}
-        <dl className="mt-16 flex flex-wrap justify-center gap-x-14 gap-y-5 text-sm">
+        <dl
+          data-ns-stagger
+          className="mt-16 flex flex-wrap justify-center gap-x-14 gap-y-5 text-sm"
+        >
           {hours && (
             <div>
               <dt className={`mb-1.5 opacity-65 ${label}`}>Hours</dt>
@@ -1048,7 +1338,10 @@ function Booking({
         </dl>
       </div>
       {data.showForm && (
-        <div className={`grid gap-12 py-(--ns-section-y) @5xl:grid-cols-12 ${wrap}`}>
+        <div
+          data-ns-stagger
+          className={`grid gap-12 py-(--ns-section-y) @5xl:grid-cols-12 ${wrap}`}
+        >
           <div className="@5xl:col-span-4">
             <p className={`text-ns-muted ${label}`}>{ctaLabel}</p>
             <p
@@ -1083,7 +1376,10 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
   const year = new Date().getFullYear();
   return (
     <footer className="overflow-hidden bg-ns-text pt-20 pb-[calc(6rem+env(safe-area-inset-bottom))] text-ns-background @3xl:pb-0">
-      <div className={`grid grid-cols-2 gap-8 text-sm leading-relaxed @5xl:grid-cols-4 ${wrap}`}>
+      <div
+        data-ns-stagger
+        className={`grid grid-cols-2 gap-8 text-sm leading-relaxed @5xl:grid-cols-4 ${wrap}`}
+      >
         {(business.address || city) && (
           <div>
             <p className={`mb-3 opacity-55 ${label}`}>Visit</p>

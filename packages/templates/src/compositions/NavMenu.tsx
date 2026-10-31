@@ -95,7 +95,7 @@ export function NavMenu({
           <a
             href={ctaHref}
             {...external}
-            className={`ns-btn flex min-h-12 items-center justify-center rounded-full bg-ns-text px-5 text-center text-[0.9375rem] leading-tight font-medium text-ns-background ${focus}`}
+            className={`ns-btn flex min-h-12 items-center justify-center rounded-full bg-ns-text px-5 text-center text-[0.9375rem] leading-tight font-medium text-ns-background transition hover:opacity-90 motion-reduce:transition-none ${focus}`}
           >
             {ctaLabel}
           </a>

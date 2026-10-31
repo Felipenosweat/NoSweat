@@ -325,14 +325,22 @@ const ORDERS: MiddleSection[][] = [
   ["services", "faq", "about", "testimonials"],
 ];
 
-/** Hash FNV-1a de 32 bits (estável entre servidores; nada de Math.random). */
+/**
+ * Hash FNV-1a de 32 bits com a mistura final do MurmurHash3 (sem ela, os bits baixos quase só
+ * dependem da última letra). Estável entre servidores; nada de Math.random.
+ */
 export function lookSeed(text: string): number {
   let hash = 0x811c9dc5;
   for (const char of text.trim().toLowerCase()) {
     hash ^= char.codePointAt(0) ?? 0;
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
-  return hash;
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x85ebca6b) >>> 0;
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xc2b2ae35) >>> 0;
+  hash ^= hash >>> 16;
+  return hash >>> 0;
 }
 
 const pick = <T>(list: readonly T[], seed: number, step: number): T =>

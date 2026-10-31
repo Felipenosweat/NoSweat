@@ -688,8 +688,8 @@ export function applyModelFill(
   // modelo nunca entram (as fotos não são do cliente).
   const isMiddle = (type: SectionType): type is MiddleSection =>
     (MiddleSection.options as readonly string[]).includes(type);
+  // Serviços não estão entre as que podem sair (DroppableSection).
   const dropped = new Set<MiddleSection>(fill.dropSections ?? []);
-  dropped.delete("services");
   const order: MiddleSection[] = [];
   for (const type of [...(fill.sectionOrder ?? []), ...model.sections.map((s) => s.type)]) {
     if (isMiddle(type) && !dropped.has(type) && !order.includes(type)) order.push(type);
@@ -751,10 +751,7 @@ function designFor(
   style: FillStyle | undefined,
 ): { design?: SiteDesign } {
   const base: SiteDesign | undefined = plan
-    ? applyDesignPlan(
-        model.design ? { composition: model.design.composition } : undefined,
-        plan,
-      )
+    ? applyDesignPlan(model.design ? { composition: model.design.composition } : undefined, plan)
     : model.design
       ? { ...model.design }
       : undefined;
@@ -773,7 +770,9 @@ function designFor(
     (model.template === "restaurant" || model.template === "beauty")
   ) {
     design.imageTreatment =
-      base?.imageTreatment && base.imageTreatment !== "monochrome" ? base.imageTreatment : "natural";
+      base?.imageTreatment && base.imageTreatment !== "monochrome"
+        ? base.imageTreatment
+        : "natural";
   }
   return { design };
 }

@@ -114,8 +114,7 @@ function restoreServices(next: Services, previous: Services | undefined): Servic
     if (!match?.image) return clean;
     const queryCleared = !item.image && !item.imageQuery?.trim();
     if (queryCleared) return clean;
-    const queryChanged =
-      Boolean(item.imageQuery?.trim()) && item.imageQuery !== match.imageQuery;
+    const queryChanged = Boolean(item.imageQuery?.trim()) && item.imageQuery !== match.imageQuery;
     if (queryChanged) return clean;
     return { ...clean, image: match.image };
   });

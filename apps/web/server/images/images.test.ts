@@ -245,7 +245,9 @@ const perQueryFetch = () =>
     const slug = query.replace(/\W+/g, "-");
     return {
       body: {
-        photos: [{ ...pexelsBody.photos[0], src: { original: `https://images.pexels.com/${slug}.jpeg` } }],
+        photos: [
+          { ...pexelsBody.photos[0], src: { original: `https://images.pexels.com/${slug}.jpeg` } },
+        ],
       },
     };
   });

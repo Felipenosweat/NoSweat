@@ -5,9 +5,12 @@ import { useEffect, useRef } from "react";
 // Movimento do molde Signature (padrão de site premiado). Só melhora o que já está na página:
 // sem JavaScript, ou com "reduzir movimento", tudo aparece parado e legível.
 // Ganchos (atributos no HTML, ver Signature.tsx):
+// - data-ns-rise / data-ns-fade: o bloco sobe e aparece ao entrar na tela (IntersectionObserver
+//   + transição de CSS; o ritmo vem da composição, ver styles.css). data-ns-stagger: o mesmo
+//   para cada filho direto, um depois do outro. O que já está na primeira tela não se mexe;
 // - data-ns-parallax="0.3": a foto anda mais devagar que a rolagem;
+// - data-ns-zoom: a foto do cartão assenta (escala 1,14 → 1) enquanto entra na tela;
 // - data-ns-reveal: a moldura da foto se abre de baixo para cima ao entrar na tela;
-// - data-ns-rise: título ou linha sobe ao entrar na tela;
 // - data-ns-words: o parágrafo acende palavra por palavra conforme a rolagem;
 // - data-ns-hscroll (com .ns-rail dentro): a rolagem vertical empurra a galeria para o lado;
 // - data-ns-float (com [data-ns-float-row] e [data-ns-float-img]): foto que segue o mouse;
@@ -23,6 +26,8 @@ export function Motion() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let disposed = false;
     const cleanups: (() => void)[] = [];
+
+    cleanups.push(revealOnScroll(root), smoothAnchors(root));
 
     void (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -73,14 +78,21 @@ export function Motion() {
           );
         }
 
-        for (const el of all("[data-ns-rise]")) {
-          gsap.from(el, {
-            y: 48,
-            opacity: 0,
-            duration: 1.3,
-            ease: "expo.out",
-            scrollTrigger: { trigger: el, start: "top 92%" },
-          });
+        for (const el of heavy("[data-ns-zoom]")) {
+          gsap.fromTo(
+            el,
+            { scale: 1.14 },
+            {
+              scale: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: el.parentElement ?? el,
+                start: "top bottom",
+                end: "center 55%",
+                scrub: true,
+              },
+            },
+          );
         }
 
         for (const p of heavy("[data-ns-words]")) {
@@ -237,4 +249,80 @@ export function Motion() {
   }, []);
 
   return <span ref={anchor} hidden />;
+}
+
+const REVEAL = "[data-ns-rise], [data-ns-fade], [data-ns-stagger] > *";
+
+/**
+ * Revelação ao rolar sem biblioteca. O CSS só esconde (opacidade + deslocamento) quando o site
+ * tem `data-ns-motion`, que só é ligado aqui: sem JavaScript, nada fica escondido. O que já está
+ * na tela ao abrir é marcado como visto antes, para não piscar. Devolve a limpeza.
+ */
+function revealOnScroll(root: HTMLElement): () => void {
+  const targets = Array.from(root.querySelectorAll<HTMLElement>(REVEAL));
+  const fold = window.innerHeight;
+  const pending: HTMLElement[] = [];
+  for (const el of targets) {
+    const box = el.getBoundingClientRect();
+    if (box.top < fold && box.bottom > 0) {
+      el.dataset.nsIn = "";
+      el.dataset.nsDone = "";
+    } else pending.push(el);
+  }
+  root.dataset.nsMotion = "";
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entering = entries
+        .filter((entry) => entry.isIntersecting)
+        .map((entry) => entry.target as HTMLElement)
+        .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+      // Os que entram juntos vêm um depois do outro (no máximo 6 degraus).
+      entering.forEach((el, k) => {
+        el.style.setProperty("--ns-d", `calc(var(--ns-stagger) * ${Math.min(k, 6)})`);
+        el.dataset.nsIn = "";
+        observer.unobserve(el);
+      });
+    },
+    { rootMargin: "0px 0px -8% 0px", threshold: 0 },
+  );
+  for (const el of pending) observer.observe(el);
+
+  // Terminada a entrada, a transição sai (o hover e o resto voltam às transições próprias).
+  const settle = (event: TransitionEvent) => {
+    const el = event.target;
+    if (event.propertyName !== "transform" || !(el instanceof HTMLElement)) return;
+    if (el.dataset.nsIn !== undefined) el.dataset.nsDone = "";
+  };
+  root.addEventListener("transitionend", settle);
+
+  return () => {
+    observer.disconnect();
+    root.removeEventListener("transitionend", settle);
+    delete root.dataset.nsMotion;
+  };
+}
+
+/**
+ * Rolagem suave até as âncoras do próprio site (menu, "voltar ao topo"). Fica no clique e não no
+ * CSS (scroll-behavior) porque o ScrollTrigger também rola a página ao recalcular. O foco vai
+ * para a seção, para o teclado e o leitor de tela continuarem dali.
+ */
+function smoothAnchors(root: HTMLElement): () => void {
+  const click = (event: MouseEvent) => {
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target instanceof Element ? event.target.closest("a") : null;
+    const hash = link?.getAttribute("href");
+    if (!hash || !hash.startsWith("#") || hash.length < 2) return;
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (!target || !root.contains(target)) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    target.focus({ preventScroll: true });
+    history.pushState(null, "", hash);
+  };
+  root.addEventListener("click", click);
+  return () => root.removeEventListener("click", click);
 }
