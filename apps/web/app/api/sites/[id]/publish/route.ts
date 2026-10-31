@@ -3,6 +3,7 @@ import { publishBlocked } from "@/server/billing";
 import { makeSlug } from "@/server/domains";
 import { placeholdersIn } from "@/lib/placeholders";
 import { errorResponse, handle, jsonResponse, notFound, unauthorized } from "@/server/http";
+import { announcePublishedSite } from "@/server/seo/announce";
 import { freeUrl, requireOwnedSite } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { revalidatePublicSite } from "@/server/store/revalidate";
@@ -10,8 +11,8 @@ import { revalidatePublicSite } from "@/server/store/revalidate";
 type Context = { params: Promise<{ id: string }> };
 
 /**
- * POST /api/sites/[id]/publish → { siteId, status, url, updatedAt } (url = endereço grátis
- * /s/<slug>).
+ * POST /api/sites/[id]/publish → { siteId, status, url, updatedAt, searchEngines } (url =
+ * endereço grátis /s/<slug>; searchEngines = o aviso aos buscadores pelo IndexNow).
  * Também serve para "publicar as mudanças" do rascunho de um site que já está no ar.
  */
 export async function POST(request: Request, { params }: Context): Promise<Response> {
@@ -58,12 +59,16 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     // A página pública (/s/<slug> e o domínio) mostra a versão nova já na próxima visita.
     revalidatePublicSite(published);
 
+    // Avisa Bing & cia. (IndexNow) do endereço oficial; nunca impede a publicação (ver seo/).
+    const searchEngines = await announcePublishedSite(published);
+
     const url = freeUrl(published, new URL(request.url).origin);
     return jsonResponse(PublishSiteResponse, {
       siteId: published.id,
       status: published.status,
       url: url ?? new URL(request.url).origin,
       updatedAt: published.updatedAt,
+      searchEngines,
     });
   }, "/api/sites/[id]/publish");
 }

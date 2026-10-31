@@ -1,0 +1,151 @@
+[
+  {
+    "id": "studio-dado",
+    "name": "Studio DADO (hospitality interior design, Coral Gables, FL)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/studio-dado",
+    "awwwardsEvidence": "WebSearch (extended) `\"awwwards\" interior architecture studio website \"Site of the Day\" quiet minimal` returned the page title 'Studio Dado - Awwwards SOTD' at awwwards.com/sites/studio-dado; the result summary says 'SOTD, February 25, 2026', tags Minimal, Clean and Gallery, and quotes the listing: 'A refined website for Studio DADO, a boutique interior design firm shaping world class hospitality spaces'. The agency was not named in the snippet and the live footer carries no site credit. Awwwards itself not loaded (unreachable from here).",
+    "siteUrl": "https://studiodado.com/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "quiet-luxury",
+    "directions": ["quiet-luxury", "editorial", "typographic"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": [
+        "interior-design",
+        "architecture",
+        "hospitality-design",
+        "furniture",
+        "boutique-hotel"
+      ],
+      "tones": ["calm", "premium", "refined", "minimal"],
+      "goals": ["portfolio", "contact", "book"]
+    },
+    "observed": {
+      "layout": "White page on a 24-column grid (computed: 24 × 40 px columns, 19.2 px gaps at 1440). A thin top row of plain text links split across the grid (Studio DADO | monogram | Projects/Approach/About Us stacked | News/Blog | Contact). Full-screen hero video under the H1 'Form Follows Feeling' (Vimeo MP4, no poster: in our headless Chromium, which has no H.264, the first screen stayed white). Then a manifesto line in large caps, two short columns of body, 'FEATURED PROJECTS' with one large photo and three small ones in an asymmetric grid, each captioned on one line: project name left, category right in grey ('AP House Miami … Featured Project'). Blog row of three, a black-and-white team photo beside a paragraph, a giant 'STUDIO DADO' wordmark, then a warm brown footer (#5D5346) with address, e-mail, phone, sitemap and newsletter.",
+      "typography": "Two families: a display serif-like cut called 'disp', uppercase, 155.5 px / 124.4 px (0.8) with −0.02em tracking for H1/H2 on desktop, 67.9 px on mobile; the wordmark at 211 px. A grotesk 'sans' at 19.2 px / 23 px, −0.02em, weight 400 for nav, captions and body — hierarchy below the display comes from position and grey, not from size or weight.",
+      "imagery": "Owner project photography (hotel suites, spa, atrium, a residence): warm wood, brass and plaster, cropped as plain rectangles of different sizes, no masks or borders; captions sit on a hairline under each image. One black-and-white team photo.",
+      "motion": "Lenis smooth scroll (html class `lenis`); blocks and photos fade/reveal on entry with 0.5–1 s transitions; no pinned sections found (no sticky elements). With prefers-reduced-motion emulated nothing changed (same Lenis, same reveals). The hero depends on autoplay video with no poster image."
+    },
+    "whyItWorks": "It sells calm by leaving things out: one grotesk size for everything practical, captions that read like a catalogue (name | category), photos placed on a strict grid with large empty fields between them, and a single warm brown block at the end that carries all the contact facts.",
+    "principles": [
+      "Use one small grotesk size (about 16–19 px) for nav, captions and body; let position on the grid and a second grey carry the hierarchy.",
+      "Caption every image on one line under a hairline: name on the left, type or place on the right.",
+      "Place images of 2–3 sizes on a strict column grid and leave whole columns empty; the empty field is the luxury.",
+      "End with one warm, dark block that holds address, phone, e-mail and hours together."
+    ],
+    "doNotCarryOver": [
+      "A hero that is only an autoplay video with no poster: if the video fails the first screen is blank.",
+      "All 8 images with empty alt; grey category captions that look under 4.5:1 on white.",
+      "Lenis smooth scroll and reveals that ignore reduced motion.",
+      "Their uppercase display cut, monogram and hospitality photography."
+    ],
+    "study": "studies/studio-dado.md"
+  },
+  {
+    "id": "tecnoarreda",
+    "name": "Tecnoarreda (architecture and interior design studio, Rovetta, Bergamo)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/tecnoarreda-interior-design",
+    "awwwardsEvidence": "WebSearch (extended) `\"Tecnoarreda\" interior design website awwwards` returned the title 'Tecnoarreda Interior Design - Awwwards Honorable Mention' (awwwards.com/sites/tecnoarreda-interior-design); the summary says the Honorable Mention is dated July 9, 2026, credited to LO Studio, and lists GSAP among the technologies. The live site does load GSAP (`window.gsap` present), which matches. Awwwards page not loaded (unreachable from here).",
+    "siteUrl": "https://www.tecnoarreda.it/en/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "cinematic-scrollytelling",
+    "directions": ["immersive-photography", "classic-luxury", "typographic"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": [
+        "interior-design",
+        "architecture",
+        "general-contractor",
+        "renovation",
+        "furniture"
+      ],
+      "tones": ["dramatic", "premium", "refined"],
+      "goals": ["portfolio", "contact"]
+    },
+    "observed": {
+      "layout": "Near-black page (#0D0D0D). Hero: a dark interior photo with 'ARCHITECTURE AND INTERIOR DESIGN STUDIO' split across the corners in thin capitals. Then a sequence of full-width interior photos (a vaulted indoor pool, a dining room, a kitchen) each revealed by clip-path, a long manifesto in light text, a giant 'BALANCE OF FORMS' word over the pool photo, services as a stacked word list (WE DESIGN / WE BUILD / WE RENOVATE / WE FURNISH), the founder's name as a script signature over a photo, then PROJECTS. A cookie-consent panel covers the lower-left of the desktop screen and about 60% of the 390 px screen until answered.",
+      "typography": "Display 'Astetes' at weight 100, uppercase, 129.6 px / 142.6 px for the H1 and 172.8 px for 'BALANCE OF FORMS' (50.7 px and 64.3 px on mobile); H2 statements in the same thin cut at 53.8 px; 'Anek Bangla' 300 at 21.5 px / 32.3 px for body; a handwritten script ('Nothing You Could Do') for annotations with drawn arrows ('STYLE DETAILS', 'DETAIL IS A MARK OF EXCELLENCE').",
+      "imagery": "Owner project photography and renders, warm artificial light on dark rooms; photos in wide landscape frames revealed by clip-path; one candid photo of the founder at a drawing table.",
+      "motion": "GSAP (present on window): 22 elements carry clip-path reveals (`transition: clip-path 0s ease-in-out 0.5s` on images), large words slide across photos while scrolling, 14 headings/paragraphs start at opacity 0. Under reduced motion the same 20+ clipped elements and hidden headings were found, i.e. no visible change."
+    },
+    "whyItWorks": "Architecture photography shown big and dark, with one very thin, very large capital word at a time: the interiors read as the hero and the type as a caption written across them. The services list as four verbs (design, build, renovate, furnish) is clear and quick.",
+    "principles": [
+      "Name the services as a short list of verbs set large, then explain each in one plain paragraph.",
+      "When the type is very large, make it very light (thin weight, uppercase, short words) so it sits on the photograph instead of fighting it.",
+      "One founder photo at work (not a posed portrait) says more than a biography."
+    ],
+    "doNotCarryOver": [
+      "A consent panel that covers most of the mobile first screen.",
+      "Weight-100 text at body sizes and light body text on near-black at 21 px with low contrast greys.",
+      "Clip-path reveals and hidden headings that ignore reduced motion.",
+      "The handwritten-script annotations with arrows (reads as template ornament); their dark palette and thin display cut."
+    ],
+    "study": "studies/tecnoarreda.md"
+  },
+  {
+    "id": "shed-design",
+    "name": "Shed (brand design and interior architecture studio, London)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/shed",
+    "awwwardsEvidence": "WebSearch `awwwards interior design studio site of the day` returned an Abduzeedo article titled 'Award-Winning Web Design: How Shed.design Earned Awwwards SOTD'; the result summary says 'Shed.design just won Awwwards Site of the Day' and describes Shed as 'an international studio of brand designers and interior architects with over 25 years of experience', built on Vue.js with Lenis. The article itself could not be opened (DNS failure for abduzeedo.com from here), so the date is unknown; the awwwardsUrl above is a guess at the slug and was not loaded. The live footer reads 'SITE BY IJP + TA' and the html carries the `lenis` class, which matches the article summary.",
+    "siteUrl": "https://shed.design/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus"
+    ],
+    "evidenceStatus": "partial",
+    "approved": false,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "editorial", "immersive-photography"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["interior-design", "retail-design", "branding-studio", "architecture"],
+      "tones": ["bold", "confident", "urban"],
+      "goals": ["portfolio", "contact"]
+    },
+    "observed": {
+      "layout": "Hero: a full-bleed photo of a red-and-green tiled washroom with 'THIS IS SHED' in white heavy capitals across the top, a marquee strapline in a serif, a small round video thumbnail bottom left. Then a white introduction (one 54 px paragraph), a 'Shed Spirit' block with a play button, an electric blue (#1F1BD0-ish) block listing RETAIL / HOSPITALITY / WORKPLACE / EXHIBITION as giant words on hairlines with a photo beside them, 'Selected clients' as two columns of 26 brand names, news cards, a 'SEE WORK →' line with a thumbnail, and a tiny footer row.",
+      "typography": "Three families: 'OwnersWeb' 600 uppercase at 231 px / 208 px for the H1 (100 px on mobile); 'SequelWeb' 500 at 54 px / 54 px for the intro paragraph and 400 at 16.2 px for body; section labels (H2) are 10.8 px uppercase pills; 'RecklessWeb' serif at 21.6 px for secondary paragraphs. 9-column grid of 148 px with 10.8 px gaps.",
+      "imagery": "Owner project photography of retail and hospitality interiors with strong colour; small video thumbnails; client logos as text.",
+      "motion": "Lenis smooth scroll; images fade in (opacity 0.8 s cubic-bezier(0.14, 1, 0.34, 1)); 11 headings/paragraphs start hidden. No visible change with reduced motion. Focus: only the logo keeps an outline; Menu, carousel and scroll buttons have `outline: none`."
+    },
+    "whyItWorks": "A confident studio voice: the sectors become a typographic index on a blue block, so a visitor sees in one screen what kinds of rooms the studio does. Small uppercase pill labels (10.8 px) name every section without competing with the giant words.",
+    "principles": [
+      "Turn the list of room types or sectors into an index of large words on hairlines, each with its own image.",
+      "Label every section with one tiny uppercase tag in the same position, so a long page stays easy to scan."
+    ],
+    "doNotCarryOver": [
+      "Heavy 230 px capitals and an electric blue block: far from quiet luxury and from a residential client's mood.",
+      "29 of 30 images without alt; outline removed from menu and carousel buttons; no tel/mailto links on the home page.",
+      "Lenis and hidden-until-revealed text that ignore reduced motion."
+    ],
+    "study": "studies/shed-design.md"
+  }
+]

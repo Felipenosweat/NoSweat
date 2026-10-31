@@ -1,0 +1,93 @@
+[
+  {
+    "id": "coffee-collective",
+    "name": "Coffee Collective (roastery, cafés and bakery, Copenhagen)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/coffee-collective",
+    "awwwardsEvidence": "WebSearch result for awwwards.com/sites/coffee-collective, summarised as 'Honorable Mention dated September 26, 2025', 'new e-shop design and refreshed visual identity', 'calm, minimalist, inspired by Nordic design', with a partial jury score breakdown. The award page itself was not loaded (awwwards.com unreachable from this environment). No agency credit was found on the live site (no 'site by' text or meta), so the credit could not be cross-checked.",
+    "siteUrl": "https://coffeecollective.dk/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "computed-styles",
+      "reduced-motion"
+    ],
+    "evidenceStatus": "partial",
+    "approved": true,
+    "archetype": "warm-hospitality",
+    "directions": ["warm-hospitality", "quiet-luxury", "modular"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["cafe", "coffee-roaster", "bakery"],
+      "tones": ["calm", "warm", "refined"],
+      "goals": ["shop", "visit", "browse-menu"]
+    },
+    "observed": {
+      "layout": "≈7 470 px on desktop. Full-bleed landscape photo (coffee farm) with a product bag composited in the middle, h1 'Clean and fruity' left, tasting notes bottom-left and an outlined 'Discover Bekele Honey' button bottom-right → 'Selected coffees' row of product cards on pale grey tiles → full-width brand blocks: deep green panel with list + photo, berry-red panel with a big coffee-cherry photo and 'Fruity and sweet', mauve 'Join our newsletter' panel → 'Brew at home' equipment row → wholesale split → 'Visit our shops' strip of 8 shop photos with neighbourhood names → footer with link columns and a condensed wordmark. Every coloured block is a 50/50 split of flat colour and photo.",
+      "typography": "Computed: one family only, 'NB International Pro' 400 (h1 54 px on desktop / 30–40 px on mobile, line-height 0.9–1.0, letter-spacing −0.46 px; h2 48 px; body 16/24 px; nav 11 px caps). No italics, no bold: hierarchy comes from size and colour blocks.",
+      "imagery": "Origin and farm photography, macro shots of coffee cherries, product bags on neutral tiles, interiors of each shop. 57 images, 2 without alt.",
+      "motion": "No GSAP, no smooth scroll; Swiper carousels. 1 Web Animation at rest, 11–13 after scrolling (carousel/hover); 0 with prefers-reduced-motion. A newsletter modal ('Stories from the collective') opens a few seconds after load and stays over the content on desktop and mobile until closed.",
+      "responsive": "Mobile keeps the order, nav collapses to MENU / wordmark / CART; brand blocks stack colour above photo. No tel: link on the page; shops are listed by name only."
+    },
+    "whyItWorks": "Calm through restraint: one grotesk, paper ground and a few big blocks of a single brand colour each, always split with a photo. The colour blocks do the pacing that ornament would do on a busier site.",
+    "principles": [
+      "Pace a long café page with full-width blocks of one brand colour, each split with a photo or an object, alternating with paper.",
+      "Let the product carry a short sensory headline ('Clean and fruity') and put the facts (notes, price) small underneath.",
+      "List every location by name with a photo; for a single café, make 'Visit' its own block."
+    ],
+    "doNotCarryOver": [
+      "A newsletter modal that opens over the content on first visit.",
+      "No phone link anywhere; locations without hours on the home page.",
+      "Their typeface (commercial), palette and photography."
+    ],
+    "study": "studies/coffee-collective.md"
+  },
+  {
+    "id": "escape-coffee",
+    "name": "Escape Coffee Company (specialty roaster, Montreal)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/escape-coffee",
+    "awwwardsEvidence": "WebSearch result for awwwards.com/sites/escape-coffee summarised as 'Site of the Day - May 15, 2024' ('sources and sells the best coffees from all over the world'). The live site's footer ends with 'Website by TUX' (checked in the HTML), but the search snippet did not name the agency, so the credit is only from the site. Award page not loaded (awwwards.com unreachable from this environment).",
+    "siteUrl": "https://escape.cafe/",
+    "inspectedOn": "2026-10-27",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "screenshot",
+      "scroll-sequence",
+      "computed-styles",
+      "reduced-motion"
+    ],
+    "evidenceStatus": "partial",
+    "approved": true,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "playful", "warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["coffee-roaster", "cafe"],
+      "tones": ["bold", "playful", "urban"],
+      "goals": ["shop", "subscribe"]
+    },
+    "observed": {
+      "layout": "≈7 700 px on desktop. Full-bleed surf photo with 'GO AGAINST THE GRAIN' in huge condensed caps whose letters assemble on load → a row of outlined product 'spec cards' laid over the photo (name, price, TYPE / ORIGIN / PROCESS lines) → a coffee quiz ('Do you prefer your coffee… Caffeinated / Decaf', progress bar) → 'Collections' carousel → 'Limited Series' split (rock photo with a stamped label + text) → mission paragraph in large light sans → photo of a person on a roof with coordinates '48.8532° N — 66.0385° W' → 'NEVER RUN OUT' subscription with words staggered across the page → black footer with lab address and 'AND YOU? HOW DO YOU ESCAPE?'. A vertical shipping marquee runs down the right edge on desktop.",
+      "typography": "Computed: 'Molitor' (condensed display caps, product names 26 px, 'Follow us' 75 px), 'TWK Lausanne' 200–400 (text, 16/16 px with 0.96 px tracking), 'Garaje' for small caps labels. The h1 is split into per-letter spans.",
+      "imagery": "Moody outdoor and travel photography (surf, rocks, fog, canoe) rather than coffee; product bags small. 63 images, 0 without alt.",
+      "motion": "GSAP + ScrollTrigger + Lenis smooth scroll (html.lenis-smooth). Letters of the headline fall into place; words of 'Never run out' drift with scroll. The reduced-motion run looked the same (1 Web Animation in both; no reduced-motion handling observed). A cookie bar ('Want some cookies with your coffee?') covers ~10% of the desktop viewport and ~35% on mobile until answered.",
+      "responsive": "Mobile stacks everything, keeps the giant caps (≈60 px), quiz and carousels; the cookie bar takes a third of the screen. No tel: link. Focus on the skip link had outline: none."
+    },
+    "whyItWorks": "A roaster with an attitude: the type is the brand and every product card reads like a spec sheet (type, origin, process), so the shop feels informed instead of salesy.",
+    "principles": [
+      "Write each coffee or drink as a small spec sheet in a mono or caps label: size, milk, origin, price, in that order.",
+      "Use one place-based detail as an ornament (they use map coordinates; a café can use its street or its building).",
+      "Keep the order path visible from the first screen: product cards sit on the hero."
+    ],
+    "doNotCarryOver": [
+      "Smooth-scroll hijacking and motion that ignores reduced motion.",
+      "Per-letter split headlines read badly by screen readers and on mobile.",
+      "A cookie bar that covers a third of the mobile screen; no phone link; focus outline removed.",
+      "Their typefaces, slogan and photography."
+    ],
+    "study": "studies/escape-coffee.md"
+  }
+]

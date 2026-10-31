@@ -1,0 +1,1658 @@
+/* Fade & Co. Barbers (demonstração). Cores, tipos e efeitos que não cabem em utilitários.
+   Superfície em blocos de uma cor: vermelho de barbearia, osso e quase-preto. Contraste
+   (WCAG): osso sobre vermelho 6,4:1; osso sobre preto 15,8:1; preto sobre osso 15,8:1;
+   coral sobre preto 7,0:1 (o coral só aparece sobre o preto). O vermelho nunca é texto
+   pequeno sobre o preto. As fotos chegam em duotone pelo CDN (sombra --f-oxblood, luz --f-bone).
+
+   Tipo: Anybody (variável) é a única voz de display. Cada letra pode ter peso (--wg) e largura
+   (--wd, eixo wdth 50–150) próprios; --cut (o ponteiro) tira peso e --sq (a entrada dos nomes)
+   abre a largura. As quatro são propriedades registradas para poderem ser animadas. */
+
+@property --wg {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 800;
+}
+
+@property --wd {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 100;
+}
+
+@property --cut {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --sq {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+.fade {
+  --f-red: #a3191e;
+  --f-red-deep: #7c1116;
+  --f-oxblood: #4a0b0f;
+  --f-bone: #f1e8d9;
+  --f-ink: #1a0b0b;
+  --f-coral: #f07a6a;
+  --f-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: var(--f-ink);
+  color: var(--f-bone);
+  font-family: var(--font-f-body), system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fade ::selection {
+  background: var(--f-coral);
+  color: var(--f-ink);
+}
+
+/* Superfícies (blocos de uma cor). */
+.fade .f-red {
+  background: var(--f-red);
+  color: var(--f-bone);
+}
+
+.fade .f-bone {
+  background: var(--f-bone);
+  color: var(--f-ink);
+}
+
+.fade .f-ink {
+  background: var(--f-ink);
+  color: var(--f-bone);
+}
+
+/* Letra variável. */
+.fade .f-display,
+.fade .f-ch,
+.fade .f-h2,
+.fade .f-statement,
+.fade .f-barber-name,
+.fade .f-hours th,
+.fade .f-hours td {
+  font-family: var(--font-f-display), "Arial Black", sans-serif;
+}
+
+.fade .f-ch {
+  display: inline-block;
+  font-weight: max(100, calc(var(--wg) - var(--cut)));
+  font-stretch: calc(var(--wd) * 1%);
+}
+
+.fade .f-space {
+  display: inline-block;
+  width: 0.22em;
+}
+
+/* Foco visível: osso sobre vermelho e preto, preto sobre osso. */
+.fade .f-focus:focus-visible,
+.fade .f-link:focus-visible {
+  outline: 2px solid var(--f-bone);
+  outline-offset: 3px;
+}
+
+.fade .f-bone .f-focus:focus-visible,
+.fade .f-bone .f-link:focus-visible,
+.fade .f-choice:has(:focus-visible),
+.fade .f-day:has(:focus-visible),
+.fade .f-slot:has(:focus-visible) {
+  outline: 2px solid var(--f-ink);
+  outline-offset: 3px;
+}
+
+.fade .f-book .f-focus:focus-visible,
+.fade .f-book .f-choice:has(:focus-visible),
+.fade .f-book .f-day:has(:focus-visible),
+.fade .f-book .f-slot:has(:focus-visible) {
+  outline-color: var(--f-bone);
+}
+
+.fade .f-skip {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 70;
+  padding: 10px 16px;
+  background: var(--f-bone);
+  color: var(--f-ink);
+  font-weight: 600;
+  transform: translateY(-160%);
+}
+
+.fade .f-skip:focus-visible {
+  transform: none;
+  outline-color: var(--f-ink);
+}
+
+.fade .f-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.fade .f-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Rótulo de seção: número em display + fio + nome em versalete. */
+.fade .f-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.fade .f-kicker-num {
+  font-family: var(--font-f-display), sans-serif;
+  font-weight: 900;
+  font-stretch: 130%;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.fade .f-kicker-rule {
+  width: 40px;
+  height: 2px;
+  background: currentColor;
+}
+
+.fade .f-kicker-plain {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Títulos de seção: caixa-alta larga e pesada, linhas mascaradas. */
+.fade .f-h2 {
+  margin-top: 20px;
+  font-size: clamp(2.7rem, 7.4vw, 7.2rem);
+  font-weight: 900;
+  font-stretch: 118%;
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.fade .f-h2-s {
+  font-size: clamp(2.4rem, 3.5vw, 3.6rem);
+  font-stretch: 96%;
+}
+
+.fade .f-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.fade .f-line-in {
+  display: inline-block;
+}
+
+.fade .f-cap {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+
+/* Botões: cor chapada, sem brilho. */
+.fade .f-btn {
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-family: var(--font-f-display), sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition:
+    background-color 250ms,
+    color 250ms,
+    font-stretch 400ms var(--f-ease);
+}
+
+.fade .f-btn:hover {
+  font-stretch: 125%;
+}
+
+.fade .f-btn-bone {
+  background: var(--f-bone);
+  color: var(--f-red);
+}
+
+.fade .f-btn-bone:hover {
+  background: #fff;
+}
+
+.fade .f-btn-line {
+  border: 2px solid var(--f-bone);
+  color: var(--f-bone);
+}
+
+.fade .f-btn-line:hover {
+  background: var(--f-bone);
+  color: var(--f-red);
+}
+
+.fade .f-btn-red {
+  background: var(--f-red);
+  color: var(--f-bone);
+}
+
+.fade .f-btn-red:hover {
+  background: var(--f-red-deep);
+}
+
+.fade .f-btn-ink {
+  background: var(--f-bone);
+  color: var(--f-ink);
+}
+
+.fade .f-btn-ghost {
+  border: 2px solid color-mix(in srgb, var(--f-bone) 50%, transparent);
+  color: var(--f-bone);
+}
+
+.fade .f-btn-text {
+  min-height: 52px;
+  padding: 0 8px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Pílula flutuante ---------- */
+
+.fade .f-pill-wrap {
+  position: fixed;
+  left: 50%;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 50;
+  width: calc(100% - 24px);
+  max-width: 460px;
+  transform: translateX(-50%);
+}
+
+.fade .f-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--f-ink);
+  color: var(--f-bone);
+  box-shadow: 0 10px 30px rgb(26 11 11 / 0.28);
+}
+
+.fade .f-pill-brand,
+.fade .f-pill-links {
+  display: none;
+}
+
+.fade .f-pill-menu,
+.fade .f-pill-call {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fade .f-pill-menu:hover,
+.fade .f-pill-call:hover {
+  background: rgb(241 232 217 / 0.1);
+}
+
+.fade .f-pill-call-num {
+  display: none;
+}
+
+.fade .f-pill-book {
+  display: inline-flex;
+  min-height: 48px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: var(--f-red);
+  color: var(--f-bone);
+  font-family: var(--font-f-display), sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  font-stretch: 112%;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color 250ms,
+    font-stretch 400ms var(--f-ease);
+}
+
+.fade .f-pill-book:hover {
+  background: var(--f-red-deep);
+  font-stretch: 125%;
+}
+
+.fade .f-burger {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 10px;
+}
+
+.fade .f-burger span {
+  position: absolute;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  transition: transform 300ms var(--f-ease);
+}
+
+.fade .f-burger span:first-child {
+  top: 0;
+}
+
+.fade .f-burger span:last-child {
+  top: 8px;
+}
+
+.fade .f-burger[data-open] span:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.fade .f-burger[data-open] span:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+@media (min-width: 1024px) {
+  .fade .f-pill-wrap {
+    top: 16px;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+  }
+
+  .fade .f-pill {
+    gap: 4px;
+  }
+
+  .fade .f-pill-brand {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px 0 12px;
+    font-family: var(--font-f-display), sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    font-stretch: 118%;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .fade .f-pill-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--f-red);
+    box-shadow: 0 0 0 3px rgb(241 232 217 / 0.9);
+  }
+
+  .fade .f-pill-links {
+    display: flex;
+    gap: 2px;
+  }
+
+  .fade .f-pill-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .fade .f-pill-link:hover {
+    background: rgb(241 232 217 / 0.1);
+  }
+
+  .fade .f-pill-menu {
+    display: none;
+  }
+
+  .fade .f-pill-call {
+    min-height: 44px;
+    white-space: nowrap;
+  }
+
+  .fade .f-pill-call-num {
+    display: inline;
+  }
+
+  .fade .f-pill-call-short {
+    display: none;
+  }
+
+  .fade .f-pill-book {
+    min-height: 44px;
+    flex: none;
+  }
+}
+
+/* Folha do menu (celular). */
+.fade .f-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 20px 120px;
+  background: var(--f-red);
+  color: var(--f-bone);
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 600ms var(--f-ease);
+}
+
+.fade .f-menu[data-open] {
+  clip-path: inset(0 0 0 0);
+}
+
+.fade .f-menu li {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 500ms var(--f-ease),
+    transform 500ms var(--f-ease);
+}
+
+.fade .f-menu[data-open] li {
+  opacity: 1;
+  transform: none;
+}
+
+.fade .f-menu-link {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 6px 0;
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(2.4rem, 12vw, 4rem);
+  font-weight: 900;
+  font-stretch: 100%;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fade .f-menu-num {
+  font-family: var(--font-f-body), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fade .f-menu-note {
+  margin-top: 32px;
+  font-size: 13px;
+}
+
+@media (min-width: 1024px) {
+  .fade .f-menu {
+    display: none;
+  }
+}
+
+/* ---------- Herói ---------- */
+
+.fade .f-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.fade .f-hero-inner {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  padding-top: 20px;
+  padding-bottom: 104px;
+}
+
+.fade .f-hero-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fade .f-hero-name {
+  margin-top: 28px;
+  font-size: 30.5vw;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+}
+
+.fade .f-hero-name-vis {
+  display: block;
+  animation: f-rise 900ms var(--f-ease) 80ms both;
+}
+
+.fade .f-hero-word {
+  display: block;
+  white-space: nowrap;
+}
+
+.fade .f-hero-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 6px;
+}
+
+.fade .f-fade-rows {
+  font-size: 27vw;
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+}
+
+.fade .f-fade-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.fade .f-fade-row .f-ch {
+  animation: f-cut 1100ms var(--f-ease) both;
+  animation-delay: calc(450ms + var(--row) * 150ms);
+}
+
+.fade .f-guard {
+  margin-top: 0.5em;
+  font-family: var(--font-f-body), sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  animation: f-fade-in 600ms var(--f-ease) both;
+  animation-delay: calc(900ms + var(--row) * 150ms);
+}
+
+.fade .f-hero-side {
+  display: flex;
+  max-width: 34rem;
+  margin-top: auto;
+  flex-direction: column;
+  gap: 14px;
+  animation: f-fade-in 700ms var(--f-ease) 700ms both;
+}
+
+.fade .f-hero-lede {
+  font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+  line-height: 1.4;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.fade .f-hero-small {
+  font-size: 15px;
+}
+
+.fade .f-hero-ctas {
+  display: none;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+@keyframes f-cut {
+  from {
+    --wg: 900;
+    --wd: 112;
+  }
+}
+
+@keyframes f-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14%);
+  }
+}
+
+@keyframes f-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (min-width: 640px) {
+  .fade .f-hero-name {
+    font-size: 15.6vw;
+  }
+
+  .fade .f-hero-word {
+    display: inline;
+  }
+
+  .fade .f-fade-rows {
+    font-size: 15.6vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fade .f-hero-inner {
+    padding-top: 92px;
+    padding-bottom: 36px;
+  }
+
+  .fade .f-hero-name {
+    margin-top: 18px;
+    font-size: min(15.4vw, 24vh, 15rem);
+  }
+
+  .fade .f-hero-body {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .fade .f-fade-rows {
+    font-size: min(15.4vw, 24vh, 15rem);
+  }
+
+  .fade .f-hero-side {
+    margin-top: 0;
+    padding-bottom: 6px;
+  }
+
+  .fade .f-hero-ctas {
+    display: flex;
+  }
+}
+
+/* ---------- Faixa de preços correndo ---------- */
+
+.fade .f-marquee {
+  overflow: hidden;
+  padding: 18px 0;
+  border-block: 1px solid rgb(241 232 217 / 0.15);
+}
+
+.fade .f-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: f-marquee 48s linear infinite;
+}
+
+.fade .f-marquee-run {
+  display: flex;
+  flex: none;
+}
+
+.fade .f-marquee-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  padding-right: 0.5em;
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(2rem, 4.6vw, 4.2rem);
+  font-weight: 800;
+  font-stretch: 62%;
+  line-height: 1.05;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fade .f-marquee-price {
+  color: var(--f-coral);
+  font-stretch: 120%;
+}
+
+.fade .f-marquee-sep {
+  padding-left: 0.3em;
+  font-weight: 200;
+  opacity: 0.5;
+}
+
+@keyframes f-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---------- A frase do corte ---------- */
+
+.fade .f-every {
+  padding: 96px 0;
+}
+
+.fade .f-statement {
+  margin-top: 24px;
+  font-size: clamp(2.5rem, 6.6vw, 6.6rem);
+  font-stretch: 96%;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.fade .f-word {
+  font-weight: var(--wg, 820);
+  --wg: 820;
+}
+
+.fade .f-chip {
+  display: inline-block;
+  width: 1.9em;
+  height: 0.78em;
+  margin: 0 0.06em 0 0.18em;
+  overflow: hidden;
+  border-radius: 999px;
+  vertical-align: -0.04em;
+}
+
+.fade .f-every-fig {
+  align-self: end;
+  max-width: 26rem;
+}
+
+@media (min-width: 1024px) {
+  .fade .f-every-fig {
+    max-width: none;
+  }
+}
+
+.fade .f-facts {
+  display: grid;
+  gap: 28px;
+}
+
+.fade .f-facts > div {
+  padding-top: 18px;
+  border-top: 2px solid var(--f-ink);
+}
+
+.fade .f-facts dd {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.fade .f-fact-n {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(3.6rem, 8vw, 8rem);
+  font-weight: 900;
+  font-stretch: 125%;
+  line-height: 0.85;
+  color: var(--f-red);
+  letter-spacing: -0.03em;
+}
+
+.fade .f-fact-l {
+  max-width: 14ch;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+@media (min-width: 768px) {
+  .fade .f-facts {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  .fade .f-facts dd {
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fade .f-every {
+    padding: 150px 0 120px;
+  }
+}
+
+/* ---------- Quadro de preços ---------- */
+
+.fade .f-board {
+  padding: 96px 0 72px;
+}
+
+.fade .f-board-note {
+  max-width: 34ch;
+  font-size: 16px;
+  color: rgb(241 232 217 / 0.82);
+}
+
+.fade .f-board-cols {
+  display: grid;
+  gap: 64px;
+  margin-top: 56px;
+}
+
+.fade .f-board-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--f-bone);
+}
+
+.fade .f-board-title {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-weight: 900;
+  font-stretch: 130%;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fade .f-board-photo {
+  width: 42%;
+  max-width: 15rem;
+  aspect-ratio: 2.2;
+  object-fit: cover;
+}
+
+.fade .f-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "main price"
+    "book book";
+  gap: 6px 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid rgb(241 232 217 / 0.2);
+}
+
+.fade .f-row-main {
+  grid-area: main;
+}
+
+.fade .f-row-name {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.3rem);
+  font-weight: 800;
+  font-stretch: 74%;
+  line-height: 0.95;
+  text-transform: uppercase;
+  transition:
+    font-stretch 550ms var(--f-ease),
+    color 250ms;
+}
+
+.fade .f-row-desc {
+  margin-top: 8px;
+  max-width: 40ch;
+  font-size: 15px;
+  line-height: 1.5;
+  color: rgb(241 232 217 / 0.78);
+}
+
+.fade .f-row-price {
+  grid-area: price;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+  font-weight: 900;
+  font-stretch: 110%;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  transition: color 250ms;
+}
+
+.fade .f-row-time {
+  margin-top: 8px;
+  font-family: var(--font-f-body), sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(241 232 217 / 0.78);
+}
+
+.fade .f-row-book {
+  grid-area: book;
+  justify-self: start;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  margin-top: 4px;
+  padding: 0 16px;
+  border: 1px solid rgb(241 232 217 / 0.4);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background-color 250ms,
+    color 250ms,
+    border-color 250ms;
+}
+
+.fade .f-row-book:hover {
+  border-color: var(--f-coral);
+  background: var(--f-coral);
+  color: var(--f-ink);
+}
+
+.fade .f-row:hover .f-row-name,
+.fade .f-row:focus-within .f-row-name {
+  font-stretch: 128%;
+}
+
+.fade .f-row:hover .f-row-price,
+.fade .f-row:focus-within .f-row-price {
+  color: var(--f-coral);
+}
+
+@media (min-width: 1024px) {
+  .fade .f-board {
+    padding: 130px 0 96px;
+  }
+
+  .fade .f-board-cols {
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    margin-top: 80px;
+  }
+
+  .fade .f-row {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas: "main price book";
+    align-items: start;
+  }
+
+  .fade .f-row-book {
+    margin-top: 0;
+    align-self: start;
+  }
+}
+
+/* ---------- Barbeiros ---------- */
+
+.fade .f-barbers {
+  padding: 96px 0;
+}
+
+.fade .f-barber-list {
+  margin-top: 56px;
+  border-top: 2px solid var(--f-bone);
+}
+
+.fade .f-barber {
+  display: grid;
+  gap: 12px;
+  padding: 18px 0 22px;
+  border-bottom: 2px solid var(--f-bone);
+}
+
+.fade .f-barber-box {
+  container-type: inline-size;
+  overflow: hidden;
+}
+
+.fade .f-barber-name {
+  display: inline-block;
+  font-size: 31cqw;
+  font-weight: 900;
+  font-stretch: calc((50 + (var(--wd) - 50) * var(--sq)) * 1%);
+  line-height: 0.8;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  padding-top: 0.04em;
+}
+
+.fade .f-barber-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.fade .f-barber-full {
+  font-weight: 700;
+}
+
+.fade .f-barbers-foot {
+  display: grid;
+  gap: 48px;
+  margin-top: 56px;
+}
+
+.fade .f-about {
+  max-width: 34ch;
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.fade .f-quotes {
+  display: grid;
+  gap: 24px;
+}
+
+.fade .f-quote p {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+  font-weight: 600;
+  font-stretch: 88%;
+  line-height: 1.2;
+}
+
+.fade .f-quote footer {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+@media (min-width: 1024px) {
+  .fade .f-barbers {
+    padding: 130px 0;
+  }
+
+  .fade .f-barber {
+    grid-template-columns: 1fr 17rem;
+    align-items: end;
+    gap: 40px;
+  }
+
+  .fade .f-barber-meta {
+    padding-bottom: 6px;
+  }
+
+  .fade .f-barbers-foot {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 64px;
+    margin-top: 80px;
+  }
+}
+
+/* ---------- Reservar ---------- */
+
+.fade .f-booking {
+  padding: 96px 0;
+}
+
+.fade .f-notes {
+  display: grid;
+  gap: 12px;
+  margin-top: 32px;
+  max-width: 40ch;
+  font-size: 16px;
+}
+
+.fade .f-notes li {
+  padding-left: 22px;
+  background: linear-gradient(var(--f-red), var(--f-red)) 0 0.6em / 10px 10px no-repeat;
+}
+
+.fade .f-book {
+  padding: 22px;
+  background: var(--f-ink);
+  color: var(--f-bone);
+}
+
+.fade .f-book-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.fade .f-tag {
+  display: inline-flex;
+  padding: 6px 12px;
+  border: 1px solid var(--f-coral);
+  color: var(--f-coral);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fade .f-steps {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fade .f-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(241 232 217 / 0.72);
+}
+
+.fade .f-steps li[aria-current] {
+  color: var(--f-bone);
+}
+
+.fade .f-steps-n {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.fade .f-steps li[aria-current] .f-steps-n,
+.fade .f-steps li[data-done] .f-steps-n {
+  border-color: var(--f-coral);
+  background: var(--f-coral);
+  color: var(--f-ink);
+}
+
+.fade .f-ticket {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.35em;
+  margin-top: 26px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgb(241 232 217 / 0.2);
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.7rem, 3.6vw, 3.1rem);
+  font-weight: 900;
+  font-stretch: 100%;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.fade .f-ticket-part {
+  animation: f-ticket 600ms var(--f-ease) both;
+}
+
+.fade .f-ticket-part + .f-ticket-part::before {
+  content: "/ ";
+  font-weight: 200;
+  color: var(--f-coral);
+}
+
+@keyframes f-ticket {
+  from {
+    opacity: 0;
+    font-stretch: 50%;
+  }
+}
+
+.fade .f-step {
+  margin-top: 24px;
+  animation: f-step 500ms var(--f-ease) both;
+}
+
+@keyframes f-step {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.fade .f-book-h {
+  font-size: 20px;
+  font-weight: 700;
+  outline: none;
+}
+
+.fade .f-book-p {
+  margin-top: 14px;
+  max-width: 52ch;
+  font-size: 16px;
+  color: rgb(241 232 217 / 0.85);
+}
+
+.fade .f-book-small {
+  font-size: 13px;
+  color: rgb(241 232 217 / 0.78);
+}
+
+.fade .f-choices {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.fade .f-choice {
+  display: flex;
+  min-height: 56px;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 16px;
+  border: 1px solid rgb(241 232 217 / 0.28);
+  transition:
+    background-color 200ms,
+    border-color 200ms;
+}
+
+.fade .f-choice:hover {
+  border-color: var(--f-bone);
+}
+
+.fade .f-choice:has(:checked) {
+  border-color: var(--f-red);
+  background: var(--f-red);
+}
+
+.fade .f-choice-name {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  font-stretch: 100%;
+  line-height: 1.1;
+  text-transform: uppercase;
+  transition: font-stretch 400ms var(--f-ease);
+}
+
+.fade .f-choice:has(:checked) .f-choice-name {
+  font-stretch: 122%;
+}
+
+.fade .f-choice-meta {
+  font-size: 13px;
+  color: rgb(241 232 217 / 0.82);
+}
+
+.fade .f-choice:has(:checked) .f-choice-meta {
+  color: var(--f-bone);
+}
+
+.fade .f-days,
+.fade .f-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fade .f-day,
+.fade .f-slot {
+  display: inline-flex;
+  min-height: 48px;
+  cursor: pointer;
+  align-items: center;
+  border: 1px solid rgb(241 232 217 / 0.28);
+  transition:
+    background-color 200ms,
+    border-color 200ms;
+}
+
+.fade .f-day {
+  min-width: 76px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px;
+}
+
+.fade .f-slot {
+  min-width: 96px;
+  justify-content: center;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fade .f-day:hover,
+.fade .f-slot:hover {
+  border-color: var(--f-bone);
+}
+
+.fade .f-day:has(:checked),
+.fade .f-slot:has(:checked) {
+  border-color: var(--f-red);
+  background: var(--f-red);
+}
+
+.fade .f-day-w {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  font-stretch: 120%;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fade .f-day-d {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.fade .f-summary {
+  display: grid;
+  margin-top: 16px;
+}
+
+.fade .f-summary > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(241 232 217 / 0.2);
+}
+
+.fade .f-summary dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(241 232 217 / 0.78);
+}
+
+.fade .f-summary dd {
+  font-weight: 600;
+}
+
+.fade .f-book-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.fade .f-book-actions .f-btn[aria-disabled] {
+  opacity: 0.6;
+}
+
+@media (min-width: 640px) {
+  .fade .f-book {
+    padding: 34px;
+  }
+
+  .fade .f-choices {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fade .f-booking {
+    padding: 130px 0;
+  }
+
+  .fade .f-book {
+    margin-top: 40px;
+  }
+}
+
+/* ---------- Horário e endereço ---------- */
+
+.fade .f-visit {
+  padding: 96px 0;
+}
+
+.fade .f-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 8px 14px;
+  border: 1px solid rgb(241 232 217 / 0.5);
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fade .f-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 2px solid var(--f-bone);
+}
+
+.fade .f-status-dot[data-open] {
+  background: var(--f-bone);
+}
+
+.fade .f-visit-grid {
+  display: grid;
+  gap: 56px;
+  margin-top: 48px;
+}
+
+.fade .f-hours {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fade .f-hours tr {
+  border-top: 2px solid var(--f-bone);
+}
+
+.fade .f-hours tr:last-child {
+  border-bottom: 2px solid var(--f-bone);
+}
+
+.fade .f-hours th {
+  padding: 12px 12px 8px 0;
+  text-align: left;
+  font-size: clamp(2.2rem, 7vw, 6rem);
+  font-weight: 900;
+  font-stretch: 125%;
+  line-height: 0.9;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fade .f-hours td {
+  padding: 12px 0 8px;
+  text-align: right;
+  font-size: clamp(1.15rem, 2.6vw, 2.3rem);
+  font-weight: 600;
+  font-stretch: 78%;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fade .f-hours .f-hours-closed th,
+.fade .f-hours .f-hours-closed td {
+  font-weight: 200;
+}
+
+.fade .f-hours tr[data-today] th::after {
+  content: "Today";
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 8px;
+  vertical-align: middle;
+  background: var(--f-bone);
+  color: var(--f-red);
+  font-family: var(--font-f-body), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  font-stretch: 100%;
+  letter-spacing: 0.14em;
+  line-height: 1;
+}
+
+.fade .f-address {
+  display: grid;
+  gap: 10px;
+  font-style: normal;
+}
+
+.fade .f-link-big {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: clamp(1.6rem, 2.6vw, 2.3rem);
+  font-weight: 800;
+  font-stretch: 100%;
+  line-height: 1.05;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.fade .f-address-note {
+  max-width: 40ch;
+  font-size: 15px;
+}
+
+.fade .f-contact {
+  display: grid;
+  gap: 4px;
+  margin-top: 28px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.fade .f-contact a {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+}
+
+.fade .f-faq {
+  display: grid;
+  gap: 18px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(241 232 217 / 0.45);
+}
+
+.fade .f-faq dt {
+  font-weight: 700;
+}
+
+.fade .f-faq dd {
+  margin-top: 2px;
+  font-size: 15px;
+}
+
+@media (min-width: 1024px) {
+  .fade .f-visit {
+    padding: 130px 0 110px;
+  }
+
+  .fade .f-visit-grid {
+    grid-template-columns: 1.45fr 1fr;
+    gap: 72px;
+    margin-top: 64px;
+  }
+}
+
+/* ---------- Rodapé ---------- */
+
+.fade .f-footer {
+  padding: 72px 0 40px;
+}
+
+.fade .f-foot-mark {
+  font-size: min(15vw, 15rem);
+  line-height: 0.8;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.fade .f-foot-grid {
+  display: grid;
+  gap: 36px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid rgb(241 232 217 / 0.25);
+}
+
+.fade .f-foot-name {
+  font-family: var(--font-f-display), sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  font-stretch: 118%;
+  text-transform: uppercase;
+}
+
+.fade .f-foot-text {
+  margin-top: 10px;
+  max-width: 44ch;
+  font-size: 14px;
+  color: rgb(241 232 217 / 0.82);
+}
+
+.fade .f-foot-grid .f-kicker-plain {
+  color: var(--f-coral);
+}
+
+.fade .f-foot-credits {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: rgb(241 232 217 / 0.82);
+}
+
+@media (min-width: 768px) {
+  .fade .f-foot-grid {
+    grid-template-columns: 1fr 1.2fr 1fr;
+  }
+}
+
+/* Selo da No Sweat: mesmas cores do rodapé. O container permite ao selo usar o espaço da
+   pílula do celular só quando ela está embaixo (abaixo de 48rem). */
+.fade .f-badge {
+  --nsb-bg: var(--f-ink);
+  --nsb-fg: var(--f-bone);
+  container-type: inline-size;
+  border-top: 1px solid rgb(241 232 217 / 0.12);
+}
+
+/* Entre 768 e 1023 px a pílula ainda fica embaixo, mas o selo já não reserva o espaço dela. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .fade .f-badge {
+    padding-bottom: 76px;
+  }
+}
+
+/* ---------- Movimento reduzido: nada anda, tudo no estado final ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .fade *,
+  .fade *::before,
+  .fade *::after {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+
+  .fade .f-marquee-track {
+    width: auto;
+  }
+
+  .fade .f-marquee-run {
+    flex-wrap: wrap;
+  }
+
+  .fade .f-marquee-run + .f-marquee-run {
+    display: none;
+  }
+}

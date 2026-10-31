@@ -1,0 +1,1277 @@
+/* Bright Spark Electric (demonstração). "service-direct" em blocos de marca: amarelo de
+   segurança em blocos grandes, tinta quase preta, papel claro e cinza de quadro elétrico. Uma
+   família só (Schibsted Grotesk). O amarelo NUNCA é texto sobre claro; sobre tinta, sim.
+   Contraste medido: tinta #121211 sobre amarelo #ffd000 12,7:1; tinta suave #3b3829 sobre
+   amarelo 7,9:1; tinta suave #4d4b45 sobre papel #f3f1ea 7,7:1; amarelo sobre tinta 12,7:1;
+   papel a 72% sobre tinta ≈ 8,6:1. Tudo dentro de @layer components (as utilidades do
+   Tailwind continuam vencendo) e com prefixo .brightspark / bs- para não vazar. */
+
+@layer components {
+  .brightspark {
+    --bs-yellow: #ffd000;
+    --bs-yellow-deep: #f2c200;
+    --bs-ink: #121211;
+    --bs-ink-2: #1d1e20;
+    --bs-ink-3: #2b2d30;
+    --bs-paper: #f3f1ea;
+    --bs-paper-2: #e8e5db;
+    --bs-white: #fbfaf6;
+    --bs-soft: #4d4b45;
+    --bs-soft-on-yellow: #3b3829;
+    --bs-on-ink: #f3f1ea;
+    --bs-on-ink-soft: rgba(243, 241, 234, 0.72);
+    --bs-rule: rgba(18, 18, 17, 0.2);
+    --bs-rule-on-ink: rgba(243, 241, 234, 0.22);
+    --bs-red: #b42318;
+    --bs-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
+    --bs-top-h: 3.5rem;
+    background: var(--bs-paper);
+    color: var(--bs-ink);
+    font-family: var(--font-bs), system-ui, sans-serif;
+    font-size: 16px;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html:has(.brightspark) body {
+    background: #f3f1ea;
+  }
+
+  .brightspark ::selection {
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+  }
+
+  .brightspark a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Foco visível próprio: contorno de 3 px com afastamento, na cor do texto da seção. */
+  .brightspark :focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Tipos ---------- */
+
+  /* Algarismos de linha proporcionais: a vírgula tabular desta fonte é larga demais
+     ("$2 , 400"); só as horas grandes usam tabulares (alinhamento). */
+  .brightspark .bs-num {
+    font-variant-numeric: lining-nums;
+  }
+
+  .brightspark .bs-hours-big {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  .brightspark .bs-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .brightspark .bs-poster {
+    font-size: clamp(4.6rem, 24vw, 13.5rem);
+    font-weight: 800;
+    line-height: 0.84;
+    letter-spacing: -0.055em;
+    margin-left: -0.05em;
+    text-wrap: balance;
+  }
+
+  .brightspark .bs-poster-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.06em;
+    margin-bottom: -0.06em;
+  }
+
+  .brightspark .bs-poster-line > span {
+    display: inline-block;
+  }
+
+  .brightspark .bs-h2 {
+    font-size: clamp(2.4rem, 5.6vw, 5.25rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .brightspark .bs-h3 {
+    font-size: clamp(1.55rem, 2.4vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .brightspark .bs-h4 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .brightspark p {
+    text-wrap: pretty;
+  }
+
+  .brightspark .bs-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .brightspark .bs-link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  /* ---------- Botões ---------- */
+
+  .brightspark .bs-btn {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    border: 2px solid var(--bs-ink);
+    padding: 0.7rem 1.25rem;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    transition:
+      background-color 0.18s var(--bs-ease),
+      color 0.18s var(--bs-ease);
+    cursor: pointer;
+  }
+
+  .brightspark .bs-btn-lg {
+    min-height: 56px;
+    padding: 0.85rem 1.5rem;
+    font-size: 17px;
+  }
+
+  .brightspark .bs-btn-ink {
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+  }
+
+  .brightspark .bs-btn-ink:hover {
+    background: var(--bs-ink-3);
+  }
+
+  .brightspark .bs-btn-line {
+    background: transparent;
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-btn-line:hover {
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+  }
+
+  .brightspark .bs-ink .bs-btn-ink {
+    background: var(--bs-yellow);
+    border-color: var(--bs-yellow);
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-ink .bs-btn-line {
+    border-color: var(--bs-on-ink);
+    color: var(--bs-on-ink);
+  }
+
+  /* ---------- Barras ---------- */
+
+  .brightspark .bs-top {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    height: var(--bs-top-h);
+    background: var(--bs-ink);
+    color: var(--bs-on-ink);
+    font-size: 15px;
+  }
+
+  .brightspark .bs-top-link {
+    font-weight: 500;
+    color: var(--bs-on-ink-soft);
+    transition: color 0.15s;
+  }
+
+  .brightspark .bs-top-link:hover {
+    color: var(--bs-on-ink);
+  }
+
+  .brightspark .bs-top-call {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bs-yellow);
+    color: var(--bs-ink);
+    padding: 0 0.9rem;
+    font-weight: 700;
+  }
+
+  .brightspark .bs-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .brightspark .bs-top .bs-status {
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+  }
+
+  .brightspark .bs-status[data-open] .bs-status-dot {
+    background: var(--bs-yellow);
+    border-color: var(--bs-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 208, 0, 0.25);
+  }
+
+  .brightspark .bs-yellow .bs-status[data-open] .bs-status-dot {
+    background: var(--bs-ink);
+    border-color: var(--bs-ink);
+    box-shadow: none;
+  }
+
+  .brightspark .bs-bottom {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 70;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 1px;
+    background: var(--bs-ink-3);
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .brightspark .bs-bottom a {
+    display: flex;
+    min-height: 60px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--bs-ink);
+    color: var(--bs-on-ink);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .brightspark .bs-bottom a.bs-bottom-call {
+    background: var(--bs-yellow);
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-bottom a:focus-visible {
+    outline-offset: -5px;
+  }
+
+  /* ---------- Superfícies ---------- */
+
+  .brightspark .bs-hero,
+  .brightspark .bs-yellow {
+    background: var(--bs-yellow);
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-paper {
+    background: var(--bs-paper);
+  }
+
+  .brightspark .bs-paper-2 {
+    background: var(--bs-paper-2);
+  }
+
+  .brightspark .bs-ink {
+    background: var(--bs-ink);
+    color: var(--bs-on-ink);
+  }
+
+  .brightspark .bs-sec {
+    position: relative;
+  }
+
+  /* ---------- Topo ---------- */
+
+  .brightspark .bs-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 3px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-facts > div {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding: 1rem 1rem 0.25rem 0;
+    border-bottom: 1px solid rgba(18, 18, 17, 0.35);
+  }
+
+  .brightspark .bs-facts > div:nth-child(odd) {
+    border-right: 1px solid rgba(18, 18, 17, 0.35);
+  }
+
+  .brightspark .bs-facts > div:nth-child(even) {
+    padding-left: 1rem;
+  }
+
+  .brightspark .bs-facts dd {
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+  }
+
+  .brightspark .bs-facts dt {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--bs-soft-on-yellow);
+    padding-bottom: 0.75rem;
+  }
+
+  @media (min-width: 1024px) {
+    .brightspark .bs-facts {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .brightspark .bs-facts > div,
+    .brightspark .bs-facts > div:nth-child(even) {
+      border-bottom: 0;
+      border-right: 1px solid rgba(18, 18, 17, 0.35);
+      padding: 1.25rem 1.5rem 0 1.5rem;
+    }
+
+    .brightspark .bs-facts > div:first-child {
+      padding-left: 0;
+    }
+
+    .brightspark .bs-facts > div:last-child {
+      border-right: 0;
+    }
+  }
+
+  /* ---------- O fio e os interruptores ---------- */
+
+  .brightspark .bs-wire {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 15px;
+    width: 3px;
+    background: var(--bs-rule);
+    pointer-events: none;
+  }
+
+  .brightspark .bs-ink .bs-wire {
+    background: var(--bs-rule-on-ink);
+  }
+
+  .brightspark .bs-wire-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--bs-ink);
+    transform-origin: top center;
+  }
+
+  .brightspark .bs-ink .bs-wire-fill {
+    background: var(--bs-yellow);
+  }
+
+  @media (min-width: 640px) {
+    .brightspark .bs-wire {
+      left: 24px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .brightspark .bs-wire {
+      left: 44px;
+    }
+  }
+
+  .brightspark .bs-switch {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 16px;
+    flex: none;
+    border: 2px solid currentColor;
+    border-radius: 3px;
+  }
+
+  .brightspark .bs-switch-handle {
+    position: absolute;
+    top: 2px;
+    left: 14px;
+    width: 10px;
+    height: 8px;
+    background: currentColor;
+    transition: left 0.28s var(--bs-ease);
+  }
+
+  .brightspark .bs-ink .bs-switch-handle {
+    background: var(--bs-yellow);
+  }
+
+  .brightspark [data-bs-off] .bs-switch-handle {
+    left: 2px;
+    background: transparent;
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+
+  /* ---------- Quadro de disjuntores ---------- */
+
+  .brightspark .bs-panel {
+    background: var(--bs-ink-2);
+    color: var(--bs-on-ink);
+    padding: 0.85rem;
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 1px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .brightspark .bs-panel-head,
+  .brightspark .bs-panel-foot {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0.4rem 0.75rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-panel-foot {
+    padding: 0.75rem 0.4rem 0.2rem;
+  }
+
+  .brightspark .bs-breakers {
+    display: grid;
+    gap: 6px;
+    background: #0d0d0d;
+    padding: 6px;
+    border-radius: 3px;
+  }
+
+  .brightspark .bs-breaker {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 64px;
+    width: 100%;
+    padding: 0.6rem 0.9rem 0.6rem 0.7rem;
+    background: var(--bs-ink-3);
+    color: var(--bs-on-ink);
+    text-align: left;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background-color 0.2s var(--bs-ease);
+  }
+
+  .brightspark .bs-breaker:hover {
+    background: #34373b;
+  }
+
+  .brightspark .bs-breaker:focus-visible {
+    outline: 3px solid var(--bs-yellow);
+    outline-offset: 2px;
+  }
+
+  .brightspark .bs-breaker[data-on] {
+    background: #3a3c3f;
+    box-shadow: inset 4px 0 0 var(--bs-yellow);
+  }
+
+  .brightspark .bs-breaker-toggle {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    border-radius: 3px;
+    background: #0d0d0d;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .brightspark .bs-breaker-handle {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 2px;
+    background: #8d9096;
+    transition:
+      transform 0.25s var(--bs-ease),
+      background-color 0.25s var(--bs-ease);
+  }
+
+  .brightspark .bs-breaker[data-on] .bs-breaker-handle {
+    transform: translateX(20px);
+    background: var(--bs-yellow);
+  }
+
+  .brightspark .bs-breaker-slot {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-breaker-name {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .brightspark .bs-breaker-rating {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--bs-on-ink-soft);
+    white-space: nowrap;
+  }
+
+  .brightspark .bs-breaker[data-on] .bs-breaker-rating {
+    color: var(--bs-yellow);
+  }
+
+  .brightspark .bs-detail {
+    border-top: 3px solid var(--bs-ink);
+    padding-top: 1.5rem;
+  }
+
+  .brightspark .bs-detail:focus-visible {
+    outline-offset: 6px;
+  }
+
+  .brightspark .bs-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15em 0.35em;
+    font-size: clamp(3.6rem, 8vw, 6.5rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+  }
+
+  .brightspark .bs-price-from {
+    font-size: 0.24em;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-included {
+    display: grid;
+    border-top: 1px solid var(--bs-rule);
+  }
+
+  .brightspark .bs-included li {
+    display: grid;
+    grid-template-columns: 2.25rem 1fr;
+    gap: 0.5rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--bs-rule);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .brightspark .bs-included li > .bs-num {
+    font-weight: 700;
+    font-size: 13px;
+    padding-top: 0.2em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .brightspark .bs-detail-in {
+      animation: bs-fade 0.4s var(--bs-ease) both;
+    }
+  }
+
+  @keyframes bs-fade {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  /* Molduras das fotos (editorial: foto, fio, legenda numerada). */
+  .brightspark .bs-frame-photo {
+    overflow: hidden;
+    background: var(--bs-ink);
+    padding: 6px;
+  }
+
+  .brightspark .bs-caption {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--bs-soft);
+  }
+
+  /* ---------- Dia de troca de quadro ---------- */
+
+  .brightspark .bs-day {
+    display: grid;
+    gap: 2.5rem 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .brightspark .bs-day {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .brightspark .bs-day {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .brightspark .bs-day li {
+    border-top: 1px solid var(--bs-rule-on-ink);
+    padding-top: 1.25rem;
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-day h3 {
+    color: var(--bs-on-ink);
+  }
+
+  .brightspark .bs-day-no {
+    display: block;
+    font-size: clamp(5rem, 10vw, 8.5rem);
+    font-weight: 800;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    color: var(--bs-yellow);
+  }
+
+  .brightspark .bs-quote-big blockquote p {
+    font-size: clamp(1.8rem, 3.6vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .brightspark .bs-quote-big .bs-label {
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-quote-big figcaption {
+    color: var(--bs-yellow);
+  }
+
+  /* ---------- Área e horário ---------- */
+
+  .brightspark .bs-yellow .bs-label {
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-cities-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    border-top: 2px solid var(--bs-ink);
+    padding: 0.35rem 0 0.4rem;
+    font-size: clamp(2.2rem, 6.2vw, 5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  .brightspark .bs-cities-list li:last-child {
+    border-bottom: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-cities-list .bs-num {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    min-width: 1.6rem;
+    transform: translateY(-0.4em);
+  }
+
+  .brightspark .bs-hours li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: end;
+    gap: 1.25rem;
+    border-top: 2px solid var(--bs-ink);
+    padding: 1rem 0;
+  }
+
+  .brightspark .bs-hours li:last-child {
+    border-bottom: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-hours-big {
+    font-size: clamp(4rem, 8vw, 7rem);
+    font-weight: 800;
+    line-height: 0.82;
+    letter-spacing: -0.06em;
+    min-width: 2.6em;
+  }
+
+  .brightspark .bs-hours-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-size: 16px;
+    padding-bottom: 0.2rem;
+  }
+
+  .brightspark .bs-today {
+    display: none;
+    align-self: flex-start;
+    margin-top: 0.35rem;
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+    padding: 0.1rem 0.45rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .brightspark [data-today] .bs-today {
+    display: inline-block;
+  }
+
+  /* ---------- Quem atende ---------- */
+
+  .brightspark .bs-people {
+    display: grid;
+    gap: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    .brightspark .bs-people {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2.5rem;
+    }
+  }
+
+  .brightspark .bs-people article {
+    border-top: 3px solid var(--bs-ink);
+    padding-top: 1.25rem;
+  }
+
+  .brightspark .bs-people .bs-label {
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-people-num {
+    font-size: clamp(4.5rem, 10vw, 8.5rem);
+    font-weight: 800;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+  }
+
+  .brightspark .bs-quote-small {
+    border-left: 6px solid var(--bs-yellow);
+    padding: 0.25rem 0 0.25rem 1rem;
+  }
+
+  .brightspark .bs-quote-small blockquote p {
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  .brightspark .bs-highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .brightspark .bs-highlights li {
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+    padding: 0.55rem 0.9rem;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .brightspark .bs-faq {
+    border-top: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-faq details {
+    border-bottom: 1px solid var(--bs-rule);
+  }
+
+  .brightspark .bs-faq summary {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .brightspark .bs-faq summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .brightspark .bs-faq p {
+    max-width: 60ch;
+    padding: 0 0 1.1rem;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-faq-switch {
+    position: relative;
+    width: 30px;
+    height: 16px;
+    flex: none;
+    border: 2px solid var(--bs-ink);
+    border-radius: 3px;
+  }
+
+  .brightspark .bs-faq-switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 8px;
+    box-shadow: inset 0 0 0 2px var(--bs-ink);
+    transition: left 0.25s var(--bs-ease);
+  }
+
+  .brightspark .bs-faq details[open] .bs-faq-switch span {
+    left: 14px;
+    background: var(--bs-ink);
+  }
+
+  /* ---------- Orçamento ---------- */
+
+  .brightspark .bs-contact {
+    display: grid;
+    border-top: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-contact > div {
+    display: grid;
+    grid-template-columns: 3.75rem 1fr;
+    gap: 0.75rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--bs-rule);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .brightspark .bs-contact dt {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding-top: 0.2rem;
+  }
+
+  .brightspark .bs-contact dd {
+    min-width: 0;
+    font-weight: 600;
+  }
+
+  .brightspark .bs-contact a[href^="mailto:"] {
+    font-size: 15px;
+  }
+
+  .brightspark .bs-sheet {
+    background: var(--bs-white);
+    border-top: 8px solid var(--bs-yellow);
+    box-shadow: 0 0 0 1px var(--bs-rule);
+    padding: 1.5rem 1.15rem;
+  }
+
+  @media (min-width: 640px) {
+    .brightspark .bs-sheet {
+      padding: 2rem 2.25rem 2.25rem;
+    }
+  }
+
+  .brightspark .bs-demo-tag {
+    display: inline-block;
+    background: var(--bs-yellow);
+    color: var(--bs-ink);
+    padding: 0.15rem 0.45rem;
+    margin-right: 0.4rem;
+    font-weight: 800;
+  }
+
+  .brightspark .bs-steps {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .brightspark .bs-steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-top: 3px solid var(--bs-rule);
+    padding: 0.4rem 0.6rem 0 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-steps li[data-done] {
+    border-color: var(--bs-ink);
+  }
+
+  .brightspark .bs-steps li[aria-current] {
+    border-color: var(--bs-ink);
+    color: var(--bs-ink);
+  }
+
+  .brightspark .bs-steps-label {
+    display: none;
+  }
+
+  .brightspark .bs-steps li[aria-current] .bs-steps-label {
+    display: inline;
+  }
+
+  @media (min-width: 768px) {
+    .brightspark .bs-steps-label {
+      display: inline;
+    }
+  }
+
+  .brightspark .bs-quote legend:focus {
+    outline: none;
+  }
+
+  .brightspark .bs-quote legend:focus-visible {
+    outline: 3px solid currentColor;
+  }
+
+  .brightspark .bs-hint {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-choices {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .brightspark .bs-choices {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .brightspark .bs-choice {
+    position: relative;
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    min-height: 64px;
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--bs-rule);
+    background: var(--bs-white);
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background-color 0.15s;
+  }
+
+  .brightspark .bs-choice:hover {
+    border-color: var(--bs-ink);
+  }
+
+  .brightspark .bs-choice[data-checked] {
+    border-color: var(--bs-ink);
+    background: #fff6cc;
+  }
+
+  .brightspark .bs-choice input,
+  .brightspark .bs-city input {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.1rem;
+    flex: none;
+    accent-color: var(--bs-ink);
+  }
+
+  .brightspark .bs-choice:has(input:focus-visible),
+  .brightspark .bs-city:has(input:focus-visible) {
+    outline: 3px solid var(--bs-ink);
+    outline-offset: 2px;
+  }
+
+  .brightspark .bs-choice-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .brightspark .bs-choice-label {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .brightspark .bs-choice-hint {
+    font-size: 13px;
+    color: var(--bs-soft);
+  }
+
+  .brightspark .bs-cities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .brightspark .bs-city {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem 0.5rem 0.8rem;
+    border: 2px solid var(--bs-rule);
+    background: var(--bs-white);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .brightspark .bs-city input {
+    margin-top: 0;
+  }
+
+  .brightspark .bs-city:hover,
+  .brightspark .bs-city[data-checked] {
+    border-color: var(--bs-ink);
+  }
+
+  .brightspark .bs-city[data-checked] {
+    background: #fff6cc;
+  }
+
+  .brightspark .bs-field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .brightspark .bs-field input,
+  .brightspark .bs-field textarea {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+    border: 2px solid var(--bs-rule);
+    background: #fff;
+    padding: 0.7rem 0.85rem;
+    font: inherit;
+    font-size: 16px;
+    color: var(--bs-ink);
+    border-radius: 0;
+  }
+
+  .brightspark .bs-field input::placeholder,
+  .brightspark .bs-field textarea::placeholder {
+    color: #75736b;
+  }
+
+  .brightspark .bs-field input:hover,
+  .brightspark .bs-field textarea:hover {
+    border-color: rgba(18, 18, 17, 0.5);
+  }
+
+  .brightspark .bs-field input:focus-visible,
+  .brightspark .bs-field textarea:focus-visible {
+    outline: 3px solid var(--bs-ink);
+    outline-offset: 0;
+    border-color: var(--bs-ink);
+  }
+
+  .brightspark .bs-field [aria-invalid="true"] {
+    border-color: var(--bs-red);
+  }
+
+  .brightspark .bs-error {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bs-red);
+  }
+
+  .brightspark .bs-thumb {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .brightspark .bs-thumb-x {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--bs-ink);
+    color: var(--bs-yellow);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .brightspark .bs-drop {
+    display: flex;
+    width: 96px;
+    height: 96px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    border: 2px dashed rgba(18, 18, 17, 0.5);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .brightspark .bs-drop:hover {
+    border-color: var(--bs-ink);
+    background: #fff6cc;
+  }
+
+  .brightspark .bs-drop:has(input:focus-visible) {
+    outline: 3px solid var(--bs-ink);
+    outline-offset: 2px;
+  }
+
+  .brightspark .bs-drop-plus {
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .brightspark .bs-quote-done:focus {
+    outline: none;
+  }
+
+  .brightspark .bs-summary {
+    display: grid;
+    border-top: 2px solid var(--bs-ink);
+  }
+
+  .brightspark .bs-summary > div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--bs-rule);
+    font-size: 16px;
+  }
+
+  .brightspark .bs-summary dt {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding-top: 0.2rem;
+  }
+
+  .brightspark .bs-summary dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Rodapé ---------- */
+
+  .brightspark .bs-footer {
+    background: var(--bs-ink);
+    color: var(--bs-on-ink);
+  }
+
+  .brightspark .bs-on-ink-soft {
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-footer-mark {
+    font-size: clamp(3.2rem, 11vw, 10rem);
+    font-weight: 800;
+    line-height: 0.86;
+    letter-spacing: -0.055em;
+    color: var(--bs-yellow);
+  }
+
+  .brightspark .bs-footer-fine {
+    border-color: var(--bs-rule-on-ink);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--bs-on-ink-soft);
+  }
+
+  .brightspark .bs-footer-fine a:hover {
+    color: var(--bs-on-ink);
+  }
+
+  .brightspark .bs-badge {
+    background: #121211;
+    border-top: 1px solid var(--bs-rule-on-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brightspark *,
+    .brightspark *::before,
+    .brightspark *::after {
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  .brightspark .bs-hero-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    border-top: 3px solid var(--bs-ink);
+    border-bottom: 1px solid rgba(18, 18, 17, 0.35);
+    padding: 0.6rem 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+}

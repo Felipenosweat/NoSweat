@@ -1,0 +1,129 @@
+[
+  {
+    "id": "white-desert",
+    "name": "White Desert (by Malvah)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/white-desert",
+    "awwwardsEvidence": "WebSearch only (awwwards.com unreachable from this environment, DNS failure in WebFetch and Playwright). Query `\"White Desert\" Antarctica website awwwards \"Site of the Day\" studio credits` returned the result titled 'White Desert - Awwwards SOTD' (awwwards.com/sites/white-desert) with snippet 'Site of the Day - Sep 11, 2026' and credits 'Malvah ^PRO, Geoff Dawes, Usudo'; an LBB Online interview ('Getting to Know… Malvah Studio') describes Malvah's work for White Desert. Award page itself not loaded.",
+    "siteUrl": "https://white-desert.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "scroll-sequence",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "cinematic-scrollytelling",
+    "directions": ["immersive-photography", "typographic", "editorial"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": ["tour-operator", "resort", "hotel", "restaurant", "food-truck"],
+      "tones": ["cinematic", "premium", "bold"],
+      "goals": ["inquire", "book", "brand-story"]
+    },
+    "observed": {
+      "layout": "≈20 800 px desktop document. Hero = muted autoplay film (no poster: grey frame until it plays) with 'ANTARCTICA' set across the bottom; uppercase serif statement on white with faint vertical grid lines (fixed '.grid-overlay'); 'OUR TRIPS' cards; 'OUR CAMPS' title over a sticky aerial ice photo while camp cards slide sideways (sticky '.horizontal-scroll_wrapper'); 'mist' transitions between scenes (sticky '.mist-transition_image-container'); a dark flight panel with numbers (FLYING TIME 05:30 HRS, 4,220 KM / 2,610 MI, -5°C / 23°F) beside a map of the route; a giant route code 'CPT – WFR'; footer with a full-width 'WHITE DESERT' wordmark.",
+      "typography": "Computed: h1 'Antarctica' Oswald 400, 256 px, line-height 256 px, uppercase (80 px on 390 mobile); 'CPT – WFR' Oswald 320 px (200 px mobile); h2/statement in 'Cardinal Classic Long' (serif) 90 px uppercase; paragraphs Cardinal Classic Long 18 px; UI in Inter Tight 500. Three families: condensed sans for monuments, serif for voice, grotesk for UI.",
+      "imagery": "Full-bleed aerial and ground photography of ice, blue ice runways, camps; colour stays within white/ice-blue with one orange accent (the vertical 'Rates' tab, the 'Enquire' pill on mobile).",
+      "motion": "Lenis smooth scroll (html.lenis); sticky horizontal camp rail and sticky mist dissolves seen across sequential wheel screenshots; custom cursor element. Reduced-motion emulation produced the same screenshots: no visible change.",
+      "responsive": "Mobile keeps the chapters, condenses type (h1 80 px), 'Menu' + 'Enquire' pill top bar. A chat prompt + cookie banner covered the bottom ≈35% of every mobile screenshot."
+    },
+    "whyItWorks": "Facts are the spectacle: the flight panel turns hours, distance and temperature into a scene, and one condensed typeface at 256–320 px carries the place name and the route code like signage. One orange accent on a neutral palette is enough to mark every action.",
+    "principles": [
+      "Set the one number that defines the experience (flight time, smoking time) huge, as a scene of its own.",
+      "Use a condensed display face at monument size for the place name or code; keep body text in another voice.",
+      "One saturated accent on a neutral palette, reserved for actions and the key number.",
+      "Let a sticky full-bleed photo hold still while information changes over it."
+    ],
+    "doNotCarryOver": [
+      "Hero film without a poster (grey first frame) and no reduced-motion alternative.",
+      "Focus outline at 0 px on most nav buttons (Tab showed outline=auto 0px).",
+      "Chat prompt and cookie banner stacked over the mobile first screen.",
+      "Lenis smooth scroll (we keep native scroll).",
+      "Their Oswald/Cardinal pairing, ice palette, wordmark and photos."
+    ],
+    "study": "studies/white-desert.md"
+  },
+  {
+    "id": "gourou-indian-food",
+    "name": "Gourou Indian Food Company (design 13g, dev Thomas Carré)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/gourou-indian-food",
+    "awwwardsEvidence": "WebSearch only: the result 'Gourou Indian Food - Awwwards Honorable Mention' (awwwards.com/sites/gourou-indian-food) and Thomas Carré's Awwwards profile snippet 'Gourou Indian Food WEBSITE HM Honorable Mention Feb 17, 2026'. The live footer credits 'Design : 13g.fr' and 'Dev : Thomas Carré', which matches the award credit. Award page not loaded (awwwards.com unreachable).",
+    "siteUrl": "https://www.gourouindianfood.fr/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "scroll-sequence",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "playful", "warm-hospitality"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["restaurant", "fast-casual", "food-truck", "cafe"],
+      "tones": ["bold", "playful", "warm"],
+      "goals": ["browse-menu", "reserve-table", "order", "visit"]
+    },
+    "observed": {
+      "layout": "≈8 500 px desktop, ≈10 300 px mobile. Header: logo, 'Réserver' and 'Emporter' outlined pills, red 'Recrutement'. Hero: two photos side by side (kitchen + dish) and 'INDIAN FOOD COMPANY' set edge to edge in blue; a 'TO PARIS' marquee with a delivery-truck drawing; red full-width bands; a menu grid where every dish is a saturated card (yellow/blue/green/red/orange) with the Hindi name, the French/English name and a one-line description; 'SHOP' merch section; a closing block with address, metro line, hours and phone, then a blue footer nav.",
+      "typography": "Computed: Poppins 700 uppercase everywhere (h2 86.4 px 'INDIAN FOOD COMPANY', section titles 28.8 px, body 14.4 px), Oswald loaded; Devanagari script used as a second graphic voice beside each dish.",
+      "imagery": "Dish cut-outs on flat colour cards, candid kitchen photos of staff in branded T-shirts, a top-down table shot; four autoplay videos (muted).",
+      "motion": "GSAP + Lenis present; marquees, page loader and transition overlays (fixed .loader / .transition), Lottie hover videos. Reduced-motion emulation looked the same as normal.",
+      "responsive": "Mobile stacks the cards one per row, keeps the colour blocks, 'Recrutement' + burger in the header. Phone link is tel:0140563595 (valid)."
+    },
+    "whyItWorks": "The menu is the hero: each dish gets its own card in the brand palette, with two scripts and a plain description, so browsing the menu feels like part of the identity instead of a PDF. Practical facts (address, metro, hours, phone) are written out in one block at the end.",
+    "principles": [
+      "Make the menu itself the signature component, styled in the brand system.",
+      "Give each dish its real name and one plain line; no adjectives needed.",
+      "End with address, transit, hours and phone together in one readable block.",
+      "Keep reserve/takeaway actions in the header from the first frame."
+    ],
+    "doNotCarryOver": [
+      "Body copy at 14.4 px with 15.8 px line-height in places (too tight).",
+      "No change at all under prefers-reduced-motion (marquees, loader).",
+      "Five saturated colours at once (works for their brand, not for a monochrome direction).",
+      "Their logo, palette, Devanagari treatment and photos."
+    ],
+    "study": "studies/gourou-indian-food.md"
+  },
+  {
+    "id": "bucks-sauce",
+    "name": "Bucks Sauce",
+    "awwwardsUrl": "https://www.awwwards.com/sites/bucks-sauce",
+    "awwwardsEvidence": "WebSearch only: result 'Bucks Sauce' (awwwards.com/sites/bucks-sauce) summarised as 'a small-batch BBQ sauce brand', 'SOTD / SCORE 7.34/10', with a Developer Award breakdown 7.28/10; a studio portfolio snippet lists 'Bucks Sauce WEBSITE DEV Developer Award SOTD Site Of The Day Jul 03, 2026'. The studio credit was not confirmed. Award page not loaded.",
+    "siteUrl": null,
+    "inspectedOn": "2026-10-26",
+    "inspection": ["text-only"],
+    "evidenceStatus": "unavailable",
+    "approved": false,
+    "archetype": "kinetic-type",
+    "directions": ["playful", "product-demo"],
+    "useFor": [],
+    "fits": {
+      "businesses": ["product-brand", "restaurant"],
+      "tones": ["bold", "playful"],
+      "goals": ["shop", "brand-story"]
+    },
+    "observed": {
+      "layout": "Not observed. Live site not established: buckssauce.com answered with a Vercel Security Checkpoint ('Failed to verify your browser', Code 21, HTTP 429) to both curl and headless Chromium; bucks-sauce.com is a parked domain redirecting to /lander. Neither is confirmed to be the awarded site.",
+      "typography": "Not observed.",
+      "imagery": "Not observed (UIUX Showcase summary, unreachable from here, describes 'bold visuals, storytelling, and product-focused design').",
+      "motion": "Not observed.",
+      "responsive": "Not observed."
+    },
+    "whyItWorks": "Unknown from direct observation. Kept as a lead: the only BBQ-niche site with a 2026 SOTD found in this round.",
+    "principles": [],
+    "doNotCarryOver": ["Everything until it is inspected live."],
+    "study": null
+  }
+]

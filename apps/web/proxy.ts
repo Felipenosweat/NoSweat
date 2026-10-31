@@ -10,6 +10,7 @@ import {
 } from "@/server/auth/view-as-token";
 import { isAppHost } from "@/server/domains/hosts";
 import { GUEST_COOKIE } from "@/server/guest-cookie";
+import { INDEXNOW_KEY, INDEXNOW_KEY_PATH } from "@/server/seo/indexnow";
 
 // Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
 const PROTECTED_PATHS = [
@@ -76,6 +77,14 @@ export async function proxy(request: NextRequest) {
     .toLowerCase()
     .replace(/:\d+$/, "")
     .replace(/\.$/, ""); // "joes.com." (ponto final) é o mesmo domínio
+  // Chave do IndexNow (aviso aos buscadores), aberta em todo host que a No Sweat serve: é como o
+  // Bing confere que o aviso de "site novo" veio do dono do endereço (ver server/seo/indexnow.ts).
+  if (request.nextUrl.pathname === INDEXNOW_KEY_PATH) {
+    return new NextResponse(INDEXNOW_KEY, {
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
+
   // No domínio do cliente, só a API pública (ex.: formulário de contato) passa direto.
   if (host && !isAppHost(host) && !request.nextUrl.pathname.startsWith("/api/")) {
     // O site do cliente é uma página só: robots.txt e sitemap.xml simples para o Google.
@@ -86,8 +95,11 @@ export async function proxy(request: NextRequest) {
       });
     }
     if (safeHost && request.nextUrl.pathname === "/sitemap.xml") {
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://${host}/</loc></url></urlset>\n`;
-      return new NextResponse(xml, { headers: { "Content-Type": "application/xml" } });
+      // Feito na rota /d/<host>/sitemap.xml: ela confere se o site está no ar e põe a data.
+      const url = request.nextUrl.clone();
+      url.pathname = `/d/${host}/sitemap.xml`;
+      url.search = "";
+      return NextResponse.rewrite(url);
     }
     const url = request.nextUrl.clone();
     url.pathname = `/d/${host}`;

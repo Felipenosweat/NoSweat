@@ -8,6 +8,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
+import type { PublishSiteResponse } from "@nosweat/schema";
 import { markShared, splitSiteUrl } from "@/components/DashboardUi";
 import { Notice, glassButtonClass } from "@/components/glass";
 
@@ -136,6 +137,35 @@ const CheckIcon = () => (
   </Svg>
 );
 
+/**
+ * Linha "avisamos os buscadores" depois de publicar. Só aparece com o resultado da publicação
+ * que acabou de acontecer; "skipped" (prévia/dev) diz que o aviso só sai no site oficial.
+ */
+function SearchEnginesNote({
+  notice,
+}: {
+  notice: NonNullable<PublishSiteResponse["searchEngines"]>;
+}) {
+  const text =
+    notice.status === "sent"
+      ? `We told ${notice.engines.join(", ")} about your site, so they can visit it soon. Google finds it through your sitemap.`
+      : notice.status === "failed"
+        ? "Your site is live. Search engines didn't answer our notice this time; they'll still find it through your sitemap."
+        : "Search engines are notified automatically when you publish on your live address.";
+  return (
+    <p
+      role="status"
+      className="mt-3 flex items-start gap-2 rounded-xl bg-white/60 px-3 py-2 text-[13px] leading-5 text-(--glass-fg-muted)"
+    >
+      <span
+        aria-hidden="true"
+        className={`mt-1.5 size-1.5 shrink-0 rounded-full ${notice.status === "sent" ? "bg-emerald-500" : "bg-slate-400"}`}
+      />
+      {text}
+    </p>
+  );
+}
+
 export function PublishDialog({
   open,
   onClose,
@@ -150,6 +180,7 @@ export function PublishDialog({
   domainUrl = null,
   needsPlan = false,
   returnFocusTo,
+  searchEngines = null,
 }: {
   open: boolean;
   onClose: () => void;
@@ -175,6 +206,8 @@ export function PublishDialog({
   needsPlan?: boolean;
   /** Plano B para o foco ao fechar, se o botão que abriu sumiu. */
   returnFocusTo?: () => HTMLElement | null;
+  /** Resultado do aviso aos buscadores (IndexNow) da publicação que acabou de acontecer. */
+  searchEngines?: PublishSiteResponse["searchEngines"] | null;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
@@ -321,6 +354,7 @@ export function PublishDialog({
                 {status.label}
               </p>
               <p className="mt-0.5 text-[13px] text-(--glass-fg-muted)">{status.text}</p>
+              {searchEngines && <SearchEnginesNote notice={searchEngines} />}
             </div>
 
             {/* ---------- Endereço grátis ---------- */}

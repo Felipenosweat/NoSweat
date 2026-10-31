@@ -1,0 +1,146 @@
+[
+  {
+    "id": "monolith-studio",
+    "name": "Monolith Studio",
+    "awwwardsUrl": null,
+    "awwwardsEvidence": "Two second-hand sources, award page not loaded (awwwards.com unreachable, DNS fails from this environment). (1) Abduzeedo article 'Monolith Studio: Tattoo Studio Web Design by Le:mma' (https://abduzeedo.com/node/89302, dated 2026-04-20, page loaded with curl) says the site 'earned FWA of the Day, Awwwards Site of the Day, and CSS Design Awards in the same cycle'. (2) WebSearch summary of the Webflow showcase page https://webflow.com/made-in-webflow/website/monolith-st (not loaded) says the site 'has won Awwwards SOTD & DEV, CSSDA SOTD, and Behance UI & XD awards'. Credit: a Contra listing (search result) attributes the website to Artemii Lebedev (Le:mma Studio), timeline Sep–Nov 2024. The live page title and Webflow build match.",
+    "siteUrl": "https://monolithstudio.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot",
+      "scroll-sequence"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "cinematic-scrollytelling",
+    "directions": ["typographic", "immersive", "modular"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["tattoo-studio", "barber", "salon", "gallery", "studio"],
+      "tones": ["bold", "premium", "cinematic"],
+      "goals": ["book", "portfolio"]
+    },
+    "observed": {
+      "layout": "Brooklyn tattoo studio (document 13,026 px desktop, 10,620 px mobile). Hero on light grey #E0E0E0: the word 'MONOLITH' across the full width with a classical marble bust (3D, rendered into the page) standing in front of the letters; small corner facts ('Monolith Studio, contemporary tattoo studio based in Brooklyn, NYC', local time '6:20 PM, ET • NYC', 'Sound: off', 'Keep scrolling'). The bust stays pinned and turns for about five screens while short texts pass ('About', 'Our vision') and black 'Sidenote' cards. 'MEET THE ARTISTS' at 216 px, then a black section 'Artists' with a grid of black-and-white portraits, four per row, each card with a role tag (Co-Founder, Resident Artist, Resident Guest), the name, the styles ('Fine Line, Micro Realism, Black Work') and a '<name>'s bio ↗' button. Then a blog strip, an Instagram feed, 'Collectors say' quotes, press logos, a huge 'BOOK EXPERIENCE ↗' and a footer index of tattoo styles.",
+      "typography": "Computed: one family, 'SK Modernist' at 400 and 700. h1 'monolith' 285.12/199.6 px, 700, uppercase, −14.26 px tracking (−0.05em); h2 'meet the artists' 216/168.5 px; section h2 61.2 px at 400 with −0.05em; nav 10.8 px 700 uppercase. Many small labels: 51 text nodes at 11.52 px, 45 at 12.24 px, 31 at 10.08 px.",
+      "imagery": "One sculptural object (marble bust) as the brand image; artists in consistent black-and-white portraits; tattoo photos only in the blog and Instagram strips.",
+      "motion": "Scroll-driven 3D bust (2 canvases, 3 videos) pinned for the first screens; cards slide over it. Identical with prefers-reduced-motion: reduce (same scroll sequence in the reduced run). No gsap global; Webflow interactions.",
+      "interaction": "Top text navigation (artists, studio, book experience, blog, available design, lab (soon)); every artist card links to a bio. Default focus ring (outline auto 1px) visible on Tab.",
+      "responsive": "390 px: 'MONOLITH' fits the width with the bust below; Menu button; artists become a horizontal slider with arrows; footer keeps the styles index. No horizontal overflow."
+    },
+    "whyItWorks": "A roster studio sells its artists: one monumental word and one sculptural object set the tone, then the page turns into a plain, scannable index of people where each card says role, name and styles in the same order.",
+    "principles": [
+      "For a studio with several artists, an index of equal cards or rows: role tag, name, styles, one action, always in the same order.",
+      "One family at two weights; hierarchy by size with tracking that tightens as the type grows.",
+      "Keep the artists' photos in one treatment (black and white) so different shoots read as one roster."
+    ],
+    "doNotCarryOver": [
+      "A pinned 3D intro of about five screens before the first artist, and the same sequence under reduced motion.",
+      "No tel: or mailto: link on the home page; 33 of 87 images with empty alt.",
+      "Text at 10–12 px for most labels and links.",
+      "The near-black artists section and marble bust (our BBQ demo is the dark one); their wordmark and SK Modernist."
+    ],
+    "study": "studies/monolith-studio.md"
+  },
+  {
+    "id": "lass-tattoo",
+    "name": "Lass Tattoo",
+    "awwwardsUrl": "https://www.awwwards.com/sites/lass-tattoo",
+    "awwwardsEvidence": "WebSearch (standard) for 'awwwards honorable mention tattoo artist portfolio website' returned https://www.awwwards.com/sites/lass-tattoo; the summary described it as 'a portfolio site for a tattoo artist in Hamburg, which received an Awwwards Honorable Mention on May 17, 2023' with jury scores shown. A second search ('\"Lass Tattoo\" Hamburg website awwwards') found no award evidence, only interviews with the artist. Award page not loaded (awwwards.com unreachable). Live footer credit: 'Website made with love by Tanya Dyo'. Treat the award as one search snippet.",
+    "siteUrl": "https://www.lasstattoo.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": false,
+    "archetype": "experimental-grid",
+    "directions": ["editorial", "typographic"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["tattoo-artist", "piercer", "illustrator", "beauty", "salon"],
+      "tones": ["calm", "intimate", "refined"],
+      "goals": ["inquire", "portfolio"]
+    },
+    "observed": {
+      "layout": "Single artist (fine-line floral work), document 13,265 px desktop and 17,170 px mobile. First an entry gate: an off-white card over a black-and-white sea photo, 'I feel your energy and transfer it to the most expensive canvas in the world —' with 'your body' in script and an 'Explore' link; the page does not scroll until it is clicked (same with reduced motion). Behind it: 'LASS TATTOO' set huge at the bottom left of an off-white #F9F8F6 page with line-drawn flowers in the corners and a small red 'Send request' button. Then courses, 'Hey, I'm Lass!' (script) with two text columns, a portfolio of black-and-white tattoo photos placed at different sizes and heights with captions and arrows ('The Symbol of Freedom ↗'), giant grey words ('SENSITIVELY', 'YOUR PRECIOUS', 'LET'S VIBE TOGETHER') between blocks, an approach in two columns (Trust / Freedom), reviews shown as dark chat-message cards, a row of pre-care cards ('Prepare your skin', 'DO NOT wax your tattoo placement', 'Eat super well before the session', 'DO NOT drink alcohol'…), contact (studio, guest spots, email, Instagram) and 'LASS TATTOO' again as the footer.",
+      "typography": "Computed: DM Sans 300–700 plus a script, Qwitchergrypen, for one or two words per section in muted red. h1 'lass tattoo' 208.8/167 px, 700, uppercase, −8.35 px (−0.04em), #323232. Section h2s are 11.5 px uppercase labels; pre-care h3 38.9 px 700 uppercase; body 17.3 px uppercase in the manifesto. Nav 10 px uppercase; 'send request' in #B64B4B.",
+      "imagery": "Only the artist's own work, all in black and white, cut to different sizes; one portrait; studio interior photos in the contact block; hand-drawn floral line art as ornament.",
+      "motion": "Entry gate, then mostly static blocks with small reveals; 5 videos. Reduced motion: the gate and layout looked the same.",
+      "interaction": "Top nav (about, portfolio, reviews, pre-care, contact) and 'send request' as a mailto link; no tel: link. Default focus ring visible. 17 of 89 images with empty alt.",
+      "responsive": "390 px: the gate fills the screen; after it the scattered portfolio becomes a single column with offsets; long page (17,170 px). No horizontal overflow."
+    },
+    "whyItWorks": "A light, paper-like page with one dark-ink voice and one muted red makes tattoo work look like drawings on a sheet; scattering the photos at different sizes keeps a long portfolio from reading as a grid of thumbnails, and the pre-care cards answer the practical question every client has.",
+    "principles": [
+      "Off-white paper, near-black ink and one muted red: tattoo work reads as drawing, not as nightlife.",
+      "Place work at different sizes and heights on the page so a portfolio feels hand-pinned, with a short caption on each piece.",
+      "Give the practical rules (before and after the session) their own numbered cards, in the client's words."
+    ],
+    "doNotCarryOver": [
+      "An entry gate that blocks scrolling until 'Explore' is clicked, also under reduced motion.",
+      "Section titles as 11 px labels; long uppercase paragraphs.",
+      "Reviews as screenshots of private chat messages; no phone link.",
+      "Their script font, florals and wordmark."
+    ],
+    "study": "studies/lass-tattoo.md"
+  },
+  {
+    "id": "aralesk-collages",
+    "name": "Aralesk — Collages & Motion",
+    "awwwardsUrl": "https://www.awwwards.com/sites/aralesk-collages-motion",
+    "awwwardsEvidence": "The live home page HTML contains an embedded Awwwards ribbon (HTML comment 'Awwwards HM ribbon', class 'awwwards-badge') linking to https://www.awwwards.com/sites/aralesk-collages-motion, and a 'W. Honors' tab is visible on the page. A WebSearch summary of the Awwwards profile https://www.awwwards.com/aralesk/ said the site 'Aralesk — Collages & Motion' is listed with an honorable mention badge. Award page and date not loaded (awwwards.com unreachable).",
+    "siteUrl": "https://aralesk.es/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "network",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "experimental-grid",
+    "directions": ["playful", "immersive"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["artist", "illustrator", "tattoo-studio", "print-shop", "gallery"],
+      "tones": ["playful", "warm", "intimate"],
+      "goals": ["portfolio", "browse", "shop"]
+    },
+    "observed": {
+      "layout": "Collage artist from León, Spain (Spanish and English). Home: a closed, rusty metal shop shutter fills the screen with the stencilled 'ARALESK' logo and coloured 'light' dots; dragging up opens it onto a grid of coloured tiles with phrases ('Un latido', 'Un fragmento'). Work page (/work.html, 4,436 px desktop): a dark intro with 'WORK' in Bebas Neue at 360 px under a hanging lamp, red threads running down from it; then a kraft-paper board covered with pinned pieces: collages printed with white borders like instant photos, black video frames, each slightly rotated, held by coloured pins and washi tape, with a handwritten-style title under each ('Distorsión Natural', 'Lunático Dolor', 'Hogar Dulce Hogar'), sticky notes in between ('¿otra versión de esta?', 'seguir por aquí', '¿un café?') and one red thread running through the whole board; a small vertical scroll gauge on the right edge. It ends on black with 'NO TIRES DEL HILO. O SÍ.' ('Don't pull the thread. Or do.') and a red ball of yarn.",
+      "typography": "Computed on /work.html: h1 'WORK' Bebas Neue 360/288 px (101 px on mobile); h2 84/105 px; a marquee in Anton 108 px ('COLLECTION — HIP FLOW 2026 — COLLECTION'); body Montserrat 300 at 15.8/26 px in white at 55% opacity on black; captions in a handwriting-style face.",
+      "imagery": "The artist's own collages as physical prints (white border, slight rotation, pin, tape) on a textured board; video works sit in the same frames.",
+      "motion": "three.js on the home page (3 canvases, 10 videos); the shutter opens by drag; on the board 102 elements carry a rotation. With reduced motion the shutter gate looked the same. Screenshots after opening the shutter needed up to 120 s on software WebGL.",
+      "interaction": "A labelled, numbered menu: '01 HOME Inicio, 02 WORK Collages, 03 WEAR Arte para llevar, 04 ABOUT Sobre mí'. A skip link ('Saltar al contenido principal') and a visible default focus ring. The home page has no h1. Each piece on the board says it hides something to tap ('Cada pieza esconde algo. Tócala para descubrirlo').",
+      "responsive": "390 px: the board becomes two columns of pinned prints that keep their rotation and pins, readable without zoom; the shutter still fills the first screen. No horizontal overflow."
+    },
+    "whyItWorks": "The layout is the metaphor: an artist's corkboard where every piece is pinned, numbered by its caption and joined by a red thread, so browsing feels like walking up to a studio wall; the thread doubles as the reading path and the scroll gauge.",
+    "principles": [
+      "Pin the work: white-bordered prints, slight rotations, tape or pins, a short caption each; on mobile the same pins in a two-column grid.",
+      "One red line (thread, ink, marker) that ties the pieces together and marks progress.",
+      "Numbered, labelled navigation even on an experimental layout."
+    ],
+    "doNotCarryOver": [
+      "A home page that is a closed shutter you must drag open, and heavy WebGL before any content.",
+      "Grey body text at 55% opacity on black; no h1 on the home page.",
+      "The dark kraft-and-lamp mood (our demo is bone paper), their logo, typefaces and works."
+    ],
+    "study": "studies/aralesk-collages.md"
+  }
+]

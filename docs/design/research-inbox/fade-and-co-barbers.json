@@ -1,0 +1,95 @@
+[
+  {
+    "id": "crisp-barbershop",
+    "name": "CRISP Barbershop (Montreal)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/crisp-barbershop",
+    "awwwardsEvidence": "WebSearch 'CRISP Barbershop awwwards honorable mention' (2026-10-26) returned the page https://www.awwwards.com/sites/crisp-barbershop; the result summary says it is listed 'with an Honorable Mention dated Aug 11, 2026' and describes CRISP as 'a modern-day barbershop that fuses traditional barbering with contemporary hairstyling ... open since 2018'. The access log of 2026-10-26 (query 23) also listed 'CRISP Barbershop (HM Aug 11, 2026)'. The Awwwards page itself was not loaded (awwwards.com unreachable from this environment). The live site's HTML carries 'Last Published: Wed Aug 12 2026', which fits the award date. The live site was found by probing crispmtl.com (the brand's Instagram handle is @crispmtl per press coverage); the award page's link to it was not seen.",
+    "siteUrl": "https://www.crispmtl.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "scroll-sequence",
+      "keyboard-focus",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "service-led"],
+    "useFor": ["customer-sites"],
+    "fits": {
+      "businesses": ["barber", "hair-salon", "tattoo", "streetwear-shop", "gym"],
+      "tones": ["bold", "modern"],
+      "goals": ["book", "call"]
+    },
+    "observed": {
+      "layout": "Top bar: hamburger left, 'CRISP' wordmark centre, 'BOOK NOW' right. Hero: full-bleed muted photo (barber and client on a grey-green wall) with a dark veil and the h1 'MORE THAN A BARBER SHOP' centred low, a white 'BOOK NOW' button below. Then: a story block ('7 YEARS OF CRISP.' + 'Our Story / Est. 2018' labels + paragraph + BOOK NOW), a big index list (LOCATIONS / SERVICES / PORTFOLIO / COLLABS / ACADEMY) beside a photo of the shop counter, a two-location accordion ('2 LOCATIONS, SAME GREAT CUTS.'), the price list ('SEE OUR PRICE LIST.') as three bordered columns by barber level (Stylist / Junior Stylist / Junior Barber, each with Haircut, Kid's Haircut, Full Scissor Cut, Beard, Haircut + Beard and a price), portfolio portraits on flat colour, a collab logo row, an academy banner, and a black closing block 'GIVE US [grid of six b/w portraits] A SHOUT' with BOOK NOW, both addresses with hours, and a giant 'CRISP' wordmark. Thin vertical grid lines are drawn on the light sections. The page scrolls inside div.global-wrapper (6988 px at 1440, 5931 px at 390); the window itself does not scroll.",
+      "typography": "Computed: headings 'Helvetica Neue LT Std Bold Extended' 700, h1 92 px / lh 92 px desktop, section h2 72 px / lh 72 px (32 px on mobile), all caps, most ending with a full stop ('SEE OUR PRICE LIST.'). The index list uses the same extended face at 400. Small labels ('Our Story', 'Est. 2018', 'Our Services') are a serif, 'Perfectly Nineties' 14 px. Body 'Helvetica Neue' 16 px / 20 px. No variable font, no tracking changes (letter-spacing normal).",
+      "imagery": "Natural colour studio portraits of clients' cuts on flat coloured walls (green, cream), interior photos of the shops, a b/w portrait grid in the closing block. 34 images, all with an alt attribute.",
+      "motion": "GSAP present (window.gsap), no Lenis. 9 running animations at load; scroll reveals on blocks. With prefers-reduced-motion emulated the same 9 animations ran and the captured frames were identical. Focus: browser default outline (auto 1 px)."
+    },
+    "whyItWorks": "It reads like a barbershop's own signage: one wide, heavy, all-caps face for every heading, sentences that end in a full stop, and a price list laid out like the board on the wall. A tiny serif label is the only second voice, so the page has character without ornament.",
+    "principles": [
+      "Give the shop one wide, heavy display voice for every heading and keep the second voice tiny.",
+      "Lay the price list out like the board on the wall: bordered columns, item left, price right.",
+      "Keep 'Book' in the top bar and repeat it after each major block.",
+      "Put addresses and hours in a dark closing block right before the giant wordmark."
+    ],
+    "doNotCarryOver": [
+      "The inner scroll container (div.global-wrapper): breaks native scroll, anchors and scroll restoration.",
+      "No tel: link anywhere on the page.",
+      "Reduced motion ignored.",
+      "Default focus ring only.",
+      "Their typeface (Helvetica Neue LT Std Extended, commercial), wordmark, photos and portrait grid."
+    ],
+    "study": "studies/crisp-barbershop.md"
+  },
+  {
+    "id": "safari-riot",
+    "name": "Safari Riot (by Van Holtz Co)",
+    "awwwardsUrl": "https://www.awwwards.com/sites/safari-riot",
+    "awwwardsEvidence": "WebSearch 'Safari Riot website Van Holtz awwwards site of the day' (2026-10-26) returned https://www.awwwards.com/sites/safari-riot; the summary says the page lists 'Site of the Day - Jul 3, 2020' with the tagline 'Sound+Music for the Wild', and a Van Holtz Co collection lists an earlier 'Safari Riot: Noise' SOTD (Jun 18, 2019). Awwwards also hosts an element 'Variable font animation - Safari Riot' credited to Van Holtz Co (https://www.awwwards.com/inspiration/variable-font-animation-safari-riot). None of these pages were loaded (awwwards.com unreachable). The live site shows a label 'ARTISTS // Class of 2023', so it has been updated since the 2020 award: the variable-width interaction matches the awarded element's description, but the exact awarded version is unconfirmed.",
+    "siteUrl": "https://safaririot.com/",
+    "inspectedOn": "2026-10-26",
+    "inspection": [
+      "live-desktop",
+      "live-mobile",
+      "reduced-motion",
+      "computed-styles",
+      "keyboard-focus",
+      "screenshot"
+    ],
+    "evidenceStatus": "verified-live",
+    "approved": true,
+    "archetype": "kinetic-type",
+    "directions": ["typographic", "playful"],
+    "useFor": ["customer-sites", "marketing-site"],
+    "fits": {
+      "businesses": ["barber", "music-venue", "event-venue", "creative-studio", "gym"],
+      "tones": ["bold", "playful"],
+      "goals": ["portfolio", "book"]
+    },
+    "observed": {
+      "layout": "One screen, no page scroll (document height 900 at 1440×900, no scroll container). Two giant words fill the viewport: 'ARTISTS' over 'DEPTS', black on light grey #E1E1E1-ish, with a thin bordered bottom bar (round logo, 'SAFARI RIOT', '⌄ ABOUT', '⌄ GENERAL INQUIRIES', '⌄ CAREERS'). About/inquiries/careers open as panels; the h1 is 'ABOUT' inside the About panel (108 px). On mobile (390) the two words are stacked as tall, very condensed letters filling the screen under a top bar (logo, name, menu).",
+      "typography": "Display 'Compagnie-III', a variable font with a wdth axis; every letter is its own span with inline font-variation-settings ('\"wdth\" 200' at rest) plus a translateX that re-flows the row as widths change, and scaleY ≈ 0.98. Body and UI text 'CartographMonoCF' 16.8 px / 24 px; links rgb(14, 48, 249).",
+      "imagery": "None on the home screen; the type is the image.",
+      "motion": "Pointer-driven: the row under the pointer turns full black and grows while the other row goes dark grey; each letter's wdth follows its distance from the pointer (sampled values 48 → 398 across one row, e.g. 68 / 130 / 214 / 321 / 372 / 256 / 162), like a lens that travels with the mouse. The bottom bar label changes to 'ARTISTS // Class of 2023' or 'DEPTS // Secret Sauce'. Scrolling did nothing. With reduced motion emulated the resting state was the same (wdth 200); the hover was not re-tested under reduced motion. Focus: browser default outline (auto 1 px)."
+    },
+    "whyItWorks": "A variable font's width axis becomes the interface: the word you point at swells and its neighbours make room, so navigation and identity are the same gesture. Two words, one colour, no photos.",
+    "principles": [
+      "Use the width axis of one variable font as the hover feedback, letter by letter, with the row re-flowing so nothing overlaps.",
+      "Tie the effect to the pointer, never to a timer, so it stays calm when nobody touches it.",
+      "Fit the words to the screen with the width axis on mobile instead of shrinking the font size."
+    ],
+    "doNotCarryOver": [
+      "A home screen with no content besides two words: a barbershop needs prices, hours and booking on the first scroll.",
+      "Navigation only through hover on desktop; the effect must be decoration on top of real links.",
+      "The h1 hidden inside a closed panel.",
+      "Their font (Compagnie-III), mono UI face and blue link colour."
+    ],
+    "study": "studies/safari-riot.md"
+  }
+]
