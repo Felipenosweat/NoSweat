@@ -8,8 +8,9 @@ import { ProspectSearchResponse, TRADE_SUGGESTIONS } from "@/lib/prospects";
 import { Notice } from "@/components/glass";
 import { fieldClass, labelClass, panelText, panelTitle } from "../AdminUi";
 
-// Busca de prospects: ramo (texto livre com sugestões) + cidade (sugestões de cidades dos EUA,
-// as mesmas do /create, via GET /api/places) + estado. Uma busca grava até 60 empresas.
+// Busca de prospects. O jeito principal é o botão "Find leads": sem digitar nada, o servidor sorteia
+// uma cidade dos EUA ainda não buscada e traz empresas de QUALQUER ramo sem site. Embaixo, opcional:
+// ramo (texto livre com sugestões) + cidade (sugestões via GET /api/places) + estado.
 
 type Result = { tone: "success" | "error" | "warning"; text: string };
 
@@ -64,13 +65,17 @@ export function ProspectSearch({ source }: { source: keyof typeof SOURCE_NOTE })
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    await run({ trade, city, state });
+  }
+
+  async function run(input: { trade?: string; city?: string; state?: string }) {
     setBusy(true);
     setResult(null);
     try {
       const res = await fetch("/api/admin/prospects/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trade, city, state }),
+        body: JSON.stringify(input),
       });
       const body: unknown = await res.json().catch(() => null);
       const ok = ProspectSearchResponse.safeParse(body);
@@ -80,7 +85,7 @@ export function ProspectSearch({ source }: { source: keyof typeof SOURCE_NOTE })
           tone: r.found ? "success" : "warning",
           text: r.found
             ? `“${r.query}”: ${r.found} found · ${r.added} new · ${r.updated} updated${r.mock ? " (sample data)" : ""}.`
-            : `“${r.query}”: nothing found. Try a nearby bigger city or another trade.`,
+            : `“${r.query}”: nothing found. Click Find leads again for another city.`,
         });
         router.refresh();
       } else {
@@ -99,71 +104,95 @@ export function ProspectSearch({ source }: { source: keyof typeof SOURCE_NOTE })
 
   return (
     <section className="glass rounded-2xl p-4 sm:p-5" aria-labelledby={`${id}-title`}>
-      <h2 id={`${id}-title`} className={panelTitle}>
-        Find businesses
-      </h2>
-      <p className={`mt-1 ${panelText}`}>{SOURCE_NOTE[source]}</p>
-      <form
-        onSubmit={submit}
-        className="mt-4 grid grid-cols-[1fr_5.5rem] gap-3 sm:grid-cols-[1.2fr_1.2fr_6rem_auto] sm:items-end"
-      >
-        <label className="col-span-2 sm:col-span-1">
-          <span className={labelClass}>Trade</span>
-          <input
-            className={fieldClass}
-            list={`${id}-trades`}
-            value={trade}
-            onChange={(event) => setTrade(event.target.value)}
-            placeholder="plumber"
-            maxLength={60}
-            required
-            autoComplete="off"
-          />
-          <datalist id={`${id}-trades`}>
-            {TRADE_SUGGESTIONS.map((suggestion) => (
-              <option key={suggestion} value={suggestion} />
-            ))}
-          </datalist>
-        </label>
-        <label>
-          <span className={labelClass}>City</span>
-          <input
-            className={fieldClass}
-            list={`${id}-cities`}
-            value={city}
-            onChange={(event) => onCity(event.target.value)}
-            placeholder="Austin"
-            maxLength={60}
-            required
-            autoComplete="off"
-          />
-          <datalist id={`${id}-cities`}>
-            {cities.map((c) => (
-              <option key={`${c.name}|${c.state}`} value={`${c.name}, ${c.state}`} />
-            ))}
-          </datalist>
-        </label>
-        <label>
-          <span className={labelClass}>State</span>
-          <input
-            className={`${fieldClass} uppercase`}
-            value={state}
-            onChange={(event) => setState(event.target.value.slice(0, 2).toUpperCase())}
-            placeholder="TX"
-            maxLength={2}
-            required
-            autoComplete="off"
-          />
-        </label>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 id={`${id}-title`} className={panelTitle}>
+            Find leads
+          </h2>
+          <p className={`mt-1 max-w-[60ch] ${panelText}`}>
+            One click: we pick a US city you haven&rsquo;t searched yet and bring in local
+            businesses of any kind that have a phone number but no website. Click again for the next
+            city.
+          </p>
+        </div>
         <GlassButton
-          type="submit"
+          type="button"
           variant="primary"
           loading={busy}
-          className="col-span-2 sm:col-span-1"
+          disabled={busy}
+          onClick={() => void run({})}
+          className="shrink-0"
         >
-          {busy ? "Searching…" : "Search"}
+          {busy ? "Finding leads…" : "Find leads"}
         </GlassButton>
-      </form>
+      </div>
+      <p className={`mt-3 ${panelText}`}>{SOURCE_NOTE[source]}</p>
+      <details className="group mt-3">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center text-[14px] font-semibold text-(--glass-fg) sm:min-h-8">
+          Search a specific trade or city (optional)
+        </summary>
+        <form
+          onSubmit={submit}
+          className="mt-3 grid grid-cols-[1fr_5.5rem] gap-3 sm:grid-cols-[1.2fr_1.2fr_6rem_auto] sm:items-end"
+        >
+          <label className="col-span-2 sm:col-span-1">
+            <span className={labelClass}>Trade</span>
+            <input
+              className={fieldClass}
+              list={`${id}-trades`}
+              value={trade}
+              onChange={(event) => setTrade(event.target.value)}
+              placeholder="Any"
+              maxLength={60}
+              autoComplete="off"
+            />
+            <datalist id={`${id}-trades`}>
+              {TRADE_SUGGESTIONS.map((suggestion) => (
+                <option key={suggestion} value={suggestion} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            <span className={labelClass}>City</span>
+            <input
+              className={fieldClass}
+              list={`${id}-cities`}
+              value={city}
+              onChange={(event) => onCity(event.target.value)}
+              placeholder="Any"
+              maxLength={60}
+              required={Boolean(state)}
+              autoComplete="off"
+            />
+            <datalist id={`${id}-cities`}>
+              {cities.map((c) => (
+                <option key={`${c.name}|${c.state}`} value={`${c.name}, ${c.state}`} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            <span className={labelClass}>State</span>
+            <input
+              className={`${fieldClass} uppercase`}
+              value={state}
+              onChange={(event) => setState(event.target.value.slice(0, 2).toUpperCase())}
+              placeholder="TX"
+              maxLength={2}
+              required={Boolean(city)}
+              autoComplete="off"
+            />
+          </label>
+          <GlassButton
+            type="submit"
+            variant="secondary"
+            loading={busy}
+            disabled={busy}
+            className="col-span-2 sm:col-span-1"
+          >
+            Search
+          </GlassButton>
+        </form>
+      </details>
       {busy && (
         <p className={`mt-3 ${panelText}`} role="status">
           Looking up businesses and checking their websites. This can take a minute.

@@ -8,7 +8,8 @@ import { refundUse, reserveUse } from "../quota";
 import { getSiteStore } from "../store";
 import { buildPreviewBrief, tradeFromSearch } from "./brief";
 import { MockPlacesClient, mockWebsiteFetch } from "./mock";
-import { OverpassClient } from "./osm";
+import { citiesByPopulation } from "../places";
+import { ANY_TRADE, OverpassClient } from "./osm";
 import { GooglePlacesClient, textQueryFor, type PlacesClient, type PlacesSource } from "./places";
 import { getProspectStore } from "./store";
 import type { PlaceBusiness, ProspectRecord, ProspectUpsert } from "./types";
@@ -81,12 +82,41 @@ export type SearchResult = {
   mock: boolean;
 };
 
-/** Busca na fonte, confere os sites e grava (sem mexer no status dos que já existiam). */
+/** Cidades que o "Find leads" sorteia: as com 50 mil moradores ou mais (~900 nos EUA). */
+const AUTO_CITY_MIN_POPULATION = 50_000;
+/** O sorteio é entre as N maiores ainda não buscadas: começa pelas grandes, sem repetir sempre a mesma. */
+const AUTO_CITY_POOL = 40;
+
+/** "... in Austin, TX" → "austin, tx" (para saber quais cidades já foram buscadas). */
+function searchedCity(search: string | null): string | null {
+  const match = /\s+in\s+(.+?),\s*([A-Za-z]{2})$/i.exec(search ?? "");
+  return match ? `${match[1]!.trim().toLowerCase()}, ${match[2]!.toLowerCase()}` : null;
+}
+
+/** Escolhe uma cidade dos EUA que ainda não foi buscada (sorteio entre as maiores que faltam). */
+export async function pickAutoCity(
+  random: () => number = Math.random,
+): Promise<{ city: string; state: string }> {
+  const prospects = await getProspectStore().list();
+  const done = new Set(prospects.map((p) => searchedCity(p.search)).filter(Boolean));
+  const cities = citiesByPopulation(AUTO_CITY_MIN_POPULATION);
+  const left = cities.filter((c) => !done.has(`${c.name.toLowerCase()}, ${c.state.toLowerCase()}`));
+  const pool = (left.length ? left : cities).slice(0, AUTO_CITY_POOL);
+  const pick = pool[Math.floor(random() * pool.length)] ?? cities[0]!;
+  return { city: pick.name, state: pick.state };
+}
+
+/**
+ * Busca na fonte, confere os sites e grava (sem mexer no status dos que já existiam).
+ * Tudo opcional: sem ramo = qualquer empresa sem site; sem cidade = uma cidade dos EUA sorteada.
+ */
 export async function searchProspects(
-  input: { trade: string; city: string; state: string },
+  input: { trade?: string | undefined; city?: string | undefined; state?: string | undefined },
   client: PlacesClient = getPlacesClient(),
 ): Promise<SearchResult> {
-  const query = textQueryFor(input.trade, input.city, input.state);
+  const where =
+    input.city && input.state ? { city: input.city, state: input.state } : await pickAutoCity();
+  const query = textQueryFor(input.trade?.trim() || ANY_TRADE, where.city, where.state);
   const businesses = await client.searchText(query);
   const fetchImpl = websiteFetch(client);
   const now = new Date().toISOString();

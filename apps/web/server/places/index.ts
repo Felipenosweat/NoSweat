@@ -135,3 +135,13 @@ export function nearbyPlaces(
 }
 
 const STATE_CODES = new Set(data.states);
+
+/** Cidades com pelo menos `minPopulation` moradores, da maior para a menor (prospecção). */
+export function citiesByPopulation(minPopulation: number): PlaceSuggestion[] {
+  const out: PlaceSuggestion[] = [];
+  for (const p of places()) {
+    if (p.population < minPopulation) break;
+    out.push(toSuggestion(p));
+  }
+  return out;
+}

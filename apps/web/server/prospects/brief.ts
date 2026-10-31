@@ -55,5 +55,7 @@ export function buildPreviewBrief(facts: BriefFacts): string {
 /** "plumber in Austin, TX" → "plumber" (o ramo da busca que achou o prospect). */
 export function tradeFromSearch(search: string | null): string | null {
   const match = /^(.*?)\s+in\s+/i.exec(search ?? "");
-  return match?.[1]?.trim() || null;
+  const trade = match?.[1]?.trim() || null;
+  // Busca "qualquer empresa": o ramo de verdade é a categoria de cada uma, não "local businesses".
+  return trade && trade.toLowerCase() === "local businesses" ? null : trade;
 }

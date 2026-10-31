@@ -9,8 +9,12 @@ e-mail frio (Instantly, Smartlead...). Ligações são feitas por você, uma a u
 
 ## Passo a passo
 
-1. **Buscar.** Em _Find businesses_, digite o ramo (ex.: `plumber`) e a cidade (`Austin`, `TX`).
-   Cada busca grava até 60 empresas e confere o site de cada uma:
+1. **Buscar.** Clique em **Find leads**, sem digitar nada: a plataforma sorteia uma cidade dos EUA
+   (com 50 mil moradores ou mais) que ainda não foi buscada e traz empresas de **qualquer ramo**
+   que têm telefone e **não têm site** (redes e franquias ficam de fora). Cada clique = outra
+   cidade. Se quiser algo específico, abra _Search a specific trade or city_ e digite o ramo
+   (ex.: `plumber`) e/ou a cidade (`Austin`, `TX`); ramo desconhecido procura a palavra no nome.
+   Cada busca grava até 80 empresas e confere o site de cada uma:
    - **No website**: não tem site. Melhor alvo.
    - **Weak site**: sem `https`, não funciona bem no celular (sem _viewport_), página
      "coming soon"/estacionada, quase vazia, ou o "site" é só um Facebook/Yelp.

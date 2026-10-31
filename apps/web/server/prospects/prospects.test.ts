@@ -8,7 +8,9 @@ import {
   OverpassClient,
   buildOverpassQuery,
   clearOverpassCache,
+  categoryFromTags,
   formatUsPhone,
+  toBusiness,
   tradeFilters,
 } from "./osm";
 import { GooglePlacesClient, SEARCH_FIELD_MASK, TEXT_SEARCH_URL, toPlaceBusiness } from "./places";
@@ -17,6 +19,7 @@ import {
   ensureFresh,
   getPlacesClient,
   getPublicPreview,
+  pickAutoCity,
   searchProspects,
   setProspectStatus,
 } from "./service";
@@ -146,7 +149,34 @@ describe("OverpassClient", () => {
     expect(tradeFilters("nail salon")?.filters).toEqual(['["shop"="beauty"]["beauty"~"nails"]']);
     expect(tradeFilters("barber")?.filters).toEqual(['["shop"="hairdresser"]']);
     expect(tradeFilters("HVAC")?.filters).toEqual(['["craft"="hvac"]']);
-    expect(tradeFilters("underwater basket weaving")).toBeNull();
+    expect(tradeFilters("dentist")?.label).toBe("Dentist");
+    // Ramo sem tag no OSM: procura a palavra no nome das empresas.
+    expect(tradeFilters("pool service")?.filters[0]).toBe('["shop"]["name"~"pool service",i]');
+    expect(tradeFilters("x")).toBeNull();
+  });
+
+  it("any trade: only businesses with a phone and no website, no chains, smaller radius", () => {
+    for (const text of ["", "any", "local businesses"]) {
+      const trade = tradeFilters(text)!;
+      expect(trade.any).toBe(true);
+      const query = buildOverpassQuery(trade, 30, -97);
+      expect(query).toContain("(around:8000,30,-97)");
+      expect(query).toContain('[!"website"][!"contact:website"]');
+      expect(query).toContain('[!"brand"]');
+      expect(query).toContain('["phone"]');
+      expect(query).toContain('["contact:phone"]');
+    }
+  });
+
+  it("any trade: each business keeps its own category", () => {
+    expect(categoryFromTags({ shop: "hairdresser" })).toBe("Hairdresser");
+    expect(categoryFromTags({ craft: "hvac", shop: "trade" })).toBe("Hvac");
+    expect(categoryFromTags({ office: "company" })).toBeNull();
+    const business = toBusiness(
+      { type: "node", id: 1, tags: { name: "Bea's Cakes", shop: "pastry", phone: "5125550100" } },
+      { label: "Local business", city: "Austin", state: "TX", any: true },
+    );
+    expect(business?.category).toBe("Pastry");
   });
 
   it("sends one polite query around the city and reads the tags", async () => {
@@ -208,10 +238,10 @@ describe("OverpassClient", () => {
     ]);
   });
 
-  it("refuses unknown trades and cities without calling the API", async () => {
+  it("refuses too-short trades and unknown cities without calling the API", async () => {
     const fetchImpl = vi.fn() as unknown as typeof fetch;
     const client = new OverpassClient(fetchImpl);
-    await expect(client.searchText("astronaut in Austin, TX")).rejects.toThrow(/can't search/);
+    await expect(client.searchText("x in Austin, TX")).rejects.toThrow(/can't search/);
     await expect(client.searchText("plumber in Nowheresville, TX")).rejects.toThrow(/don't know/);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -371,6 +401,19 @@ describe("prospect store", () => {
     // A mesma busca de novo só atualiza.
     const again = await searchProspects({ trade: "plumber", city: "Austin", state: "TX" });
     expect(again.added).toBe(0);
+  });
+
+  it("Find leads with nothing typed: picks a US city and searches any business", async () => {
+    const result = await searchProspects({});
+    expect(result.query).toMatch(/^local businesses in .+, [A-Z]{2}$/);
+    const all = await getProspectStore().list();
+    expect(new Set(all.map((p) => p.category)).size).toBeGreaterThan(1);
+    // A cidade já buscada não é sorteada de novo.
+    const city = /in (.+, [A-Z]{2})$/.exec(result.query)![1]!;
+    for (let i = 0; i < 20; i++) {
+      const next = await pickAutoCity(() => i / 20);
+      expect(`${next.city}, ${next.state}`).not.toBe(city);
+    }
   });
 
   it("do-not-contact sticks for bulk actions", async () => {

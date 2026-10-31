@@ -18,8 +18,31 @@ const QUERY_TIMEOUT_S = 25;
 const MAX_RESULTS = 80;
 const CACHE_MS = 60 * 60 * 1000;
 
-/** Filtros do Overpass por ramo. Cada item vira um `nwr[...]` dentro do raio. */
-type Trade = { label: string; filters: string[] };
+/**
+ * Filtros do Overpass por ramo. Cada item vira um `nwr[...]` dentro do raio.
+ * `any`: qualquer ramo (a categoria de cada empresa sai das tags dela) e só quem NÃO tem site.
+ */
+type Trade = { label: string; filters: string[]; any?: boolean; radius?: number };
+
+/** O ramo da busca "qualquer empresa" (botão "Find leads" sem nada digitado). */
+export const ANY_TRADE = "local businesses";
+const ANY_MATCH = /^(any|all|any business(es)?|all business(es)?|local business(es)?|businesses)$/;
+
+// Qualquer empresa pequena SEM site e COM telefone (dá para ligar ou mandar a prévia), fora redes
+// (tag brand). Tipos que não compram site (governo, igreja, escola, banco...) ficam de fora.
+const NO_SITE = '[!"website"][!"contact:website"][!"url"][!"brand"][!"brand:wikidata"]';
+const ANY_KINDS = [
+  '["shop"]["shop"!~"^(vacant|yes|no|kiosk|mall|department_store|supermarket|convenience|gas|fuel|ticket|lottery)$"]',
+  '["craft"]',
+  '["office"]["office"!~"^(government|ngo|association|religion|political_party|diplomatic|educational_institution|union|yes)$"]',
+  '["healthcare"]["healthcare"!~"^(hospital|centre|blood_donation|laboratory)$"]',
+  '["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream|dentist|veterinary|clinic|car_wash|car_rental|childcare|driving_school|beauty|spa)$"]',
+  '["leisure"~"^(fitness_centre|sports_centre|dance)$"]',
+];
+const ANY_TRADE_FILTERS = ANY_KINDS.flatMap((kind) => [
+  `${kind}${NO_SITE}["phone"]`,
+  `${kind}${NO_SITE}["contact:phone"]`,
+]);
 
 const TRADES: { match: RegExp; trade: Trade }[] = [
   { match: /plumb/, trade: { label: "Plumber", filters: ['["craft"="plumber"]'] } },
@@ -75,18 +98,156 @@ const TRADES: { match: RegExp; trade: Trade }[] = [
   },
   { match: /bakery|bakeries/, trade: { label: "Bakery", filters: ['["shop"="bakery"]'] } },
   { match: /cafe|café|coffee/, trade: { label: "Cafe", filters: ['["amenity"="cafe"]'] } },
+  {
+    match: /dentist|dental/,
+    trade: { label: "Dentist", filters: ['["amenity"="dentist"]', '["healthcare"="dentist"]'] },
+  },
+  {
+    match: /\bvet|veterinar|animal hospital/,
+    trade: { label: "Veterinarian", filters: ['["amenity"="veterinary"]'] },
+  },
+  {
+    match: /chiropract/,
+    trade: {
+      label: "Chiropractor",
+      filters: ['["healthcare"="chiropractor"]', '["healthcare:speciality"~"chiropractic"]'],
+    },
+  },
+  {
+    match: /gym|fitness|crossfit|yoga|pilates/,
+    trade: {
+      label: "Gym / fitness",
+      filters: ['["leisure"="fitness_centre"]', '["sport"~"yoga|pilates|crossfit"]'],
+    },
+  },
+  { match: /tattoo/, trade: { label: "Tattoo studio", filters: ['["shop"="tattoo"]'] } },
+  { match: /florist|flower/, trade: { label: "Florist", filters: ['["shop"="florist"]'] } },
+  {
+    match: /pet|groom/,
+    trade: { label: "Pet grooming", filters: ['["shop"="pet_grooming"]', '["shop"="pet"]'] },
+  },
+  {
+    match: /spa|massage|beauty|esthetic|lash|brow/,
+    trade: {
+      label: "Beauty / spa",
+      filters: ['["shop"="beauty"]', '["shop"="massage"]', '["amenity"="spa"]'],
+    },
+  },
+  {
+    match: /lawyer|attorney|law firm|legal/,
+    trade: { label: "Lawyer", filters: ['["office"="lawyer"]'] },
+  },
+  {
+    match: /account|cpa|bookkeep|tax/,
+    trade: {
+      label: "Accountant",
+      filters: ['["office"="accountant"]', '["office"="tax_advisor"]'],
+    },
+  },
+  { match: /insurance/, trade: { label: "Insurance agent", filters: ['["office"="insurance"]'] } },
+  {
+    match: /real estate|realtor|realty/,
+    trade: { label: "Real estate", filters: ['["office"="estate_agent"]'] },
+  },
+  {
+    match: /locksmith/,
+    trade: { label: "Locksmith", filters: ['["craft"="locksmith"]', '["shop"="locksmith"]'] },
+  },
+  {
+    match: /carpent|cabinet|woodwork/,
+    trade: { label: "Carpenter", filters: ['["craft"="carpenter"]', '["craft"="cabinet_maker"]'] },
+  },
+  {
+    match: /floor|tile|carpet/,
+    trade: {
+      label: "Flooring",
+      filters: [
+        '["craft"="floorer"]',
+        '["craft"="tiler"]',
+        '["shop"="flooring"]',
+        '["shop"="carpet"]',
+      ],
+    },
+  },
+  {
+    match: /photograph/,
+    trade: { label: "Photographer", filters: ['["craft"="photographer"]', '["shop"="photo"]'] },
+  },
+  {
+    match: /tailor|alteration|seamstress/,
+    trade: { label: "Tailor", filters: ['["craft"="tailor"]', '["shop"="tailor"]'] },
+  },
+  { match: /tire|tyre/, trade: { label: "Tire shop", filters: ['["shop"="tyres"]'] } },
+  {
+    match: /car wash|detail/,
+    trade: { label: "Car wash / detailing", filters: ['["amenity"="car_wash"]'] },
+  },
+  {
+    match: /daycare|child ?care|preschool/,
+    trade: {
+      label: "Childcare",
+      filters: ['["amenity"="childcare"]', '["amenity"="kindergarten"]'],
+    },
+  },
+  {
+    match: /bar\b|pub|brewery/,
+    trade: {
+      label: "Bar",
+      filters: ['["amenity"="bar"]', '["amenity"="pub"]', '["craft"="brewery"]'],
+    },
+  },
+  {
+    match: /food truck|taco|pizza|burger|fast food/,
+    trade: { label: "Fast food", filters: ['["amenity"="fast_food"]'] },
+  },
 ];
 
 export const OSM_SUPPORTED_TRADES = TRADES.map(({ trade }) => trade.label.toLowerCase());
 
+/** Ramo digitado → filtros. Vazio ou "any" = qualquer empresa sem site; desconhecido = pelo nome. */
 export function tradeFilters(trade: string): Trade | null {
   const text = trade.trim().toLowerCase();
-  return TRADES.find(({ match }) => match.test(text))?.trade ?? null;
+  if (!text || ANY_MATCH.test(text)) {
+    // Raio menor: numa cidade grande, "todas as lojas em 15 km" estoura o tempo do Overpass.
+    return { label: "Local business", filters: ANY_TRADE_FILTERS, any: true, radius: 8_000 };
+  }
+  const known = TRADES.find(({ match }) => match.test(text))?.trade;
+  if (known) return known;
+  // Ramo que não tem tag certa no OSM: empresas com a palavra no nome ("pool" → "Blue Pool Care").
+  const word = text
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+  if (word.length < 3) return null;
+  const name = `["name"~"${word}",i]`;
+  return {
+    label: word.replace(/\b\w/g, (c) => c.toUpperCase()),
+    filters: ['["shop"]', '["craft"]', '["office"]', '["amenity"]', '["healthcare"]'].map(
+      (kind) => `${kind}${name}`,
+    ),
+  };
+}
+
+const humanize = (value: string) =>
+  value
+    .replace(/[_;]+/g, " ")
+    .trim()
+    .replace(/^\w/, (c) => c.toUpperCase());
+
+/** Categoria de uma empresa pelas tags ("shop=hairdresser" → "Hairdresser"). */
+export function categoryFromTags(tags: Record<string, string>): string | null {
+  for (const key of ["craft", "healthcare", "shop", "amenity", "office", "leisure"]) {
+    const value = tags[key];
+    if (!value || value === "yes") continue;
+    if (key === "office" && value === "company") continue;
+    return humanize(value.split(";")[0]!);
+  }
+  return null;
 }
 
 /** Consulta Overpass QL: todos os filtros do ramo, num raio em volta do centro da cidade. */
 export function buildOverpassQuery(trade: Trade, lat: number, lon: number): string {
-  const around = `(around:${OSM_RADIUS_METERS},${lat},${lon})`;
+  const around = `(around:${trade.radius ?? OSM_RADIUS_METERS},${lat},${lon})`;
   const parts = trade.filters.map((filter) => `  nwr${filter}["name"]${around};`);
   return `[out:json][timeout:${QUERY_TIMEOUT_S}];\n(\n${parts.join("\n")}\n);\nout center tags ${MAX_RESULTS};`;
 }
@@ -119,7 +280,7 @@ const STATE = /^[A-Za-z]{2}$/;
 /** Elemento do OSM → nosso formato. Sem nome = descartado. */
 export function toBusiness(
   raw: unknown,
-  context: { label: string; city: string; state: string },
+  context: { label: string; city: string; state: string; any?: boolean },
 ): (PlaceBusiness & { email: string | null }) | null {
   const parsed = Element.safeParse(raw);
   if (!parsed.success) return null;
@@ -137,7 +298,8 @@ export function toBusiness(
   return {
     placeId: `osm:${parsed.data.type}/${parsed.data.id}`,
     name,
-    category: context.label,
+    // Busca de qualquer ramo: a categoria é a da própria empresa.
+    category: (context.any ? categoryFromTags(tags) : null) ?? context.label,
     // Sem addr:city no OSM, a cidade é a da busca (a empresa está a até 15 km do centro dela).
     address: street ? address : null,
     city: city ?? context.city,
@@ -172,7 +334,7 @@ export class OverpassClient implements PlacesClient {
     const trade = tradeFilters(parts.trade);
     if (!trade) {
       throw new PlacesError(
-        `OpenStreetMap can't search “${parts.trade}” yet. Try: ${OSM_SUPPORTED_TRADES.join(", ")}.`,
+        `OpenStreetMap can't search “${parts.trade}”. Try: ${OSM_SUPPORTED_TRADES.slice(0, 12).join(", ")}…`,
         400,
       );
     }
@@ -214,7 +376,7 @@ export class OverpassClient implements PlacesClient {
     const parsed = OverpassJson.safeParse(await res.json().catch(() => null));
     if (!parsed.success) throw new PlacesError("OpenStreetMap sent an unexpected answer.");
 
-    const context = { label: trade.label, city: place.name, state: place.state };
+    const context = { label: trade.label, city: place.name, state: place.state, any: trade.any };
     const seen = new Set<string>();
     const results: PlaceBusiness[] = [];
     for (const element of parsed.data.elements) {
