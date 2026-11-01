@@ -559,6 +559,11 @@
   --ns-glass-a: 98%;
   --ns-glass-b: 97%;
 }
+/* Base sólida sob o vidro do painel (o material fica no ::after, que é translúcido): o texto da
+   página nunca aparece atrás dos links, em nenhum tom nem no meio da troca de tom. */
+.ns-site .ns-nav .ns-menu-panel {
+  background-color: color-mix(in srgb, var(--ns-glass-tint) 94%, transparent);
+}
 .ns-site .ns-nav .ns-navbar {
   color: var(--ns-nav-ink, var(--ns-text));
 }
