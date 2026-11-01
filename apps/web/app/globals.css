@@ -167,8 +167,12 @@ html {
     --glass-fg-muted: #475569;
     --glass-bg: rgb(255 255 255 / 0.62);
     --glass-bg-hover: rgb(255 255 255 / 0.82);
-    --glass-bg-strong: rgb(255 255 255 / 0.78);
-    --glass-bg-bar: rgb(248 250 252 / 0.72);
+    --glass-bg-strong: rgb(255 255 255 / 0.68);
+    --glass-bg-bar: rgb(248 250 252 / 0.7);
+    /* Refração: reflexo diagonal, brilho interno e linha clara embaixo (só no vidro que flutua). */
+    --glass-refract: rgb(255 255 255 / 0.3);
+    --glass-glow: rgb(255 255 255 / 0.3);
+    --glass-edge-low: rgb(255 255 255 / 0.55);
     --glass-solid: #ffffff;
     --glass-solid-hover: #f1f5f9;
     --glass-solid-strong: #ffffff;
@@ -181,7 +185,7 @@ html {
     --glass-depth-raised: 0 2px 6px rgb(7 27 51 / 0.06), 0 24px 56px -20px rgb(7 27 51 / 0.32);
     --glass-blur: 20px;
     --glass-blur-strong: 36px;
-    --glass-saturate: 180%;
+    --glass-saturate: 200%;
     --glass-groove: rgb(7 27 51 / 0.06);
     --glass-pill: #ffffff;
     --glass-ghost-hover: rgb(7 27 51 / 0.06);
@@ -215,6 +219,9 @@ html {
   --glass-rim-contrast: rgb(255 255 255 / 0.6);
   --glass-specular: rgb(255 255 255 / 0.22);
   --glass-sheen: rgb(255 255 255 / 0.08);
+  --glass-refract: rgb(255 255 255 / 0.07);
+  --glass-glow: rgb(255 255 255 / 0.05);
+  --glass-edge-low: rgb(255 255 255 / 0.04);
   --glass-depth: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 32px -12px rgb(0 0 0 / 0.5);
   --glass-depth-raised: 0 2px 6px rgb(0 0 0 / 0.3), 0 24px 56px -20px rgb(0 0 0 / 0.6);
   --glass-groove: rgb(255 255 255 / 0.08);
