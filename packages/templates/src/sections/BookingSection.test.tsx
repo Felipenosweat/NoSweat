@@ -20,7 +20,8 @@ describe("booking section", () => {
       <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" />,
     );
     expect(html).toContain('id="book"');
-    expect(html).toContain("Book online");
+    // O título passa pelo <Accent> (uma palavra em itálico): confere o texto sem as tags.
+    expect(html.replace(/<[^>]*>/g, "")).toContain("Book online");
     expect(html).toContain("Pick a service and a time that works.");
     expect(html).toContain("Call us to book");
     expect(html).toContain('href="#book"');
