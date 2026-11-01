@@ -7,6 +7,9 @@ import { themeToCssVars } from "./theme";
 export type SiteRendererProps = {
   spec: SiteSpec;
   contactEndpoint?: string;
+  /** Base das rotas públicas de agendamento (`/api/public/booking/<siteId>`). Sem ela, a seção
+   *  "booking" não aparece (no editor mostra um aviso). */
+  bookingEndpoint?: string;
   /**
    * Modo de edição (só o editor usa): cada seção ganha uma moldura com `data-section-index`,
    * contorno ao passar o mouse e um rótulo clicável. Padrão `false`: o site publicado não muda.
@@ -31,6 +34,7 @@ export type SiteRendererProps = {
 export function SiteRenderer({
   spec,
   contactEndpoint,
+  bookingEndpoint,
   editable = false,
   selectedSection = null,
   anchors = true,
@@ -58,12 +62,18 @@ export function SiteRenderer({
         <Template
           spec={spec}
           contactEndpoint={contactEndpoint}
+          bookingEndpoint={bookingEndpoint}
           editable
           selectedSection={selectedSection}
           anchors={anchors}
         />
       ) : (
-        <Template spec={spec} contactEndpoint={contactEndpoint} anchors={anchors} />
+        <Template
+          spec={spec}
+          contactEndpoint={contactEndpoint}
+          bookingEndpoint={bookingEndpoint}
+          anchors={anchors}
+        />
       )}
       {/* Selo da No Sweat: sempre, fora do SiteSpec (o cliente não consegue tirar). */}
       <NoSweatBadge />

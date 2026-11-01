@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DurationMinutes } from "./booking";
 
 // Contrato do "escritório" do dono (gestão da empresa, inspirado no ServiceTitan, bem mais
 // simples): tabela de preços, equipe, serviços agendados (jobs), orçamentos (estimates) e faturas
@@ -112,6 +113,10 @@ export const PriceItem = z.object({
   taxable: z.boolean(),
   /** Inativo = some das sugestões, mas documentos antigos continuam iguais. */
   active: z.boolean(),
+  /** Agendável online pelo cliente do dono (precisa de `durationMinutes`). Padrão: não. */
+  bookable: z.boolean().optional(),
+  /** Duração do atendimento em minutos (só serviços agendáveis). */
+  durationMinutes: DurationMinutes.nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -123,6 +128,8 @@ export const CreatePriceItemRequest = z.object({
   unitPriceCents: Money,
   unit: z.string().trim().max(20).optional(),
   taxable: z.boolean().optional(),
+  bookable: z.boolean().optional(),
+  durationMinutes: DurationMinutes.nullable().optional(),
 });
 export type CreatePriceItemRequest = z.infer<typeof CreatePriceItemRequest>;
 

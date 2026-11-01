@@ -74,7 +74,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           </Link>
         </div>
       </div>
-      <SiteRenderer spec={site.spec} />
+      <SiteRenderer spec={site.spec} bookingEndpoint={`/api/public/booking/${site.id}`} />
     </>
   );
 }

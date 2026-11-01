@@ -68,7 +68,11 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: siteJsonLd(site, siteUrl(site, host)) }}
       />
-      <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />
+      <SiteRenderer
+        spec={site.spec}
+        contactEndpoint={`/api/sites/${site.id}/leads`}
+        bookingEndpoint={`/api/public/booking/${site.id}`}
+      />
     </>
   );
 }

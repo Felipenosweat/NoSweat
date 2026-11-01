@@ -220,6 +220,11 @@ function PriceRow({
               No tax
             </GlassBadge>
           )}
+          {item.bookable && item.durationMinutes && (
+            <GlassBadge tone="neutral" size="sm" dot={false}>
+              Bookable · {item.durationMinutes} min
+            </GlassBadge>
+          )}
         </span>
         {item.description && (
           <span className="block truncate text-[13px] leading-5 text-slate-600">
@@ -279,7 +284,7 @@ function PriceRow({
   );
 }
 
-type FormField = "name" | "description" | "price" | "unit";
+type FormField = "name" | "description" | "price" | "unit" | "duration";
 
 function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () => void }) {
   const router = useRouter();
@@ -289,6 +294,8 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
   const [price, setPrice] = useState(item ? centsToInput(item.unitPriceCents) : "");
   const [unit, setUnit] = useState(item?.unit ?? "each");
   const [taxable, setTaxable] = useState(item?.taxable ?? true);
+  const [bookable, setBookable] = useState(item?.bookable ?? false);
+  const [duration, setDuration] = useState(item?.durationMinutes ? String(item.durationMinutes) : "");
   const [errors, setErrors] = useState<Partial<Record<FormField, string>>>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<OfficeApiError | null>(null);
@@ -300,12 +307,19 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
     const next: Partial<Record<FormField, string>> = {};
     const cents = parseDollars(price);
     if (cents === null || cents === undefined) next.price = "Enter a price like 120 or 89.50.";
+    // Duração em minutos inteiros (5 a 480); só vale para item agendável.
+    const minutes = /^\d{1,3}$/.test(duration.trim()) ? Number(duration.trim()) : null;
+    if (bookable && (minutes === null || minutes < 5 || minutes > 480)) {
+      next.duration = "Enter the visit length in minutes, from 5 to 480.";
+    }
     const parsed = CreatePriceItemRequest.safeParse({
       name,
       description: description.trim(),
       unitPriceCents: cents ?? 0,
       unit: unit.trim(),
       taxable,
+      bookable,
+      durationMinutes: bookable ? minutes : null,
     });
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
@@ -319,7 +333,9 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
                 ? "unit"
                 : key === "unitPriceCents"
                   ? "price"
-                  : undefined;
+                  : key === "durationMinutes"
+                    ? "duration"
+                    : undefined;
         if (field && !next[field]) next[field] = issue.message;
       }
     }
@@ -455,6 +471,42 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
             </span>
           </span>
         </label>
+
+        <div className="rounded-2xl border border-(--glass-rim) p-4">
+          <label className="flex min-h-11 cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={bookable}
+              onChange={(event) => setBookable(event.target.checked)}
+              className="mt-0.5 size-5 shrink-0 accent-brand"
+            />
+            <span>
+              <span className="block text-[15px] font-semibold text-ink">Bookable</span>
+              <span className="block text-[13px] leading-5 text-slate-600">
+                Customers can pick this on your site and book a time. Only bookable items with a
+                duration appear to customers.
+              </span>
+            </span>
+          </label>
+          {bookable && (
+            <div className="mt-4 sm:max-w-48">
+              <label htmlFor={`${ids}-duration`} className={labelClass}>
+                Duration (min)
+              </label>
+              <input
+                id={`${ids}-duration`}
+                inputMode="numeric"
+                value={duration}
+                onChange={(event) => setDuration(event.target.value)}
+                autoComplete="off"
+                placeholder="30"
+                className={`${fieldClass} mt-1.5 h-11 tabular-nums`}
+                {...errorProps("duration")}
+              />
+              {errorText("duration")}
+            </div>
+          )}
+        </div>
       </fieldset>
 
       {error && <ErrorNote error={error} className="mt-5" />}

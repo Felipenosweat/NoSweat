@@ -2,6 +2,7 @@ import type { Composition, Section, SectionOf, SiteImage } from "@nosweat/schema
 import type { CSSProperties, ReactNode } from "react";
 import { PhoneIcon } from "../components/icons";
 import { Photo, PhotoCredits, specImages } from "../components/photo";
+import { BookingSection } from "../sections/BookingSection";
 import type { TemplateProps } from "../types";
 import { Motion } from "./Motion";
 import { NavMenu } from "./NavMenu";
@@ -81,6 +82,7 @@ function photoPool(model: SiteModel): SiteImage[] {
 export function SignatureComposition({
   spec,
   contactEndpoint,
+  bookingEndpoint,
   editable = false,
   selectedSection = null,
   anchors = true,
@@ -136,6 +138,28 @@ export function SignatureComposition({
               </div>
             </div>
           </section>
+        );
+      case "booking":
+        // Agendamento: o título vem daqui (servidor); o seletor busca os horários no navegador.
+        return (
+          <BookingSection
+            key={key}
+            id={id}
+            endpoint={bookingEndpoint}
+            editable={editable}
+            intro={section.intro}
+            phone={model.business.phone}
+            phoneHref={model.phoneHref}
+            className={`scroll-mt-28 py-(--ns-section-y) ${wrap}`}
+            heading={
+              <h2
+                data-ns-rise
+                className={`${display} text-[length:clamp(2.75rem,5cqw,5.25rem)] leading-[0.95]`}
+              >
+                <Accent text={model.titleOf(section)} />
+              </h2>
+            }
+          />
         );
       case "contact":
         return (

@@ -55,7 +55,11 @@ export default async function PublicSitePage({ params }: PublicSitePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: siteJsonLd(site, freeSiteUrl(slug)) }}
       />
-      <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />
+      <SiteRenderer
+        spec={site.spec}
+        contactEndpoint={`/api/sites/${site.id}/leads`}
+        bookingEndpoint={`/api/public/booking/${site.id}`}
+      />
     </>
   );
 }

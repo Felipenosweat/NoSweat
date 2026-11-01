@@ -5,6 +5,8 @@ export type TemplateProps = {
   spec: SiteSpec;
   /** Endpoint do formulário de contato; ausente no preview (o envio fica desligado). */
   contactEndpoint?: string;
+  /** Base das rotas públicas de agendamento (`/api/public/booking/<siteId>`); ausente = sem seção. */
+  bookingEndpoint?: string;
   /** Modo de edição do editor (ver SiteRenderer). Ausente no site publicado. */
   editable?: boolean;
   /** Seção destacada no modo de edição. */

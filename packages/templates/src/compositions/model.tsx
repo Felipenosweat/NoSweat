@@ -187,6 +187,7 @@ const NAV_ANCHORS: Partial<Record<SectionType, string>> = {
   testimonials: "reviews",
   faq: "faq",
   contact: "contact",
+  booking: "book",
 };
 
 /** Foto do dono (a única que pode aparecer como "nosso trabalho" ou "nossa equipe"). */
@@ -248,6 +249,7 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
     testimonials: "Reviews",
     faq: "FAQ",
     contact: "Contact",
+    booking: "Book",
   };
   const defaultTitles: Record<SectionType, string> = {
     hero: "",
@@ -257,6 +259,7 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
     testimonials: words.testimonialsTitle,
     faq: words.faqTitle,
     contact: words.contactTitle,
+    booking: "Book online",
   };
 
   const anchors = new Map<Section, string>();
