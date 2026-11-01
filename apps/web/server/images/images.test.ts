@@ -335,6 +335,25 @@ describe("resolveServiceImages", () => {
     expect(heroOf(result).image?.url).toContain("plumber-tools");
     expect(servicesOf(result)[0]?.image?.url).toContain("drain-snake");
   });
+
+  it("resolveSiteImages searches nothing when the owner brings their own photos", async () => {
+    vi.stubEnv("PEXELS_API_KEY", "k");
+    const base = specWithServices(items(["drain snake"]));
+    const spec: SiteSpec = {
+      ...base,
+      sections: base.sections.map((s) =>
+        s.type === "hero" ? { ...s, imageQuery: "plumber tools" } : s,
+      ),
+    };
+    const fetch = perQueryFetch();
+    const result = await resolveSiteImages(spec, { fetch, photos: "own" });
+    expect(result).toBe(spec);
+    expect(fetch).not.toHaveBeenCalled();
+
+    // "auto" (o padrão) segue buscando.
+    const auto = await resolveSiteImages(spec, { fetch, photos: "auto" });
+    expect(heroOf(auto).image).toBeDefined();
+  });
 });
 
 describe("sanitizeAiImages", () => {

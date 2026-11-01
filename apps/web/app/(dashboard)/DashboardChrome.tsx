@@ -78,7 +78,7 @@ const soonItem =
   "flex min-h-10 items-center gap-3 rounded-2xl px-3 text-[15px] text-(--glass-fg-muted)";
 
 // Aba do celular: ícone sobre o rótulo; ativa = azul da marca numa cápsula clara.
-const tabItem = `mx-0.5 my-1.5 flex h-[calc(100%-0.75rem)] flex-col items-center justify-center gap-0.5 rounded-[22px] text-[11px] leading-4 font-semibold text-(--glass-fg-muted) transition-colors duration-150 hover:text-(--glass-fg) aria-[current=page]:bg-brand/10 aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
+const tabItem = `mx-0.5 my-1.5 flex h-[calc(100%-0.75rem)] flex-col items-center justify-center gap-0.5 rounded-[22px] text-[11px] leading-4 font-semibold text-(--glass-fg-muted) transition-colors duration-150 hover:text-(--glass-fg) aria-[current=page]:glass-edge aria-[current=page]:bg-brand/10 aria-[current=page]:text-brand focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand`;
 
 const sheetItem = `flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 text-[15px] font-medium text-(--glass-fg) transition-colors duration-150 hover:bg-(--glass-ghost-hover) aria-[current=page]:glass-pill ${focusRing}`;
 
@@ -352,10 +352,14 @@ function AdminButton({ compact = false }: { compact?: boolean }) {
         aria-hidden="true"
         className="absolute -bottom-10 -left-4 -z-10 size-20 rounded-full bg-indigo-400/40 blur-2xl"
       />
-      {/* Reflexo de vidro em cima. */}
+      {/* Reflexo de vidro em cima e a linha clara de 1px da borda (o mesmo brilho do vidro). */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 -z-10 h-1/2 bg-linear-to-b from-white/20 to-transparent"
+        className="absolute inset-x-0 top-0 -z-10 h-1/2 bg-linear-to-b from-white/25 to-transparent"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-3 top-0 -z-10 h-px bg-linear-to-r from-transparent via-white/70 to-transparent"
       />
       <span
         aria-hidden="true"
