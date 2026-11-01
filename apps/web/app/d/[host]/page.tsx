@@ -1,3 +1,4 @@
+import { liveBookingEndpoint } from "@/server/booking/service";
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -61,6 +62,7 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
   if (site.slug && !site.customDomainAccess) {
     redirect(`${appOrigin("https://customer.invalid/")}/s/${encodeURIComponent(site.slug)}`);
   }
+  const bookingEndpoint = await liveBookingEndpoint(site.id, site.spec);
   return (
     <>
       {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}
@@ -71,7 +73,7 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
       <SiteRenderer
         spec={site.spec}
         contactEndpoint={`/api/sites/${site.id}/leads`}
-        bookingEndpoint={`/api/public/booking/${site.id}`}
+        bookingEndpoint={bookingEndpoint}
       />
     </>
   );

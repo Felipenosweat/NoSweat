@@ -34,13 +34,22 @@ export type SiteRendererProps = {
  * No fim vem sempre o selo "Website by nosweatfd" (NoSweatBadge), que não depende do spec.
  */
 export function SiteRenderer({
-  spec,
+  spec: fullSpec,
   contactEndpoint,
   bookingEndpoint,
   editable = false,
   selectedSection = null,
   anchors = true,
 }: SiteRendererProps) {
+  // Agendamento desligado (sem endereço da API): a seção e o link "Book" do menu não existem. No
+  // editor (`editable`) a seção fica, com o aviso de como ligar.
+  const hideBooking =
+    !editable &&
+    !bookingEndpoint &&
+    fullSpec.sections.some((section) => section.type === "booking");
+  const spec = hideBooking
+    ? { ...fullSpec, sections: fullSpec.sections.filter((section) => section.type !== "booking") }
+    : fullSpec;
   // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
   const composition = compositionOf(spec);

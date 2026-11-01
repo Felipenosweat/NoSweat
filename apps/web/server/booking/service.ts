@@ -203,6 +203,23 @@ export async function getPublicBookingInfo(siteId: string): Promise<PublicBookin
 }
 
 /**
+ * Endereço da API de agendamento para o site público, ou `undefined` quando a seção não deve
+ * aparecer: o site não tem a seção "booking", o agendamento está desligado, o dono não tem serviço
+ * agendável ou houve erro. Sem endereço, o SiteRenderer tira a seção E o link "Book" do menu.
+ */
+export async function liveBookingEndpoint(
+  siteId: string,
+  spec: { sections: readonly { type: string }[] },
+): Promise<string | undefined> {
+  if (!spec.sections.some((section) => section.type === "booking")) return undefined;
+  try {
+    return (await getPublicBookingInfo(siteId)) ? `/api/public/booking/${siteId}` : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Entrada do motor: regras + o que está ocupado. Lê serviços (jobs) e marcações de ontem até o
  * fim da janela de `maxDaysAhead` (cobre também a busca da próxima vaga).
  */
