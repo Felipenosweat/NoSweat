@@ -9,7 +9,14 @@ import {
 } from "@nosweat/schema";
 import { z } from "zod";
 import { applyDesignPlan, readBrief, type DesignPlan } from "../design";
-import { DropSections, FillStyle, MiddleSection, pickTheme, SectionOrder } from "./look";
+import {
+  DropSections,
+  FillBooking,
+  FillStyle,
+  MiddleSection,
+  pickTheme,
+  SectionOrder,
+} from "./look";
 
 // Geração a partir do modelo (docs/design/model-sites.md, "Geração a partir do modelo").
 // A IA barata devolve só um ModelFill (textos + fatos que estão no pedido); o código junta com o
@@ -126,6 +133,8 @@ export const ModelFill = z.object({
   sectionOrder: SectionOrder.optional(),
   /** Seções que este negócio não precisa (serviços, topo e contato ficam sempre). */
   dropSections: DropSections.optional(),
+  /** Agendamento online (depois dos serviços): só para negócios que atendem com hora marcada. */
+  booking: FillBooking.optional(),
 });
 export type ModelFill = z.infer<typeof ModelFill>;
 
@@ -390,6 +399,8 @@ function copyFields(fill: ModelFill): Field[] {
   for (const [key, title] of Object.entries(fill.titles ?? {})) {
     if (title) fields.push({ path: `titles.${key}`, text: title });
   }
+  if (fill.booking?.title) fields.push({ path: "booking.title", text: fill.booking.title });
+  if (fill.booking?.intro) fields.push({ path: "booking.intro", text: fill.booking.intro });
   if (fill.category) fields.push({ path: "category", text: fill.category });
   const b = fill.business;
   if (b.name) fields.push({ path: "business.name", text: b.name });
@@ -718,14 +729,24 @@ export function applyModelFill(
     showMap: modelContact?.showMap ?? false,
   };
 
-  const sections: Section[] = [
-    hero,
-    ...order.flatMap((type) => {
-      const section = build(type);
-      return section ? [section] : [];
-    }),
-    contact,
-  ];
+  const middle: Section[] = order.flatMap((type) => {
+    const section = build(type);
+    return section ? [section] : [];
+  });
+  // Agendamento online logo depois dos serviços (só título e frase; o resto vem do dono).
+  if (fill.booking) {
+    const title = fill.booking.title?.trim();
+    const intro = fill.booking.intro?.trim();
+    const booking: SectionOf<"booking"> = {
+      type: "booking",
+      ...(title ? { title } : {}),
+      ...(intro ? { intro } : {}),
+    };
+    const after = middle.findIndex((section) => section.type === "services");
+    middle.splice(after + 1, 0, booking);
+  }
+
+  const sections: Section[] = [hero, ...middle, contact];
 
   // Estilo escolhido pelo dono (passo "Colors") vale mais que tudo: são as cores que ele viu.
   const ownerTheme = plan?.signals.style ? STYLE_THEMES[plan.signals.style] : undefined;
@@ -807,6 +828,7 @@ export function modelCopyForPrompt(model: SiteSpec): string {
       case "testimonials":
       case "contact":
       case "gallery":
+      case "booking":
         return { type: section.type, title: section.title };
     }
   });

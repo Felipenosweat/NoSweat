@@ -414,7 +414,9 @@ function BookingEditor({
               );
             })}
           </ul>
-          <p className={hintClass}>Times are in your business time zone (Settings &rarr; Schedule).</p>
+          <p className={hintClass}>
+            Times are in your business time zone (Settings &rarr; Schedule).
+          </p>
         </GlassCard>
 
         <GlassCard as="section" aria-labelledby={`${ids}-rules`}>

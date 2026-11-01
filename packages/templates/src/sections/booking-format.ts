@@ -76,14 +76,21 @@ export function dayLabelLong(key: string): string {
   return calendarFormat(key, { weekday: "long", month: "short", day: "numeric" });
 }
 
+/** Navegadores novos põem um espaço fino antes de AM/PM; aqui vira um espaço comum. */
+function plain(text: string): string {
+  return text.replace(/[\u202f\u00a0]/g, " ");
+}
+
 /** "3:30 PM" no fuso da empresa. */
 export function formatTime(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: safeTimeZone(timeZone),
-  }).format(new Date(iso));
+  return plain(
+    new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: safeTimeZone(timeZone),
+    }).format(new Date(iso)),
+  );
 }
 
 /** "Tue, Nov 3 at 3:30 PM EST": data, hora e abreviação do fuso da empresa. */
@@ -95,13 +102,15 @@ export function formatDateTime(iso: string, timeZone: string): string {
     day: "numeric",
     timeZone: zone,
   }).format(new Date(iso));
-  const time = new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZoneName: "short",
-    timeZone: zone,
-  }).format(new Date(iso));
+  const time = plain(
+    new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+      timeZone: zone,
+    }).format(new Date(iso)),
+  );
   return `${date} at ${time}`;
 }
 

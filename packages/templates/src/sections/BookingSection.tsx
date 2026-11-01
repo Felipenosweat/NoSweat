@@ -48,10 +48,9 @@ function useBookingInfo(endpoint: string | undefined): InfoState {
   useEffect(() => {
     if (!endpoint) return;
     let live = true;
-    async function load(url: string) {
-      try {
-        const res = await fetch(url);
-        const data: unknown = res.ok ? await res.json() : null;
+    fetch(endpoint)
+      .then((res): Promise<unknown> | null => (res.ok ? res.json() : null))
+      .then((data) => {
         if (!live) return;
         if (isPublicBookingInfo(data) && data.services.length > 0) {
           setState({
@@ -62,11 +61,10 @@ function useBookingInfo(endpoint: string | undefined): InfoState {
         } else {
           setState({ status: "off" });
         }
-      } catch {
+      })
+      .catch(() => {
         if (live) setState({ status: "off" });
-      }
-    }
-    void load(endpoint);
+      });
     return () => {
       live = false;
     };
@@ -89,6 +87,8 @@ export type BookingSectionProps = {
   id?: string;
   /** Classe do <section> (espaçamento e largura da composição). */
   className?: string;
+  /** Mostrado no lugar da seção quando o agendamento está desligado (a página própria usa; nos sites a seção some). */
+  fallback?: ReactNode;
   /** "split": título à esquerda e seletor à direita (telas largas). "stack": um embaixo do outro. */
   layout?: "split" | "stack";
 };
@@ -102,10 +102,11 @@ export function BookingSection({
   phoneHref,
   id,
   className = "",
+  fallback,
   layout = "split",
 }: BookingSectionProps) {
   const state = useBookingInfo(endpoint);
-  if (state.status === "off" && !editable) return null;
+  if (state.status === "off" && !editable) return <>{fallback ?? null}</>;
 
   const split = layout === "split";
   return (
@@ -211,23 +212,21 @@ function BookingPanel({
   useEffect(() => {
     if (!serviceId || !availabilityKey) return;
     let live = true;
-    async function load(chosenService: string, key: string) {
-      const query = new URLSearchParams({
-        serviceId: chosenService,
-        from: todayKey,
-        days: String(dayCount),
-      });
-      if (staffId) query.set("staffId", staffId);
-      try {
-        const res = await fetch(`${endpoint}/availability?${query.toString()}`);
-        const data: unknown = res.ok ? await res.json() : null;
-        if (!live) return;
-        setAvailability({ key, data: isAvailabilityResponse(data) ? data : null });
-      } catch {
+    const key = availabilityKey;
+    const query = new URLSearchParams({
+      serviceId,
+      from: todayKey,
+      days: String(dayCount),
+    });
+    if (staffId) query.set("staffId", staffId);
+    fetch(`${endpoint}/availability?${query.toString()}`)
+      .then((res): Promise<unknown> | null => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (live) setAvailability({ key, data: isAvailabilityResponse(data) ? data : null });
+      })
+      .catch(() => {
         if (live) setAvailability({ key, data: null });
-      }
-    }
-    void load(serviceId, availabilityKey);
+      });
     return () => {
       live = false;
     };

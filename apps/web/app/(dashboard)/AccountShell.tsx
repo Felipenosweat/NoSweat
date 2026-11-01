@@ -1,11 +1,13 @@
-import type { ReactNode } from "react";
+import { cache, type ReactNode } from "react";
 import { CONTACT_EMAIL } from "@/components/marketing/legal/contact";
 import { ViewAsBanner } from "@/components/ViewAsBanner";
+import type { PillBalance } from "@/lib/credits-ui";
 import { tourConfig } from "@/lib/onboarding";
 import { isAdminUser } from "@/server/admin";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { getSessionClaims } from "@/server/auth/session";
 import { getViewer, type Viewer } from "@/server/auth/viewer";
+import { getBalance } from "@/server/credits";
 import { listOwnerSites } from "@/server/owner-sites";
 import { DashboardChrome } from "./DashboardChrome";
 
@@ -27,6 +29,25 @@ async function latestSiteId(ownerId: string): Promise<string | null> {
     return null;
   }
 }
+
+/**
+ * Saldo de créditos da IA para o "pill" do menu (conta dona dos dados: no "ver como", a vista).
+ * Com `cache()` a leitura é uma só por request. Erro = `null`: o pill some, a página segue.
+ */
+const creditsFor = cache(async (ownerId: string): Promise<PillBalance | null> => {
+  try {
+    const balance = await getBalance({ id: ownerId });
+    return {
+      unlimited: balance.unlimited,
+      total: balance.total,
+      monthlyAllowance: balance.monthlyAllowance,
+      resetsAt: balance.resetsAt,
+    };
+  } catch (error) {
+    console.error("[credits] could not read the balance for the menu", error);
+    return null;
+  }
+});
 
 /**
  * `user_metadata` da sessão (as claims que o getCurrentUser já leu neste request), para saber se
@@ -67,11 +88,12 @@ export async function AccountShell({
   // Com login desligado (dev local) todo mundo é o DEV_USER: sem e-mail nem "Log out".
   const authEnabled = getSupabaseAuthConfig() !== null;
   const viewingAs = viewer.viewingAs !== null;
-  const [admin, latest, metadata] = await Promise.all([
+  const [admin, latest, metadata, credits] = await Promise.all([
     isAdminUser(viewer.user),
     latestSiteId(viewer.ownerId),
     // No "ver como" o tour nunca abre sozinho: nem precisa ler a sessão.
     authEnabled && !viewingAs ? sessionMetadata() : Promise.resolve(null),
+    creditsFor(viewer.ownerId),
   ]);
   const tour = tourConfig({ accountId: viewer.user.id, authEnabled, viewingAs, metadata });
 
@@ -81,6 +103,8 @@ export async function AccountShell({
       account={authEnabled ? { email: viewer.user.email } : null}
       latestSiteId={latest}
       supportHref={supportHref(viewer.user.email)}
+      credits={credits}
+      creditsReadOnly={viewingAs}
       banner={viewer.viewingAs ? <ViewAsBanner email={viewer.viewingAs.email} /> : null}
       tour={tour}
     >

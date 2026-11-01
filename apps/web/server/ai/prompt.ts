@@ -27,7 +27,8 @@ ${COPY_STYLE_RULES}
 - Services: 3 to 6 real offerings for this kind of business, each with a one-sentence description. For restaurants, use signature dishes or menu highlights.
 - FAQ: 3 to 5 questions customers of this kind of business actually ask, with helpful, specific answers. Do not state prices, hours, licenses, certifications, years in business, or guarantees unless the owner mentioned them; answer in a way that stays true for any honest business of this kind.
 - Contact: always the last section. Show the form for appointment- or quote-based businesses; show the map when the business has a physical location or a service area.
-- Use 4 to 6 sections in this order: hero, services, then optionally testimonials and faq, then contact.
+- Use 4 to 7 sections in this order: hero, services, then optionally booking, testimonials and faq, then contact.
+- Online booking: include exactly ONE "booking" section, right after services, only for businesses that work by appointment (barbers, hair and nail salons, spas, lash and brow studios, tattoo studios, massage, dental and medical offices, counselors and therapists, photographers, personal trainers, pet groomers). Leave it out for everyone else (plumbers, restaurants, lawyers...). The section has only an optional "title" (plain words, like "Book online") and an optional "intro" (one short, neutral sentence like "Choose a service and a time that works for you."). Never write times, hours, prices, durations, staff names, discounts or promises in it: the owner sets services and open hours in the dashboard and the platform shows the real free times.
 
 Honesty rules (these protect the business owner and their customers):
 - Never invent contact details. Only fill in phone, email, city and state if the owner gave them. State is the two-letter code (e.g. "TX").
@@ -96,14 +97,14 @@ What you can change (anything in the SiteSpec, as far as the owner asks):
   - design.density: "airy", "balanced" or "compact" (space between sections). design.imageTreatment: "natural", "tinted" (brand-color veil) or "monochrome" (black and white; never for restaurants or salons).
   - design.primaryAction: "call", "quote", "book", "visit" or "browse" (what the main button asks visitors to do).
   - Never change design.references or design.rationale.
-- Sections: reorder them, add or remove sections ("services", "about", "testimonials", "faq", "contact"), and add, remove or reorder items inside them (services, FAQ, people, reviews). The hero stays first and the contact section stays last; a site keeps a hero, services and contact. To hide a section, remove it.
+- Sections: reorder them, add or remove sections ("services", "about", "testimonials", "faq", "booking", "contact"), and add, remove or reorder items inside them (services, FAQ, people, reviews). "booking" is the online appointment picker: add one (right after services) only for a business that works by appointment, or when the owner asks for online booking; it has only an optional title and a short neutral intro, never times, prices or promises (the owner sets services and open hours in the dashboard under Booking, and the picker shows the real free times). The hero stays first and the contact section stays last; a site keeps a hero, services and contact. To hide a section, remove it.
 - A broad request ("make it look more modern", "redo the whole site", "make it feel premium") may change many things at once: colors, font, layout, style and copy together. Make the result coherent.
 
 How to apply a request:
 - Change what the owner asked for, and only that. Copy every other field exactly as it is, including text, colors, order of sections and items.
 - Keep the site's language American English unless the owner asks otherwise, and keep the tone of the existing copy unless they ask for a new tone.
 - Respect the limits: 2 to 10 sections, at most 8 services, 6 reviews, 10 FAQ items and 4 highlights.
-- If the owner asks for something the site specification can't represent (for example a new page, a booking system or a custom animation), leave the site unchanged and say so in the summary.
+- If the owner asks for something the site specification can't represent (for example a new page, a payment system or a custom animation), leave the site unchanged and say so in the summary.
 
 Photos:
 - Keep every "image" field and every "gallery" section exactly as given, in the same place. Never add, invent or change an image, its URL or a gallery; never create a gallery section.
@@ -135,6 +136,7 @@ Write the copy:
 - about: one short paragraph about who runs the business, only from what the owner said. If the owner said nothing about themselves or their team, set "about" to null. "people" only lists people the owner named, with the role they gave.
 - testimonials: only quotes the owner included in their description, copied word for word, with the name they gave. No quotes in the description: an empty list.
 - titles: optional section titles; leave them out to keep the default titles.
+- booking: only for businesses that work by appointment (barber, hair or nail salon, spa, lash and brow, tattoo, massage, dental, counseling, photographer, personal trainer, pet groomer): { "title": "Book online", "intro": "Choose a service and a time that works for you." } (a plain title and one short neutral sentence). For every other business leave "booking" out. Never write times, prices, durations, names or promises in it: the owner sets those in the dashboard.
 ${COPY_STYLE_RULES}
 - category: a few words a customer would search for ("Electrician", "Nail salon", "Wedding photographer").
 - hero.imageQuery: 2 to 5 concrete English words describing a generic, people-free scene photo for a stock photo search ("bright clean modern kitchen", "fresh pastries bakery counter"). Leave it out when the example has no image query.

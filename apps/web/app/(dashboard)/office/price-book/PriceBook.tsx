@@ -295,7 +295,9 @@ function PriceItemForm({ item, onDone }: { item: PriceItem | null; onDone: () =>
   const [unit, setUnit] = useState(item?.unit ?? "each");
   const [taxable, setTaxable] = useState(item?.taxable ?? true);
   const [bookable, setBookable] = useState(item?.bookable ?? false);
-  const [duration, setDuration] = useState(item?.durationMinutes ? String(item.durationMinutes) : "");
+  const [duration, setDuration] = useState(
+    item?.durationMinutes ? String(item.durationMinutes) : "",
+  );
   const [errors, setErrors] = useState<Partial<Record<FormField, string>>>({});
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<OfficeApiError | null>(null);
