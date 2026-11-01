@@ -1,8 +1,9 @@
 import type { SiteSpec } from "@nosweat/schema";
+import { GlassDefs } from "./components/GlassDefs";
 import { NoSweatBadge } from "./components/NoSweatBadge";
 import { COMPOSITIONS, compositionOf } from "./compositions";
 import { siteStyle } from "./compositions/model";
-import { themeToCssVars } from "./theme";
+import { luminance, themeToCssVars } from "./theme";
 
 export type SiteRendererProps = {
   spec: SiteSpec;
@@ -29,6 +30,7 @@ export type SiteRendererProps = {
  * wrapper ocupa a tela toda, então o resultado é o mesmo das variantes sm:/md:/lg:.
  * `data-font` deixa o CSS ajustar detalhes por par de fontes; `data-density` e `data-image` aplicam
  * o respiro entre seções e o tratamento das fotos do plano de design (ver styles.css).
+ * `data-scheme` (light/dark, pela luminância do fundo) escolhe a tinta do vidro do topo.
  * No fim vem sempre o selo "Website by nosweatfd" (NoSweatBadge), que não depende do spec.
  */
 export function SiteRenderer({
@@ -53,11 +55,15 @@ export function SiteRenderer({
       data-composition={composition}
       data-density={spec.design?.density ?? "balanced"}
       data-image={spec.design?.imageTreatment ?? "natural"}
+      // Claro ou escuro: o vidro do topo escolhe a tinta por aqui (styles.css, "Vidro líquido").
+      data-scheme={luminance(spec.theme.background) > 0.4 ? "light" : "dark"}
       data-buttons={style.buttons}
       data-header={style.header}
       data-contact={style.contact}
       data-editable={editable ? "" : undefined}
     >
+      {/* Filtro SVG da refração do vidro (só o Chromium usa). */}
+      <GlassDefs />
       {editable ? (
         <Template
           spec={spec}

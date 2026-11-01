@@ -100,6 +100,9 @@ describe("costNote", () => {
   });
 
   it("shows only the cost when the balance is unknown", () => {
-    expect(costNote("One caption", 1, null)).toEqual({ text: "One caption uses 1 credit", short: false });
+    expect(costNote("One caption", 1, null)).toEqual({
+      text: "One caption uses 1 credit",
+      short: false,
+    });
   });
 });

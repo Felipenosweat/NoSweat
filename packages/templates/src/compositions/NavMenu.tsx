@@ -80,7 +80,7 @@ export function NavMenu({
                 <li key={link.anchor}>
                   <a
                     href={`#${link.anchor}`}
-                    className={`flex min-h-12 items-center rounded-2xl px-4 font-ns-heading text-2xl leading-none font-ns-display tracking-[-0.02em] transition-colors hover:bg-ns-text/5 motion-reduce:transition-none ${focus}`}
+                    className={`flex min-h-12 items-center rounded-2xl px-4 font-ns-heading text-2xl leading-none font-ns-display tracking-[-0.02em] ${focus}`}
                   >
                     {link.label}
                   </a>

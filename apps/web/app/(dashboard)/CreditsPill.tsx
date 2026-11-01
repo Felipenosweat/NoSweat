@@ -25,7 +25,11 @@ import {
 const TONE: Record<CreditState, { text: string; icon: string; ring: string }> = {
   ok: { text: "text-(--glass-fg)", icon: "text-brand", ring: "" },
   unlimited: { text: "text-(--glass-fg)", icon: "text-brand", ring: "" },
-  low: { text: "text-amber-900", icon: "text-amber-600", ring: "ring-1 ring-amber-500/60 ring-inset" },
+  low: {
+    text: "text-amber-900",
+    icon: "text-amber-600",
+    ring: "ring-1 ring-amber-500/60 ring-inset",
+  },
   empty: { text: "text-red-800", icon: "text-red-600", ring: "ring-1 ring-red-500/60 ring-inset" },
 };
 

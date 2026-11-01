@@ -80,7 +80,10 @@ export function applyCreditsEvent(balance: PillBalance, detail: CreditsEventDeta
     return { ...balance, total: Math.max(0, Math.floor(detail.left)) };
   }
   if (typeof detail.spent === "number" && Number.isFinite(detail.spent)) {
-    return { ...balance, total: Math.max(0, balance.total - Math.max(0, Math.floor(detail.spent))) };
+    return {
+      ...balance,
+      total: Math.max(0, balance.total - Math.max(0, Math.floor(detail.spent))),
+    };
   }
   return balance;
 }

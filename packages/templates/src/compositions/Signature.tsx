@@ -1288,7 +1288,7 @@ function Booking({
             href={callHref}
             {...externalProps(callHref)}
             data-ns-magnetic
-            className={`ns-glass relative mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-text ${focus}`}
+            className={`ns-glass ns-glass-inverse relative mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-background ${focus}`}
           >
             <span aria-hidden="true" className="size-2 rounded-full bg-ns-primary" />
             {phoneHref && business.phone ? `Call ${business.phone}` : ctaLabel}
