@@ -113,7 +113,8 @@ function ReplySheet({
       firstName,
       company: company.name,
       phone: company.phone,
-      when: next === "confirm" && (nextDate || nextTime) ? { date: nextDate, time: nextTime } : null,
+      when:
+        next === "confirm" && (nextDate || nextTime) ? { date: nextDate, time: nextTime } : null,
     });
     setTemplate(next);
     setDate(nextDate);
@@ -207,11 +208,7 @@ function ReplySheet({
         <GlassButton variant="ghost" onClick={close} disabled={pending}>
           Cancel
         </GlassButton>
-        <GlassButton
-          variant="primary"
-          loading={pending}
-          onClick={() => void submit("send")}
-        >
+        <GlassButton variant="primary" loading={pending} onClick={() => void submit("send")}>
           {pending ? "Sending…" : "Send email"}
         </GlassButton>
       </>

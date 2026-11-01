@@ -214,9 +214,7 @@ export function buildReplyTemplate({
   const contact = phone?.trim()
     ? `Reply here or call ${phone.trim()}`
     : "Just reply to this message";
-  const subject = company?.trim()
-    ? `Your request with ${company.trim()}`
-    : "Your request";
+  const subject = company?.trim() ? `Your request with ${company.trim()}` : "Your request";
 
   if (template === "details") {
     return {

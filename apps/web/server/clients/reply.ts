@@ -14,12 +14,7 @@ export type ClientReplyOutcome =
   | { ok: true; data: ClientReplyResponse }
   | {
       ok: false;
-      reason:
-        | "not_found"
-        | "no_contact"
-        | "no_reply_to"
-        | "not_configured"
-        | "send_failed";
+      reason: "not_found" | "no_contact" | "no_reply_to" | "not_configured" | "send_failed";
     };
 
 /** Quantos caracteres da mensagem vão para o histórico. */
