@@ -351,7 +351,6 @@
     0 1px 2px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
     0 8px 20px -4px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
     0 28px 56px -14px color-mix(in srgb, var(--ns-glass-shade) 28%, transparent);
-  transition: scale 0.25s cubic-bezier(0.19, 1, 0.22, 1);
 }
 /* As cápsulas do tablet só viram vidro no tablet (mais abaixo). */
 .ns-site .ns-navpart {
@@ -496,7 +495,7 @@
   inset: 0;
   border-radius: 1rem;
 }
-.ns-site .ns-nav nav:not(.ns-menu-panel nav) .ns-underline::after {
+.ns-site .ns-nav .ns-underline::after {
   content: none;
 }
 .ns-site .ns-nav :is(nav a, a[href^="tel:"]):is(:hover, :focus-visible)::before {
@@ -512,8 +511,10 @@
   .ns-site .ns-nav :is(nav a, a[href^="tel:"])::before {
     transition: opacity 0.22s ease;
   }
-  .ns-site .ns-nav :is(a, summary, .ns-glass:active) {
-    transition: scale 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+  .ns-site :is(.ns-nav a, .ns-nav summary, a.ns-glass) {
+    transition:
+      scale 0.2s cubic-bezier(0.19, 1, 0.22, 1),
+      opacity 0.2s ease;
   }
   .ns-site :is(.ns-nav a, .ns-nav summary, a.ns-glass):active {
     scale: 0.98;

@@ -11,6 +11,8 @@ import {
   type KeyboardEvent,
   type MouseEvent,
 } from "react";
+import { announceCreditsSpent } from "@/lib/credits-events";
+import { creditsLabel } from "@/lib/credits-ui";
 import { ArrowUpIcon, CheckIcon, PlusIcon, UndoIcon } from "./icons";
 import { focusRing, panelTitle, primaryButton } from "./ui";
 
@@ -127,6 +129,14 @@ export function AskAiPanel({
   const lastDoneId = [...messages]
     .reverse()
     .find((m) => m.role === "assistant" && m.kind === "done")?.id;
+
+  // Uma mudança nova terminou: o servidor já descontou os créditos, o menu atualiza na hora.
+  const announcedDone = useRef(lastDoneId);
+  useEffect(() => {
+    if (lastDoneId === undefined || lastDoneId === announcedDone.current) return;
+    announcedDone.current = lastDoneId;
+    if (aiCredits) announceCreditsSpent(aiCredits.cost);
+  }, [lastDoneId, aiCredits]);
 
   // Rola a conversa até o fim quando chega mensagem nova (ou começa um pedido).
   useEffect(() => {
@@ -416,14 +426,30 @@ export function AskAiPanel({
             >
               <PlusIcon className="size-[18px]" />
             </button>
-            <button
-              type="submit"
-              disabled={!canSend}
-              aria-label={pending ? "Working on it" : "Send"}
-              className={`inline-flex size-11 items-center justify-center rounded-xl bg-brand text-white transition-colors duration-150 hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 motion-reduce:transition-none lg:size-9 ${focusRing}`}
-            >
-              <ArrowUpIcon className="size-[18px]" />
-            </button>
+            <div className="flex items-center gap-2">
+              {aiEnabled && aiCredits && (
+                <span
+                  aria-hidden="true"
+                  className="text-[12px] font-medium text-slate-500 tabular-nums"
+                >
+                  Ask AI · {creditsLabel(aiCredits.cost)}
+                </span>
+              )}
+              <button
+                type="submit"
+                disabled={!canSend}
+                aria-label={
+                  pending
+                    ? "Working on it"
+                    : aiCredits
+                      ? `Send, uses ${creditsLabel(aiCredits.cost)}`
+                      : "Send"
+                }
+                className={`inline-flex size-11 items-center justify-center rounded-xl bg-brand text-white transition-colors duration-150 hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 motion-reduce:transition-none lg:size-9 ${focusRing}`}
+              >
+                <ArrowUpIcon className="size-[18px]" />
+              </button>
+            </div>
           </div>
         </div>
         <p id={`${ids}-hint`} className="mt-2 px-1 text-[12px] text-slate-500">
