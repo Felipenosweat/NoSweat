@@ -66,7 +66,9 @@ async function setup(): Promise<Setup> {
 /** Primeiro horário livre de quarta-feira (2/12). */
 async function firstSlot(data: Setup): Promise<string> {
   const res = await availabilityRoute(
-    new Request(`${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`),
+    new Request(
+      `${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`,
+    ),
     siteCtx(data.siteId),
   );
   expect(res.status).toBe(200);
@@ -111,6 +113,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
 
 describe("GET /api/public/booking/[siteId]", () => {
@@ -141,7 +144,9 @@ describe("GET /api/public/booking/[siteId]", () => {
     expect(
       (
         await availabilityRoute(
-          new Request(`${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02`),
+          new Request(
+            `${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02`,
+          ),
           siteCtx(data.siteId),
         )
       ).status,
@@ -151,7 +156,6 @@ describe("GET /api/public/booking/[siteId]", () => {
     expect((await get(data.siteId)).status).toBe(200);
     vi.stubEnv("REQUIRE_PLAN", "true");
     expect((await get(data.siteId)).status).toBe(404);
-    vi.unstubAllEnvs();
   });
 });
 
@@ -159,7 +163,9 @@ describe("GET /api/public/booking/[siteId]/availability", () => {
   it("returns the days with their free times in the company's zone", async () => {
     const data = await setup();
     const res = await availabilityRoute(
-      new Request(`${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-05`),
+      new Request(
+        `${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-05`,
+      ),
       siteCtx(data.siteId),
     );
     expect(res.status).toBe(200);
@@ -212,13 +218,18 @@ describe("POST /api/public/booking/[siteId]/book", () => {
 
     // O horário saiu da lista.
     const after = await availabilityRoute(
-      new Request(`${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`),
+      new Request(
+        `${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`,
+      ),
       siteCtx(data.siteId),
     );
     const slots = AvailabilityResponse.parse(await after.json()).days[0]?.slots ?? [];
     expect(slots.map((s) => s.startAt)).not.toContain(startAt);
 
-    const seen = await tokenRoute(new Request(`${BASE}/token/${booking.token}`), tokenCtx(booking.token));
+    const seen = await tokenRoute(
+      new Request(`${BASE}/token/${booking.token}`),
+      tokenCtx(booking.token),
+    );
     expect(seen.status).toBe(200);
     expect(PublicBookingResponse.parse(await seen.json()).booking.status).toBe("confirmed");
 
@@ -240,11 +251,15 @@ describe("POST /api/public/booking/[siteId]/book", () => {
 
     // O horário voltou.
     const reopened = await availabilityRoute(
-      new Request(`${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`),
+      new Request(
+        `${BASE}/${data.siteId}/availability?serviceId=${data.serviceId}&from=2026-12-02&days=1`,
+      ),
       siteCtx(data.siteId),
     );
     expect(
-      (AvailabilityResponse.parse(await reopened.json()).days[0]?.slots ?? []).map((s) => s.startAt),
+      (AvailabilityResponse.parse(await reopened.json()).days[0]?.slots ?? []).map(
+        (s) => s.startAt,
+      ),
     ).toContain(startAt);
   });
 
@@ -301,7 +316,10 @@ describe("POST /api/public/booking/[siteId]/book", () => {
     expect(blocked.status).toBe(429);
     expect(await errorCode(blocked)).toBe("quota_exceeded");
     // Outro IP continua podendo.
-    const other = await bookRoute(bookRequest(data, startAt, {}, "192.0.2.11"), siteCtx(data.siteId));
+    const other = await bookRoute(
+      bookRequest(data, startAt, {}, "192.0.2.11"),
+      siteCtx(data.siteId),
+    );
     expect([201, 409]).toContain(other.status);
   });
 
@@ -323,11 +341,13 @@ describe("POST /api/public/booking/[siteId]/book", () => {
 
 describe("public booking links", () => {
   it("answers 404 for a malformed or unknown token", async () => {
-    expect((await tokenRoute(new Request(`${BASE}/token/short`), tokenCtx("short"))).status).toBe(404);
-    const unknown = "u".repeat(43);
-    expect((await tokenRoute(new Request(`${BASE}/token/${unknown}`), tokenCtx(unknown))).status).toBe(
+    expect((await tokenRoute(new Request(`${BASE}/token/short`), tokenCtx("short"))).status).toBe(
       404,
     );
+    const unknown = "u".repeat(43);
+    expect(
+      (await tokenRoute(new Request(`${BASE}/token/${unknown}`), tokenCtx(unknown))).status,
+    ).toBe(404);
     const cancel = await cancelRoute(
       new Request(`${BASE}/token/${unknown}/cancel`, { method: "POST" }),
       tokenCtx(unknown),
@@ -370,7 +390,18 @@ describe("/api/office/booking-settings", () => {
     expect((await put({ weekly: [[]] })).status).toBe(400);
     expect((await put({ closedDates: ["12/25/2026"] })).status).toBe(400);
     const overlap = await put({
-      weekly: [[], [{ start: "09:00", end: "13:00" }, { start: "12:00", end: "17:00" }], [], [], [], [], []],
+      weekly: [
+        [],
+        [
+          { start: "09:00", end: "13:00" },
+          { start: "12:00", end: "17:00" },
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
     });
     expect(overlap.status).toBe(400);
     expect(await errorCode(overlap)).toBe("invalid_request");

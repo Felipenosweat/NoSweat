@@ -191,7 +191,10 @@ export function computeAvailability(
     return { date, slots: daySlots(input, date) };
   });
 
-  const last = addDaysTo(dateKeyOf(input.now.getTime(), input.timeZone), input.settings.maxDaysAhead);
+  const last = addDaysTo(
+    dateKeyOf(input.now.getTime(), input.timeZone),
+    input.settings.maxDaysAhead,
+  );
   let nextAvailableAt: string | null = null;
   for (let i = days; i < days + MAX_SEARCH_DAYS; i += 1) {
     const date = addDaysTo(from, i);

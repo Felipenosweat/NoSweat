@@ -42,8 +42,7 @@ const busy = (start: string, end: string, staffIds: string[] = []): BusyInterval
 const times = (day: { slots: { startAt: string }[] } | undefined) =>
   (day?.slots ?? []).map((slot) => slot.startAt.slice(11, 16));
 
-const dayOf = (data: AvailabilityInput, date: string) =>
-  computeAvailability(data, date, 1).days[0];
+const dayOf = (data: AvailabilityInput, date: string) => computeAvailability(data, date, 1).days[0];
 
 describe("time helpers", () => {
   it("converts wall-clock times to instants and back, with the zone offset", () => {
@@ -258,9 +257,7 @@ describe("computeAvailability: staff", () => {
 
   it("any person: a time is gone only when everyone is busy", () => {
     const jobB = busy("2026-12-02T15:00:00Z", "2026-12-02T16:00:00Z", ["b"]);
-    expect(times(dayOf(input({ staff, busy: [jobA, jobB] }), "2026-12-02"))).not.toContain(
-      "10:00",
-    );
+    expect(times(dayOf(input({ staff, busy: [jobA, jobB] }), "2026-12-02"))).not.toContain("10:00");
   });
 
   it("a job with nobody assigned blocks the whole team", () => {

@@ -42,7 +42,9 @@ describe("formatWhen", () => {
 describe("buildOwnerBookingEmail", () => {
   it("puts service, name and time in the subject, on one line", () => {
     const email = buildOwnerBookingEmail(input);
-    expect(email.subject).toMatch(/^New booking: Haircut · Ana <b>Lima<\/b> Bcc: evil@example\.test · Thu Dec 3, 3:30 PM$/);
+    expect(email.subject).toMatch(
+      /^New booking: Haircut · Ana <b>Lima<\/b> Bcc: evil@example\.test · Thu Dec 3, 3:30 PM$/,
+    );
     expect(email.subject).not.toMatch(/[\r\n]/);
   });
 

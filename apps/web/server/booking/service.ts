@@ -44,7 +44,9 @@ const SLOT_TAKEN = "That time was just taken. Please pick another one.";
 
 /** As regras do dono; sem nada gravado, os padrões (desligado). */
 export async function getBookingSettings(ownerId: string): Promise<BookingSettings> {
-  return (await getBookingStore().getSettings(ownerId)) ?? structuredClone(DEFAULT_BOOKING_SETTINGS);
+  return (
+    (await getBookingStore().getSettings(ownerId)) ?? structuredClone(DEFAULT_BOOKING_SETTINGS)
+  );
 }
 
 /** Intervalos de um dia em ordem, sem se tocar. */
@@ -136,11 +138,7 @@ async function businessFor(
   };
 }
 
-function siteAddress(business: {
-  address?: string;
-  city?: string;
-  state?: string;
-}): string | null {
+function siteAddress(business: { address?: string; city?: string; state?: string }): string | null {
   const cityState = [business.city, business.state].filter(Boolean).join(", ");
   return [business.address, cityState].filter(Boolean).join(", ") || null;
 }

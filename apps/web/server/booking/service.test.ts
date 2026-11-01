@@ -65,7 +65,10 @@ async function setup(): Promise<Setup> {
   return { siteId, serviceId: item.id };
 }
 
-const request = (setupData: Setup, over: Partial<CreateBookingRequest> = {}): CreateBookingRequest => ({
+const request = (
+  setupData: Setup,
+  over: Partial<CreateBookingRequest> = {},
+): CreateBookingRequest => ({
   serviceId: setupData.serviceId,
   startAt: WED_10,
   name: "Ana Lima",
@@ -207,7 +210,11 @@ describe("public info and availability", () => {
     await updateBookingSettings(OWNER, { enabled: false });
     expect(await getPublicBookingInfo(data.siteId)).toBeNull();
     expect(
-      await getPublicAvailability(data.siteId, { serviceId: data.serviceId, from: "2026-12-02", days: 1 }, NOW),
+      await getPublicAvailability(
+        data.siteId,
+        { serviceId: data.serviceId, from: "2026-12-02", days: 1 },
+        NOW,
+      ),
     ).toBeNull();
     expect(await createBooking(data.siteId, request(data), NOW)).toBeNull();
 
@@ -254,7 +261,11 @@ describe("public info and availability", () => {
       400,
       "invalid_request",
     );
-    await expectError(ask({ serviceId: data.serviceId, from: "2026-02-30" }), 400, "invalid_request");
+    await expectError(
+      ask({ serviceId: data.serviceId, from: "2026-02-30" }),
+      400,
+      "invalid_request",
+    );
   });
 
   it("owner jobs block the times, and a job assigned to someone only blocks that person", async () => {
@@ -531,12 +542,21 @@ describe("createBooking", () => {
       notes: "",
     };
     const store = getBookingStore();
-    const forDana = await store.bookSlot({ ...base, token: "t1", staffId: dana.id }, { bufferMinutes: 0 });
+    const forDana = await store.bookSlot(
+      { ...base, token: "t1", staffId: dana.id },
+      { bufferMinutes: 0 },
+    );
     expect(forDana.ok).toBe(false);
-    const forLee = await store.bookSlot({ ...base, token: "t2", staffId: lee.id }, { bufferMinutes: 0 });
+    const forLee = await store.bookSlot(
+      { ...base, token: "t2", staffId: lee.id },
+      { bufferMinutes: 0 },
+    );
     expect(forLee.ok).toBe(true);
     // Sem pessoa (agenda única): o serviço da Dana bloqueia.
-    const single = await store.bookSlot({ ...base, token: "t3", staffId: null }, { bufferMinutes: 0 });
+    const single = await store.bookSlot(
+      { ...base, token: "t3", staffId: null },
+      { bufferMinutes: 0 },
+    );
     expect(single.ok).toBe(false);
   });
 });
