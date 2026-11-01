@@ -28,6 +28,8 @@ export const ERROR_CODES = [
   "ai_unavailable",
   /** A busca de empresas (prospecção) falhou no provedor (OpenStreetMap ou Google). */
   "places_error",
+  /** O envio de e-mails ainda não está ligado (sem RESEND_API_KEY): respostas ao cliente dão 503. */
+  "email_not_configured",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 

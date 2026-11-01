@@ -7,7 +7,7 @@ import {
   MapPinIcon,
   PhoneIcon,
 } from "../components/icons";
-import { Photo, PhotoCredit } from "../components/photo";
+import { Photo, PhotoCredits, specImages } from "../components/photo";
 import { ContactForm, VISITOR_PRIVACY_URL, type ContactFormRadius } from "../sections/ContactForm";
 import { externalProps, isOwnerPhoto, location, type SiteModel } from "./model";
 import { ReviewUsEntry } from "./ReviewLink";
@@ -83,7 +83,8 @@ export function HeroActions({
 }
 
 /**
- * Foto com o tratamento do plano (classe ns-photo, ver styles.css) e o crédito do banco.
+ * Foto com o tratamento do plano (classe ns-photo, ver styles.css). O crédito do banco de
+ * imagens não aparece aqui: fica numa linha só no rodapé (PhotoCredits).
  * `data-kind` deixa as fotos do dono fora dos filtros (preto e branco, véu de cor).
  */
 export function PhotoFrame({
@@ -92,7 +93,6 @@ export function PhotoFrame({
   imgClassName = "absolute inset-0 size-full object-cover",
   sizes,
   eager = false,
-  credit = "overlay",
   radius = "",
 }: {
   image: SiteImage;
@@ -100,12 +100,9 @@ export function PhotoFrame({
   imgClassName?: string;
   sizes?: string;
   eager?: boolean;
-  /** "overlay": etiqueta no canto da foto; "below": legenda embaixo; "none": quem chama mostra. */
-  credit?: "overlay" | "below" | "none";
   /** Raio da moldura da foto (o mesmo da composição). */
   radius?: string;
 }) {
-  const hasCredit = Boolean(image.credit);
   return (
     <figure className={className}>
       <div
@@ -113,17 +110,7 @@ export function PhotoFrame({
         className={`ns-photo relative size-full overflow-hidden bg-ns-border ${eager ? "ns-hero-zoom" : "ns-unclip"} ${radius}`}
       >
         <Photo image={image} priority={eager} sizes={sizes} className={imgClassName} />
-        {hasCredit && credit === "overlay" && (
-          <figcaption className="absolute right-3 bottom-3 z-10 max-w-[calc(100%-1.5rem)] rounded-md bg-ns-background/90 px-2 py-1 text-[0.6875rem] leading-tight text-ns-text">
-            <PhotoCredit image={image} />
-          </figcaption>
-        )}
       </div>
-      {hasCredit && credit === "below" && (
-        <figcaption className="mt-3 text-xs text-ns-muted">
-          <PhotoCredit image={image} />
-        </figcaption>
-      )}
     </figure>
   );
 }
@@ -639,6 +626,7 @@ export function SimpleFooter({
           <p className="[overflow-wrap:anywhere]">
             &copy; {year} {business.name}. All rights reserved.
           </p>
+          <PhotoCredits images={specImages(model.spec)} className="text-[0.625rem] opacity-80" />
           <p className="flex flex-wrap gap-x-4">
             <a
               href={VISITOR_PRIVACY_URL}
@@ -1035,7 +1023,6 @@ export function AboutPhoto({
   return (
     <PhotoFrame
       image={data.image}
-      credit="below"
       radius={radius}
       sizes="(min-width: 1024px) 480px, 100vw"
       className={className}

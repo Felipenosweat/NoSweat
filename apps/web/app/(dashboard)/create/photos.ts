@@ -1,4 +1,4 @@
-import type { Composition } from "@nosweat/schema";
+import type { Composition, SiteImage, SiteSpec } from "@nosweat/schema";
 
 // Quantas fotos o dono deve mandar para cada layout (pedido do fundador: "quando o cliente
 // escolher o template, a No Sweat fala quantas fotos ele tem que mandar").
@@ -50,3 +50,43 @@ export function photoPlan(layout: Composition | "auto"): PhotoPlan {
 /** Nota que acompanha o plano: o site não espera as fotos do dono. */
 export const PHOTO_PLAN_NOTE =
   "Your site starts with a stock photo picked for your trade. In the editor you can swap it for yours and add a photo gallery.";
+
+/** Quantas fotos o dono pode mandar no /create (o editor aceita mais depois). */
+export const MAX_OWN_PHOTOS = 8;
+
+/**
+ * Coloca as fotos do dono (kind "owner", já enviadas) no site recém-gerado: a primeira vai para o
+ * topo (se o topo ainda não tem foto) e as demais viram uma galeria antes do contato. Não
+ * coloca foto em serviço nem em "quem somos": só o dono sabe o que cada foto mostra. Sem
+ * fotos, devolve o mesmo objeto. Respeita o limite de 10 seções e de 12 fotos da galeria.
+ */
+export function placeOwnerPhotos(spec: SiteSpec, photos: SiteImage[]): SiteSpec {
+  const owner = photos.filter((photo) => photo.kind === "owner");
+  if (owner.length === 0) return spec;
+
+  let rest = owner;
+  let sections = spec.sections.slice();
+  const heroIndex = sections.findIndex((section) => section.type === "hero");
+  const hero = sections[heroIndex];
+  if (hero?.type === "hero" && !hero.image) {
+    sections[heroIndex] = { ...hero, image: owner[0]! };
+    rest = owner.slice(1);
+  }
+
+  if (rest.length > 0) {
+    const galleryIndex = sections.findIndex((section) => section.type === "gallery");
+    const gallery = sections[galleryIndex];
+    if (gallery?.type === "gallery") {
+      sections[galleryIndex] = { ...gallery, images: [...gallery.images, ...rest].slice(0, 12) };
+    } else if (sections.length < 10) {
+      const contactIndex = sections.findIndex((section) => section.type === "contact");
+      const at = contactIndex === -1 ? sections.length : contactIndex;
+      sections = [
+        ...sections.slice(0, at),
+        { type: "gallery", images: rest.slice(0, 12) },
+        ...sections.slice(at),
+      ];
+    }
+  }
+  return { ...spec, sections };
+}

@@ -17,6 +17,13 @@ export {
   sendEstimateAnswerNotification,
   type EstimateAnswerInput,
 } from "./estimate-email";
+export {
+  buildClientReplyEmail,
+  replyFromAddress,
+  sendClientReplyEmail,
+  type ClientReplyEmailInput,
+  type ClientReplyEmailResult,
+} from "./client-reply-email";
 export { RateLimiter, clientIp } from "./rate-limit";
 
 /** Endereço padrão do painel quando o pedido chega pelo domínio do cliente. */

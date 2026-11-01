@@ -7,6 +7,7 @@ import { PageHeader, StatTile, type IconTone } from "@/components/DashboardUi";
 import { EmptyState, GlassButton, Notice, cx, glassButtonClass } from "@/components/glass";
 import { dateKeyIn, sortClients } from "@/lib/clients";
 import { getViewer } from "@/server/auth/viewer";
+import { getReplyCompany } from "@/server/clients/reply";
 import {
   clientsTimeZone,
   getClientsSummary,
@@ -202,7 +203,10 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
 
   // E-mail da conta mostrada (no "ver como", a conta vista; nunca o do admin).
   const ownerEmail = viewer.viewingAs ? viewer.viewingAs.email : viewer.user.email;
-  const { today, clients, summary } = await loadClients(viewer.ownerId, ownerEmail);
+  const [{ today, clients, summary }, company] = await Promise.all([
+    loadClients(viewer.ownerId, ownerEmail),
+    getReplyCompany(viewer.ownerId),
+  ]);
 
   const noClientsAtAll = clients !== null && clients.length === 0;
 
@@ -246,6 +250,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
           params={params}
           today={today}
           readOnly={readOnly}
+          company={company}
         />
       )}
     </div>
@@ -258,12 +263,14 @@ function ClientsContent({
   params,
   today,
   readOnly,
+  company,
 }: {
   clients: Client[];
   summary: ClientsSummary | null;
   params: ClientsParams;
   today: string;
   readOnly: boolean;
+  company: { name: string; phone: string | null };
 }) {
   // Busca e "retornos vencidos" valem para a lista e para o quadro; a etapa, só para a lista.
   let found = params.q ? searchClients(clients, params.q) : clients;
@@ -319,13 +326,14 @@ function ClientsContent({
           found.length === 0 ? (
             <NoMatch clearHref={params.q ? clearSearch : clearAll} />
           ) : (
-            <ClientsBoard clients={shown} today={today} readOnly={readOnly} />
+            <ClientsBoard clients={shown} today={today} readOnly={readOnly} company={company} />
           )
         ) : (
           <ClientList
             clients={shown}
             today={today}
             readOnly={readOnly}
+            company={company}
             empty={
               params.stage && found.length > 0 ? (
                 <EmptyState

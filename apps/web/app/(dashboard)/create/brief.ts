@@ -1,4 +1,4 @@
-import type { Composition, TemplateId } from "@nosweat/schema";
+import type { Composition, PhotoMode, TemplateId } from "@nosweat/schema";
 import { makeSlug } from "@/lib/slug";
 
 // Lógica pura do fluxo /create: estilos, montagem do texto único (brief) enviado para
@@ -340,6 +340,15 @@ export function composeBrief(fields: CreateFields, choices: CreateChoices = EMPT
   return paragraphs.filter(Boolean).join("\n\n");
 }
 
+/** O corpo do POST /api/sites/generate: o texto único + de onde vêm as fotos. */
+export function generateRequest(
+  fields: CreateFields,
+  choices: CreateChoices = EMPTY_CHOICES,
+  photos: PhotoMode = "auto",
+): { brief: string; photos: PhotoMode } {
+  return { brief: composeBrief(fields, choices), photos };
+}
+
 /** Corta no último espaço antes do limite, para não quebrar uma palavra no meio. */
 function cutAtWord(text: string, max: number): [string, string] {
   if (text.length <= max) return [text, ""];
@@ -430,7 +439,8 @@ export function parseDraft(raw: string | null): StoredDraft | null {
     if (!["auto", ...STYLE_OPTIONS.map((option) => option.id)].includes(fields.style)) {
       fields.style = "auto";
     }
-    const step = draft.step === 1 || draft.step === 2 || draft.step === 3 ? draft.step : 0;
+    const step =
+      draft.step === 1 || draft.step === 2 || draft.step === 3 || draft.step === 4 ? draft.step : 0;
     return { source: draft.source, step, fields };
   } catch {
     return null;

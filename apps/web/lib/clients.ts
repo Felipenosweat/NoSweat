@@ -154,3 +154,92 @@ export function parseTagsInput(input: string): string[] {
     .map((tag) => tag.trim())
     .filter(Boolean);
 }
+
+// ---------- responder ao cliente (botão "Reply") ----------
+
+export type ReplyTemplateId = "confirm" | "details" | "quote";
+
+export const REPLY_TEMPLATES: readonly { id: ReplyTemplateId; label: string }[] = [
+  { id: "confirm", label: "Confirm the job" },
+  { id: "details", label: "Ask for details" },
+  { id: "quote", label: "Send a quote soon" },
+];
+
+/** Dia e hora marcados pelo dono ("AAAA-MM-DD" e "HH:MM", ambos opcionais). */
+export type ReplyWhen = { date: string; time: string };
+
+/** "Tuesday, Oct 21 at 2:30 PM" (só a parte preenchida). Vazio se nada foi escolhido. */
+export function formatReplyWhen(when: ReplyWhen): string {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(when.date);
+  const timeMatch = /^(\d{2}):(\d{2})$/.exec(when.time);
+  let day = "";
+  if (dateMatch) {
+    const [, y, m, d] = dateMatch;
+    day = new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(Date.UTC(Number(y), Number(m) - 1, Number(d))));
+  }
+  let clock = "";
+  if (timeMatch) {
+    const hours = Number(timeMatch[1]);
+    const minutes = timeMatch[2];
+    clock = `${hours % 12 === 0 ? 12 : hours % 12}:${minutes} ${hours < 12 ? "AM" : "PM"}`;
+  }
+  if (day && clock) return `${day} at ${clock}`;
+  return day || (clock ? `at ${clock}` : "");
+}
+
+/**
+ * Assunto e texto prontos de cada modelo de resposta. Só entra o que o dono informou: nome da
+ * empresa, telefone e o dia/hora que ele escolheu (sem data escolhida, o texto não promete data).
+ */
+export function buildReplyTemplate({
+  template,
+  firstName,
+  company,
+  phone,
+  when,
+}: {
+  template: ReplyTemplateId;
+  firstName?: string | null;
+  company?: string | null;
+  phone?: string | null;
+  when?: ReplyWhen | null;
+}): { subject: string; message: string } {
+  const name = firstName?.trim() || "there";
+  const business = company?.trim() || "us";
+  const contact = phone?.trim()
+    ? `Reply here or call ${phone.trim()}`
+    : "Just reply to this message";
+  const subject = company?.trim()
+    ? `Your request with ${company.trim()}`
+    : "Your request";
+
+  if (template === "details") {
+    return {
+      subject,
+      message: `Hi ${name}, thanks for reaching out to ${business}! To get you on the schedule, could you tell us a bit more about the job, like what needs to be done and the address? ${contact} with any details.`,
+    };
+  }
+  if (template === "quote") {
+    return {
+      subject,
+      message: `Hi ${name}, thanks for reaching out to ${business}! We received your request and will send you a quote soon. ${contact} if you want to add anything.`,
+    };
+  }
+  const whenText = when ? formatReplyWhen(when) : "";
+  const plan = whenText
+    ? `We can do it ${whenText.startsWith("at ") ? "" : "on "}${whenText}. We'll see you then.`
+    : "We'd be glad to help and will confirm a day and time with you shortly.";
+  return {
+    subject: whenText
+      ? company?.trim()
+        ? `Confirming your request with ${company.trim()}`
+        : "Confirming your request"
+      : subject,
+    message: `Hi ${name}, thanks for reaching out to ${business}! We received your request. ${plan} ${contact} to change anything.`,
+  };
+}
