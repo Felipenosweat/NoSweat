@@ -145,6 +145,11 @@ describe("API schemas", () => {
       "plumbing company in Austin",
     );
     expect(GenerateSiteRequest.safeParse({ brief: "hi" }).success).toBe(false);
+    // Fotos: "auto" é o padrão; "own" = o dono manda as dele; outro valor é recusado.
+    const brief = "plumbing company in Austin";
+    expect(GenerateSiteRequest.parse({ brief }).photos).toBe("auto");
+    expect(GenerateSiteRequest.parse({ brief, photos: "own" }).photos).toBe("own");
+    expect(GenerateSiteRequest.safeParse({ brief, photos: "stock" }).success).toBe(false);
   });
 });
 

@@ -1,7 +1,7 @@
 import type { Composition, Section, SectionOf, SiteImage } from "@nosweat/schema";
 import type { CSSProperties, ReactNode } from "react";
 import { PhoneIcon } from "../components/icons";
-import { Photo, PhotoCredit } from "../components/photo";
+import { Photo, PhotoCredits, specImages } from "../components/photo";
 import type { TemplateProps } from "../types";
 import { Motion } from "./Motion";
 import { NavMenu } from "./NavMenu";
@@ -166,7 +166,7 @@ export function SignatureComposition({
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
-      <GiantFooter model={model} pool={pool} />
+      <GiantFooter model={model} />
       <MobileCallBar model={model} radius="rounded-full" />
       {motion && <Motion />}
     </div>
@@ -469,11 +469,6 @@ function SignatureHero({
           </div>
         </div>
         <div aria-hidden="true" className="ns-hero-veil absolute inset-0 -z-10" />
-        {image.credit && (
-          <div className="absolute top-24 left-5 text-[0.6875rem] opacity-75 @min-[40rem]:left-8 @5xl:left-16 [&_a]:underline">
-            <PhotoCredit image={image} />
-          </div>
-        )}
         <div className={`${wrap} pb-8 pt-40`}>
           <h1
             style={{ "--ns-name-scale": nameScale(business.name) } as CSSProperties}
@@ -545,11 +540,6 @@ function SignatureHero({
               />
             </div>
           </div>
-          {image.credit && (
-            <figcaption className="mt-3 text-xs text-ns-muted">
-              <PhotoCredit image={image} />
-            </figcaption>
-          )}
         </figure>
       </header>
     );
@@ -596,11 +586,6 @@ function SignatureHero({
               className="absolute inset-0 size-full object-cover"
             />
           </div>
-          {image.credit && (
-            <div className="absolute right-3 bottom-3 rounded-sm bg-ns-background/85 px-2 py-1 text-[0.6875rem]">
-              <PhotoCredit image={image} />
-            </div>
-          )}
         </div>
       </header>
     );
@@ -706,11 +691,8 @@ function Statement({
                   />
                 </div>
               </div>
-              {(image.caption || image.credit) && (
-                <figcaption className="mt-3 flex justify-between gap-4 text-xs text-ns-muted">
-                  <span>{image.caption}</span>
-                  {image.credit && <PhotoCredit image={image} />}
-                </figcaption>
+              {image.caption && (
+                <figcaption className="mt-3 text-xs text-ns-muted">{image.caption}</figcaption>
               )}
             </figure>
           ))}
@@ -918,9 +900,6 @@ function ServiceRow({ item, n, level }: ServiceEntry & { level: "h3" | "h4" }) {
       </Heading>
       <div className="col-span-2 @3xl:col-span-1">
         <p className="text-sm leading-relaxed opacity-70">{item.description}</p>
-        {item.image && (
-          <PhotoCredit image={item.image} className="mt-2 text-[0.6875rem] opacity-55" />
-        )}
       </div>
       {(item.price || item.detail) && (
         <p className="row-start-1 text-right text-[0.9375rem] tabular-nums @3xl:row-auto">
@@ -958,14 +937,13 @@ function CardPhoto({
   );
 }
 
-/** Nome, preço, descrição e crédito da foto de um cartão. */
+/** Nome, preço e descrição de um cartão (o crédito da foto fica só no rodapé). */
 function CardText({
   item,
   n,
   level,
   big = false,
-  credit = true,
-}: ServiceEntry & { level: "h3" | "h4"; big?: boolean; credit?: boolean }) {
+}: ServiceEntry & { level: "h3" | "h4"; big?: boolean }) {
   const Heading = level;
   return (
     <>
@@ -985,9 +963,6 @@ function CardText({
       </div>
       {item.detail && <p className="mt-1 text-xs opacity-55">{item.detail}</p>}
       <p className="mt-3 max-w-prose text-sm leading-relaxed opacity-70">{item.description}</p>
-      {credit && item.image && (
-        <PhotoCredit image={item.image} className="mt-4 text-[0.6875rem] opacity-55" />
-      )}
     </>
   );
 }
@@ -1062,10 +1037,9 @@ function ServiceCards({
                   className="absolute inset-0 bg-gradient-to-t from-ns-text/90 via-ns-text/25 to-transparent"
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 p-6 @3xl:p-8">
-                  <CardText {...entry} level={level} big={feature} credit={false} />
+                  <CardText {...entry} level={level} big={feature} />
                 </figcaption>
               </figure>
-              <PhotoCredit image={image} className="mt-2 text-[0.6875rem] opacity-55" />
             </li>
           );
         })}
@@ -1164,7 +1138,6 @@ function Rail({
       </p>
     </div>
   );
-  const credits = images.filter((i) => i.credit);
   return (
     <section
       id={id}
@@ -1201,15 +1174,6 @@ function Rail({
             </li>
           ))}
         </ul>
-        {credits.length > 0 && (
-          <div
-            className={`mt-6 flex flex-wrap gap-x-4 gap-y-1 text-[0.6875rem] text-ns-muted ${wrap}`}
-          >
-            {credits.map((image) => (
-              <PhotoCredit key={image.url} image={image} />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
@@ -1367,12 +1331,11 @@ function Booking({
 }
 
 /** Rodapé com o nome enorme de ponta a ponta. */
-function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
+function GiantFooter({ model }: { model: SiteModel }) {
   const { business, links, phoneHref } = model;
   const city = location(business);
   const hours = hoursSummary(business.hours);
   const socials = socialLinks(business);
-  const credits = pool.filter((image) => image.credit);
   const year = new Date().getFullYear();
   return (
     <footer className="overflow-hidden bg-ns-text pt-20 text-ns-background">
@@ -1454,9 +1417,11 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
         <span>
           &copy; {year} {business.name}
         </span>
-        {credits.length > 0 && (
-          <span>Photos: {Array.from(new Set(credits.map((i) => i.credit?.name))).join(", ")}</span>
-        )}
+        {/* Créditos das fotos de banco: uma linha pequena para o site todo (nunca sob cada foto). */}
+        <PhotoCredits
+          images={specImages(model.spec)}
+          className="text-[0.625rem] opacity-80 @3xl:max-w-[50%] @3xl:text-center"
+        />
         {/* O crédito da No Sweat é o selo (NoSweatBadge) logo abaixo, desenhado pelo SiteRenderer. */}
         <span className="flex gap-4">
           <a

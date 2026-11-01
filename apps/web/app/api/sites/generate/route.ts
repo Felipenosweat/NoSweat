@@ -17,7 +17,7 @@ export const maxDuration = 300;
 const templateLimiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
- * POST /api/sites/generate: { brief } → { siteId, spec }
+ * POST /api/sites/generate: { brief, photos? } → { siteId, spec }
  * Funciona sem login: quem não tem conta vira visitante (cookie) e o site fica guardado
  * para ele até criar a conta (ver server/guest.ts). Visitantes têm limites menores.
  */
@@ -62,8 +62,9 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Fotos do topo e dos serviços a partir dos imageQuery (sem chave, erro ou demora: segue
-    // sem foto).
-    spec = fitDesignToPhoto(await resolveSiteImages(spec));
+    // sem foto). Com photos "own" a busca é pulada: as fotos são do dono (o /create envia
+    // depois e coloca no topo e na galeria).
+    spec = fitDesignToPhoto(await resolveSiteImages(spec, { photos: input.data.photos }));
 
     const site = await getSiteStore().create(
       spec,

@@ -118,16 +118,23 @@ describe("photos", () => {
     sections: [...base.sections, { type: "gallery", title, images }],
   });
 
-  it("renders the hero photo with alt, size and the photographer credit", () => {
+  it("renders the hero photo with alt and size, and credits it only in the footer", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={withHeroImage(scene)} />);
     expect(html).toContain(`src="${scene.url}"`);
     expect(html).toContain('alt="Plumber&#x27;s tools on a kitchen counter"');
     expect(html).toContain('width="1600"');
     expect(html).toContain('loading="eager"');
-    expect(html).toContain("Jane Doe");
-    expect(html).toContain('href="https://www.pexels.com/@jane-doe"');
-    expect(html).toContain("Pexels");
+    // Crédito agrupado numa linha só, com links (Pexels pede a atribuição).
+    expect(html).toMatch(
+      /Photo: <a[^>]*href="https:\/\/www\.pexels\.com\/@jane-doe"[^>]*>Jane Doe<\/a> · <a[^>]*>Pexels<\/a>/,
+    );
     expect(html).toContain('rel="noopener noreferrer"');
+    // Nenhuma legenda de crédito sob a foto: só a linha do rodapé, dentro do <footer>.
+    expect(html.match(/Jane Doe<\/a>/g)).toHaveLength(1);
+    const footer = html.slice(html.indexOf("<footer"), html.indexOf("</footer>"));
+    expect(footer).toContain("Jane Doe");
+    // O `title` da foto guarda a atribuição sem mostrar nada na página.
+    expect(html).toContain('title="Photo by Jane Doe on Pexels"');
   });
 
   it("credits licensed example photos even when they are local files", () => {
@@ -142,14 +149,57 @@ describe("photos", () => {
     expect(html).toContain('href="https://www.flickr.com/photos/ana/1"');
   });
 
-  it("credits Unsplash photos the way Unsplash asks", () => {
+  it("credits Unsplash photos in the footer, keeping the Unsplash links", () => {
     const image: SiteImage = {
       ...scene,
       source: "unsplash",
-      credit: { name: "John Roe", url: "https://unsplash.com/@johnroe" },
+      credit: {
+        name: "John Roe",
+        url: "https://unsplash.com/@johnroe?utm_source=nosweat&utm_medium=referral",
+      },
     };
     const html = renderToStaticMarkup(<SiteRenderer spec={withHeroImage(image)} />);
-    expect(html).toMatch(/Photo by <a[^>]*>John Roe<\/a> on <a[^>]*>Unsplash<\/a>/);
+    expect(html).toMatch(/Photo: <a[^>]*>John Roe<\/a> · <a[^>]*>Unsplash<\/a>/);
+    expect(html).toContain("utm_source=nosweat&amp;utm_medium=referral");
+    expect(html).not.toContain("Photo by <a");
+  });
+
+  it("groups the credits of every stock photo into one footer line", () => {
+    const service = (n: number, name: string): SiteImage => ({
+      ...scene,
+      url: `https://images.pexels.com/photos/${n}/pexels-photo-${n}.jpeg`,
+      credit: { name, url: `https://www.pexels.com/@${name.toLowerCase().replace(" ", "-")}` },
+    });
+    const spec = withHeroImage(scene);
+    const withServices: SiteSpec = {
+      ...spec,
+      sections: spec.sections.map((s) =>
+        s.type === "services"
+          ? {
+              ...s,
+              items: s.items.map((item, i) =>
+                i === 0 ? { ...item, image: service(7, "Sam Roe") } : item,
+              ),
+            }
+          : s,
+      ),
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={withServices} />);
+    expect(html.match(/Photos: /g)).toHaveLength(1);
+    expect(html).toMatch(/Photos: <a[^>]*>Jane Doe<\/a>, <a[^>]*>Sam Roe<\/a> · <a[^>]*>Pexels/);
+  });
+
+  it("never credits the owner's own photos", () => {
+    const noHero = withHeroImage(undefined);
+    const spec: SiteSpec = {
+      ...noHero,
+      sections: [...noHero.sections, { type: "gallery", images: [owner(1), owner(2)] }],
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain("owner-1.jpg");
+    expect(html).not.toContain("Photo:");
+    expect(html).not.toContain("Photos:");
+    expect(html).not.toContain("Photo by");
   });
 
   it("renders no image or credit when the hero has no photo", () => {

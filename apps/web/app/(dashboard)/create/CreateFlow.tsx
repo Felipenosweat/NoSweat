@@ -4,6 +4,7 @@ import {
   ApiError,
   GenerateSiteRequest,
   GenerateSiteResponse,
+  type PhotoMode,
   type SiteSpec,
 } from "@nosweat/schema";
 import Image from "next/image";
@@ -30,6 +31,7 @@ import {
   US_STATES,
   composeBrief,
   formatLocation,
+  generateRequest,
   parseChoices,
   parseDraft,
   slugBase,
@@ -40,6 +42,8 @@ import {
 import { BUILD_STEPS, BuildingPanel, ReadyPanel } from "./Building";
 import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
+import { addOwnPhotos } from "./ownPhotos";
+import { PhotoStep } from "./PhotoStep";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
@@ -61,6 +65,10 @@ const STEPS = [
   {
     title: "Colors",
     lead: "Sets the colors, fonts and tone of voice. You can fine-tune them in the editor.",
+  },
+  {
+    title: "Photos",
+    lead: "Choose who picks the pictures for your site. You can change them later in the editor.",
   },
   {
     title: "Ready to start?",
@@ -115,7 +123,8 @@ type FormError = {
 };
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
-type Generated = { siteId: string; spec: SiteSpec };
+/** `notice`: aviso sobre as fotos do dono (só quando escolheu mandar as próprias). */
+type Generated = { siteId: string; spec: SiteSpec; notice?: string | null };
 type InitialState = StoredDraft & { choices: CreateChoices };
 
 /** Mensagens amigáveis para cada `error.code` da API. */
@@ -273,6 +282,10 @@ function Flow({
   const [cardError, setCardError] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [step, setStep] = useState(0);
+  // Fotos: "auto" = a No Sweat escolhe (padrão); "own" = o dono manda as dele (enviadas depois
+  // que o site é gerado, porque o upload precisa do id do site).
+  const [photoMode, setPhotoMode] = useState<PhotoMode>("auto");
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   // Atalho do cartão / "Let AI decide the rest": a revisão sem "Step X of 4" e com a frase própria.
   // Vira `false` quando a pessoa abre um dos passos (aí ela está percorrendo o assistente).
   const [quick, setQuick] = useState(false);
@@ -428,7 +441,7 @@ function Flow({
   }
 
   async function generate() {
-    const input = GenerateSiteRequest.safeParse({ brief: composeBrief(fields, choices) });
+    const input = GenerateSiteRequest.safeParse(generateRequest(fields, choices, photoMode));
     if (!input.success) {
       setFormError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
       return;
@@ -464,8 +477,14 @@ function Flow({
         return;
       }
 
-      const { siteId, spec } = GenerateSiteResponse.parse(body);
-      setResult({ siteId, spec });
+      const generated = GenerateSiteResponse.parse(body);
+      if (photoMode === "own") {
+        // Sem fotos de banco: envia as do dono e coloca no topo e na galeria.
+        const placed = await addOwnPhotos(generated.siteId, generated.spec, photoFiles, signedIn);
+        setResult({ siteId: generated.siteId, spec: placed.spec, notice: placed.notice });
+      } else {
+        setResult({ siteId: generated.siteId, spec: generated.spec });
+      }
     } catch {
       backToWizard(errorFor("network_error", ""));
     }
@@ -545,6 +564,7 @@ function Flow({
         siteId={result.siteId}
         spec={result.spec}
         signedIn={signedIn}
+        notice={result.notice}
         headingRef={headingRef}
       />
     );
@@ -561,6 +581,12 @@ function Flow({
     LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
   const colorLabel =
     STYLE_OPTIONS.find((option) => option.id === fields.style)?.label ?? "No Sweat chooses";
+  const photoLabel =
+    photoMode === "own"
+      ? signedIn && photoFiles.length > 0
+        ? `Your own photos (${photoFiles.length})`
+        : "Your own photos"
+      : "No Sweat chooses";
   const location = formatLocation(fields.city, fields.state);
   const nameAndPlace = [
     fields.name.trim(),
@@ -850,6 +876,17 @@ function Flow({
                     />
                   )}
 
+                  {step === LAST_STEP - 1 && (
+                    <PhotoStep
+                      mode={photoMode}
+                      onModeChange={setPhotoMode}
+                      files={photoFiles}
+                      onFilesChange={setPhotoFiles}
+                      signedIn={signedIn}
+                      labelledBy="create-step-heading"
+                    />
+                  )}
+
                   {step === LAST_STEP && (
                     <>
                       {formError && (
@@ -924,6 +961,9 @@ function Flow({
                         </SummaryRow>
                         <SummaryRow label="Colors" onChange={() => goTo(2)}>
                           {colorLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Photos" onChange={() => goTo(LAST_STEP - 1)}>
+                          {photoLabel}
                         </SummaryRow>
                       </dl>
                     </>

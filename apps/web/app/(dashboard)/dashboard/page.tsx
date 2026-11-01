@@ -246,20 +246,21 @@ type NeedRow = { key: string; kind: NeedKind; href: string; text: ReactNode; act
 
 type IconComponent = (props: { className?: string }) => ReactNode;
 
-// Aprovação = âmbar, clientes = azul da marca, retorno = céu, problema = vermelho.
+// Visual calmo: azul da marca para tudo que pede ação, cinza para o informativo e vermelho só
+// para o que é urgente de verdade (plano acabou, fatura vencida, post que falhou).
 const NEED_STYLES: Record<NeedKind, { tone: IconTone; label: string; Icon: IconComponent }> = {
   "plan-ended": { tone: "red", label: "Plan", Icon: BillingIcon },
-  "plan-ending": { tone: "amber", label: "Plan", Icon: BillingIcon },
-  approval: { tone: "amber", label: "Social posts", Icon: ApproveIcon },
-  ready: { tone: "amber", label: "Social posts", Icon: SocialIcon },
-  reconnect: { tone: "amber", label: "Instagram", Icon: LinkIcon },
-  "follow-up": { tone: "sky", label: "Follow-up", Icon: ClockIcon },
+  "plan-ending": { tone: "brand", label: "Plan", Icon: BillingIcon },
+  approval: { tone: "brand", label: "Social posts", Icon: ApproveIcon },
+  ready: { tone: "brand", label: "Social posts", Icon: SocialIcon },
+  reconnect: { tone: "brand", label: "Instagram", Icon: LinkIcon },
+  "follow-up": { tone: "brand", label: "Follow-up", Icon: ClockIcon },
   clients: { tone: "brand", label: "Clients", Icon: ClientsIcon },
   problem: { tone: "red", label: "Social posts", Icon: AlertIcon },
   messages: { tone: "brand", label: "Website messages", Icon: MessagesIcon },
   overdue: { tone: "red", label: "Invoices", Icon: InvoicesIcon },
-  approved: { tone: "emerald", label: "Estimates", Icon: EstimatesIcon },
-  "to-bill": { tone: "emerald", label: "Ready to bill", Icon: InvoicesIcon },
+  approved: { tone: "brand", label: "Estimates", Icon: EstimatesIcon },
+  "to-bill": { tone: "brand", label: "Ready to bill", Icon: InvoicesIcon },
   next: { tone: "slate", label: "Calendar", Icon: SocialIcon },
 };
 
@@ -633,7 +634,7 @@ function NeedsYou({ rows }: { rows: NeedRow[] }) {
       <div className={`mt-3 overflow-hidden ${cardClass}`}>
         {rows.length === 0 ? (
           <div className="flex min-h-16 items-center gap-3.5 px-4 py-3 sm:px-5">
-            <IconTile tone="emerald">
+            <IconTile tone="brand">
               <CheckIcon className="size-[18px]" />
             </IconTile>
             <p className="text-[15px] text-slate-600">Nothing needs you right now.</p>
@@ -834,7 +835,7 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
           ? `${money(summary.estimatesAwaitingCents)} waiting for a yes`
           : "No open estimates",
       href: "/estimates?status=sent",
-      tone: "amber",
+      tone: "brand",
       Icon: EstimatesIcon,
       attention: summary.estimatesAwaiting > 0,
     },
@@ -846,7 +847,7 @@ function moneyStats({ summary, today }: OfficeSnapshot): Stat[] {
       hint: `In ${monthLong(today)}`,
       // Pagamentos do mês (inclui parciais): a lista "Paid" não é o mesmo número, então sem link.
       href: null,
-      tone: "emerald",
+      tone: "brand",
       Icon: MoneyIcon,
       attention: summary.collectedThisMonthCents > 0,
     },
@@ -1200,7 +1201,6 @@ type QuickAction = {
   short: string;
   hint: string;
   href: string;
-  tone: IconTone;
   Icon: IconComponent;
 };
 
@@ -1212,7 +1212,6 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     label: "Book a job",
     hint: "Put it on the calendar",
     href: "/schedule?new=1",
-    tone: "brand",
     Icon: ScheduleIcon,
   },
   {
@@ -1221,7 +1220,6 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     label: "Send an estimate",
     hint: "They approve from their phone",
     href: "/estimates/new",
-    tone: "amber",
     Icon: EstimatesIcon,
   },
   {
@@ -1230,7 +1228,6 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     label: "Send an invoice",
     hint: "Get paid, track who paid",
     href: "/invoices/new",
-    tone: "emerald",
     Icon: InvoicesIcon,
   },
   {
@@ -1239,7 +1236,6 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
     label: "Add a client",
     hint: "Name and phone is enough",
     href: "/clients/new",
-    tone: "sky",
     Icon: ClientsIcon,
   },
 ];
@@ -1253,29 +1249,31 @@ function QuickActions() {
       <ul className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {QUICK_ACTIONS.map((action) => (
           <li key={action.key}>
-            {/* Celular: linha compacta (ícone + rótulo curto). Do sm em diante: cartão com a frase
-                de apoio. */}
+            {/* Um tratamento só: cartão de vidro, ícone de linha na cor da marca num disco claro,
+                rótulo e seta. Celular: linha compacta (rótulo curto, 56px+ de altura). Do sm em
+                diante: rótulo completo e a frase de apoio. */}
             <Link
               href={action.href}
-              className={`group flex h-full min-h-16 items-center gap-3 rounded-2xl px-3.5 py-3 sm:min-h-[7.5rem] sm:flex-col sm:items-start sm:gap-0 sm:p-5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow] motion-safe:duration-200 hover:glass-raised ${focusRing}`}
+              className={`group flex h-full min-h-14 items-center gap-3 rounded-2xl px-3 py-2.5 sm:min-h-[4.75rem] sm:gap-3.5 sm:px-4 sm:py-3.5 ${cardClass} glass-interactive motion-safe:transition-[background-color,box-shadow,transform] motion-safe:duration-200 hover:glass-raised motion-safe:active:scale-[0.985] ${focusRing}`}
             >
-              <span className="flex shrink-0 items-start justify-between gap-2 sm:w-full">
-                <IconTile tone={action.tone}>
-                  <action.Icon className="size-[18px]" />
-                </IconTile>
-                <PlusIcon className="mt-2 hidden size-4 text-slate-400 transition-colors duration-150 group-hover:text-slate-600 sm:block" />
+              <span
+                aria-hidden="true"
+                className="glass-edge glass-flat grid size-9 shrink-0 place-items-center rounded-full bg-white/70 text-brand sm:size-10"
+              >
+                <action.Icon className="size-5" />
               </span>
-              <span className="min-w-0 sm:mt-auto sm:pt-4">
+              <span className="min-w-0 flex-1">
                 <span className="block text-[15px] leading-5 font-semibold text-ink sm:hidden">
                   {action.short}
                 </span>
-                <span className="hidden text-[17px] leading-6 font-semibold text-ink sm:block">
+                <span className="hidden text-[15px] leading-5 font-semibold text-ink sm:block">
                   {action.label}
                 </span>
-                <span className="mt-0.5 hidden text-[13px] leading-5 text-(--glass-fg-muted) sm:block">
+                <span className="mt-0.5 hidden text-[13px] leading-[1.35] text-(--glass-fg-muted) sm:block">
                   {action.hint}
                 </span>
               </span>
+              <ChevronRightIcon className="hidden size-4 shrink-0 text-slate-400 motion-safe:transition-[transform,color] motion-safe:duration-150 group-hover:text-brand motion-safe:group-hover:translate-x-0.5 sm:block" />
             </Link>
           </li>
         ))}

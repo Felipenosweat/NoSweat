@@ -1,4 +1,5 @@
-import type { SiteImage } from "@nosweat/schema";
+import type { SiteImage, SiteSpec } from "@nosweat/schema";
+import { Fragment } from "react";
 
 // <img> simples de propósito: o pacote de templates não depende do Next (sem next/image).
 
@@ -80,6 +81,7 @@ export function Photo({ image, priority = false, className = "", sizes }: PhotoP
       // Sem `sizes`, o navegador supõe 100vw (o mesmo que antes, quando não havia srcset).
       sizes={srcSet ? (sizes ?? "100vw") : sizes}
       alt={image.alt}
+      title={creditTitle(image)}
       width={image.width}
       height={image.height}
       loading={priority ? "eager" : "lazy"}
@@ -103,55 +105,106 @@ const PROVIDERS: Record<"pexels" | "unsplash", { name: string; url: string }> = 
 const creditLink =
   "underline decoration-current/40 underline-offset-2 transition hover:decoration-current focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
 
+type CreditedImage = SiteImage & { credit: NonNullable<SiteImage["credit"]> };
+
 /**
- * Crédito do fotógrafo, como os bancos de imagens pedem:
- * Pexels → "Photo: Nome / Pexels"; Unsplash → "Photo by Nome on Unsplash".
- * Foto enviada pelo dono sem crédito não mostra nada; "upload" COM crédito (fotos com licença
- * Creative Commons dos sites de exemplo) mostra "Photo: Nome", com link para a página original.
- * Em espaço apertado só o nome do fotógrafo é cortado (…); o link do banco de imagens sempre
- * aparece inteiro. O `gap` faz o papel dos espaços entre as partes da linha flex.
+ * Texto do `title` da foto (dica ao passar o mouse; não aparece na página). Só fotos de banco
+ * de imagens ou com licença que pede crédito; foto do dono (sem crédito) fica sem `title`.
  */
-export function PhotoCredit({ image, className = "" }: { image: SiteImage; className?: string }) {
-  if (!image.credit) return null;
-  const author = (
-    <a
-      href={image.credit.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`min-w-0 truncate ${creditLink}`}
-    >
-      {image.credit.name}
-    </a>
-  );
-  if (image.source === "upload") {
-    return (
-      <p className={`flex min-w-0 items-baseline gap-[0.25em] whitespace-nowrap ${className}`}>
-        Photo: {author}
-      </p>
-    );
+export function creditTitle(image: SiteImage): string | undefined {
+  if (!image.credit) return undefined;
+  if (image.source === "upload") return `Photo: ${image.credit.name}`;
+  return `Photo by ${image.credit.name} on ${PROVIDERS[image.source].name}`;
+}
+
+/** Fotos que pedem crédito, sem repetir a mesma foto (pela url). */
+export function creditedImages(images: readonly (SiteImage | undefined)[]): CreditedImage[] {
+  const seen = new Set<string>();
+  const out: CreditedImage[] = [];
+  for (const image of images) {
+    if (!image?.credit || seen.has(image.url)) continue;
+    seen.add(image.url);
+    out.push({ ...image, credit: image.credit });
   }
-  const provider = PROVIDERS[image.source];
-  const site = (
-    <a
-      href={provider.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`shrink-0 ${creditLink}`}
-    >
-      {provider.name}
-    </a>
-  );
+  return out;
+}
+
+/**
+ * Todas as fotos do site (topo, serviços, galeria, "quem somos" e pessoas). Os créditos do
+ * rodapé saem daqui: ficam num lugar só, na ordem em que as fotos aparecem na página.
+ */
+export function specImages(spec: SiteSpec): SiteImage[] {
+  const images: (SiteImage | undefined)[] = [];
+  for (const section of spec.sections) {
+    if (section.type === "hero") images.push(section.image);
+    if (section.type === "services") images.push(...section.items.map((item) => item.image));
+    if (section.type === "gallery") images.push(...section.images);
+    if (section.type === "about") {
+      images.push(section.image, ...(section.people ?? []).map((person) => person.image));
+    }
+  }
+  return images.filter((image): image is SiteImage => Boolean(image));
+}
+
+/**
+ * Crédito das fotos de banco de imagens numa linha só (no rodapé do site), agrupado por banco:
+ * "Photos: Ana, Bia · Unsplash". Os nomes e o banco são links (a Unsplash e a Pexels pedem a
+ * atribuição com link; os parâmetros utm da Unsplash ficam nos endereços). Fotos do dono sem
+ * crédito não aparecem; "upload" COM crédito (fotos Creative Commons dos sites de exemplo) lista
+ * só o nome, com link para a página original. Sem nenhuma foto creditada, não desenha nada.
+ */
+export function PhotoCredits({
+  images,
+  className = "",
+}: {
+  images: readonly (SiteImage | undefined)[];
+  className?: string;
+}) {
+  const credited = creditedImages(images);
+  if (credited.length === 0) return null;
+
+  // Um grupo por origem, na ordem da primeira foto; o mesmo fotógrafo entra uma vez só.
+  const groups = new Map<SiteImage["source"], CreditedImage[]>();
+  for (const image of credited) {
+    const group = groups.get(image.source) ?? [];
+    if (!group.some((other) => other.credit.url === image.credit.url)) group.push(image);
+    groups.set(image.source, group);
+  }
+
   return (
-    <p className={`flex min-w-0 items-baseline gap-[0.25em] whitespace-nowrap ${className}`}>
-      {image.source === "unsplash" ? (
-        <>
-          Photo by {author} on {site}
-        </>
-      ) : (
-        <>
-          Photo: {author} / {site}
-        </>
-      )}
+    <p className={className}>
+      {credited.length > 1 ? "Photos" : "Photo"}:{" "}
+      {Array.from(groups.entries()).map(([source, group], groupIndex) => (
+        <Fragment key={source}>
+          {groupIndex > 0 && "; "}
+          {group.map((image, index) => (
+            <Fragment key={image.credit.url}>
+              {index > 0 && ", "}
+              <a
+                href={image.credit.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={creditLink}
+              >
+                {image.credit.name}
+              </a>
+            </Fragment>
+          ))}
+          {source !== "upload" && (
+            <>
+              {" \u00b7 "}
+              <a
+                href={PROVIDERS[source].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={creditLink}
+              >
+                {PROVIDERS[source].name}
+              </a>
+            </>
+          )}
+        </Fragment>
+      ))}
     </p>
   );
 }

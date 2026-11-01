@@ -1,4 +1,4 @@
-import type { SiteImage, SiteSpec } from "@nosweat/schema";
+import type { PhotoMode, SiteImage, SiteSpec } from "@nosweat/schema";
 import {
   searchPexels,
   searchUnsplash,
@@ -185,11 +185,14 @@ export async function resolveServiceImages(
 /**
  * Todas as fotos que a plataforma busca para o site (topo + serviços), em paralelo. Nunca
  * lança erro. Com `previous` (edição), só busca o que mudou (ver as duas funções acima).
+ * Com `photos: "own"` (o dono escolheu mandar as próprias fotos), não busca nada.
  */
 export async function resolveSiteImages(
   spec: SiteSpec,
-  options: ProviderOptions & { previous?: SiteSpec } = {},
+  options: ProviderOptions & { previous?: SiteSpec; photos?: PhotoMode } = {},
 ): Promise<SiteSpec> {
+  // "own": o dono manda as fotos dele; a plataforma não busca nenhuma foto de banco.
+  if (options.photos === "own") return spec;
   const [withHero, withServices] = await Promise.all([
     resolveHeroImage(spec, options),
     resolveServiceImages(spec, options),
