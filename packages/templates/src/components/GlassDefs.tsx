@@ -2,7 +2,7 @@
 // de `backdrop-filter: url(#ns-liquid)`; Safari e Firefox ignoram e ficam na camada de base.
 // O mapa de deslocamento é um degradê esticado no tamanho do elemento (vermelho = horizontal,
 // verde = vertical, 50% = parado): perto das bordas o fundo é empurrado para dentro, como numa
-// lente. Escala pequena (10) para o texto por baixo continuar legível.
+// lente. Escala pequena (14) para o texto por baixo continuar legível.
 // Vários sites na mesma página (editor + prévia) repetem o mesmo `id` com o mesmo conteúdo: o
 // navegador usa o primeiro e nada quebra. O SVG não usa display:none (alguns navegadores
 // descartam o filtro assim); fica com 0 × 0 e fora do fluxo.
@@ -37,14 +37,7 @@ export function GlassDefs() {
       style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
     >
       <defs>
-        <filter
-          id="ns-liquid"
-          x="0"
-          y="0"
-          width="1"
-          height="1"
-          colorInterpolationFilters="sRGB"
-        >
+        <filter id="ns-liquid" x="0" y="0" width="1" height="1" colorInterpolationFilters="sRGB">
           <feImage
             href={`data:image/svg+xml,${MAP}`}
             x="0"
@@ -57,7 +50,7 @@ export function GlassDefs() {
           <feDisplacementMap
             in="SourceGraphic"
             in2="map"
-            scale="10"
+            scale="14"
             xChannelSelector="R"
             yChannelSelector="G"
           />
