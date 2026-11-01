@@ -20,7 +20,7 @@ const balance = (over: Partial<PillBalance> = {}): PillBalance => ({
 
 describe("creditState", () => {
   it("is ok with plenty of credits", () => {
-    expect(creditState(balance())).toBe("ok");
+    expect(creditState(balance({ total: 100 }))).toBe("ok");
   });
 
   it("is low at 5 credits or fewer", () => {
