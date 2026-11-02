@@ -39,6 +39,8 @@ import {
   type CreateFields,
   type StoredDraft,
 } from "./brief";
+import { announceCreditsSpent } from "@/lib/credits-events";
+import { costNote } from "@/lib/credits-ui";
 import { BUILD_STEPS, BuildingPanel, ReadyPanel } from "./Building";
 import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
@@ -110,6 +112,9 @@ const SLOW_BUILD_MS = 40_000;
 
 /** Frase final das mensagens de limite do visitante (server/quota.ts): aqui vira o link. */
 const SIGN_UP_HINT_RE = /\s*Create a free account to keep going\.?\s*$/;
+
+/** Custo de criar um site e saldo da conta (só contas com créditos e IA ligada; senão `null`). */
+export type CreateCredits = { cost: number; left: number };
 
 type FormError = {
   title: string;
@@ -242,10 +247,13 @@ export function CreateFlow({
   initialBrief,
   signedIn = false,
   autoStart = false,
+  credits = null,
 }: {
   initialBrief: string;
   /** Há uma conta logada (muda as mensagens de limite e o aviso de rascunho de visitante). */
   signedIn?: boolean;
+  /** Créditos: mostra o custo antes de criar. Visitante, admin e IA desligada: `null` (sem aviso). */
+  credits?: CreateCredits | null;
   /** Veio da landing com `start=1`: monta o site na hora, sem o assistente. */
   autoStart?: boolean;
 }) {
@@ -261,6 +269,7 @@ export function CreateFlow({
       canReadStorage={hydrated}
       signedIn={signedIn}
       autoStart={hydrated && autoStart}
+      credits={credits}
     />
   );
 }
@@ -270,11 +279,13 @@ function Flow({
   canReadStorage,
   signedIn,
   autoStart,
+  credits,
 }: {
   initialBrief: string;
   canReadStorage: boolean;
   signedIn: boolean;
   autoStart: boolean;
+  credits: CreateCredits | null;
 }) {
   const [initial] = useState(() => initialState(initialBrief, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
@@ -478,6 +489,8 @@ function Flow({
       }
 
       const generated = GenerateSiteResponse.parse(body);
+      // O servidor já descontou os créditos: o menu atualiza na hora.
+      if (credits) announceCreditsSpent(credits.cost);
       if (photoMode === "own") {
         // Sem fotos de banco: envia as do dono e coloca no topo e na galeria.
         const placed = await addOwnPhotos(generated.siteId, generated.spec, photoFiles, signedIn);
@@ -587,6 +600,7 @@ function Flow({
         ? `Your own photos (${photoFiles.length})`
         : "Your own photos"
       : "No Sweat chooses";
+  const creditLine = credits ? costNote("Creating your website", credits.cost, credits.left) : null;
   const location = formatLocation(fields.city, fields.state);
   const nameAndPlace = [
     fields.name.trim(),
@@ -944,6 +958,26 @@ function Flow({
                             )}
                           </p>
                         </div>
+                      )}
+                      {creditLine && (
+                        <p
+                          className={`flex flex-wrap items-center gap-x-2 rounded-xl px-3 py-2.5 text-[13px] leading-5 ${
+                            creditLine.short
+                              ? "bg-amber-50 text-amber-900"
+                              : "bg-slate-50 text-slate-700"
+                          }`}
+                        >
+                          <SparkIcon className="size-4 shrink-0 text-brand" />
+                          <span>{creditLine.text}</span>
+                          {creditLine.short && (
+                            <Link
+                              href="/billing#credits"
+                              className={`font-semibold underline underline-offset-4 ${focusRing}`}
+                            >
+                              Get credits
+                            </Link>
+                          )}
+                        </p>
                       )}
                       <dl className="divide-y divide-slate-200 border-y border-slate-200">
                         <SummaryRow label="Your request" onChange={() => goTo(0)}>

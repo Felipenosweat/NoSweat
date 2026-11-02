@@ -497,3 +497,26 @@ describe("foldMessage", () => {
     expect(foldMessage([{ label: "Service", value: "Blowout" }], "")).toBe("Service: Blowout");
   });
 });
+
+describe("SiteRenderer: online booking section", () => {
+  const withBooking = (): SiteSpec => ({
+    ...fixtures["glow-salon"],
+    sections: [
+      ...fixtures["glow-salon"].sections,
+      { type: "booking", title: "Book online", intro: "Pick a time." },
+    ],
+  });
+
+  it("drops the section and the menu link while booking is off (no endpoint)", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={withBooking()} />);
+    expect(html).not.toContain('id="book"');
+    expect(html).not.toContain('href="#book"');
+  });
+
+  it("keeps the section when the booking API is live", () => {
+    const html = renderToStaticMarkup(
+      <SiteRenderer spec={withBooking()} bookingEndpoint="/api/public/booking/site-1" />,
+    );
+    expect(html).toContain('id="book"');
+  });
+});

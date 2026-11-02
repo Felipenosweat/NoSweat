@@ -38,6 +38,7 @@ import {
 } from "@nosweat/schema";
 import { dateKeyIn, formatCents } from "@/lib/clients";
 import { answeredByCustomer, MARKED_PAID_REFERENCE } from "@/lib/office";
+import { cancelBookingForJob, moveBookingForJob } from "../booking/sync";
 import {
   addClientPayment,
   clientsTimeZone,
@@ -301,10 +302,14 @@ function toPriceItem(record: PriceItemRecord): PriceItem {
     unit: record.unit,
     taxable: record.taxable,
     active: record.active,
+    bookable: record.bookable ?? false,
+    durationMinutes: record.durationMinutes ?? null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
 }
+
+const NEEDS_DURATION = "Set how long the service takes to make it bookable online.";
 
 /** Todos os itens (ativos e inativos), por nome. */
 export async function listPriceItems(ownerId: string): Promise<PriceItem[]> {
@@ -315,6 +320,9 @@ export async function createPriceItem(
   ownerId: string,
   input: CreatePriceItemRequest,
 ): Promise<PriceItem> {
+  if (input.bookable && !input.durationMinutes) {
+    throw new OfficeError(400, "invalid_request", NEEDS_DURATION);
+  }
   const record = await store().insertPriceItem({
     ownerId,
     name: input.name.trim(),
@@ -323,6 +331,8 @@ export async function createPriceItem(
     unit: input.unit?.trim() || "each",
     taxable: input.taxable ?? true,
     active: true,
+    bookable: input.bookable ?? false,
+    durationMinutes: input.durationMinutes ?? null,
   });
   return toPriceItem(record);
 }
@@ -332,6 +342,15 @@ export async function updatePriceItem(
   id: string,
   input: UpdatePriceItemRequest,
 ): Promise<PriceItem | null> {
+  if (input.bookable !== undefined || input.durationMinutes !== undefined) {
+    // Agendável precisa de duração: confere o resultado final (o que já estava + o pedido).
+    const current = await store().getPriceItem(ownerId, id);
+    if (!current) return null;
+    const bookable = input.bookable ?? current.bookable ?? false;
+    const duration =
+      input.durationMinutes === undefined ? current.durationMinutes : input.durationMinutes;
+    if (bookable && !duration) throw new OfficeError(400, "invalid_request", NEEDS_DURATION);
+  }
   const record = await store().updatePriceItem(ownerId, id, {
     name: input.name?.trim(),
     description: input.description,
@@ -339,6 +358,8 @@ export async function updatePriceItem(
     unit: input.unit === undefined ? undefined : input.unit.trim() || "each",
     taxable: input.taxable,
     active: input.active,
+    bookable: input.bookable,
+    durationMinutes: input.durationMinutes,
   });
   return record ? toPriceItem(record) : null;
 }
@@ -617,11 +638,25 @@ export async function updateJob(
   if (finalStatus !== "done" && current.completedAt) patch.completedAt = null;
 
   const updated = await store().updateJob(ownerId, id, patch);
+  if (updated) {
+    // Marcação feita pelo site: cancelar ou remarcar o serviço faz o mesmo com ela (reabre o horário).
+    if (updated.status === "canceled" && current.status !== "canceled") {
+      await cancelBookingForJob(ownerId, id);
+    } else if (
+      (patch.startAt !== undefined || patch.endAt !== undefined) &&
+      updated.startAt &&
+      updated.endAt
+    ) {
+      await moveBookingForJob(ownerId, id, updated.startAt, updated.endAt);
+    }
+  }
   return updated ? jobView(ownerId, updated) : null;
 }
 
 /** Apaga o job; orçamento e fatura ligados continuam, só sem o job. */
 export async function deleteJob(ownerId: string, id: string): Promise<boolean> {
+  // Antes de apagar: depois, o banco já soltou o `job_id` da marcação (on delete set null).
+  await cancelBookingForJob(ownerId, id);
   return store().deleteJob(ownerId, id);
 }
 

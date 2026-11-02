@@ -1,6 +1,7 @@
 "use client";
 
 import type { Section, SectionOf, SiteImage } from "@nosweat/schema";
+import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import { MAX_ITEMS } from "./defaults";
 import { Field, ItemList } from "./fields";
@@ -14,6 +15,7 @@ type Person = NonNullable<SectionOf<"about">["people"]>[number];
 
 /** Limites do schema (packages/schema/src/site.ts). */
 const MAX_TITLE = 80;
+const MAX_INTRO = 200;
 const MAX_PEOPLE = 6;
 
 /** Título opcional da seção: vazio sai do SiteSpec e o site usa o título padrão do ramo. */
@@ -344,6 +346,39 @@ export function SectionFields({
             />
             Show contact form (messages arrive in your dashboard)
           </label>
+        </div>
+      );
+
+    case "booking":
+      return (
+        <div className="space-y-4">
+          <TitleField
+            value={section.title}
+            placeholder="e.g. Book online"
+            onChange={(value) => onChange((s) => setTitle(s, value))}
+          />
+          <Field label="Short intro (optional)">
+            <input
+              className={inputClass}
+              value={section.intro ?? ""}
+              maxLength={MAX_INTRO}
+              placeholder="Pick a service and a time that works for you."
+              onChange={(e) =>
+                onChange((s) => {
+                  if (s.type !== "booking") return;
+                  if (e.target.value.trim()) s.intro = e.target.value;
+                  else delete s.intro;
+                })
+              }
+            />
+          </Field>
+          <p className="text-[13px] leading-5 text-slate-500">
+            Your open hours and bookable services are set in{" "}
+            <Link href="/office/booking" className="font-medium text-brand hover:underline">
+              Business &rarr; Booking
+            </Link>
+            . The section only shows on your published site once booking is turned on there.
+          </p>
         </div>
       );
 

@@ -32,7 +32,15 @@ import {
 // registro de outra pessoa simplesmente não existe aqui. As únicas buscas sem dono são as do
 // link público (pelo token), usadas só pelas rotas /api/public/*.
 
-export type JobFilter = { status?: JobStatus; clientId?: string; invoiceId?: string };
+export type JobFilter = {
+  status?: JobStatus;
+  clientId?: string;
+  invoiceId?: string;
+  /** Só os que começam a partir deste instante (ISO, inclusive); os sem horário ficam de fora. */
+  startsFrom?: string;
+  /** Só os que começam antes deste instante (ISO, exclusivo); os sem horário ficam de fora. */
+  startsBefore?: string;
+};
 export type EstimateFilter = { clientId?: string; jobId?: string };
 export type InvoiceFilter = { clientId?: string; jobId?: string; estimateId?: string };
 export type PaymentFilter = {
@@ -377,9 +385,18 @@ export class SupabaseOfficeStore implements OfficeStore {
     const status = filter.status ? `&status=eq.${filter.status}` : "";
     const client = filter.clientId ? `&client_id=eq.${filter.clientId}` : "";
     const invoice = filter.invoiceId ? `&invoice_id=eq.${filter.invoiceId}` : "";
+    // Texto que não é data nunca bate (e o Postgres recusaria o filtro com 400).
+    if (filter.startsFrom !== undefined && Number.isNaN(Date.parse(filter.startsFrom))) return [];
+    if (filter.startsBefore !== undefined && Number.isNaN(Date.parse(filter.startsBefore))) {
+      return [];
+    }
+    const from = filter.startsFrom ? `&start_at=gte.${encodeURIComponent(filter.startsFrom)}` : "";
+    const before = filter.startsBefore
+      ? `&start_at=lt.${encodeURIComponent(filter.startsBefore)}`
+      : "";
     return this.all(
       JobRecord,
-      `/jobs?owner_id=eq.${ownerId}${status}${client}${invoice}&select=*&order=created_at.desc,id.asc`,
+      `/jobs?owner_id=eq.${ownerId}${status}${client}${invoice}${from}${before}&select=*&order=created_at.desc,id.asc`,
     );
   }
 
@@ -703,6 +720,11 @@ function removeOwned<T extends Owned>(map: Map<string, T>, ownerId: string, id: 
   return true;
 }
 
+const startsAtOrAfter = (job: JobRecord, iso: string) =>
+  job.startAt !== null && Date.parse(job.startAt) >= Date.parse(iso);
+const startsBefore = (job: JobRecord, iso: string) =>
+  job.startAt !== null && Date.parse(job.startAt) < Date.parse(iso);
+
 /** Ordem padrão das listas: mais novo primeiro (empate: id). */
 function byCreatedDesc(a: { createdAt: string; id: string }, b: { createdAt: string; id: string }) {
   return Date.parse(b.createdAt) - Date.parse(a.createdAt) || a.id.localeCompare(b.id);
@@ -783,6 +805,8 @@ export class MemoryOfficeStore implements OfficeStore {
       .filter((j) => !filter.status || j.status === filter.status)
       .filter((j) => filter.clientId === undefined || j.clientId === filter.clientId)
       .filter((j) => filter.invoiceId === undefined || j.invoiceId === filter.invoiceId)
+      .filter((j) => filter.startsFrom === undefined || startsAtOrAfter(j, filter.startsFrom))
+      .filter((j) => filter.startsBefore === undefined || startsBefore(j, filter.startsBefore))
       .sort(byCreatedDesc);
   }
   async getJob(ownerId: string, id: string) {

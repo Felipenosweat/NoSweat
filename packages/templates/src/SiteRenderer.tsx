@@ -1,12 +1,16 @@
 import type { SiteSpec } from "@nosweat/schema";
+import { GlassDefs } from "./components/GlassDefs";
 import { NoSweatBadge } from "./components/NoSweatBadge";
 import { COMPOSITIONS, compositionOf } from "./compositions";
 import { siteStyle } from "./compositions/model";
-import { themeToCssVars } from "./theme";
+import { luminance, themeToCssVars } from "./theme";
 
 export type SiteRendererProps = {
   spec: SiteSpec;
   contactEndpoint?: string;
+  /** Base das rotas públicas de agendamento (`/api/public/booking/<siteId>`). Sem ela, a seção
+   *  "booking" não aparece (no editor mostra um aviso). */
+  bookingEndpoint?: string;
   /**
    * Modo de edição (só o editor usa): cada seção ganha uma moldura com `data-section-index`,
    * contorno ao passar o mouse e um rótulo clicável. Padrão `false`: o site publicado não muda.
@@ -26,15 +30,26 @@ export type SiteRendererProps = {
  * wrapper ocupa a tela toda, então o resultado é o mesmo das variantes sm:/md:/lg:.
  * `data-font` deixa o CSS ajustar detalhes por par de fontes; `data-density` e `data-image` aplicam
  * o respiro entre seções e o tratamento das fotos do plano de design (ver styles.css).
+ * `data-scheme` (light/dark, pela luminância do fundo) escolhe a tinta do vidro do topo.
  * No fim vem sempre o selo "Website by nosweatfd" (NoSweatBadge), que não depende do spec.
  */
 export function SiteRenderer({
-  spec,
+  spec: fullSpec,
   contactEndpoint,
+  bookingEndpoint,
   editable = false,
   selectedSection = null,
   anchors = true,
 }: SiteRendererProps) {
+  // Agendamento desligado (sem endereço da API): a seção e o link "Book" do menu não existem. No
+  // editor (`editable`) a seção fica, com o aviso de como ligar.
+  const hideBooking =
+    !editable &&
+    !bookingEndpoint &&
+    fullSpec.sections.some((section) => section.type === "booking");
+  const spec = hideBooking
+    ? { ...fullSpec, sections: fullSpec.sections.filter((section) => section.type !== "booking") }
+    : fullSpec;
   // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
   const composition = compositionOf(spec);
@@ -49,21 +64,31 @@ export function SiteRenderer({
       data-composition={composition}
       data-density={spec.design?.density ?? "balanced"}
       data-image={spec.design?.imageTreatment ?? "natural"}
+      // Claro ou escuro: o vidro do topo escolhe a tinta por aqui (styles.css, "Vidro líquido").
+      data-scheme={luminance(spec.theme.background) > 0.4 ? "light" : "dark"}
       data-buttons={style.buttons}
       data-header={style.header}
       data-contact={style.contact}
       data-editable={editable ? "" : undefined}
     >
+      {/* Filtro SVG da refração do vidro (só o Chromium usa). */}
+      <GlassDefs />
       {editable ? (
         <Template
           spec={spec}
           contactEndpoint={contactEndpoint}
+          bookingEndpoint={bookingEndpoint}
           editable
           selectedSection={selectedSection}
           anchors={anchors}
         />
       ) : (
-        <Template spec={spec} contactEndpoint={contactEndpoint} anchors={anchors} />
+        <Template
+          spec={spec}
+          contactEndpoint={contactEndpoint}
+          bookingEndpoint={bookingEndpoint}
+          anchors={anchors}
+        />
       )}
       {/* Selo da No Sweat: sempre, fora do SiteSpec (o cliente não consegue tirar). */}
       <NoSweatBadge />

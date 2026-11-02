@@ -18,6 +18,16 @@ export const FillStyle = SiteDesign.pick({
 });
 export type FillStyle = z.infer<typeof FillStyle>;
 
+/**
+ * Seção de agendamento online do ModelFill: só para negócios que atendem com hora marcada. Só título
+ * e uma frase neutra (horários, preços e equipe vêm das configurações do dono, nunca da IA).
+ */
+export const FillBooking = z.object({
+  title: z.string().max(80).optional(),
+  intro: z.string().max(200).optional(),
+});
+export type FillBooking = z.infer<typeof FillBooking>;
+
 /** Seções entre o topo e o contato que a IA pode reordenar. */
 export const MiddleSection = z.enum(["services", "about", "testimonials", "faq"]);
 export type MiddleSection = z.infer<typeof MiddleSection>;
@@ -119,6 +129,7 @@ export function dropInvalidLook(raw: unknown): unknown {
   const parts: [string, z.ZodType][] = [
     ["theme", Theme],
     ["style", FillStyle],
+    ["booking", FillBooking],
     ["sectionOrder", SectionOrder],
     ["dropSections", DropSections],
   ];

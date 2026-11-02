@@ -16,6 +16,7 @@ import { signOut } from "@/app/(auth)/login/actions";
 import { ChevronRightIcon, focusRing } from "@/components/DashboardUi";
 import { GlassBackdrop, glassButtonClass } from "@/components/glass";
 import { Logo } from "@/components/Logo";
+import type { PillBalance } from "@/lib/credits-ui";
 import { SOON_MODULES } from "@/lib/modules";
 import type { TourConfig } from "@/lib/onboarding";
 import {
@@ -39,6 +40,7 @@ import {
   TourIcon,
   WebsiteIcon,
 } from "./NavIcons";
+import { CreditsPill } from "./CreditsPill";
 import { WelcomeTour, openWelcomeTour } from "./WelcomeTour";
 
 // Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral de vidro flutuante no
@@ -59,6 +61,10 @@ type ChromeProps = {
    * Links do WhatsApp abrem em outra aba; e-mail abre o app de e-mail.
    */
   supportHref?: string;
+  /** Saldo de créditos da IA para o "pill". `null` = não deu para ler: o pill some. */
+  credits: PillBalance | null;
+  /** "Ver como": o saldo é da conta vista e o pill não acompanha as ações do admin. */
+  creditsReadOnly?: boolean;
   /** Faixa no topo do conteúdo (ex.: modo "ver como" do admin). */
   banner?: ReactNode;
   /** Tour de boas-vindas: abre sozinho uma vez por conta e "Take the tour" abre de novo. */
@@ -388,6 +394,8 @@ function SidebarNav({
   admin,
   account,
   supportHref,
+  credits,
+  creditsReadOnly,
 }: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId">) {
   const { currentItem, pathname } = useCurrent();
   const create = useDetailsMenu(pathname);
@@ -414,7 +422,10 @@ function SidebarNav({
           <AdminButton />
         </div>
       )}
-      <details {...create.detailsProps} className="group relative z-10 pb-5">
+      <details
+        {...create.detailsProps}
+        className={`group relative z-10 ${credits ? "pb-3" : "pb-5"}`}
+      >
         <summary
           data-tour="nav-new"
           className={`${glassButtonClass({ variant: "primary", fullWidth: true })} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
@@ -438,6 +449,11 @@ function SidebarNav({
           </ul>
         </div>
       </details>
+      {credits && (
+        <div className="pb-5">
+          <CreditsPill initial={credits} readOnly={creditsReadOnly} variant="sidebar" />
+        </div>
+      )}
       <nav aria-label="Main" className="flex flex-1 flex-col">
         <ul className="grid gap-0.5">
           {main.map((item) => (
@@ -527,7 +543,10 @@ function SidebarNav({
 function TabBar({
   account,
   supportHref,
-}: Omit<ChromeProps, "children" | "banner" | "tour" | "latestSiteId" | "admin">) {
+}: Omit<
+  ChromeProps,
+  "children" | "banner" | "tour" | "latestSiteId" | "admin" | "credits" | "creditsReadOnly"
+>) {
   const { currentItem, pathname } = useCurrent();
   const moreMenu = useDetailsMenu(pathname);
   const createMenu = useDetailsMenu(pathname);
@@ -703,6 +722,8 @@ export function DashboardChrome({
   account,
   latestSiteId,
   supportHref,
+  credits,
+  creditsReadOnly,
   banner,
   tour,
   children,
@@ -718,6 +739,9 @@ export function DashboardChrome({
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
             <Logo />
             <div className="flex items-center gap-1 sm:gap-3">
+              {credits && (
+                <CreditsPill initial={credits} readOnly={creditsReadOnly} variant="chip" />
+              )}
               <Link href="/dashboard" className={topLink}>
                 Dashboard
               </Link>
@@ -744,11 +768,20 @@ export function DashboardChrome({
   return (
     <div className="relative isolate min-h-screen">
       <GlassBackdrop />
-      <SidebarNav admin={admin} account={account} supportHref={supportHref} />
+      <SidebarNav
+        admin={admin}
+        account={account}
+        supportHref={supportHref}
+        credits={credits}
+        creditsReadOnly={creditsReadOnly}
+      />
       {/* Criar fica no "+" da barra de abas. */}
       <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
         <Logo />
-        {admin && <AdminButton compact />}
+        <div className="flex items-center gap-2">
+          {credits && <CreditsPill initial={credits} readOnly={creditsReadOnly} variant="chip" />}
+          {admin && <AdminButton compact />}
+        </div>
       </header>
       {/* No celular o conteúdo rola por baixo da barra de abas flutuante: o espaço embaixo deixa
           o fim da página aparecer acima dela. */}

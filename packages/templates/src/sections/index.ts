@@ -6,4 +6,5 @@ export {
   type ContactFormProps,
   type ContactFormRadius,
 } from "./ContactForm";
+export { BookingSection, type BookingSectionProps } from "./BookingSection";
 export { Gallery, type GalleryProps, type GalleryVariant } from "./Gallery";

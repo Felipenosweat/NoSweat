@@ -25,7 +25,11 @@ import {
   textButton,
 } from "@/components/DashboardUi";
 import { Notice, glassButtonClass } from "@/components/glass";
+import { announceCreditsSpent } from "@/lib/credits-events";
+import { creditsLabel } from "@/lib/credits-ui";
 import { prepareSocialImage, ratioOf, type SocialRatio } from "@/lib/social-image";
+// Só os preços (arquivo puro, sem código de servidor): a tabela de preços fica num lugar só.
+import { creditCost } from "@/server/credits/pricing";
 import { ManualPostButton } from "./ManualPostButton";
 import {
   EDITABLE_STATUSES,
@@ -46,6 +50,8 @@ import {
 // A IA só sugere texto: aprovar e publicar são sempre cliques do dono.
 
 const DeleteResponse = z.object({ ok: z.literal(true) });
+
+const CAPTION_COST = creditCost("social_caption");
 
 const AI_ACTIONS: { action: CaptionAction; label: string; needsCaption: boolean }[] = [
   { action: "write", label: "Write", needsCaption: false },
@@ -308,6 +314,8 @@ export function PostComposer({
       });
       setCaption(result.caption);
       setNote(result.ownerNotePt);
+      // O servidor já descontou o crédito: o menu atualiza na hora.
+      announceCreditsSpent(CAPTION_COST);
       onAiUsed();
       setStatus("New caption written. Review it before you approve.");
       captionRef.current?.focus();
@@ -585,9 +593,10 @@ export function PostComposer({
                     >
                       Ask AI{" "}
                       <span className="font-normal text-(--glass-fg-muted)">
+                        · {creditsLabel(CAPTION_COST)} each
                         {captionsLeft === null
                           ? ""
-                          : `· ${captionsLeft} caption${captionsLeft === 1 ? "" : "s"} left today`}
+                          : ` · ${captionsLeft} caption${captionsLeft === 1 ? "" : "s"} left today`}
                       </span>
                     </label>
                     <input

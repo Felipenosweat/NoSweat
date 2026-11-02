@@ -107,7 +107,7 @@ export type NumberKind = "job" | "estimate" | "invoice";
 export class OfficeError extends Error {
   constructor(
     readonly status: number,
-    readonly code: "invalid_request" | "not_found" | "conflict",
+    readonly code: "invalid_request" | "not_found" | "conflict" | "slot_taken",
     message: string,
   ) {
     super(message);

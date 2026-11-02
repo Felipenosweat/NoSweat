@@ -221,6 +221,7 @@ export const SECTION_NAMES: Record<Section["type"], string> = {
   testimonials: "Reviews",
   faq: "FAQ",
   contact: "Contact",
+  booking: "Booking",
   gallery: "Photo gallery",
   about: "About",
 };

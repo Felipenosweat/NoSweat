@@ -1,5 +1,6 @@
 import type { SiteSpec, TemplateId } from "@nosweat/schema";
 import { readBrief } from "../design";
+import { DEFAULT_BOOKING_FILL, isAppointmentProfile } from "./booking";
 import { factsFromBrief, servicesFromWhat, whatFromBrief } from "./brief-facts";
 import { variedLook } from "./look";
 import { lintFill, type BriefFacts, type ModelFill } from "./model-fill";
@@ -950,6 +951,8 @@ export function templateFill(brief: string, profile: TemplateProfile, model: Sit
     titles: { ...copy.titles },
     category: profile.category,
     business: { ...facts, name: facts.name ?? fallbackName(profile, facts.city) },
+    // Negócio que atende com hora marcada ganha o agendamento online (texto fixo e neutro).
+    ...(isAppointmentProfile(profile.id) ? { booking: { ...DEFAULT_BOOKING_FILL } } : {}),
   };
   // Visual sorteado pelo nome (paleta só sem estilo do dono): sites do mesmo tipo não saem
   // com a cara do mesmo modelo. A ordem das seções fica a do modelo.

@@ -112,7 +112,7 @@ export function CreditsPanel({
         always free.
       </p>
 
-      <h3 className="mt-5 text-[13px] font-semibold text-(--glass-fg-muted)">What uses credits</h3>
+      <h3 className="mt-5 text-[13px] font-semibold text-(--glass-fg-muted)">What costs what</h3>
       <ul className="mt-2 divide-y divide-(--glass-rim) text-[15px]">
         {costs.map((cost) => (
           <li key={cost.label} className="flex items-center justify-between gap-4 py-2">
@@ -125,6 +125,7 @@ export function CreditsPanel({
       </ul>
       <p className="mt-1 text-[13px] text-(--glass-fg-muted)">
         If the AI can&rsquo;t finish a request, the credits go back to you.
+        {!balance.unlimited && ` Monthly credits refill on ${refill}.`}
       </p>
 
       {!balance.unlimited && packs.length > 0 && (

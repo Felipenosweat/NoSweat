@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import { isAppHost } from "../domains/hosts";
+import { sendBookingNotifications, type BookingEmailInput } from "./booking-email";
 import { sendEstimateAnswerNotification, type EstimateAnswerInput } from "./estimate-email";
 import { sendLeadNotification, type LeadEmailInput } from "./lead-email";
 
@@ -24,6 +25,14 @@ export {
   type ClientReplyEmailInput,
   type ClientReplyEmailResult,
 } from "./client-reply-email";
+export {
+  buildCustomerBookingEmail,
+  buildOwnerBookingEmail,
+  formatWhen,
+  sendBookingNotifications,
+  type BookingEmailInput,
+  type BookingEmailResult,
+} from "./booking-email";
 export { RateLimiter, clientIp } from "./rate-limit";
 
 /** Endereço padrão do painel quando o pedido chega pelo domínio do cliente. */
@@ -55,6 +64,18 @@ export function notifyOwnerOfLead(input: LeadEmailInput): void {
 export function notifyOwnerOfEstimateAnswer(input: EstimateAnswerInput): void {
   const task = async () => {
     await sendEstimateAnswerNotification(input);
+  };
+  try {
+    after(task);
+  } catch {
+    void task();
+  }
+}
+
+/** Avisos de uma marcação feita pelo site (dono e cliente), depois da resposta, como acima. */
+export function notifyOfBooking(input: BookingEmailInput): void {
+  const task = async () => {
+    await sendBookingNotifications(input);
   };
   try {
     after(task);

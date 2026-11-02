@@ -140,6 +140,17 @@ export const Section = z.discriminatedUnion("type", [
     showForm: z.boolean(),
     showMap: z.boolean(),
   }),
+  /**
+   * Agendamento online: o cliente escolhe serviço, dia e horário livres (apps/web/server/booking).
+   * Sem dados próprios: serviços, horários e equipe vêm das configurações do dono. Só aparece no
+   * site publicado quando o dono liga o agendamento; senão a seção some.
+   */
+  z.object({
+    type: z.literal("booking"),
+    title: SectionTitle.optional(),
+    /** Frase curta acima do seletor (escrita pela IA ou pelo dono; nada de promessa inventada). */
+    intro: z.string().max(200).optional(),
+  }),
   /** Galeria de fotos DO DONO (só kind "owner"). A IA nunca cria esta seção. */
   z.object({
     type: z.literal("gallery"),

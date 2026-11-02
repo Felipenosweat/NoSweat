@@ -54,14 +54,19 @@ export function InvoiceBadge({ status, size }: { status: InvoiceStatus; size?: "
   );
 }
 
-/** Abas "Settings · Price book · Team" do escritório. */
-export function OfficeTabs({ current }: { current: "settings" | "price-book" | "team" }) {
+/** Abas "Settings · Price book · Booking · Team" do escritório. */
+export function OfficeTabs({
+  current,
+}: {
+  current: "settings" | "price-book" | "booking" | "team";
+}) {
   return (
     <GlassSegmentedLinks
       aria-label="Office"
       items={[
         { href: "/office/settings", label: "Settings", current: current === "settings" },
         { href: "/office/price-book", label: "Price book", current: current === "price-book" },
+        { href: "/office/booking", label: "Booking", current: current === "booking" },
         { href: "/team", label: "Team", current: current === "team" },
       ]}
     />

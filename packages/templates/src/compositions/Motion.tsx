@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { Tone } from "./tone";
 
 // Movimento do molde Signature (padrão de site premiado). Só melhora o que já está na página:
 // sem JavaScript, ou com "reduzir movimento", tudo aparece parado e legível.
@@ -15,17 +16,21 @@ import { useEffect, useRef } from "react";
 // - data-ns-hscroll (com .ns-rail dentro): a rolagem vertical empurra a galeria para o lado;
 // - data-ns-float (com [data-ns-float-row] e [data-ns-float-img]): foto que segue o mouse;
 // - data-ns-magnetic: o botão puxa na direção do mouse;
-// - data-ns-quotes (com [data-ns-quote]): depoimentos que trocam sozinhos.
+// - data-ns-quotes (com [data-ns-quote]): depoimentos que trocam sozinhos;
+// - data-tone="light|dark" (seções e faixas): o menu de vidro troca de tom conforme o que passa
+//   por baixo dele (adaptHeader). Esse gancho roda também com "reduzir movimento" (só sem a
+//   transição, que é do CSS).
 
-export function Motion() {
+export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
   const anchor = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const root = anchor.current?.closest<HTMLElement>(".ns-site");
     if (!root) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const stopHeader = adaptHeader(root, pageTone);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return stopHeader;
     let disposed = false;
-    const cleanups: (() => void)[] = [];
+    const cleanups: (() => void)[] = [stopHeader];
 
     cleanups.push(revealOnScroll(root), smoothAnchors(root));
 
@@ -228,9 +233,10 @@ export function Motion() {
       for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-ns-quotes]"))) {
         const quotes = Array.from(box.querySelectorAll<HTMLElement>("[data-ns-quote]"));
         if (quotes.length < 2) continue;
+        // O primeiro já fica aceso antes de ligar a troca (nunca nasce apagado nem sobreposto).
+        quotes[0]?.setAttribute("data-on", "");
         box.dataset.rotating = "";
         let current = 0;
-        quotes[0]?.setAttribute("data-on", "");
         const timer = window.setInterval(() => {
           quotes[current]?.removeAttribute("data-on");
           current = (current + 1) % quotes.length;
@@ -246,9 +252,91 @@ export function Motion() {
       disposed = true;
       for (const cleanup of cleanups) cleanup();
     };
-  }, []);
+  }, [pageTone]);
 
   return <span ref={anchor} hidden />;
+}
+
+/** Rolagem (em px) a partir da qual o menu do celular assenta no vidro completo. */
+const SETTLE_AT = 40;
+
+/**
+ * Menu de vidro adaptativo (como o Liquid Glass do iOS 26): ele sabe o que está por baixo.
+ * - Tom: uma faixa de 1 px na altura do centro da barra é observada com IntersectionObserver
+ *   (sem ler layout a cada quadro). O elemento `[data-tone]` que cruza a faixa (o último na
+ *   ordem do documento, se houver aninhados) dá o tom ao menu (`data-tone` do `.ns-nav`); sem
+ *   nenhum, vale o tom da página. A faixa é refeita quando a janela muda de tamanho.
+ * - Topo: `data-top` fica ligado nos primeiros 40 px de rolagem (um passo por quadro, só lê
+ *   `scrollY`); o CSS deixa o vidro mais leve ali e assentar depois. Só tinta e opacidade.
+ * - `data-adaptive` avisa o CSS de que o JavaScript está no comando: sem ele (sem JS, editor) o
+ *   vidro usa a tinta forte, que lê bem sobre qualquer fundo.
+ * Devolve a limpeza.
+ */
+function adaptHeader(root: HTMLElement, pageTone: Tone): () => void {
+  const nav = root.querySelector<HTMLElement>(".ns-nav");
+  const bar = nav?.querySelector<HTMLElement>(".ns-navbar");
+  if (!nav || !bar) return () => {};
+  const zones = Array.from(root.querySelectorAll<HTMLElement>("[data-tone]")).filter(
+    (el) => el !== nav,
+  );
+  const under = new Set<Element>();
+  nav.dataset.adaptive = "";
+
+  const apply = () => {
+    let tone: Tone = pageTone;
+    for (const zone of zones)
+      if (under.has(zone)) tone = zone.dataset.tone === "dark" ? "dark" : "light";
+    if (nav.dataset.tone !== tone) nav.dataset.tone = tone;
+  };
+
+  let observer: IntersectionObserver | null = null;
+  const observe = () => {
+    observer?.disconnect();
+    under.clear();
+    // offsetTop ignora a animação de entrada do menu (translateY): o centro da barra de verdade.
+    const y = Math.round(bar.offsetTop + bar.offsetHeight / 2);
+    const below = Math.max(0, window.innerHeight - y - 1);
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) under.add(entry.target);
+          else under.delete(entry.target);
+        }
+        apply();
+      },
+      { rootMargin: `-${y}px 0px -${below}px 0px`, threshold: 0 },
+    );
+    for (const zone of zones) observer.observe(zone);
+  };
+  observe();
+
+  let frame = 0;
+  const settle = () => {
+    frame = 0;
+    nav.toggleAttribute("data-top", window.scrollY < SETTLE_AT);
+  };
+  const onScroll = () => {
+    if (!frame) frame = window.requestAnimationFrame(settle);
+  };
+  settle();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  let resizing = 0;
+  const onResize = () => {
+    window.clearTimeout(resizing);
+    resizing = window.setTimeout(observe, 150);
+  };
+  window.addEventListener("resize", onResize);
+
+  return () => {
+    observer?.disconnect();
+    window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", onResize);
+    window.clearTimeout(resizing);
+    if (frame) window.cancelAnimationFrame(frame);
+    delete nav.dataset.adaptive;
+    nav.removeAttribute("data-top");
+  };
 }
 
 const REVEAL = "[data-ns-rise], [data-ns-fade], [data-ns-stagger] > *";

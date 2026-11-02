@@ -2,6 +2,7 @@ import { fixtures, type FixtureSlug } from "@nosweat/fixtures";
 import { SiteSpec, type AiEditResult, type TemplateId } from "@nosweat/schema";
 import { readBrief, type DesignPlan } from "../design";
 import { factsFromBrief } from "./brief-facts";
+import { DEFAULT_BOOKING_FILL, isAppointmentTemplate } from "./booking";
 import { variedLook } from "./look";
 import { applyModelFill, verifyFacts, type ModelFill } from "./model-fill";
 import { modelBySlug, modelFor, templateFor } from "./models";
@@ -187,6 +188,7 @@ export function mockFill(brief: string, model: SiteSpec, slug?: FixtureSlug): Mo
     ...(readBrief(brief).style ? {} : { theme: look.theme }),
     style: look.style,
     sectionOrder: look.sectionOrder.filter((type) => modelTypes.has(type)),
+    ...(isAppointmentTemplate(model.template) ? { booking: DEFAULT_BOOKING_FILL } : {}),
   };
 }
 
