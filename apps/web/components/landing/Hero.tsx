@@ -7,13 +7,37 @@ import { PromptForm } from "@/components/marketing/PromptForm";
 // molde Signature, negócio fictício) que cresce com a rolagem. Sem cortina de abertura (pedido
 // do fundador): a página abre direto no conteúdo.
 
-/** O título, uma linha por <span> (sobem de dentro de uma máscara ao abrir). */
-const LINES = [
-  <>Your business,</>,
-  <>
-    online by <em>lunch.</em>
-  </>,
-];
+/** As palavras que trocam no título: ramos que têm site de exemplo na galeria (nada inventado). */
+const TRADES = ["barbershop", "law firm", "landscaper", "bakery", "electrician", "day spa"];
+
+/** O título: "A website for" + o ramo que troca. O leitor de tela lê a frase fixa. */
+function Title() {
+  return (
+    <h1
+      id="hero-title"
+      className="lp-serif mt-6 text-[clamp(2.9rem,9vw,8.75rem)] leading-[0.92] text-white"
+    >
+      <span className="sr-only">A website for your local business</span>
+      <span aria-hidden="true">
+        <span className="lp-line">
+          <span style={{ "--i": 0 } as CSSProperties}>A website for</span>
+        </span>
+        <span className="lp-line">
+          <span style={{ "--i": 1 } as CSSProperties}>
+            your{" "}
+            <span className="lp-rotor">
+              {TRADES.map((trade, k) => (
+                <span key={trade} style={{ "--k": k } as CSSProperties}>
+                  {trade}.
+                </span>
+              ))}
+            </span>
+          </span>
+        </span>
+      </span>
+    </h1>
+  );
+}
 
 // A captura do site de exemplo: no computador a inteira, no celular a do celular. Um <picture>
 // só (getImageProps), para o navegador baixar apenas a que aparece, com prioridade alta (é o
@@ -72,18 +96,9 @@ export function Hero() {
       >
         <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
           <p className="lp-eyebrow lp-fade-up text-white/60" style={{ "--i": 0 } as CSSProperties}>
-            Website builder for local businesses
+            AI website builder · Local businesses · USA
           </p>
-          <h1
-            id="hero-title"
-            className="lp-serif mt-6 text-[clamp(3.4rem,10.5vw,10.5rem)] leading-[0.9] text-white"
-          >
-            {LINES.map((line, index) => (
-              <span key={index} className="lp-line">
-                <span style={{ "--i": index } as CSSProperties}>{line}</span>
-              </span>
-            ))}
-          </h1>
+          <Title />
 
           <div className="mt-12 grid grid-cols-1 gap-10 lg:mt-14 lg:grid-cols-12 lg:items-start lg:gap-8">
             <p

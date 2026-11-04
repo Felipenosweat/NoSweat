@@ -19,8 +19,6 @@ const SLUGS = [
   "brick-oven-pizza",
 ];
 
-const INCLUDED = ["Call button", "Contact form", "Your hours", "Set up for Google"];
-
 function Row({ slugs, reverse = false }: { slugs: string[]; reverse?: boolean }) {
   return (
     <div className="overflow-hidden">
@@ -52,22 +50,9 @@ export function PhoneWall() {
   return (
     <section aria-labelledby="wall-title" className="lp-paper overflow-hidden py-14 lg:py-20">
       <div className="mx-auto mb-10 flex w-full max-w-[1240px] flex-col gap-5 px-5 sm:px-8 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
-        <h2
-          id="wall-title"
-          className="lp-serif text-[clamp(2.2rem,4.6vw,4rem)] leading-[0.95] text-[#071b33]"
-        >
+        <h2 id="wall-title" className="lp-serif text-[clamp(2rem,4.2vw,3.75rem)] text-[#071b33]">
           Made for the <em>phone</em> in your customer’s hand
         </h2>
-        <ul className="flex flex-wrap gap-2">
-          {INCLUDED.map((item) => (
-            <li
-              key={item}
-              className="rounded-full border border-[var(--lp-line)] px-3.5 py-1.5 text-[13px] font-medium text-[#071b33]/80"
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
       </div>
       <div aria-hidden="true" className="flex flex-col gap-4">
         <Row slugs={SLUGS} />

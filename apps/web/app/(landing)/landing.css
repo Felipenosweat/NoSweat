@@ -13,23 +13,105 @@
   --lp-paper-deep: #e9e4da;
   --lp-line: rgb(7 27 51 / 0.14);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
-  --font-lp-serif: var(--ns-font-editorial-heading);
+  /* V9: títulos em grotesca pesada, caixa alta (Bricolage Grotesque, par "bold" de app/fonts.ts).
+     O nome da classe (.lp-serif) ficou por compatibilidade; já não é serifa. */
+  --font-lp-serif: var(--ns-font-bold-heading);
+  --lp-accent: #00c2ff;
   background: var(--lp-night);
 }
 
 /* ---------- Tipografia ---------- */
 
 .lp-serif {
-  font-family: var(--font-lp-serif), "Times New Roman", serif;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  word-spacing: 0.02em;
+  font-family: var(--font-lp-serif), "Arial Black", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-wrap: balance;
 }
 
+/* A palavra de destaque: sem itálico, na cor de ação (ciano no escuro, azul da marca no papel). */
 .lp-serif em {
-  font-style: italic;
-  letter-spacing: -0.01em;
+  font-style: normal;
+  color: var(--lp-accent);
+}
+
+.lp-paper .lp-serif em {
+  color: #0066ff;
+}
+
+/* Palavra que troca no título (só CSS: todas as palavras ocupam a mesma célula, a maior define a
+   largura, e cada uma acende na sua vez). Sem movimento: fica só a primeira. */
+.lp-rotor {
+  display: inline-grid;
+  vertical-align: bottom;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+.lp-rotor > span {
+  grid-area: 1 / 1;
+  color: var(--lp-accent);
+  opacity: 0;
+  transform: translateY(60%);
+  animation: lp-rotor 15.6s var(--lp-ease) infinite;
+  animation-delay: calc(var(--k) * 2.6s);
+}
+
+.lp-rotor > span:first-child {
+  opacity: 1;
+  transform: none;
+  /* Já começa dentro da janela visível: o título (LCP) aparece no primeiro quadro. */
+  animation-delay: -0.5s;
+}
+
+/* Seis palavras: cada uma ocupa 1/6 do ciclo (sobe, fica, sai por cima). */
+@keyframes lp-rotor {
+  0% {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+  2.5%,
+  13.5% {
+    opacity: 1;
+    transform: none;
+  }
+  16.67%,
+  100% {
+    opacity: 0;
+    transform: translateY(-60%);
+  }
+}
+
+/* Faixa de nomes que corre (o mesmo vaivém do lp-drift). */
+.lp-ticker {
+  animation: lp-drift 60s linear infinite;
+}
+
+/* Cartões numerados ("o que todo site leva"). */
+.lp-card {
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  transition:
+    background-color 300ms var(--lp-ease),
+    border-color 300ms var(--lp-ease);
+}
+
+.lp-card:hover {
+  background: rgb(255 255 255 / 0.08);
+  border-color: rgb(0 194 255 / 0.6);
+}
+
+/* Contorno só no texto grande de enfeite (número, faixa). */
+.lp-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.55);
+}
+
+.lp-paper .lp-outline {
+  -webkit-text-stroke-color: rgb(7 27 51 / 0.45);
 }
 
 .lp-eyebrow {
@@ -266,7 +348,9 @@
   .lp-line > span,
   .lp-fade-up,
   .lp-nav,
-  .lp-drift {
+  .lp-drift,
+  .lp-ticker,
+  .lp-rotor > span {
     animation: none;
   }
 

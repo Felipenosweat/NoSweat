@@ -3,10 +3,12 @@ import Link from "next/link";
 import { MODEL_UNSPLASH_PHOTOS } from "@nosweat/fixtures";
 import { AfterLaunch } from "@/components/landing/AfterLaunch";
 import { Hero } from "@/components/landing/Hero";
+import { Included } from "@/components/landing/Included";
 import { LandingMotion } from "@/components/landing/LandingMotion";
 import { PhoneWall } from "@/components/landing/PhoneWall";
 import { Showcase } from "@/components/landing/Showcase";
 import { Steps } from "@/components/landing/Steps";
+import { Ticker } from "@/components/landing/Ticker";
 import { PlusIcon } from "@/components/marketing/icons";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { PromptForm } from "@/components/marketing/PromptForm";
@@ -17,7 +19,7 @@ import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
 
-// Landing V8 ("Signature", pedido do fundador: "de realeza, que nem os templates premium", sem
+// Landing V9 (redesenho: grotesca pesada em caixa alta, palavra rotativa, faixa, pilha nos passos; refs: Redstone e Miligram, só a forma). Antes: V8 ("Signature", pedido do fundador: "de realeza, que nem os templates premium", sem
 // degradê "cara de IA"): hero com título gigante em serifa e o site de exemplo que cresce →
 // parede de celulares com sites de exemplo → galeria de sites de exemplo (#looks) → como funciona (#story) →
 // depois de publicado (#clients, #social) → preço → dúvidas → CTA final
@@ -63,11 +65,12 @@ export default function LandingPage() {
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
       <Hero />
-
+      <Ticker />
       <PhoneWall />
 
       <Showcase />
       <Steps />
+      <Included />
       <AfterLaunch />
 
       {/* PREÇO — o mesmo componente da página /pricing. */}
@@ -81,7 +84,7 @@ export default function LandingPage() {
             <h2
               id="pricing-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] lg:col-span-8"
+              className="lp-serif text-[clamp(2.2rem,5.2vw,4.75rem)] lg:col-span-8"
             >
               Build it free. Pay when it’s <em>live.</em>
             </h2>
@@ -104,11 +107,7 @@ export default function LandingPage() {
       >
         <div className={`${wrap} grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8`}>
           <div className="lg:col-span-4">
-            <h2
-              id="faq-title"
-              data-lp-rise
-              className="lp-serif text-[clamp(2.4rem,5vw,4.25rem)] leading-[0.95]"
-            >
+            <h2 id="faq-title" data-lp-rise className="lp-serif text-[clamp(2.2rem,4.6vw,4rem)]">
               Questions, <em>answered</em>
             </h2>
             <p className="mt-6 max-w-[36ch] text-lg leading-relaxed text-[#071b33]/70">
@@ -129,12 +128,20 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="border-b border-[var(--lp-line)] lg:col-span-8">
-            {LANDING_FAQS.map((faq) => (
+            {LANDING_FAQS.map((faq, index) => (
               <details key={faq.question} className="ns-faq group border-t border-[var(--lp-line)]">
                 <summary
                   className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 rounded-sm py-5 text-lg font-medium text-[#071b33] transition-colors duration-150 hover:text-[#071b33]/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:text-xl [&::-webkit-details-marker]:hidden`}
                 >
-                  {faq.question}
+                  <span className="flex items-baseline gap-5">
+                    <span
+                      aria-hidden="true"
+                      className="w-6 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/45"
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {faq.question}
+                  </span>
                   <PlusIcon className="size-5 shrink-0 text-[#071b33]/50 transition-transform duration-300 group-open:rotate-45 motion-reduce:transition-none" />
                 </summary>
                 <p className="max-w-[65ch] pr-10 pb-8 text-base leading-[1.7] text-pretty text-[#071b33]/72">
@@ -172,7 +179,7 @@ export default function LandingPage() {
             <h2
               id="final-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.8rem,6.5vw,6rem)] leading-[0.92] text-white"
+              className="lp-serif text-[clamp(2.5rem,6vw,5.5rem)] text-white"
             >
               Stop sweating the <em>website.</em>
             </h2>
@@ -218,7 +225,7 @@ export default function LandingPage() {
       <div aria-hidden="true" className="overflow-hidden border-t border-white/10 bg-ink pt-10">
         <p
           data-lp-giant
-          className="lp-serif text-center text-[24vw] leading-[0.8] whitespace-nowrap text-white"
+          className="lp-serif text-center text-[19vw] leading-[0.8] whitespace-nowrap text-white"
         >
           No <em>Sweat</em>
         </p>

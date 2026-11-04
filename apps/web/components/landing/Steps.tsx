@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 // "How it works" (#story): quatro passos em linhas editoriais (número, título em serifa, texto)
 // com a interface ao lado. As interfaces são desenhos fiéis das telas de verdade (o campo do
@@ -183,7 +183,7 @@ export function Steps() {
           <h2
             id="story-title"
             data-lp-rise
-            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] lg:col-span-8"
+            className="lp-serif text-[clamp(2.2rem,5.2vw,4.75rem)] lg:col-span-8"
           >
             How it <em>works</em>
           </h2>
@@ -192,29 +192,33 @@ export function Steps() {
           </p>
         </div>
 
-        {/* Quatro passos: 2×2 no tablet e no computador; no celular, um trilho que o dedo passa
-            de lado (a página não fica comprida). */}
-        <ol className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-12 md:overflow-visible md:px-0 lg:mt-14">
+        {/* Quatro passos. No tablet e no computador viram uma pilha: cada cartão gruda no topo e o
+            próximo desliza por cima (position: sticky, só CSS). No celular, um trilho que o dedo
+            passa de lado (a página não fica comprida). */}
+        <ol className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 md:mx-0 md:block md:overflow-visible md:px-0 lg:mt-14">
           {STEPS.map((step, index) => (
             <li
               key={index}
-              data-lp-rise
-              className="w-[84vw] max-w-[420px] min-w-0 shrink-0 snap-start md:w-auto md:max-w-none"
+              style={{ "--i": index } as CSSProperties}
+              className="w-[84vw] max-w-[420px] min-w-0 shrink-0 snap-start md:sticky md:top-[calc(5.5rem+var(--i)*1.1rem)] md:mb-6 md:w-auto md:max-w-none"
             >
-              <div className="flex h-[300px] items-center justify-center overflow-hidden rounded-[1.5rem] bg-[var(--lp-paper-deep)] px-5 sm:h-[340px] sm:px-8">
-                {step.visual}
-              </div>
-              <div className="mt-6 flex gap-5">
-                <p className="pt-2 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/50">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <div>
-                  <h3 className="lp-serif text-[clamp(1.9rem,3vw,2.6rem)] leading-none">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 max-w-[46ch] text-[16px] leading-[1.65] text-pretty text-[#071b33]/72">
-                    {step.body}
+              <div className="overflow-hidden rounded-[1.5rem] bg-[var(--lp-paper-deep)] ring-1 ring-[var(--lp-line)] md:grid md:min-h-[420px] md:grid-cols-12 md:items-stretch md:bg-[var(--lp-paper)] md:shadow-[0_-24px_50px_-30px_rgb(7_27_51/.35)]">
+                <div className="flex h-[300px] items-center justify-center overflow-hidden px-5 sm:h-[340px] sm:px-8 md:col-span-7 md:h-auto md:bg-[var(--lp-paper-deep)]">
+                  {step.visual}
+                </div>
+                <div className="flex flex-col justify-between gap-8 p-6 md:col-span-5 md:p-10">
+                  <p
+                    aria-hidden="true"
+                    className="lp-serif lp-outline text-[clamp(3.5rem,7vw,6.5rem)]"
+                  >
+                    {String(index + 1).padStart(2, "0")}
                   </p>
+                  <div>
+                    <h3 className="lp-serif text-[clamp(1.7rem,2.8vw,2.5rem)]">{step.title}</h3>
+                    <p className="mt-3 max-w-[40ch] text-[16px] leading-[1.65] text-pretty text-[#071b33]/72">
+                      {step.body}
+                    </p>
+                  </div>
                 </div>
               </div>
             </li>
