@@ -5,6 +5,8 @@ import { PhoneIcon } from "../components/icons";
 
 // Menu do celular e do tablet (e do cabeçalho "minimal" em qualquer largura). É um <details>:
 // abre e fecha sem JavaScript; com JavaScript, fecha ao escolher um link, com Esc e ao tocar fora.
+// O botão é uma bolha de vidro (.ns-bubble) e o painel é vidro (.ns-glass) com links grandes na
+// fonte dos títulos; as cores vêm do tom do menu (data-tone, styles.css), então acompanham a barra.
 
 const focus =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current";
@@ -61,7 +63,7 @@ export function NavMenu({
   return (
     <details ref={ref} onKeyDown={onKeyDown} className={`ns-menu group/menu ${className}`}>
       <summary
-        className={`flex size-11 cursor-pointer list-none items-center justify-center rounded-full bg-ns-text text-ns-background transition hover:opacity-90 motion-reduce:transition-none [&::-webkit-details-marker]:hidden ${focus}`}
+        className={`ns-bubble flex size-11 cursor-pointer list-none items-center justify-center rounded-full [&::-webkit-details-marker]:hidden ${focus}`}
       >
         <span className="sr-only">Menu</span>
         <span aria-hidden="true" className="relative block h-2.5 w-4">
@@ -71,16 +73,16 @@ export function NavMenu({
       </summary>
       <div
         onClick={onClick}
-        className="ns-glass ns-menu-panel absolute inset-x-0 top-[calc(100%+0.5rem)] max-h-[calc(100svh-6rem)] overflow-y-auto rounded-[1.75rem] p-2 text-ns-text @3xl:left-auto @3xl:w-80"
+        className="ns-glass ns-menu-panel absolute inset-x-0 top-[calc(100%+0.5rem)] max-h-[calc(100svh-6rem)] overflow-y-auto rounded-[1.75rem] p-2 @3xl:left-auto @3xl:w-80"
       >
         {links.length > 0 && (
           <nav aria-label="Menu">
-            <ul>
+            <ul className="ns-menu-list">
               {links.map((link) => (
                 <li key={link.anchor}>
                   <a
                     href={`#${link.anchor}`}
-                    className={`flex min-h-12 items-center rounded-2xl px-4 font-ns-heading text-2xl leading-none font-ns-display tracking-[-0.02em] transition-colors hover:bg-ns-text/5 motion-reduce:transition-none ${focus}`}
+                    className={`flex min-h-12 items-center rounded-2xl px-4 font-ns-heading text-[1.625rem] leading-none font-ns-display tracking-[-0.02em] ${focus}`}
                   >
                     {link.label}
                   </a>
@@ -89,20 +91,18 @@ export function NavMenu({
             </ul>
           </nav>
         )}
-        <div
-          className={`grid gap-2 p-2 ${links.length > 0 ? "mt-2 border-t border-ns-text/10 pt-4" : ""}`}
-        >
+        <div className={`grid gap-2 p-2 ${links.length > 0 ? "ns-menu-actions mt-2 pt-4" : ""}`}>
           <a
             href={ctaHref}
             {...external}
-            className={`ns-btn flex min-h-12 items-center justify-center rounded-full bg-ns-text px-5 text-center text-[0.9375rem] leading-tight font-medium text-ns-background transition hover:opacity-90 motion-reduce:transition-none ${focus}`}
+            className={`ns-btn ns-panel-cta flex min-h-12 items-center justify-center rounded-full px-5 text-center text-[0.9375rem] leading-tight font-medium transition hover:opacity-90 motion-reduce:transition-none ${focus}`}
           >
             {ctaLabel}
           </a>
           {phoneHref && phone && (
             <a
               href={phoneHref}
-              className={`flex min-h-12 items-center justify-center gap-2 rounded-full border border-ns-text/15 px-5 text-[0.9375rem] font-medium tabular-nums ${focus}`}
+              className={`ns-bubble flex min-h-12 items-center justify-center gap-2 rounded-full px-5 text-[0.9375rem] font-medium tabular-nums ${focus}`}
             >
               <PhoneIcon className="size-4 shrink-0" />
               {`Call ${phone}`}

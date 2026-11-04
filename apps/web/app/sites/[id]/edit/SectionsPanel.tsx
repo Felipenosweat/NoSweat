@@ -22,6 +22,7 @@ const SECTION_HINTS: Record<SectionType, string> = {
   testimonials: "Real reviews you paste in",
   faq: "Answers to common questions",
   contact: "Phone, form and map",
+  booking: "Customers pick a free time",
   gallery: "Photos you upload",
   about: "Who you are and how you work",
 };
@@ -54,6 +55,7 @@ const SECTION_NAMES: Record<SectionType, string> = {
   testimonials: "Reviews",
   faq: "FAQ",
   contact: "Contact",
+  booking: "Booking",
   gallery: "Gallery",
   about: "About",
 };
@@ -88,6 +90,8 @@ function sectionSummary(section: Section): string {
       return count(section.items.length, "question");
     case "contact":
       return section.showForm ? "Form" : "Details only";
+    case "booking":
+      return section.title?.trim() || "Online booking";
     case "gallery":
       return count(section.images.length, "photo");
     case "about":

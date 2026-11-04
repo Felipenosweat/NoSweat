@@ -1,7 +1,8 @@
 import type { Composition, Section, SectionOf, SiteImage } from "@nosweat/schema";
 import type { CSSProperties, ReactNode } from "react";
 import { PhoneIcon } from "../components/icons";
-import { Photo, PhotoCredit } from "../components/photo";
+import { Photo, PhotoCredits, specImages } from "../components/photo";
+import { BookingSection } from "../sections/BookingSection";
 import type { TemplateProps } from "../types";
 import { Motion } from "./Motion";
 import { NavMenu } from "./NavMenu";
@@ -28,6 +29,7 @@ import {
   socialLinks,
 } from "./shared";
 import { VISITOR_PRIVACY_URL } from "../sections/ContactForm";
+import { heroTone, tonesOf, type Tone } from "./tone";
 
 // Molde SIGNATURE: o padrão de site premiado aprovado pelo dono (protótipo do Still Water Spa).
 // Uma arquitetura só, com o topo num de 5 formatos (um por composição do plano de design) e as
@@ -81,6 +83,7 @@ function photoPool(model: SiteModel): SiteImage[] {
 export function SignatureComposition({
   spec,
   contactEndpoint,
+  bookingEndpoint,
   editable = false,
   selectedSection = null,
   anchors = true,
@@ -89,6 +92,10 @@ export function SignatureComposition({
   const motion = anchors && !editable;
   const pool = photoPool(model);
   const composition: Composition = spec.design?.composition ?? "service-led";
+  // Tom de cada faixa (menu de vidro adaptativo, ver tone.ts): o topo, as faixas na cor do texto
+  // (serviços, agendar, rodapé) e o resto da página no fundo do tema.
+  const tones = tonesOf(spec.theme);
+  const topTone = model.hero ? heroTone(composition, Boolean(model.hero.image), tones) : tones.page;
 
   const render = (section: Section, index: number): ReactNode => {
     const key = `${section.type}-${index}`;
@@ -101,6 +108,7 @@ export function SignatureComposition({
             model={model}
             data={section}
             variant={composition}
+            tone={heroTone(composition, Boolean(section.image), tones)}
             intro={motion && index === 0}
           />
         );
@@ -115,6 +123,7 @@ export function SignatureComposition({
             data={section}
             pool={pool}
             variant={composition}
+            bandTone={tones.band}
           />
         );
       case "gallery":
@@ -137,6 +146,28 @@ export function SignatureComposition({
             </div>
           </section>
         );
+      case "booking":
+        // Agendamento: o título vem daqui (servidor); o seletor busca os horários no navegador.
+        return (
+          <BookingSection
+            key={key}
+            id={id}
+            endpoint={bookingEndpoint}
+            editable={editable}
+            intro={section.intro}
+            phone={model.business.phone}
+            phoneHref={model.phoneHref}
+            className={`scroll-mt-28 py-(--ns-section-y) ${wrap}`}
+            heading={
+              <h2
+                data-ns-rise
+                className={`${display} text-[length:clamp(2.75rem,5cqw,5.25rem)] leading-[0.95]`}
+              >
+                <Accent text={model.titleOf(section)} />
+              </h2>
+            }
+          />
+        );
       case "contact":
         return (
           <div key={key}>
@@ -146,7 +177,14 @@ export function SignatureComposition({
                 className={`border-t border-ns-border py-(--ns-section-y) ${wrap}`}
               />
             </div>
-            <Booking id={id} model={model} data={section} pool={pool} endpoint={contactEndpoint} />
+            <Booking
+              id={id}
+              model={model}
+              data={section}
+              pool={pool}
+              endpoint={contactEndpoint}
+              bandTone={tones.band}
+            />
           </div>
         );
       default: {
@@ -162,13 +200,13 @@ export function SignatureComposition({
       className="relative flex min-h-full flex-col overflow-x-clip"
     >
       {motion && model.hero && <Intro name={model.business.name} place={model.where} />}
-      <GlassNav model={model} />
+      <GlassNav model={model} tone={topTone} />
       <main id={anchors ? "main" : undefined} className="flex-1">
         {renderSections(spec, render, editable, selectedSection)}
       </main>
-      <GiantFooter model={model} pool={pool} />
+      <GiantFooter model={model} bandTone={tones.band} />
       <MobileCallBar model={model} radius="rounded-full" />
-      {motion && <Motion />}
+      {motion && <Motion pageTone={tones.page} />}
     </div>
   );
 }
@@ -203,16 +241,19 @@ function Intro({ name, place }: { name: string; place?: string }) {
 
 /**
  * Menu de vidro (liquid glass) no alto. Três larguras (do site, não da janela: @container):
- * - celular (< 48rem): uma barra flutuante de ponta a ponta: nome à esquerda; ligar e o botão
- *   de menu (44 px cada) à direita; respeita o recorte da tela (safe-area);
+ * - celular (< 48rem): uma barra flutuante de ponta a ponta (10 px das bordas, 56 px de altura):
+ *   o nome grande à esquerda; à direita duas bolhas de vidro de 44 px, "Call" (ícone e rótulo) e
+ *   o botão de menu; respeita o recorte da tela (safe-area);
  * - tablet (48rem a 80rem): a cápsula de sempre (aprovada pelo dono no iPad): do tamanho do
  *   conteúdo e no meio (classic/centered) ou duas cápsulas nas pontas (bar/minimal);
  * - computador (>= 80rem): barra da largura do conteúdo, com o nome alinhado ao texto da página.
  *   classic: nome | links, telefone, botão. centered: links | nome no meio | telefone, botão.
  *   bar: faixa de vidro presa no alto, sem flutuar. minimal: sem links; telefone, botão e menu.
  * O vidro das cápsulas do tablet (bar/minimal) é ligado no CSS (.ns-navpart, styles.css).
+ * O tom (`data-tone`) começa com o do topo da página e, com JavaScript, acompanha o que passa por
+ * baixo do menu (Motion.tsx); as cores do vidro e da letra mudam por ele (styles.css).
  */
-function GlassNav({ model }: { model: SiteModel }) {
+function GlassNav({ model, tone }: { model: SiteModel; tone: Tone }) {
   const { business, links, ctaHref, ctaLabel, ctaExternal, phoneHref } = model;
   const header = model.style.header;
   const split = header === "bar" || header === "minimal";
@@ -225,7 +266,7 @@ function GlassNav({ model }: { model: SiteModel }) {
     <a
       href={ctaHref}
       {...externalProps(ctaHref)}
-      className={`ns-btn ns-btn-primary hidden min-h-11 items-center rounded-full bg-ns-text px-5 text-sm font-medium whitespace-nowrap text-ns-background transition hover:opacity-90 motion-reduce:transition-none @3xl:inline-flex @7xl:min-h-12 @7xl:px-6 @7xl:text-[0.9375rem] ${focus}`}
+      className={`ns-btn ns-btn-primary ns-nav-cta hidden min-h-11 items-center rounded-full px-5 text-sm font-medium whitespace-nowrap transition hover:opacity-90 motion-reduce:transition-none @3xl:inline-flex @7xl:min-h-12 @7xl:px-6 @7xl:text-[0.9375rem] ${focus}`}
     >
       {ctaLabel}
     </a>
@@ -234,9 +275,11 @@ function GlassNav({ model }: { model: SiteModel }) {
     <a
       href={phoneHref}
       aria-label={`Call ${business.phone}`}
-      className={`inline-flex size-11 shrink-0 items-center justify-center gap-2 rounded-full bg-ns-text/[0.07] text-sm tabular-nums @3xl:size-auto @3xl:min-h-11 @3xl:min-w-11 @3xl:bg-transparent @7xl:text-[0.9375rem] ${focus}`}
+      className={`ns-phone ns-bubble inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 text-[0.9375rem] font-semibold tabular-nums @3xl:size-auto @3xl:min-h-11 @3xl:min-w-11 @3xl:gap-2 @3xl:px-0 @3xl:text-sm @3xl:font-normal @7xl:text-[0.9375rem] ${focus}`}
     >
-      <PhoneIcon className="size-4 shrink-0" />
+      <PhoneIcon className="size-[1.0625rem] shrink-0 @3xl:size-4" />
+      {/* Só no celular; abaixo de 340 px sobra o ícone (styles.css, .ns-call-label). */}
+      <span className="ns-call-label @3xl:hidden">Call</span>
       <span className="hidden @5xl:inline">{business.phone}</span>
     </a>
   ) : null;
@@ -296,15 +339,16 @@ function GlassNav({ model }: { model: SiteModel }) {
   return (
     <header
       data-split={split ? "" : undefined}
-      className={`ns-nav pointer-events-none fixed inset-x-0 top-0 z-40 flex px-3 pt-[max(0.625rem,env(safe-area-inset-top))] ${shell} ${header === "bar" ? "@7xl:px-0 @7xl:pt-0" : "@7xl:px-10 @7xl:pt-5"}`}
+      data-tone={tone}
+      className={`ns-nav pointer-events-none fixed inset-x-0 top-0 z-40 flex px-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] ${shell} ${header === "bar" ? "@7xl:px-0 @7xl:pt-0" : "@7xl:px-10 @7xl:pt-5"}`}
     >
       <div
-        className={`ns-glass ns-navbar pointer-events-auto relative flex h-14 w-full min-w-0 items-center gap-1.5 rounded-full pr-1.5 pl-5 text-ns-text ${bar} @7xl:w-full @7xl:gap-8 ${desktop}`}
+        className={`ns-glass ns-navbar pointer-events-auto relative flex h-14 w-full min-w-0 items-center gap-1.5 rounded-full pr-1.5 pl-5 ${bar} @7xl:w-full @7xl:gap-8 ${desktop}`}
       >
         <div className={`ns-navpart flex min-w-0 flex-1 items-center ${brandPart}`}>
           <a
             href="#top"
-            className={`block min-w-0 truncate py-3.5 ${display} text-lg leading-none @min-[40rem]:text-xl @7xl:text-2xl ${focus}`}
+            className={`ns-nav-name block min-w-0 truncate py-3.5 ${display} text-lg leading-none @min-[40rem]:text-xl @7xl:text-2xl ${focus}`}
           >
             {business.name}
           </a>
@@ -437,11 +481,14 @@ function SignatureHero({
   model,
   data,
   variant,
+  tone,
   intro,
 }: {
   model: SiteModel;
   data: SectionOf<"hero">;
   variant: Composition;
+  /** Tom do topo, lido pelo menu de vidro (data-tone). */
+  tone: Tone;
   intro: boolean;
 }) {
   const { business } = model;
@@ -453,6 +500,7 @@ function SignatureHero({
     return (
       <header
         {...introAttr}
+        data-tone={tone}
         className="ns-hero relative isolate flex min-h-[max(40rem,100svh)] flex-col justify-end overflow-hidden text-ns-background"
       >
         <div
@@ -469,11 +517,6 @@ function SignatureHero({
           </div>
         </div>
         <div aria-hidden="true" className="ns-hero-veil absolute inset-0 -z-10" />
-        {image.credit && (
-          <div className="absolute top-24 left-5 text-[0.6875rem] opacity-75 @min-[40rem]:left-8 @5xl:left-16 [&_a]:underline">
-            <PhotoCredit image={image} />
-          </div>
-        )}
         <div className={`${wrap} pb-8 pt-40`}>
           <h1
             style={{ "--ns-name-scale": nameScale(business.name) } as CSSProperties}
@@ -504,6 +547,7 @@ function SignatureHero({
     return (
       <header
         {...introAttr}
+        data-tone={tone}
         className={`ns-hero grid min-h-[100svh] gap-10 pt-32 pb-12 @5xl:grid-cols-12 @5xl:items-end ${wrap}`}
       >
         <div className="@5xl:col-span-7">
@@ -545,11 +589,6 @@ function SignatureHero({
               />
             </div>
           </div>
-          {image.credit && (
-            <figcaption className="mt-3 text-xs text-ns-muted">
-              <PhotoCredit image={image} />
-            </figcaption>
-          )}
         </figure>
       </header>
     );
@@ -558,7 +597,7 @@ function SignatureHero({
   // Nome enorme de ponta a ponta, a foto larga embaixo (modular).
   if (image && variant === "modular") {
     return (
-      <header {...introAttr} className={`ns-hero pt-32 ${wrap}`}>
+      <header {...introAttr} data-tone={tone} className={`ns-hero pt-32 ${wrap}`}>
         <p className={`ns-hero-fade text-ns-muted ${label}`}>
           {[business.category, model.where].filter(Boolean).join(" · ")}
         </p>
@@ -596,11 +635,6 @@ function SignatureHero({
               className="absolute inset-0 size-full object-cover"
             />
           </div>
-          {image.credit && (
-            <div className="absolute right-3 bottom-3 rounded-sm bg-ns-background/85 px-2 py-1 text-[0.6875rem]">
-              <PhotoCredit image={image} />
-            </div>
-          )}
         </div>
       </header>
     );
@@ -610,6 +644,7 @@ function SignatureHero({
   return (
     <header
       {...introAttr}
+      data-tone={tone}
       className="ns-hero relative flex min-h-[max(38rem,100svh)] flex-col justify-end bg-ns-text text-ns-background"
     >
       <div className={`${wrap} pb-8 pt-40`}>
@@ -706,11 +741,8 @@ function Statement({
                   />
                 </div>
               </div>
-              {(image.caption || image.credit) && (
-                <figcaption className="mt-3 flex justify-between gap-4 text-xs text-ns-muted">
-                  <span>{image.caption}</span>
-                  {image.credit && <PhotoCredit image={image} />}
-                </figcaption>
+              {image.caption && (
+                <figcaption className="mt-3 text-xs text-ns-muted">{image.caption}</figcaption>
               )}
             </figure>
           ))}
@@ -761,12 +793,14 @@ function ServiceIndex({
   data,
   pool,
   variant,
+  bandTone,
 }: {
   id?: string;
   model: SiteModel;
   data: SectionOf<"services">;
   pool: SiteImage[];
   variant: Composition;
+  bandTone: Tone;
 }) {
   if (data.items.length === 0) return null;
   const names = serviceNames(model);
@@ -830,6 +864,7 @@ function ServiceIndex({
       )}
       <div
         data-ns-float
+        data-tone={bandTone}
         className={`relative bg-ns-text py-(--ns-section-y) text-ns-background ${wrap}`}
       >
         <div className="mb-14 flex flex-col gap-6 @3xl:flex-row @3xl:items-end @3xl:justify-between">
@@ -918,9 +953,6 @@ function ServiceRow({ item, n, level }: ServiceEntry & { level: "h3" | "h4" }) {
       </Heading>
       <div className="col-span-2 @3xl:col-span-1">
         <p className="text-sm leading-relaxed opacity-70">{item.description}</p>
-        {item.image && (
-          <PhotoCredit image={item.image} className="mt-2 text-[0.6875rem] opacity-55" />
-        )}
       </div>
       {(item.price || item.detail) && (
         <p className="row-start-1 text-right text-[0.9375rem] tabular-nums @3xl:row-auto">
@@ -958,14 +990,13 @@ function CardPhoto({
   );
 }
 
-/** Nome, preço, descrição e crédito da foto de um cartão. */
+/** Nome, preço e descrição de um cartão (o crédito da foto fica só no rodapé). */
 function CardText({
   item,
   n,
   level,
   big = false,
-  credit = true,
-}: ServiceEntry & { level: "h3" | "h4"; big?: boolean; credit?: boolean }) {
+}: ServiceEntry & { level: "h3" | "h4"; big?: boolean }) {
   const Heading = level;
   return (
     <>
@@ -985,9 +1016,6 @@ function CardText({
       </div>
       {item.detail && <p className="mt-1 text-xs opacity-55">{item.detail}</p>}
       <p className="mt-3 max-w-prose text-sm leading-relaxed opacity-70">{item.description}</p>
-      {credit && item.image && (
-        <PhotoCredit image={item.image} className="mt-4 text-[0.6875rem] opacity-55" />
-      )}
     </>
   );
 }
@@ -1062,10 +1090,9 @@ function ServiceCards({
                   className="absolute inset-0 bg-gradient-to-t from-ns-text/90 via-ns-text/25 to-transparent"
                 />
                 <figcaption className="absolute inset-x-0 bottom-0 p-6 @3xl:p-8">
-                  <CardText {...entry} level={level} big={feature} credit={false} />
+                  <CardText {...entry} level={level} big={feature} />
                 </figcaption>
               </figure>
-              <PhotoCredit image={image} className="mt-2 text-[0.6875rem] opacity-55" />
             </li>
           );
         })}
@@ -1164,7 +1191,6 @@ function Rail({
       </p>
     </div>
   );
-  const credits = images.filter((i) => i.credit);
   return (
     <section
       id={id}
@@ -1201,15 +1227,6 @@ function Rail({
             </li>
           ))}
         </ul>
-        {credits.length > 0 && (
-          <div
-            className={`mt-6 flex flex-wrap gap-x-4 gap-y-1 text-[0.6875rem] text-ns-muted ${wrap}`}
-          >
-            {credits.map((image) => (
-              <PhotoCredit key={image.url} image={image} />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
@@ -1257,12 +1274,14 @@ function Booking({
   data,
   pool,
   endpoint,
+  bandTone,
 }: {
   id?: string;
   model: SiteModel;
   data: SectionOf<"contact">;
   pool: SiteImage[];
   endpoint?: string;
+  bandTone: Tone;
 }) {
   const { business, phoneHref, ctaHref, ctaLabel, ctaExternal } = model;
   // Fundo: a última foto do dono; com só a foto do topo, a primeira foto de serviço (para não
@@ -1275,7 +1294,10 @@ function Booking({
   const callHref = phoneHref ?? (ctaExternal ? ctaHref : undefined);
   return (
     <section id={id} className="scroll-mt-28">
-      <div className="relative isolate grid min-h-[90svh] place-content-center justify-items-center overflow-hidden bg-ns-text px-5 py-28 text-center text-ns-background">
+      <div
+        data-tone={bandTone}
+        className="relative isolate grid min-h-[90svh] place-content-center justify-items-center overflow-hidden bg-ns-text px-5 py-28 text-center text-ns-background"
+      >
         {backdrop && (
           <div className="absolute inset-x-0 -inset-y-[10%] -z-10" data-ns-parallax="0.25">
             <div data-kind={backdrop.kind} className="ns-photo absolute inset-0">
@@ -1300,7 +1322,7 @@ function Booking({
             href={callHref}
             {...externalProps(callHref)}
             data-ns-magnetic
-            className={`ns-glass relative mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-text ${focus}`}
+            className={`ns-glass ns-glass-inverse relative mt-12 inline-flex min-h-14 items-center gap-3 rounded-full px-9 text-base font-medium text-ns-background ${focus}`}
           >
             <span aria-hidden="true" className="size-2 rounded-full bg-ns-primary" />
             {phoneHref && business.phone ? `Call ${business.phone}` : ctaLabel}
@@ -1367,15 +1389,14 @@ function Booking({
 }
 
 /** Rodapé com o nome enorme de ponta a ponta. */
-function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
+function GiantFooter({ model, bandTone }: { model: SiteModel; bandTone: Tone }) {
   const { business, links, phoneHref } = model;
   const city = location(business);
   const hours = hoursSummary(business.hours);
   const socials = socialLinks(business);
-  const credits = pool.filter((image) => image.credit);
   const year = new Date().getFullYear();
   return (
-    <footer className="overflow-hidden bg-ns-text pt-20 text-ns-background">
+    <footer data-tone={bandTone} className="overflow-hidden bg-ns-text pt-20 text-ns-background">
       <div
         data-ns-stagger
         className={`grid grid-cols-2 gap-8 text-sm leading-relaxed @5xl:grid-cols-4 ${wrap}`}
@@ -1454,9 +1475,11 @@ function GiantFooter({ model, pool }: { model: SiteModel; pool: SiteImage[] }) {
         <span>
           &copy; {year} {business.name}
         </span>
-        {credits.length > 0 && (
-          <span>Photos: {Array.from(new Set(credits.map((i) => i.credit?.name))).join(", ")}</span>
-        )}
+        {/* Créditos das fotos de banco: uma linha pequena para o site todo (nunca sob cada foto). */}
+        <PhotoCredits
+          images={specImages(model.spec)}
+          className="text-[0.625rem] opacity-80 @3xl:max-w-[50%] @3xl:text-center"
+        />
         {/* O crédito da No Sweat é o selo (NoSweatBadge) logo abaixo, desenhado pelo SiteRenderer. */}
         <span className="flex gap-4">
           <a

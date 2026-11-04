@@ -5,6 +5,7 @@ import { LocalTime } from "@/components/LocalTime";
 import { GlassCard, cx, focusRing } from "@/components/glass";
 import { CLIENT_STAGES, STAGE_LABELS, formatCents } from "@/lib/clients";
 import { ClientMenu, type ClientMenuClient } from "./ClientMenu";
+import { ReplyButton, type ReplyClient, type ReplyCompany } from "./ReplyButton";
 import { Avatar, FollowUpBadge, StageBadge, TagList } from "./ui";
 
 // Lista e quadro (Kanban por etapa) dos clientes. Server components; o menu "⋯" de cada cliente
@@ -34,6 +35,17 @@ function openFollowUp(client: Client): string | null {
     : null;
 }
 
+/** O que o botão "Reply" precisa (só clientes novos, fora do modo "ver como"). */
+function replyClient(client: Client): ReplyClient {
+  return {
+    id: client.id,
+    name: client.name,
+    email: client.email,
+    phone: client.phone,
+    stage: client.stage,
+  };
+}
+
 const clientHref = (client: Client) => `/clients/${encodeURIComponent(client.id)}`;
 
 // ---------- lista ----------
@@ -42,10 +54,12 @@ function ClientRow({
   client,
   today,
   readOnly,
+  company,
 }: {
   client: Client;
   today: string;
   readOnly: boolean;
+  company: ReplyCompany;
 }) {
   const followUp = openFollowUp(client);
   const tags = client.tags.slice(0, 3);
@@ -89,6 +103,9 @@ function ClientRow({
           </span>
         </span>
       </Link>
+      {!readOnly && client.stage === "new" && (
+        <ReplyButton client={replyClient(client)} company={company} size="sm" />
+      )}
       <ClientMenu client={menuClient(client)} readOnly={readOnly} />
     </li>
   );
@@ -98,11 +115,13 @@ export function ClientList({
   clients,
   today,
   readOnly,
+  company,
   empty,
 }: {
   clients: readonly Client[];
   today: string;
   readOnly: boolean;
+  company: ReplyCompany;
   /** O que mostrar quando o filtro não acha ninguém. */
   empty: ReactNode;
 }) {
@@ -113,7 +132,13 @@ export function ClientList({
       ) : (
         <ul className="divide-y divide-(--glass-rim) p-1">
           {clients.map((client) => (
-            <ClientRow key={client.id} client={client} today={today} readOnly={readOnly} />
+            <ClientRow
+              key={client.id}
+              client={client}
+              today={today}
+              readOnly={readOnly}
+              company={company}
+            />
           ))}
         </ul>
       )}
@@ -127,10 +152,12 @@ function BoardCard({
   client,
   today,
   readOnly,
+  company,
 }: {
   client: Client;
   today: string;
   readOnly: boolean;
+  company: ReplyCompany;
 }) {
   const followUp = openFollowUp(client);
   return (
@@ -161,6 +188,9 @@ function BoardCard({
         )}
         <TagList tags={client.tags.slice(0, 3)} />
       </Link>
+      {!readOnly && client.stage === "new" && (
+        <ReplyButton client={replyClient(client)} company={company} size="sm" />
+      )}
       <ClientMenu client={menuClient(client)} readOnly={readOnly} context="board" />
     </li>
   );
@@ -170,10 +200,12 @@ export function ClientsBoard({
   clients,
   today,
   readOnly,
+  company,
 }: {
   clients: readonly Client[];
   today: string;
   readOnly: boolean;
+  company: ReplyCompany;
 }) {
   return (
     // No celular as colunas rolam de lado, uma de cada vez (como o quadro do Trello no iPhone).
@@ -210,7 +242,13 @@ export function ClientsBoard({
               ) : (
                 <ul className="mt-1 grid gap-2">
                   {column.map((client) => (
-                    <BoardCard key={client.id} client={client} today={today} readOnly={readOnly} />
+                    <BoardCard
+                      key={client.id}
+                      client={client}
+                      today={today}
+                      readOnly={readOnly}
+                      company={company}
+                    />
                   ))}
                 </ul>
               )}

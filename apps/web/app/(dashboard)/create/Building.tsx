@@ -224,10 +224,12 @@ type ReadyPanelProps = {
   spec: SiteSpec;
   /** Visitante sem conta: avisa que o rascunho só existe neste navegador. */
   signedIn?: boolean;
+  /** Aviso sobre as fotos do dono (upload que falhou, visitante sem conta...). */
+  notice?: string | null;
   headingRef: Ref<HTMLHeadingElement>;
 };
 
-export function ReadyPanel({ siteId, spec, signedIn = true, headingRef }: ReadyPanelProps) {
+export function ReadyPanel({ siteId, spec, signedIn = true, notice, headingRef }: ReadyPanelProps) {
   const slug = publishedSlug(spec.business.name, siteId);
   return (
     <section aria-labelledby="ready-heading" className="mx-auto max-w-[55rem] pb-4">
@@ -255,6 +257,14 @@ export function ReadyPanel({ siteId, spec, signedIn = true, headingRef }: ReadyP
           See the preview
         </Link>
       </div>
+      {notice && (
+        <p
+          role="status"
+          className="mx-auto mt-4 max-w-[36rem] text-center text-[13px] leading-[1.55] text-pretty text-slate-600"
+        >
+          {notice}
+        </p>
+      )}
       {!signedIn && (
         <p className="mx-auto mt-4 max-w-[36rem] text-center text-[13px] leading-[1.55] text-pretty text-slate-600">
           This draft is saved in this browser only.{" "}

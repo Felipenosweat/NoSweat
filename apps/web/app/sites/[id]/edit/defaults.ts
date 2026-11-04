@@ -20,6 +20,13 @@ export function newSection(type: SectionType): Section {
       return { type, items: [{ q: P.faqQuestion, a: P.faqAnswer }] };
     case "contact":
       return { type, showForm: true, showMap: false };
+    case "booking":
+      // Sem dados próprios: serviços e horários vêm de Business → Booking.
+      return {
+        type,
+        title: "Book online",
+        intro: "Pick a service and a time that works for you.",
+      };
     case "gallery":
       // Só fotos do dono: começa vazia e o cliente envia as fotos.
       return { type, images: [] };
@@ -34,6 +41,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   testimonials: "Reviews",
   faq: "FAQ",
   contact: "Contact",
+  booking: "Booking",
   gallery: "Photo gallery (your photos)",
   about: "About",
 };

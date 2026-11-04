@@ -299,92 +299,417 @@
    Molde SIGNATURE (compositions/Signature.tsx): padrão de site premiado aprovado pelo dono.
    Tudo aqui funciona sem JavaScript; Motion.tsx só acrescenta o movimento da rolagem. */
 
-/* Vidro líquido (menu e botão de agendar): translúcido, com brilho na borda. A tinta
-   (--ns-glass-a/b, quanto do fundo do tema entra) sobe no menu para o texto ler bem sobre foto
-   clara ou escura. O elemento com vidro precisa de `position` (relative/absolute) no próprio
-   componente: o brilho (::before) se apoia nele. */
+/* Vidro líquido (estilo iOS 26 "Liquid Glass"): barra do topo, cápsulas do tablet, painel do menu
+   e botão de agendar. O material fica nos pseudo-elementos (a barra em si só leva a sombra de
+   fora), por dois motivos: o painel do menu é filho da barra e, se a barra tivesse
+   backdrop-filter, o painel só enxergaria a barra e não a página; e a borda brilhante precisa de
+   máscara. Camadas:
+   - ::after  (atrás do conteúdo): desfoque + saturação do que está por baixo, tinta leve do tema,
+     brilho especular no canto de cima, faixa diagonal, luz interna e sombra interna embaixo;
+   - ::before (borda de 1px): luz forte no canto de cima à esquerda, some no meio, volta fraca no
+     canto de baixo à direita (a borda de vidro de verdade);
+   - sombra de fora em duas camadas (curta + larga): a barra flutua até sobre fundo claro.
+   Chromium ainda ganha refração (filtro SVG `#ns-liquid`, ver GlassDefs.tsx); Safari e Firefox
+   ficam na camada de base. Quem usa precisa de `position` (relative/absolute) no próprio
+   componente. A cor da tinta vem do tema: `data-scheme` (light/dark) é posto pelo SiteRenderer
+   a partir da luminância do fundo. A tinta tem a cor do FUNDO do tema porque o texto do vidro
+   é a cor do texto do tema: é isso que garante contraste (≥ 4,5:1) sobre foto escura ou clara. */
+.ns-site {
+  --ns-glass-tint: color-mix(in srgb, var(--ns-background) 55%, #fff);
+  --ns-glass-edge: #fff;
+  --ns-glass-shade: var(--ns-text);
+  --ns-glass-hover: color-mix(in srgb, #fff 55%, transparent);
+  --ns-glass-a: 64%;
+  --ns-glass-b: 50%;
+  /* Força do brilho branco e do clareamento do fundo: no vidro escuro o brilho é discreto
+     (senão a letra clara perde contraste). */
+  --ns-glass-sheen: 1;
+  --ns-glass-bright: 1.08;
+}
+.ns-site[data-scheme="dark"] {
+  --ns-glass-tint: color-mix(in srgb, var(--ns-background) 82%, #000);
+  --ns-glass-shade: #000;
+  --ns-glass-hover: color-mix(in srgb, #fff 16%, transparent);
+  --ns-glass-a: 74%;
+  --ns-glass-b: 62%;
+  --ns-glass-sheen: 0.3;
+  --ns-glass-bright: 0.9;
+}
+/* Vidro "invertido": botão sobre a seção escura do fim (fundo = cor do texto do tema, letra =
+   cor do fundo). A tinta segue a seção, então precisa de pouca. */
+.ns-site .ns-glass-inverse {
+  --ns-glass-tint: color-mix(in srgb, var(--ns-text) 72%, #000);
+  --ns-glass-shade: #000;
+  --ns-glass-hover: color-mix(in srgb, #fff 18%, transparent);
+  --ns-glass-a: 34%;
+  --ns-glass-b: 24%;
+  --ns-glass-sheen: 0.4;
+  --ns-glass-bright: 0.95;
+}
+.ns-site[data-scheme="dark"] .ns-glass-inverse {
+  --ns-glass-tint: color-mix(in srgb, var(--ns-text) 55%, #fff);
+  --ns-glass-hover: color-mix(in srgb, #fff 55%, transparent);
+  --ns-glass-a: 46%;
+  --ns-glass-b: 36%;
+  --ns-glass-sheen: 1;
+  --ns-glass-bright: 1.05;
+}
+
 .ns-site .ns-glass {
+  --ns-g-content: "";
+  isolation: isolate;
+  box-shadow:
+    0 0 0 0.5px color-mix(in srgb, var(--ns-glass-shade) var(--ns-glass-hair, 10%), transparent),
+    0 1px 2px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
+    0 8px 20px -4px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
+    0 28px 56px -14px color-mix(in srgb, var(--ns-glass-shade) 28%, transparent);
+}
+/* As cápsulas do tablet só viram vidro no tablet (mais abaixo). */
+.ns-site .ns-navpart {
+  --ns-g-content: none;
+}
+.ns-site :is(.ns-glass, .ns-navpart)::after {
+  content: var(--ns-g-content, none);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      130% 170% at 8% -35%,
+      color-mix(in srgb, var(--ns-glass-edge) calc(46% * var(--ns-glass-sheen)), transparent),
+      transparent 56%
+    ),
+    linear-gradient(
+      112deg,
+      transparent 28%,
+      color-mix(in srgb, var(--ns-glass-edge) calc(16% * var(--ns-glass-sheen)), transparent) 42%,
+      transparent 56%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ns-glass-tint) var(--ns-glass-a), transparent),
+      color-mix(in srgb, var(--ns-glass-tint) var(--ns-glass-b), transparent)
+    );
+  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro.
+     Nada aqui é animado (nem o raio do desfoque nem o filtro). */
+  -webkit-backdrop-filter: blur(var(--ns-glass-blur, 14px)) saturate(var(--ns-glass-sat, 185%))
+    brightness(var(--ns-glass-bright));
+  backdrop-filter: blur(var(--ns-glass-blur, 14px)) saturate(var(--ns-glass-sat, 185%))
+    brightness(var(--ns-glass-bright));
+  box-shadow:
+    inset 0 7px 10px -7px
+      color-mix(in srgb, var(--ns-glass-edge) calc(60% * var(--ns-glass-sheen)), transparent),
+    inset 0 0 20px
+      color-mix(in srgb, var(--ns-glass-edge) calc(24% * var(--ns-glass-sheen)), transparent),
+    inset 0 -12px 16px -12px color-mix(in srgb, var(--ns-glass-shade) 30%, transparent);
+}
+.ns-site :is(.ns-glass, .ns-navpart)::before {
+  content: var(--ns-g-content, none);
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--ns-background) var(--ns-glass-a, 70%), transparent),
-    color-mix(in srgb, var(--ns-background) var(--ns-glass-b, 42%), transparent)
+    color-mix(in srgb, var(--ns-glass-edge) 96%, transparent) 0%,
+    color-mix(in srgb, var(--ns-glass-edge) 34%, transparent) 16%,
+    color-mix(in srgb, var(--ns-glass-edge) 8%, transparent) 46%,
+    color-mix(in srgb, var(--ns-glass-edge) 18%, transparent) 78%,
+    color-mix(in srgb, var(--ns-glass-edge) 72%, transparent) 100%
   );
-  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  backdrop-filter: blur(14px) saturate(160%);
-  border: 1px solid color-mix(in srgb, var(--ns-background) 70%, transparent);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
-    inset 0 -1px 0 color-mix(in srgb, var(--ns-background) 25%, transparent),
-    0 12px 40px color-mix(in srgb, var(--ns-text) 18%, transparent);
+  /* Só o anel de 1px aparece: a máscara de dentro é subtraída da de fora. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
 }
-.ns-site .ns-glass::before {
+
+/* Refração (só Chromium: o Safari e o Firefox não aplicam filtro SVG no fundo e ficam na camada
+   de base). `-webkit-app-region` só existe no Chromium. O filtro desloca poucos pixels, então o
+   texto por baixo continua legível. */
+@supports (-webkit-app-region: drag) {
+  .ns-site :is(.ns-glass, .ns-navpart)::after {
+    -webkit-backdrop-filter: url(#ns-liquid) blur(var(--ns-glass-blur, 9px))
+      saturate(var(--ns-glass-sat, 185%)) brightness(var(--ns-glass-bright));
+    backdrop-filter: url(#ns-liquid) blur(var(--ns-glass-blur, 9px))
+      saturate(var(--ns-glass-sat, 185%)) brightness(var(--ns-glass-bright));
+  }
+}
+
+/* Menu: a tinta é a mesma da barra em qualquer largura (texto escuro sobre a foto escura do topo
+   só lê bem com tinta). Painel do menu: bem mais forte (texto grande e botões sobre qualquer
+   foto). */
+.ns-site .ns-menu-panel {
+  --ns-glass-a: 88%;
+  --ns-glass-b: 82%;
+  --ns-glass-blur: 24px;
+}
+/* Tom adaptativo (como o Liquid Glass do iOS 26): o menu sabe o que está por baixo. Cada seção ou
+   faixa leva `data-tone="light|dark"` (Signature.tsx, tone.ts) e o `data-tone` do `.ns-nav` segue o
+   que passa pelo centro da barra (Motion.tsx, adaptHeader). Sobre o escuro: fumaça escura com
+   letra clara e borda brilhante. Sobre o claro: vidro claro com letra escura e sombra (para não
+   sumir no creme). Sem JavaScript (ou no editor) o tom é o do topo da página e a tinta é forte
+   (88-90%): lê bem sobre qualquer fundo; com JavaScript (`data-adaptive`) o vidro fica mais
+   transparente. As variáveis são registradas (@property) para a troca de tom virar transição. */
+@property --ns-glass-tint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --ns-glass-shade {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #000;
+}
+@property --ns-nav-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #000;
+}
+@property --ns-nav-ink-inv {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fff;
+}
+@property --ns-glass-a {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 64%;
+}
+@property --ns-glass-b {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --ns-bubble-a {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 20%;
+}
+@property --ns-glass-sheen {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --ns-glass-bright {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+/* Fumaça (vidro escuro), geada (vidro claro) e as duas cores de letra, a partir do tema. */
+.ns-site {
+  --ns-smoke: color-mix(in srgb, var(--ns-text) 82%, #000);
+  --ns-frost: color-mix(in srgb, var(--ns-background) 40%, #fff);
+  --ns-ink-on-dark: var(--ns-background);
+  --ns-ink-on-light: var(--ns-text);
+}
+.ns-site[data-scheme="dark"] {
+  --ns-smoke: color-mix(in srgb, var(--ns-background) 80%, #000);
+  --ns-frost: color-mix(in srgb, var(--ns-text) 55%, #fff);
+  --ns-ink-on-dark: var(--ns-text);
+  --ns-ink-on-light: var(--ns-background);
+}
+.ns-site .ns-nav[data-tone="dark"] {
+  --ns-glass-tint: var(--ns-smoke);
+  --ns-glass-shade: #000;
+  --ns-glass-hair: 18%;
+  --ns-nav-ink: var(--ns-ink-on-dark);
+  --ns-nav-ink-inv: var(--ns-ink-on-light);
+  --ns-glass-hover: color-mix(in srgb, #fff 16%, transparent);
+  --ns-glass-a: 88%;
+  --ns-glass-b: 82%;
+  --ns-glass-sheen: 0.35;
+  --ns-glass-bright: 0.95;
+  --ns-bubble-a: 14%;
+}
+.ns-site .ns-nav[data-tone="light"] {
+  --ns-glass-tint: var(--ns-frost);
+  --ns-glass-shade: var(--ns-ink-on-light);
+  --ns-glass-hair: 16%;
+  --ns-nav-ink: var(--ns-ink-on-light);
+  --ns-nav-ink-inv: var(--ns-ink-on-dark);
+  --ns-glass-hover: color-mix(in srgb, #fff 60%, transparent);
+  --ns-glass-a: 90%;
+  --ns-glass-b: 84%;
+  --ns-glass-sheen: 1;
+  --ns-glass-bright: 1.06;
+  --ns-bubble-a: 58%;
+}
+.ns-site .ns-nav[data-tone="dark"][data-adaptive] {
+  --ns-glass-a: 78%;
+  --ns-glass-b: 70%;
+}
+.ns-site .ns-nav[data-tone="light"][data-adaptive] {
+  --ns-glass-a: 82%;
+  --ns-glass-b: 74%;
+}
+/* O painel do menu é mais denso que a barra: links grandes e botões sobre o texto da página
+   (mesmo com desfoque, o texto escuro atrás de um vidro claro aparece se a tinta for fraca). */
+.ns-site .ns-nav[data-tone="dark"] .ns-menu-panel {
+  --ns-glass-a: 93%;
+  --ns-glass-b: 88%;
+}
+.ns-site .ns-nav[data-tone="light"] .ns-menu-panel {
+  --ns-glass-a: 98%;
+  --ns-glass-b: 97%;
+}
+/* Base sólida sob o vidro do painel (o material fica no ::after, que é translúcido): o texto da
+   página nunca aparece atrás dos links, em nenhum tom nem no meio da troca de tom. */
+.ns-site .ns-nav .ns-menu-panel {
+  background-color: color-mix(in srgb, var(--ns-glass-tint) 94%, transparent);
+}
+.ns-site .ns-nav .ns-navbar {
+  color: var(--ns-nav-ink, var(--ns-text));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ns-site .ns-nav {
+    transition:
+      --ns-glass-tint 0.28s ease,
+      --ns-glass-shade 0.28s ease,
+      --ns-nav-ink 0.28s ease,
+      --ns-nav-ink-inv 0.28s ease,
+      --ns-glass-a 0.28s ease,
+      --ns-glass-b 0.28s ease,
+      --ns-bubble-a 0.28s ease,
+      --ns-glass-sheen 0.28s ease,
+      --ns-glass-bright 0.28s ease;
+  }
+}
+/* Botão cheio do menu: a cor da letra do tom (sobre fumaça, creme com letra escura; sobre vidro
+   claro, escuro com letra clara). No estilo "line" o botão do topo continua sendo texto. */
+.ns-site .ns-nav .ns-panel-cta,
+.ns-site:not([data-buttons="line"]) .ns-nav .ns-nav-cta {
+  background-color: var(--ns-nav-ink);
+  color: var(--ns-nav-ink-inv);
+}
+
+/* Bolha de vidro: botão com a própria borda e brilho (o "Call" e o menu do celular, o menu do
+   tablet, o "Call" dentro do painel). Fica sobre o vidro da barra: preenchimento claro, luz no
+   alto, sombra curta embaixo e o anel de 1px (::after) como na barra. */
+.ns-site .ns-nav .ns-bubble {
+  position: relative;
+  isolation: isolate;
+  color: inherit;
+  background:
+    radial-gradient(
+      120% 150% at 22% -30%,
+      color-mix(in srgb, var(--ns-glass-edge) calc(46% * var(--ns-glass-sheen)), transparent),
+      transparent 62%
+    ),
+    color-mix(in srgb, var(--ns-glass-edge) var(--ns-bubble-a), transparent);
+  box-shadow:
+    inset 0 1px 1px
+      color-mix(in srgb, var(--ns-glass-edge) calc(70% * var(--ns-glass-sheen)), transparent),
+    inset 0 -6px 8px -6px color-mix(in srgb, var(--ns-glass-shade) 30%, transparent),
+    0 1px 2px color-mix(in srgb, var(--ns-glass-shade) 24%, transparent),
+    0 6px 14px -5px color-mix(in srgb, var(--ns-glass-shade) 32%, transparent);
+}
+.ns-site .ns-nav .ns-bubble::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  padding: 1px;
   pointer-events: none;
-  background: radial-gradient(
-    120% 80% at 20% 0%,
-    color-mix(in srgb, var(--ns-background) 55%, transparent),
-    transparent 45%
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ns-glass-edge) 92%, transparent) 0%,
+    color-mix(in srgb, var(--ns-glass-edge) 30%, transparent) 22%,
+    color-mix(in srgb, var(--ns-glass-edge) 8%, transparent) 55%,
+    color-mix(in srgb, var(--ns-glass-edge) 60%, transparent) 100%
   );
-  mix-blend-mode: soft-light;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
 }
 
-/* Menu: no celular e no computador o texto fica sobre a foto do topo, então a tinta é mais
-   forte. No tablet (48rem a 80rem) fica como sempre foi (o visual aprovado no iPad). */
-.ns-site .ns-navbar {
-  --ns-glass-a: 80%;
-  --ns-glass-b: 62%;
-}
-@container (48rem <= width < 80rem) {
-  .ns-site .ns-navbar {
-    --ns-glass-a: 70%;
-    --ns-glass-b: 42%;
+/* Celular (< 48rem): mais desfoque e saturação (o texto da página não aparece pela barra), nome
+   grande e confiante, e o vidro mais leve nos primeiros 40 px de rolagem (`data-top`, Motion.tsx):
+   a foto aparece mais; depois assenta no vidro completo (só tinta e opacidade, nada de layout). */
+@container (width < 48rem) {
+  .ns-site .ns-nav {
+    --ns-glass-blur: 24px;
+    --ns-glass-sat: 190%;
   }
-  /* bar/minimal no tablet: a barra de fora some e as duas cápsulas (nome; ações) viram vidro. */
-  .ns-site .ns-nav[data-split] .ns-navbar {
+  .ns-site .ns-nav[data-tone="dark"][data-adaptive][data-top] {
+    --ns-glass-a: 64%;
+    --ns-glass-b: 56%;
+    --ns-bubble-a: 8%;
+  }
+  .ns-site .ns-nav[data-tone="light"][data-adaptive][data-top] {
+    --ns-glass-a: 54%;
+    --ns-glass-b: 42%;
+    --ns-bubble-a: 48%;
+  }
+  .ns-site .ns-nav-name {
+    font-size: var(--ns-nav-name-size, 1.0625rem);
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    line-height: 1.2;
+  }
+  .ns-site:is([data-font="editorial"], [data-font="refined"]) .ns-nav-name {
+    font-weight: 400;
+  }
+}
+/* Fontes de título finas e estreitas (serifas) parecem menores no mesmo corpo: sobem um passo. */
+.ns-site:is([data-font="editorial"], [data-font="refined"], [data-font="luxe"]) {
+  --ns-nav-name-size: 1.3125rem;
+}
+/* Abaixo de 340 px o "Call" vira só o ícone (a bolha fica redonda). */
+@container (width < 340px) {
+  .ns-site .ns-call-label {
+    display: none;
+  }
+}
+/* No tablet e no computador o telefone é só um link (sem bolha). */
+@container (width >= 48rem) {
+  .ns-site .ns-nav .ns-phone.ns-bubble {
     background: none;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border-color: transparent;
     box-shadow: none;
   }
-  .ns-site .ns-nav[data-split] .ns-navbar::before {
+  .ns-site .ns-nav .ns-phone.ns-bubble::after {
     content: none;
   }
+}
+/* Painel do menu: linhas finas entre os links grandes e antes dos botões. */
+.ns-site .ns-menu-list li + li,
+.ns-site .ns-menu-actions {
+  border-top: 1px solid color-mix(in srgb, var(--ns-nav-ink) 12%, transparent);
+}
+@container (48rem <= width < 80rem) {
+  /* bar/minimal no tablet: a barra de fora some e as duas cápsulas (nome; ações) viram vidro. */
+  .ns-site .ns-nav[data-split] .ns-navbar {
+    --ns-g-content: none;
+    box-shadow: none;
+  }
   .ns-site .ns-nav[data-split] .ns-navpart {
+    --ns-g-content: "";
     position: relative;
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--ns-background) 70%, transparent),
-      color-mix(in srgb, var(--ns-background) 42%, transparent)
-    );
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
-    border: 1px solid color-mix(in srgb, var(--ns-background) 70%, transparent);
+    isolation: isolate;
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
-      inset 0 -1px 0 color-mix(in srgb, var(--ns-background) 25%, transparent),
-      0 12px 40px color-mix(in srgb, var(--ns-text) 18%, transparent);
+      0 0 0 0.5px color-mix(in srgb, var(--ns-glass-shade) var(--ns-glass-hair, 10%), transparent),
+      0 1px 2px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
+      0 8px 20px -4px color-mix(in srgb, var(--ns-glass-shade) 16%, transparent),
+      0 28px 56px -14px color-mix(in srgb, var(--ns-glass-shade) 28%, transparent);
   }
 }
 /* "bar" no computador: faixa presa no alto, de ponta a ponta, sem flutuar. */
 @container (width >= 80rem) {
   .ns-site .ns-navbar-dock {
-    border-width: 0 0 1px;
-    border-color: color-mix(in srgb, var(--ns-text) 10%, transparent);
     box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--ns-background) 90%, transparent),
-      0 10px 30px -18px color-mix(in srgb, var(--ns-text) 35%, transparent);
+      0 1px 0 color-mix(in srgb, var(--ns-glass-shade) 8%, transparent),
+      0 14px 30px -18px color-mix(in srgb, var(--ns-glass-shade) 40%, transparent);
   }
-}
-/* Painel do menu: quase sólido (abre sobre qualquer foto; o desfoque não alcança a página por
-   baixo porque a barra também tem desfoque). */
-.ns-site .ns-menu-panel {
-  --ns-glass-a: 96%;
-  --ns-glass-b: 90%;
 }
 @media (prefers-reduced-motion: no-preference) {
   .ns-site .ns-menu[open] .ns-menu-panel {
@@ -399,57 +724,119 @@
   }
 }
 
-/* Sem desfoque no navegador, transparência reduzida ou contraste alto: vidro vira cor sólida. */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .ns-site .ns-glass {
-    background: color-mix(in srgb, var(--ns-background) 94%, transparent);
+/* Vidro dentro do vidro: ao passar o mouse ou focar, um "comprimido" claro aparece atrás do link
+   (substitui o sublinhado do menu); ao apertar, o botão encolhe um pouco. */
+.ns-site .ns-nav :is(nav a, a[href^="tel:"]) {
+  position: relative;
+  isolation: isolate;
+}
+.ns-site .ns-nav :is(nav a, a[href^="tel:"])::before {
+  content: "";
+  position: absolute;
+  inset: 0.4rem -0.7rem;
+  z-index: -1;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: var(--ns-glass-hover);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ns-glass-edge) 70%, transparent),
+    0 1px 3px color-mix(in srgb, var(--ns-glass-shade) 10%, transparent);
+  opacity: 0;
+}
+.ns-site .ns-nav a[href^="tel:"]::before {
+  inset: 0;
+}
+.ns-site .ns-nav .ns-menu-panel nav a::before {
+  inset: 0;
+  border-radius: 1rem;
+}
+.ns-site .ns-nav .ns-underline::after {
+  content: none;
+}
+.ns-site .ns-nav :is(nav a, a[href^="tel:"]):is(:hover, :focus-visible)::before {
+  opacity: 1;
+}
+/* Botão cheio dentro do vidro: um brilho fino no alto, como o botão "proeminente" do iOS. */
+.ns-site .ns-nav .ns-btn {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    0 1px 2px color-mix(in srgb, var(--ns-glass-shade) 25%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ns-site .ns-nav :is(nav a, a[href^="tel:"])::before {
+    transition: opacity 0.22s ease;
   }
-  @container (48rem <= width < 80rem) {
-    .ns-site .ns-nav[data-split] .ns-navpart {
-      background: color-mix(in srgb, var(--ns-background) 94%, transparent);
-    }
+  .ns-site :is(.ns-nav a, .ns-nav summary, a.ns-glass) {
+    transition:
+      scale 0.2s cubic-bezier(0.19, 1, 0.22, 1),
+      opacity 0.2s ease;
+  }
+  .ns-site :is(.ns-nav a, .ns-nav summary, a.ns-glass):active {
+    scale: 0.98;
+  }
+}
+
+/* Sem desfoque no navegador, transparência reduzida ou contraste alto: vidro vira cor sólida
+   (cor de fundo do tema), então a letra volta a ser a cor do texto, em qualquer tom. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .ns-site .ns-nav[data-tone] {
+    --ns-nav-ink: var(--ns-text);
+    --ns-nav-ink-inv: var(--ns-background);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ns-site .ns-nav[data-tone] {
+    --ns-nav-ink: var(--ns-text);
+    --ns-nav-ink-inv: var(--ns-background);
+  }
+  .ns-site .ns-nav .ns-bubble {
+    background: color-mix(in srgb, var(--ns-text) 8%, transparent);
+    box-shadow: none;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .ns-site :is(.ns-glass, .ns-navpart)::after {
+    background: color-mix(in srgb, var(--ns-background) 94%, transparent);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .ns-site .ns-glass {
+  .ns-site :is(.ns-glass, .ns-navpart)::after {
     background: var(--ns-background);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-  }
-  .ns-site .ns-glass::before {
-    content: none;
-  }
-  @container (48rem <= width < 80rem) {
-    .ns-site .ns-nav[data-split] .ns-navpart {
-      background: var(--ns-background);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
+    box-shadow: none;
   }
 }
 @media (prefers-contrast: more) {
-  .ns-site .ns-glass {
+  .ns-site :is(.ns-glass, .ns-navpart)::after {
     background: var(--ns-background);
-    border-color: color-mix(in srgb, var(--ns-text) 55%, transparent);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
   }
-  .ns-site .ns-glass::before {
-    content: none;
-  }
-  @container (48rem <= width < 80rem) {
-    .ns-site .ns-nav[data-split] .ns-navpart {
-      background: var(--ns-background);
-      border-color: color-mix(in srgb, var(--ns-text) 55%, transparent);
-    }
+  .ns-site :is(.ns-glass, .ns-navpart)::before {
+    background: color-mix(in srgb, var(--ns-text) 55%, transparent);
   }
 }
 @media (forced-colors: active) {
-  .ns-site .ns-glass {
+  .ns-site .ns-nav .ns-bubble {
     border: 1px solid CanvasText;
   }
-  @container (48rem <= width < 80rem) {
-    .ns-site .ns-nav[data-split] .ns-navpart {
-      border: 1px solid CanvasText;
-    }
+  .ns-site .ns-nav .ns-bubble::after {
+    content: none;
+  }
+  .ns-site .ns-glass,
+  .ns-site .ns-nav[data-split] .ns-navpart {
+    border: 1px solid CanvasText;
+  }
+  .ns-site :is(.ns-glass, .ns-navpart)::after {
+    background: Canvas;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .ns-site :is(.ns-glass, .ns-navpart)::before {
+    content: none;
   }
 }
 
@@ -546,10 +933,19 @@
 .ns-site .ns-quotes[data-rotating] .ns-quote {
   grid-area: 1 / 1;
   opacity: 0;
-  transition: opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  visibility: hidden;
+  /* Sai primeiro (0,5 s); o próximo só entra depois que ele sumiu: os dois nunca aparecem juntos
+     (antes a troca era um cruzamento de 1,2 s e as frases se sobrepunham). */
+  transition:
+    opacity 0.5s ease,
+    visibility 0s linear 0.5s;
 }
 .ns-site .ns-quotes[data-rotating] .ns-quote[data-on] {
   opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.5s,
+    visibility 0s;
 }
 .ns-site .ns-quotes:not([data-rotating]) .ns-quote + .ns-quote {
   margin-top: 4rem;

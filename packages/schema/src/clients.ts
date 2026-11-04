@@ -67,8 +67,10 @@ export type Client = z.infer<typeof Client>;
  * - stage: mudança de etapa (texto = a etapa nova);
  * - payment: pagamento registrado numa fatura do escritório (migration 0023). Soma no total do
  *   cliente (`totalJobsCents`) e na receita do mês, mas não conta como serviço (`jobsCount`).
+ * - message: resposta do dono ao cliente (e-mail enviado ou SMS avisado), migration 0026. O texto
+ *   é o que o cliente recebeu; não soma em nada.
  */
-export const ClientActivityKind = z.enum(["lead", "note", "job", "stage", "payment"]);
+export const ClientActivityKind = z.enum(["lead", "note", "job", "stage", "payment", "message"]);
 export type ClientActivityKind = z.infer<typeof ClientActivityKind>;
 
 export const ClientActivity = z.object({
@@ -161,3 +163,50 @@ export type CreateClientActivityRequest = z.infer<typeof CreateClientActivityReq
 
 export const ClientActivityResponse = z.object({ activity: ClientActivity, client: Client });
 export type ClientActivityResponse = z.infer<typeof ClientActivityResponse>;
+
+// ---------- POST /api/clients/[id]/reply ----------
+
+/** Por onde o dono respondeu. */
+export const ReplyChannel = z.enum(["email", "sms"]);
+export type ReplyChannel = z.infer<typeof ReplyChannel>;
+
+/**
+ * Responder ao cliente (por exemplo, confirmar o serviço pedido pelo site).
+ * - `mode: "send"` (padrão, só e-mail): o servidor envia o e-mail (503 `email_not_configured` se o
+ *   envio estiver desligado);
+ * - `mode: "log"`: o dono mandou por conta própria (app de mensagens ou de e-mail do celular) e só
+ *   quer registrar no histórico. É o único modo do SMS (ainda não há provedor de SMS).
+ */
+export const ClientReplyRequest = z
+  .object({
+    channel: ReplyChannel,
+    mode: z.enum(["send", "log"]).default("send"),
+    /** Assunto do e-mail (ignorado no SMS). */
+    subject: z.string().trim().max(150, "Keep the subject under 150 characters.").optional(),
+    message: z
+      .string()
+      .trim()
+      .min(1, "Write a message first.")
+      .max(2000, "Please keep the message under 2,000 characters."),
+    /** É a confirmação do serviço (só muda o texto do histórico). */
+    confirmation: z.boolean().optional(),
+    /** Passa o cliente de "new" para "contacted" depois de responder. */
+    moveToContacted: z.boolean().optional(),
+  })
+  .refine((r) => r.channel === "email" || r.mode === "log", {
+    message: "Text messages are sent from your phone, then logged here.",
+    path: ["mode"],
+  })
+  .refine((r) => r.channel !== "email" || r.mode === "log" || Boolean(r.subject), {
+    message: "Add a subject for the email.",
+    path: ["subject"],
+  });
+export type ClientReplyRequest = z.infer<typeof ClientReplyRequest>;
+
+export const ClientReplyResponse = z.object({
+  activity: ClientActivity,
+  client: Client,
+  /** "sent": o e-mail saiu pela plataforma; "logged": só foi registrado no histórico. */
+  delivery: z.enum(["sent", "logged"]),
+});
+export type ClientReplyResponse = z.infer<typeof ClientReplyResponse>;

@@ -13,7 +13,8 @@ import { GUEST_COOKIE } from "@/server/guest-cookie";
 import { INDEXNOW_KEY, INDEXNOW_KEY_PATH } from "@/server/seo/indexnow";
 
 // Páginas que exigem login. As rotas /api conferem o acesso sozinhas (respondem 401 em JSON).
-// Fora desta lista e públicas de propósito: /s, /d, /q, /i e /p (prévia de prospect, só pelo token).
+// Fora desta lista e públicas de propósito: /s, /d, /q, /i, /book, /booking (agendamento do cliente
+// do dono, só pelo link) e /p (prévia de prospect, só pelo token).
 const PROTECTED_PATHS = [
   "/dashboard",
   "/sites",
@@ -43,7 +44,16 @@ const isProtected = (path: string) =>
 // links públicos de orçamento/fatura (/q, /i), a API pública (formulário dos sites, crons,
 // webhook do Stripe, descadastro) e as páginas estáticas do marketing.
 // Nenhuma destas páginas ou rotas chama getCurrentUser; se uma passar a chamar, tirar daqui.
-const PUBLIC_PREFIXES = ["/s/", "/examples/", "/q/", "/i/", "/api/public/", "/api/cron/"];
+const PUBLIC_PREFIXES = [
+  "/s/",
+  "/examples/",
+  "/q/",
+  "/i/",
+  "/book/",
+  "/booking/",
+  "/api/public/",
+  "/api/cron/",
+];
 const PUBLIC_PATTERNS = [
   /^\/api\/sites\/[^/]+\/leads\/?$/,
   /^\/api\/billing\/webhook\/?$/,

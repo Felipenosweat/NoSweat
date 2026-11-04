@@ -1,3 +1,4 @@
+import { liveBookingEndpoint } from "@/server/booking/service";
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -48,6 +49,7 @@ export default async function PublicSitePage({ params }: PublicSitePageProps) {
   if (!site.liveAccess) {
     return <SiteUnavailable name={site.spec.business.name} />;
   }
+  const bookingEndpoint = await liveBookingEndpoint(site.id, site.spec);
   return (
     <>
       {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}
@@ -55,7 +57,11 @@ export default async function PublicSitePage({ params }: PublicSitePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: siteJsonLd(site, freeSiteUrl(slug)) }}
       />
-      <SiteRenderer spec={site.spec} contactEndpoint={`/api/sites/${site.id}/leads`} />
+      <SiteRenderer
+        spec={site.spec}
+        contactEndpoint={`/api/sites/${site.id}/leads`}
+        bookingEndpoint={bookingEndpoint}
+      />
     </>
   );
 }

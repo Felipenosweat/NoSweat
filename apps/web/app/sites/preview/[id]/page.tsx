@@ -1,3 +1,4 @@
+import { liveBookingEndpoint } from "@/server/booking/service";
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -74,7 +75,10 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           </Link>
         </div>
       </div>
-      <SiteRenderer spec={site.spec} />
+      <SiteRenderer
+        spec={site.spec}
+        bookingEndpoint={await liveBookingEndpoint(site.id, site.spec)}
+      />
     </>
   );
 }

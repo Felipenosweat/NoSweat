@@ -5,6 +5,10 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { fieldClass, labelClass, primaryButton, textButton } from "@/components/DashboardUi";
 import { GlassSegmented } from "@/components/glass";
 import { SparklesIcon } from "@/components/marketing/icons";
+import { announceCreditsSpent } from "@/lib/credits-events";
+import { creditsLabel } from "@/lib/credits-ui";
+// Só os preços (arquivo puro, sem código de servidor): a tabela de preços fica num lugar só.
+import { creditCost } from "@/server/credits/pricing";
 import {
   ErrorNote,
   monthLabel,
@@ -18,6 +22,8 @@ import {
 // A geração pode levar ~1 minuto: mostramos o progresso e travamos o botão.
 
 const PER_WEEK: PlanMonthRequest["postsPerWeek"][] = [2, 3, 5];
+
+const PLAN_COST = creditCost("social_plan");
 
 export function PlanMonthButton({
   thisMonth,
@@ -81,6 +87,8 @@ export function PlanMonthButton({
         body,
       });
       setOpen(false);
+      // O servidor já descontou os créditos: o menu atualiza na hora.
+      announceCreditsSpent(PLAN_COST);
       onPlanned(result.posts, month);
     } catch (err) {
       setError(toApiError(err));
@@ -110,7 +118,9 @@ export function PlanMonthButton({
           <SparklesIcon className="size-4" aria-hidden="true" />
           Fill my month with AI
         </button>
-        {remainingText && <p className="text-[13px] text-(--glass-fg-muted)">{remainingText}</p>}
+        <p className="text-[13px] text-(--glass-fg-muted)">
+          {[`Uses ${creditsLabel(PLAN_COST)}`, remainingText].filter(Boolean).join(" · ")}
+        </p>
       </div>
     );
   }
@@ -160,6 +170,9 @@ export function PlanMonthButton({
         you approve it.
         {remainingText ? ` ${remainingText}.` : ""}
       </p>
+      <p className="mt-1 text-[13px] leading-5 font-medium text-ink">
+        Planning the month uses {creditsLabel(PLAN_COST)}.
+      </p>
 
       <div aria-live="polite" className="mt-3">
         {pending && (
@@ -187,7 +200,9 @@ export function PlanMonthButton({
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button type="submit" disabled={pending || out} className={primaryButton}>
-          {pending ? "Writing…" : `Write ${monthLabel(month).split(" ")[0]} posts`}
+          {pending
+            ? "Writing…"
+            : `Write ${monthLabel(month).split(" ")[0]} posts · ${creditsLabel(PLAN_COST)}`}
         </button>
         <button
           type="button"

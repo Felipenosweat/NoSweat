@@ -28,6 +28,8 @@ export const ERROR_CODES = [
   "ai_unavailable",
   /** A busca de empresas (prospecção) falhou no provedor (OpenStreetMap ou Google). */
   "places_error",
+  /** O envio de e-mails ainda não está ligado (sem RESEND_API_KEY): respostas ao cliente dão 503. */
+  "email_not_configured",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 
@@ -49,12 +51,21 @@ export type SiteStatus = z.infer<typeof SiteStatus>;
 
 // ---------- POST /api/sites/generate ----------
 
+/**
+ * De onde vêm as fotos do site: "auto" = a plataforma busca fotos de banco de imagens (topo e
+ * serviços); "own" = o dono manda as dele (a plataforma não busca nenhuma foto de banco).
+ */
+export const PhotoMode = z.enum(["auto", "own"]);
+export type PhotoMode = z.infer<typeof PhotoMode>;
+
 export const GenerateSiteRequest = z.object({
   brief: z
     .string()
     .trim()
     .min(10, "Tell us a bit more about your business (at least 10 characters).")
     .max(2000, "Please keep the description under 2,000 characters."),
+  /** Opcional; sem ele, "auto" (comportamento de sempre). */
+  photos: PhotoMode.default("auto"),
 });
 export type GenerateSiteRequest = z.infer<typeof GenerateSiteRequest>;
 

@@ -153,6 +153,27 @@ Como as peças se ligam:
   (anual ÷ 12), receita mensal real (Stripe + liberações manuais, preços de `billing/plans.ts`) e
   break-even = custos fixos ÷ (receita média por cliente − custo variável por cliente). As
   premissas mudam pela URL (`?arpu=&var=`).
+- Responder pedidos (botão "Reply" na ficha e na lista dos clientes novos; `POST /api/clients/[id]/reply`,
+  `server/clients/reply.ts`, migration 0026 atividade `message`): o dono manda e-mail pela Resend (a
+  resposta do cliente volta para o e-mail da empresa) ou registra um SMS que ele mesmo enviou pelo
+  app de mensagens (`sms:`); sem `RESEND_API_KEY`, a tela abre o app de e-mail (`mailto:`). Tudo vira
+  atividade no histórico e "Confirm the job" pode mover o cliente para "contacted".
+- Fotos dos sites: a plataforma busca fotos de banco (Unsplash/Pexels) só como `scene`; o dono pode
+  escolher "I'll add my own" ao criar (`GenerateSiteRequest.photos`). O crédito dos fotógrafos sai
+  em UMA linha pequena no rodapé (`PhotoCredits`), exigência dos termos do Unsplash; fotos do dono
+  nunca têm crédito.
+- Agendamento online (`server/booking/`, migration 0027, seção `booking` do SiteSpec, `/office/booking`,
+  `/booking/[token]`, `/book/[slug]`): o dono liga em Business → Booking (horários da semana, passo,
+  folga, antecedência, dias fechados) e marca serviços da tabela de preços como `bookable` com
+  `durationMinutes`. O site público só mostra a seção e o link "Book" quando o agendamento está ligado
+  (`liveBookingEndpoint`). Horários livres = horário de atendimento menos jobs não cancelados (da
+  pessoa ou sem ninguém) e marcações; a função SQL `book_slot` trava por dono
+  (`pg_advisory_xact_lock`) e confere de novo antes de gravar (409 `slot_taken`). Marcar cria
+  cliente + job "Booked online" na agenda; cancelar o job cancela a marcação. E-mails pela Resend.
+- Créditos à vista: `CreditsPill` no menu lateral e no topo do celular (`ns:credits` atualiza na
+  hora); o custo de cada ação de IA aparece antes de usar. Preços só em `server/credits/pricing.ts`.
+- Cabeçalho dos sites (`styles.css` "Vidro líquido", `Signature.tsx`, `Motion.tsx` `adaptHeader`,
+  `tone.ts`): vidro que muda de tom (claro/escuro) conforme a seção sob a barra (`data-tone`).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 - Prospecção (`/admin/prospects`, `server/prospects/`, migration 0025, `docs/prospecting.md`):

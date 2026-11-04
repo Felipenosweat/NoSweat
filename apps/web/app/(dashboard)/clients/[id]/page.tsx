@@ -25,6 +25,7 @@ import {
 } from "@/lib/clients";
 import { estimateLabel, invoiceLabel } from "@/lib/office";
 import { getViewer } from "@/server/auth/viewer";
+import { getReplyCompany } from "@/server/clients/reply";
 import { clientsTimeZone, getClientDetail } from "@/server/clients/service";
 import { listEstimates, listInvoices, listJobs } from "@/server/office/service";
 import { listOwnerSites } from "@/server/owner-sites";
@@ -33,6 +34,7 @@ import { EstimateBadge, EstimateIcon, InvoiceBadge, InvoiceIcon } from "../../of
 import { scheduleHref } from "../../schedule/params";
 import { JobStatusBadge } from "../../schedule/ui";
 import { ClientMenu } from "../ClientMenu";
+import { ReplyButton } from "../ReplyButton";
 import {
   Avatar,
   CalendarIcon,
@@ -230,6 +232,7 @@ function activityTitle(activity: ClientActivity): string {
       ? `Job done · ${formatCents(activity.amountCents)}`
       : "Job done";
   }
+  if (activity.kind === "message") return "You replied";
   if (activity.kind === "stage") {
     const stage = activity.body.trim();
     return `Moved to ${isClientStage(stage) ? STAGE_LABELS[stage] : stage}`;
@@ -251,6 +254,7 @@ const ACTIVITY_ICONS: Partial<Record<string, (props: { className?: string }) => 
   job: JobIcon,
   stage: StageIcon,
   payment: MoneyIcon,
+  message: MailIcon,
 };
 
 const ACTIVITY_TONES: Partial<Record<string, string>> = {
@@ -259,6 +263,7 @@ const ACTIVITY_TONES: Partial<Record<string, string>> = {
   job: "bg-emerald-500/10 text-emerald-700",
   stage: "bg-amber-500/15 text-amber-700",
   payment: "bg-emerald-500/10 text-emerald-700",
+  message: "bg-brand/10 text-brand",
 };
 
 function TimelineItem({ activity, last }: { activity: ClientActivity; last: boolean }) {
@@ -509,10 +514,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
   if (!viewer) redirect(`/login?next=${encodeURIComponent(`/clients/${id}`)}`);
   const readOnly = viewer.viewingAs !== null;
 
-  const [{ today, detail, since }, review, paperwork] = await Promise.all([
+  const [{ today, detail, since }, review, paperwork, company] = await Promise.all([
     loadClient(viewer.ownerId, id),
     loadReviewLink(viewer.ownerId),
     loadPaperwork(viewer.ownerId, id),
+    getReplyCompany(viewer.ownerId),
   ]);
   if (!detail) notFound();
   const { client, activities } = detail;
@@ -559,6 +565,22 @@ export default async function ClientPage({ params }: ClientPageProps) {
               {since}
             </p>
             <TagList tags={client.tags} className="mt-3" />
+            {!readOnly && (
+              // Cliente novo: o primeiro passo é responder (confirmar o serviço pedido pelo site).
+              <ReplyButton
+                client={{
+                  id: client.id,
+                  name: client.name,
+                  email: client.email,
+                  phone: client.phone,
+                  stage: client.stage,
+                }}
+                company={company}
+                variant={client.stage === "new" ? "primary" : "secondary"}
+                fullWidth
+                className="mt-5"
+              />
+            )}
             <QuickActions client={client} />
             {!readOnly && (
               // Três seguidos só onde cabem sem cortar o texto (no celular e na coluna estreita do

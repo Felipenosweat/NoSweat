@@ -8,6 +8,7 @@ export const EDITABLE_SECTION_LABELS: Record<SectionType, string> = {
   testimonials: "Reviews",
   faq: "FAQ",
   contact: "Contact",
+  booking: "Booking",
   gallery: "Gallery",
   about: "About",
 };

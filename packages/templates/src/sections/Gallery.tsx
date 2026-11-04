@@ -1,5 +1,5 @@
 import type { SectionOf, SiteImage } from "@nosweat/schema";
-import { Photo, PhotoCredit } from "../components/photo";
+import { Photo } from "../components/photo";
 
 /**
  * Jeito de mostrar as fotos, um por composição:
@@ -87,11 +87,6 @@ export function Gallery({
 
   const layout = LAYOUTS[variant];
   const ratio = frameRatio(images, variant);
-  const credited = images.filter((image) => image.credit);
-  // Todas do mesmo fotógrafo: um crédito só, sem repetir a linha para cada foto.
-  const oneCredit =
-    credited.length > 0 &&
-    new Set(credited.map((image) => `${image.credit?.name}|${image.credit?.url}`)).size === 1;
 
   return (
     <section
@@ -143,21 +138,6 @@ export function Gallery({
             </li>
           ))}
         </ul>
-        {oneCredit && credited[0] && (
-          <PhotoCredit image={credited[0]} className="mt-10 text-xs text-ns-muted" />
-        )}
-        {credited.length > 0 && !oneCredit && (
-          <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ns-muted">
-            {images.map((image, index) =>
-              image.credit ? (
-                <li key={`${image.url}-credit-${index}`} className="flex min-w-0 gap-1.5">
-                  <span className="tabular-nums">{String(index + 1).padStart(2, "0")}</span>
-                  <PhotoCredit image={image} />
-                </li>
-              ) : null,
-            )}
-          </ul>
-        )}
       </div>
     </section>
   );

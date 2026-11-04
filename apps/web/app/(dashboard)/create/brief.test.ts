@@ -6,6 +6,8 @@ import {
   PROMPT_LIMIT,
   parseChoices,
   composeBrief,
+  EMPTY_CHOICES,
+  generateRequest,
   fieldsFromBrief,
   parseDraft,
   publishedSlug,
@@ -190,5 +192,20 @@ describe("área atendida", () => {
 
   it("não passa do limite do campo", () => {
     expect(toggleArea("x".repeat(20), "Holden", 25)).toBe("x".repeat(20));
+  });
+});
+
+describe("generateRequest", () => {
+  const fields = { ...EMPTY_FIELDS, what: "House cleaning in Austin, TX" };
+
+  it("asks for stock photos by default", () => {
+    const request = generateRequest(fields, EMPTY_CHOICES);
+    expect(request.photos).toBe("auto");
+    expect(GenerateSiteRequest.safeParse(request).success).toBe(true);
+  });
+
+  it("carries the owner's choice to bring their own photos", () => {
+    const request = generateRequest(fields, EMPTY_CHOICES, "own");
+    expect(GenerateSiteRequest.parse(request).photos).toBe("own");
   });
 });

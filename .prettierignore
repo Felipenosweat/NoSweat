@@ -5,3 +5,6 @@ out
 dist
 coverage
 next-env.d.ts
+
+# Skill de terceiros copiada sem alteração (ver .claude/skills/impeccable/PROJECT-NOTES.md)
+.claude/skills/impeccable
