@@ -13,76 +13,84 @@
   --lp-paper-deep: #e9e4da;
   --lp-line: rgb(7 27 51 / 0.14);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* V9: títulos em grotesca pesada, caixa alta (Bricolage Grotesque, par "bold" de app/fonts.ts).
-     O nome da classe (.lp-serif) ficou por compatibilidade; já não é serifa. */
-  --font-lp-serif: var(--ns-font-bold-heading);
-  --lp-accent: #00c2ff;
+  /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
+  --font-lp-serif: var(--ns-font-editorial-heading);
+  /* Dourado discreto (só em destaques sobre a noite): a "realeza" combinada. */
+  --lp-accent: #d9b877;
   background: var(--lp-night);
 }
 
 /* ---------- Tipografia ---------- */
 
 .lp-serif {
-  font-family: var(--font-lp-serif), "Arial Black", sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: -0.035em;
-  line-height: 0.92;
+  font-family: var(--font-lp-serif), "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  word-spacing: 0.02em;
+  line-height: 0.95;
   text-wrap: balance;
 }
 
-/* A palavra de destaque: sem itálico, na cor de ação (ciano no escuro, azul da marca no papel). */
+/* A palavra de destaque: itálico, dourada na noite e azul-tinta no papel. */
 .lp-serif em {
-  font-style: normal;
+  font-style: italic;
+  letter-spacing: -0.01em;
   color: var(--lp-accent);
 }
 
 .lp-paper .lp-serif em {
-  color: #0066ff;
+  color: #0a3d91;
 }
 
-/* Palavra que troca no título (só CSS: todas as palavras ocupam a mesma célula, a maior define a
-   largura, e cada uma acende na sua vez). Sem movimento: fica só a primeira. */
-.lp-rotor {
-  display: inline-grid;
-  vertical-align: bottom;
+/* Pílula de imagem dentro do título (a forma do Redstone): um recorte de site de exemplo. */
+.lp-pill {
+  display: inline-block;
+  width: 1.9em;
+  height: 0.74em;
+  margin-inline: 0.1em;
+  vertical-align: -0.04em;
   overflow: hidden;
-  padding-bottom: 0.1em;
-  margin-bottom: -0.1em;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.25);
 }
 
-.lp-rotor > span {
-  grid-area: 1 / 1;
-  color: var(--lp-accent);
+.lp-pill img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+/* Cursor "View" que segue o mouse sobre a galeria (só mouse; ver LandingCursor). */
+.lp-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  border-radius: 999px;
+  background: var(--lp-accent);
+  color: #071b33;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
   opacity: 0;
-  transform: translateY(60%);
-  animation: lp-rotor 15.6s var(--lp-ease) infinite;
-  animation-delay: calc(var(--k) * 2.6s);
+  scale: 0.4;
+  transition:
+    opacity 200ms var(--lp-ease),
+    scale 300ms var(--lp-ease);
 }
 
-.lp-rotor > span:first-child {
+.lp-cursor[data-on] {
   opacity: 1;
-  transform: none;
-  /* Já começa dentro da janela visível: o título (LCP) aparece no primeiro quadro. */
-  animation-delay: -0.5s;
-}
-
-/* Seis palavras: cada uma ocupa 1/6 do ciclo (sobe, fica, sai por cima). */
-@keyframes lp-rotor {
-  0% {
-    opacity: 0;
-    transform: translateY(60%);
-  }
-  2.5%,
-  13.5% {
-    opacity: 1;
-    transform: none;
-  }
-  16.67%,
-  100% {
-    opacity: 0;
-    transform: translateY(-60%);
-  }
+  scale: 1;
 }
 
 /* Faixa de nomes que corre (o mesmo vaivém do lp-drift). */
@@ -101,7 +109,7 @@
 
 .lp-card:hover {
   background: rgb(255 255 255 / 0.08);
-  border-color: rgb(0 194 255 / 0.6);
+  border-color: rgb(217 184 119 / 0.6);
 }
 
 /* Contorno só no texto grande de enfeite (número, faixa). */
@@ -349,8 +357,7 @@
   .lp-fade-up,
   .lp-nav,
   .lp-drift,
-  .lp-ticker,
-  .lp-rotor > span {
+  .lp-ticker {
     animation: none;
   }
 

@@ -88,7 +88,7 @@ export function Showcase() {
         <div className="mx-auto mb-8 grid w-full max-w-[1240px] grid-cols-1 gap-6 px-5 sm:px-8 lg:mb-10 lg:grid-cols-12 lg:items-end">
           <h2
             id="looks-title"
-            className="lp-serif text-[clamp(2.2rem,4.6vw,4.25rem)] text-white lg:col-span-7"
+            className="lp-serif text-[clamp(2.4rem,5vw,4.5rem)] text-white lg:col-span-7"
           >
             Open any of them <em>and scroll.</em>
           </h2>
@@ -102,6 +102,7 @@ export function Showcase() {
             <li key={site.slug} className="w-[78vw] sm:w-[62vw] lg:w-[46vw] lg:max-w-[720px]">
               <Link
                 href={`/examples/${site.slug}`}
+                data-lp-cursor
                 className="group block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
                 <span className="lp-zoom block overflow-hidden rounded-lg ring-1 ring-white/10">

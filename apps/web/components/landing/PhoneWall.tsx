@@ -50,7 +50,7 @@ export function PhoneWall() {
   return (
     <section aria-labelledby="wall-title" className="lp-paper overflow-hidden py-14 lg:py-20">
       <div className="mx-auto mb-10 flex w-full max-w-[1240px] flex-col gap-5 px-5 sm:px-8 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
-        <h2 id="wall-title" className="lp-serif text-[clamp(2rem,4.2vw,3.75rem)] text-[#071b33]">
+        <h2 id="wall-title" className="lp-serif text-[clamp(2.2rem,4.6vw,4rem)] text-[#071b33]">
           Made for the <em>phone</em> in your customer’s hand
         </h2>
       </div>

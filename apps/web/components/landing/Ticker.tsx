@@ -1,18 +1,18 @@
-// Faixa que corre entre o hero e a parede de celulares: os ramos que a No Sweat já atende com
-// site de exemplo. É enfeite (aria-hidden); só nomes de ramos, nenhum número ou cliente inventado.
+// Faixa que corre entre o hero e a parede de celulares: os sites de exemplo (negócios fictícios,
+// avisado na galeria). É enfeite (aria-hidden); nenhum cliente real, número ou logo inventado.
 
 const TRADES = [
-  "Barbershops",
-  "Law firms",
-  "Landscapers",
-  "Bakeries",
-  "Electricians",
-  "Day spas",
-  "Tattoo studios",
-  "Coffee shops",
-  "Interior designers",
-  "BBQ joints",
-  "Pizzerias",
+  "Still Water Spa",
+  "Smoke & Rail BBQ",
+  "Mercer Law",
+  "Greenline Landscaping",
+  "Fade & Co. Barbers",
+  "Sunrise Bakery",
+  "Iron Lotus Tattoo",
+  "Hollis Interiors",
+  "North Loop Coffee",
+  "Bright Spark Electric",
+  "Brick Oven Pizza Co.",
 ];
 
 export function Ticker() {
@@ -28,13 +28,13 @@ export function Ticker() {
             {TRADES.map((trade, index) => (
               <span key={`${copy}-${trade}`} className="flex items-center">
                 <span
-                  className={`lp-serif px-6 text-[clamp(1.75rem,3.6vw,3.25rem)] whitespace-nowrap lg:px-9 ${
-                    index % 2 ? "lp-outline" : "text-white"
+                  className={`lp-serif px-6 text-[clamp(2rem,4vw,3.75rem)] whitespace-nowrap lg:px-9 ${
+                    index % 2 ? "italic text-[var(--lp-accent)]" : "text-white"
                   }`}
                 >
                   {trade}
                 </span>
-                <span className="size-2 rounded-full bg-[var(--lp-accent)]" />
+                <span className="size-1.5 rotate-45 bg-white/40" />
               </span>
             ))}
           </div>

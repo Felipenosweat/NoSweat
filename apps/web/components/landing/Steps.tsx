@@ -183,7 +183,7 @@ export function Steps() {
           <h2
             id="story-title"
             data-lp-rise
-            className="lp-serif text-[clamp(2.2rem,5.2vw,4.75rem)] lg:col-span-8"
+            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] lg:col-span-8"
           >
             How it <em>works</em>
           </h2>

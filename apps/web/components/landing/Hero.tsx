@@ -7,32 +7,30 @@ import { PromptForm } from "@/components/marketing/PromptForm";
 // molde Signature, negócio fictício) que cresce com a rolagem. Sem cortina de abertura (pedido
 // do fundador): a página abre direto no conteúdo.
 
-/** As palavras que trocam no título: ramos que têm site de exemplo na galeria (nada inventado). */
-const TRADES = ["barbershop", "law firm", "landscaper", "bakery", "electrician", "day spa"];
+/** Recorte de um site de exemplo, em pílula, no meio do título (decorativo). */
+function Pill({ slug }: { slug: string }) {
+  return (
+    <span aria-hidden="true" className="lp-pill">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/landing/signature/${slug}-d.webp`} alt="" width={380} height={238} />
+    </span>
+  );
+}
 
-/** O título: "A website for" + o ramo que troca. O leitor de tela lê a frase fixa. */
+/** O título: vale para qualquer negócio (nada de ramo específico). */
 function Title() {
   return (
     <h1
       id="hero-title"
-      className="lp-serif mt-6 text-[clamp(2.9rem,9vw,8.75rem)] leading-[0.92] text-white"
+      className="lp-serif mt-6 text-[clamp(3.2rem,10vw,10rem)] leading-[0.92] text-white"
     >
-      <span className="sr-only">A website for your local business</span>
-      <span aria-hidden="true">
-        <span className="lp-line">
-          <span style={{ "--i": 0 } as CSSProperties}>A website for</span>
-        </span>
-        <span className="lp-line">
-          <span style={{ "--i": 1 } as CSSProperties}>
-            your{" "}
-            <span className="lp-rotor">
-              {TRADES.map((trade, k) => (
-                <span key={trade} style={{ "--k": k } as CSSProperties}>
-                  {trade}.
-                </span>
-              ))}
-            </span>
-          </span>
+      <span className="lp-line">
+        <span style={{ "--i": 0 } as CSSProperties}>Your business,</span>
+      </span>
+      <span className="lp-line">
+        <span style={{ "--i": 1 } as CSSProperties}>
+          dressed like <Pill slug="mercer-law" />
+          <em>royalty.</em>
         </span>
       </span>
     </h1>
@@ -96,7 +94,7 @@ export function Hero() {
       >
         <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
           <p className="lp-eyebrow lp-fade-up text-white/60" style={{ "--i": 0 } as CSSProperties}>
-            AI website builder · Local businesses · USA
+            Website builder for local businesses
           </p>
           <Title />
 

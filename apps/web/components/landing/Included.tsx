@@ -40,7 +40,7 @@ export function Included() {
           <h2
             id="included-title"
             data-lp-rise
-            className="lp-serif text-[clamp(2.2rem,5.2vw,4.75rem)] text-white lg:col-span-8"
+            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] text-white lg:col-span-8"
           >
             You say little. <em>We ship the rest.</em>
           </h2>
