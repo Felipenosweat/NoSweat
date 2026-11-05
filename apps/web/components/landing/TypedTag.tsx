@@ -2,21 +2,25 @@
 
 import { useEffect, useState } from "react";
 
-// Etiqueta "BE ___" que se digita e se apaga, com cursor de bloco (forma inspirada no
-// gianmediagroup.com, palavras nossas). Fonte mono, caixa alta, dentro de uma pílula com a borda
-// em gradiente animado nas cores da logo. Com "reduzir movimento" fica parada na primeira palavra.
+// Etiqueta "BE ___" (forma inspirada no gianmediagroup.com, palavras nossas): começa só com "BE"
+// e o cursor de bloco piscando; depois da abertura da página, digita a palavra, espera, apaga e
+// digita a próxima. Fonte mono, caixa alta, pílula com borda em gradiente animado nas cores da
+// logo. Com "reduzir movimento" mostra a primeira palavra parada.
 
 const WORDS = ["FOUND.", "TRUSTED.", "REMEMBERED."];
 
 export function TypedTag({ className = "" }: { className?: string }) {
-  const [text, setText] = useState(WORDS[0] ?? "");
+  const [text, setText] = useState("");
   const [typing, setTyping] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setText(WORDS[0] ?? "");
+      return;
+    }
     let i = 0;
     let timer = 0;
-    let current = WORDS[0] ?? "";
+    let current = "";
     const erase = () => {
       setTyping(true);
       if (current.length > 0) {
@@ -29,6 +33,7 @@ export function TypedTag({ className = "" }: { className?: string }) {
       }
     };
     const type = () => {
+      setTyping(true);
       const target = WORDS[i] ?? "";
       if (current.length < target.length) {
         current = target.slice(0, current.length + 1);
@@ -39,7 +44,8 @@ export function TypedTag({ className = "" }: { className?: string }) {
         timer = window.setTimeout(erase, 2600);
       }
     };
-    timer = window.setTimeout(erase, 2600);
+    // Começa a digitar depois da abertura (IntroCurtain, ~1,7 s) e de um instante de cursor.
+    timer = window.setTimeout(type, 2400);
     return () => window.clearTimeout(timer);
   }, []);
 
