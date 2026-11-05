@@ -84,7 +84,7 @@ export function MarketingHeader({
     <header
       className={
         float
-          ? "lp-nav sticky top-0 z-40 border-b border-black/[0.08] bg-white/80 backdrop-blur-xl backdrop-saturate-150"
+          ? "lp-nav fixed inset-x-3 top-3 z-40 sm:inset-x-5 sm:top-4"
           : `sticky top-0 z-30 border-b backdrop-blur-md ${
               dark ? "border-white/10 bg-ink/75" : "border-slate-200/80 bg-white/90"
             }`
@@ -95,7 +95,7 @@ export function MarketingHeader({
       <div
         className={
           float
-            ? "mx-auto flex min-h-14 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-1 sm:px-8"
+            ? "lp-glass mx-auto flex min-h-14 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[1.75rem] py-1.5 pr-1.5 pl-4 sm:pl-5"
             : `${container} flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5`
         }
       >
@@ -132,7 +132,7 @@ export function MarketingHeader({
             href="/create"
             className={`inline-flex h-10 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-4 ${ring} ${
               float
-                ? "rounded-full bg-brand text-white hover:bg-brand-dark"
+                ? "rounded-full bg-white text-ink hover:bg-slate-200"
                 : dark
                   ? "bg-white text-ink hover:bg-slate-200"
                   : "bg-brand text-white hover:bg-brand-dark"

@@ -1,3 +1,5 @@
+import { SlabGlow } from "./SlabGlow";
+
 // "How it works" (#story): quatro cartões pretos em uma fileira, cada um com um esboço desenhado
 // em HTML (sem fotos) do que acontece naquele passo. Só o que o produto faz hoje.
 
@@ -60,8 +62,8 @@ function Art({ i }: { i: number }) {
 
 const STEPS = [
   {
-    title: "Describe your business",
-    body: "One or two sentences, like you’d tell a customer.",
+    title: "Answer a few questions",
+    body: "What you do, where, and anything worth knowing. About a minute.",
   },
   {
     title: "Get a finished site",
@@ -82,16 +84,20 @@ export function Steps() {
     <section
       id="story"
       aria-labelledby="story-title"
-      className="px-5 pt-8 pb-16 text-center sm:px-8 lg:pb-24"
+      className="scroll-mt-14 px-5 py-20 text-center sm:px-8 lg:py-28"
     >
       <span className="lp-tag">How it works</span>
-      <h2 id="story-title" data-lp-rise className="lp-serif mt-6 text-[clamp(2rem,4.4vw,3.5rem)]">
-        From one sentence <br className="hidden sm:block" />
-        <em>to a website that works.</em>
+      <h2 id="story-title" className="lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]">
+        From a few answers
+        <br />
+        <span className="dim">to a website that works.</span>
       </h2>
-      <ol className="mx-auto mt-12 grid w-full max-w-[1240px] grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
+      <ol
+        data-slabs
+        className="mx-auto mt-12 grid w-full max-w-[1180px] grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4"
+      >
         {STEPS.map((step, index) => (
-          <li key={step.title} data-lp-rise className="lp-slab flex flex-col gap-6 p-6 lg:p-7">
+          <li key={step.title} className="lp-slab flex flex-col gap-6 p-6">
             <p className="lp-slab-n text-[12px] font-semibold tracking-[0.1em] text-white/60">
               STEP {String(index + 1).padStart(2, "0")}
             </p>
@@ -105,6 +111,7 @@ export function Steps() {
           </li>
         ))}
       </ol>
+      <SlabGlow />
     </section>
   );
 }

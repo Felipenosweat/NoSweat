@@ -1,37 +1,78 @@
-/* Landing V10: fundo branco, detalhes nas cores da logo (azul #0066ff, ciano #00c2ff, tinta
-   #071b33). Títulos em serifa editorial com a palavra de destaque em itálico azul; painéis com
-   borda fina e cantos marcados (forma das referências do fundador). Sem fotos nem capturas de
-   sites: só interface desenhada. O movimento com rolagem é do LandingMotion; sem JS ou com
-   "reduzir movimento", tudo aparece parado, legível e completo. */
+/* Landing V12 (forma inspirada no averaks.com, conteúdo e cores da No Sweat): página branca,
+   tipografia de sistema, cabeçalho fino com o logo no centro, título com brilho e verbo que se
+   digita, perguntas uma de cada vez no topo, três colunas com aparelhos desenhados que alternam
+   entre negócios de exemplo, cartões pretos e dúvidas centralizadas. Sem fotos.
+   Sem JS ou com "reduzir movimento", tudo aparece parado, legível e completo. */
 
 .lp {
   --lp-ink: #071b33;
+  --lp-dim: #6e6e73;
+  --lp-faint: #aeaeb4;
+  --lp-panel: #f5f5f7;
+  --lp-hair: rgb(0 0 0 / 0.09);
   --lp-blue: #0066ff;
   --lp-cyan: #00c2ff;
-  --lp-tint: #f4f8ff;
   --lp-line: rgb(7 27 51 / 0.12);
-  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Tipografia de sistema (San Francisco no Apple, Segoe no Windows): limpa e sem baixar fonte. */
-  --font-lp-serif:
+  --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-lp:
     -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial,
     sans-serif;
+  /* isolation: as linhas de fundo (z-index -1) ficam sobre o branco da página. */
+  isolation: isolate;
   background: #ffffff;
   color: var(--lp-ink);
+  font-family: var(--font-lp);
+  letter-spacing: -0.014em;
 }
 
-.lp-serif {
-  font-family: var(--font-lp-serif);
+/* ---------- Linhas de fundo: curvas paralelas com um pulso andando ---------- */
+.lp-trail {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.lp-trail path {
+  fill: none;
+  stroke-width: 1.2;
+  stroke: rgb(7 27 51 / 0.06);
+}
+
+.lp-trail .pulse {
+  stroke: rgb(0 102 255 / 0.28);
+  stroke-linecap: round;
+  stroke-dasharray: 160 2440;
+  animation: lp-trail 11s linear infinite;
+}
+
+.lp-trail .pulse.p2 {
+  animation-duration: 15s;
+  animation-delay: -6s;
+  stroke: rgb(0 194 255 / 0.25);
+}
+
+@keyframes lp-trail {
+  to {
+    stroke-dashoffset: -2600;
+  }
+}
+
+/* ---------- Tipografia ---------- */
+.lp-h {
+  font-family: var(--font-lp);
   font-weight: 600;
-  letter-spacing: -0.03em;
-  line-height: 1.06;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
   text-wrap: balance;
   color: var(--lp-ink);
 }
 
-/* Segunda metade do título em outro tom (estilo duas cores): azul da marca, sem itálico. */
-.lp-serif em {
-  font-style: normal;
-  color: var(--lp-blue);
+/* Segunda linha do título de seção em cinza (duas cores, sem itálico). */
+.lp-h .dim {
+  color: #86868b;
 }
 
 .lp-tag {
@@ -45,7 +86,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6e6e73;
+  color: var(--lp-dim);
 }
 
 .lp-tag::before {
@@ -55,53 +96,210 @@
   background: var(--lp-blue);
 }
 
-/* Verbo que troca no título (só CSS; sem movimento fica só o primeiro). */
-.lp-rotor {
-  display: inline-grid;
-  vertical-align: bottom;
-  overflow: hidden;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
+/* Brilho que atravessa o título e descansa (só quando o navegador recorta fundo no texto). */
+.lp-sheen {
+  color: var(--c, var(--lp-ink));
 }
 
-.lp-rotor > span {
-  grid-area: 1 / 1;
-  color: var(--lp-blue);
-  opacity: 0;
-  transform: translateY(60%);
-  animation: lp-rotor 14s var(--lp-ease) infinite;
-  animation-delay: calc(var(--k) * 3.5s);
+@supports (-webkit-background-clip: text) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-sheen {
+      color: transparent;
+      background:
+        linear-gradient(105deg, var(--c) 42%, var(--glint, #9aa5b4) 50%, var(--c) 58%) 130% 0 / 240%
+          100% no-repeat,
+        var(--c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: lp-sheen 7.5s ease-in-out 1.6s infinite;
+    }
+  }
 }
 
-.lp-rotor > span:first-child {
-  opacity: 1;
-  transform: none;
-  animation-delay: -0.4s;
-}
-
-/* Quatro verbos: cada um ocupa 1/4 do ciclo. */
-@keyframes lp-rotor {
+@keyframes lp-sheen {
   0% {
-    opacity: 0;
-    transform: translateY(60%);
+    background-position: 130% 0;
   }
-  3%,
-  22% {
-    opacity: 1;
-    transform: none;
-  }
-  25%,
+  28%,
   100% {
-    opacity: 0;
-    transform: translateY(-60%);
+    background-position: -140% 0;
   }
 }
 
-/* Cartão preto "metal": luz que cai do canto e uma borda fina. */
+/* O verbo ganha uma linha só no celular (trocar de palavra não reflui o título). */
+.lp-whirl {
+  display: inline-block;
+  white-space: pre;
+}
+
+@media (max-width: 700px) {
+  .lp-whirl {
+    display: block;
+  }
+}
+
+/* ---------- Entrada da página ---------- */
+.lp-rise {
+  animation: lp-rise 0.9s var(--lp-ease) both;
+  animation-delay: calc(var(--i, 0) * 120ms + 50ms);
+}
+
+/* O título sobe sem sumir (um primeiro quadro com opacidade 0 não conta como LCP). */
+.lp-rise-solid {
+  animation: lp-rise-solid 0.9s var(--lp-ease) both;
+  animation-delay: 150ms;
+}
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes lp-rise-solid {
+  from {
+    transform: translateY(16px);
+  }
+}
+
+.lp-nav {
+  animation: lp-rise 0.9s var(--lp-ease) both;
+}
+
+/* ---------- Perguntas do topo ---------- */
+.lp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(7 27 51 / 0.15);
+  transition:
+    transform 0.3s var(--lp-ease),
+    background 0.3s;
+}
+
+.lp-dot[data-on] {
+  background: var(--lp-ink);
+  transform: scale(1.25);
+}
+
+.lp-step {
+  animation: lp-step 0.45s var(--lp-ease) both;
+}
+
+@keyframes lp-step {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+}
+
+.lp-chip {
+  border-radius: 980px;
+  background: var(--lp-panel);
+  color: var(--lp-ink);
+  transition:
+    transform 0.2s var(--lp-ease),
+    background 0.2s,
+    color 0.2s;
+}
+
+.lp-chip:hover {
+  background: #e8e8ed;
+  transform: translateY(-1px);
+}
+
+.lp-chip:active {
+  transform: scale(0.97);
+}
+
+.lp-chip[aria-pressed="true"] {
+  background: var(--lp-ink);
+  color: #fff;
+}
+
+.lp-field {
+  background: var(--lp-panel);
+  border-radius: 980px;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.lp-field:focus {
+  outline: none;
+  background: #efeff1;
+  box-shadow: 0 0 0 3px rgb(0 102 255 / 0.18);
+}
+
+.lp-btn {
+  border-radius: 980px;
+  background: var(--lp-ink);
+  color: #fff;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.18),
+    0 6px 16px rgb(0 0 0 / 0.12);
+  transition:
+    transform 0.2s var(--lp-ease),
+    box-shadow 0.25s,
+    background 0.2s;
+}
+
+.lp-btn:hover {
+  transform: translateY(-1px);
+  background: #000;
+}
+
+.lp-btn:active {
+  transform: scale(0.97);
+}
+
+.lp-btn-blue {
+  background: var(--lp-blue);
+}
+
+.lp-btn-blue:hover {
+  background: #0052cc;
+}
+
+/* ---------- O que você ganha: três aparelhos ---------- */
+.lp-dev {
+  position: relative;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 18px;
+  border: 1px solid rgb(0 0 0 / 0.05);
+  background:
+    radial-gradient(90% 70% at 50% 100%, rgb(0 0 0 / 0.05), transparent 70%), var(--lp-panel);
+}
+
+.lp-frame {
+  position: absolute;
+  transition: transform 0.7s var(--lp-ease);
+}
+
+.lp-dev:hover .lp-frame {
+  transform: translateY(-2.5%);
+}
+
+.lp-set {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease;
+}
+
+.lp-set[data-on] {
+  opacity: 1;
+}
+
+/* ---------- Cartões pretos ---------- */
 .lp-slab {
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 20px;
   color: #fff;
   background: radial-gradient(125% 95% at 12% 0%, #1b2a40 0%, #0d1726 42%, #070d18 100%);
   border: 1px solid rgb(255 255 255 / 0.09);
@@ -109,13 +307,55 @@
     0 30px 80px -30px rgb(7 27 51 / 0.5),
     inset 0 1px 0 rgb(255 255 255 / 0.07);
   transition:
-    transform 500ms var(--lp-ease),
-    border-color 400ms;
+    transform 0.6s var(--lp-ease),
+    border-color 0.4s ease;
+}
+
+/* Luz que segue o mouse (posição em --mx/--my, ver SlabGlow). */
+.lp-slab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(255 255 255 / 0.07),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* Faixa de luz que atravessa o cartão no hover. */
+.lp-slab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgb(255 255 255 / 0.075) 46%,
+    rgb(0 194 255 / 0.06) 52%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
 }
 
 .lp-slab:hover {
   transform: translateY(-4px);
-  border-color: rgb(255 255 255 / 0.22);
+  border-color: rgb(255 255 255 / 0.2);
+}
+
+.lp-slab:hover::before {
+  opacity: 1;
+}
+
+.lp-slab:hover::after {
+  transition: transform 1s ease;
+  transform: translateX(130%);
 }
 
 .lp-slab-n::before {
@@ -128,47 +368,53 @@
   background: var(--lp-cyan);
 }
 
-.lp-eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-/* Painel com borda fina e dois cantos marcados em azul. */
-.lp-frame {
+/* ---------- Dúvidas: + que vira − ---------- */
+.lp-fx {
   position: relative;
-  background: #ffffff;
-  border: 1px solid var(--lp-line);
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: auto;
 }
 
-.lp-frame::before,
-.lp-frame::after {
+.lp-fx::before,
+.lp-fx::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 0 solid var(--lp-blue);
-  pointer-events: none;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 2px;
+  background: var(--lp-ink);
+  transition: rotate 0.35s var(--lp-ease);
 }
 
-.lp-frame::before {
-  top: -1px;
-  left: -1px;
-  border-width: 2px 0 0 2px;
+.lp-fx::after {
+  rotate: 90deg;
 }
 
-.lp-frame::after {
-  right: -1px;
-  bottom: -1px;
-  border-width: 0 2px 2px 0;
+details[open] > summary .lp-fx::after {
+  rotate: 0deg;
 }
 
-.lp-tint {
-  background: var(--lp-tint);
+details[open] > summary .lp-fx::before {
+  rotate: 180deg;
 }
 
-/* Sublinhado que corre da esquerda. */
+/* Linha da lista de exemplos. */
+.lp-row {
+  transition: padding 0.4s var(--lp-ease);
+}
+
+.lp-row:hover,
+.lp-row:focus-visible {
+  padding-inline: 1rem;
+}
+
+.lp-row:hover .lp-row-name {
+  color: var(--lp-blue);
+}
+
 .lp-underline {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
   transition: background-size 500ms var(--lp-ease);
@@ -179,81 +425,123 @@
   background-size: 100% 1px;
 }
 
-/* Linhas do título sobem de dentro de uma máscara ao abrir (deslocamento curto: o título é o LCP). */
-.lp-line {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
-}
+@media (prefers-reduced-motion: reduce) {
+  .lp-trail .pulse {
+    display: none;
+  }
 
-.lp-line > span {
-  display: block;
-  animation: lp-line-in 900ms var(--lp-ease) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
-}
+  .lp-rise,
+  .lp-rise-solid,
+  .lp-nav,
+  .lp-step {
+    animation: none;
+  }
 
-@keyframes lp-line-in {
-  from {
-    transform: translateY(22%);
+  .lp-frame,
+  .lp-set,
+  .lp-slab,
+  .lp-chip,
+  .lp-btn,
+  .lp-row,
+  .lp-fx::before,
+  .lp-fx::after,
+  .lp-underline {
+    transition: none;
+  }
+
+  .lp-slab::after {
+    display: none;
+  }
+
+  .lp-dev:hover .lp-frame,
+  .lp-slab:hover {
+    transform: none;
   }
 }
 
-.lp-fade-up {
-  animation: lp-fade-up 900ms var(--lp-ease) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
+/* ---------- Abertura (IntroCurtain) ---------- */
+.lp {
+  /* Quanto a entrada da página espera pela cortina subir. */
+  --lp-intro: 1.55s;
 }
 
-@keyframes lp-fade-up {
-  from {
-    opacity: 0.35;
-    transform: translateY(14px);
+.ns-fastintro .lp {
+  --lp-intro: 0.35s;
+}
+
+.lp-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  pointer-events: none;
+  animation: lp-lift 0.65s cubic-bezier(0.65, 0, 0.2, 1) var(--lp-intro) forwards;
+}
+
+.lp-intro-mark {
+  animation: lp-mark 0.6s var(--lp-ease) 0.05s both;
+}
+
+.lp-intro-l {
+  display: inline-block;
+  animation: lp-letter 0.35s var(--lp-ease) both;
+  animation-delay: calc(0.25s + var(--d) * 0.07s);
+}
+
+.lp-intro-bar {
+  transform-origin: left;
+  animation: lp-bar calc(var(--lp-intro) - 0.1s) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.ns-fastintro .lp-intro-mark,
+.ns-fastintro .lp-intro-l {
+  animation: none;
+}
+
+@keyframes lp-lift {
+  to {
+    transform: translateY(-101%);
+    visibility: hidden;
   }
 }
 
-.lp-nav {
-  animation: lp-fade-down 900ms var(--lp-ease) 150ms both;
-}
-
-@keyframes lp-fade-down {
+@keyframes lp-mark {
   from {
     opacity: 0;
-    transform: translateY(-16px);
+    transform: scale(0.6) rotate(-12deg);
   }
 }
 
-/* Linha da lista de exemplos: o nome desliza e a seta aparece no hover. */
-.lp-row {
-  transition: padding 400ms var(--lp-ease);
+@keyframes lp-letter {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
 }
 
-.lp-row:hover,
-.lp-row:focus-visible {
-  padding-inline: 1rem;
+@keyframes lp-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
-.lp-row:hover .lp-row-name,
-.lp-row:focus-visible .lp-row-name {
-  color: var(--lp-blue);
+/* A entrada do conteúdo começa quando a cortina sobe. */
+.lp .lp-rise {
+  animation-delay: calc(var(--lp-intro) + var(--i, 0) * 120ms + 50ms);
+}
+
+.lp .lp-rise-solid,
+.lp .lp-nav {
+  animation-delay: calc(var(--lp-intro) + 150ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-line > span,
-  .lp-fade-up,
-  .lp-nav {
-    animation: none;
-  }
-
-  .lp-rotor > span {
-    animation: none;
-  }
-
-  .lp-slab {
-    transition: none;
-  }
-
-  .lp-row,
-  .lp-underline {
-    transition: none;
+  .lp-intro {
+    display: none;
   }
 }
