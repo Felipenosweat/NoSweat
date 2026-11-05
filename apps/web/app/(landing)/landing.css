@@ -283,6 +283,15 @@
   transform: translateY(-2.5%);
 }
 
+/* A página do site rola sozinha enquanto o mouse está em cima (como um visitante lendo). */
+.lp-page {
+  transition: transform 5s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+.lp-dev:hover .lp-page {
+  transform: translateY(-36%);
+}
+
 .lp-set {
   position: absolute;
   inset: 0;
@@ -438,6 +447,7 @@ details[open] > summary .lp-fx::before {
   }
 
   .lp-frame,
+  .lp-page,
   .lp-set,
   .lp-slab,
   .lp-chip,
@@ -454,6 +464,7 @@ details[open] > summary .lp-fx::before {
   }
 
   .lp-dev:hover .lp-frame,
+  .lp-dev:hover .lp-page,
   .lp-slab:hover {
     transform: none;
   }

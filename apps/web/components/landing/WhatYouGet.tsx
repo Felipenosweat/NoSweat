@@ -9,273 +9,482 @@ import { KINDS } from "./HeroStepper";
 // negócio; a lista de clientes e os posts são as telas da No Sweat (brancas, mesmas cores).
 // Os chips da coluna "Website" preenchem a primeira pergunta do topo.
 
+// Tudo aqui vem dos sites de exemplo de verdade (packages/fixtures/src/library): nome, título,
+// preços, horários, telefone, cores e fonte do modelo. Os pedidos e posts são inventados para o
+// exemplo, nos mesmos rótulos das telas reais (/clients: New, Contacted, Quoted, Won; /social:
+// Needs approval, Scheduled, Published). Negócios fictícios, avisado na legenda.
+
 type Brand = {
   id: string;
   label: string;
   name: string;
+  handle: string;
   domain: string;
+  strip: string;
+  phone: string;
+  nav: string[];
   hero: string;
   sub: string;
   cta: string;
-  services: string[];
-  clients: { name: string; ask: string; stage: "New" | "Quoted" | "Won" }[];
-  posts: { when: string; text: string; ok: boolean }[];
+  listTitle: string;
+  items: { name: string; price: string }[];
+  hours: { days: string; time: string }[];
+  clients: {
+    name: string;
+    ask: string;
+    when: string;
+    stage: "New" | "Contacted" | "Quoted" | "Won";
+  }[];
+  post: { art: string; caption: string; when: string };
+  next: { caption: string; when: string };
   theme: {
     bg: string;
-    sf: string;
-    ln: string;
     tx: string;
-    mu: string;
     ac: string;
-    acTx: string;
+    mu: string;
+    line: string;
     ff: string;
     wt: number;
+    upper?: boolean;
   };
 };
 
-const SERIF = "ui-serif, Georgia, 'Times New Roman', serif";
-
 const BRANDS: Brand[] = [
+  {
+    id: "law",
+    label: "Mercer Law, a family and estate law office",
+    name: "Mercer Law",
+    handle: "mercerlaw.columbus",
+    domain: "mercerlaw.com",
+    strip: "588 S Third St, German Village",
+    phone: "(614) 555-0127",
+    nav: ["Fees", "About", "Contact"],
+    hero: "Family and estate law in German Village",
+    sub: "Ellen Mercer handles wills, trusts, probate and divorce consultations from a two-person office, with fees quoted in writing before we start.",
+    cta: "Book a consultation",
+    listTitle: "Services and fees",
+    items: [
+      { name: "Will package", price: "$1,450 flat" },
+      { name: "Revocable living trust", price: "from $3,200" },
+      { name: "Estate plan review", price: "$350" },
+      { name: "Probate and administration", price: "$285 an hour" },
+      { name: "Prenuptial agreement", price: "from $1,800" },
+    ],
+    hours: [
+      { days: "Mon–Thu", time: "9 AM – 5 PM" },
+      { days: "Fri", time: "9 AM – 1 PM" },
+    ],
+    clients: [
+      {
+        name: "Rachel Kim",
+        ask: "Will package for me and my husband",
+        when: "9:12 AM",
+        stage: "New",
+      },
+      {
+        name: "Paul Dorsey",
+        ask: "Probate question about my dad’s house",
+        when: "Yesterday",
+        stage: "Contacted",
+      },
+      { name: "Ana Silva", ask: "Dissolution consultation", when: "Oct 30", stage: "Quoted" },
+      { name: "Mark Ellis", ask: "Prenup before June", when: "Oct 27", stage: "Won" },
+    ],
+    post: {
+      art: "What to bring to your first consultation",
+      caption:
+        "A short list: your current will, a list of accounts, and your questions. Book at the link in bio.",
+      when: "Thu, Nov 6 · 12:00 PM",
+    },
+    next: {
+      caption: "Free parking behind the building on S Third St.",
+      when: "Mon, Nov 10 · 8:30 AM",
+    },
+    theme: {
+      bg: "#f6f2ea",
+      tx: "#1f1b16",
+      ac: "#6b2d2a",
+      mu: "#6f665a",
+      line: "rgb(31 27 22 / .14)",
+      ff: "var(--ns-font-classic-heading), Georgia, serif",
+      wt: 500,
+    },
+  },
+  {
+    id: "spark",
+    label: "Bright Spark Electric, a residential electrician",
+    name: "Bright Spark Electric",
+    handle: "brightspark.phx",
+    domain: "brightsparkelectric.com",
+    strip: "Phoenix · Tempe · Scottsdale · Mesa",
+    phone: "(602) 555-0137",
+    nav: ["Services", "About", "Contact"],
+    hero: "Residential electrician in Phoenix, Arizona",
+    sub: "Marcus Bell has been wiring houses in the Valley since 2006. You get a written quote before we start.",
+    cta: "Call for a quote",
+    listTitle: "Electrical services",
+    items: [
+      { name: "Panel upgrades", price: "from $2,400" },
+      { name: "EV charger installs", price: "from $650" },
+      { name: "Lighting and ceiling fans", price: "from $175" },
+      { name: "Troubleshooting visit", price: "$95" },
+    ],
+    hours: [
+      { days: "Mon–Fri", time: "7 AM – 5 PM" },
+      { days: "Sat", time: "8 AM – 12 PM" },
+    ],
+    clients: [
+      { name: "Omar Haddad", ask: "EV charger in the garage", when: "7:48 AM", stage: "New" },
+      {
+        name: "Jenna Ruiz",
+        ask: "Breaker keeps tripping in the kitchen",
+        when: "7:02 AM",
+        stage: "New",
+      },
+      {
+        name: "Dale Porter",
+        ask: "Panel upgrade, 1970s house",
+        when: "Yesterday",
+        stage: "Quoted",
+      },
+      { name: "Rachel Klein", ask: "Three ceiling fans", when: "Oct 29", stage: "Won" },
+    ],
+    post: {
+      art: "Is your panel older than your house’s AC?",
+      caption:
+        "Panels from the 70s weren’t built for today’s loads. We quote upgrades in writing before we start.",
+      when: "Wed, Nov 5 · 7:00 AM",
+    },
+    next: {
+      caption: "EV charger installs from $650, permit handled by Tasha.",
+      when: "Fri, Nov 7 · 7:00 AM",
+    },
+    theme: {
+      bg: "#f2f0e8",
+      tx: "#17181c",
+      ac: "#17181c",
+      mu: "#5d5f66",
+      line: "rgb(23 24 28 / .14)",
+      ff: "var(--ns-font-technical-heading), system-ui, sans-serif",
+      wt: 600,
+      upper: true,
+    },
+  },
   {
     id: "spa",
     label: "Still Water Spa, a day spa",
     name: "Still Water Spa",
+    handle: "stillwater.scottsdale",
     domain: "stillwaterspa.com",
-    hero: "Slow down, you’re here.",
-    sub: "Massage and facials in Old Town Scottsdale.",
+    strip: "7134 E Stetson Dr, Suite 2",
+    phone: "(480) 555-0171",
+    nav: ["Treatments", "About", "Book"],
+    hero: "Day spa in Old Town Scottsdale",
+    sub: "Massage and facials with licensed therapists. Five treatment rooms, one of them a couples suite, and phones stay out of all of them.",
     cta: "Book a treatment",
-    services: ["Massage", "Facials", "Hot stone"],
+    listTitle: "Treatments",
+    items: [
+      { name: "Swedish massage", price: "$110 / $155" },
+      { name: "Deep tissue massage", price: "$125 / $175" },
+      { name: "Hot stone massage", price: "$165" },
+      { name: "Signature facial", price: "$130" },
+      { name: "Couples massage", price: "$240" },
+    ],
+    hours: [{ days: "Daily", time: "9 AM – 8 PM" }],
     clients: [
-      { name: "Hannah Brooks", ask: "Couples massage, Saturday", stage: "New" },
-      { name: "Luis Ortega", ask: "Facial and hot stone", stage: "Quoted" },
-      { name: "Priya Raman", ask: "Gift card for her mom", stage: "Won" },
-      { name: "Dana Whitfield", ask: "Prenatal massage", stage: "Won" },
+      {
+        name: "Hannah Brooks",
+        ask: "Couples massage, Saturday at 4",
+        when: "10:31 AM",
+        stage: "New",
+      },
+      {
+        name: "Priya Raman",
+        ask: "Gift card for my mom, $150",
+        when: "Yesterday",
+        stage: "Contacted",
+      },
+      {
+        name: "Luis Ortega",
+        ask: "Facial and hot stone, same day",
+        when: "Oct 31",
+        stage: "Quoted",
+      },
+      { name: "Dana Whitfield", ask: "Prenatal massage, 28 weeks", when: "Oct 28", stage: "Won" },
     ],
-    posts: [
-      { when: "Tue 10:00", text: "Hot stone is back on the menu this fall.", ok: true },
-      { when: "Thu 6:30", text: "The couples suite is open on Sundays now.", ok: false },
-      { when: "Sat 9:00", text: "Coming from Old Town? Parking is free.", ok: false },
-    ],
-    theme: {
-      bg: "#f4eee8",
-      sf: "#fffaf5",
-      ln: "#e6dbcf",
-      tx: "#2b211b",
-      mu: "#8a7769",
-      ac: "#7d5f45",
-      acTx: "#ffffff",
-      ff: SERIF,
-      wt: 400,
+    post: {
+      art: "Hot stone is back for the season",
+      caption: "75 minutes, $165. Book online or call the front desk.",
+      when: "Tue, Nov 4 · 10:00 AM",
     },
-  },
-  {
-    id: "bbq",
-    label: "Smoke & Rail BBQ, a barbecue joint",
-    name: "Smoke & Rail",
-    domain: "smokeandrail.com",
-    hero: "Low and slow since sunrise.",
-    sub: "Kansas City barbecue in the West Bottoms.",
-    cta: "Order for pickup",
-    services: ["Brisket", "Burnt ends", "Catering"],
-    clients: [
-      { name: "Marcus Lee", ask: "Catering for 60, June 14", stage: "New" },
-      { name: "Erin Walsh", ask: "Office lunch, Friday", stage: "Quoted" },
-      { name: "Tom Becker", ask: "Rehearsal dinner", stage: "Won" },
-      { name: "Gina Russo", ask: "Whole brisket to go", stage: "Won" },
-    ],
-    posts: [
-      { when: "Mon 11:00", text: "Burnt ends are back, while they last.", ok: true },
-      { when: "Wed 5:00", text: "Catering for your next game day.", ok: true },
-      { when: "Fri 4:30", text: "Open late this Friday. Bring friends.", ok: false },
-    ],
+    next: { caption: "The couples suite is open on Sundays now.", when: "Sun, Nov 9 · 9:00 AM" },
     theme: {
-      bg: "#151110",
-      sf: "#211b19",
-      ln: "#33292a",
-      tx: "#f3ece4",
-      mu: "#a99a8f",
-      ac: "#e0662b",
-      acTx: "#ffffff",
-      ff: "var(--font-lp)",
-      wt: 800,
-    },
-  },
-  {
-    id: "law",
-    label: "Mercer Law, a family law firm",
-    name: "Mercer Law",
-    domain: "mercerlaw.com",
-    hero: "Family law, with a steady hand.",
-    sub: "Divorce, custody and estate planning in Columbus.",
-    cta: "Book a consultation",
-    services: ["Divorce", "Custody", "Estates"],
-    clients: [
-      { name: "Rachel Kim", ask: "Custody question", stage: "New" },
-      { name: "Paul Dorsey", ask: "Will and estate plan", stage: "Quoted" },
-      { name: "Ana Silva", ask: "Divorce consultation", stage: "Quoted" },
-      { name: "Mark Ellis", ask: "Prenuptial agreement", stage: "Won" },
-    ],
-    posts: [
-      { when: "Tue 9:00", text: "What to bring to your first consultation.", ok: true },
-      { when: "Thu 12:00", text: "Estate planning, in plain words.", ok: false },
-      { when: "Mon 8:30", text: "Free parking behind our office.", ok: false },
-    ],
-    theme: {
-      bg: "#0f1b2d",
-      sf: "#16253b",
-      ln: "#24344d",
-      tx: "#f1eee8",
-      mu: "#9aa6b8",
-      ac: "#c8a96a",
-      acTx: "#0f1b2d",
-      ff: SERIF,
-      wt: 400,
+      bg: "#f5f2ec",
+      tx: "#2a2c26",
+      ac: "#5b6b4e",
+      mu: "#6b6d63",
+      line: "rgb(42 44 38 / .14)",
+      ff: "var(--ns-font-luxe-heading), Georgia, serif",
+      wt: 500,
     },
   },
 ];
 
-const STAGE: Record<string, string> = {
-  New: "bg-[#00c2ff]",
-  Quoted: "bg-amber-500",
-  Won: "bg-emerald-500",
+/** Selo de etapa no estilo do StatusBadge do app (borda fina, ponto, texto colorido). */
+const STAGE: Record<Brand["clients"][number]["stage"], string> = {
+  New: "text-[#0052cc] bg-[#0066ff]/[0.07] ring-[#0066ff]/20",
+  Contacted: "text-slate-600 bg-slate-100 ring-slate-200",
+  Quoted: "text-amber-800 bg-amber-50 ring-amber-200",
+  Won: "text-emerald-800 bg-emerald-50 ring-emerald-200",
 };
 
+function Chrome({ url }: { url: string }) {
+  return (
+    <div className="relative z-10 flex h-7 shrink-0 items-center gap-1.5 border-b border-[#eaeaee] bg-[#f7f7f9] px-3">
+      <i className="size-2 rounded-full bg-[#d9d9de]" />
+      <i className="size-2 rounded-full bg-[#d9d9de]" />
+      <i className="size-2 rounded-full bg-[#d9d9de]" />
+      <span className="mx-auto rounded-full border border-[#eaeaee] bg-white px-4 py-0.5 text-[10px] text-[#6e6e73]">
+        {url}
+      </span>
+    </div>
+  );
+}
+
+/** O site do negócio: a página inteira, que rola sozinha ao passar o mouse (lp-page). */
 function BrowserSite({ b }: { b: Brand }) {
   const t = b.theme;
+  const head = {
+    fontFamily: t.ff,
+    fontWeight: t.wt,
+    textTransform: t.upper ? "uppercase" : undefined,
+  } as const;
   return (
-    <div
-      className="lp-frame top-[10%] right-[7%] bottom-[-8%] left-[7%] overflow-hidden rounded-t-xl shadow-[0_30px_60px_-26px_rgb(0_0_0/.45),0_0_0_1px_rgb(0_0_0/.08)]"
-      style={{ background: t.bg, color: t.tx }}
-    >
-      <div className="flex h-7 items-center gap-1.5 border-b border-[#eaeaee] bg-[#f7f7f9] px-3">
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <span className="mx-auto rounded-full border border-[#eaeaee] bg-white px-4 py-0.5 text-[10px] text-[#6e6e73]">
-          {b.domain}
-        </span>
-      </div>
-      <div className="px-5 pt-4">
-        <div className="flex items-center justify-between text-[10px]">
-          <span style={{ fontFamily: t.ff, fontWeight: t.wt }} className="text-[14px]">
-            {b.name}
-          </span>
-          <span
-            className="rounded-full px-2.5 py-1 font-semibold"
-            style={{ background: t.ac, color: t.acTx }}
+    <div className="lp-frame top-[10%] right-[7%] bottom-[-8%] left-[7%] flex flex-col overflow-hidden rounded-t-xl bg-white shadow-[0_30px_60px_-26px_rgb(0_0_0/.45),0_0_0_1px_rgb(0_0_0/.08)]">
+      <Chrome url={b.domain} />
+      <div className="relative flex-1 overflow-hidden" style={{ background: t.bg, color: t.tx }}>
+        <div className="lp-page">
+          <div
+            className="flex justify-between px-4 py-1 text-[8px]"
+            style={{ background: t.ac, color: "#fff" }}
           >
-            {b.cta}
-          </span>
-        </div>
-        <p
-          className="mt-6 max-w-[13ch] text-[clamp(1.35rem,2.3vw,1.9rem)] leading-[1.02] tracking-[-0.02em]"
-          style={{ fontFamily: t.ff, fontWeight: t.wt }}
-        >
-          {b.hero}
-        </p>
-        <p className="mt-2 max-w-[30ch] text-[11px]" style={{ color: t.mu }}>
-          {b.sub}
-        </p>
-        <div className="mt-4 grid grid-cols-3 gap-1.5">
-          {b.services.map((s) => (
-            <span
-              key={s}
-              className="rounded-md px-2 py-3 text-[10px] font-semibold"
-              style={{ background: t.sf, border: `1px solid ${t.ln}` }}
-            >
-              {s}
+            <span>{b.strip}</span>
+            <span className="font-semibold">{b.phone}</span>
+          </div>
+          <div
+            className="flex items-center justify-between px-4 py-2.5 text-[9px]"
+            style={{ borderBottom: `1px solid ${t.line}` }}
+          >
+            <span className="text-[12px] leading-none" style={head}>
+              {b.name}
             </span>
-          ))}
+            <span className="flex gap-3" style={{ color: t.mu }}>
+              {b.nav.map((n) => (
+                <span key={n}>{n}</span>
+              ))}
+            </span>
+          </div>
+          <div className="px-4 pt-5 pb-4">
+            <p className="max-w-[15ch] text-[23px] leading-[1.02] tracking-[-0.015em]" style={head}>
+              {b.hero}
+            </p>
+            <p className="mt-2.5 max-w-[42ch] text-[9.5px] leading-[1.5]" style={{ color: t.mu }}>
+              {b.sub}
+            </p>
+            <div className="mt-3 flex items-center gap-3 text-[9px]">
+              <span className="px-3 py-1.5 font-semibold text-white" style={{ background: t.ac }}>
+                {b.cta}
+              </span>
+              <span className="underline underline-offset-2">{b.phone}</span>
+            </div>
+          </div>
+          <div className="px-4 pt-3 pb-4" style={{ borderTop: `1px solid ${t.line}` }}>
+            <p className="text-[13px]" style={head}>
+              {b.listTitle}
+            </p>
+            <ul className="mt-1.5 text-[9.5px]">
+              {b.items.map((it) => (
+                <li
+                  key={it.name}
+                  className="flex justify-between gap-3 py-1.5"
+                  style={{ borderBottom: `1px solid ${t.line}` }}
+                >
+                  <span>{it.name}</span>
+                  <span className="tabular-nums" style={{ color: t.mu }}>
+                    {it.price}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="grid grid-cols-2 gap-4 px-4 pb-6 text-[9px]">
+            <div>
+              <p className="text-[12px]" style={head}>
+                Hours
+              </p>
+              {b.hours.map((h) => (
+                <p key={h.days} className="mt-1 flex justify-between gap-2" style={{ color: t.mu }}>
+                  <span>{h.days}</span>
+                  <span className="tabular-nums">{h.time}</span>
+                </p>
+              ))}
+            </div>
+            <div>
+              <p className="text-[12px]" style={head}>
+                Contact
+              </p>
+              {["Name", "Phone", "How can we help?"].map((f) => (
+                <p
+                  key={f}
+                  className="mt-1 px-1.5 py-1 text-[8px]"
+                  style={{ border: `1px solid ${t.line}`, color: t.mu, background: "#fff" }}
+                >
+                  {f}
+                </p>
+              ))}
+              <p
+                className="mt-1 inline-block px-2 py-1 text-[8px] font-semibold text-white"
+                style={{ background: t.ac }}
+              >
+                Send
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/** A lista de Clientes da No Sweat, no celular (mesmos rótulos da tela real). */
 function PhoneClients({ b }: { b: Brand }) {
+  const counts = { New: 0, Quoted: 0 } as Record<string, number>;
+  for (const c of b.clients) counts[c.stage] = (counts[c.stage] ?? 0) + 1;
   return (
-    <div className="lp-frame top-[8%] left-1/2 h-[150%] w-[46%] -translate-x-1/2 rounded-[2rem] bg-[#0b0c10] p-[2.6%] shadow-[0_34px_70px_-24px_rgb(0_0_0/.55)]">
-      <div className="h-full overflow-hidden rounded-[1.7rem] bg-white px-3 pt-6 text-[#071b33]">
-        <p className="text-[9px] text-[#6e6e73]">{b.name}</p>
-        <p className="text-[15px] font-semibold tracking-[-0.02em]">Clients</p>
-        <div className="mt-2 rounded-xl bg-[#0066ff] p-2.5 text-white">
-          <p className="text-[8px] font-bold tracking-[0.12em] opacity-80">
-            NEW REQUEST · JUST NOW
-          </p>
-          <p className="mt-0.5 text-[12px] font-semibold">{b.clients[0]?.name}</p>
-          <p className="text-[10px] opacity-85">{b.clients[0]?.ask}</p>
+    <div className="lp-frame top-[8%] left-1/2 h-[150%] w-[47%] -translate-x-1/2 rounded-[2rem] bg-[#0b0c10] p-[2.6%] shadow-[0_34px_70px_-24px_rgb(0_0_0/.55)]">
+      <div className="h-full overflow-hidden rounded-[1.7rem] bg-[#f8fafc] text-[#071b33]">
+        <div className="flex justify-between px-4 pt-2 text-[8px] font-semibold">
+          <span>9:41</span>
+          <span className="flex items-center gap-1">
+            <i className="h-1.5 w-2.5 rounded-[2px] bg-[#071b33]" />
+          </span>
         </div>
-        <ul className="mt-2 divide-y divide-[#071b33]/10">
-          {b.clients.map((c) => (
-            <li key={c.name} className="flex items-center gap-2 py-2">
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#071b33]/[0.07] text-[8px] font-semibold">
-                {c.name
-                  .split(" ")
-                  .map((p) => p[0])
-                  .join("")}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[10px] font-semibold">{c.name}</span>
-                <span className="block truncate text-[9px] text-[#6e6e73]">{c.ask}</span>
-              </span>
-              <span className="flex shrink-0 items-center gap-1 text-[9px] text-[#071b33]/75">
-                <span className={`size-1.5 rounded-full ${STAGE[c.stage]}`} />
+        <div className="flex items-end justify-between px-3 pt-3">
+          <div>
+            <p className="text-[8px] text-slate-500">{b.name}</p>
+            <p className="text-[15px] leading-tight font-bold tracking-[-0.02em]">Clients</p>
+          </div>
+          <span className="grid size-5 place-items-center rounded-full bg-[#0066ff] text-[11px] leading-none text-white">
+            +
+          </span>
+        </div>
+        <p className="mx-3 mt-2 rounded-md bg-white px-2 py-1 text-[8.5px] text-slate-400 ring-1 ring-slate-200">
+          Search clients
+        </p>
+        <div className="mx-3 mt-2 flex gap-1 text-[8px] font-semibold">
+          <span className="rounded-full bg-[#071b33] px-2 py-0.5 text-white">
+            All {b.clients.length}
+          </span>
+          <span className="rounded-full bg-white px-2 py-0.5 ring-1 ring-slate-200">
+            New {counts.New ?? 0}
+          </span>
+          <span className="rounded-full bg-white px-2 py-0.5 ring-1 ring-slate-200">
+            Quoted {counts.Quoted ?? 0}
+          </span>
+        </div>
+        <ul className="mx-2 mt-2 rounded-lg bg-white ring-1 ring-slate-200">
+          {b.clients.map((c, i) => (
+            <li key={c.name} className={`px-2 py-2 ${i > 0 ? "border-t border-slate-100" : ""}`}>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[9.5px] font-semibold">{c.name}</span>
+                <span className="shrink-0 text-[7.5px] text-slate-400">{c.when}</span>
+              </div>
+              <p className="mt-0.5 text-[8.5px] leading-snug text-slate-600">{c.ask}</p>
+              <span
+                className={`mt-1 inline-block rounded-full px-1.5 py-px text-[7.5px] font-semibold ring-1 ${STAGE[c.stage]}`}
+              >
                 {c.stage}
               </span>
             </li>
           ))}
         </ul>
+        <p className="mx-3 mt-2 text-[7.5px] text-slate-400">From your website’s contact form</p>
       </div>
     </div>
   );
 }
 
+/** A tela de posts da No Sweat: um post esperando aprovação e o próximo já agendado. */
 function WindowSocial({ b }: { b: Brand }) {
+  const t = b.theme;
+  const initials = b.name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2);
   return (
-    <div className="lp-frame top-[10%] right-[7%] bottom-[-8%] left-[7%] overflow-hidden rounded-t-xl bg-white text-[#071b33] shadow-[0_30px_60px_-26px_rgb(0_0_0/.45),0_0_0_1px_rgb(0_0_0/.08)]">
-      <div className="flex h-7 items-center gap-1.5 border-b border-[#eaeaee] bg-[#f7f7f9] px-3">
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <i className="size-2 rounded-full bg-[#d9d9de]" />
-        <span className="mx-auto rounded-full border border-[#eaeaee] bg-white px-4 py-0.5 text-[10px] text-[#6e6e73]">
-          nosweatfd.com/social
-        </span>
+    <div className="lp-frame top-[10%] right-[7%] bottom-[-8%] left-[7%] flex flex-col overflow-hidden rounded-t-xl bg-[#f8fafc] text-[#071b33] shadow-[0_30px_60px_-26px_rgb(0_0_0/.45),0_0_0_1px_rgb(0_0_0/.08)]">
+      <Chrome url="nosweatfd.com/social" />
+      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-3 py-2 text-[9px]">
+        <span className="text-[12px] font-bold tracking-[-0.015em]">Social</span>
+        <span className="border-b-2 border-[#0066ff] pb-0.5 font-semibold">Calendar</span>
+        <span className="text-slate-500">Drafts</span>
+        <span className="ml-auto text-slate-500">@{b.handle}</span>
       </div>
-      <div className="p-4">
-        <div className="flex items-baseline justify-between">
-          <p className="text-[13px] font-semibold tracking-[-0.015em]">This week on Instagram</p>
-          <p className="text-[9px] text-[#6e6e73]">{b.name}</p>
+      <div className="grid flex-1 grid-cols-[1.25fr_1fr] gap-2.5 p-3">
+        <div className="rounded-lg bg-white p-2 ring-1 ring-slate-200">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="grid size-4 place-items-center rounded-full text-[6.5px] font-bold text-white"
+              style={{ background: t.ac }}
+            >
+              {initials}
+            </span>
+            <span className="min-w-0 truncate text-[8.5px] font-semibold">{b.handle}</span>
+            <span className="ml-auto shrink-0 rounded-full bg-amber-50 px-1.5 py-px text-[7px] whitespace-nowrap font-semibold text-amber-800 ring-1 ring-amber-200">
+              Needs approval
+            </span>
+          </div>
+          <div
+            className="mt-1.5 flex aspect-[16/9] items-end p-2.5"
+            style={{ background: t.bg, color: t.tx, border: `1px solid ${t.line}` }}
+          >
+            <p
+              className="text-[13px] leading-[1.05]"
+              style={{
+                fontFamily: t.ff,
+                fontWeight: t.wt,
+                textTransform: t.upper ? "uppercase" : undefined,
+              }}
+            >
+              {b.post.art}
+            </p>
+          </div>
+          <p className="mt-1.5 text-[8px] leading-snug text-slate-600">{b.post.caption}</p>
+          <div className="mt-1.5 flex items-center gap-1.5 text-[7.5px]">
+            <span className="min-w-0 truncate text-slate-400">{b.post.when}</span>
+            <span className="ml-auto rounded bg-[#0066ff] px-1.5 py-0.5 font-semibold text-white">
+              Approve
+            </span>
+            <span className="rounded px-1.5 py-0.5 font-semibold ring-1 ring-slate-200">Edit</span>
+          </div>
         </div>
-        <ul className="mt-3 grid grid-cols-3 gap-2">
-          {b.posts.map((p, i) => (
-            <li key={p.when} className="min-w-0 rounded-lg ring-1 ring-[#071b33]/10">
-              <span
-                className="flex aspect-square items-end rounded-t-lg p-1.5 text-[8px] font-semibold"
-                style={{
-                  background: i === 1 ? b.theme.ac : b.theme.bg,
-                  color: i === 1 ? b.theme.acTx : b.theme.tx,
-                  fontFamily: b.theme.ff,
-                }}
-              >
-                {b.name}
-              </span>
-              <span className="block p-1.5">
-                <span className="block text-[8px] font-semibold text-[#6e6e73]">{p.when}</span>
-                <span className="mt-0.5 line-clamp-2 block text-[9px] leading-snug">{p.text}</span>
-                <span
-                  className={`mt-1 inline-flex items-center gap-1 text-[8px] font-semibold ${
-                    p.ok ? "text-emerald-700" : "text-amber-700"
-                  }`}
-                >
-                  <span
-                    className={`size-1 rounded-full ${p.ok ? "bg-emerald-600" : "bg-amber-500"}`}
-                  />
-                  {p.ok ? "Approved" : "Needs your OK"}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <div className="rounded-lg bg-white p-2 ring-1 ring-slate-200">
+            <span className="rounded-full bg-[#0066ff]/[0.07] px-1.5 py-px text-[7px] font-semibold text-[#0052cc] ring-1 ring-[#0066ff]/20">
+              Scheduled
+            </span>
+            <p className="mt-1 text-[8px] leading-snug text-slate-600">{b.next.caption}</p>
+            <p className="mt-1 text-[7.5px] text-slate-400">{b.next.when}</p>
+          </div>
+          <div className="rounded-lg bg-white p-2 ring-1 ring-slate-200">
+            <span className="rounded-full bg-emerald-50 px-1.5 py-px text-[7px] font-semibold text-emerald-800 ring-1 ring-emerald-200">
+              Published
+            </span>
+            <p className="mt-1 text-[8px] leading-snug text-slate-600">Our hours, in one post.</p>
+            <p className="mt-1 text-[7.5px] text-slate-400">Mon, Nov 3</p>
+          </div>
+        </div>
       </div>
     </div>
   );
