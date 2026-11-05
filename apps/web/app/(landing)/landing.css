@@ -28,12 +28,13 @@
 }
 
 /* ---------- Tipografia ---------- */
-/* Títulos em Funnel Display (já carregada em app/fonts.ts, par "gallery"); o texto corrido segue
-   na fonte do sistema. */
+/* Títulos em Plus Jakarta Sans, a fonte da marca (já carregada com preload em app/fonts.ts, par
+   "modern"); traço limpo, sem os cortes da Funnel Display. O texto corrido segue na fonte do
+   sistema. */
 .lp-h {
-  font-family: var(--ns-font-gallery-heading), var(--font-lp);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--ns-font-modern-heading), var(--font-lp);
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.1;
   text-wrap: balance;
   color: var(--lp-ink);
@@ -41,7 +42,7 @@
 
 /* Segunda linha do título de seção em cinza (duas cores, sem itálico). */
 .lp-display {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .lp-h .dim {

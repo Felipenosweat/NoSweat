@@ -15,9 +15,9 @@ const TABS = [
     id: "website",
     title: "Website",
     body: "Services, hours, a contact form and a call button.",
-    src: "/landing/real/site.webp",
-    width: 1280,
-    height: 2400,
+    src: "/landing/real/site-2.webp",
+    width: 2000,
+    height: 3750,
     alt: "The Mercer Law example site made with No Sweat: a large serif headline, “Family and estate law in German Village”, a photo of law books and the office’s story.",
     caption: "Mercer Law, an example site. The business is made up.",
     tall: true,
@@ -26,9 +26,9 @@ const TABS = [
     id: "clients",
     title: "Clients",
     body: "Every request from your site, in one list.",
-    src: "/landing/real/clients.webp",
-    width: 1400,
-    height: 1018,
+    src: "/landing/real/clients-2.webp",
+    width: 2400,
+    height: 1500,
     alt: "The No Sweat Clients screen with five new requests from the contact form, each with a Reply button.",
     caption: "The real Clients screen, with demo requests.",
     tall: false,
@@ -37,9 +37,9 @@ const TABS = [
     id: "social",
     title: "Instagram",
     body: "Posts drafted for you. Nothing goes out until you approve it.",
-    src: "/landing/real/social.webp",
-    width: 1400,
-    height: 1018,
+    src: "/landing/real/social-2.webp",
+    width: 2400,
+    height: 1500,
     alt: "The No Sweat Social screen: a connected Instagram account, the monthly posting plan and a November calendar with a post waiting for approval.",
     caption: "The real Social screen, with a demo account.",
     tall: false,
@@ -121,9 +121,7 @@ export function WhatYouGet() {
           className="mt-4 sm:mt-6"
         >
           <div
-            className={`lp-shot relative overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#eef1f6] ${
-              tab.tall ? "aspect-[16/10]" : "aspect-[1400/1018]"
-            }`}
+            className={`lp-shot relative overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#eef1f6] aspect-[16/10]`}
           >
             {TABS.map((t, i) => (
               <Image
