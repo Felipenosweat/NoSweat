@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { MiniSite } from "./MiniSite";
 import type { CSSProperties, ReactNode } from "react";
 
 // "How it works" (#story): quatro passos em linhas editoriais (número, título em serifa, texto)
@@ -44,20 +44,11 @@ function DescribeMock() {
   );
 }
 
-/** 2. O site pronto, no celular. */
-function PhoneMock() {
+/** 2. O site pronto (desenhado, sem foto). */
+function SiteMock() {
   return (
-    <div className="mx-auto w-[210px] translate-y-[22%] rounded-[2.2rem] bg-[#0b1220] p-1.5 shadow-[0_40px_70px_-35px_rgb(7_27_51/.6)]">
-      <div className="overflow-hidden rounded-[1.8rem]">
-        <Image
-          src="/landing/signature/still-water-spa-m.webp"
-          alt="The finished Still Water Spa site on a phone."
-          width={640}
-          height={1385}
-          sizes="210px"
-          className="block h-auto w-full"
-        />
-      </div>
+    <div className="w-full max-w-[440px]">
+      <MiniSite />
     </div>
   );
 }
@@ -66,72 +57,43 @@ function PhoneMock() {
 function EditMock() {
   const tabs = ["Ask AI", "Content", "Style", "Sections"];
   return (
-    <div className="relative w-full max-w-[440px]">
-      <div className="overflow-hidden rounded-xl ring-1 ring-[var(--lp-line)]">
-        <Image
-          src="/landing/signature/still-water-spa-d.webp"
-          alt=""
-          width={1600}
-          height={1000}
-          sizes="440px"
-          className="block h-auto w-full"
-        />
-      </div>
-      <div className="relative -mt-14 ml-auto w-[min(300px,88%)] rounded-2xl bg-white p-3 text-[#071b33] shadow-[0_40px_80px_-30px_rgb(7_27_51/.5)] ring-1 ring-[var(--lp-line)] sm:-mt-20">
-        <div className="grid grid-cols-4 gap-0.5 rounded-xl bg-[#071b33]/[0.06] p-0.5">
-          {tabs.map((tab, index) => (
-            <span
-              key={tab}
-              className={`truncate rounded-[0.6rem] px-1 py-1.5 text-center text-[11px] font-semibold ${
-                index === 0 ? "bg-white shadow-sm" : "text-[#071b33]/55"
-              }`}
-            >
-              {tab}
-            </span>
-          ))}
-        </div>
-        <p className="mt-3 text-[11px] font-semibold text-[#071b33]/60">Describe a change</p>
-        <p className="mt-1 rounded-lg px-3 py-2 text-[13px] ring-1 ring-[var(--lp-line)]">
-          Make the intro shorter and mention the free parking.
-        </p>
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#071b33]/70">
-            <span className="size-1.5 rounded-full bg-amber-500" />
-            New draft ready to review
+    <div className="w-full max-w-[360px] rounded-2xl bg-white p-3 text-[#071b33] shadow-[0_40px_80px_-40px_rgb(7_27_51/.4)] ring-1 ring-[var(--lp-line)]">
+      <div className="grid grid-cols-4 gap-0.5 rounded-xl bg-[#071b33]/[0.06] p-0.5">
+        {tabs.map((tab, index) => (
+          <span
+            key={tab}
+            className={`truncate rounded-[0.6rem] px-1 py-1.5 text-center text-[11px] font-semibold ${
+              index === 0 ? "bg-white shadow-sm" : "text-[#071b33]/55"
+            }`}
+          >
+            {tab}
           </span>
-          <ExampleTag />
-        </div>
+        ))}
+      </div>
+      <p className="mt-3 text-[11px] font-semibold text-[#071b33]/60">Describe a change</p>
+      <p className="mt-1 rounded-lg px-3 py-2 text-[13px] ring-1 ring-[var(--lp-line)]">
+        Make the intro shorter and mention the free parking.
+      </p>
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 text-[12px] text-[#071b33]/70">
+          <span className="size-1.5 rounded-full bg-[#00c2ff]" />
+          New draft ready to review
+        </span>
+        <ExampleTag />
       </div>
     </div>
   );
 }
 
-/** 4. O site publicado, com a barra do navegador. */
+/** 4. O site publicado, com a barra do navegador e o selo "Live". */
 function LiveMock() {
   return (
-    <div className="w-full max-w-[460px] overflow-hidden rounded-xl bg-white shadow-[0_50px_90px_-50px_rgb(7_27_51/.6)] ring-1 ring-[var(--lp-line)]">
-      <div className="flex h-10 items-center gap-3 border-b border-[var(--lp-line)] px-4">
-        <span className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-        </span>
-        <span className="min-w-0 flex-1 truncate rounded-full bg-[#071b33]/[0.05] px-3 py-1 text-[12px] text-[#071b33]/70">
-          nosweatfd.com/s/mercer-law
-        </span>
-        <span className="hidden items-center gap-1.5 text-[12px] font-semibold text-emerald-700 sm:inline-flex">
-          <span className="size-1.5 rounded-full bg-emerald-600" />
-          Live
-        </span>
-      </div>
-      <Image
-        src="/landing/signature/mercer-law-d.webp"
-        alt="Mercer Law, an example site, published at its free nosweatfd.com address."
-        width={1600}
-        height={1000}
-        sizes="460px"
-        className="block h-auto w-full"
-      />
+    <div className="relative w-full max-w-[440px]">
+      <MiniSite address="nosweatfd.com/s/still-water-spa" />
+      <span className="absolute top-2 right-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-[var(--lp-line)]">
+        <span className="size-1.5 rounded-full bg-emerald-600" />
+        Live
+      </span>
     </div>
   );
 }
@@ -153,7 +115,7 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
       </>
     ),
     body: "Photos, services, hours, contact form and a call button.",
-    visual: <PhoneMock />,
+    visual: <SiteMock />,
   },
   {
     title: (
@@ -177,7 +139,11 @@ const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
 
 export function Steps() {
   return (
-    <section id="story" aria-labelledby="story-title" className="lp-paper py-16 lg:py-24">
+    <section
+      id="story"
+      aria-labelledby="story-title"
+      className="lp-tint border-y border-[var(--lp-line)] py-16 lg:py-24"
+    >
       <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-end">
           <h2
@@ -202,14 +168,14 @@ export function Steps() {
               style={{ "--i": index } as CSSProperties}
               className="w-[84vw] max-w-[420px] min-w-0 shrink-0 snap-start md:sticky md:top-[calc(5.5rem+var(--i)*1.1rem)] md:mb-6 md:w-auto md:max-w-none"
             >
-              <div className="overflow-hidden rounded-[1.5rem] bg-[var(--lp-paper-deep)] ring-1 ring-[var(--lp-line)] md:grid md:min-h-[420px] md:grid-cols-12 md:items-stretch md:bg-[var(--lp-paper)] md:shadow-[0_-24px_50px_-30px_rgb(7_27_51/.35)]">
-                <div className="flex h-[300px] items-center justify-center overflow-hidden px-5 sm:h-[340px] sm:px-8 md:col-span-7 md:h-auto md:bg-[var(--lp-paper-deep)]">
+              <div className="overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-[var(--lp-line)] md:grid md:min-h-[420px] md:grid-cols-12 md:items-stretch md:bg-white md:shadow-[0_-24px_50px_-30px_rgb(7_27_51/.35)]">
+                <div className="flex h-[300px] items-center justify-center overflow-hidden px-5 sm:h-[340px] sm:px-8 md:col-span-7 md:h-auto md:bg-[var(--lp-tint)]">
                   {step.visual}
                 </div>
                 <div className="flex flex-col justify-between gap-8 p-6 md:col-span-5 md:p-10">
                   <p
                     aria-hidden="true"
-                    className="lp-serif lp-outline text-[clamp(3.5rem,7vw,6.5rem)]"
+                    className="lp-serif text-[clamp(3.5rem,7vw,6.5rem)] text-[#0066ff]"
                   >
                     {String(index + 1).padStart(2, "0")}
                   </p>

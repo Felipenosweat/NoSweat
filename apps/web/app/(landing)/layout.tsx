@@ -22,12 +22,12 @@ const hasTheme = existsSync(path.join(process.cwd(), "public/landing/audio/theme
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="lp flex min-h-svh flex-col">
-      <MarketingHeader tone="dark" float actions={hasTheme ? <SoundToggle /> : undefined} />
+      <MarketingHeader float actions={hasTheme ? <SoundToggle /> : undefined} />
       <main id="main" className="flex-1">
         {children}
       </main>
-      <MarketingFooter tone="dark" />
-      <MobileCtaBar tone="dark" />
+      <MarketingFooter />
+      <MobileCtaBar />
     </div>
   );
 }

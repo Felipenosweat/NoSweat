@@ -1,14 +1,12 @@
-import { MODEL_UNSPLASH_PHOTOS } from "@nosweat/fixtures";
-
 // Depois de publicado (#clients e #social, no escuro): a lista de Clientes que se enche com os
 // pedidos do formulário e o calendário de posts do Instagram que esperam o OK do dono.
 // Desenhos fiéis das telas /clients e /social com o exemplo da Still Water Spa (fictícia).
-// As fotos dos posts são as da galeria do site de exemplo (Unsplash, hotlink com crédito).
+// Sem fotos: o quadrado do post é só um espaço colorido (pedido do fundador).
 
 const STAGES = {
-  new: { label: "New", dot: "bg-sky-400" },
-  quoted: { label: "Quoted", dot: "bg-amber-400" },
-  won: { label: "Won", dot: "bg-emerald-400" },
+  new: { label: "New", dot: "bg-[#00c2ff]" },
+  quoted: { label: "Quoted", dot: "bg-amber-500" },
+  won: { label: "Won", dot: "bg-emerald-500" },
 } as const;
 
 const CLIENTS: { name: string; ask: string; when: string; stage: keyof typeof STAGES }[] = [
@@ -20,7 +18,7 @@ const CLIENTS: { name: string; ask: string; when: string; stage: keyof typeof ST
 
 function ClientsMock() {
   return (
-    <div className="rounded-2xl bg-white p-2 text-[#071b33] shadow-[0_50px_100px_-40px_rgb(0_0_0/.7)]">
+    <div className="rounded-2xl bg-white p-2 text-[#071b33] shadow-[0_40px_80px_-40px_rgb(7_27_51/.35)] ring-1 ring-[var(--lp-line)]">
       <div className="flex items-center justify-between px-3 pt-2 pb-3">
         <p className="text-[15px] font-semibold">Clients</p>
         <span className="rounded-full border border-[#071b33]/15 px-2 py-0.5 text-[11px] font-semibold text-[#071b33]/60">
@@ -56,13 +54,6 @@ function ClientsMock() {
   );
 }
 
-const photos = MODEL_UNSPLASH_PHOTOS["still-water-spa"]?.gallery ?? [];
-
-/** URL menor da mesma foto do Unsplash (o hotlink pede o parâmetro w). */
-function small(url: string) {
-  return url.replace(/([?&])w=\d+/, "$1w=640");
-}
-
 const POSTS = [
   {
     day: "Tue",
@@ -76,7 +67,7 @@ const POSTS = [
 
 function SocialMock() {
   return (
-    <div className="rounded-2xl bg-white p-2 text-[#071b33] shadow-[0_50px_100px_-40px_rgb(0_0_0/.7)]">
+    <div className="rounded-2xl bg-white p-2 text-[#071b33] shadow-[0_40px_80px_-40px_rgb(7_27_51/.35)] ring-1 ring-[var(--lp-line)]">
       <div className="flex items-center justify-between px-3 pt-2 pb-3">
         <p className="text-[15px] font-semibold">This week on Instagram</p>
         <span className="rounded-full border border-[#071b33]/15 px-2 py-0.5 text-[11px] font-semibold text-[#071b33]/60">
@@ -84,21 +75,11 @@ function SocialMock() {
         </span>
       </div>
       <ul className="grid grid-cols-3 gap-2">
-        {POSTS.map((post, index) => {
-          const photo = photos[index % Math.max(photos.length, 1)];
+        {POSTS.map((post) => {
           return (
             <li key={post.day} className="min-w-0 rounded-xl ring-1 ring-[#071b33]/10">
-              <span className="block aspect-square overflow-hidden rounded-t-xl bg-[#071b33]/10">
-                {photo && (
-                  // Hotlink do Unsplash (exigido pelas regras deles); o otimizador do Next não entra.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={small(photo.url)}
-                    alt=""
-                    loading="lazy"
-                    className="size-full object-cover"
-                  />
-                )}
+              <span className="block aspect-[4/3] rounded-t-xl bg-[var(--lp-tint)] p-2 text-[11px] font-semibold text-[#0066ff]">
+                Photo
               </span>
               <span className="block p-2">
                 <span className="block text-[11px] font-semibold text-[#071b33]/55">
@@ -122,42 +103,18 @@ function SocialMock() {
           );
         })}
       </ul>
-      {photos.length > 0 && (
-        <p className="px-3 pt-3 pb-1 text-[11px] text-[#071b33]/55">
-          Photos by{" "}
-          {photos.slice(0, 3).map((photo, index, list) => (
-            <span key={photo.url}>
-              {photo.credit?.url ? (
-                <a href={photo.credit.url} className="underline underline-offset-2">
-                  {photo.credit.name}
-                </a>
-              ) : (
-                photo.credit?.name
-              )}
-              {index < list.length - 1 ? ", " : ""}
-            </span>
-          ))}{" "}
-          on{" "}
-          <a
-            href="https://unsplash.com/?utm_source=nosweat&utm_medium=referral"
-            className="underline underline-offset-2"
-          >
-            Unsplash
-          </a>
-        </p>
-      )}
     </div>
   );
 }
 
 export function AfterLaunch() {
   return (
-    <section aria-labelledby="after-title" className="lp-night py-16 lg:py-24">
+    <section aria-labelledby="after-title" className="py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <h2
           id="after-title"
           data-lp-rise
-          className="lp-serif max-w-[14ch] text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] text-white"
+          className="lp-serif max-w-[14ch] text-[clamp(2.4rem,5.5vw,5rem)]"
         >
           After it goes <em>live</em>
         </h2>
@@ -165,10 +122,10 @@ export function AfterLaunch() {
         <div className="mt-10 grid grid-cols-1 gap-14 lg:mt-14 lg:grid-cols-2 lg:gap-12">
           <article id="clients" className="scroll-mt-24">
             <div data-lp-rise>
-              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none text-white">
+              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none">
                 Requests turn into <em>clients</em>
               </h3>
-              <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-white/70">
+              <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-[#071b33]/70">
                 Every contact form request lands in one list, ready to follow up.
               </p>
             </div>
@@ -179,10 +136,10 @@ export function AfterLaunch() {
 
           <article id="social" className="scroll-mt-24">
             <div data-lp-rise>
-              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none text-white">
+              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none">
                 Posts that wait for your <em>OK</em>
               </h3>
-              <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-white/70">
+              <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-[#071b33]/70">
                 We draft them, you approve them. Needs an Instagram professional account.
               </p>
             </div>

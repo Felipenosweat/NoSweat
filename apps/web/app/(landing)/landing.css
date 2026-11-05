@@ -1,125 +1,34 @@
-/* Landing V8 ("Signature"): o mesmo padrão dos sites premium dos clientes.
-   Ink (noite) e papel quente, títulos em serifa editorial com a última palavra em itálico,
-   menu de vidro, fotos que se revelam, parágrafo que acende palavra por palavra, galeria que
-   anda de lado e o nome gigante no fim. Sem cortina de abertura: a página abre direto. Sem degradê de cor (só os
-   véus escuros sobre fotos, para o texto ler bem).
-   O movimento com rolagem é do LandingMotion (components/landing/LandingMotion.tsx). Sem JS
-   ou com "reduzir movimento", tudo aparece parado, legível e completo. */
+/* Landing V10: fundo branco, detalhes nas cores da logo (azul #0066ff, ciano #00c2ff, tinta
+   #071b33). Títulos em serifa editorial com a palavra de destaque em itálico azul; painéis com
+   borda fina e cantos marcados (forma das referências do fundador). Sem fotos nem capturas de
+   sites: só interface desenhada. O movimento com rolagem é do LandingMotion; sem JS ou com
+   "reduzir movimento", tudo aparece parado, legível e completo. */
 
 .lp {
-  --lp-night: #050c18;
   --lp-ink: #071b33;
-  --lp-paper: #f3f0e9;
-  --lp-paper-deep: #e9e4da;
-  --lp-line: rgb(7 27 51 / 0.14);
+  --lp-blue: #0066ff;
+  --lp-cyan: #00c2ff;
+  --lp-tint: #f4f8ff;
+  --lp-line: rgb(7 27 51 / 0.12);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
   --font-lp-serif: var(--ns-font-editorial-heading);
-  /* Destaque sem cor chamativa: marfim sobre a noite (peso vem do itálico e da escala). */
-  --lp-accent: #ece6d8;
-  background: var(--lp-night);
+  background: #ffffff;
+  color: var(--lp-ink);
 }
-
-/* ---------- Tipografia ---------- */
 
 .lp-serif {
   font-family: var(--font-lp-serif), "Times New Roman", serif;
   font-weight: 400;
   letter-spacing: -0.02em;
-  word-spacing: 0.02em;
   line-height: 0.95;
   text-wrap: balance;
-}
-
-/* A palavra de destaque: só itálico, em marfim na noite e na cor da tinta no papel. */
-.lp-serif em {
-  font-style: italic;
-  letter-spacing: -0.01em;
-  color: var(--lp-accent);
-}
-
-.lp-paper .lp-serif em {
   color: var(--lp-ink);
 }
 
-/* Pílula de imagem dentro do título (a forma do Redstone): um recorte de site de exemplo. */
-.lp-pill {
-  display: inline-block;
-  width: 1.9em;
-  height: 0.74em;
-  margin-inline: 0.1em;
-  vertical-align: -0.04em;
-  overflow: hidden;
-  border-radius: 999px;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.25);
-}
-
-.lp-pill img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 30%;
-}
-
-/* Cursor "View" (disco marfim) que segue o mouse sobre a galeria (só mouse; ver LandingCursor). */
-.lp-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  margin: -42px 0 0 -42px;
-  border-radius: 999px;
-  background: var(--lp-accent);
-  color: #071b33;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  pointer-events: none;
-  opacity: 0;
-  scale: 0.4;
-  transition:
-    opacity 200ms var(--lp-ease),
-    scale 300ms var(--lp-ease);
-}
-
-.lp-cursor[data-on] {
-  opacity: 1;
-  scale: 1;
-}
-
-/* Faixa de nomes que corre (o mesmo vaivém do lp-drift). */
-.lp-ticker {
-  animation: lp-drift 60s linear infinite;
-}
-
-/* Cartões numerados ("o que todo site leva"). */
-.lp-card {
-  background: rgb(255 255 255 / 0.04);
-  border: 1px solid rgb(255 255 255 / 0.12);
-  transition:
-    background-color 300ms var(--lp-ease),
-    border-color 300ms var(--lp-ease);
-}
-
-.lp-card:hover {
-  background: rgb(255 255 255 / 0.08);
-  border-color: rgb(255 255 255 / 0.4);
-}
-
-/* Contorno só no texto grande de enfeite (número, faixa). */
-.lp-outline {
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgb(255 255 255 / 0.55);
-}
-
-.lp-paper .lp-outline {
-  -webkit-text-stroke-color: rgb(7 27 51 / 0.45);
+.lp-serif em {
+  font-style: italic;
+  letter-spacing: -0.01em;
+  color: var(--lp-blue);
 }
 
 .lp-eyebrow {
@@ -129,31 +38,40 @@
   text-transform: uppercase;
 }
 
-/* ---------- Superfícies ---------- */
-
-.lp-paper {
-  background: var(--lp-paper);
-  color: var(--lp-ink);
+/* Painel com borda fina e dois cantos marcados em azul. */
+.lp-frame {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--lp-line);
 }
 
-.lp-night {
-  background: var(--lp-night);
-  color: #ffffff;
+.lp-frame::before,
+.lp-frame::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid var(--lp-blue);
+  pointer-events: none;
 }
 
-/* Vidro (menu, campo do hero): escuro o bastante para o texto branco ler sobre o papel. */
-.lp-glass {
-  background: rgb(6 15 30 / 0.74);
-  border: 1px solid rgb(255 255 255 / 0.14);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    0 24px 60px -28px rgb(0 0 0 / 0.6);
-  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+.lp-frame::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
 }
 
-/* Sublinhado que corre da esquerda (links do texto e do menu). */
+.lp-frame::after {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+.lp-tint {
+  background: var(--lp-tint);
+}
+
+/* Sublinhado que corre da esquerda. */
 .lp-underline {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
   transition: background-size 500ms var(--lp-ease);
@@ -164,10 +82,7 @@
   background-size: 100% 1px;
 }
 
-/* Linhas do título do hero sobem um pouco de dentro de uma máscara assim que a página abre.
-   O título é o LCP: já no primeiro quadro a maior parte do texto aparece (deslocamento curto,
-   sem espera na primeira linha). Antes começava 108% abaixo, todo escondido, e o LCP só
-   contava quando a animação revelava o texto. */
+/* Linhas do título sobem de dentro de uma máscara ao abrir (deslocamento curto: o título é o LCP). */
 .lp-line {
   display: block;
   overflow: hidden;
@@ -187,7 +102,6 @@
   }
 }
 
-/* Sem começar em opacidade 0 (o navegador não conta o que está invisível como pintado). */
 .lp-fade-up {
   animation: lp-fade-up 900ms var(--lp-ease) both;
   animation-delay: calc(var(--i, 0) * 60ms);
@@ -211,157 +125,29 @@
   }
 }
 
-/* ---------- Hero ---------- */
-
-/* A foto do site de exemplo atrás do título: bem escura, com véu embaixo para o texto. */
-.lp-hero-veil {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(5 12 24 / 0.72) 0%,
-      rgb(5 12 24 / 0.35) 40%,
-      rgb(5 12 24 / 0.94) 100%
-    ),
-    rgb(5 12 24 / 0.25);
+/* Linha da lista de exemplos: o nome desliza e a seta aparece no hover. */
+.lp-row {
+  transition: padding 400ms var(--lp-ease);
 }
 
-/* A moldura do site de exemplo cresce com a rolagem: animação presa à rolagem só em CSS
-   (animation-timeline), que o navegador roda fora da thread principal e já vale no primeiro
-   quadro (antes era o GSAP, que só chegava depois de carregar e pulava de escala). Navegador
-   sem suporte (Firefox) ou "reduzir movimento": a moldura fica parada no tamanho cheio.
-   Fim igual ao de antes: quando o topo da moldura chega a 12% da altura da tela. */
-.lp-stage {
-  --lp-stage-from: 0.92;
-  transform-origin: 50% 0;
+.lp-row:hover,
+.lp-row:focus-visible {
+  padding-inline: 1rem;
 }
 
-@media (min-width: 1024px) {
-  .lp-stage {
-    --lp-stage-from: 0.82;
-  }
+.lp-row:hover .lp-row-name,
+.lp-row:focus-visible .lp-row-name {
+  color: var(--lp-blue);
 }
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lp-stage {
-      will-change: transform;
-      animation: lp-stage-grow linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 88vh;
-    }
-  }
-}
-
-@keyframes lp-stage-grow {
-  from {
-    transform: scale(var(--lp-stage-from));
-  }
-  to {
-    transform: none;
-  }
-}
-
-/* ---------- Galeria lateral (#looks) ---------- */
-
-/* Padrão: trilho com rolagem nativa (celular, sem JS). */
-.lp-rail {
-  display: flex;
-  gap: 1.25rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-inline: 1.25rem;
-  scroll-padding-inline: 1.25rem;
-}
-
-.lp-rail::-webkit-scrollbar {
-  display: none;
-}
-
-.lp-rail > * {
-  scroll-snap-align: start;
-  flex: none;
-}
-
-/* Computador sem a galeria presa (máquina fraca, sem JS ou movimento reduzido): a roda do mouse
-   não anda de lado, então os sites ficam numa grade de 3 colunas. */
-@media (min-width: 1024px) {
-  .lp-hscroll:not([data-pinned]) .lp-rail {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2.5rem 1.5rem;
-    overflow: visible;
-    max-width: 1240px;
-    margin-inline: auto;
-    padding-inline: 2rem;
-  }
-
-  .lp-hscroll:not([data-pinned]) .lp-rail > * {
-    width: auto;
-    max-width: none;
-  }
-}
-
-/* Com o LandingMotion no computador: a seção fica alta, o trilho preso na tela anda de lado. */
-.lp-hscroll[data-pinned] {
-  height: 220vh;
-}
-
-.lp-hscroll[data-pinned] .lp-hscroll-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.lp-hscroll[data-pinned] .lp-rail {
-  overflow: visible;
-  scroll-snap-type: none;
-  padding-inline: max(2rem, calc((100vw - 1240px) / 2));
-  will-change: transform;
-}
-
-/* ---------- Parede de celulares (PhoneWall): fileiras correndo devagar ---------- */
-
-.lp-drift {
-  animation: lp-drift 70s linear infinite;
-}
-
-.lp-drift-reverse {
-  animation-direction: reverse;
-}
-
-@keyframes lp-drift {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* ---------- Fotos que se revelam / zoom no hover ---------- */
-
-.lp-zoom img {
-  transition: transform 1400ms var(--lp-ease);
-}
-
-.lp-zoom:hover img {
-  transform: scale(1.04);
-}
-
-/* ---------- Movimento reduzido: nada anda ---------- */
 
 @media (prefers-reduced-motion: reduce) {
   .lp-line > span,
   .lp-fade-up,
-  .lp-nav,
-  .lp-drift,
-  .lp-ticker {
+  .lp-nav {
     animation: none;
   }
 
-  .lp-zoom img,
+  .lp-row,
   .lp-underline {
     transition: none;
   }
