@@ -464,3 +464,59 @@ details[open] > summary .lp-fx::before {
     animation: none;
   }
 }
+
+/* ---------- Etiqueta "BE ___" (TypedTag) ---------- */
+.lp-typed {
+  --c1: #0066ff;
+  --c2: #00c2ff;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #071b33;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, var(--c1), var(--c2), #a8c8ff, var(--c1)) border-box;
+  background-size:
+    100% 100%,
+    300% 100%;
+  animation: lp-gradient-move 6s linear infinite;
+}
+
+@keyframes lp-gradient-move {
+  to {
+    background-position:
+      0 0,
+      -300% 0;
+  }
+}
+
+.lp-caret {
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  margin-left: 3px;
+  background: #0066ff;
+  animation: lp-blink 1s steps(1) infinite;
+}
+
+.lp-caret[data-on] {
+  animation: none;
+}
+
+@keyframes lp-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-typed,
+  .lp-caret {
+    animation: none;
+  }
+}
