@@ -74,7 +74,7 @@ export default function LandingPage() {
             <h2
               id="pricing-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] lg:col-span-8"
+              className="lp-serif text-[clamp(2rem,4.4vw,3.5rem)] lg:col-span-8"
             >
               Build it free. Pay when it’s <em>live.</em>
             </h2>
@@ -97,7 +97,7 @@ export default function LandingPage() {
       >
         <div className={`${wrap} grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8`}>
           <div className="lg:col-span-4">
-            <h2 id="faq-title" data-lp-rise className="lp-serif text-[clamp(2.4rem,5vw,4.25rem)]">
+            <h2 id="faq-title" data-lp-rise className="lp-serif text-[clamp(2rem,4vw,3rem)]">
               Questions, <em>answered</em>
             </h2>
             <p className="mt-6 max-w-[36ch] text-lg leading-relaxed text-[#071b33]/70">
@@ -150,7 +150,7 @@ export default function LandingPage() {
             <h2
               id="final-title"
               data-lp-rise
-              className="lp-serif text-[clamp(2.8rem,6.5vw,6rem)] !text-white"
+              className="lp-serif text-[clamp(2.4rem,5.5vw,4.5rem)] !text-white"
             >
               Stop sweating the <em className="!text-[#00c2ff]">website.</em>
             </h2>
@@ -181,7 +181,7 @@ export default function LandingPage() {
       <div aria-hidden="true" className="overflow-hidden pt-10">
         <p
           data-lp-giant
-          className="lp-serif text-center text-[24vw] leading-[0.8] whitespace-nowrap"
+          className="lp-serif text-center text-[17.5vw] leading-[0.85] tracking-[-0.05em] whitespace-nowrap"
         >
           No <em>Sweat</em>
         </p>

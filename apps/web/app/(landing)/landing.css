@@ -11,24 +11,121 @@
   --lp-tint: #f4f8ff;
   --lp-line: rgb(7 27 51 / 0.12);
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --font-lp-serif: var(--ns-font-editorial-heading);
+  /* Tipografia de sistema (San Francisco no Apple, Segoe no Windows): limpa e sem baixar fonte. */
+  --font-lp-serif:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
   background: #ffffff;
   color: var(--lp-ink);
 }
 
 .lp-serif {
-  font-family: var(--font-lp-serif), "Times New Roman", serif;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  font-family: var(--font-lp-serif);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
   text-wrap: balance;
   color: var(--lp-ink);
 }
 
+/* Segunda metade do título em outro tom (estilo duas cores): azul da marca, sem itálico. */
 .lp-serif em {
-  font-style: italic;
-  letter-spacing: -0.01em;
+  font-style: normal;
   color: var(--lp-blue);
+}
+
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgb(0 0 0 / 0.14);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6e6e73;
+}
+
+.lp-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--lp-blue);
+}
+
+/* Verbo que troca no título (só CSS; sem movimento fica só o primeiro). */
+.lp-rotor {
+  display: inline-grid;
+  vertical-align: bottom;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.lp-rotor > span {
+  grid-area: 1 / 1;
+  color: var(--lp-blue);
+  opacity: 0;
+  transform: translateY(60%);
+  animation: lp-rotor 14s var(--lp-ease) infinite;
+  animation-delay: calc(var(--k) * 3.5s);
+}
+
+.lp-rotor > span:first-child {
+  opacity: 1;
+  transform: none;
+  animation-delay: -0.4s;
+}
+
+/* Quatro verbos: cada um ocupa 1/4 do ciclo. */
+@keyframes lp-rotor {
+  0% {
+    opacity: 0;
+    transform: translateY(60%);
+  }
+  3%,
+  22% {
+    opacity: 1;
+    transform: none;
+  }
+  25%,
+  100% {
+    opacity: 0;
+    transform: translateY(-60%);
+  }
+}
+
+/* Cartão preto "metal": luz que cai do canto e uma borda fina. */
+.lp-slab {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  color: #fff;
+  background: radial-gradient(125% 95% at 12% 0%, #1b2a40 0%, #0d1726 42%, #070d18 100%);
+  border: 1px solid rgb(255 255 255 / 0.09);
+  box-shadow:
+    0 30px 80px -30px rgb(7 27 51 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  transition:
+    transform 500ms var(--lp-ease),
+    border-color 400ms;
+}
+
+.lp-slab:hover {
+  transform: translateY(-4px);
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.lp-slab-n::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  margin-right: 10px;
+  vertical-align: 4px;
+  background: var(--lp-cyan);
 }
 
 .lp-eyebrow {
@@ -145,6 +242,14 @@
   .lp-fade-up,
   .lp-nav {
     animation: none;
+  }
+
+  .lp-rotor > span {
+    animation: none;
+  }
+
+  .lp-slab {
+    transition: none;
   }
 
   .lp-row,

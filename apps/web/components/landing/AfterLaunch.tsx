@@ -114,15 +114,15 @@ export function AfterLaunch() {
         <h2
           id="after-title"
           data-lp-rise
-          className="lp-serif max-w-[14ch] text-[clamp(2.4rem,5.5vw,5rem)]"
+          className="lp-serif text-center text-[clamp(2rem,4.4vw,3.5rem)]"
         >
-          After it goes <em>live</em>
+          After it goes <em>live.</em>
         </h2>
 
         <div className="mt-10 grid grid-cols-1 gap-14 lg:mt-14 lg:grid-cols-2 lg:gap-12">
           <article id="clients" className="scroll-mt-24">
             <div data-lp-rise>
-              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none">
+              <h3 className="lp-serif text-[clamp(1.5rem,2.4vw,2rem)]">
                 Requests turn into <em>clients</em>
               </h3>
               <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-[#071b33]/70">
@@ -136,7 +136,7 @@ export function AfterLaunch() {
 
           <article id="social" className="scroll-mt-24">
             <div data-lp-rise>
-              <h3 className="lp-serif text-[clamp(2rem,3.4vw,2.9rem)] leading-none">
+              <h3 className="lp-serif text-[clamp(1.5rem,2.4vw,2rem)]">
                 Posts that wait for your <em>OK</em>
               </h3>
               <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.7] text-[#071b33]/70">

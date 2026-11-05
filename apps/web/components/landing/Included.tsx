@@ -30,17 +30,19 @@ const ITEMS = [
 
 export function Included() {
   return (
-    <section id="included" aria-labelledby="included-title" className="py-16 lg:py-24">
+    <section id="included" aria-labelledby="included-title" className="px-0 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-end">
+        <div className="text-center">
+          <span className="lp-tag">Included</span>
           <h2
             id="included-title"
             data-lp-rise
-            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] lg:col-span-8"
+            className="lp-serif mt-6 text-[clamp(2rem,4.4vw,3.5rem)]"
           >
-            You say little. <em>We ship the rest.</em>
+            You say little. <br className="hidden sm:block" />
+            <em>We ship the rest.</em>
           </h2>
-          <p className="max-w-[40ch] text-lg leading-relaxed text-[#071b33]/70 lg:col-span-4">
+          <p className="mx-auto mt-4 max-w-[44ch] text-lg leading-relaxed text-[#6e6e73]">
             Every site comes complete, even the parts you did not ask for.
           </p>
         </div>
@@ -50,16 +52,18 @@ export function Included() {
             <li
               key={item.title}
               data-lp-rise
-              className="lp-frame flex min-h-[240px] flex-col justify-between rounded-[4px] p-6 lg:min-h-[280px] lg:p-8"
+              className="flex min-h-[220px] flex-col justify-between rounded-[22px] bg-[#f5f5f7] p-6 lg:min-h-[280px] lg:p-8"
             >
               <p
-                className="lp-serif text-[clamp(3rem,5vw,4.5rem)] text-[#0066ff]"
+                className="text-[15px] font-semibold tracking-[0.08em] text-[#0066ff]"
                 aria-hidden="true"
               >
                 {String(index + 1).padStart(2, "0")}
               </p>
               <div>
-                <h3 className="lp-serif text-[clamp(1.6rem,2.4vw,2.1rem)]">{item.title}</h3>
+                <h3 className="text-[22px] leading-tight font-semibold tracking-[-0.02em] text-[#071b33]">
+                  {item.title}
+                </h3>
                 <p className="mt-3 max-w-[38ch] text-[15px] leading-[1.65] text-pretty text-[#071b33]/70">
                   {item.body}
                 </p>

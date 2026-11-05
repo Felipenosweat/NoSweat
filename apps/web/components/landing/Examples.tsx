@@ -38,21 +38,18 @@ const SITES = [
 
 export function Examples() {
   return (
-    <section
-      id="looks"
-      aria-labelledby="looks-title"
-      className="lp-tint border-y border-[var(--lp-line)] py-16 lg:py-24"
-    >
+    <section id="looks" aria-labelledby="looks-title" className="py-16 lg:py-24">
       <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-12 lg:items-end">
+        <div className="text-center">
+          <span className="lp-tag">Examples</span>
           <h2
             id="looks-title"
             data-lp-rise
-            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] lg:col-span-8"
+            className="lp-serif mt-6 text-[clamp(2rem,4.4vw,3.5rem)]"
           >
             Open any of them <em>and scroll.</em>
           </h2>
-          <p className="max-w-[40ch] text-lg leading-relaxed text-[#071b33]/70 lg:col-span-4">
+          <p className="mx-auto mt-4 max-w-[44ch] text-lg leading-relaxed text-[#6e6e73]">
             Made-up businesses, real No Sweat sites. Pick one to look around.
           </p>
         </div>
@@ -66,7 +63,7 @@ export function Examples() {
                 <span className="w-7 shrink-0 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/45">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span className="lp-row-name lp-serif min-w-0 flex-1 text-[clamp(1.6rem,3.4vw,2.75rem)] leading-none transition-colors duration-300">
+                <span className="lp-row-name lp-serif min-w-0 flex-1 text-[clamp(1.4rem,2.8vw,2.1rem)] leading-none transition-colors duration-300">
                   {site.name}
                 </span>
                 <span className="hidden shrink-0 text-sm text-[#071b33]/60 sm:block">

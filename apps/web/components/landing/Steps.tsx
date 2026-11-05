@@ -1,139 +1,79 @@
-import { MiniSite } from "./MiniSite";
-import type { CSSProperties, ReactNode } from "react";
+// "How it works" (#story): quatro cartões pretos em uma fileira, cada um com um esboço desenhado
+// em HTML (sem fotos) do que acontece naquele passo. Só o que o produto faz hoje.
 
-// "How it works" (#story): quatro passos em linhas editoriais (número, título em serifa, texto)
-// com a interface ao lado. As interfaces são desenhos fiéis das telas de verdade (o campo do
-// /create, o painel do editor, a barra do navegador do site publicado) com o exemplo da
-// Still Water Spa (fictícia), o mesmo do hero. Selo "Example" em cada uma.
+const ROW = "flex h-8 items-center gap-2 rounded-lg bg-white/10 px-3 text-[12px] text-white/80";
 
-function ExampleTag() {
-  return (
-    <span className="rounded-full border border-[var(--lp-line)] px-2 py-0.5 text-[11px] font-semibold text-[#071b33]/60">
-      Example
-    </span>
-  );
-}
-
-/** 1. O campo de descrição, com os fatos que a No Sweat tira da frase. */
-function DescribeMock() {
-  const fact =
-    "rounded-sm bg-[#071b33]/[0.07] px-1 underline decoration-brand decoration-2 underline-offset-4";
-  return (
-    <div className="w-full max-w-[460px] rounded-[1.25rem] bg-white p-5 shadow-[0_40px_80px_-40px_rgb(7_27_51/.35)] ring-1 ring-[var(--lp-line)]">
-      <div className="flex items-center justify-between">
-        <p className="text-[13px] font-semibold text-[#071b33]/60">Describe your business</p>
-        <ExampleTag />
-      </div>
-      <p className="mt-3 text-[15px] leading-[1.7] text-[#071b33] sm:text-base">
-        <span className={fact}>Still Water Spa</span>. Massage and facials in{" "}
-        <span className={fact}>Old Town Scottsdale</span>. Five treatment rooms,{" "}
-        <span className={fact}>open daily 9 to 8</span>. Call{" "}
-        <span className={fact}>(480) 555-0171</span>.
-      </p>
-      <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--lp-line)] pt-5">
-        {["Day spa", "Scottsdale, AZ", "Daily 9 AM to 8 PM", "(480) 555-0171"].map((chip) => (
-          <span
-            key={chip}
-            className="rounded-full bg-[#071b33] px-3 py-1.5 text-[13px] font-medium text-white"
-          >
-            {chip}
+function Art({ i }: { i: number }) {
+  if (i === 0)
+    return (
+      <div className="grid gap-1.5" aria-hidden="true">
+        {["Your business", "Where you are", "Hours", "Phone"].map((t) => (
+          <span key={t} className={ROW}>
+            <span className="size-1.5 rounded-full bg-[#00c2ff]" />
+            {t}
           </span>
         ))}
       </div>
-    </div>
-  );
-}
-
-/** 2. O site pronto (desenhado, sem foto). */
-function SiteMock() {
-  return (
-    <div className="w-full max-w-[440px]">
-      <MiniSite />
-    </div>
-  );
-}
-
-/** 3. O painel do editor: o pedido à IA vira um rascunho para conferir. */
-function EditMock() {
-  const tabs = ["Ask AI", "Content", "Style", "Sections"];
-  return (
-    <div className="w-full max-w-[360px] rounded-2xl bg-white p-3 text-[#071b33] shadow-[0_40px_80px_-40px_rgb(7_27_51/.4)] ring-1 ring-[var(--lp-line)]">
-      <div className="grid grid-cols-4 gap-0.5 rounded-xl bg-[#071b33]/[0.06] p-0.5">
-        {tabs.map((tab, index) => (
-          <span
-            key={tab}
-            className={`truncate rounded-[0.6rem] px-1 py-1.5 text-center text-[11px] font-semibold ${
-              index === 0 ? "bg-white shadow-sm" : "text-[#071b33]/55"
-            }`}
-          >
-            {tab}
-          </span>
-        ))}
+    );
+  if (i === 1)
+    return (
+      <div className="grid gap-2 rounded-xl border border-white/15 p-4" aria-hidden="true">
+        <span className="h-2 w-2/5 rounded bg-white/15" />
+        <span className="h-7 w-3/5 rounded-lg bg-white/85" />
+        <span className="h-2 w-4/5 rounded bg-white/15" />
+        <span className="h-2 w-3/5 rounded bg-white/15" />
+        <span className="mt-1 h-6 w-1/3 rounded-full bg-[#0066ff]" />
       </div>
-      <p className="mt-3 text-[11px] font-semibold text-[#071b33]/60">Describe a change</p>
-      <p className="mt-1 rounded-lg px-3 py-2 text-[13px] ring-1 ring-[var(--lp-line)]">
-        Make the intro shorter and mention the free parking.
-      </p>
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 text-[12px] text-[#071b33]/70">
+    );
+  if (i === 2)
+    return (
+      <div className="rounded-xl border border-white/15 p-3 text-[12px]" aria-hidden="true">
+        <p className="text-white/55">Describe a change</p>
+        <p className="mt-1.5 rounded-lg bg-white/10 px-3 py-2 text-white/85">
+          Make the intro shorter.
+        </p>
+        <p className="mt-2.5 flex items-center gap-2 text-white/70">
           <span className="size-1.5 rounded-full bg-[#00c2ff]" />
           New draft ready to review
+        </p>
+      </div>
+    );
+  return (
+    <div className="overflow-hidden rounded-xl border border-white/15" aria-hidden="true">
+      <div className="flex items-center gap-1.5 border-b border-white/15 px-3 py-2">
+        <span className="size-1.5 rounded-full bg-white/25" />
+        <span className="size-1.5 rounded-full bg-white/25" />
+        <span className="size-1.5 rounded-full bg-white/25" />
+        <span className="ml-2 h-2 flex-1 rounded bg-white/10" />
+      </div>
+      <div className="grid gap-2 p-3">
+        <span className="h-5 w-1/2 rounded bg-white/85" />
+        <span className="h-2 w-3/4 rounded bg-white/15" />
+        <span className="mt-1 flex items-center gap-2 text-[12px] text-white/70">
+          <span className="size-1.5 rounded-full bg-emerald-400" />
+          Live
         </span>
-        <ExampleTag />
       </div>
     </div>
   );
 }
 
-/** 4. O site publicado, com a barra do navegador e o selo "Live". */
-function LiveMock() {
-  return (
-    <div className="relative w-full max-w-[440px]">
-      <MiniSite address="nosweatfd.com/s/still-water-spa" />
-      <span className="absolute top-2 right-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-emerald-700 ring-1 ring-[var(--lp-line)]">
-        <span className="size-1.5 rounded-full bg-emerald-600" />
-        Live
-      </span>
-    </div>
-  );
-}
-
-const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
+const STEPS = [
   {
-    title: (
-      <>
-        Describe your <em>business</em>
-      </>
-    ),
+    title: "Describe your business",
     body: "One or two sentences, like you’d tell a customer.",
-    visual: <DescribeMock />,
   },
   {
-    title: (
-      <>
-        Get a finished <em>site</em>
-      </>
-    ),
-    body: "Photos, services, hours, contact form and a call button.",
-    visual: <SiteMock />,
+    title: "Get a finished site",
+    body: "Services, hours, contact form and a call button, already in place.",
   },
   {
-    title: (
-      <>
-        Change <em>anything</em>
-      </>
-    ),
-    body: "Click to edit, or just ask the AI in plain words.",
-    visual: <EditMock />,
+    title: "Change anything",
+    body: "Click to edit, or ask the AI in plain words. You review every draft.",
   },
   {
-    title: (
-      <>
-        Go <em>live</em>
-      </>
-    ),
-    body: "Free nosweatfd.com address, or your own domain on Pro.",
-    visual: <LiveMock />,
+    title: "Go live",
+    body: "A free nosweatfd.com address, or your own domain on Pro.",
   },
 ];
 
@@ -142,55 +82,29 @@ export function Steps() {
     <section
       id="story"
       aria-labelledby="story-title"
-      className="lp-tint border-y border-[var(--lp-line)] py-16 lg:py-24"
+      className="px-5 pt-8 pb-16 text-center sm:px-8 lg:pb-24"
     >
-      <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-end">
-          <h2
-            id="story-title"
-            data-lp-rise
-            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] lg:col-span-8"
-          >
-            How it <em>works</em>
-          </h2>
-          <p className="max-w-[38ch] text-lg leading-relaxed text-[#071b33]/70 lg:col-span-4">
-            Free to create. Pay only to publish.
-          </p>
-        </div>
-
-        {/* Quatro passos. No tablet e no computador viram uma pilha: cada cartão gruda no topo e o
-            próximo desliza por cima (position: sticky, só CSS). No celular, um trilho que o dedo
-            passa de lado (a página não fica comprida). */}
-        <ol className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 md:mx-0 md:block md:overflow-visible md:px-0 lg:mt-14">
-          {STEPS.map((step, index) => (
-            <li
-              key={index}
-              style={{ "--i": index } as CSSProperties}
-              className="w-[84vw] max-w-[420px] min-w-0 shrink-0 snap-start md:sticky md:top-[calc(5.5rem+var(--i)*1.1rem)] md:mb-6 md:w-auto md:max-w-none"
-            >
-              <div className="overflow-hidden rounded-[1.5rem] bg-white ring-1 ring-[var(--lp-line)] md:grid md:min-h-[420px] md:grid-cols-12 md:items-stretch md:bg-white md:shadow-[0_-24px_50px_-30px_rgb(7_27_51/.35)]">
-                <div className="flex h-[300px] items-center justify-center overflow-hidden px-5 sm:h-[340px] sm:px-8 md:col-span-7 md:h-auto md:bg-[var(--lp-tint)]">
-                  {step.visual}
-                </div>
-                <div className="flex flex-col justify-between gap-8 p-6 md:col-span-5 md:p-10">
-                  <p
-                    aria-hidden="true"
-                    className="lp-serif text-[clamp(3.5rem,7vw,6.5rem)] text-[#0066ff]"
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <div>
-                    <h3 className="lp-serif text-[clamp(1.7rem,2.8vw,2.5rem)]">{step.title}</h3>
-                    <p className="mt-3 max-w-[40ch] text-[16px] leading-[1.65] text-pretty text-[#071b33]/72">
-                      {step.body}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
+      <span className="lp-tag">How it works</span>
+      <h2 id="story-title" data-lp-rise className="lp-serif mt-6 text-[clamp(2rem,4.4vw,3.5rem)]">
+        From one sentence <br className="hidden sm:block" />
+        <em>to a website that works.</em>
+      </h2>
+      <ol className="mx-auto mt-12 grid w-full max-w-[1240px] grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4">
+        {STEPS.map((step, index) => (
+          <li key={step.title} data-lp-rise className="lp-slab flex flex-col gap-6 p-6 lg:p-7">
+            <p className="lp-slab-n text-[12px] font-semibold tracking-[0.1em] text-white/60">
+              STEP {String(index + 1).padStart(2, "0")}
+            </p>
+            <Art i={index} />
+            <div className="mt-auto">
+              <h3 className="text-[20px] leading-tight font-semibold tracking-[-0.02em] text-white">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-[14.5px] leading-[1.55] text-white/70">{step.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
