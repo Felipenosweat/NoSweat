@@ -26,8 +26,10 @@
 }
 
 /* ---------- Tipografia ---------- */
+/* Títulos em Funnel Display (já carregada em app/fonts.ts, par "gallery"); o texto corrido segue
+   na fonte do sistema. */
 .lp-h {
-  font-family: var(--font-lp);
+  font-family: var(--ns-font-gallery-heading), var(--font-lp);
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -36,6 +38,10 @@
 }
 
 /* Segunda linha do título de seção em cinza (duas cores, sem itálico). */
+.lp-display {
+  font-weight: 700;
+}
+
 .lp-h .dim {
   color: #86868b;
 }
@@ -88,18 +94,6 @@
   28%,
   100% {
     background-position: -140% 0;
-  }
-}
-
-/* O verbo ganha uma linha só no celular (trocar de palavra não reflui o título). */
-.lp-whirl {
-  display: inline-block;
-  white-space: pre;
-}
-
-@media (max-width: 700px) {
-  .lp-whirl {
-    display: block;
   }
 }
 
