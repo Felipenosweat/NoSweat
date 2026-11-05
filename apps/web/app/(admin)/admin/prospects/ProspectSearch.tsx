@@ -111,8 +111,7 @@ export function ProspectSearch({ source }: { source: keyof typeof SOURCE_NOTE })
           </h2>
           <p className={`mt-1 max-w-[60ch] ${panelText}`}>
             One click: we pick a US city you haven&rsquo;t searched yet and bring in local
-            businesses of any kind that have a phone number but no website. Click again for the next
-            city.
+            businesses without a good website. Click again for the next city.
           </p>
         </div>
         <GlassButton

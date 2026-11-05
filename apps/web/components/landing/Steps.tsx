@@ -1,226 +1,235 @@
-import Image from "next/image";
-import type { ReactNode } from "react";
+"use client";
 
-// "How it works" (#story): quatro passos em linhas editoriais (número, título em serifa, texto)
-// com a interface ao lado. As interfaces são desenhos fiéis das telas de verdade (o campo do
-// /create, o painel do editor, a barra do navegador do site publicado) com o exemplo da
-// Still Water Spa (fictícia), o mesmo do hero. Selo "Example" em cada uma.
+import { Unbounded } from "next/font/google";
+import { useEffect, useRef, useState } from "react";
 
-function ExampleTag() {
+// "How it works" (#story), direto no fundo cinza: o slogan em caixa alta numa fonte larga
+// (Unbounded, só nesta seção, sem preload) e os quatro passos como cartões brancos arredondados
+// lado a lado, que rolam de lado (com o dedo ou pelas setas). Cada cartão tem um desenho de
+// linha simples, nas cores da marca, do que acontece naquele passo. Só o que o produto faz hoje.
+
+const wide = Unbounded({
+  subsets: ["latin"],
+  weight: ["700"],
+  display: "swap",
+  preload: false,
+  variable: "--font-lp-wide",
+});
+
+const BLUE = "#0066ff";
+const INK = "#071b33";
+const SOFT = "#d6dce6";
+
+// Desenhos dos passos (decorativos: o texto do cartão já diz tudo).
+function AnswerArt() {
   return (
-    <span className="rounded-full border border-[var(--lp-line)] px-2 py-0.5 text-[11px] font-semibold text-[#071b33]/60">
-      Example
-    </span>
+    <svg viewBox="0 0 220 120" className="h-auto w-full max-w-[220px]" aria-hidden="true">
+      {[14, 50, 86].map((y, i) => (
+        <g key={y}>
+          <rect
+            x="20"
+            y={y}
+            width="180"
+            height="24"
+            rx="12"
+            fill={i === 1 ? "#eef4ff" : "#fff"}
+            stroke={i === 1 ? BLUE : SOFT}
+            strokeDasharray={i === 1 ? undefined : "3 3"}
+          />
+          <rect
+            x="34"
+            y={y + 10}
+            width={i === 1 ? 74 : 54}
+            height="4"
+            rx="2"
+            fill={i === 1 ? INK : SOFT}
+          />
+          <rect
+            x="164"
+            y={y + 6}
+            width="24"
+            height="12"
+            rx="6"
+            fill={i === 1 ? BLUE : "#fff"}
+            stroke={i === 1 ? BLUE : INK}
+          />
+          <circle cx={i === 1 ? 182 : 170} cy={y + 12} r="3.5" fill={i === 1 ? "#fff" : INK} />
+        </g>
+      ))}
+    </svg>
   );
 }
 
-/** 1. O campo de descrição, com os fatos que a No Sweat tira da frase. */
-function DescribeMock() {
-  const fact =
-    "rounded-sm bg-[#071b33]/[0.07] px-1 underline decoration-brand decoration-2 underline-offset-4";
+function DraftArt() {
   return (
-    <div className="w-full max-w-[460px] rounded-[1.25rem] bg-white p-5 shadow-[0_40px_80px_-40px_rgb(7_27_51/.35)] ring-1 ring-[var(--lp-line)]">
-      <div className="flex items-center justify-between">
-        <p className="text-[13px] font-semibold text-[#071b33]/60">Describe your business</p>
-        <ExampleTag />
-      </div>
-      <p className="mt-3 text-[15px] leading-[1.7] text-[#071b33] sm:text-base">
-        <span className={fact}>Still Water Spa</span>. Massage and facials in{" "}
-        <span className={fact}>Old Town Scottsdale</span>. Five treatment rooms,{" "}
-        <span className={fact}>open daily 9 to 8</span>. Call{" "}
-        <span className={fact}>(480) 555-0171</span>.
-      </p>
-      <div className="mt-6 flex flex-wrap gap-2 border-t border-[var(--lp-line)] pt-5">
-        {["Day spa", "Scottsdale, AZ", "Daily 9 AM to 8 PM", "(480) 555-0171"].map((chip) => (
-          <span
-            key={chip}
-            className="rounded-full bg-[#071b33] px-3 py-1.5 text-[13px] font-medium text-white"
-          >
-            {chip}
-          </span>
-        ))}
-      </div>
-    </div>
+    <svg viewBox="0 0 220 120" className="h-auto w-full max-w-[220px]" aria-hidden="true">
+      <rect x="30" y="8" width="160" height="106" rx="12" fill="#fff" stroke={SOFT} />
+      <line x1="30" y1="26" x2="190" y2="26" stroke={SOFT} />
+      {[42, 52, 62].map((x) => (
+        <circle key={x} cx={x} cy="17" r="3" fill={SOFT} />
+      ))}
+      <rect x="44" y="38" width="92" height="8" rx="4" fill={INK} />
+      <rect x="44" y="52" width="62" height="5" rx="2.5" fill={SOFT} />
+      <rect x="44" y="64" width="40" height="12" rx="6" fill={BLUE} />
+      <rect x="44" y="86" width="40" height="18" rx="5" fill="#eef1f6" />
+      <rect x="90" y="86" width="40" height="18" rx="5" fill="#eef1f6" />
+      <rect x="136" y="86" width="40" height="18" rx="5" fill="#eef4ff" stroke={BLUE} />
+    </svg>
   );
 }
 
-/** 2. O site pronto, no celular. */
-function PhoneMock() {
+function EditArt() {
   return (
-    <div className="mx-auto w-[210px] translate-y-[22%] rounded-[2.2rem] bg-[#0b1220] p-1.5 shadow-[0_40px_70px_-35px_rgb(7_27_51/.6)]">
-      <div className="overflow-hidden rounded-[1.8rem]">
-        <Image
-          src="/landing/signature/still-water-spa-m.webp"
-          alt="The finished Still Water Spa site on a phone."
-          width={640}
-          height={1385}
-          sizes="210px"
-          className="block h-auto w-full"
-        />
-      </div>
-    </div>
-  );
-}
-
-/** 3. O painel do editor: o pedido à IA vira um rascunho para conferir. */
-function EditMock() {
-  const tabs = ["Ask AI", "Content", "Style", "Sections"];
-  return (
-    <div className="relative w-full max-w-[440px]">
-      <div className="overflow-hidden rounded-xl ring-1 ring-[var(--lp-line)]">
-        <Image
-          src="/landing/signature/still-water-spa-d.webp"
-          alt=""
-          width={1600}
-          height={1000}
-          sizes="440px"
-          className="block h-auto w-full"
-        />
-      </div>
-      <div className="relative -mt-14 ml-auto w-[min(300px,88%)] rounded-2xl bg-white p-3 text-[#071b33] shadow-[0_40px_80px_-30px_rgb(7_27_51/.5)] ring-1 ring-[var(--lp-line)] sm:-mt-20">
-        <div className="grid grid-cols-4 gap-0.5 rounded-xl bg-[#071b33]/[0.06] p-0.5">
-          {tabs.map((tab, index) => (
-            <span
-              key={tab}
-              className={`truncate rounded-[0.6rem] px-1 py-1.5 text-center text-[11px] font-semibold ${
-                index === 0 ? "bg-white shadow-sm" : "text-[#071b33]/55"
-              }`}
-            >
-              {tab}
-            </span>
-          ))}
-        </div>
-        <p className="mt-3 text-[11px] font-semibold text-[#071b33]/60">Describe a change</p>
-        <p className="mt-1 rounded-lg px-3 py-2 text-[13px] ring-1 ring-[var(--lp-line)]">
-          Make the intro shorter and mention the free parking.
-        </p>
-        <div className="mt-3 flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-[#071b33]/70">
-            <span className="size-1.5 rounded-full bg-amber-500" />
-            New draft ready to review
-          </span>
-          <ExampleTag />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 4. O site publicado, com a barra do navegador. */
-function LiveMock() {
-  return (
-    <div className="w-full max-w-[460px] overflow-hidden rounded-xl bg-white shadow-[0_50px_90px_-50px_rgb(7_27_51/.6)] ring-1 ring-[var(--lp-line)]">
-      <div className="flex h-10 items-center gap-3 border-b border-[var(--lp-line)] px-4">
-        <span className="flex gap-1.5">
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-          <span className="size-2 rounded-full bg-[#071b33]/20" />
-        </span>
-        <span className="min-w-0 flex-1 truncate rounded-full bg-[#071b33]/[0.05] px-3 py-1 text-[12px] text-[#071b33]/70">
-          nosweatfd.com/s/mercer-law
-        </span>
-        <span className="hidden items-center gap-1.5 text-[12px] font-semibold text-emerald-700 sm:inline-flex">
-          <span className="size-1.5 rounded-full bg-emerald-600" />
-          Live
-        </span>
-      </div>
-      <Image
-        src="/landing/signature/mercer-law-d.webp"
-        alt="Mercer Law, an example site, published at its free nosweatfd.com address."
-        width={1600}
-        height={1000}
-        sizes="460px"
-        className="block h-auto w-full"
+    <svg viewBox="0 0 220 120" className="h-auto w-full max-w-[220px]" aria-hidden="true">
+      <rect x="24" y="22" width="150" height="10" rx="5" fill={SOFT} />
+      <rect x="24" y="44" width="40" height="10" rx="5" fill={SOFT} />
+      <rect x="68" y="40" width="96" height="18" rx="4" fill="#e3edff" />
+      <rect x="72" y="44" width="88" height="10" rx="5" fill={BLUE} />
+      <line x1="164" y1="36" x2="164" y2="62" stroke={BLUE} strokeWidth="2" />
+      <rect x="24" y="68" width="120" height="10" rx="5" fill={SOFT} />
+      <path
+        d="M150 70 L150 100 L158 92 L164 106 L170 103 L164 90 L175 90 Z"
+        fill="#fff"
+        stroke={INK}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
       />
-    </div>
+    </svg>
   );
 }
 
-const STEPS: { title: ReactNode; body: ReactNode; visual: ReactNode }[] = [
+function LiveArt() {
+  return (
+    <svg viewBox="0 0 220 120" className="h-auto w-full max-w-[220px]" aria-hidden="true">
+      <circle cx="56" cy="60" r="34" fill="#fff" stroke={SOFT} />
+      <ellipse cx="56" cy="60" rx="14" ry="34" fill="none" stroke={SOFT} />
+      <line x1="22" y1="60" x2="90" y2="60" stroke={SOFT} />
+      <circle cx="56" cy="60" r="6" fill={BLUE} />
+      <path d="M62 60 H112" stroke={INK} strokeDasharray="2 4" strokeLinecap="round" />
+      <rect x="112" y="46" width="94" height="28" rx="14" fill="#eef4ff" stroke={BLUE} />
+      <circle cx="128" cy="60" r="4" fill={BLUE} />
+      <rect x="140" y="57" width="54" height="6" rx="3" fill={INK} />
+    </svg>
+  );
+}
+
+const STEPS = [
   {
-    title: (
-      <>
-        Describe your <em>business</em>
-      </>
-    ),
-    body: "One or two sentences, like you’d tell a customer.",
-    visual: <DescribeMock />,
+    title: "Answer a few questions",
+    body: "What you do and where. About a minute.",
+    Art: AnswerArt,
   },
   {
-    title: (
-      <>
-        Get a finished <em>site</em>
-      </>
-    ),
-    body: "Photos, services, hours, contact form and a call button.",
-    visual: <PhoneMock />,
+    title: "Get your first draft",
+    body: "Pages, words and a contact form, set up for your business.",
+    Art: DraftArt,
   },
   {
-    title: (
-      <>
-        Change <em>anything</em>
-      </>
-    ),
-    body: "Click to edit, or just ask the AI in plain words.",
-    visual: <EditMock />,
+    title: "Change anything",
+    body: "Click to edit, or ask the AI in plain words.",
+    Art: EditArt,
   },
   {
-    title: (
-      <>
-        Go <em>live</em>
-      </>
-    ),
-    body: "Free nosweatfd.com address, or your own domain on Pro.",
-    visual: <LiveMock />,
+    title: "Go live",
+    body: "A free nosweatfd.com address, or your own domain on Pro.",
+    Art: LiveArt,
   },
 ];
 
-export function Steps() {
-  return (
-    <section id="story" aria-labelledby="story-title" className="lp-paper py-16 lg:py-24">
-      <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-end">
-          <h2
-            id="story-title"
-            data-lp-rise
-            className="lp-serif text-[clamp(2.4rem,5.5vw,5rem)] leading-[0.95] lg:col-span-8"
-          >
-            How it <em>works</em>
-          </h2>
-          <p className="max-w-[38ch] text-lg leading-relaxed text-[#071b33]/70 lg:col-span-4">
-            Free to create. Pay only to publish.
-          </p>
-        </div>
+const focus =
+  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
 
-        {/* Quatro passos: 2×2 no tablet e no computador; no celular, um trilho que o dedo passa
-            de lado (a página não fica comprida). */}
-        <ol className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 [scrollbar-width:none] sm:-mx-8 sm:scroll-px-8 sm:px-8 md:mx-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-12 md:overflow-visible md:px-0 lg:mt-14">
-          {STEPS.map((step, index) => (
-            <li
-              key={index}
-              data-lp-rise
-              className="w-[84vw] max-w-[420px] min-w-0 shrink-0 snap-start md:w-auto md:max-w-none"
-            >
-              <div className="flex h-[300px] items-center justify-center overflow-hidden rounded-[1.5rem] bg-[var(--lp-paper-deep)] px-5 sm:h-[340px] sm:px-8">
-                {step.visual}
-              </div>
-              <div className="mt-6 flex gap-5">
-                <p className="pt-2 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/50">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <div>
-                  <h3 className="lp-serif text-[clamp(1.9rem,3vw,2.6rem)] leading-none">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 max-w-[46ch] text-[16px] leading-[1.65] text-pretty text-[#071b33]/72">
-                    {step.body}
-                  </p>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
+export function Steps() {
+  const track = useRef<HTMLOListElement>(null);
+  const [edge, setEdge] = useState({ start: true, end: false });
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const update = () =>
+      setEdge({
+        start: el.scrollLeft <= 4,
+        end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4,
+      });
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  const move = (dir: 1 | -1) => {
+    const el = track.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    if (!el || !card) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: dir * (card.offsetWidth + 16), behavior: reduce ? "auto" : "smooth" });
+  };
+
+  return (
+    <section
+      id="story"
+      aria-labelledby="story-title"
+      className={`${wide.variable} scroll-mt-14 overflow-x-clip py-20 lg:py-28`}
+    >
+      <div className="mx-auto flex w-full max-w-[1280px] items-end justify-between gap-6 px-5 sm:px-10 lg:px-16">
+        <h2
+          id="story-title"
+          className="lp-wide text-[clamp(1.6rem,3.6vw,3.2rem)] leading-[1.02] text-[#071b33]"
+        >
+          Start with a few answers.
+          <br />
+          <span className="text-[#0066ff]">Build with clarity.</span>
+        </h2>
+        <div className="hidden shrink-0 gap-2 sm:flex">
+          <button
+            type="button"
+            onClick={() => move(-1)}
+            disabled={edge.start}
+            aria-label="Previous step"
+            className={`lp-round w-10 ${focus}`}
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => move(1)}
+            disabled={edge.end}
+            aria-label="Next step"
+            className={`lp-round lp-round-blue ${focus}`}
+          >
+            <span aria-hidden="true">⟶</span>
+          </button>
+        </div>
       </div>
+
+      {/* A trilha começa alinhada ao título e corre até a borda da tela. */}
+      <ol
+        ref={track}
+        className="lp-cards mt-10 flex gap-4 overflow-x-auto px-5 pb-2 sm:px-10 lg:mt-14 lp-track"
+      >
+        {STEPS.map(({ title, body, Art }, index) => (
+          <li
+            key={title}
+            className="flex w-[min(82vw,360px)] shrink-0 flex-col items-center rounded-[28px] bg-white px-7 pt-9 pb-8 text-center"
+          >
+            <span className="text-[12px] font-semibold tracking-[0.14em] text-[#0066ff] tabular-nums">
+              STEP {index + 1}
+            </span>
+            <h3 className="mt-3 text-[21px] leading-tight font-semibold tracking-[-0.02em] text-[#071b33]">
+              {title}
+            </h3>
+            <p className="mt-2 max-w-[28ch] text-[14.5px] leading-[1.55] text-[#6e6e73]">{body}</p>
+            <div className="mt-auto flex w-full justify-center pt-8">
+              <Art />
+            </div>
+          </li>
+        ))}
+        {/* Folga no fim para o último cartão encostar no começo da trilha ao rolar. */}
+        <li aria-hidden="true" className="w-px shrink-0" />
+      </ol>
     </section>
   );
 }

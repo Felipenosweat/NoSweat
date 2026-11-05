@@ -1,123 +1,32 @@
-import { getImageProps } from "next/image";
-import type { CSSProperties } from "react";
-import { PromptForm } from "@/components/marketing/PromptForm";
+import { HeroGrid } from "./HeroGrid";
+import { HeroStepper } from "./HeroStepper";
+import { HeroTitle } from "./HeroTitle";
+import { TypedTag } from "./TypedTag";
 
-// Hero da landing V8: o título gigante em serifa com a última palavra em itálico, o campo REAL
-// de descrição em vidro e, logo abaixo, a moldura de um site de exemplo de verdade (captura do
-// molde Signature, negócio fictício) que cresce com a rolagem. Sem cortina de abertura (pedido
-// do fundador): a página abre direto no conteúdo.
-
-/** O título, uma linha por <span> (sobem de dentro de uma máscara ao abrir). */
-const LINES = [
-  <>Your business,</>,
-  <>
-    online by <em>lunch.</em>
-  </>,
-];
-
-// A captura do site de exemplo: no computador a inteira, no celular a do celular. Um <picture>
-// só (getImageProps), para o navegador baixar apenas a que aparece, com prioridade alta (é o
-// LCP). Antes eram duas <Image>: a do computador (escondida no celular) tinha priority e a do
-// celular ficava lazy, então o celular baixava a imagem errada primeiro.
-// Sem <link rel=preload>: a imagem já está no começo do HTML e o fetchPriority alto basta.
-const STAGE_ALT =
-  "Home page of Still Water Spa, an example site made with No Sweat: a full-width photo of a treatment room with the spa’s name in large serif type.";
-
-function StagePicture() {
-  const common = { alt: STAGE_ALT, fetchPriority: "high", loading: "eager" } as const;
-  const {
-    props: { srcSet: desktop },
-  } = getImageProps({
-    ...common,
-    src: "/landing/signature/still-water-spa-d.webp",
-    width: 1600,
-    height: 1000,
-    // 60: a moldura começa menor (escala 0.82) e a foto é escura; bem menos bytes que o 75.
-    quality: 60,
-    sizes: "(min-width: 1440px) 1440px, 100vw",
-  });
-  const {
-    props: { srcSet: mobile, ...rest },
-  } = getImageProps({
-    ...common,
-    src: "/landing/signature/still-water-spa-m.webp",
-    width: 640,
-    height: 1385,
-    sizes: "300px",
-  });
-  return (
-    <picture>
-      <source
-        media="(min-width: 640px)"
-        srcSet={desktop}
-        sizes="(min-width: 1440px) 1440px, 100vw"
-      />
-      <source media="(max-width: 639.98px)" srcSet={mobile} sizes="300px" />
-      <img
-        {...rest}
-        alt={STAGE_ALT}
-        className="block aspect-[9/14] h-auto w-full object-cover object-top sm:aspect-[8/5]"
-      />
-    </picture>
-  );
-}
+// Topo da landing V12: ocupa a primeira tela inteira. Título com brilho e verbo que se digita,
+// uma frase em cinza e as perguntas, uma de cada vez. Sem fotos. Dentro de uma bolha branca.
 
 export function Hero() {
   return (
-    <>
+    <div className="px-3 pt-2 sm:px-5">
       <section
+        id="start"
         aria-labelledby="hero-title"
         data-hide-mobile-cta
-        className="lp-night relative isolate overflow-hidden pt-32 pb-12 sm:pt-40 lg:pt-36 lg:pb-14"
+        className="lp-bubble relative isolate flex min-h-[calc(100svh-4.5rem)] scroll-mt-14 flex-col overflow-hidden items-center justify-center px-5 pt-12 pb-8 text-center sm:px-8"
       >
-        <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
-          <p className="lp-eyebrow lp-fade-up text-white/60" style={{ "--i": 0 } as CSSProperties}>
-            Website builder for local businesses
-          </p>
-          <h1
-            id="hero-title"
-            className="lp-serif mt-6 text-[clamp(3.4rem,10.5vw,10.5rem)] leading-[0.9] text-white"
-          >
-            {LINES.map((line, index) => (
-              <span key={index} className="lp-line">
-                <span style={{ "--i": index } as CSSProperties}>{line}</span>
-              </span>
-            ))}
-          </h1>
-
-          <div className="mt-12 grid grid-cols-1 gap-10 lg:mt-14 lg:grid-cols-12 lg:items-start lg:gap-8">
-            <p
-              className="lp-fade-up max-w-[40ch] text-lg leading-[1.6] text-pretty text-white/75 lg:col-span-5 lg:text-xl"
-              style={{ "--i": 1 } as CSSProperties}
-            >
-              Tell us what you do and where. We build the website for you.
-            </p>
-            <div
-              className="lp-fade-up lg:col-span-6 lg:col-start-7"
-              style={{ "--i": 2 } as CSSProperties}
-            >
-              <PromptForm
-                tone="glass"
-                caption="Free to create. No account or credit card needed."
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* O site de exemplo: no computador a captura inteira; no celular, a do celular. */}
-      <figure className="lp-night px-3 pb-14 sm:px-5 lg:pb-20">
-        <div
-          data-lp-stage
-          className="lp-stage relative mx-auto max-w-[300px] overflow-hidden rounded-[2.2rem] ring-1 ring-white/15 sm:max-w-[1440px] sm:rounded-[10px]"
+        <HeroGrid />
+        <TypedTag className="lp-rise mb-7" />
+        <HeroTitle />
+        <p
+          className="lp-rise-solid mt-4 max-w-[44ch] text-[clamp(1.15rem,2vw,1.55rem)] leading-[1.35] text-[#6e6e73]"
+          style={{ animationDelay: "calc(var(--lp-intro) + 300ms)" }}
         >
-          <StagePicture />
-        </div>
-        <figcaption className="mx-auto mt-5 flex max-w-[1440px] flex-wrap justify-between gap-2 px-2 text-[13px] text-white/55">
-          <span>Still Water Spa, Scottsdale. Made with No Sweat.</span>
-          <span>Example site. The business is made up.</span>
-        </figcaption>
-      </figure>
-    </>
+          Websites for local businesses, built from a few answers.
+          <br className="hidden sm:block" /> Free to make. Pay only when it goes live.
+        </p>
+        <HeroStepper />
+      </section>
+    </div>
   );
 }

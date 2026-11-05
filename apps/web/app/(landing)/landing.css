@@ -1,69 +1,337 @@
-/* Landing V8 ("Signature"): o mesmo padrão dos sites premium dos clientes.
-   Ink (noite) e papel quente, títulos em serifa editorial com a última palavra em itálico,
-   menu de vidro, fotos que se revelam, parágrafo que acende palavra por palavra, galeria que
-   anda de lado e o nome gigante no fim. Sem cortina de abertura: a página abre direto. Sem degradê de cor (só os
-   véus escuros sobre fotos, para o texto ler bem).
-   O movimento com rolagem é do LandingMotion (components/landing/LandingMotion.tsx). Sem JS
-   ou com "reduzir movimento", tudo aparece parado, legível e completo. */
+/* Landing V12 (forma inspirada no averaks.com, conteúdo e cores da No Sweat): página branca,
+   tipografia de sistema, cabeçalho fino com o logo no centro, título com brilho e verbo que se
+   digita, perguntas uma de cada vez no topo, três colunas com aparelhos desenhados que alternam
+   entre negócios de exemplo, cartões pretos e dúvidas centralizadas. Sem fotos.
+   Sem JS ou com "reduzir movimento", tudo aparece parado, legível e completo. */
 
 .lp {
-  --lp-night: #050c18;
   --lp-ink: #071b33;
-  --lp-paper: #f3f0e9;
-  --lp-paper-deep: #e9e4da;
-  --lp-line: rgb(7 27 51 / 0.14);
-  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
-  --font-lp-serif: var(--ns-font-editorial-heading);
-  background: var(--lp-night);
+  --lp-dim: #6e6e73;
+  --lp-faint: #aeaeb4;
+  --lp-panel: #f5f5f7;
+  --lp-hair: rgb(0 0 0 / 0.09);
+  --lp-blue: #0066ff;
+  --lp-cyan: #00c2ff;
+  --lp-line: rgb(7 27 51 / 0.12);
+  --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-lp:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
+  /* isolation: as linhas de fundo (z-index -1) ficam sobre o branco da página. */
+  isolation: isolate;
+  /* Fundo cinza-azulado: cada seção é uma "bolha" branca arredondada por cima (.lp-bubble). */
+  --lp-page: #eef1f6;
+  background: var(--lp-page);
+  color: var(--lp-ink);
+  font-family: var(--font-lp);
+  letter-spacing: -0.014em;
 }
 
 /* ---------- Tipografia ---------- */
-
-.lp-serif {
-  font-family: var(--font-lp-serif), "Times New Roman", serif;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  word-spacing: 0.02em;
-}
-
-.lp-serif em {
-  font-style: italic;
-  letter-spacing: -0.01em;
-}
-
-.lp-eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-/* ---------- Superfícies ---------- */
-
-.lp-paper {
-  background: var(--lp-paper);
+/* Títulos em Plus Jakarta Sans, a fonte da marca (já carregada com preload em app/fonts.ts, par
+   "modern"); traço limpo, sem os cortes da Funnel Display. O texto corrido segue na fonte do
+   sistema. */
+.lp-h {
+  font-family: var(--ns-font-modern-heading), var(--font-lp);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-wrap: balance;
   color: var(--lp-ink);
 }
 
-.lp-night {
-  background: var(--lp-night);
-  color: #ffffff;
+/* Segunda linha do título de seção em cinza (duas cores, sem itálico). */
+.lp-display {
+  font-weight: 800;
 }
 
-/* Vidro (menu, campo do hero): escuro o bastante para o texto branco ler sobre o papel. */
-.lp-glass {
-  background: rgb(6 15 30 / 0.74);
-  border: 1px solid rgb(255 255 255 / 0.14);
+.lp-h .dim {
+  color: #86868b;
+}
+
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgb(0 0 0 / 0.14);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lp-dim);
+}
+
+.lp-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--lp-blue);
+}
+
+/* Brilho que atravessa o título e descansa (só quando o navegador recorta fundo no texto). */
+.lp-sheen {
+  color: var(--c, var(--lp-ink));
+}
+
+@supports (-webkit-background-clip: text) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-sheen {
+      color: transparent;
+      background:
+        linear-gradient(105deg, var(--c) 42%, var(--glint, #9aa5b4) 50%, var(--c) 58%) 130% 0 / 240%
+          100% no-repeat,
+        var(--c);
+      -webkit-background-clip: text;
+      background-clip: text;
+      animation: lp-sheen 7.5s ease-in-out 1.6s infinite;
+    }
+  }
+}
+
+@keyframes lp-sheen {
+  0% {
+    background-position: 130% 0;
+  }
+  28%,
+  100% {
+    background-position: -140% 0;
+  }
+}
+
+/* ---------- Entrada da página ---------- */
+.lp-rise {
+  animation: lp-rise 0.9s var(--lp-ease) both;
+  animation-delay: calc(var(--i, 0) * 120ms + 50ms);
+}
+
+/* O título sobe sem sumir (um primeiro quadro com opacidade 0 não conta como LCP). */
+.lp-rise-solid {
+  animation: lp-rise-solid 0.9s var(--lp-ease) both;
+  animation-delay: 150ms;
+}
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes lp-rise-solid {
+  from {
+    transform: translateY(16px);
+  }
+}
+
+.lp-nav {
+  animation: lp-rise 0.9s var(--lp-ease) both;
+}
+
+/* ---------- Perguntas do topo ---------- */
+.lp-step {
+  animation: lp-step 0.45s var(--lp-ease) both;
+}
+
+@keyframes lp-step {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+}
+
+.lp-chip {
+  border-radius: 980px;
+  background: var(--lp-panel);
+  color: var(--lp-ink);
+  transition:
+    transform 0.2s var(--lp-ease),
+    background 0.2s,
+    color 0.2s;
+}
+
+.lp-chip:hover {
+  background: #e8e8ed;
+  transform: translateY(-1px);
+}
+
+.lp-chip:active {
+  transform: scale(0.97);
+}
+
+.lp-chip[aria-pressed="true"] {
+  background: var(--lp-ink);
+  color: #fff;
+}
+
+.lp-field {
+  background: var(--lp-panel);
+  border-radius: 980px;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.lp-field:focus {
+  outline: none;
+  background: #efeff1;
+  box-shadow: 0 0 0 3px rgb(0 102 255 / 0.18);
+}
+
+.lp-btn {
+  border-radius: 980px;
+  background: var(--lp-ink);
+  color: #fff;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    0 24px 60px -28px rgb(0 0 0 / 0.6);
-  /* Desfoque curto: o vidro fica fixo sobre a página que rola e é redesenhado a cada quadro. */
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+    0 1px 2px rgb(0 0 0 / 0.18),
+    0 6px 16px rgb(0 0 0 / 0.12);
+  transition:
+    transform 0.2s var(--lp-ease),
+    box-shadow 0.25s,
+    background 0.2s;
 }
 
-/* Sublinhado que corre da esquerda (links do texto e do menu). */
+.lp-btn:hover {
+  transform: translateY(-1px);
+  background: #000;
+}
+
+.lp-btn:active {
+  transform: scale(0.97);
+}
+
+.lp-btn-blue {
+  background: var(--lp-blue);
+}
+
+.lp-btn-blue:hover {
+  background: #0052cc;
+}
+
+/* ---------- Grade de pontos do topo (HeroGrid) ---------- */
+.lp-grid-base,
+.lp-grid-glow {
+  background-size: 22px 22px;
+  background-position: center top;
+}
+
+.lp-grid-base {
+  background-image: radial-gradient(circle, rgb(7 27 51 / 0.13) 1px, transparent 1.4px);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 42%, #000 20%, transparent 75%);
+}
+
+.lp-grid-glow {
+  background-image: radial-gradient(circle, rgb(0 102 255 / 0.75) 1.2px, transparent 1.6px);
+  mask-image: radial-gradient(170px circle at var(--gx, 50%) var(--gy, 50%), #000, transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.lp-grid[data-on] .lp-grid-glow {
+  opacity: 1;
+}
+
+/* ---------- Telas reais ("What you get") ---------- */
+.lp-pan {
+  transition:
+    opacity 0.5s ease,
+    transform 7s cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+.lp-shot:hover .lp-pan {
+  transform: translateY(-62%);
+}
+
+/* ---------- Slogan e linha do tempo ("How it works") ---------- */
+.lp-wide {
+  font-family: var(--font-lp-wide), var(--font-lp);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 1024px) {
+  .lp-timeline::before,
+  .lp-timeline::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgb(7 27 51 / 0.12);
+  }
+
+  .lp-timeline::after {
+    background: var(--lp-blue);
+    transform-origin: left;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .lp-timeline::after {
+        animation: lp-draw linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 55%;
+      }
+    }
+  }
+}
+
+@keyframes lp-draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- Dúvidas: + que vira − ---------- */
+.lp-fx {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: auto;
+}
+
+.lp-fx::before,
+.lp-fx::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 2px;
+  background: var(--lp-ink);
+  transition: rotate 0.35s var(--lp-ease);
+}
+
+.lp-fx::after {
+  rotate: 90deg;
+}
+
+details[open] > summary .lp-fx::after {
+  rotate: 0deg;
+}
+
+details[open] > summary .lp-fx::before {
+  rotate: 180deg;
+}
+
+/* Linha da lista de exemplos. */
+.lp-row {
+  transition: padding 0.4s var(--lp-ease);
+}
+
+.lp-row:hover,
+.lp-row:focus-visible {
+  padding-inline: 1rem;
+}
+
+.lp-row:hover .lp-row-name {
+  color: var(--lp-blue);
+}
+
 .lp-underline {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
   transition: background-size 500ms var(--lp-ease);
@@ -74,204 +342,297 @@
   background-size: 100% 1px;
 }
 
-/* Linhas do título do hero sobem um pouco de dentro de uma máscara assim que a página abre.
-   O título é o LCP: já no primeiro quadro a maior parte do texto aparece (deslocamento curto,
-   sem espera na primeira linha). Antes começava 108% abaixo, todo escondido, e o LCP só
-   contava quando a animação revelava o texto. */
-.lp-line {
-  display: block;
-  overflow: hidden;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
-}
-
-.lp-line > span {
-  display: block;
-  animation: lp-line-in 900ms var(--lp-ease) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
-}
-
-@keyframes lp-line-in {
-  from {
-    transform: translateY(22%);
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise,
+  .lp-rise-solid,
+  .lp-nav,
+  .lp-step {
+    animation: none;
   }
-}
 
-/* Sem começar em opacidade 0 (o navegador não conta o que está invisível como pintado). */
-.lp-fade-up {
-  animation: lp-fade-up 900ms var(--lp-ease) both;
-  animation-delay: calc(var(--i, 0) * 60ms);
-}
-
-@keyframes lp-fade-up {
-  from {
-    opacity: 0.35;
-    transform: translateY(14px);
+  .lp-pan,
+  .lp-grid-glow,
+  .lp-chip,
+  .lp-btn,
+  .lp-row,
+  .lp-fx::before,
+  .lp-fx::after,
+  .lp-underline {
+    transition: none;
   }
-}
 
-.lp-nav {
-  animation: lp-fade-down 900ms var(--lp-ease) 150ms both;
-}
-
-@keyframes lp-fade-down {
-  from {
-    opacity: 0;
-    transform: translateY(-16px);
-  }
-}
-
-/* ---------- Hero ---------- */
-
-/* A foto do site de exemplo atrás do título: bem escura, com véu embaixo para o texto. */
-.lp-hero-veil {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(5 12 24 / 0.72) 0%,
-      rgb(5 12 24 / 0.35) 40%,
-      rgb(5 12 24 / 0.94) 100%
-    ),
-    rgb(5 12 24 / 0.25);
-}
-
-/* A moldura do site de exemplo cresce com a rolagem: animação presa à rolagem só em CSS
-   (animation-timeline), que o navegador roda fora da thread principal e já vale no primeiro
-   quadro (antes era o GSAP, que só chegava depois de carregar e pulava de escala). Navegador
-   sem suporte (Firefox) ou "reduzir movimento": a moldura fica parada no tamanho cheio.
-   Fim igual ao de antes: quando o topo da moldura chega a 12% da altura da tela. */
-.lp-stage {
-  --lp-stage-from: 0.92;
-  transform-origin: 50% 0;
-}
-
-@media (min-width: 1024px) {
-  .lp-stage {
-    --lp-stage-from: 0.82;
-  }
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lp-stage {
-      will-change: transform;
-      animation: lp-stage-grow linear both;
-      animation-timeline: view();
-      animation-range: cover 0% cover 88vh;
-    }
-  }
-}
-
-@keyframes lp-stage-grow {
-  from {
-    transform: scale(var(--lp-stage-from));
-  }
-  to {
+  .lp-shot:hover .lp-pan {
     transform: none;
   }
 }
 
-/* ---------- Galeria lateral (#looks) ---------- */
-
-/* Padrão: trilho com rolagem nativa (celular, sem JS). */
-.lp-rail {
-  display: flex;
-  gap: 1.25rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  padding-inline: 1.25rem;
-  scroll-padding-inline: 1.25rem;
+/* ---------- Abertura (IntroCurtain) ---------- */
+.lp {
+  /* Quanto a entrada da página espera pela cortina subir. */
+  --lp-intro: 1.7s;
 }
 
-.lp-rail::-webkit-scrollbar {
+.lp-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  pointer-events: none;
+  animation: lp-lift 0.65s cubic-bezier(0.65, 0, 0.2, 1) var(--lp-intro) forwards;
+}
+
+.lp-intro-mark {
+  animation: lp-mark 0.6s var(--lp-ease) 0.05s both;
+}
+
+.lp-intro-l {
+  display: inline-block;
+  animation: lp-letter 0.35s var(--lp-ease) both;
+  animation-delay: calc(0.25s + var(--d) * 0.07s);
+}
+
+.lp-intro-bar {
+  transform-origin: left;
+  animation: lp-bar calc(var(--lp-intro) - 0.1s) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes lp-lift {
+  to {
+    transform: translateY(-101%);
+    visibility: hidden;
+  }
+}
+
+@keyframes lp-mark {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-12deg);
+  }
+}
+
+@keyframes lp-letter {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+
+@keyframes lp-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* A entrada do conteúdo começa quando a cortina sobe. */
+.lp .lp-rise {
+  animation-delay: calc(var(--lp-intro) + var(--i, 0) * 120ms + 50ms);
+}
+
+.lp .lp-rise-solid,
+.lp .lp-nav {
+  animation-delay: calc(var(--lp-intro) + 150ms);
+}
+
+/* ---------- Etiqueta "BE ___" (TypedTag) ---------- */
+.lp-typed {
+  --c1: #0066ff;
+  --c2: #00c2ff;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #071b33;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, var(--c1), var(--c2), #a8c8ff, var(--c1)) border-box;
+  background-size:
+    100% 100%,
+    300% 100%;
+  animation: lp-gradient-move 6s linear infinite;
+}
+
+@keyframes lp-gradient-move {
+  to {
+    background-position:
+      0 0,
+      -300% 0;
+  }
+}
+
+.lp-caret {
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  margin-left: 3px;
+  background: #0066ff;
+  animation: lp-blink 1s steps(1) infinite;
+}
+
+.lp-caret[data-on] {
+  animation: none;
+}
+
+@keyframes lp-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-typed {
+    animation: none;
+  }
+}
+
+/* ---------- Bolhas e pílulas (V13) ---------- */
+/* Cada bloco de conteúdo fica dentro de uma bolha branca com cantos bem redondos sobre o fundo
+   cinza; o que já é cartão (passos, preços) fica direto no cinza, para intercalar. */
+.lp-bubble {
+  background: #fff;
+  border-radius: 22px;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1280px;
+}
+
+@media (min-width: 640px) {
+  .lp-bubble {
+    border-radius: 32px;
+  }
+
+  .lp-cards {
+    scroll-padding-left: 2.5rem;
+  }
+}
+
+.lp-bubble-dark {
+  background: var(--lp-ink);
+  color: #fff;
+}
+
+/* Botão em pílula com a seta num círculo à direita (a seta gira ao passar o mouse). */
+.lp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 6px 6px 6px 22px;
+  border-radius: 999px;
+  background: var(--lp-ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    transform 0.2s var(--lp-ease);
+}
+
+.lp-pill:hover {
+  background: #000;
+}
+
+.lp-pill:active {
+  transform: scale(0.97);
+}
+
+.lp-pill-blue {
+  background: var(--lp-blue);
+}
+
+.lp-pill-blue:hover {
+  background: #0052cc;
+}
+
+.lp-pill-light {
+  background: #fff;
+  color: var(--lp-ink);
+}
+
+.lp-pill-light:hover {
+  background: #e6ebf3;
+}
+
+.lp-pill-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  transition: transform 0.3s var(--lp-ease);
+}
+
+.lp-pill-light .lp-pill-arrow {
+  background: var(--lp-page);
+}
+
+.lp-pill:hover .lp-pill-arrow {
+  transform: rotate(45deg);
+}
+
+/* Botões redondos do carrossel dos passos. */
+.lp-round {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lp-ink);
+  transition:
+    background 0.2s,
+    opacity 0.2s;
+}
+
+.lp-round-blue {
+  width: 64px;
+  background: var(--lp-blue);
+  color: #fff;
+}
+
+.lp-round:disabled {
+  opacity: 0.4;
+}
+
+.lp-cards {
+  scroll-snap-type: x mandatory;
+  /* O encaixe respeita o recuo da trilha (senão o 1º cartão cola na borda). */
+  scroll-padding-left: 1.25rem;
+  scrollbar-width: none;
+}
+
+.lp-cards::-webkit-scrollbar {
   display: none;
 }
 
-.lp-rail > * {
+.lp-cards > * {
   scroll-snap-align: start;
-  flex: none;
 }
-
-/* Computador sem a galeria presa (máquina fraca, sem JS ou movimento reduzido): a roda do mouse
-   não anda de lado, então os sites ficam numa grade de 3 colunas. */
-@media (min-width: 1024px) {
-  .lp-hscroll:not([data-pinned]) .lp-rail {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 2.5rem 1.5rem;
-    overflow: visible;
-    max-width: 1240px;
-    margin-inline: auto;
-    padding-inline: 2rem;
-  }
-
-  .lp-hscroll:not([data-pinned]) .lp-rail > * {
-    width: auto;
-    max-width: none;
-  }
-}
-
-/* Com o LandingMotion no computador: a seção fica alta, o trilho preso na tela anda de lado. */
-.lp-hscroll[data-pinned] {
-  height: 220vh;
-}
-
-.lp-hscroll[data-pinned] .lp-hscroll-sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.lp-hscroll[data-pinned] .lp-rail {
-  overflow: visible;
-  scroll-snap-type: none;
-  padding-inline: max(2rem, calc((100vw - 1240px) / 2));
-  will-change: transform;
-}
-
-/* ---------- Parede de celulares (PhoneWall): fileiras correndo devagar ---------- */
-
-.lp-drift {
-  animation: lp-drift 70s linear infinite;
-}
-
-.lp-drift-reverse {
-  animation-direction: reverse;
-}
-
-@keyframes lp-drift {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* ---------- Fotos que se revelam / zoom no hover ---------- */
-
-.lp-zoom img {
-  transition: transform 1400ms var(--lp-ease);
-}
-
-.lp-zoom:hover img {
-  transform: scale(1.04);
-}
-
-/* ---------- Movimento reduzido: nada anda ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-line > span,
-  .lp-fade-up,
-  .lp-nav,
-  .lp-drift {
-    animation: none;
-  }
-
-  .lp-zoom img,
-  .lp-underline {
+  .lp-pill,
+  .lp-pill-arrow {
     transition: none;
   }
+}
+
+/* Trilha dos passos: no computador começa alinhada ao título (bolha de 1280 px + 4rem). */
+@media (min-width: 1024px) {
+  .lp-track {
+    padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
+    scroll-padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
+  }
+}
+
+.lp-bubble-dark .lp-h {
+  color: #fff;
 }

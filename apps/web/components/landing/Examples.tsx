@@ -1,0 +1,90 @@
+import Link from "next/link";
+
+// Exemplos (#looks): uma lista numerada só de texto, cada linha abre o site de exemplo de verdade
+// (/examples/<slug>). Negócios fictícios, avisado no texto. Sem imagens. Numa bolha branca, só 6
+// (o suficiente para ver a variedade sem encher a página).
+
+const SITES = [
+  { slug: "still-water-spa", name: "Still Water Spa", kind: "Day spa", place: "Scottsdale" },
+  { slug: "smoke-and-rail-bbq", name: "Smoke & Rail BBQ", kind: "Barbecue", place: "Kansas City" },
+  { slug: "mercer-law", name: "Mercer Law", kind: "Family law", place: "Columbus" },
+  {
+    slug: "greenline-landscaping",
+    name: "Greenline Landscaping",
+    kind: "Landscaping",
+    place: "Charlotte",
+  },
+  { slug: "fade-and-co-barbers", name: "Fade & Co. Barbers", kind: "Barbershop", place: "Chicago" },
+  { slug: "sunrise-bakery", name: "Sunrise Bakery", kind: "Bakery", place: "Sacramento" },
+  { slug: "iron-lotus-tattoo", name: "Iron Lotus Tattoo", kind: "Tattoo studio", place: "Denver" },
+  {
+    slug: "hollis-interiors",
+    name: "Hollis Interiors",
+    kind: "Interior design",
+    place: "Nashville",
+  },
+  {
+    slug: "north-loop-coffee",
+    name: "North Loop Coffee",
+    kind: "Coffee shop",
+    place: "Minneapolis",
+  },
+  {
+    slug: "bright-spark-electric",
+    name: "Bright Spark Electric",
+    kind: "Electrician",
+    place: "Phoenix",
+  },
+];
+
+export function Examples() {
+  return (
+    <div className="px-3 sm:px-5">
+      <section
+        id="looks"
+        aria-labelledby="looks-title"
+        className="lp-bubble scroll-mt-16 px-5 py-14 sm:px-10 lg:py-20"
+      >
+        <div className="mx-auto w-full max-w-[860px]">
+          <div className="text-center">
+            <span className="lp-tag">Examples</span>
+            <h2 id="looks-title" className="lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]">
+              Example sites.
+              <br />
+              <span className="dim">Open one and scroll.</span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-[44ch] text-[16px] leading-relaxed text-[#6e6e73]">
+              Made-up businesses, real No Sweat sites.
+            </p>
+          </div>
+          <ul className="mt-10 border-b border-[var(--lp-line)] lg:mt-14">
+            {SITES.slice(0, 6).map((site, index) => (
+              <li key={site.slug} className="border-t border-[var(--lp-line)]">
+                <Link
+                  href={`/examples/${site.slug}`}
+                  className="lp-row group flex min-h-16 items-baseline gap-4 rounded-sm py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0066ff] sm:gap-8"
+                >
+                  <span className="w-7 shrink-0 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/45">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="lp-row-name min-w-0 flex-1 text-[clamp(1.25rem,2.4vw,1.75rem)] leading-tight font-semibold tracking-[-0.02em] transition-colors duration-300">
+                    {site.name}
+                  </span>
+                  <span className="hidden shrink-0 text-sm text-[#071b33]/60 sm:block">
+                    {site.kind}, {site.place}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-xl text-[#0066ff] transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </div>
+  );
+}

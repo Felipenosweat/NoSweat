@@ -82,6 +82,49 @@ export type SearchResult = {
   mock: boolean;
 };
 
+/**
+ * Ramos que o "Find leads" sorteia no Google (que não tem busca "qualquer empresa sem site"):
+ * serviços locais em que muita empresa ainda não tem site.
+ */
+export const LEAD_TRADES = [
+  "plumber",
+  "electrician",
+  "handyman",
+  "house cleaning",
+  "landscaping",
+  "lawn care",
+  "roofer",
+  "painter",
+  "HVAC",
+  "auto repair",
+  "mobile mechanic",
+  "barber",
+  "hair salon",
+  "nail salon",
+  "pressure washing",
+  "tree service",
+  "junk removal",
+  "moving company",
+  "pest control",
+  "locksmith",
+  "carpet cleaning",
+  "pool service",
+  "fence contractor",
+  "concrete contractor",
+  "flooring",
+  "towing",
+  "dog grooming",
+  "food truck",
+  "bakery",
+  "taqueria",
+];
+
+/** Sem ramo digitado: OSM e mock buscam "qualquer empresa"; o Google, um ramo sorteado. */
+function defaultTrade(client: PlacesClient, random: () => number = Math.random): string {
+  if (client.source !== "google") return ANY_TRADE;
+  return LEAD_TRADES[Math.floor(random() * LEAD_TRADES.length)]!;
+}
+
 /** Cidades que o "Find leads" sorteia: as com 50 mil moradores ou mais (~900 nos EUA). */
 const AUTO_CITY_MIN_POPULATION = 50_000;
 /** O sorteio é entre as N maiores ainda não buscadas: começa pelas grandes, sem repetir sempre a mesma. */
@@ -116,7 +159,7 @@ export async function searchProspects(
 ): Promise<SearchResult> {
   const where =
     input.city && input.state ? { city: input.city, state: input.state } : await pickAutoCity();
-  const query = textQueryFor(input.trade?.trim() || ANY_TRADE, where.city, where.state);
+  const query = textQueryFor(input.trade?.trim() || defaultTrade(client), where.city, where.state);
   const businesses = await client.searchText(query);
   const fetchImpl = websiteFetch(client);
   const now = new Date().toISOString();
@@ -136,7 +179,9 @@ export async function searchProspects(
       };
     },
   );
-  const { added, updated } = await getProspectStore().upsertMany(rows);
+  // "Find leads" sem ramo: só interessa quem não tem site bom (o Google devolve todo mundo).
+  const keep = input.trade?.trim() ? rows : rows.filter((row) => row.websiteStatus !== "ok");
+  const { added, updated } = await getProspectStore().upsertMany(keep);
   return {
     query,
     found: businesses.length,

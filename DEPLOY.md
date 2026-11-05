@@ -484,14 +484,20 @@ Sem isto, só testadores publicam. Na Meta, nesta ordem:
    Passo 1).
 2. Sem nada configurado, a busca usa o **OpenStreetMap** (Overpass API, grátis, sem chave). Os
    dados são © OpenStreetMap contributors (ODbL): a página já mostra a atribuição.
-3. (Opcional, pago) Para usar o **Google Places**: no Google Cloud, ligue a **Places API (New)**,
+3. (Recomendado) Para usar o **Google Places** (o OpenStreetMap público costuma não responder a
+   pedidos vindos da Vercel): no Google Cloud, ligue a **Places API (New)**,
    crie uma chave restrita a essa API e adicione na Vercel:
 
 | Name                  | Value                                                  |
 | --------------------- | ------------------------------------------------------ |
 | `GOOGLE_MAPS_API_KEY` | a chave do Google (sem ela, a fonte é o OpenStreetMap) |
 
-Redeploy. Regras de uso (e-mails, ligações, descadastro) em [`docs/prospecting.md`](docs/prospecting.md).
+Redeploy. Custo: a busca usa campos do nível "Enterprise" do Text Search, com ~1.000 chamadas
+grátis por mês (depois ~US$ 35 por 1.000); cada clique em _Find leads_ gasta até 3 chamadas. Para
+nunca pagar, em **APIs & Services → Places API (New) → Quotas** limite "Text Search requests per
+day" a 30 (≈ 900 por mês).
+
+Regras de uso (e-mails, ligações, descadastro) em [`docs/prospecting.md`](docs/prospecting.md).
 
 ## Conferência final
 

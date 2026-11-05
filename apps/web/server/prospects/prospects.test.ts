@@ -21,6 +21,7 @@ import {
   ensureFresh,
   getPlacesClient,
   getPublicPreview,
+  LEAD_TRADES,
   pickAutoCity,
   searchProspects,
   setProspectStatus,
@@ -461,12 +462,33 @@ describe("prospect store", () => {
     expect(result.query).toMatch(/^local businesses in .+, [A-Z]{2}$/);
     const all = await getProspectStore().list();
     expect(new Set(all.map((p) => p.category)).size).toBeGreaterThan(1);
+    // Só quem não tem site bom.
+    expect(all.length).toBeGreaterThan(0);
+    expect(all.some((p) => p.websiteStatus === "ok")).toBe(false);
     // A cidade já buscada não é sorteada de novo.
     const city = /in (.+, [A-Z]{2})$/.exec(result.query)![1]!;
     for (let i = 0; i < 20; i++) {
       const next = await pickAutoCity(() => i / 20);
       expect(`${next.city}, ${next.state}`).not.toBe(city);
     }
+  });
+
+  it("Find leads on Google: searches a real trade (Google has no 'any business' search)", async () => {
+    const queries: string[] = [];
+    const google = {
+      mock: false,
+      source: "google" as const,
+      async searchText(query: string) {
+        queries.push(query);
+        return [];
+      },
+      async getPlace() {
+        return null;
+      },
+    };
+    await searchProspects({}, google);
+    const trade = /^(.*) in /.exec(queries[0]!)![1]!;
+    expect(LEAD_TRADES).toContain(trade);
   });
 
   it("do-not-contact sticks for bulk actions", async () => {
