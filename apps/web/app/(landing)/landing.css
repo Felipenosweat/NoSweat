@@ -25,41 +25,6 @@
   letter-spacing: -0.014em;
 }
 
-/* ---------- Linhas de fundo: curvas paralelas com um pulso andando ---------- */
-.lp-trail {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.lp-trail path {
-  fill: none;
-  stroke-width: 1.2;
-  stroke: rgb(7 27 51 / 0.06);
-}
-
-.lp-trail .pulse {
-  stroke: rgb(0 102 255 / 0.28);
-  stroke-linecap: round;
-  stroke-dasharray: 160 2440;
-  animation: lp-trail 11s linear infinite;
-}
-
-.lp-trail .pulse.p2 {
-  animation-duration: 15s;
-  animation-delay: -6s;
-  stroke: rgb(0 194 255 / 0.25);
-}
-
-@keyframes lp-trail {
-  to {
-    stroke-dashoffset: -2600;
-  }
-}
-
 /* ---------- Tipografia ---------- */
 .lp-h {
   font-family: var(--font-lp);
@@ -168,21 +133,6 @@
 }
 
 /* ---------- Perguntas do topo ---------- */
-.lp-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgb(7 27 51 / 0.15);
-  transition:
-    transform 0.3s var(--lp-ease),
-    background 0.3s;
-}
-
-.lp-dot[data-on] {
-  background: var(--lp-ink);
-  transform: scale(1.25);
-}
-
 .lp-step {
   animation: lp-step 0.45s var(--lp-ease) both;
 }
@@ -262,119 +212,80 @@
   background: #0052cc;
 }
 
-/* ---------- O que você ganha: três aparelhos ---------- */
-.lp-dev {
-  position: relative;
-  aspect-ratio: 5 / 4;
-  overflow: hidden;
-  isolation: isolate;
-  border-radius: 18px;
-  border: 1px solid rgb(0 0 0 / 0.05);
-  background:
-    radial-gradient(90% 70% at 50% 100%, rgb(0 0 0 / 0.05), transparent 70%), var(--lp-panel);
+/* ---------- Grade de pontos do topo (HeroGrid) ---------- */
+.lp-grid-base,
+.lp-grid-glow {
+  background-size: 22px 22px;
+  background-position: center top;
 }
 
-.lp-frame {
-  position: absolute;
-  transition: transform 0.7s var(--lp-ease);
+.lp-grid-base {
+  background-image: radial-gradient(circle, rgb(7 27 51 / 0.13) 1px, transparent 1.4px);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 42%, #000 20%, transparent 75%);
 }
 
-.lp-dev:hover .lp-frame {
-  transform: translateY(-2.5%);
-}
-
-/* A página do site rola sozinha enquanto o mouse está em cima (como um visitante lendo). */
-.lp-page {
-  transition: transform 5s cubic-bezier(0.45, 0, 0.25, 1);
-}
-
-.lp-dev:hover .lp-page {
-  transform: translateY(-36%);
-}
-
-.lp-set {
-  position: absolute;
-  inset: 0;
+.lp-grid-glow {
+  background-image: radial-gradient(circle, rgb(0 102 255 / 0.75) 1.2px, transparent 1.6px);
+  mask-image: radial-gradient(170px circle at var(--gx, 50%) var(--gy, 50%), #000, transparent);
   opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.9s ease;
+  transition: opacity 0.4s ease;
 }
 
-.lp-set[data-on] {
+.lp-grid[data-on] .lp-grid-glow {
   opacity: 1;
 }
 
-/* ---------- Cartões pretos ---------- */
-.lp-slab {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  color: #fff;
-  background: radial-gradient(125% 95% at 12% 0%, #1b2a40 0%, #0d1726 42%, #070d18 100%);
-  border: 1px solid rgb(255 255 255 / 0.09);
-  box-shadow:
-    0 30px 80px -30px rgb(7 27 51 / 0.5),
-    inset 0 1px 0 rgb(255 255 255 / 0.07);
+/* ---------- Telas reais ("What you get") ---------- */
+.lp-pan {
   transition:
-    transform 0.6s var(--lp-ease),
-    border-color 0.4s ease;
+    opacity 0.5s ease,
+    transform 7s cubic-bezier(0.45, 0, 0.25, 1);
 }
 
-/* Luz que segue o mouse (posição em --mx/--my, ver SlabGlow). */
-.lp-slab::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(
-    340px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(255 255 255 / 0.07),
-    transparent 62%
-  );
-  opacity: 0;
-  transition: opacity 0.35s ease;
+.lp-shot:hover .lp-pan {
+  transform: translateY(-62%);
 }
 
-/* Faixa de luz que atravessa o cartão no hover. */
-.lp-slab::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: linear-gradient(
-    115deg,
-    transparent 32%,
-    rgb(255 255 255 / 0.075) 46%,
-    rgb(0 194 255 / 0.06) 52%,
-    transparent 64%
-  );
-  transform: translateX(-130%);
+/* ---------- Slogan e linha do tempo ("How it works") ---------- */
+.lp-wide {
+  font-family: var(--font-lp-wide), var(--font-lp);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
-.lp-slab:hover {
-  transform: translateY(-4px);
-  border-color: rgb(255 255 255 / 0.2);
+@media (min-width: 1024px) {
+  .lp-timeline::before,
+  .lp-timeline::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgb(7 27 51 / 0.12);
+  }
+
+  .lp-timeline::after {
+    background: var(--lp-blue);
+    transform-origin: left;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .lp-timeline::after {
+        animation: lp-draw linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 55%;
+      }
+    }
+  }
 }
 
-.lp-slab:hover::before {
-  opacity: 1;
-}
-
-.lp-slab:hover::after {
-  transition: transform 1s ease;
-  transform: translateX(130%);
-}
-
-.lp-slab-n::before {
-  content: "";
-  display: inline-block;
-  width: 18px;
-  height: 2px;
-  margin-right: 10px;
-  vertical-align: 4px;
-  background: var(--lp-cyan);
+@keyframes lp-draw {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 /* ---------- Dúvidas: + que vira − ---------- */
@@ -435,10 +346,6 @@ details[open] > summary .lp-fx::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lp-trail .pulse {
-    display: none;
-  }
-
   .lp-rise,
   .lp-rise-solid,
   .lp-nav,
@@ -446,10 +353,8 @@ details[open] > summary .lp-fx::before {
     animation: none;
   }
 
-  .lp-frame,
-  .lp-page,
-  .lp-set,
-  .lp-slab,
+  .lp-pan,
+  .lp-grid-glow,
   .lp-chip,
   .lp-btn,
   .lp-row,
@@ -459,13 +364,7 @@ details[open] > summary .lp-fx::before {
     transition: none;
   }
 
-  .lp-slab::after {
-    display: none;
-  }
-
-  .lp-dev:hover .lp-frame,
-  .lp-dev:hover .lp-page,
-  .lp-slab:hover {
+  .lp-shot:hover .lp-pan {
     transform: none;
   }
 }

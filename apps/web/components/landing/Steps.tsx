@@ -1,64 +1,17 @@
-import { SlabGlow } from "./SlabGlow";
+import { Unbounded } from "next/font/google";
 
-// "How it works" (#story): quatro cartões pretos em uma fileira, cada um com um esboço desenhado
-// em HTML (sem fotos) do que acontece naquele passo. Só o que o produto faz hoje.
+// "How it works" (#story): o slogan em caixa alta numa fonte larga (Unbounded, só nesta seção,
+// sem preload) e os quatro passos numa linha do tempo: uma linha azul que se desenha com a
+// rolagem (CSS animation-timeline; sem suporte ou com "reduzir movimento", aparece inteira).
+// Só o que o produto faz hoje.
 
-const ROW = "flex h-8 items-center gap-2 rounded-lg bg-white/10 px-3 text-[12px] text-white/80";
-
-function Art({ i }: { i: number }) {
-  if (i === 0)
-    return (
-      <div className="grid gap-1.5" aria-hidden="true">
-        {["Your business", "Where you are", "Hours", "Phone"].map((t) => (
-          <span key={t} className={ROW}>
-            <span className="size-1.5 rounded-full bg-[#00c2ff]" />
-            {t}
-          </span>
-        ))}
-      </div>
-    );
-  if (i === 1)
-    return (
-      <div className="grid gap-2 rounded-xl border border-white/15 p-4" aria-hidden="true">
-        <span className="h-2 w-2/5 rounded bg-white/15" />
-        <span className="h-7 w-3/5 rounded-lg bg-white/85" />
-        <span className="h-2 w-4/5 rounded bg-white/15" />
-        <span className="h-2 w-3/5 rounded bg-white/15" />
-        <span className="mt-1 h-6 w-1/3 rounded-full bg-[#0066ff]" />
-      </div>
-    );
-  if (i === 2)
-    return (
-      <div className="rounded-xl border border-white/15 p-3 text-[12px]" aria-hidden="true">
-        <p className="text-white/55">Describe a change</p>
-        <p className="mt-1.5 rounded-lg bg-white/10 px-3 py-2 text-white/85">
-          Make the intro shorter.
-        </p>
-        <p className="mt-2.5 flex items-center gap-2 text-white/70">
-          <span className="size-1.5 rounded-full bg-[#00c2ff]" />
-          New draft ready to review
-        </p>
-      </div>
-    );
-  return (
-    <div className="overflow-hidden rounded-xl border border-white/15" aria-hidden="true">
-      <div className="flex items-center gap-1.5 border-b border-white/15 px-3 py-2">
-        <span className="size-1.5 rounded-full bg-white/25" />
-        <span className="size-1.5 rounded-full bg-white/25" />
-        <span className="size-1.5 rounded-full bg-white/25" />
-        <span className="ml-2 h-2 flex-1 rounded bg-white/10" />
-      </div>
-      <div className="grid gap-2 p-3">
-        <span className="h-5 w-1/2 rounded bg-white/85" />
-        <span className="h-2 w-3/4 rounded bg-white/15" />
-        <span className="mt-1 flex items-center gap-2 text-[12px] text-white/70">
-          <span className="size-1.5 rounded-full bg-emerald-400" />
-          Live
-        </span>
-      </div>
-    </div>
-  );
-}
+const wide = Unbounded({
+  subsets: ["latin"],
+  weight: ["700"],
+  display: "swap",
+  preload: false,
+  variable: "--font-lp-wide",
+});
 
 const STEPS = [
   {
@@ -66,8 +19,8 @@ const STEPS = [
     body: "What you do, where, and anything worth knowing. About a minute.",
   },
   {
-    title: "Get a finished site",
-    body: "Services, hours, contact form and a call button, already in place.",
+    title: "We build the first draft",
+    body: "Layout, words, services and contact form, set up for your business.",
   },
   {
     title: "Change anything",
@@ -84,34 +37,38 @@ export function Steps() {
     <section
       id="story"
       aria-labelledby="story-title"
-      className="scroll-mt-14 px-5 py-20 text-center sm:px-8 lg:py-28"
+      className={`${wide.variable} scroll-mt-14 bg-[#f5f5f7] px-5 py-20 sm:px-8 lg:py-28`}
     >
-      <span className="lp-tag">How it works</span>
-      <h2 id="story-title" className="lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]">
-        From a few answers
-        <br />
-        <span className="dim">to a website that works.</span>
-      </h2>
-      <ol
-        data-slabs
-        className="mx-auto mt-12 grid w-full max-w-[1180px] grid-cols-1 gap-4 text-left sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {STEPS.map((step, index) => (
-          <li key={step.title} className="lp-slab flex flex-col gap-6 p-6">
-            <p className="lp-slab-n text-[12px] font-semibold tracking-[0.1em] text-white/60">
-              STEP {String(index + 1).padStart(2, "0")}
-            </p>
-            <Art i={index} />
-            <div className="mt-auto">
-              <h3 className="text-[20px] leading-tight font-semibold tracking-[-0.02em] text-white">
+      <div className="mx-auto w-full max-w-[1240px]">
+        <span className="lp-tag bg-white">How it works</span>
+        <h2
+          id="story-title"
+          className="lp-wide mt-7 text-[clamp(1.75rem,4.6vw,4.1rem)] leading-[0.98] text-[#071b33]"
+        >
+          Start with a few answers.
+          <br />
+          <span className="text-[#0066ff]">Build with clarity.</span>
+        </h2>
+
+        <ol className="lp-timeline relative mt-16 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+          {STEPS.map((step, index) => (
+            <li key={step.title} className="relative pl-12 lg:pt-14 lg:pl-0">
+              <span
+                aria-hidden="true"
+                className="absolute top-0 left-0 z-10 grid size-9 place-items-center rounded-full border border-[#0066ff] bg-white text-[13px] font-semibold text-[#0066ff] tabular-nums lg:top-0"
+              >
+                {index + 1}
+              </span>
+              <h3 className="text-[20px] leading-tight font-semibold tracking-[-0.02em] text-[#071b33]">
                 {step.title}
               </h3>
-              <p className="mt-2 text-[14.5px] leading-[1.55] text-white/70">{step.body}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <SlabGlow />
+              <p className="mt-2 max-w-[30ch] text-[15px] leading-[1.55] text-[#6e6e73]">
+                {step.body}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }

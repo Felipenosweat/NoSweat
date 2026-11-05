@@ -112,6 +112,15 @@ export function HeroStepper() {
   };
 
   const prompt = PROMPTS[step];
+  const answered = [
+    { step: 0, value: kind },
+    { step: 1, value: where.trim() },
+    { step: 2, value: name.trim() },
+  ].filter((a) => a.step < index && a.value);
+  const goTo = (i: number) => {
+    setError("");
+    setIndex(i);
+  };
   const buttons = (
     <div className="mt-2 flex items-center justify-center gap-5">
       {index > 0 && (
@@ -139,15 +148,36 @@ export function HeroStepper() {
 
   return (
     <div className="lp-rise w-full" style={{ "--i": 2 } as React.CSSProperties}>
-      <div aria-hidden="true" className="mt-8 flex justify-center gap-2">
-        {STEPS.map((s, i) => (
-          <i key={s} className="lp-dot" data-on={i <= index ? "" : undefined} />
+      {/* O que já foi respondido: cada resposta é um chip que leva de volta àquela pergunta. */}
+      <div
+        className="mt-8 flex min-h-9 flex-wrap items-center justify-center gap-2"
+        aria-live="polite"
+      >
+        {answered.map((a) => (
+          <button
+            key={a.step}
+            type="button"
+            onClick={() => goTo(a.step)}
+            aria-label={`Change: ${a.value}`}
+            className={`lp-answer inline-flex items-center gap-2 rounded-full border border-[#071b33]/12 bg-white px-3.5 py-1.5 text-[13px] text-[#071b33] transition-colors hover:border-[#0066ff]/50 ${focusRing}`}
+          >
+            <span className="size-1.5 rounded-full bg-[#0066ff]" aria-hidden="true" />
+            {a.value}
+            <span aria-hidden="true" className="text-[#86868b]">
+              Edit
+            </span>
+          </button>
         ))}
+        {answered.length === 0 && (
+          <span className="text-[12.5px] text-[#86868b]">
+            Four quick questions. About a minute.
+          </span>
+        )}
       </div>
       <form
         onSubmit={submit}
         noValidate
-        className="mx-auto mt-8 min-h-[230px] w-full max-w-[820px]"
+        className="mx-auto mt-6 min-h-[230px] w-full max-w-[820px]"
         aria-label="Tell us about your business"
       >
         <fieldset key={step} className="lp-step flex flex-col items-center gap-4">
@@ -155,6 +185,9 @@ export function HeroStepper() {
             Question {index + 1} of {STEPS.length}
           </legend>
           <p className="text-[clamp(1.3rem,2.5vw,1.75rem)] font-semibold tracking-[-0.022em]">
+            <span className="mr-2 align-middle text-[12px] font-semibold tabular-nums text-[#86868b]">
+              {index + 1}/{STEPS.length}
+            </span>
             {prompt.title}
           </p>
           <p className="max-w-[52ch] text-[13px] text-[#6e6e73]">{prompt.hint}</p>

@@ -46,37 +46,12 @@ const h2 = "lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]";
 const linkDark =
   "lp-underline rounded-sm font-medium text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-/** Linhas de fundo: três curvas paralelas e dois pulsos andando (enfeite). */
-function Trail() {
-  return (
-    <svg
-      className="lp-trail"
-      viewBox="0 0 1440 900"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      <path d="M-80 640 C 220 560, 470 260, 760 300 C 1030 336, 1170 560, 1520 420" />
-      <path d="M-80 690 C 240 612, 488 322, 768 360 C 1024 396, 1182 618, 1520 482" />
-      <path d="M-80 744 C 260 672, 506 392, 776 426 C 1018 458, 1192 676, 1520 546" />
-      <path
-        className="pulse"
-        d="M-80 690 C 240 612, 488 322, 768 360 C 1024 396, 1182 618, 1520 482"
-      />
-      <path
-        className="pulse p2"
-        d="M-80 744 C 260 672, 506 392, 776 426 C 1018 458, 1192 676, 1520 546"
-      />
-    </svg>
-  );
-}
-
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
   const whatsapp = salesWhatsappUrl();
   return (
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
-      <Trail />
       <Hero />
       <WhatYouGet />
       <Steps />
