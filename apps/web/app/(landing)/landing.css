@@ -441,30 +441,6 @@ details[open] > summary .lp-fx::before {
   animation-delay: calc(var(--lp-intro) + 150ms);
 }
 
-@keyframes lp-fade-out {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-/* Reduzir movimento: a marca aparece parada e a tela branca só esmaece. */
-@media (prefers-reduced-motion: reduce) {
-  .lp {
-    --lp-intro: 0.9s;
-  }
-
-  .lp-intro {
-    animation: lp-fade-out 0.35s ease var(--lp-intro) forwards;
-  }
-
-  .lp-intro-mark,
-  .lp-intro-l,
-  .lp-intro-bar {
-    animation: none;
-  }
-}
-
 /* ---------- Etiqueta "BE ___" (TypedTag) ---------- */
 .lp-typed {
   --c1: #0066ff;

@@ -35,10 +35,7 @@ export function LandingHeader() {
           <Link href="/login" className={`hidden sm:inline-flex ${link}`}>
             Log in
           </Link>
-          <Link
-            href="/create"
-            className="lp-btn inline-flex h-9 items-center px-4 text-[13px] font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0066ff]"
-          >
+          <Link href="/create" className={`inline-flex whitespace-nowrap ${link}`}>
             Start free
           </Link>
           <MarketingMenu items={[...NAV, { href: "/login", label: "Log in" }]} />
