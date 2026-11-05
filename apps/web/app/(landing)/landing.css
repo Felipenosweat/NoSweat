@@ -15,8 +15,8 @@
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
   /* Serifa dos títulos: o Instrument Serif do par "editorial" (app/fonts.ts). */
   --font-lp-serif: var(--ns-font-editorial-heading);
-  /* Dourado discreto (só em destaques sobre a noite): a "realeza" combinada. */
-  --lp-accent: #d9b877;
+  /* Destaque sem cor chamativa: marfim sobre a noite (peso vem do itálico e da escala). */
+  --lp-accent: #ece6d8;
   background: var(--lp-night);
 }
 
@@ -31,7 +31,7 @@
   text-wrap: balance;
 }
 
-/* A palavra de destaque: itálico, dourada na noite e azul-tinta no papel. */
+/* A palavra de destaque: só itálico, em marfim na noite e na cor da tinta no papel. */
 .lp-serif em {
   font-style: italic;
   letter-spacing: -0.01em;
@@ -39,7 +39,7 @@
 }
 
 .lp-paper .lp-serif em {
-  color: #0a3d91;
+  color: var(--lp-ink);
 }
 
 /* Pílula de imagem dentro do título (a forma do Redstone): um recorte de site de exemplo. */
@@ -62,7 +62,7 @@
   object-position: 50% 30%;
 }
 
-/* Cursor "View" que segue o mouse sobre a galeria (só mouse; ver LandingCursor). */
+/* Cursor "View" (disco marfim) que segue o mouse sobre a galeria (só mouse; ver LandingCursor). */
 .lp-cursor {
   position: fixed;
   top: 0;
@@ -109,7 +109,7 @@
 
 .lp-card:hover {
   background: rgb(255 255 255 / 0.08);
-  border-color: rgb(217 184 119 / 0.6);
+  border-color: rgb(255 255 255 / 0.4);
 }
 
 /* Contorno só no texto grande de enfeite (número, faixa). */

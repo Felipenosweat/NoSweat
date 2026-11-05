@@ -29,7 +29,7 @@ export function Ticker() {
               <span key={`${copy}-${trade}`} className="flex items-center">
                 <span
                   className={`lp-serif px-6 text-[clamp(2rem,4vw,3.75rem)] whitespace-nowrap lg:px-9 ${
-                    index % 2 ? "italic text-[var(--lp-accent)]" : "text-white"
+                    index % 2 ? "italic text-white/60" : "text-white"
                   }`}
                 >
                   {trade}

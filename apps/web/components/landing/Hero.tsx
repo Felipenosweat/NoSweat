@@ -25,12 +25,12 @@ function Title() {
       className="lp-serif mt-6 text-[clamp(3.2rem,10vw,10rem)] leading-[0.92] text-white"
     >
       <span className="lp-line">
-        <span style={{ "--i": 0 } as CSSProperties}>Your business,</span>
+        <span style={{ "--i": 0 } as CSSProperties}>A website with</span>
       </span>
       <span className="lp-line">
         <span style={{ "--i": 1 } as CSSProperties}>
-          dressed like <Pill slug="mercer-law" />
-          <em>royalty.</em>
+          <Pill slug="mercer-law" />
+          <em>presence.</em>
         </span>
       </span>
     </h1>

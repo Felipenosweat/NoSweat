@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-// Cursor "View" (a forma do cursor próprio do Redstone): um disco dourado que segue o mouse sobre
+// Cursor "View" (a forma do cursor próprio do Redstone): um disco marfim que segue o mouse sobre
 // qualquer elemento com data-lp-cursor. Só com mouse de verdade (hover + ponteiro fino); em toque
 // e teclado não existe, e os links continuam sendo os mesmos. É enfeite (aria-hidden).
 
