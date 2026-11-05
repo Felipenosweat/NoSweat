@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 // Etiqueta "BE ___" (forma inspirada no gianmediagroup.com, palavras nossas): começa só com "BE"
 // e o cursor de bloco piscando; depois da abertura da página, digita a palavra, espera, apaga e
 // digita a próxima. Fonte mono, caixa alta, pílula com borda em gradiente animado nas cores da
-// logo. Com "reduzir movimento" mostra a primeira palavra parada.
+// logo. Digitar não é deslocamento na tela, então roda também com "reduzir movimento" (o Windows
+// liga essa opção quando "Efeitos de animação" está desligado); só a borda fica parada.
 
 const WORDS = ["FOUND.", "TRUSTED.", "REMEMBERED."];
 
@@ -14,10 +15,6 @@ export function TypedTag({ className = "" }: { className?: string }) {
   const [typing, setTyping] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setText(WORDS[0] ?? "");
-      return;
-    }
     let i = 0;
     let timer = 0;
     let current = "";

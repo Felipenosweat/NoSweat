@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 // Título do topo: "Built to" + um verbo que se digita e se apaga (sem cursor). O servidor já
-// manda o primeiro verbo inteiro (é o LCP); com "reduzir movimento" ele fica parado.
+// manda o primeiro verbo inteiro (é o LCP). Digitar não é deslocamento na tela, então roda também
+// com "reduzir movimento"; o brilho que atravessa o título, esse sim, fica desligado.
 // Os verbos são intenção de estilo, não promessa de resultado.
 
 const WORDS = ["impress.", "get found.", "look the part.", "win trust."];
@@ -12,7 +13,6 @@ export function HeroTitle() {
   const [text, setText] = useState(WORDS[0] ?? "");
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let word = 0;
     let chars = (WORDS[0] ?? "").length;
     let deleting = false;
