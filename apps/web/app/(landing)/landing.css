@@ -19,7 +19,9 @@
     sans-serif;
   /* isolation: as linhas de fundo (z-index -1) ficam sobre o branco da página. */
   isolation: isolate;
-  background: #ffffff;
+  /* Fundo cinza-azulado: cada seção é uma "bolha" branca arredondada por cima (.lp-bubble). */
+  --lp-page: #eef1f6;
+  background: var(--lp-page);
   color: var(--lp-ink);
   font-family: var(--font-lp);
   letter-spacing: -0.014em;
@@ -488,4 +490,148 @@ details[open] > summary .lp-fx::before {
   .lp-typed {
     animation: none;
   }
+}
+
+/* ---------- Bolhas e pílulas (V13) ---------- */
+/* Cada bloco de conteúdo fica dentro de uma bolha branca com cantos bem redondos sobre o fundo
+   cinza; o que já é cartão (passos, preços) fica direto no cinza, para intercalar. */
+.lp-bubble {
+  background: #fff;
+  border-radius: 22px;
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1280px;
+}
+
+@media (min-width: 640px) {
+  .lp-bubble {
+    border-radius: 32px;
+  }
+
+  .lp-cards {
+    scroll-padding-left: 2.5rem;
+  }
+}
+
+.lp-bubble-dark {
+  background: var(--lp-ink);
+  color: #fff;
+}
+
+/* Botão em pílula com a seta num círculo à direita (a seta gira ao passar o mouse). */
+.lp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 6px 6px 6px 22px;
+  border-radius: 999px;
+  background: var(--lp-ink);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 0.2s,
+    transform 0.2s var(--lp-ease);
+}
+
+.lp-pill:hover {
+  background: #000;
+}
+
+.lp-pill:active {
+  transform: scale(0.97);
+}
+
+.lp-pill-blue {
+  background: var(--lp-blue);
+}
+
+.lp-pill-blue:hover {
+  background: #0052cc;
+}
+
+.lp-pill-light {
+  background: #fff;
+  color: var(--lp-ink);
+}
+
+.lp-pill-light:hover {
+  background: #e6ebf3;
+}
+
+.lp-pill-arrow {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.14);
+  transition: transform 0.3s var(--lp-ease);
+}
+
+.lp-pill-light .lp-pill-arrow {
+  background: var(--lp-page);
+}
+
+.lp-pill:hover .lp-pill-arrow {
+  transform: rotate(45deg);
+}
+
+/* Botões redondos do carrossel dos passos. */
+.lp-round {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--lp-ink);
+  transition:
+    background 0.2s,
+    opacity 0.2s;
+}
+
+.lp-round-blue {
+  width: 64px;
+  background: var(--lp-blue);
+  color: #fff;
+}
+
+.lp-round:disabled {
+  opacity: 0.4;
+}
+
+.lp-cards {
+  scroll-snap-type: x mandatory;
+  /* O encaixe respeita o recuo da trilha (senão o 1º cartão cola na borda). */
+  scroll-padding-left: 1.25rem;
+  scrollbar-width: none;
+}
+
+.lp-cards::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-cards > * {
+  scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-pill,
+  .lp-pill-arrow {
+    transition: none;
+  }
+}
+
+/* Trilha dos passos: no computador começa alinhada ao título (bolha de 1280 px + 4rem). */
+@media (min-width: 1024px) {
+  .lp-track {
+    padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
+    scroll-padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
+  }
+}
+
+.lp-bubble-dark .lp-h {
+  color: #fff;
 }

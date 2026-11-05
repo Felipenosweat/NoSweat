@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { PillArrow } from "./Pill";
 
 // As perguntas do topo, uma de cada vez (forma do averaks.com): que tipo de negócio, onde, o
 // nome e, se quiser, um detalhe. No fim viram uma frase (o mesmo `brief` do campo antigo) e
 // vão para /create?brief=…&start=1, que monta o site na hora. O texto também fica no
 // sessionStorage `ns-brief`, como no PromptForm.
 // Sem JavaScript: o <noscript> leva direto para o /create.
-// Os chips de "Website" mais abaixo preenchem a primeira pergunta (evento `ns:preset-kind`).
+// Um evento `ns:preset-kind` (de qualquer botão da página) preenche a primeira pergunta.
 
 const STORAGE_KEY = "ns-brief";
 
@@ -133,13 +134,15 @@ export function HeroStepper() {
         </button>
       )}
       {step === "details" ? (
-        <button type="submit" className={`lp-btn lp-btn-blue px-7 py-3 text-[17px] ${focusRing}`}>
+        <button type="submit" className={`lp-pill lp-pill-blue ${focusRing}`}>
           Build my website
+          <PillArrow />
         </button>
       ) : (
         step !== "kind" && (
-          <button type="submit" className={`lp-btn px-7 py-3 text-[17px] ${focusRing}`}>
+          <button type="submit" className={`lp-pill ${focusRing}`}>
             Next
+            <PillArrow />
           </button>
         )
       )}

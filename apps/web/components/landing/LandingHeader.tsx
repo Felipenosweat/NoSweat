@@ -19,7 +19,7 @@ const link =
 
 export function LandingHeader() {
   return (
-    <header className="lp-nav sticky top-0 z-40 border-b border-black/10 bg-[rgb(251_251_253/0.8)] backdrop-blur-xl backdrop-saturate-150">
+    <header className="lp-nav sticky top-0 z-40 bg-[#eef1f6]">
       <div className="mx-auto grid min-h-14 w-full max-w-[1240px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 sm:px-8">
         <div className="col-start-1 justify-self-start">
           <Logo />

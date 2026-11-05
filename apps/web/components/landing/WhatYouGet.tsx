@@ -2,19 +2,19 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { KINDS } from "./HeroStepper";
+import { Pill } from "./Pill";
 
-// "What you get" (#what): as TELAS REAIS da No Sweat (capturas do app rodando, com dados de
-// demonstração de um negócio inventado, avisado na legenda), nada desenhado. À esquerda, três
-// abas (Website, Clients, Instagram); à direita, a captura da aba escolhida, maior que a coluna,
-// sangrando para fora da página no computador. A captura do site rola devagar ao passar o mouse.
+// "What you get" (#what), numa bolha branca: título à esquerda, uma frase e o botão à direita;
+// embaixo, três abas curtas (Website, Clients, Instagram) e a TELA REAL da aba escolhida
+// (capturas do app rodando, com dados de demonstração de um negócio inventado, avisado na
+// legenda). A captura do site rola devagar ao passar o mouse.
 // Capturas em public/landing/real (regravar: ver docs/design/README.md, "Validação").
 
 const TABS = [
   {
     id: "website",
     title: "Website",
-    body: "Every page a customer needs before they call you: services and fees, hours, a contact form and a call button.",
+    body: "Services, hours, a contact form and a call button.",
     src: "/landing/real/site.webp",
     width: 1280,
     height: 2400,
@@ -25,7 +25,7 @@ const TABS = [
   {
     id: "clients",
     title: "Clients",
-    body: "Every request from your contact form lands in one list. Reply, quote and move each one along.",
+    body: "Every request from your site, in one list.",
     src: "/landing/real/clients.webp",
     width: 1400,
     height: 1018,
@@ -36,7 +36,7 @@ const TABS = [
   {
     id: "social",
     title: "Instagram",
-    body: "We draft posts from your website. Nothing goes out until you approve it. Needs an Instagram professional account.",
+    body: "Posts drafted for you. Nothing goes out until you approve it.",
     src: "/landing/real/social.webp",
     width: 1400,
     height: 1018,
@@ -53,95 +53,75 @@ export function WhatYouGet() {
   const [active, setActive] = useState(0);
   const tab = TABS[active] ?? TABS[0];
 
-  const preset = (label: string) => {
-    window.dispatchEvent(new CustomEvent("ns:preset-kind", { detail: label }));
-    document.getElementById("start")?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-    });
-  };
-
   return (
-    <section
-      id="what"
-      aria-labelledby="what-title"
-      className="scroll-mt-14 overflow-x-clip py-20 lg:py-28"
-    >
-      <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-4">
-          <span className="lp-tag">What you get</span>
-          <h2 id="what-title" className="lp-h mt-6 text-[clamp(1.9rem,3.4vw,2.9rem)]">
+    <div className="mt-3 px-3 sm:mt-5 sm:px-5">
+      <section
+        id="what"
+        aria-labelledby="what-title"
+        className="lp-bubble scroll-mt-16 px-5 py-12 sm:px-10 lg:px-16 lg:py-16"
+      >
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-12">
+          <h2 id="what-title" className="lp-h text-[clamp(1.9rem,3.4vw,2.9rem)]">
             Not just a website.
             <br />
             <span className="dim">The tools around it.</span>
           </h2>
+          <div className="lg:pt-2">
+            <p className="max-w-[44ch] text-[16px] leading-[1.6] text-[#6e6e73]">
+              Your site, the requests it brings in and your Instagram, in one place. Built for
+              people who would rather be working.
+            </p>
+            <div className="mt-6">
+              <Pill href="#start">Start free</Pill>
+            </div>
+          </div>
+        </div>
 
-          <div
-            role="tablist"
-            aria-label="What you get"
-            className="mt-10 border-t border-[var(--lp-hair)]"
-          >
-            {TABS.map((t, i) => (
-              <button
-                key={t.id}
-                id={`tab-${t.id}`}
-                role="tab"
-                type="button"
-                aria-selected={i === active}
-                aria-controls="what-panel"
-                onClick={() => setActive(i)}
-                onMouseEnter={() => setActive(i)}
-                className={`lp-tab group block w-full border-b border-[var(--lp-hair)] py-5 text-left ${focus}`}
-              >
-                <span className="flex items-baseline gap-4">
-                  <span className="w-6 text-[12px] font-semibold tabular-nums text-[#86868b]">
-                    0{i + 1}
-                  </span>
-                  <span
-                    className={`text-[clamp(1.4rem,2vw,1.75rem)] font-semibold tracking-[-0.025em] transition-colors duration-300 ${
-                      i === active ? "text-[#071b33]" : "text-[#aeaeb4] group-hover:text-[#6e6e73]"
-                    }`}
-                  >
-                    {t.title}
-                  </span>
-                </span>
+        <div
+          role="tablist"
+          aria-label="What you get"
+          className="mt-12 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3"
+        >
+          {TABS.map((t, i) => (
+            <button
+              key={t.id}
+              id={`tab-${t.id}`}
+              role="tab"
+              type="button"
+              aria-selected={i === active}
+              aria-controls="what-panel"
+              onClick={() => setActive(i)}
+              onMouseEnter={() => setActive(i)}
+              className={`flex flex-col items-start justify-start rounded-[20px] px-5 py-4 text-left transition-colors duration-300 ${focus} ${
+                i === active ? "bg-[#eef1f6]" : "hover:bg-[#f5f6f9]"
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
                 <span
-                  className={`grid pl-10 transition-[grid-template-rows,opacity] duration-500 ${
-                    i === active ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  aria-hidden="true"
+                  className={`size-2 rounded-full transition-colors duration-300 ${
+                    i === active ? "bg-[#0066ff]" : "bg-[#d2d6de]"
                   }`}
-                >
-                  <span className="overflow-hidden">
-                    <span className="block pt-2 text-[15px] leading-[1.55] text-[#6e6e73]">
-                      {t.body}
-                    </span>
-                  </span>
+                />
+                <span className="text-[17px] font-semibold tracking-[-0.02em] text-[#071b33]">
+                  {t.title}
                 </span>
-              </button>
-            ))}
-          </div>
-
-          <p className="mt-8 text-[13px] text-[#6e6e73]">Start with your kind of business:</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {KINDS.slice(0, 4).map((k) => (
-              <button
-                key={k.label}
-                type="button"
-                onClick={() => preset(k.label)}
-                className={`lp-chip px-3.5 py-2 text-[13.5px] ${focus}`}
-              >
-                {k.label}
-              </button>
-            ))}
-          </div>
+              </span>
+              <span className="mt-1 block pl-[18px] text-[14px] leading-[1.5] text-[#6e6e73]">
+                {t.body}
+              </span>
+            </button>
+          ))}
         </div>
 
         <figure
           id="what-panel"
           role="tabpanel"
           aria-labelledby={`tab-${tab.id}`}
-          className="lg:col-span-8 lg:-mr-[max(2rem,calc((100vw-1240px)/2+2rem))]"
+          className="mt-4 sm:mt-6"
         >
           <div
-            className={`lp-shot relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_1px_2px_rgb(7_27_51/.05),0_24px_60px_-28px_rgb(7_27_51/.35)] ${
+            className={`lp-shot relative overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#eef1f6] ${
               tab.tall ? "aspect-[16/10]" : "aspect-[1400/1018]"
             }`}
           >
@@ -153,7 +133,7 @@ export function WhatYouGet() {
                 height={t.height}
                 alt={i === active ? t.alt : ""}
                 aria-hidden={i !== active}
-                sizes="(min-width: 1024px) 60vw, 100vw"
+                sizes="(min-width: 1280px) 1150px, 100vw"
                 className={`absolute inset-x-0 top-0 h-auto w-full transition-opacity duration-500 ${
                   t.tall ? "lp-pan" : ""
                 } ${i === active ? "opacity-100" : "opacity-0"}`}
@@ -162,7 +142,7 @@ export function WhatYouGet() {
           </div>
           <figcaption className="mt-3 text-[12.5px] text-[#6e6e73]">{tab.caption}</figcaption>
         </figure>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
