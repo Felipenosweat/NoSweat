@@ -267,20 +267,6 @@ details[open] > summary .lp-fx::before {
   rotate: 180deg;
 }
 
-/* Linha da lista de exemplos. */
-.lp-row {
-  transition: padding 0.4s var(--lp-ease);
-}
-
-.lp-row:hover,
-.lp-row:focus-visible {
-  padding-inline: 1rem;
-}
-
-.lp-row:hover .lp-row-name {
-  color: var(--lp-blue);
-}
-
 .lp-underline {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
   transition: background-size 500ms var(--lp-ease);
@@ -302,7 +288,6 @@ details[open] > summary .lp-fx::before {
   .lp-pan,
   .lp-chip,
   .lp-btn,
-  .lp-row,
   .lp-fx::before,
   .lp-fx::after,
   .lp-underline {
