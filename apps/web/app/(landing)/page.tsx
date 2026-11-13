@@ -5,6 +5,7 @@ import { Hero } from "@/components/landing/Hero";
 import { LandingMotion } from "@/components/landing/LandingMotion";
 import { Pill } from "@/components/landing/Pill";
 import { Steps } from "@/components/landing/Steps";
+import { edgeInner, edgeOuter, h2Class, leadClass } from "@/components/landing/type";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
@@ -59,24 +60,26 @@ export default function LandingPage() {
       <Steps />
       <Examples />
 
-      {/* PREÇO — o mesmo componente da página /pricing. */}
-      <section
-        id="pricing"
-        aria-labelledby="pricing-title"
-        className="scroll-mt-14 px-5 py-20 text-center sm:px-8 lg:py-28"
-      >
-        <span className={tag}>Pricing</span>
-        <h2 id="pricing-title" className={h2}>
-          Build it free.
-          <br />
-          <span className="dim">Pay when it’s live.</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-[46ch] text-[17px] leading-relaxed text-[#6e6e73]">
-          Create and preview your whole site without paying. You only pay when you pick a plan to
-          publish.
-        </p>
-        <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} />
+      {/* PREÇO — direto no fundo cinza; o mesmo componente da página /pricing. O título e a
+          introdução entram pelo `heading`, para a escolha mensal/anual ficar na mesma linha. */}
+      <section id="pricing" aria-labelledby="pricing-title" className={`scroll-mt-14 ${edgeOuter}`}>
+        <div className={`${edgeInner} py-16 lg:py-24`}>
+          <PricingPlans
+            checkout={checkoutReady()}
+            heading={
+              <>
+                <h2 id="pricing-title" className={h2Class}>
+                  Build it free.
+                  <br />
+                  <span className="text-slate-600">Pay when it’s live.</span>
+                </h2>
+                <p className={`mt-4 ${leadClass}`}>
+                  Create and preview your whole site without paying. You only pay when you pick a
+                  plan to publish.
+                </p>
+              </>
+            }
+          />
         </div>
       </section>
 

@@ -7,8 +7,11 @@ export const edgeOuter = "px-3 sm:px-5";
 /** Borda da página, camada de dentro: conteúdo a 32 / 60 / 144 px em 390 / 768 / 1440. */
 export const edgeInner = "mx-auto w-full max-w-[1280px] px-5 sm:px-10 lg:px-16";
 
-export const h2Class =
-  "font-display text-[1.875rem] leading-[1.1] font-bold tracking-[-0.03em] text-balance text-ink lg:text-[2.75rem]";
+/** H2 sem cor (para a bolha escura, onde o texto é branco). */
+export const h2Base =
+  "font-display text-[1.875rem] leading-[1.1] font-bold tracking-[-0.03em] text-balance lg:text-[2.75rem]";
+
+export const h2Class = `${h2Base} text-ink`;
 
 export const h3Class =
   "font-display text-xl leading-[1.3] font-semibold tracking-[-0.02em] text-ink lg:text-[1.375rem]";

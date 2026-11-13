@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { CheckIcon } from "./icons";
-import { primaryButton, secondaryButton, textLink } from "./styles";
+import { focusRing, primaryButton, secondaryButton } from "./styles";
 
 // Tabela de planos da landing: três cartões rounded-xl com linhas de recibo; o recomendado tem
 // o anel azul (ring-2 ring-brand), o único destaque de cor da seção.
@@ -17,6 +17,9 @@ import { primaryButton, secondaryButton, textLink } from "./styles";
 // página, que é server component). Sem ele a venda é manual (WhatsApp/e-mail + acesso liberado
 // pelo admin por X dias): pago adiantado e SEM renovação automática, então o texto muda.
 // Nenhum dos dois modos promete e-mail de lembrete: hoje nenhum código manda esse e-mail.
+// `heading` (opcional, usado pela landing): título e introdução da seção, que ficam à esquerda
+// com a escolha mensal/anual embaixo à direita no computador. Sem ele (página /pricing), a
+// escolha fica sozinha em cima dos planos, como sempre.
 
 type Billing = "monthly" | "annual";
 
@@ -86,35 +89,46 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
 
 const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
-export function PricingPlans({ checkout }: { checkout: boolean }) {
+export function PricingPlans({ checkout, heading }: { checkout: boolean; heading?: ReactNode }) {
   // Anual por padrão: sem taxa de implantação e 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
 
+  // Radios nativos: setas do teclado, nome acessível e estado vêm de graça.
+  const toggle = (
+    <fieldset className={heading ? "mt-8 shrink-0 lg:mt-0" : undefined}>
+      <legend className="text-sm font-semibold text-ink">Billing</legend>
+      <div className="mt-3 inline-flex max-w-full flex-wrap rounded-full border border-slate-300 bg-white p-1">
+        {BILLING_OPTIONS.map((option) => (
+          <label key={option.value} className="relative cursor-pointer">
+            <input
+              type="radio"
+              name="billing"
+              value={option.value}
+              checked={billing === option.value}
+              onChange={() => setBilling(option.value)}
+              className="peer sr-only"
+            />
+            <span className="flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
+              {option.label}
+              {option.note && <span className="font-normal tabular-nums">{option.note}</span>}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+
   return (
     <div>
-      {/* Radios nativos: setas do teclado, nome acessível e estado vêm de graça. */}
-      <fieldset>
-        <legend className="text-sm font-semibold text-ink">Billing</legend>
-        <div className="mt-3 inline-flex max-w-full flex-wrap rounded-lg border border-slate-300 bg-white p-1">
-          {BILLING_OPTIONS.map((option) => (
-            <label key={option.value} className="relative cursor-pointer">
-              <input
-                type="radio"
-                name="billing"
-                value={option.value}
-                checked={billing === option.value}
-                onChange={() => setBilling(option.value)}
-                className="peer sr-only"
-              />
-              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
-                {option.label}
-                {option.note && <span className="font-normal tabular-nums">{option.note}</span>}
-              </span>
-            </label>
-          ))}
+      {heading ? (
+        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
+          <div>{heading}</div>
+          {toggle}
         </div>
-      </fieldset>
+      ) : (
+        toggle
+      )}
       <p aria-live="polite" className="sr-only">
         {annual ? "Showing annual prices." : "Showing monthly prices."}
       </p>
@@ -136,7 +150,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
                 {plan.name}
               </h3>
               {plan.recommended && (
-                <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+                <span className="inline-flex h-7 items-center rounded-full bg-white px-3 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
                   Recommended
                 </span>
               )}
@@ -168,7 +182,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
               {plan.intro && <p className="text-sm font-semibold text-ink">{plan.intro}</p>}
               <ul className={`grid grid-cols-1 gap-y-3 ${plan.intro ? "mt-3" : ""}`}>
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-3 text-base leading-snug text-slate-600">
+                  <li key={feature} className="flex gap-3 text-[15px] leading-snug text-slate-600">
                     <CheckIcon className="mt-0.5 size-4 shrink-0 text-slate-500" />
                     {feature}
                   </li>
@@ -202,7 +216,11 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
       {/* Quem já criou o site e volta para comprar vai direto para /billing (pede login). */}
       <p className="mt-8 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
         Already built your site?{" "}
-        <Link href="/billing" className={textLink}>
+        {/* brand-dark: na landing este link fica sobre o fundo slate-100 (o brand não dá 4.5:1). */}
+        <Link
+          href="/billing"
+          className={`rounded-sm font-semibold text-brand-dark underline-offset-4 hover:underline ${focusRing}`}
+        >
           Choose your plan
         </Link>
         .
