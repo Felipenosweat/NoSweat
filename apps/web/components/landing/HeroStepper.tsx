@@ -10,6 +10,7 @@ import { PillArrow } from "./Pill";
 // sessionStorage `ns-brief`, como no PromptForm.
 // Sem JavaScript: o <noscript> leva direto para o /create.
 // Um evento `ns:preset-kind` (de qualquer botão da página) preenche a primeira pergunta.
+// Cada chip de ramo leva `data-kind`: o HeroPreview ouve (por delegação) para trocar a captura.
 
 const STORAGE_KEY = "ns-brief";
 
@@ -37,7 +38,10 @@ const PROMPTS: Record<Step, { title: string; hint: string }> = {
 };
 
 const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+
+// Campos de uma linha: pílula branca com borda visível (3:1) e o contorno azul no foco.
+const field = `h-12 w-full max-w-[380px] rounded-full border border-slate-500 bg-white px-6 text-center text-lg font-medium text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink lg:text-left ${focusRing}`;
 
 export function HeroStepper() {
   const router = useRouter();
@@ -123,14 +127,23 @@ export function HeroStepper() {
     setIndex(i);
   };
   const buttons = (
-    <div className="mt-2 flex items-center justify-center gap-5">
+    <div className="mt-2 flex items-center justify-center gap-5 lg:justify-start">
       {index > 0 && (
         <button
           type="button"
           onClick={back}
-          className={`rounded-md px-1 py-2 text-sm text-[#6e6e73] transition-colors hover:text-[#071b33] ${focusRing}`}
+          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:text-ink lg:-ml-3 ${focusRing}`}
         >
-          ← Back
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="M13 8H3M7 4 3 8l4 4"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Back
         </button>
       )}
       {step === "details" ? (
@@ -153,7 +166,7 @@ export function HeroStepper() {
     <div className="lp-rise w-full" style={{ "--i": 2 } as React.CSSProperties}>
       {/* O que já foi respondido: cada resposta é um chip que leva de volta àquela pergunta. */}
       <div
-        className="mt-8 flex min-h-9 flex-wrap items-center justify-center gap-2"
+        className="mt-8 flex min-h-11 flex-wrap items-center justify-center gap-2 lg:justify-start"
         aria-live="polite"
       >
         {answered.map((a) => (
@@ -162,48 +175,50 @@ export function HeroStepper() {
             type="button"
             onClick={() => goTo(a.step)}
             aria-label={`Change: ${a.value}`}
-            className={`lp-answer inline-flex items-center gap-2 rounded-full border border-[#071b33]/12 bg-white px-3.5 py-1.5 text-[13px] text-[#071b33] transition-colors hover:border-[#0066ff]/50 ${focusRing}`}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-500 bg-white px-4 text-sm text-ink transition-colors duration-200 hover:border-ink ${focusRing}`}
           >
-            <span className="size-1.5 rounded-full bg-[#0066ff]" aria-hidden="true" />
+            {/* O quadrado azul da página (nunca redondo, nunca piscando). */}
+            <span className="size-1.5 shrink-0 bg-brand" aria-hidden="true" />
             {a.value}
-            <span aria-hidden="true" className="text-[#86868b]">
+            <span aria-hidden="true" className="text-slate-600">
               Edit
             </span>
           </button>
         ))}
         {answered.length === 0 && (
-          <span className="text-[12.5px] text-[#86868b]">
-            Four quick questions. About a minute.
-          </span>
+          <span className="text-sm text-slate-600">Four quick questions. About a minute.</span>
         )}
       </div>
       <form
         onSubmit={submit}
         noValidate
-        className="mx-auto mt-6 min-h-[230px] w-full max-w-[820px]"
+        className="mx-auto mt-6 min-h-[230px] w-full max-w-[820px] lg:mx-0"
         aria-label="Tell us about your business"
       >
-        <fieldset key={step} className="lp-step flex flex-col items-center gap-4">
+        <fieldset key={step} className="lp-step flex flex-col items-center gap-4 lg:items-start">
           <legend className="sr-only">
             Question {index + 1} of {STEPS.length}
           </legend>
-          <p className="text-[clamp(1.3rem,2.5vw,1.75rem)] font-semibold tracking-[-0.022em]">
-            <span className="mr-2 align-middle text-[12px] font-semibold tabular-nums text-[#86868b]">
+          <p className="font-display text-xl leading-[1.3] font-semibold tracking-[-0.02em] text-ink lg:text-[1.375rem]">
+            <span className="mr-2 align-middle font-sans text-sm font-semibold tracking-normal text-slate-600 tabular-nums">
               {index + 1}/{STEPS.length}
             </span>
             {prompt.title}
           </p>
-          <p className="max-w-[52ch] text-[13px] text-[#6e6e73]">{prompt.hint}</p>
+          <p className="max-w-[60ch] text-sm text-pretty text-slate-600">{prompt.hint}</p>
 
           {step === "kind" && (
-            <div className="flex max-w-[680px] flex-wrap justify-center gap-2.5">
-              {KINDS.map((k) => (
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:max-w-[680px] sm:flex-wrap sm:justify-center sm:gap-2.5 lg:justify-start">
+              {KINDS.map((k, i) => (
                 <button
                   key={k.label}
                   type="button"
+                  data-kind={k.label}
                   aria-pressed={kind === k.label}
                   onClick={() => pickKind(k.label)}
-                  className={`lp-chip px-6 py-3 text-[16px] sm:px-7 sm:py-3.5 sm:text-[17px] ${focusRing}`}
+                  className={`lp-chip min-h-12 px-3 text-[15px] leading-tight sm:px-6 sm:text-base ${
+                    i === KINDS.length - 1 ? "col-span-2" : ""
+                  } ${focusRing}`}
                 >
                   {k.label}
                 </button>
@@ -220,7 +235,7 @@ export function HeroStepper() {
               enterKeyHint="next"
               placeholder="Austin, TX"
               aria-label="City and state"
-              className="lp-field w-[min(380px,92%)] px-6 py-3 text-center text-[19px] font-medium placeholder:text-[#aeaeb4]"
+              className={field}
             />
           )}
 
@@ -233,7 +248,7 @@ export function HeroStepper() {
               enterKeyHint="next"
               placeholder="Business name"
               aria-label="Business name, optional"
-              className="lp-field w-[min(380px,92%)] px-6 py-3 text-center text-[19px] font-medium placeholder:text-[#aeaeb4]"
+              className={field}
             />
           )}
 
@@ -246,24 +261,27 @@ export function HeroStepper() {
               maxLength={1500}
               placeholder="Family-owned since 2009. Open Mon to Sat. Call (512) 555-0142."
               aria-label="Anything else, optional"
-              className="lp-field w-[min(560px,96%)] resize-none rounded-[22px] px-6 py-3.5 text-[16px] leading-relaxed placeholder:text-[#aeaeb4]"
+              className={`w-full max-w-[560px] resize-none rounded-xl border border-slate-500 bg-white px-5 py-3.5 text-left text-base leading-relaxed text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink ${focusRing}`}
             />
           )}
 
-          <p role="alert" className="min-h-5 text-[13px] text-[#b42318]">
+          <p role="alert" className="min-h-5 text-sm text-[#b42318]">
             {error}
           </p>
           {buttons}
           {step === "details" && (
-            <p className="text-[12.5px] text-[#6e6e73]">
+            <p className="text-sm text-slate-600">
               Free to create. No account or credit card needed.
             </p>
           )}
         </fieldset>
       </form>
       <noscript>
-        <p className="text-center text-sm">
-          <a href="/create" className="font-semibold text-[#0066ff] underline">
+        <p>
+          <a
+            href="/create"
+            className={`inline-flex min-h-11 items-center rounded-sm text-base font-semibold text-brand-dark underline ${focusRing}`}
+          >
             Describe your business and build your site
           </a>
         </p>

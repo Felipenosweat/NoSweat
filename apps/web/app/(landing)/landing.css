@@ -70,16 +70,18 @@
   background: var(--lp-blue);
 }
 
-/* ---------- Entrada da página ---------- */
+/* ---------- Entrada da página (só o topo, uma vez) ---------- */
+/* Opacidade + 16 px subindo, 600 ms, 80 ms entre um e outro; começa quando a cortina sobe
+   (--lp-intro; 0 quando não há cortina). */
 .lp-rise {
-  animation: lp-rise 0.9s var(--lp-ease) both;
-  animation-delay: calc(var(--i, 0) * 120ms + 50ms);
+  animation: lp-rise 0.6s var(--lp-ease) both;
+  animation-delay: calc(var(--lp-intro) + var(--i, 0) * 80ms);
 }
 
 /* O título sobe sem sumir (um primeiro quadro com opacidade 0 não conta como LCP). */
 .lp-rise-solid {
-  animation: lp-rise-solid 0.9s var(--lp-ease) both;
-  animation-delay: 150ms;
+  animation: lp-rise-solid 0.6s var(--lp-ease) both;
+  animation-delay: var(--lp-intro);
 }
 
 @keyframes lp-rise {
@@ -111,18 +113,22 @@
   }
 }
 
+/* Chip de ramo: pílula branca com borda visível (3:1); escolhido = fundo ink. */
 .lp-chip {
-  border-radius: 980px;
-  background: var(--lp-panel);
-  color: var(--lp-ink);
+  border: 1px solid var(--color-slate-500);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-ink);
   transition:
     transform 0.2s var(--lp-ease),
     background 0.2s,
+    border-color 0.2s,
     color 0.2s;
 }
 
 .lp-chip:hover {
-  background: #e8e8ed;
+  background: var(--color-slate-100);
+  border-color: var(--color-ink);
   transform: translateY(-1px);
 }
 
@@ -131,22 +137,9 @@
 }
 
 .lp-chip[aria-pressed="true"] {
-  background: var(--lp-ink);
+  background: var(--color-ink);
+  border-color: var(--color-ink);
   color: #fff;
-}
-
-.lp-field {
-  background: var(--lp-panel);
-  border-radius: 980px;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s;
-}
-
-.lp-field:focus {
-  outline: none;
-  background: #efeff1;
-  box-shadow: 0 0 0 3px rgb(0 102 255 / 0.18);
 }
 
 .lp-btn {
@@ -388,14 +381,8 @@ details[open] > summary .lp-fx::before {
   }
 }
 
-/* A entrada do conteúdo começa quando a cortina sobe. */
-.lp .lp-rise {
-  animation-delay: calc(var(--lp-intro) + var(--i, 0) * 120ms + 50ms);
-}
-
-.lp .lp-rise-solid,
 .lp .lp-nav {
-  animation-delay: calc(var(--lp-intro) + 150ms);
+  animation-delay: var(--lp-intro);
 }
 
 /* ---------- Bolhas e pílulas (V13) ---------- */
