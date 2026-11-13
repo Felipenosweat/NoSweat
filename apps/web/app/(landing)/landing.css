@@ -70,36 +70,6 @@
   background: var(--lp-blue);
 }
 
-/* Brilho que atravessa o título e descansa (só quando o navegador recorta fundo no texto). */
-.lp-sheen {
-  color: var(--c, var(--lp-ink));
-}
-
-@supports (-webkit-background-clip: text) {
-  @media (prefers-reduced-motion: no-preference) {
-    .lp-sheen {
-      color: transparent;
-      background:
-        linear-gradient(105deg, var(--c) 42%, var(--glint, #9aa5b4) 50%, var(--c) 58%) 130% 0 / 240%
-          100% no-repeat,
-        var(--c);
-      -webkit-background-clip: text;
-      background-clip: text;
-      animation: lp-sheen 7.5s ease-in-out 1.6s infinite;
-    }
-  }
-}
-
-@keyframes lp-sheen {
-  0% {
-    background-position: 130% 0;
-  }
-  28%,
-  100% {
-    background-position: -140% 0;
-  }
-}
-
 /* ---------- Entrada da página ---------- */
 .lp-rise {
   animation: lp-rise 0.9s var(--lp-ease) both;
@@ -207,29 +177,6 @@
 
 .lp-btn-blue:hover {
   background: #0052cc;
-}
-
-/* ---------- Grade de pontos do topo (HeroGrid) ---------- */
-.lp-grid-base,
-.lp-grid-glow {
-  background-size: 22px 22px;
-  background-position: center top;
-}
-
-.lp-grid-base {
-  background-image: radial-gradient(circle, rgb(7 27 51 / 0.13) 1px, transparent 1.4px);
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 42%, #000 20%, transparent 75%);
-}
-
-.lp-grid-glow {
-  background-image: radial-gradient(circle, rgb(0 102 255 / 0.75) 1.2px, transparent 1.6px);
-  mask-image: radial-gradient(170px circle at var(--gx, 50%) var(--gy, 50%), #000, transparent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.lp-grid[data-on] .lp-grid-glow {
-  opacity: 1;
 }
 
 /* ---------- Telas reais ("What you get") ---------- */
@@ -351,7 +298,6 @@ details[open] > summary .lp-fx::before {
   }
 
   .lp-pan,
-  .lp-grid-glow,
   .lp-chip,
   .lp-btn,
   .lp-row,
@@ -450,61 +396,6 @@ details[open] > summary .lp-fx::before {
 .lp .lp-rise-solid,
 .lp .lp-nav {
   animation-delay: calc(var(--lp-intro) + 150ms);
-}
-
-/* ---------- Etiqueta "BE ___" (TypedTag) ---------- */
-.lp-typed {
-  --c1: #0066ff;
-  --c2: #00c2ff;
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: #071b33;
-  background:
-    linear-gradient(#fff, #fff) padding-box,
-    linear-gradient(90deg, var(--c1), var(--c2), #a8c8ff, var(--c1)) border-box;
-  background-size:
-    100% 100%,
-    300% 100%;
-  animation: lp-gradient-move 6s linear infinite;
-}
-
-@keyframes lp-gradient-move {
-  to {
-    background-position:
-      0 0,
-      -300% 0;
-  }
-}
-
-.lp-caret {
-  display: inline-block;
-  width: 6px;
-  height: 11px;
-  margin-left: 3px;
-  background: #0066ff;
-  animation: lp-blink 1s steps(1) infinite;
-}
-
-.lp-caret[data-on] {
-  animation: none;
-}
-
-@keyframes lp-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-typed {
-    animation: none;
-  }
 }
 
 /* ---------- Bolhas e pílulas (V13) ---------- */
