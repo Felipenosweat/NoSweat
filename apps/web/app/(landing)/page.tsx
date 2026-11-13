@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Examples } from "@/components/landing/Examples";
 import { Hero } from "@/components/landing/Hero";
-import { LandingMotion } from "@/components/landing/LandingMotion";
 import { Pill } from "@/components/landing/Pill";
 import { Steps } from "@/components/landing/Steps";
 import {
@@ -162,8 +161,6 @@ export default function LandingPage() {
           </div>
         </section>
       </div>
-
-      <LandingMotion />
     </>
   );
 }
