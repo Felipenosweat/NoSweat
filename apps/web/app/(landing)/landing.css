@@ -183,14 +183,23 @@
   transform: translateY(-62%);
 }
 
-/* ---------- Slogan e linha do tempo ("How it works") ---------- */
-.lp-wide {
-  font-family: var(--font-lp-wide), var(--font-lp);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
+/* ---------- Linha dos passos ("How it works") ---------- */
+/* Celular: um fio vertical parado liga cada número ao seguinte (do centro de um ao centro do
+   outro; o quadrado branco do número fica por cima). */
+@media (max-width: 639.98px) {
+  .lp-timeline > li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 17.5px;
+    width: 1px;
+    /* altura do item + o espaço entre itens (gap-y-8) */
+    height: calc(100% + 2rem);
+    background: var(--color-slate-300);
+  }
 }
 
+/* Computador: fio horizontal na altura do centro dos números; o azul se desenha uma vez. */
 @media (min-width: 1024px) {
   .lp-timeline::before,
   .lp-timeline::after {
@@ -200,11 +209,11 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: rgb(7 27 51 / 0.12);
+    background: var(--color-slate-300);
   }
 
   .lp-timeline::after {
-    background: var(--lp-blue);
+    background: var(--color-brand);
     transform-origin: left;
   }
 
@@ -400,10 +409,6 @@ details[open] > summary .lp-fx::before {
   .lp-bubble {
     border-radius: 32px;
   }
-
-  .lp-cards {
-    scroll-padding-left: 2.5rem;
-  }
 }
 
 .lp-bubble-dark {
@@ -472,56 +477,10 @@ details[open] > summary .lp-fx::before {
   transform: rotate(45deg);
 }
 
-/* Botões redondos do carrossel dos passos. */
-.lp-round {
-  display: grid;
-  place-items: center;
-  height: 40px;
-  border-radius: 999px;
-  background: #fff;
-  color: var(--lp-ink);
-  transition:
-    background 0.2s,
-    opacity 0.2s;
-}
-
-.lp-round-blue {
-  width: 64px;
-  background: var(--lp-blue);
-  color: #fff;
-}
-
-.lp-round:disabled {
-  opacity: 0.4;
-}
-
-.lp-cards {
-  scroll-snap-type: x mandatory;
-  /* O encaixe respeita o recuo da trilha (senão o 1º cartão cola na borda). */
-  scroll-padding-left: 1.25rem;
-  scrollbar-width: none;
-}
-
-.lp-cards::-webkit-scrollbar {
-  display: none;
-}
-
-.lp-cards > * {
-  scroll-snap-align: start;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .lp-pill,
   .lp-pill-arrow {
     transition: none;
-  }
-}
-
-/* Trilha dos passos: no computador começa alinhada ao título (bolha de 1280 px + 4rem). */
-@media (min-width: 1024px) {
-  .lp-track {
-    padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
-    scroll-padding-left: max(4rem, calc((100vw - 1280px) / 2 + 4rem));
   }
 }
 
