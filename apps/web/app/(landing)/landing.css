@@ -367,35 +367,49 @@ details[open] > summary .lp-fx::before {
 }
 
 /* ---------- Abertura (IntroCurtain) ---------- */
+/* Curta (0,9 s), uma vez por sessão e nunca com "reduzir movimento" (docs/design/motion.md).
+   A cortina fica escondida por padrão: só aparece quando o script inline do layout marca
+   html[data-ns-intro="play"] (primeira visita da sessão, com movimento permitido). Sem
+   JavaScript não há cortina. */
 .lp {
-  /* Quanto a entrada da página espera pela cortina subir. */
-  --lp-intro: 1.7s;
+  /* Quanto a entrada da página espera pela cortina subir (0 quando não há cortina). */
+  --lp-intro: 0s;
 }
 
 .lp-intro {
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  display: grid;
-  place-items: center;
-  background: #fff;
-  pointer-events: none;
-  animation: lp-lift 0.65s cubic-bezier(0.65, 0, 0.2, 1) var(--lp-intro) forwards;
+  display: none;
 }
 
-.lp-intro-mark {
-  animation: lp-mark 0.6s var(--lp-ease) 0.05s both;
-}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-ns-intro="play"] .lp {
+    --lp-intro: 0.6s;
+  }
 
-.lp-intro-l {
-  display: inline-block;
-  animation: lp-letter 0.35s var(--lp-ease) both;
-  animation-delay: calc(0.25s + var(--d) * 0.07s);
-}
+  html[data-ns-intro="play"] .lp-intro {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    pointer-events: none;
+    animation: lp-lift 0.3s cubic-bezier(0.65, 0, 0.2, 1) 0.6s forwards;
+  }
 
-.lp-intro-bar {
-  transform-origin: left;
-  animation: lp-bar calc(var(--lp-intro) - 0.1s) cubic-bezier(0.4, 0, 0.2, 1) both;
+  html[data-ns-intro="play"] .lp-intro-mark {
+    animation: lp-mark 0.25s var(--lp-ease) both;
+  }
+
+  html[data-ns-intro="play"] .lp-intro-l {
+    display: inline-block;
+    animation: lp-letter 0.2s var(--lp-ease) both;
+    animation-delay: calc(0.1s + var(--d) * 0.03s);
+  }
+
+  html[data-ns-intro="play"] .lp-intro-bar {
+    transform-origin: left;
+    animation: lp-bar 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
 }
 
 @keyframes lp-lift {
