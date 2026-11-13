@@ -2,7 +2,7 @@
 // se escreve letra por letra com uma barrinha de progresso, e a cortina sobe (pedido do fundador).
 // Curta (~0,9 s; os tempos ficam em landing.css), uma vez por sessão e nunca com "reduzir
 // movimento": fica escondida por padrão e só aparece quando o script inline de
-// app/(landing)/layout.tsx marca html[data-ns-intro="play"]. Sem JavaScript não há abertura.
+// app/(landing)/layout.tsx marca .lp[data-ns-intro="play"]. Sem JavaScript não há abertura.
 // A cortina nunca segura cliques (pointer-events: none).
 
 const NAME = [..."No"]

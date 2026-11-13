@@ -315,7 +315,7 @@ details[open] > summary .lp-fx::before {
 /* ---------- Abertura (IntroCurtain) ---------- */
 /* Curta (0,9 s), uma vez por sessão e nunca com "reduzir movimento" (docs/design/motion.md).
    A cortina fica escondida por padrão: só aparece quando o script inline do layout marca
-   html[data-ns-intro="play"] (primeira visita da sessão, com movimento permitido). Sem
+   .lp[data-ns-intro="play"] (primeira visita da sessão, com movimento permitido). Sem
    JavaScript não há cortina. */
 .lp {
   /* Quanto a entrada da página espera pela cortina subir (0 quando não há cortina). */
@@ -327,11 +327,11 @@ details[open] > summary .lp-fx::before {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  html[data-ns-intro="play"] .lp {
+  .lp[data-ns-intro="play"] {
     --lp-intro: 0.6s;
   }
 
-  html[data-ns-intro="play"] .lp-intro {
+  .lp[data-ns-intro="play"] .lp-intro {
     position: fixed;
     inset: 0;
     z-index: 400;
@@ -342,17 +342,17 @@ details[open] > summary .lp-fx::before {
     animation: lp-lift 0.3s cubic-bezier(0.65, 0, 0.2, 1) 0.6s forwards;
   }
 
-  html[data-ns-intro="play"] .lp-intro-mark {
+  .lp[data-ns-intro="play"] .lp-intro-mark {
     animation: lp-mark 0.25s var(--lp-ease) both;
   }
 
-  html[data-ns-intro="play"] .lp-intro-l {
+  .lp[data-ns-intro="play"] .lp-intro-l {
     display: inline-block;
     animation: lp-letter 0.2s var(--lp-ease) both;
     animation-delay: calc(0.1s + var(--d) * 0.03s);
   }
 
-  html[data-ns-intro="play"] .lp-intro-bar {
+  .lp[data-ns-intro="play"] .lp-intro-bar {
     transform-origin: left;
     animation: lp-bar 0.55s cubic-bezier(0.4, 0, 0.2, 1) both;
   }

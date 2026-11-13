@@ -9,15 +9,17 @@ import "./landing.css";
 // Landing V12: página branca, tipografia de sistema, cabeçalho fino com o logo no centro (ver
 // landing.css). As outras páginas de marketing (preço, termos…) ficam em app/(marketing).
 
-// Abertura: uma vez por sessão e nunca com "reduzir movimento". Roda antes da pintura; se o
-// sessionStorage estiver bloqueado, não há abertura. O atributo sai depois que a cortina subiu e
-// as entradas do topo terminaram (tirar antes mudaria o atraso delas no meio do caminho), para a
-// cortina não tocar de novo quando a pessoa volta para a landing sem recarregar.
-const INTRO_SCRIPT = `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!sessionStorage.getItem("ns-intro")){sessionStorage.setItem("ns-intro","1");var d=document.documentElement;d.dataset.nsIntro="play";setTimeout(function(){delete d.dataset.nsIntro},2000)}}catch(e){}`;
+// Abertura: uma vez por sessão e nunca com "reduzir movimento". Roda antes da pintura e marca o
+// próprio bloco .lp (o pai do script) com data-ns-intro="play"; se o sessionStorage estiver
+// bloqueado, não há abertura. O atributo fica no .lp, e não no <html>, porque o React avisa de
+// atributo diferente na hidratação: aqui o `suppressHydrationWarning` do bloco cobre só isso.
+// O atributo sai depois que a cortina subiu e as entradas do topo terminaram (tirar antes mudaria
+// o atraso delas no meio do caminho), para nada tocar de novo.
+const INTRO_SCRIPT = `try{var p=document.currentScript.parentElement;if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!sessionStorage.getItem("ns-intro")){sessionStorage.setItem("ns-intro","1");p.dataset.nsIntro="play";setTimeout(function(){delete p.dataset.nsIntro},2000)}}catch(e){}`;
 
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="lp flex min-h-svh flex-col">
+    <div className="lp flex min-h-svh flex-col" suppressHydrationWarning>
       <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
       <IntroCurtain />
       <LandingHeader />
