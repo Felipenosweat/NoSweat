@@ -49,27 +49,6 @@
   color: #86868b;
 }
 
-.lp-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid rgb(0 0 0 / 0.14);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lp-dim);
-}
-
-.lp-tag::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  background: var(--lp-blue);
-}
-
 /* ---------- Entrada da página (só o topo, uma vez) ---------- */
 /* Opacidade + 16 px subindo, 600 ms, 80 ms entre um e outro; começa quando a cortina sobe
    (--lp-intro; 0 quando não há cortina). */
@@ -251,8 +230,8 @@
   top: 5px;
   width: 12px;
   height: 2px;
-  background: var(--lp-ink);
-  transition: rotate 0.35s var(--lp-ease);
+  background: currentColor;
+  transition: rotate 0.2s var(--lp-ease);
 }
 
 .lp-fx::after {
@@ -269,7 +248,7 @@ details[open] > summary .lp-fx::before {
 
 .lp-underline {
   background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
-  transition: background-size 500ms var(--lp-ease);
+  transition: background-size 200ms var(--lp-ease);
 }
 
 .lp-underline:hover,

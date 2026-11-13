@@ -5,7 +5,14 @@ import { Hero } from "@/components/landing/Hero";
 import { LandingMotion } from "@/components/landing/LandingMotion";
 import { Pill } from "@/components/landing/Pill";
 import { Steps } from "@/components/landing/Steps";
-import { edgeInner, edgeOuter, h2Class, leadClass } from "@/components/landing/type";
+import {
+  edgeInner,
+  edgeOuter,
+  focusRing,
+  h2Base,
+  h2Class,
+  leadClass,
+} from "@/components/landing/type";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
@@ -14,8 +21,9 @@ import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
 
-// Landing V13: fundo cinza-claro e cada bloco numa "bolha" branca arredondada, intercalando com
-// cartões direto no cinza (passos, preços). Topo com perguntas uma de cada vez → o que você ganha
+// Landing V13 (revisada): fundo cinza-claro e cada bloco numa "bolha" branca arredondada,
+// intercalando com blocos direto no cinza (passos, preços). Títulos de seção num só estilo,
+// alinhados à esquerda na mesma borda (components/landing/type.ts); só o fim é centralizado. Topo com perguntas uma de cada vez → o que você ganha
 // (site, clientes, Instagram) → como funciona → exemplos → preço → dúvidas → fim (bolha escura).
 // Pouco texto por bloco: o cliente quer praticidade. Sem vidro/transparência. Sem fotos. Só afirmações que o produto cumpre hoje;
 // nada de números, logos, notas ou depoimentos inventados.
@@ -43,11 +51,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-const tag = "lp-tag";
-const h2 = "lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]";
-
-const linkDark =
-  "lp-underline rounded-sm font-medium text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+const linkDark = `lp-underline rounded-sm font-medium text-ink ${focusRing}`;
 
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
@@ -83,37 +87,38 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* DÚVIDAS — centralizadas; abrir uma fecha as outras (details com o mesmo name). */}
-      <div className="px-3 sm:px-5">
+      {/* DÚVIDAS — numa bolha branca; abrir uma fecha as outras (details com o mesmo name). No
+          computador o título e a linha de contato ficam à esquerda (colunas 1–4) e as perguntas à
+          direita (6–12); abaixo de lg, empilhado na ordem do DOM. */}
+      <div className={edgeOuter}>
         <section
           id="faq"
           aria-labelledby="faq-title"
-          className="lp-bubble scroll-mt-16 px-5 py-14 text-center sm:px-10 lg:py-20"
+          className="lp-bubble scroll-mt-16 px-5 py-14 sm:px-10 lg:grid lg:grid-cols-12 lg:grid-rows-[auto_1fr] lg:gap-x-8 lg:px-16 lg:py-20"
         >
-          <span className={tag}>FAQ</span>
-          <h2 id="faq-title" className={h2}>
-            Questions,
-            <br />
-            <span className="dim">answered.</span>
+          <h2 id="faq-title" className={`${h2Class} lg:col-span-4 lg:row-start-1`}>
+            Questions.
           </h2>
-          <div className="mx-auto mt-12 w-full max-w-[760px] text-left">
+          <div className="mt-8 lg:col-span-7 lg:col-start-6 lg:row-span-2 lg:row-start-1 lg:mt-0">
             {LANDING_FAQS.map((faq, index) => (
               <details
                 key={faq.question}
                 name="faq"
-                className={`border-b border-[var(--lp-hair)] ${index === 0 ? "border-t" : ""}`}
+                className={`border-b border-slate-200 ${index === 0 ? "border-t" : ""}`}
               >
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm px-0.5 py-5 text-[17px] font-semibold tracking-[-0.01em] text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                <summary
+                  className={`flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm py-5 text-base font-semibold text-ink transition-colors duration-200 hover:text-brand lg:text-[17px] [&::-webkit-details-marker]:hidden ${focusRing}`}
+                >
                   {faq.question}
                   <span aria-hidden="true" className="lp-fx" />
                 </summary>
-                <p className="max-w-[60ch] px-0.5 pb-5 text-[15px] leading-[1.65] text-pretty text-[#6e6e73]">
+                <p className="max-w-[65ch] pb-5 text-base leading-[1.6] text-pretty text-slate-600">
                   {faq.answer}
                 </p>
               </details>
             ))}
           </div>
-          <p className="mx-auto mt-8 max-w-[52ch] text-[15px] leading-relaxed text-[#6e6e73]">
+          <p className="mt-8 max-w-[40ch] text-base leading-[1.6] text-slate-600 lg:col-span-4 lg:col-start-1 lg:row-start-2 lg:mt-6">
             Still wondering? Write to{" "}
             <a href="mailto:hello@nosweatfd.com" className={linkDark}>
               hello@nosweatfd.com
@@ -139,18 +144,18 @@ export default function LandingPage() {
           data-hide-mobile-cta
           className="lp-bubble lp-bubble-dark px-5 py-16 text-center sm:px-10 lg:py-24"
         >
-          <h2 id="final-title" className="lp-h text-[clamp(1.9rem,3.9vw,3.375rem)] text-white">
+          <h2 id="final-title" className={`${h2Base} text-white`}>
             Ready when you are.
             <br />
-            <span className="text-white/55">It takes about a minute.</span>
+            <span className="text-white/70">It takes about a minute.</span>
           </h2>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Pill href="#start" tone="light">
-              Start your website
+              Build my website
             </Pill>
             <Link
               href="/pricing"
-              className="lp-underline rounded-sm px-3 text-[15px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-flex min-h-11 items-center rounded-sm px-3 text-base font-medium text-white underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               See pricing
             </Link>
