@@ -130,7 +130,7 @@ export function MarketingHeader({
               o tour inteiro (#story), então o header precisa ter sempre um caminho para /create. */}
           <Link
             href="/create"
-            className={`inline-flex h-10 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-4 ${ring} ${
+            className={`inline-flex h-10 items-center rounded-full px-4 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-5 ${ring} ${
               float
                 ? "rounded-full bg-white text-ink hover:bg-slate-200"
                 : dark
