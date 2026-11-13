@@ -26,7 +26,7 @@ export function IntroCurtain() {
             {NAME.map((l, i) => (
               <span
                 key={i}
-                className={`lp-intro-l ${l.blue ? "text-[#0066ff]" : "text-[#071b33]"}`}
+                className={`lp-intro-l ${l.blue ? "text-brand" : "text-ink"}`}
                 style={{ "--d": i } as React.CSSProperties}
               >
                 {l.c}
@@ -34,8 +34,8 @@ export function IntroCurtain() {
             ))}
           </span>
         </div>
-        <span className="mt-7 block h-[2px] w-40 overflow-hidden rounded-full bg-[#071b33]/10">
-          <span className="lp-intro-bar block h-full bg-[#071b33]" />
+        <span className="mt-7 block h-[2px] w-40 overflow-hidden rounded-full bg-ink/10">
+          <span className="lp-intro-bar block h-full bg-ink" />
         </span>
       </div>
     </div>

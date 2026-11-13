@@ -7,6 +7,13 @@ export const edgeOuter = "px-3 sm:px-5";
 /** Borda da página, camada de dentro: conteúdo a 32 / 60 / 144 px em 390 / 768 / 1440. */
 export const edgeInner = "mx-auto w-full max-w-[1280px] px-5 sm:px-10 lg:px-16";
 
+/**
+ * A mesma borda numa camada só (as duas somadas), para blocos que têm um único elemento de
+ * largura, como o rodapé compartilhado: 32 / 60 / 84 px de margem e 1280 px + a camada de fora.
+ */
+export const edgeFlat =
+  "mx-auto w-full max-w-[calc(1280px+1.5rem)] px-8 sm:max-w-[calc(1280px+2.5rem)] sm:px-[3.75rem] lg:px-[5.25rem]";
+
 /** H2 sem cor (para a bolha escura, onde o texto é branco). */
 export const h2Base =
   "font-display text-[1.875rem] leading-[1.1] font-bold tracking-[-0.03em] text-balance lg:text-[2.75rem]";

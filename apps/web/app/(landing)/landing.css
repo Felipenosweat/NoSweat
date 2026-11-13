@@ -1,52 +1,26 @@
-/* Landing V12 (forma inspirada no averaks.com, conteúdo e cores da No Sweat): página branca,
-   tipografia de sistema, cabeçalho fino com o logo no centro, título com brilho e verbo que se
-   digita, perguntas uma de cada vez no topo, três colunas com aparelhos desenhados que alternam
-   entre negócios de exemplo, cartões pretos e dúvidas centralizadas. Sem fotos.
-   Sem JS ou com "reduzir movimento", tudo aparece parado, legível e completo. */
+/* Landing V13 (revisada): fundo slate-100 e cada bloco numa "bolha" branca arredondada,
+   intercalando com blocos direto no fundo (passos, preços). Só as fontes da marca (Plus Jakarta
+   nos títulos, Inter no texto) e só os tokens da marca + slate; o tamanho e a cor de cada texto
+   ficam em utilitários do Tailwind (components/landing/type.ts). Aqui fica só o que não cabe em
+   utilitário: a abertura, a entrada do topo, as pílulas, o fio dos passos e o + das dúvidas.
+   Nada fica em loop. Sem JS ou com "reduzir movimento", tudo aparece parado, legível e completo. */
 
 .lp {
-  --lp-ink: #071b33;
-  --lp-dim: #6e6e73;
-  --lp-faint: #aeaeb4;
-  --lp-panel: #f5f5f7;
-  --lp-hair: rgb(0 0 0 / 0.09);
-  --lp-blue: #0066ff;
-  --lp-cyan: #00c2ff;
-  --lp-line: rgb(7 27 51 / 0.12);
+  /* Apelidos dos tokens do tema (globals.css / Tailwind). O valor depois da vírgula é o mesmo
+     token escrito por extenso, para o caso de a variável não ter sido emitida. */
+  --lp-ink: var(--color-ink, #071b33);
+  --lp-blue: var(--color-brand, #0066ff);
+  --lp-blue-dark: var(--color-brand-dark, #0052cc);
+  --lp-page: var(--color-slate-100, #f1f5f9);
+  --lp-line: var(--color-slate-300, #cad5e2);
+  --lp-border: var(--color-slate-500, #62748e);
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --font-lp:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial,
-    sans-serif;
-  /* isolation: as linhas de fundo (z-index -1) ficam sobre o branco da página. */
-  isolation: isolate;
-  /* Fundo cinza-azulado: cada seção é uma "bolha" branca arredondada por cima (.lp-bubble). */
-  --lp-page: #eef1f6;
+  /* Quanto a entrada do topo espera pela cortina subir (0 quando não há cortina). */
+  --lp-intro: 0s;
+  /* Fundo slate-100: cada seção é uma "bolha" branca arredondada por cima (.lp-bubble). */
   background: var(--lp-page);
   color: var(--lp-ink);
-  font-family: var(--font-lp);
-  letter-spacing: -0.014em;
-}
-
-/* ---------- Tipografia ---------- */
-/* Títulos em Plus Jakarta Sans, a fonte da marca (já carregada com preload em app/fonts.ts, par
-   "modern"); traço limpo, sem os cortes da Funnel Display. O texto corrido segue na fonte do
-   sistema. */
-.lp-h {
-  font-family: var(--ns-font-modern-heading), var(--font-lp);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  text-wrap: balance;
-  color: var(--lp-ink);
-}
-
-/* Segunda linha do título de seção em cinza (duas cores, sem itálico). */
-.lp-display {
-  font-weight: 800;
-}
-
-.lp-h .dim {
-  color: #86868b;
+  font-family: var(--font-sans);
 }
 
 /* ---------- Entrada da página (só o topo, uma vez) ---------- */
@@ -76,10 +50,6 @@
   }
 }
 
-.lp-nav {
-  animation: lp-rise 0.9s var(--lp-ease) both;
-}
-
 /* ---------- Perguntas do topo ---------- */
 .lp-step {
   animation: lp-step 0.45s var(--lp-ease) both;
@@ -94,10 +64,10 @@
 
 /* Chip de ramo: pílula branca com borda visível (3:1); escolhido = fundo ink. */
 .lp-chip {
-  border: 1px solid var(--color-slate-500);
+  border: 1px solid var(--lp-border);
   border-radius: 999px;
   background: #fff;
-  color: var(--color-ink);
+  color: var(--lp-ink);
   transition:
     transform 0.2s var(--lp-ease),
     background 0.2s,
@@ -106,8 +76,8 @@
 }
 
 .lp-chip:hover {
-  background: var(--color-slate-100);
-  border-color: var(--color-ink);
+  background: var(--lp-page);
+  border-color: var(--lp-ink);
   transform: translateY(-1px);
 }
 
@@ -116,39 +86,9 @@
 }
 
 .lp-chip[aria-pressed="true"] {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: #fff;
-}
-
-.lp-btn {
-  border-radius: 980px;
   background: var(--lp-ink);
+  border-color: var(--lp-ink);
   color: #fff;
-  box-shadow:
-    0 1px 2px rgb(0 0 0 / 0.18),
-    0 6px 16px rgb(0 0 0 / 0.12);
-  transition:
-    transform 0.2s var(--lp-ease),
-    box-shadow 0.25s,
-    background 0.2s;
-}
-
-.lp-btn:hover {
-  transform: translateY(-1px);
-  background: #000;
-}
-
-.lp-btn:active {
-  transform: scale(0.97);
-}
-
-.lp-btn-blue {
-  background: var(--lp-blue);
-}
-
-.lp-btn-blue:hover {
-  background: #0052cc;
 }
 
 /* ---------- Telas reais ("What you get") ---------- */
@@ -176,7 +116,7 @@
     width: 1px;
     /* altura do item + o espaço entre itens (gap-y-8) */
     height: calc(100% + 2rem);
-    background: var(--color-slate-300);
+    background: var(--lp-line);
   }
 }
 
@@ -190,11 +130,11 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: var(--color-slate-300);
+    background: var(--lp-line);
   }
 
   .lp-timeline::after {
-    background: var(--color-brand);
+    background: var(--lp-blue);
     transform-origin: left;
   }
 
@@ -261,14 +201,12 @@ details[open] > summary .lp-fx::before {
 @media (prefers-reduced-motion: reduce) {
   .lp-rise,
   .lp-rise-solid,
-  .lp-nav,
   .lp-step {
     animation: none;
   }
 
   .lp-pan,
   .lp-chip,
-  .lp-btn,
   .lp-fx::before,
   .lp-fx::after,
   .lp-underline {
@@ -286,11 +224,6 @@ details[open] > summary .lp-fx::before {
    A cortina fica escondida por padrão: só aparece quando o script inline do layout marca
    .lp[data-ns-intro="play"] (primeira visita da sessão, com movimento permitido). Sem
    JavaScript não há cortina. */
-.lp {
-  /* Quanto a entrada da página espera pela cortina subir (0 quando não há cortina). */
-  --lp-intro: 0s;
-}
-
 .lp-intro {
   display: none;
 }
@@ -357,16 +290,12 @@ details[open] > summary .lp-fx::before {
   }
 }
 
-.lp .lp-nav {
-  animation-delay: var(--lp-intro);
-}
-
-/* ---------- Bolhas e pílulas (V13) ---------- */
-/* Cada bloco de conteúdo fica dentro de uma bolha branca com cantos bem redondos sobre o fundo
-   cinza; o que já é cartão (passos, preços) fica direto no cinza, para intercalar. */
+/* ---------- Bolhas e pílulas ---------- */
+/* Cada bloco de conteúdo fica dentro de uma bolha branca com cantos bem redondos (24 px; 32 px
+   a partir de sm) sobre o fundo; passos e preços ficam direto no fundo, para intercalar. */
 .lp-bubble {
   background: #fff;
-  border-radius: 22px;
+  border-radius: 24px;
   margin-inline: auto;
   width: 100%;
   max-width: 1280px;
@@ -383,7 +312,7 @@ details[open] > summary .lp-fx::before {
   color: #fff;
 }
 
-/* Botão em pílula com a seta num círculo à direita (a seta gira ao passar o mouse). */
+/* Botão em pílula com a seta num círculo à direita (a seta gira ao passar o mouse). Sem sombra. */
 .lp-pill {
   display: inline-flex;
   align-items: center;
@@ -394,7 +323,7 @@ details[open] > summary .lp-fx::before {
   background: var(--lp-ink);
   color: #fff;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   transition:
     background 0.2s,
@@ -414,7 +343,7 @@ details[open] > summary .lp-fx::before {
 }
 
 .lp-pill-blue:hover {
-  background: #0052cc;
+  background: var(--lp-blue-dark);
 }
 
 .lp-pill-light {
@@ -423,7 +352,7 @@ details[open] > summary .lp-fx::before {
 }
 
 .lp-pill-light:hover {
-  background: #e6ebf3;
+  background: var(--color-slate-200, #e2e8f0);
 }
 
 .lp-pill-arrow {
@@ -433,7 +362,7 @@ details[open] > summary .lp-fx::before {
   height: 36px;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.14);
-  transition: transform 0.3s var(--lp-ease);
+  transition: transform 0.2s var(--lp-ease);
 }
 
 .lp-pill-light .lp-pill-arrow {
@@ -449,8 +378,4 @@ details[open] > summary .lp-fx::before {
   .lp-pill-arrow {
     transition: none;
   }
-}
-
-.lp-bubble-dark .lp-h {
-  color: #fff;
 }

@@ -149,7 +149,14 @@ export function MarketingHeader({
   );
 }
 
-export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
+export function MarketingFooter({
+  tone = "light",
+  containerClass = container,
+}: {
+  tone?: Tone;
+  /** Largura e margens do conteúdo. A landing passa a borda dela; o padrão é `container`. */
+  containerClass?: string;
+}) {
   const dark = tone === "dark";
   const whatsapp = salesWhatsappUrl();
   const groups = whatsapp
@@ -174,7 +181,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
         dark ? "border-white/10 bg-ink" : "border-slate-200 bg-surface"
       }`}
     >
-      <div className={`${container} grid gap-10 py-14 lg:grid-cols-12 lg:gap-x-8`}>
+      <div className={`${containerClass} grid gap-10 py-14 lg:grid-cols-12 lg:gap-x-8`}>
         <div className="lg:col-span-4">
           <Logo tagline tone={tone} />
           <p
@@ -230,7 +237,7 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
       </div>
       <div className={`border-t ${dark ? "border-white/10" : "border-slate-200"}`}>
         <div
-          className={`${container} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:justify-between ${dark ? "text-slate-400" : "text-(--glass-fg-muted)"}`}
+          className={`${containerClass} flex flex-col gap-2 py-6 text-sm sm:flex-row sm:justify-between ${dark ? "text-slate-400" : "text-(--glass-fg-muted)"}`}
         >
           <p>&copy; {new Date().getFullYear()} No Sweat. All rights reserved.</p>
           <p>nosweatfd.com</p>

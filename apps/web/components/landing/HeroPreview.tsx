@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { frameShadow } from "@/components/marketing/styles";
 
 // Vitrine ao lado das perguntas (só no computador, ≥ lg): uma moldura de navegador com a captura
@@ -75,10 +75,9 @@ export function HeroPreview() {
   }, [want]);
 
   return (
-    <figure
-      className="lp-rise hidden pl-6 lg:col-span-5 lg:block"
-      style={{ "--i": 3 } as CSSProperties}
-    >
+    // Entrada sem opacidade (lp-rise-solid): este bloco some e volta com `hidden lg:block`, e uma
+    // animação recomeça quando o elemento volta a aparecer; assim ele nunca fica invisível.
+    <figure className="lp-rise-solid hidden pl-6 lg:col-span-5 lg:block">
       <div inert aria-hidden="true" className="relative mb-6">
         <div
           className={`overflow-hidden rounded-xl border border-slate-200 bg-white ${frameShadow}`}

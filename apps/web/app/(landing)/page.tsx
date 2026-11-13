@@ -144,9 +144,9 @@ export default function LandingPage() {
           className="lp-bubble lp-bubble-dark px-5 py-16 text-center sm:px-10 lg:py-24"
         >
           <h2 id="final-title" className={`${h2Base} text-white`}>
-            Ready when you are.
-            <br />
-            <span className="text-white/70">It takes about a minute.</span>
+            Ready when you are.{" "}
+            {/* Bloco próprio: no celular a segunda frase quebra em duas linhas equilibradas. */}
+            <span className="block text-white/70">It takes about a minute.</span>
           </h2>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
             <Pill href="#start" tone="light">

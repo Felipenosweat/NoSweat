@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 import { IntroCurtain } from "@/components/landing/IntroCurtain";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { edgeFlat } from "@/components/landing/type";
 import { MobileCtaBar } from "@/components/marketing/MobileCtaBar";
 import { MarketingFooter } from "@/components/marketing/SiteChrome";
 import "../(marketing)/marketing.css";
 import "./landing.css";
 
-// Landing V12: página branca, tipografia de sistema, cabeçalho fino com o logo no centro (ver
-// landing.css). As outras páginas de marketing (preço, termos…) ficam em app/(marketing).
+// Landing V13 (revisada): fundo slate-100 com bolhas brancas, fontes da marca e uma só borda de
+// página do cabeçalho ao rodapé (ver landing.css e components/landing/type.ts). As outras páginas
+// de marketing (preço, termos…) ficam em app/(marketing).
 
 // Abertura: uma vez por sessão e nunca com "reduzir movimento". Roda antes da pintura e marca o
 // próprio bloco .lp (o pai do script) com data-ns-intro="play"; se o sessionStorage estiver
@@ -26,7 +28,8 @@ export default function LandingLayout({ children }: { children: ReactNode }) {
       <main id="main" className="flex-1">
         {children}
       </main>
-      <MarketingFooter />
+      {/* Rodapé na mesma borda da página (o padrão dele é o container de 1200 px). */}
+      <MarketingFooter containerClass={edgeFlat} />
       <MobileCtaBar />
     </div>
   );
