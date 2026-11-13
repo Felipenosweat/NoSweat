@@ -152,13 +152,15 @@
 }
 
 /* ---------- Telas reais ("What you get") ---------- */
+/* A captura do site rola devagar com o mouse em cima ou com o painel focado pelo teclado. */
 .lp-pan {
   transition:
-    opacity 0.5s ease,
+    opacity 0.2s ease,
     transform 7s cubic-bezier(0.45, 0, 0.25, 1);
 }
 
-.lp-shot:hover .lp-pan {
+.lp-shot:hover .lp-pan,
+#what-panel:focus-visible .lp-pan {
   transform: translateY(-62%);
 }
 
@@ -273,7 +275,8 @@ details[open] > summary .lp-fx::before {
     transition: none;
   }
 
-  .lp-shot:hover .lp-pan {
+  .lp-shot:hover .lp-pan,
+  #what-panel:focus-visible .lp-pan {
     transform: none;
   }
 }
