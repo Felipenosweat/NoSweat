@@ -33,8 +33,9 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
     title: "Product",
     links: [
       { href: "/#story", label: "Websites" },
-      { href: "/#clients", label: "Clients" },
-      { href: "/#social", label: "Instagram posts" },
+      // Clients e Instagram são abas da seção "What you get" (#what); não têm âncora própria.
+      { href: "/#what", label: "Clients" },
+      { href: "/#what", label: "Instagram posts" },
       { href: "/#looks", label: "Examples" },
       { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
