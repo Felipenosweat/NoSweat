@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { MODEL_LIBRARY } from "@nosweat/fixtures";
+import type { SiteSpec } from "@nosweat/schema";
 import Link from "next/link";
 import { Arrow } from "@/components/landing/Arrow";
 import { Examples } from "@/components/landing/Examples";
-import { Hero } from "@/components/landing/Hero";
-import { SITES } from "@/components/landing/sites";
-import { Steps } from "@/components/landing/Steps";
+import { BuildStory } from "@/components/landing/BuildStory";
+import { SignatureHero } from "@/components/landing/SignatureHero";
+import { TRADES } from "@/components/landing/trades";
 import {
   arrowShift,
   focusRing,
@@ -22,10 +24,10 @@ import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
 
-// Landing ("Vitrine"): página branca com seções de ponta a ponta e fios de 1 px; o topo e o fim
-// são blocos ink. Topo com as perguntas (uma de cada vez) num cartão branco e a vitrine de sites
-// de exemplo → faixa "um site para um negócio como o seu" → o que você ganha (site, clientes,
-// Instagram) → como funciona → exemplos → preço (faixa surface, a seção com mais respiro) →
+// Landing ("o site se monta sozinho"): página branca com seções de ponta a ponta e fios de 1 px;
+// o topo e o fim são blocos ink. Topo com a frase que o visitante completa e um site de exemplo
+// de verdade numa moldura → como funciona (cena presa à rolagem) → o que você ganha (site,
+// clientes, Instagram) → exemplos → preço (faixa surface, a seção com mais respiro) →
 // dúvidas → fim. Títulos de seção num só estilo, alinhados à esquerda na mesma borda
 // (components/landing/type.ts); só o topo e o fim são centralizados. Pouco texto por bloco. Só
 // afirmações que o produto cumpre hoje; nada de números, logos, notas ou depoimentos inventados.
@@ -56,40 +58,26 @@ export const metadata: Metadata = {
 
 const linkDark = `lp-underline rounded-sm font-medium text-ink ${focusRing}`;
 
+// Os sites de exemplo (fictícios) que a moldura do topo e o "how it works" desenham: só os seis
+// ramos da frase, para não mandar a biblioteca inteira ao navegador.
+const TRADE_SPECS: Record<string, SiteSpec> = Object.fromEntries(
+  MODEL_LIBRARY.filter((entry) => TRADES.some((t) => t.slug === entry.slug)).map((entry) => [
+    entry.slug,
+    entry.spec,
+  ]),
+);
+
 export default function LandingPage() {
+  const specs = TRADE_SPECS;
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
   const whatsapp = salesWhatsappUrl();
   return (
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
-      <Hero />
-
-      {/* FAIXA — seis atalhos para os sites de exemplo, pelo ramo. */}
-      <section aria-labelledby="kinds-title" className="border-b border-slate-200">
-        <div className={`${shell} flex flex-wrap items-center gap-x-7 gap-y-1 py-5 sm:py-6`}>
-          <p id="kinds-title" className="text-[15px] text-slate-600">
-            See one for a business like yours:
-          </p>
-          <ul
-            aria-labelledby="kinds-title"
-            className="-mx-2 flex flex-wrap gap-x-2 font-display text-[17px] font-bold tracking-[-0.01em] sm:gap-x-3 sm:text-lg"
-          >
-            {SITES.map((site) => (
-              <li key={site.slug}>
-                <Link
-                  href={`/examples/${site.slug}`}
-                  className={`inline-flex min-h-11 items-center rounded-sm px-2 text-ink decoration-1 underline-offset-4 transition-colors duration-200 hover:text-brand-dark hover:underline ${focusRing}`}
-                >
-                  {site.kind}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <SignatureHero specs={specs} />
+      <BuildStory specs={specs} />
 
       <WhatYouGet />
-      <Steps />
       <Examples />
 
       {/* PREÇO — faixa surface de ponta a ponta, a seção com mais respiro (é a da decisão); o
