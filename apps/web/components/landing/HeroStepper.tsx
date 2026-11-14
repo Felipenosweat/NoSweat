@@ -2,13 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { PillArrow } from "./Pill";
+import { focusRing, primaryButton } from "@/components/marketing/styles";
+import { Arrow } from "./Arrow";
+import { arrowShift } from "./type";
 
 // As perguntas do topo, uma de cada vez (forma do averaks.com): que tipo de negócio, onde, o
 // nome e, se quiser, um detalhe. No fim viram uma frase (o mesmo `brief` do campo antigo) e
 // vão para /create?brief=…&start=1, que monta o site na hora. O texto também fica no
 // sessionStorage `ns-brief`, como no PromptForm.
 // Sem JavaScript: o <noscript> leva direto para o /create.
+// Visual: um cartão branco de 16 px sobre o ink do topo (ver Hero.tsx); as quatro perguntas usam
+// a mesma estrutura (título + "n of 4", dica, campo, e o rodapé com o aviso e os botões).
 // Um evento `ns:preset-kind` (de qualquer botão da página) preenche a primeira pergunta.
 // Cada chip de ramo leva `data-kind`: o HeroPreview ouve (por delegação) para trocar a captura.
 
@@ -37,11 +41,8 @@ const PROMPTS: Record<Step, { title: string; hint: string }> = {
   },
 };
 
-const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
-
 // Campos de uma linha: pílula branca com borda visível (3:1) e o contorno azul no foco.
-const field = `h-12 w-full max-w-[380px] rounded-full border border-slate-500 bg-white px-6 text-center text-lg font-medium text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink lg:text-left ${focusRing}`;
+const field = `h-12 w-full max-w-[26rem] rounded-full border border-slate-500 bg-white px-5 text-lg font-medium text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink ${focusRing}`;
 
 export function HeroStepper() {
   const router = useRouter();
@@ -127,35 +128,30 @@ export function HeroStepper() {
     setIndex(i);
   };
   const buttons = (
-    <div className="mt-2 flex items-center justify-center gap-5 lg:justify-start">
+    <div className="ml-auto flex items-center gap-3">
       {index > 0 && (
         <button
           type="button"
           onClick={back}
-          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:text-ink lg:-ml-3 ${focusRing}`}
+          className={`inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-[15px] font-medium text-slate-600 transition-colors duration-200 hover:text-ink ${focusRing}`}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path
-              d="M13 8H3M7 4 3 8l4 4"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Arrow className="rotate-180" />
           Back
         </button>
       )}
       {step === "details" ? (
-        <button type="submit" className={`lp-pill lp-pill-blue ${focusRing}`}>
+        <button type="submit" className={`group ${primaryButton}`}>
           Build my website
-          <PillArrow />
+          <Arrow className={arrowShift} />
         </button>
       ) : (
         step !== "kind" && (
-          <button type="submit" className={`lp-pill ${focusRing}`}>
+          <button
+            type="submit"
+            className={`group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink px-6 font-semibold text-white transition-colors duration-150 hover:bg-black active:translate-y-px ${focusRing}`}
+          >
             Next
-            <PillArrow />
+            <Arrow className={arrowShift} />
           </button>
         )
       )}
@@ -163,121 +159,123 @@ export function HeroStepper() {
   );
 
   return (
-    <div className="lp-rise w-full" style={{ "--i": 2 } as React.CSSProperties}>
+    // O cartão branco sobre o ink do topo. Altura mínima fixa: trocar de pergunta não empurra a
+    // vitrine de baixo. Tudo alinhado à esquerda; o rodapé do cartão (aviso + botões) fica parado.
+    <div
+      className="lp-rise mt-9 flex min-h-[25.5rem] w-full max-w-[780px] flex-col rounded-2xl bg-white p-5 text-left text-ink sm:min-h-[21rem] sm:p-7"
+      style={{ "--i": 2 } as React.CSSProperties}
+    >
       {/* O que já foi respondido: cada resposta é um chip que leva de volta àquela pergunta. */}
-      <div
-        className="mt-8 flex min-h-11 flex-wrap items-center justify-center gap-2 lg:justify-start"
-        aria-live="polite"
-      >
+      <div className="flex flex-wrap items-center gap-2 not-empty:mb-5" aria-live="polite">
         {answered.map((a) => (
           <button
             key={a.step}
             type="button"
             onClick={() => goTo(a.step)}
             aria-label={`Change: ${a.value}`}
-            className={`inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-500 bg-white px-4 text-sm text-ink transition-colors duration-200 hover:border-ink ${focusRing}`}
+            className={`inline-flex min-h-11 max-w-full items-center gap-2 rounded-full bg-slate-100 px-3.5 text-sm sm:px-4 font-medium text-ink transition-colors duration-200 hover:bg-slate-200 ${focusRing}`}
           >
-            {/* O quadrado azul da página (nunca redondo, nunca piscando). */}
-            <span className="size-1.5 shrink-0 bg-brand" aria-hidden="true" />
-            {a.value}
-            <span aria-hidden="true" className="text-slate-600">
+            <span className="truncate">{a.value}</span>
+            <span aria-hidden="true" className="hidden font-normal text-slate-600 sm:inline">
               Edit
             </span>
           </button>
         ))}
-        {answered.length === 0 && (
-          <span className="text-sm text-slate-600">Four quick questions. About a minute.</span>
-        )}
       </div>
       <form
         onSubmit={submit}
         noValidate
-        className="mx-auto mt-6 min-h-[230px] w-full max-w-[820px] lg:mx-0"
+        className="flex flex-1 flex-col"
         aria-label="Tell us about your business"
       >
-        <fieldset key={step} className="lp-step flex flex-col items-center gap-4 lg:items-start">
+        <fieldset key={step} className="lp-step min-w-0">
           <legend className="sr-only">
             Question {index + 1} of {STEPS.length}
           </legend>
-          <p className="font-display text-xl leading-[1.3] font-semibold tracking-[-0.02em] text-ink lg:text-[1.375rem]">
-            <span className="mr-2 align-middle font-sans text-sm font-semibold tracking-normal text-slate-600 tabular-nums">
-              {index + 1}/{STEPS.length}
-            </span>
-            {prompt.title}
-          </p>
-          <p className="max-w-[60ch] text-sm text-pretty text-slate-600">{prompt.hint}</p>
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="font-display text-[1.375rem] leading-[1.25] font-bold tracking-[-0.02em] text-ink">
+              {prompt.title}
+            </p>
+            {/* Enfeite: a legenda acima já diz "Question 1 of 4" para leitores de tela. */}
+            <p aria-hidden="true" className="shrink-0 text-sm text-slate-600 tabular-nums">
+              {index + 1} of {STEPS.length}
+            </p>
+          </div>
+          <p className="mt-1 max-w-[60ch] text-[15px] text-pretty text-slate-600">{prompt.hint}</p>
 
-          {step === "kind" && (
-            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:max-w-[680px] sm:flex-wrap sm:justify-center sm:gap-2.5 lg:justify-start">
-              {KINDS.map((k, i) => (
-                <button
-                  key={k.label}
-                  type="button"
-                  data-kind={k.label}
-                  aria-pressed={kind === k.label}
-                  onClick={() => pickKind(k.label)}
-                  className={`lp-chip min-h-12 px-3 text-[15px] leading-tight sm:px-6 sm:text-base ${
-                    i === KINDS.length - 1 ? "col-span-2" : ""
-                  } ${focusRing}`}
-                >
-                  {k.label}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="mt-5">
+            {step === "kind" && (
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2.5">
+                {KINDS.map((k, i) => (
+                  <button
+                    key={k.label}
+                    type="button"
+                    data-kind={k.label}
+                    aria-pressed={kind === k.label}
+                    onClick={() => pickKind(k.label)}
+                    className={`lp-chip min-h-12 px-3 text-[15px] leading-tight font-medium sm:px-[1.125rem] sm:text-base ${
+                      i === KINDS.length - 1 ? "col-span-2" : ""
+                    } ${focusRing}`}
+                  >
+                    {k.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {step === "where" && (
-            <input
-              ref={fieldRef}
-              value={where}
-              onChange={(e) => setWhere(e.target.value)}
-              autoComplete="address-level2"
-              enterKeyHint="next"
-              placeholder="Austin, TX"
-              aria-label="City and state"
-              className={field}
-            />
-          )}
+            {step === "where" && (
+              <input
+                ref={fieldRef}
+                value={where}
+                onChange={(e) => setWhere(e.target.value)}
+                autoComplete="address-level2"
+                enterKeyHint="next"
+                placeholder="Austin, TX"
+                aria-label="City and state"
+                className={field}
+              />
+            )}
 
-          {step === "name" && (
-            <input
-              ref={fieldRef}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="organization"
-              enterKeyHint="next"
-              placeholder="Business name"
-              aria-label="Business name, optional"
-              className={field}
-            />
-          )}
+            {step === "name" && (
+              <input
+                ref={fieldRef}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="organization"
+                enterKeyHint="next"
+                placeholder="Business name"
+                aria-label="Business name, optional"
+                className={field}
+              />
+            )}
 
-          {step === "details" && (
-            <textarea
-              ref={fieldRef}
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              rows={2}
-              maxLength={1500}
-              placeholder="Family-owned since 2009. Open Mon to Sat. Call (512) 555-0142."
-              aria-label="Anything else, optional"
-              className={`w-full max-w-[560px] resize-none rounded-xl border border-slate-500 bg-white px-5 py-3.5 text-left text-base leading-relaxed text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink ${focusRing}`}
-            />
-          )}
+            {step === "details" && (
+              <textarea
+                ref={fieldRef}
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                rows={2}
+                maxLength={1500}
+                placeholder="Family-owned since 2009. Open Mon to Sat. Call (512) 555-0142."
+                aria-label="Anything else, optional"
+                className={`block w-full resize-none rounded-2xl border border-slate-500 bg-white px-5 py-3.5 text-left text-base leading-relaxed text-ink transition-colors duration-200 placeholder:text-slate-500 hover:border-ink ${focusRing}`}
+              />
+            )}
+          </div>
 
-          <p role="alert" className="min-h-5 text-sm text-[#b42318]">
+          <p role="alert" className="mt-2 min-h-5 text-sm text-[#b42318]">
             {error}
           </p>
-          {buttons}
-          {step === "details" && (
-            <p className="text-sm text-slate-600">
-              Free to create. No account or credit card needed.
-            </p>
-          )}
         </fieldset>
+        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-3 pt-4">
+          <p className="text-sm text-slate-600">
+            Free to create. No account or credit card needed.
+          </p>
+          {buttons}
+        </div>
       </form>
       <noscript>
-        <p>
+        <p className="mt-3">
           <a
             href="/create"
             className={`inline-flex min-h-11 items-center rounded-sm text-base font-semibold text-brand-dark underline ${focusRing}`}

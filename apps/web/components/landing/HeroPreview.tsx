@@ -2,14 +2,13 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { frameShadow } from "@/components/marketing/styles";
 
-// Vitrine ao lado das perguntas (só no computador, ≥ lg): uma moldura de navegador com a captura
-// de um site de exemplo de verdade e a versão de celular por cima do canto. Passar o mouse, focar
-// ou escolher um ramo na primeira pergunta troca para o exemplo daquele ramo (e fica: não volta ao
+// A moldura do meio da vitrine do topo: um navegador simples (cartão branco com a legenda no
+// lugar da barra) com a captura de um site de exemplo de verdade. Passar o mouse, focar ou
+// escolher um ramo na primeira pergunta troca para o exemplo daquele ramo (e fica: não volta ao
 // sair). As capturas extras só entram na página na primeira intenção; a troca só acontece depois
-// que a nova imagem carregou (se falhar, fica a anterior). A moldura é enfeite (inert +
-// aria-hidden); a legenda é texto de verdade e sempre diz que o negócio é inventado.
+// que a nova imagem carregou (se falhar, fica a anterior) e é uma fusão de 200 ms. A legenda é
+// texto de verdade e sempre diz que o negócio é inventado.
 // Os chips são do HeroStepper (outro componente de cliente): aqui só ouvimos, por delegação em
 // #start, os botões com `data-kind`, e o evento `ns:preset-kind` da página.
 
@@ -27,28 +26,22 @@ const BY_KIND: Record<string, Example> = {
   "Something else": { slug: "hollis-interiors", name: "Hollis Interiors" },
 };
 
-// Cada exemplo tem duas capturas (computador e celular); só troca quando as duas carregaram.
-const SHOTS_PER_EXAMPLE = 2;
-
-const shot = "absolute inset-0 size-full object-cover object-top transition-opacity duration-200";
-
 export function HeroPreview() {
   const [mounted, setMounted] = useState<Example[]>([DEFAULT]);
   const [shown, setShown] = useState<Example>(DEFAULT);
   const wanted = useRef(DEFAULT.slug);
-  const loaded = useRef(new Map<string, number>());
+  const loaded = useRef(new Set<string>());
 
   const want = useCallback((example: Example) => {
     wanted.current = example.slug;
-    if ((loaded.current.get(example.slug) ?? 0) >= SHOTS_PER_EXAMPLE) setShown(example);
+    if (loaded.current.has(example.slug)) setShown(example);
     else
       setMounted((list) => (list.some((e) => e.slug === example.slug) ? list : [...list, example]));
   }, []);
 
   const onLoad = (example: Example) => {
-    const count = (loaded.current.get(example.slug) ?? 0) + 1;
-    loaded.current.set(example.slug, count);
-    if (count >= SHOTS_PER_EXAMPLE && wanted.current === example.slug) setShown(example);
+    loaded.current.add(example.slug);
+    if (wanted.current === example.slug) setShown(example);
   };
 
   useEffect(() => {
@@ -75,56 +68,34 @@ export function HeroPreview() {
   }, [want]);
 
   return (
-    // Entrada sem opacidade (lp-rise-solid): este bloco some e volta com `hidden lg:block`, e uma
-    // animação recomeça quando o elemento volta a aparecer; assim ele nunca fica invisível.
-    <figure className="lp-rise-solid hidden pl-6 lg:col-span-5 lg:block">
-      <div inert aria-hidden="true" className="relative mb-6">
-        <div
-          className={`overflow-hidden rounded-xl border border-slate-200 bg-white ${frameShadow}`}
-        >
-          <div className="flex h-7 items-center border-b border-slate-200 px-3 text-[13px] leading-none text-slate-600">
-            {shown.name}
-          </div>
-          <div className="relative aspect-[16/10] bg-slate-100">
-            {mounted.map((example) => (
-              <Image
-                key={example.slug}
-                src={`/landing/signature/${example.slug}-d.webp`}
-                width={1600}
-                height={1000}
-                alt=""
-                sizes="(min-width: 1024px) 520px, 1px"
-                onLoad={() => onLoad(example)}
-                className={`${shot} motion-reduce:transition-none ${
-                  example.slug === shown.slug ? "opacity-100" : "opacity-0"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-        {/* Celular: 150×240 na largura cheia; encolhe junto com a moldura em telas menores. */}
-        <div
-          className={`absolute -bottom-6 -left-6 aspect-[5/8] w-[34%] max-w-[150px] overflow-hidden rounded-xl border border-slate-200 bg-white ${frameShadow}`}
-        >
-          {mounted.map((example) => (
+    <figure className="lp-show w-full max-w-[780px] shrink-0 rounded-t-2xl bg-white px-2 pt-2 text-left sm:px-2.5 sm:pt-2.5 md:w-[64vw] lg:w-[52vw]">
+      <figcaption className="px-1.5 pb-2 text-[13px] leading-normal text-slate-600">
+        {shown.name}, an example site. The business is made up.
+      </figcaption>
+      {/* Canto de dentro = canto de fora (16) menos a borda da moldura (10). */}
+      <div className="relative aspect-[16/10] overflow-hidden rounded-t-md bg-slate-100">
+        {mounted.map((example) => {
+          const active = example.slug === shown.slug;
+          const first = example.slug === DEFAULT.slug;
+          return (
             <Image
               key={example.slug}
-              src={`/landing/signature/${example.slug}-m.webp`}
-              width={640}
-              height={1385}
-              alt=""
-              sizes="150px"
+              src={`/landing/signature/${example.slug}-d.webp`}
+              width={1600}
+              height={1000}
+              alt={active ? `The ${example.name} example site made with No Sweat.` : ""}
+              aria-hidden={!active}
+              sizes="(min-width: 1500px) 760px, (min-width: 1024px) 52vw, (min-width: 768px) 64vw, 100vw"
+              loading="eager"
+              fetchPriority={first ? "high" : "auto"}
               onLoad={() => onLoad(example)}
-              className={`${shot} motion-reduce:transition-none ${
-                example.slug === shown.slug ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 size-full object-cover object-top transition-opacity duration-200 motion-reduce:transition-none ${
+                active ? "opacity-100" : "opacity-0"
               }`}
             />
-          ))}
-        </div>
+          );
+        })}
       </div>
-      <figcaption className="mt-4 text-sm leading-normal text-slate-600">
-        Example site: {shown.name}. The business is made up.
-      </figcaption>
     </figure>
   );
 }

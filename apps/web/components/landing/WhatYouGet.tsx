@@ -1,223 +1,137 @@
-"use client";
-
 import Image from "next/image";
-import { useRef, useState, type KeyboardEvent } from "react";
-import { Pill } from "./Pill";
-import { bodyClass, focusRing, h2Class, smallClass } from "./type";
+import type { CSSProperties } from "react";
+import { frameShadow } from "@/components/marketing/styles";
+import { Arrow } from "./Arrow";
+import { h2Class, h3Class, leadClass, sectionBody, sectionHead, shell } from "./type";
 
-// "What you get" (#what), numa bolha branca: título à esquerda, uma frase e o botão à direita;
-// embaixo, três abas curtas (Website, Clients, Instagram) e a TELA REAL da aba escolhida
-// (capturas do app rodando, com dados de demonstração de um negócio inventado, avisado na
-// legenda). A captura do site rola devagar ao passar o mouse ou ao focar o painel.
-// Abas pelo teclado: uma parada só no Tab; setas, Home e End trocam (a seleção segue o foco).
+// "What you get" (#what): os três produtos à vista ao mesmo tempo, sem abas nem clique, em três
+// cartões desiguais. Website (cinza-claro, alto, à esquerda) com a captura do site de exemplo e a
+// versão de celular por cima; Clients (ink) e Instagram (azul bem claro) empilhados à direita,
+// cada um com a TELA REAL do app (dados de demonstração de um negócio inventado, avisado na
+// legenda). As capturas do app são recortes ampliados da mesma imagem (sem montagem), para o
+// texto continuar legível; o texto alternativo descreve só o que aparece no recorte.
 // Capturas em public/landing/real (regravar: ver docs/design/README.md, "Validação").
-//
-// Celular (< sm): o painel fica em 4:5 e cada aba tem uma mídia própria, porque a captura de
-// 2400 px encolhida para 350 px fica ilegível. Website usa a captura de celular do mesmo site de
-// exemplo. Clients e Social usam a MESMA captura real, ampliada e posicionada (`mobile.crop`)
-// para mostrar o objeto principal inteiro e legível: é um recorte, sem montagem. O texto
-// alternativo do recorte descreve só o que aparece nele.
 
-type Tab = {
-  id: string;
-  title: string;
-  body: string;
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-  caption: string;
-  /** Captura alta (o site inteiro): rola devagar no hover/foco. */
-  tall: boolean;
-  mobile: { src: string; width: number; height: number; alt: string; crop: string };
-};
+const card =
+  "lp-reveal flex min-w-0 flex-col overflow-hidden rounded-2xl px-6 pt-6 sm:px-8 sm:pt-8";
+const caption = "mt-4 text-[13px] leading-normal";
 
-const TABS: Tab[] = [
-  {
-    id: "website",
-    title: "Website",
-    body: "Services, hours, a contact form and a call button.",
-    src: "/landing/real/site-2.webp",
-    width: 2000,
-    height: 3750,
-    alt: "The Mercer Law example site made with No Sweat: a large serif headline, “Family and estate law in German Village”, a photo of law books and the office’s story.",
-    caption: "Mercer Law, an example site. The business is made up.",
-    tall: true,
-    mobile: {
-      src: "/landing/signature/mercer-law-m.webp",
-      width: 640,
-      height: 1385,
-      alt: "The Mercer Law example site made with No Sweat: a large serif headline, “Family and estate law in German Village”, a photo of law books and the office’s story.",
-      crop: "inset-x-0 top-0 w-full",
-    },
-  },
-  {
-    id: "clients",
-    title: "Clients",
-    body: "Every request from your site, in one list.",
-    src: "/landing/real/clients-2.webp",
-    width: 2400,
-    height: 1500,
-    alt: "The No Sweat Clients screen with five new requests from the contact form, each with a Reply button.",
-    caption: "The real Clients screen, with demo requests.",
-    tall: false,
-    mobile: {
-      src: "/landing/real/clients-2.webp",
-      width: 2400,
-      height: 1500,
-      alt: "The No Sweat Clients screen: five new requests from the contact form, each with a name, phone number and email.",
-      // Busca, etapas e as cinco linhas (nome, "New", telefone e e-mail), encostado embaixo.
-      crop: "bottom-0 left-[-75%] w-[320%] max-w-none",
-    },
-  },
-  {
-    id: "social",
-    title: "Instagram",
-    body: "Posts drafted for you. Nothing goes out until you approve it.",
-    src: "/landing/real/social-2.webp",
-    width: 2400,
-    height: 1500,
-    alt: "The No Sweat Social screen: a connected Instagram account, the monthly posting plan and a November calendar with a post waiting for approval.",
-    caption: "The real Social screen, with a demo account.",
-    tall: false,
-    mobile: {
-      src: "/landing/real/social-2.webp",
-      width: 2400,
-      height: 1500,
-      alt: "The No Sweat Social screen: a connected Instagram account and the November calendar.",
-      // Cartão do Instagram ("Connected") inteiro, "November 2026" e o começo do calendário.
-      crop: "top-[-26%] left-[-66%] w-[280%] max-w-none",
-    },
-  },
-];
+const SOCIAL_STEPS = ["Drafted for you", "You approve", "Posted on time"];
 
 export function WhatYouGet() {
-  const [active, setActive] = useState(0);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const tab = TABS[active] ?? TABS[0];
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const last = TABS.length - 1;
-    let next: number;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown")
-      next = active === last ? 0 : active + 1;
-    else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
-      next = active === 0 ? last : active - 1;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = last;
-    else return;
-    event.preventDefault();
-    setActive(next);
-    tabRefs.current[next]?.focus();
-  };
-
-  if (!tab) return null;
-
   return (
-    <div className="mt-3 px-3 sm:mt-5 sm:px-5">
-      <section
-        id="what"
-        aria-labelledby="what-title"
-        className="lp-bubble scroll-mt-16 px-5 py-12 sm:px-10 lg:px-16 lg:py-16"
-      >
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-x-8">
-          <h2 id="what-title" className={`${h2Class} lg:col-span-6`}>
-            Not just a website.
-            <br />
-            <span className="text-slate-500">The tools around it.</span>
-          </h2>
-          <div className="lg:col-span-6 lg:pt-2">
-            <p className={bodyClass}>
-              Your site, the requests it brings in and your Instagram, in one place. Built for
-              people who would rather be working.
-            </p>
-            <div className="mt-6">
-              <Pill href="#start">Build my website</Pill>
-            </div>
-          </div>
-        </div>
+    <section id="what" aria-labelledby="what-title" className={`${shell} pt-20 lg:pt-28`}>
+      <div className={`lp-reveal ${sectionHead}`}>
+        <h2 id="what-title" className={h2Class}>
+          Not just a website.
+          <br />
+          <span className="text-slate-500">The tools around it.</span>
+        </h2>
+        <p className={leadClass}>
+          Your site, the requests it brings in and your Instagram, in one place. Built for people
+          who would rather be working.
+        </p>
+      </div>
 
-        <div
-          role="tablist"
-          aria-label="What you get"
-          onKeyDown={onKeyDown}
-          className="mt-12 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3"
-        >
-          {TABS.map((t, i) => (
-            <button
-              key={t.id}
-              ref={(el) => {
-                tabRefs.current[i] = el;
-              }}
-              id={`tab-${t.id}`}
-              role="tab"
-              type="button"
-              tabIndex={i === active ? 0 : -1}
-              aria-selected={i === active}
-              aria-controls="what-panel"
-              onClick={() => setActive(i)}
-              onMouseEnter={() => setActive(i)}
-              className={`flex min-h-11 flex-col items-start justify-start rounded-xl px-5 py-4 text-left transition-colors duration-200 ${focusRing} ${
-                i === active ? "bg-slate-100" : "hover:bg-slate-50"
-              }`}
-            >
-              <span className="flex items-center gap-2.5">
-                {/* O quadrado azul marca a aba ativa; nas outras fica só o espaço dele, para o
-                    texto não andar. */}
-                <span
-                  aria-hidden="true"
-                  className={`size-1.5 shrink-0 ${i === active ? "bg-brand" : ""}`}
-                />
-                <span className="text-[17px] leading-snug font-semibold text-ink">{t.title}</span>
-              </span>
-              <span className={`mt-1 block pl-4 ${smallClass}`}>{t.body}</span>
-            </button>
-          ))}
-        </div>
-
-        <div
-          id="what-panel"
-          role="tabpanel"
-          aria-labelledby={`tab-${tab.id}`}
-          tabIndex={0}
-          className="group/panel mt-4 outline-none sm:mt-6"
-        >
-          <figure>
-            <div className="lp-shot relative aspect-[4/5] overflow-hidden rounded-xl border border-slate-200 bg-slate-100 group-focus-visible/panel:outline-2 group-focus-visible/panel:outline-offset-2 group-focus-visible/panel:outline-brand sm:aspect-[16/10]">
-              {TABS.map((t, i) => (
+      <div className={`${sectionBody} grid gap-5 lg:grid-cols-2 lg:grid-rows-[1fr_auto]`}>
+        <article className={`${card} bg-slate-100 lg:row-span-2`}>
+          <h3 className={h3Class}>Website</h3>
+          <p className="mt-2 text-[17px] leading-[1.6] text-slate-600">
+            Services, hours, a contact form and a call button.
+          </p>
+          <figure className="flex flex-1 flex-col">
+            <figcaption className={`${caption} text-slate-600`}>
+              Mercer Law, an example site. The business is made up.
+            </figcaption>
+            <div className="relative mt-6 min-h-[21rem] flex-1 sm:min-h-[34rem]">
+              <div className="absolute inset-y-0 right-0 left-[18%] overflow-hidden rounded-t-2xl border border-b-0 border-slate-300 bg-white">
                 <Image
-                  key={t.id}
-                  src={t.src}
-                  width={t.width}
-                  height={t.height}
-                  alt={i === active ? t.alt : ""}
-                  aria-hidden={i !== active}
-                  sizes="(min-width: 1280px) 1150px, (min-width: 640px) 100vw, 1px"
-                  className={`absolute inset-x-0 top-0 hidden h-auto w-full transition-opacity duration-200 motion-reduce:transition-none sm:block ${
-                    t.tall ? "lp-pan" : ""
-                  } ${i === active ? "opacity-100" : "opacity-0"}`}
+                  src="/landing/real/site-2.webp"
+                  width={2000}
+                  height={3750}
+                  alt="The Mercer Law example site made with No Sweat: a large serif headline, “Family and estate law in German Village”, a photo of law books and the office’s story."
+                  sizes="(min-width: 1024px) 480px, 85vw"
+                  className="h-auto w-full"
                 />
-              ))}
-              {/* Celular: mídia própria de cada aba (as de cima nem são baixadas: display none). */}
-              {TABS.map((t, i) => (
+              </div>
+              <div
+                className={`absolute bottom-0 left-0 aspect-[9/17] w-[28%] max-w-[10rem] overflow-hidden rounded-t-2xl border border-b-0 border-slate-300 bg-white ${frameShadow}`}
+              >
                 <Image
-                  key={t.id}
-                  src={t.mobile.src}
-                  width={t.mobile.width}
-                  height={t.mobile.height}
-                  alt={i === active ? t.mobile.alt : ""}
-                  aria-hidden={i !== active}
-                  sizes="(min-width: 640px) 1px, 200vw"
-                  className={`absolute h-auto transition-opacity duration-200 motion-reduce:transition-none sm:hidden ${t.mobile.crop} ${
-                    i === active ? "opacity-100" : "opacity-0"
-                  }`}
+                  src="/landing/signature/mercer-law-m.webp"
+                  width={640}
+                  height={1385}
+                  alt="The same site on a phone."
+                  sizes="176px"
+                  className="size-full object-cover object-top"
                 />
-              ))}
+              </div>
             </div>
-            <figcaption className={`mt-3 ${smallClass}`}>{tab.caption}</figcaption>
           </figure>
-        </div>
-      </section>
-    </div>
+        </article>
+
+        <article className={`${card} bg-ink text-white`} style={{ "--i": 1 } as CSSProperties}>
+          <h3 className={`${h3Class} text-white`}>Clients</h3>
+          <p className="mt-2 text-[17px] leading-[1.6] text-slate-300">
+            Every request from your site, in one list.
+          </p>
+          <figure className="flex flex-1 flex-col">
+            <figcaption className={`${caption} text-slate-300`}>
+              The real Clients screen, with demo requests.
+            </figcaption>
+            <div className="relative mt-6 aspect-square overflow-hidden rounded-t-2xl bg-white sm:aspect-[2/1] lg:aspect-auto lg:min-h-[15rem] lg:flex-1">
+              {/* Recorte: as etapas e os cinco pedidos (nome, telefone e e-mail), encostado embaixo. */}
+              <Image
+                src="/landing/real/clients-2.webp"
+                width={2400}
+                height={1500}
+                alt="The No Sweat Clients screen: five new requests from the contact form, each with a name, phone number and email."
+                sizes="(min-width: 1024px) 800px, (min-width: 640px) 150vw, 300vw"
+                className="absolute bottom-0 left-[-75%] h-auto w-[320%] max-w-none sm:left-[-36.5%] sm:w-[150%]"
+              />
+            </div>
+          </figure>
+        </article>
+
+        <article className={`${card} bg-brand/10`} style={{ "--i": 2 } as CSSProperties}>
+          <h3 className={h3Class}>Instagram</h3>
+          <p className="mt-2 text-[17px] leading-[1.6] text-slate-700">
+            Posts drafted for you. Nothing goes out until you approve it.
+          </p>
+          <ol className="mt-5 flex flex-col items-start gap-2 text-[15px] font-semibold text-ink sm:flex-row sm:flex-wrap sm:items-center">
+            {SOCIAL_STEPS.map((label, i) => (
+              <li
+                key={label}
+                className="flex flex-col items-start gap-2 sm:flex-row sm:items-center"
+              >
+                {/* No celular as etapas ficam uma embaixo da outra e a seta aponta para baixo. */}
+                {i > 0 && <Arrow className="ml-5 rotate-90 text-brand-dark sm:ml-0 sm:rotate-0" />}
+                <span
+                  className={`rounded-full px-3.5 py-2 ${i === 1 ? "bg-ink text-white" : "bg-white"}`}
+                >
+                  {label}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <figure className="flex flex-1 flex-col">
+            <figcaption className={`${caption} text-slate-700`}>
+              The real Social screen, with a demo account.
+            </figcaption>
+            <div className="relative mt-6 aspect-[4/3] overflow-hidden rounded-t-2xl bg-white sm:aspect-[5/2]">
+              {/* Recorte: a conta do Instagram ligada, o plano do mês e o começo do calendário. */}
+              <Image
+                src="/landing/real/social-2.webp"
+                width={2400}
+                height={1500}
+                alt="The No Sweat Social screen: a connected Instagram account, the monthly posting plan and the November calendar."
+                sizes="(min-width: 1024px) 800px, (min-width: 640px) 150vw, 280vw"
+                className="absolute top-[-43%] left-[-66%] h-auto w-[280%] max-w-none sm:top-[-42%] sm:left-[-36.5%] sm:w-[150%]"
+              />
+            </div>
+          </figure>
+        </article>
+      </div>
+    </section>
   );
 }

@@ -1,40 +1,50 @@
-/* Landing V13 (revisada): fundo slate-100 e cada bloco numa "bolha" branca arredondada,
-   intercalando com blocos direto no fundo (passos, preços). Só as fontes da marca (Plus Jakarta
-   nos títulos, Inter no texto) e só os tokens da marca + slate; o tamanho e a cor de cada texto
-   ficam em utilitários do Tailwind (components/landing/type.ts). Aqui fica só o que não cabe em
-   utilitário: a abertura, a entrada do topo, as pílulas, o fio dos passos e o + das dúvidas.
-   Nada fica em loop. Sem JS ou com "reduzir movimento", tudo aparece parado, legível e completo. */
+/* Landing ("Vitrine"): página branca, seções de ponta a ponta separadas por fios de 1 px, topo e
+   fim em ink. Só as fontes da marca (Plus Jakarta nos títulos, Inter no texto) e só os tokens da
+   marca + slate; o tamanho e a cor de cada texto ficam em utilitários do Tailwind
+   (components/landing/type.ts). Aqui fica só o que não cabe em utilitário: a abertura, a entrada
+   do topo, as revelações ao rolar, o fio dos passos, o fio do cabeçalho e o + das dúvidas.
+   Movimento: só transform e opacity, no máximo 600 ms, nada em loop, nada que quique. Sem JS ou
+   com "reduzir movimento", tudo aparece parado, legível e completo. */
 
 .lp {
   /* Apelidos dos tokens do tema (globals.css / Tailwind). O valor depois da vírgula é o mesmo
      token escrito por extenso, para o caso de a variável não ter sido emitida. */
   --lp-ink: var(--color-ink, #071b33);
-  --lp-blue: var(--color-brand, #0066ff);
-  --lp-blue-dark: var(--color-brand-dark, #0052cc);
-  --lp-page: var(--color-slate-100, #f1f5f9);
-  --lp-line: var(--color-slate-300, #cad5e2);
   --lp-border: var(--color-slate-500, #62748e);
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Quanto a entrada do topo espera pela cortina subir (0 quando não há cortina). */
   --lp-intro: 0s;
-  /* Fundo slate-100: cada seção é uma "bolha" branca arredondada por cima (.lp-bubble). */
-  background: var(--lp-page);
+  position: relative;
+  background: #fff;
   color: var(--lp-ink);
   font-family: var(--font-sans);
 }
 
 /* ---------- Entrada da página (só o topo, uma vez) ---------- */
 /* Opacidade + 16 px subindo, 600 ms, 80 ms entre um e outro; começa quando a cortina sobe
-   (--lp-intro; 0 quando não há cortina). */
+   (--lp-intro; 0 quando não há cortina). `backwards` (e não `both`): os quadros só têm o começo,
+   e uma animação terminada que continua aplicada some das capturas de página inteira do Chromium. */
 .lp-rise {
-  animation: lp-rise 0.6s var(--lp-ease) both;
+  animation: lp-rise 0.6s var(--lp-ease) backwards;
   animation-delay: calc(var(--lp-intro) + var(--i, 0) * 80ms);
 }
 
 /* O título sobe sem sumir (um primeiro quadro com opacidade 0 não conta como LCP). */
 .lp-rise-solid {
-  animation: lp-rise-solid 0.6s var(--lp-ease) both;
+  animation: lp-rise-solid 0.6s var(--lp-ease) backwards;
   animation-delay: var(--lp-intro);
+}
+
+/* Vitrine: as três molduras sobem 24 px depois do cartão, a do meio primeiro (--i 0, 1, 2).
+   A do meio também aparece (opacidade); as dos lados só sobem (ver Hero.tsx). */
+.lp-show {
+  animation: lp-show 0.6s var(--lp-ease) backwards;
+  animation-delay: calc(var(--lp-intro) + 240ms + var(--i, 0) * 90ms);
+}
+
+.lp-show-solid {
+  animation: lp-show-solid 0.6s var(--lp-ease) backwards;
+  animation-delay: calc(var(--lp-intro) + 240ms + var(--i, 0) * 90ms);
 }
 
 @keyframes lp-rise {
@@ -50,15 +60,95 @@
   }
 }
 
+@keyframes lp-show-solid {
+  from {
+    transform: translateY(24px);
+  }
+}
+
+@keyframes lp-show {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* ---------- Cabeçalho ---------- */
+/* Sobre o topo (também ink) a barra não tem borda; depois que a página rola (.lp[data-scrolled],
+   ligado pelo LandingReveal), um fio claro aparece embaixo. O fio é um ::after com opacidade:
+   nada muda de tamanho. */
+.lp-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: rgb(255 255 255 / 0.16);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.lp[data-scrolled] .lp-header::after {
+  opacity: 1;
+}
+
+/* ---------- Revelação ao rolar (uma vez por elemento) ---------- */
+/* O estado escondido só vale com .lp[data-lp-js] (o LandingReveal liga depois de marcar o que já
+   está na tela) e com movimento permitido. 14 px subindo + opacidade, 550 ms; dentro das grades,
+   70 ms entre um item e outro (--i). */
+@media (prefers-reduced-motion: no-preference) {
+  .lp[data-lp-js] .lp-reveal {
+    transition:
+      opacity 0.55s var(--lp-ease),
+      transform 0.55s var(--lp-ease);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+
+  .lp[data-lp-js] .lp-reveal:not([data-in]) {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  /* Passos: o fio se desenha da esquerda para a direita e os quatro passos seguem em fila. */
+  .lp[data-lp-js] .lp-rule::before {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .lp[data-lp-js] .lp-rule:not([data-in])::before {
+    transform: scaleX(0);
+  }
+
+  .lp[data-lp-js] .lp-rule-item {
+    transition:
+      opacity 0.5s var(--lp-ease),
+      transform 0.5s var(--lp-ease);
+    transition-delay: calc(200ms + var(--i, 0) * 110ms);
+  }
+
+  .lp[data-lp-js] .lp-rule:not([data-in]) .lp-rule-item {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* O fio ink em cima da lista dos passos (um ::before, para poder ser desenhado com scaleX). */
+.lp-rule::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: var(--lp-ink);
+  transform-origin: left;
+}
+
 /* ---------- Perguntas do topo ---------- */
 .lp-step {
-  animation: lp-step 0.45s var(--lp-ease) both;
+  animation: lp-step 0.3s var(--lp-ease) both;
 }
 
 @keyframes lp-step {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.99);
+    transform: translateY(8px);
   }
 }
 
@@ -69,20 +159,18 @@
   background: #fff;
   color: var(--lp-ink);
   transition:
-    transform 0.2s var(--lp-ease),
     background 0.2s,
     border-color 0.2s,
     color 0.2s;
 }
 
 .lp-chip:hover {
-  background: var(--lp-page);
+  background: var(--color-slate-100, #f1f5f9);
   border-color: var(--lp-ink);
-  transform: translateY(-1px);
 }
 
 .lp-chip:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .lp-chip[aria-pressed="true"] {
@@ -91,75 +179,11 @@
   color: #fff;
 }
 
-/* ---------- Telas reais ("What you get") ---------- */
-/* A captura do site rola devagar com o mouse em cima ou com o painel focado pelo teclado. */
-.lp-pan {
-  transition:
-    opacity 0.2s ease,
-    transform 7s cubic-bezier(0.45, 0, 0.25, 1);
-}
-
-.lp-shot:hover .lp-pan,
-#what-panel:focus-visible .lp-pan {
-  transform: translateY(-62%);
-}
-
-/* ---------- Linha dos passos ("How it works") ---------- */
-/* Celular: um fio vertical parado liga cada número ao seguinte (do centro de um ao centro do
-   outro; o quadrado branco do número fica por cima). */
-@media (max-width: 639.98px) {
-  .lp-timeline > li:not(:last-child)::before {
-    content: "";
-    position: absolute;
-    top: 18px;
-    left: 17.5px;
-    width: 1px;
-    /* altura do item + o espaço entre itens (gap-y-8) */
-    height: calc(100% + 2rem);
-    background: var(--lp-line);
-  }
-}
-
-/* Computador: fio horizontal na altura do centro dos números; o azul se desenha uma vez. */
-@media (min-width: 1024px) {
-  .lp-timeline::before,
-  .lp-timeline::after {
-    content: "";
-    position: absolute;
-    top: 18px;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--lp-line);
-  }
-
-  .lp-timeline::after {
-    background: var(--lp-blue);
-    transform-origin: left;
-  }
-
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .lp-timeline::after {
-        animation: lp-draw linear both;
-        animation-timeline: view();
-        animation-range: entry 20% cover 55%;
-      }
-    }
-  }
-}
-
-@keyframes lp-draw {
-  from {
-    transform: scaleX(0);
-  }
-}
-
-/* ---------- Dúvidas: + que vira − ---------- */
+/* ---------- Dúvidas: + que gira e vira − ---------- */
 .lp-fx {
   position: relative;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   flex: none;
   margin-left: auto;
 }
@@ -169,8 +193,8 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 5px;
-  width: 12px;
+  top: 6px;
+  width: 14px;
   height: 2px;
   background: currentColor;
   transition: rotate 0.2s var(--lp-ease);
@@ -201,20 +225,21 @@ details[open] > summary .lp-fx::before {
 @media (prefers-reduced-motion: reduce) {
   .lp-rise,
   .lp-rise-solid,
+  .lp-show,
+  .lp-show-solid,
   .lp-step {
     animation: none;
   }
 
-  .lp-pan,
   .lp-chip,
+  .lp-header::after,
   .lp-fx::before,
   .lp-fx::after,
   .lp-underline {
     transition: none;
   }
 
-  .lp-shot:hover .lp-pan,
-  #what-panel:focus-visible .lp-pan {
+  .lp-chip:active {
     transform: none;
   }
 }
@@ -287,95 +312,5 @@ details[open] > summary .lp-fx::before {
   }
   to {
     transform: scaleX(1);
-  }
-}
-
-/* ---------- Bolhas e pílulas ---------- */
-/* Cada bloco de conteúdo fica dentro de uma bolha branca com cantos bem redondos (24 px; 32 px
-   a partir de sm) sobre o fundo; passos e preços ficam direto no fundo, para intercalar. */
-.lp-bubble {
-  background: #fff;
-  border-radius: 24px;
-  margin-inline: auto;
-  width: 100%;
-  max-width: 1280px;
-}
-
-@media (min-width: 640px) {
-  .lp-bubble {
-    border-radius: 32px;
-  }
-}
-
-.lp-bubble-dark {
-  background: var(--lp-ink);
-  color: #fff;
-}
-
-/* Botão em pílula com a seta num círculo à direita (a seta gira ao passar o mouse). Sem sombra. */
-.lp-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  min-height: 48px;
-  padding: 6px 6px 6px 22px;
-  border-radius: 999px;
-  background: var(--lp-ink);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition:
-    background 0.2s,
-    transform 0.2s var(--lp-ease);
-}
-
-.lp-pill:hover {
-  background: #000;
-}
-
-.lp-pill:active {
-  transform: scale(0.97);
-}
-
-.lp-pill-blue {
-  background: var(--lp-blue);
-}
-
-.lp-pill-blue:hover {
-  background: var(--lp-blue-dark);
-}
-
-.lp-pill-light {
-  background: #fff;
-  color: var(--lp-ink);
-}
-
-.lp-pill-light:hover {
-  background: var(--color-slate-200, #e2e8f0);
-}
-
-.lp-pill-arrow {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.14);
-  transition: transform 0.2s var(--lp-ease);
-}
-
-.lp-pill-light .lp-pill-arrow {
-  background: var(--lp-page);
-}
-
-.lp-pill:hover .lp-pill-arrow {
-  transform: rotate(45deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-pill,
-  .lp-pill-arrow {
-    transition: none;
   }
 }

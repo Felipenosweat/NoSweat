@@ -1,35 +1,33 @@
-// Classes compartilhadas da landing: a borda da página e a escala de texto (Screen Spec, seção 2).
-// Um só H2 para todas as seções, alinhado à esquerda na mesma borda, do cabeçalho ao rodapé.
+// Classes compartilhadas da landing: a borda da página, a escala de texto e os botões.
+// Página branca, seções de ponta a ponta separadas por fios de 1 px; um só H2, alinhado à
+// esquerda na mesma borda, do cabeçalho ao rodapé.
 
-/** Borda da página, camada de fora (a de dentro é `edgeInner` ou a própria bolha branca). */
-export const edgeOuter = "px-3 sm:px-5";
+/** Borda da página: conteúdo de até 1240 px com 20 / 32 px de margem. */
+export const shell = "mx-auto w-full max-w-[1240px] px-5 sm:px-8";
 
-/** Borda da página, camada de dentro: conteúdo a 32 / 60 / 144 px em 390 / 768 / 1440. */
-export const edgeInner = "mx-auto w-full max-w-[1280px] px-5 sm:px-10 lg:px-16";
-
-/**
- * A mesma borda numa camada só (as duas somadas), para blocos que têm um único elemento de
- * largura, como o rodapé compartilhado: 32 / 60 / 84 px de margem e 1280 px + a camada de fora.
- */
-export const edgeFlat =
-  "mx-auto w-full max-w-[calc(1280px+1.5rem)] px-8 sm:max-w-[calc(1280px+2.5rem)] sm:px-[3.75rem] lg:px-[5.25rem]";
-
-/** H2 sem cor (para a bolha escura, onde o texto é branco). */
-export const h2Base =
-  "font-display text-[1.875rem] leading-[1.1] font-bold tracking-[-0.03em] text-balance lg:text-[2.75rem]";
-
-export const h2Class = `${h2Base} text-ink`;
+export const h2Class =
+  "font-display text-[clamp(2.125rem,4.6vw,3.5rem)] leading-[1.04] font-extrabold tracking-[-0.035em] text-balance text-ink";
 
 export const h3Class =
-  "font-display text-xl leading-[1.3] font-semibold tracking-[-0.02em] text-ink lg:text-[1.375rem]";
+  "font-display text-xl leading-[1.25] font-bold tracking-[-0.02em] text-ink lg:text-[1.375rem]";
 
-export const leadClass =
-  "max-w-[46ch] text-lg leading-normal tracking-[-0.01em] text-pretty text-slate-600 lg:text-xl";
+export const leadClass = "max-w-[26rem] text-lg leading-[1.55] text-pretty text-slate-600";
 
-export const bodyClass =
-  "max-w-[60ch] text-base leading-[1.6] text-pretty text-slate-600 lg:text-[17px]";
+export const bodyClass = "text-[17px] leading-[1.6] text-pretty text-slate-600";
 
-export const smallClass = "text-sm leading-normal text-slate-600";
+/** Cabeçalho de seção: título à esquerda e, quando há, uma frase à direita na linha de base. */
+export const sectionHead = "flex flex-wrap items-end justify-between gap-x-12 gap-y-5";
+
+/** Área de conteúdo da seção: um fio de 1 px em cima. */
+export const sectionBody = "mt-10 border-t border-slate-200 pt-8 lg:mt-14 lg:pt-10";
 
 export const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+
+/** Contorno de foco sobre o ink (o azul da marca some no fundo escuro). */
+export const focusRingOnInk =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+/** Seta dos botões: anda 2 px para a direita no hover do botão (que leva a classe `group`). */
+export const arrowShift =
+  "transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none";

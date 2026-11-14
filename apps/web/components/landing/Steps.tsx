@@ -1,10 +1,11 @@
-import { edgeInner, edgeOuter, h2Class, h3Class } from "./type";
+import type { CSSProperties } from "react";
+import { h2Class, h3Class, shell } from "./type";
 
-// "How it works" (#story), direto no fundo cinza: os quatro passos numa lista parada, todos à
-// vista (nada escondido atrás de rolagem lateral). Cada passo é um número num quadrado com anel
-// azul, o título e uma linha de texto. No computador os quatro ficam sobre um fio horizontal que
-// se desenha uma vez ao rolar (.lp-timeline em landing.css); no celular, um fio vertical à
-// esquerda liga os números; no tablet, 2×2 sem fio. Só o que o produto faz hoje.
+// "How it works" (#story): os quatro passos numa lista parada, todos à vista. Um fio ink em cima
+// da lista e, em cada passo, o número grande em azul, o título e uma linha de texto. No celular
+// cada passo é uma linha (número à esquerda); a partir de sm, colunas (2, depois 4).
+// Movimento (landing.css, .lp-rule): quando a lista entra na tela o fio se desenha da esquerda
+// para a direita uma vez e os quatro passos aparecem em sequência. Só o que o produto faz hoje.
 
 const STEPS = [
   {
@@ -27,31 +28,33 @@ const STEPS = [
 
 export function Steps() {
   return (
-    <section id="story" aria-labelledby="story-title" className={`scroll-mt-14 ${edgeOuter}`}>
-      <div className={`${edgeInner} py-14 lg:py-20`}>
-        <h2 id="story-title" className={h2Class}>
-          From a few answers to a live site.
-        </h2>
-        <ol className="lp-timeline relative mt-10 grid grid-cols-1 gap-y-8 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:mt-14 lg:grid-cols-4">
-          {STEPS.map(({ title, body }, index) => (
-            <li key={title} className="relative grid grid-cols-[36px_1fr] gap-x-4 sm:block">
-              {/* O número é enfeite: o <ol> já numera para quem usa leitor de tela. */}
-              <span
-                aria-hidden="true"
-                className="relative z-10 grid size-9 place-items-center rounded-xl bg-white font-display text-sm font-semibold text-ink tabular-nums ring-1 ring-brand ring-inset"
-              >
-                {index + 1}
-              </span>
-              <div className="pt-[5px] sm:pt-5">
-                <h3 className={h3Class}>{title}</h3>
-                <p className="mt-2 max-w-[32ch] text-base leading-[1.6] text-pretty text-slate-600">
-                  {body}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
+    <section id="story" aria-labelledby="story-title" className={`${shell} pt-24 lg:pt-32`}>
+      <h2 id="story-title" className={`lp-reveal ${h2Class}`}>
+        From a few answers to a live site.
+      </h2>
+      <ol className="lp-rule relative mt-10 grid grid-cols-1 sm:grid-cols-2 sm:gap-x-8 lg:mt-14 lg:grid-cols-4">
+        {STEPS.map(({ title, body }, index) => (
+          <li
+            key={title}
+            className="lp-rule-item grid grid-cols-[3.5rem_1fr] items-start gap-x-2 border-b border-slate-200 py-6 last:border-b-0 sm:block sm:border-b-0 sm:pt-6 sm:pb-4"
+            style={{ "--i": index } as CSSProperties}
+          >
+            {/* O número é enfeite: o <ol> já numera para quem usa leitor de tela. */}
+            <span
+              aria-hidden="true"
+              className="font-display text-5xl leading-none font-extrabold tracking-[-0.04em] text-brand tabular-nums sm:text-[4rem]"
+            >
+              {index + 1}
+            </span>
+            <div className="sm:mt-5">
+              <h3 className={h3Class}>{title}</h3>
+              <p className="mt-2 max-w-[30ch] text-[17px] leading-[1.6] text-pretty text-slate-600">
+                {body}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
