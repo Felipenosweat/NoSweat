@@ -94,6 +94,50 @@ export async function renderShots(browser, html) {
       screenshots.push({ mediaType: "image/jpeg", base64: buffer.toString("base64") });
     }
 
+    // Texto sobreposto sem querer: compara blocos de texto visíveis (folhas com texto próprio)
+    // em cada posição de rolagem já visitada não dá; olhamos a página parada no topo e no fim.
+    const overlaps = new Set();
+    for (const top of [0, Math.round(maxTop / 2), maxTop]) {
+      await frame.evaluate((y) => window.scrollTo({ top: y, behavior: "instant" }), top);
+      await wait(900);
+      const found = await frame.evaluate(() => {
+        const blocks = [];
+        for (const el of document.querySelectorAll("h1,h2,h3,h4,p,li,blockquote,dt,dd,label,a,span")) {
+          const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+          if (!own) continue;
+          const s = getComputedStyle(el);
+          if (s.visibility === "hidden" || Number(s.opacity) < 0.3 || el.closest("[aria-hidden=true]")) continue;
+          // Barra fixa e cabeçalho grudado passam por cima do conteúdo de propósito.
+          let fixed = false;
+          for (let p = el; p && p !== document.body; p = p.parentElement) {
+            const pos = getComputedStyle(p).position;
+            if (pos === "fixed" || pos === "sticky") { fixed = true; break; }
+          }
+          if (fixed) continue;
+          const r = el.getBoundingClientRect();
+          if (r.width < 4 || r.height < 4 || r.bottom < 0 || r.top > innerHeight) continue;
+          blocks.push({ el, r });
+        }
+        const out = [];
+        for (let i = 0; i < blocks.length; i++) {
+          for (let j = i + 1; j < blocks.length; j++) {
+            const a = blocks[i], b = blocks[j];
+            if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+            const w = Math.min(a.r.right, b.r.right) - Math.max(a.r.left, b.r.left);
+            const h = Math.min(a.r.bottom, b.r.bottom) - Math.max(a.r.top, b.r.top);
+            if (w > 8 && h > 6 && w * h > 0.2 * Math.min(a.r.width * a.r.height, b.r.width * b.r.height)) {
+              const t = (e) => e.textContent.trim().replace(/\s+/g, " ").slice(0, 40);
+              out.push(`"${t(a.el)}" overlaps "${t(b.el)}"`);
+            }
+          }
+        }
+        return out.slice(0, 6);
+      });
+      for (const item of found) overlaps.add(item);
+    }
+    const label0 = `${viewport.name} ${viewport.width}px`;
+    for (const item of [...overlaps].slice(0, 8)) problems.push(`${label0}: text overlap: ${item}`);
+
     const checks = await frame.evaluate(() => {
       const doc = document.documentElement;
       const h1 = document.querySelector("h1");

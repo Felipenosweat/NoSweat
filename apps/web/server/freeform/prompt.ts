@@ -26,6 +26,8 @@ export type FreeformBrief = {
   /** O que o dono escreveu sobre o negócio (única fonte de fatos). */
   description: string;
   photos?: FreeformPhoto[];
+  /** Família de direção de arte para este site (uma de FREEFORM_DIRECTIONS). */
+  direction?: string;
 };
 
 const scriptList = FREEFORM_SCRIPT_URLS.map((url) => `  <script src="${url}"></script>`).join("\n");
@@ -53,13 +55,21 @@ The bar is a featured site on Awwwards, not a "clean template". What separates t
 
 2. Typography is the main material. Display type at real scale: hero headlines commonly 10-20vw on desktop, set tight (line-height 0.85-0.95, slightly negative tracking for grotesks), sometimes breaking the grid, overlapping a photo, running edge to edge, or split across lines with deliberate rag. Contrast of size is extreme: huge display next to small, precise text (12-14 px labels, 16-18 px body). Use real typographic details: tabular figures for hours and prices (font-variant-numeric), proper quotes and apostrophes (’ “ ”), en dash in ranges, optical alignment of big headings (negative margin-left where needed), text-wrap: balance on headings and pretty on paragraphs, a custom ::selection color. Choose faces with character for THIS business. Good sources: Fontshare (Clash Display, Cabinet Grotesk, Satoshi, General Sans, Switzer, Zodiak, Gambetta, Erode, Sentient, Boska, Panchang, Tanker, Bespoke Serif, Chillax, Supreme, Telma) and Google (Fraunces, Instrument Serif, Newsreader, Playfair Display, DM Serif Display, Bricolage Grotesque, Space Grotesk, Archivo, Anton, Big Shoulders Display, Syne, Unbounded, Inter Tight, Manrope, JetBrains Mono, IBM Plex Mono). Do not reuse one favorite pairing for every business.
 
-3. Photography is the protagonist when photos are given. You can SEE the photos (they are attached): pick the strongest one for the first screen and know where its calm area is before placing text. Art-direct every image: full-bleed or deliberately oversized, tall or panoramic crops chosen with object-fit and object-position, images bleeding off the edge of the grid, type overlapping images (with real contrast: a scrim, mix-blend-mode: difference only when legible, or text placed on the calm area), a consistent grade across all photos (CSS filter or a duotone overlay) so they feel like one shoot. Never put photos in small rounded cards, never a grid of equal thumbnails, never the same treatment twice in a row. Use each photo at most twice.
+3. Photography is the protagonist when photos are given. You can SEE the photos (they are attached): pick the strongest one for the first screen and know where its calm area is before placing text. Art-direct every image: full-bleed or deliberately oversized, tall or panoramic crops chosen with object-fit and object-position, images bleeding off the edge of the grid, type overlapping images (with real contrast: a scrim, mix-blend-mode: difference only when legible, or text placed on the calm area), a consistent grade across all photos so they feel like one shoot (the grade follows the art direction family: keep rich color when the family is about color; do not desaturate or sepia-tone everything by habit). Never put photos in small rounded cards, never a grid of equal thumbnails, never the same treatment twice in a row. Use each photo at most twice.
 
 4. Composition with tension. A 12-column grid you then break on purpose: asymmetry, overlap, generous negative space, elements that touch the viewport edge, a sticky or pinned moment, one section that changes the background completely. Vary density and height section to section; the page should feel like a sequence of spreads in a magazine, not a stack of blocks. Recompose for a 390 px phone (do not just stack the desktop): the first phone screen must be as intentional as the desktop one.
 
 5. Motion with choreography (progressive enhancement). Use GSAP + ScrollTrigger (+ SplitText for headline line/word reveals, + Lenis for smooth scrolling on desktop if it helps) to create: an intro sequence on load (≤ 1.4 s total, staggered headline reveal, image unmask with clip-path or scale from 1.15 to 1), scroll-linked reveals for each section, at least one scrubbed effect tied to scroll (parallax on a photo, a headline that moves horizontally, a color change, a pinned section whose content advances), and crafted hover states (underline that draws, image that zooms slightly inside its frame, button with a fill transition). Rules: the page must be fully readable and usable with JavaScript off and with the CDN failing. Hide nothing in CSS by default: set initial animation states from JavaScript (gsap.set / gsap.from), and only when window.gsap exists and matchMedia("(prefers-reduced-motion: reduce)") does not match. Never animate the phone number, the form or the sticky call bar out of view. No scroll-jacking that changes scroll speed on touch devices. Call ScrollTrigger.refresh() after fonts load (document.fonts.ready).
 
 6. Details a juror notices: hairline rules and fine borders in the ink color at low opacity, a deliberate favicon, a considered focus style that matches the design, consistent radii (0 or one value), smooth anchor scrolling, a footer that is designed (often a huge wordmark of the business name), and copy that sounds like the owner.
+
+7. A default you must escape. Left alone, every generated "premium" site converges on the same look: warm beige or bone paper, near-black ink, one rust/ember/orange accent, a condensed grotesk paired with an italic serif, desaturated or sepia photos. Four different businesses then look like siblings. Do not produce that look. The request names an art direction family for this site: commit to it fully (ground color, type genre, photo grade, density, motion character) and interpret it for this business. It overrides your habits; the business only tunes it.
+
+8. Engineering that keeps the craft intact:
+- SplitText: never split text whose parent is display:flex or display:grid (the spaces between words disappear). Split headings that are block elements, split by "lines" or "words, lines", and check the result keeps word spacing. Revert splits on resize or use autoSplit.
+- Use gsap.matchMedia(): pinned sections, horizontal scrolling and heavy scrubbed effects only at (min-width: 900px) and (prefers-reduced-motion: no-preference). On phones use simple reveals; nothing is pinned on a phone.
+- Never let two blocks of text overlap by accident on any width. When type overlaps a photo on purpose, it is one heading over one image, with contrast checked.
+- Overlap and off-grid images on desktop recompose on the phone (stacked with intent, full-bleed photos, smaller but still bold type): verify at 390 px that headings fit without breaking a word in the middle.
 
 New clichés of "award sites" that you must NOT lean on: a preloader counting to 100, a custom cursor follower, a generic scrolling marquee of service names, "01 / 02 / 03" numbering on every list, a giant "Scroll" indicator, noise/grain overlay on the whole page, bento grids, glassmorphism. Use any of these only if the concept truly needs it, and at most one.
 </the_bar>
@@ -129,6 +139,22 @@ Output only the complete improved HTML document.`;
 }
 
 /** Mensagem do usuário: o pedido do dono e a lista de fotos permitidas. */
+/**
+ * Famílias de direção de arte. O lote dá uma diferente a cada site (sem repetir), para fugir do
+ * "papel bege + tinta + laranja" para onde todo site gerado converge. No produto, o servidor
+ * escolheria pela categoria e pelo tom do pedido.
+ */
+export const FREEFORM_DIRECTIONS = [
+  "Swiss / International Typographic Style: white or very light grey ground, black type, ONE saturated primary color (red, blue or yellow) used as large flat fields, a neo-grotesk (Switzer, General Sans, Inter Tight, Archivo) at enormous sizes, strict visible grid, photos in strong full-color crops, precise and fast motion.",
+  "Saturated color-block: two or three bold, unexpected flat colors (for example cobalt and acid yellow, tomato red and pale pink, deep green and lilac) as full-section grounds, chunky friendly display type (Cabinet Grotesk, Clash Display, Bricolage Grotesque, Unbounded), photos cut out or framed by the color, playful but controlled bouncy motion.",
+  "Dark cinematic: near-black ground, photos full-bleed and moody with real color (not sepia), refined serif or high-contrast display (Instrument Serif, Gambetta, Zodiak, Playfair Display) in off-white, slow parallax and long image reveals, light used like a film title sequence.",
+  "Bright editorial luxury: clean white or cool paper, a high-contrast didone or modern serif (Bespoke Serif, Erode, Newsreader, DM Serif Display) mixed with a small sans, airy margins, large colorful photos with generous whitespace, magazine captions, elegant slow fades and masks.",
+  "Kinetic type on solid color: one strong single-color ground (ultramarine, forest green, signal orange or plum) with type in a contrasting color, type is the image (massive words that move with scroll), photos appear inside letterforms, masks or narrow strips, energetic scrubbed motion.",
+  "Neo-brutalist utility: raw off-white or concrete grey, visible grid lines and hard borders, monospace plus a heavy grotesk (JetBrains Mono, IBM Plex Mono with Space Grotesk or Archivo Black), information-dense like a spec sheet or a ticket, photos hard-cropped in full color or high-contrast black and white, snappy instant motion.",
+  "Soft modern warmth: pale tinted ground (sage, sky, blush or butter, not beige), rounded humanist sans (Satoshi, Chillax, Manrope) with one expressive display face, large rounded or pill-shaped photo masks used consistently, gentle springy motion.",
+  "Night neon / signage: deep navy or black ground, one or two luminous signage colors (electric blue, hot pink, lime) used on type and lines, condensed or wide display type (Big Shoulders Display, Anton, Panchang, Tanker), photos with color-graded night tones, flicker-free glow kept subtle and accessible.",
+] as const;
+
 export function buildFreeformUserPrompt(
   brief: FreeformBrief,
   year: number = new Date().getFullYear(),
@@ -158,5 +184,5 @@ ${brief.description.trim()}
 ${photoBlock}
 </allowed_photos>
 
-Current year (for the footer only): ${year}`;
+${brief.direction ? `<art_direction_family>\n${brief.direction}\n</art_direction_family>\n\n` : ""}Current year (for the footer only): ${year}`;
 }

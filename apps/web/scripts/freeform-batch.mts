@@ -26,7 +26,7 @@ import {
 } from "../server/freeform/generate.ts";
 import { findFreeformPhotos, pingUsedPhotos } from "../server/freeform/photos.ts";
 import { estimateFreeformCostUsd } from "../server/freeform/pricing.ts";
-import type { FreeformBrief } from "../server/freeform/prompt.ts";
+import { FREEFORM_DIRECTIONS, type FreeformBrief } from "../server/freeform/prompt.ts";
 import { sanitizeFreeformHtml } from "../server/freeform/sanitize.ts";
 // @ts-expect-error: módulo .mjs sem tipos (só roda no Node, fora do typecheck do app).
 import { launchBrowser, renderShots } from "./freeform-render.mjs";
@@ -128,12 +128,16 @@ const usageLine = (result: FreeformResult) => {
   return `in ${u.input_tokens} cache r ${u.cache_read_input_tokens ?? 0} out ${u.output_tokens} ${usd === null ? "?" : `~$${usd.toFixed(3)}`}`;
 };
 
+// Uma família de direção de arte diferente para cada site do lote (sorteio sem repetir).
+const directions = [...FREEFORM_DIRECTIONS].sort(() => Math.random() - 0.5);
+
 // Em sequência: o pedido do sistema fica no cache e o lote não estoura o limite de taxa.
-for (const sample of selected) {
+for (const [index, sample] of selected.entries()) {
   const started = Date.now();
   try {
     const photos = usePhotos ? await findFreeformPhotos(sample.photoQueries) : [];
-    const brief: FreeformBrief = { ...sample.brief, photos };
+    const direction = directions[index % directions.length];
+    const brief: FreeformBrief = { ...sample.brief, photos, direction };
     const clean = (html: string) =>
       sanitizeFreeformHtml(html, {
         imageUrls: photos.map((photo) => photo.url),
@@ -190,6 +194,7 @@ for (const sample of selected) {
     console.log(
       [
         sample.slug.padEnd(18),
+        `[${direction?.split(":")[0]}]`,
         `photos ${usedPhotos}/${photos.length}`,
         `draft: ${usageLine(draft)}`,
         final === draft ? "" : `revision: ${usageLine(final)}`,
