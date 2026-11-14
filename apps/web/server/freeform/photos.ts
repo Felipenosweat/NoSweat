@@ -96,3 +96,25 @@ export async function pingUsedPhotos(
   );
   return used.length;
 }
+
+/**
+ * A IA às vezes copia errado um caractere das URLs longas do Unsplash (o `ixid`). Toda URL de
+ * images.unsplash.com cujo `photo-...` é de uma foto oferecida volta a ser a URL EXATA oferecida
+ * (antes da limpeza, que tiraria a imagem). Fotos que não foram oferecidas continuam erradas.
+ */
+export function repairPhotoUrls(html: string, photos: FreeformPhoto[]): string {
+  const byId = new Map<string, string>();
+  for (const photo of photos) {
+    const id = /images\.unsplash\.com\/(photo-[\w-]+)/.exec(photo.url)?.[1];
+    if (id) byId.set(id, photo.url);
+  }
+  return html.replace(
+    /https:\/\/images\.unsplash\.com\/(photo-[\w-]+)(?:\?[^"'\s)]*)?/g,
+    (whole, id: string) => {
+      const exact = byId.get(id);
+      if (!exact) return whole;
+      // Mantém o jeito que a IA escreveu: &amp; em atributo HTML, & cru em CSS e JS.
+      return whole.includes("&amp;") ? exact.replace(/&/g, "&amp;") : exact;
+    },
+  );
+}

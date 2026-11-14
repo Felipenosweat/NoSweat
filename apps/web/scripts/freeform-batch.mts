@@ -24,7 +24,7 @@ import {
   reviseFreeformSite,
   type FreeformResult,
 } from "../server/freeform/generate.ts";
-import { findFreeformPhotos, pingUsedPhotos } from "../server/freeform/photos.ts";
+import { findFreeformPhotos, pingUsedPhotos, repairPhotoUrls } from "../server/freeform/photos.ts";
 import { estimateFreeformCostUsd } from "../server/freeform/pricing.ts";
 import { FREEFORM_DIRECTIONS, type FreeformBrief } from "../server/freeform/prompt.ts";
 import { sanitizeFreeformHtml } from "../server/freeform/sanitize.ts";
@@ -139,7 +139,7 @@ for (const [index, sample] of selected.entries()) {
     const direction = directions[index % directions.length];
     const brief: FreeformBrief = { ...sample.brief, photos, direction };
     const clean = (html: string) =>
-      sanitizeFreeformHtml(html, {
+      sanitizeFreeformHtml(repairPhotoUrls(html, photos), {
         imageUrls: photos.map((photo) => photo.url),
         scriptUrls: FREEFORM_SCRIPT_URLS,
         linkHosts: FREEFORM_LINK_HOSTS,
