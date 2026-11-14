@@ -231,3 +231,13 @@ Como as peças se ligam:
   Com as variáveis do Supabase definidas, o store passa a ser o Supabase (`server/store/supabase.ts`).
 - Mudanças no banco: um arquivo novo em `supabase/migrations/` (nunca editar um que já rodou).
 - Deploy e domínio: ver `DEPLOY.md`.
+
+## "Roda o caminho A" (experimento de código livre)
+
+Quando o dono pedir "roda o caminho A": a chave fica em `NOSWEAT_ANTHROPIC_KEY` (o nome
+`ANTHROPIC_API_KEY` é bloqueado pelo ambiente). Sem mostrar o valor:
+1. `git fetch origin claude/determined-dijkstra-afb9si && git checkout claude/determined-dijkstra-afb9si && pnpm install`
+2. `export ANTHROPIC_API_KEY=$NOSWEAT_ANTHROPIC_KEY ANTHROPIC_BASE_URL=https://api.anthropic.com`
+   e validar com uma chamada pequena à API.
+3. `cd apps/web && node scripts/freeform-batch.mts && node scripts/freeform-sheet.mjs`
+4. Mandar a folha com os seis sites e o custo de cada um; se falhar, dizer o quê em uma frase.
