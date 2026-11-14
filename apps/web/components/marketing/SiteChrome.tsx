@@ -173,8 +173,11 @@ export function MarketingFooter({
           : group,
       )
     : FOOTER_LINKS;
-  const link = `inline-flex min-h-11 items-center rounded-sm transition-colors duration-150 ${focusRing} ${
-    dark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-ink"
+  // No fundo escuro o contorno de foco é branco (o azul da marca some no ink).
+  const link = `inline-flex min-h-11 items-center rounded-sm transition-colors duration-150 ${
+    dark
+      ? "text-slate-400 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      : `${focusRing} text-slate-600 hover:text-ink`
   }`;
   return (
     <footer

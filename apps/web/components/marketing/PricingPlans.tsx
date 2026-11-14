@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { CheckIcon } from "./icons";
 import { focusRing, primaryButton, secondaryButton } from "./styles";
 
@@ -17,9 +17,12 @@ import { focusRing, primaryButton, secondaryButton } from "./styles";
 // página, que é server component). Sem ele a venda é manual (WhatsApp/e-mail + acesso liberado
 // pelo admin por X dias): pago adiantado e SEM renovação automática, então o texto muda.
 // Nenhum dos dois modos promete e-mail de lembrete: hoje nenhum código manda esse e-mail.
-// `heading` (opcional, usado pela landing): título e introdução da seção, que ficam à esquerda
-// com a escolha mensal/anual embaixo à direita no computador. Sem ele (página /pricing), a
-// escolha fica sozinha em cima dos planos, como sempre.
+// `heading` (opcional, usado pela landing): cabeçalho da seção; liga a apresentação da landing
+// (um fio de 1 px entre o cabeçalho e a escolha mensal/anual, cartões de 16 px, preço maior e
+// revelação ao rolar). Sem ele (página /pricing), a escolha fica sozinha em cima dos planos e os
+// cartões continuam como sempre.
+// Trocar mensal/anual faz uma fusão curta do preço (os dois ficam empilhados na mesma célula e só
+// a opacidade muda: sem deslizar, sem contagem e sem mudar a altura).
 
 type Billing = "monthly" | "annual";
 
@@ -93,10 +96,11 @@ export function PricingPlans({ checkout, heading }: { checkout: boolean; heading
   // Anual por padrão: sem taxa de implantação e 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
+  const landing = Boolean(heading);
 
   // Radios nativos: setas do teclado, nome acessível e estado vêm de graça.
   const toggle = (
-    <fieldset className={heading ? "mt-8 shrink-0 lg:mt-0" : undefined}>
+    <fieldset>
       <legend className="text-sm font-semibold text-ink">Billing</legend>
       <div className="mt-3 inline-flex max-w-full flex-wrap rounded-full border border-slate-300 bg-white p-1">
         {BILLING_OPTIONS.map((option) => (
@@ -121,11 +125,11 @@ export function PricingPlans({ checkout, heading }: { checkout: boolean; heading
 
   return (
     <div>
-      {heading ? (
-        <div className="lg:flex lg:items-end lg:justify-between lg:gap-8">
-          <div>{heading}</div>
-          {toggle}
-        </div>
+      {landing ? (
+        <>
+          {heading}
+          <div className="mt-10 border-t border-slate-300 pt-8 lg:mt-14 lg:pt-10">{toggle}</div>
+        </>
       ) : (
         toggle
       )}
@@ -134,12 +138,17 @@ export function PricingPlans({ checkout, heading }: { checkout: boolean; heading
       </p>
 
       <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
-        {PLANS.map((plan) => (
+        {PLANS.map((plan, index) => (
           <li
             key={plan.id}
             aria-labelledby={`plan-${plan.id}`}
-            className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
-              plan.recommended ? "ring-2 ring-brand" : "border border-slate-200"
+            style={landing ? ({ "--i": index } as CSSProperties) : undefined}
+            className={`flex min-w-0 flex-col bg-white p-6 sm:p-8 ${
+              landing ? "lp-reveal rounded-2xl" : "rounded-xl"
+            } ${
+              plan.recommended
+                ? "ring-2 ring-brand"
+                : `border ${landing ? "border-slate-300" : "border-slate-200"}`
             }`}
           >
             <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -150,24 +159,55 @@ export function PricingPlans({ checkout, heading }: { checkout: boolean; heading
                 {plan.name}
               </h3>
               {plan.recommended && (
-                <span className="inline-flex h-7 items-center rounded-full bg-white px-3 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+                <span
+                  className={`inline-flex h-7 items-center rounded-full px-3 text-[13px] font-semibold ${
+                    landing
+                      ? "bg-brand/10 text-brand-dark"
+                      : "bg-white text-brand ring-1 ring-brand/30"
+                  }`}
+                >
                   Recommended
                 </span>
               )}
             </div>
             <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
 
-            <p className="mt-6 flex flex-wrap items-baseline gap-1 font-display text-ink">
-              <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
-                {annual ? plan.annual : plan.monthly}
-              </span>
-              <span className="text-base font-normal text-(--glass-fg-muted)">
-                {annual ? "/yr" : "/mo"}
-              </span>
-            </p>
-            <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
-              {annual ? `${plan.annualPerMonth}/mo, billed yearly` : "Billed monthly · no contract"}
-            </p>
+            {/* Os dois preços na mesma célula; o que não vale fica invisível e fora da leitura. */}
+            <div className="mt-6 grid">
+              {BILLING_OPTIONS.map(({ value }) => {
+                const yearly = value === "annual";
+                const active = value === billing;
+                return (
+                  <div
+                    key={value}
+                    aria-hidden={!active}
+                    className={`col-start-1 row-start-1 transition-[opacity,visibility] duration-200 motion-reduce:transition-none ${
+                      active ? "visible opacity-100" : "invisible opacity-0"
+                    }`}
+                  >
+                    <p className="flex flex-wrap items-baseline gap-1 font-display text-ink">
+                      <span
+                        className={`leading-none tabular-nums ${
+                          landing
+                            ? "text-[3.25rem] font-extrabold tracking-[-0.04em]"
+                            : "text-[2.5rem] font-semibold tracking-[-0.03em]"
+                        }`}
+                      >
+                        {yearly ? plan.annual : plan.monthly}
+                      </span>
+                      <span className="text-base font-normal text-(--glass-fg-muted)">
+                        {yearly ? "/yr" : "/mo"}
+                      </span>
+                    </p>
+                    <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
+                      {yearly
+                        ? `${plan.annualPerMonth}/mo, billed yearly`
+                        : "Billed monthly · no contract"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Linhas do recibo, com a linha pontilhada até o valor. */}
             <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
