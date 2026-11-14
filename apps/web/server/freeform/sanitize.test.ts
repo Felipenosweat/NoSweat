@@ -126,3 +126,18 @@ describe("isDangerousUrl", () => {
     expect(isDangerousUrl("https://example.com")).toBe(false);
   });
 });
+
+describe("sanitizeFreeformHtml script allowlist", () => {
+  it("keeps only the exact pinned animation scripts", async () => {
+    const { FREEFORM_SCRIPT_URLS } = await import("./assets");
+    const ok = FREEFORM_SCRIPT_URLS[0];
+    const result = sanitizeFreeformHtml(
+      `<script src="${ok}"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/evil/1.0/x.js"></script>`,
+      { scriptUrls: FREEFORM_SCRIPT_URLS },
+    );
+    expect(result.html).toBe(`<script src="${ok}"></script>`);
+    expect(result.removed).toEqual([
+      '<script src="https://cdnjs.cloudflare.com/ajax/libs/evil/1.0/x.js">',
+    ]);
+  });
+});

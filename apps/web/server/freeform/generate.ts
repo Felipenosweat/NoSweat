@@ -4,7 +4,12 @@
 // de enum/namespace/parameter properties.
 
 import Anthropic from "@anthropic-ai/sdk";
-import { buildFreeformUserPrompt, FREEFORM_SYSTEM_PROMPT, type FreeformBrief } from "./prompt.ts";
+import {
+  buildFreeformRevisionPrompt,
+  buildFreeformUserPrompt,
+  FREEFORM_SYSTEM_PROMPT,
+  type FreeformBrief,
+} from "./prompt.ts";
 
 /** Modelos aceitos no experimento (os preços de cada um estão em pricing.ts). */
 export const FREEFORM_MODELS = ["claude-sonnet-5-5", "claude-opus-5-5"] as const;
@@ -14,7 +19,7 @@ export type FreeformModel = (typeof FREEFORM_MODELS)[number];
 export const DEFAULT_FREEFORM_MODEL: FreeformModel = "claude-sonnet-5-5";
 
 /** Folga para uma página inteira (HTML + CSS) e o raciocínio do modelo, que conta como saída. */
-const MAX_TOKENS = 32_000;
+const MAX_TOKENS = 64_000;
 
 const EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
 type Effort = (typeof EFFORTS)[number];
@@ -55,6 +60,30 @@ export type GenerateFreeformOptions = {
   fallbacks?: boolean;
 };
 
+/** Print da página renderizada (PNG ou JPEG em base64) para a segunda passada. */
+export type FreeformScreenshot = { mediaType: "image/png" | "image/jpeg"; base64: string };
+
+export type ReviseFreeformInput = {
+  /** HTML da primeira passada (o que a IA escreveu, já limpo). */
+  html: string;
+  screenshots: FreeformScreenshot[];
+  /** Erros de console, rolagem lateral etc. encontrados ao renderizar. */
+  problems: string[];
+};
+
+type MessageParam = Anthropic.Beta.BetaMessageParam;
+type ContentBlock = Anthropic.Beta.BetaContentBlockParam;
+
+/** O pedido do dono + as fotos como imagens (a IA VÊ cada foto antes de decidir o recorte). */
+function briefContent(brief: FreeformBrief): ContentBlock[] {
+  const images: ContentBlock[] = (brief.photos ?? []).flatMap((photo) =>
+    photo.previewUrl
+      ? [{ type: "image" as const, source: { type: "url" as const, url: photo.previewUrl } }]
+      : [],
+  );
+  return [...images, { type: "text", text: buildFreeformUserPrompt(brief) }];
+}
+
 /**
  * Pede a página ao Claude com streaming (a resposta pode ser longa) e devolve o HTML extraído.
  * Sem `thinking` no pedido: Sonnet 5.5 e Opus 5.5 já usam raciocínio adaptativo por padrão (e
@@ -64,7 +93,40 @@ export async function generateFreeformSite(
   brief: FreeformBrief,
   options: GenerateFreeformOptions = {},
 ): Promise<FreeformResult> {
-  const client = options.client ?? new Anthropic({ timeout: 15 * 60_000, maxRetries: 1 });
+  return runFreeform([{ role: "user", content: briefContent(brief) }], options);
+}
+
+/**
+ * Segunda passada: a mesma conversa (pedido → página) + os prints da página renderizada. A IA
+ * critica a própria página como jurada do Awwwards e devolve o documento inteiro melhorado.
+ */
+export async function reviseFreeformSite(
+  brief: FreeformBrief,
+  input: ReviseFreeformInput,
+  options: GenerateFreeformOptions = {},
+): Promise<FreeformResult> {
+  const shots: ContentBlock[] = input.screenshots.map((shot) => ({
+    type: "image" as const,
+    source: { type: "base64" as const, media_type: shot.mediaType, data: shot.base64 },
+  }));
+  return runFreeform(
+    [
+      { role: "user", content: briefContent(brief) },
+      { role: "assistant", content: input.html },
+      {
+        role: "user",
+        content: [...shots, { type: "text", text: buildFreeformRevisionPrompt(input.problems) }],
+      },
+    ],
+    options,
+  );
+}
+
+async function runFreeform(
+  messages: MessageParam[],
+  options: GenerateFreeformOptions,
+): Promise<FreeformResult> {
+  const client = options.client ?? new Anthropic({ timeout: 20 * 60_000, maxRetries: 1 });
   const model = options.model ?? freeformModelFromEnv();
   const effort = options.effort ?? effortFromEnv();
   const fallbacks = options.fallbacks ?? process.env.FREEFORM_FALLBACKS?.trim() !== "off";
@@ -74,7 +136,7 @@ export async function generateFreeformSite(
     max_tokens: MAX_TOKENS,
     // O pedido do sistema é igual em todas as chamadas: fica no cache entre os sites do lote.
     system: [{ type: "text", text: FREEFORM_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: buildFreeformUserPrompt(brief) }],
+    messages,
     ...(effort ? { output_config: { effort } } : {}),
     // Se o filtro de segurança recusar, o servidor tenta outro modelo na mesma chamada.
     ...(fallbacks

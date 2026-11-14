@@ -115,7 +115,7 @@ for (const file of files) {
       frame.evaluate(() => document.fonts.ready.then(() => true)),
       new Promise((resolve) => setTimeout(resolve, 5000)),
     ]);
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(1800); // sequência de entrada (GSAP)
 
     const element = await page.$("iframe");
     const shots = [];
@@ -126,7 +126,7 @@ for (const file of files) {
           (y) => window.scrollTo({ top: y, behavior: "instant" }),
           screen * viewport.height,
         );
-        await page.waitForTimeout(700); // efeitos de entrada ao rolar
+        await page.waitForTimeout(1200); // efeitos de entrada ao rolar
       }
       const buffer = await element.screenshot();
       const shotPath = path.join(shotsDir, `${slug}-${viewport.width}-${screen + 1}.png`);

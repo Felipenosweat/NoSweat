@@ -20,8 +20,10 @@
 export type SanitizeOptions = {
   /** Hosts de onde um <script src> pode vir. Padrão: nenhum (o pedido proíbe scripts externos). */
   scriptHosts?: string[];
+  /** URLs EXATAS de onde um <script src> pode vir (ex.: FREEFORM_SCRIPT_URLS, versão fixa). */
+  scriptUrls?: readonly string[];
   /** Hosts permitidos em <link href> (fontes). Padrão: Google Fonts. */
-  linkHosts?: string[];
+  linkHosts?: readonly string[];
   /** URLs exatas de fotos que o site pode usar (a lista passada à IA). */
   imageUrls?: string[];
 };
@@ -59,6 +61,13 @@ type Attribute = { name: string; value: string | null; raw: string };
 
 export function sanitizeFreeformHtml(input: string, options: SanitizeOptions = {}): SanitizeResult {
   const scriptHosts = new Set((options.scriptHosts ?? []).map((host) => host.toLowerCase()));
+  const scriptUrls = new Set(options.scriptUrls ?? []);
+  const scriptAllowed = (src: string) => {
+    const trimmed = decodeAmp(src.trim());
+    if (scriptUrls.has(trimmed)) return true;
+    const host = hostOf(trimmed);
+    return host !== null && scriptHosts.has(host);
+  };
   const linkHosts = new Set((options.linkHosts ?? DEFAULT_LINK_HOSTS).map((h) => h.toLowerCase()));
   const imageUrls = new Set(options.imageUrls ?? []);
   const removed: string[] = [];
@@ -74,8 +83,7 @@ export function sanitizeFreeformHtml(input: string, options: SanitizeOptions = {
     (_whole, attrs: string, body: string) => {
       const src = readAttributes(attrs).find((attribute) => attribute.name === "src");
       if (src) {
-        const host = hostOf(src.value ?? "");
-        if (!host || !scriptHosts.has(host)) {
+        if (!scriptAllowed(src.value ?? "")) {
           removed.push(`<script src="${src.value ?? ""}">`);
           return "";
         }
@@ -121,8 +129,7 @@ export function sanitizeFreeformHtml(input: string, options: SanitizeOptions = {
       }
       if (name === "script" && get("src") !== null) {
         // <script src> sem fechamento (o passo 1 só pega os fechados).
-        const host = hostOf(get("src") ?? "");
-        if (!host || !scriptHosts.has(host)) {
+        if (!scriptAllowed(get("src") ?? "")) {
           removed.push(`<script src="${get("src") ?? ""}">`);
           return "";
         }

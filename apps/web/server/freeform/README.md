@@ -62,3 +62,22 @@ regulares (sem dependência nova): serve de segunda camada, não de proteção p
    de tokens de saída), bem mais caro que o ModelFill/edição de SiteSpec; preço em créditos.
 7. Conferência automática do que a regra 8 exige (nada inventado), acessibilidade e desempenho
    antes de mostrar ao cliente; selo da No Sweat, SEO e fotos com crédito pela plataforma.
+
+## v2: "nível awwwards"
+
+O primeiro lote (só tipografia, 45 KB, quase sem animação) saiu correto e genérico, com Sonnet ou
+Opus. O gargalo era o pedido, não o modelo. A v2 muda quatro coisas:
+
+1. **Fotos de verdade** (`photos.ts`): Unsplash por termos concretos de cada negócio; a IA recebe
+   cada foto como IMAGEM e escolhe recorte e onde pôr o texto. Fotos usadas → `download_location`.
+2. **Animação de verdade** (`assets.ts`): GSAP 3.13 + ScrollTrigger + SplitText e Lenis, por URL
+   exata (o `sanitize.ts` tira qualquer outro script). Sempre como melhoria: sem JS, tudo aparece.
+3. **Pedido novo** (`prompt.ts`): a régua é um site em destaque no Awwwards; um conceito tirado das
+   palavras do dono, tipografia em escala real, fotografia dirigida, composição com tensão,
+   coreografia de rolagem e os novos clichês de "site premiado" proibidos. Fontes do Fontshare.
+4. **Segunda passada** (`reviseFreeformSite` + `scripts/freeform-render.mjs`): a página abre no
+   sandbox, vira prints (1440 e 390 px) + checagens (erro de JS, rolagem lateral, `<h1>` invisível)
+   e a IA critica como jurada e reescreve.
+
+Custo com Opus: ~$1,50 por site (rascunho ~$0,95 + revisão ~$0,60) e ~10 min. No Node, rode com
+`NODE_USE_ENV_PROXY=1` se a rede sair por proxy (o `fetch` do Node não lê `HTTPS_PROXY`).
