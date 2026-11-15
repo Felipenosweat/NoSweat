@@ -53,7 +53,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "How much does it cost?",
     answer:
-      "Starter is $39 a month, Pro $69 and Premium $129. Monthly Starter and Pro plans have a one-time $249 setup fee. Pay yearly and get 2 months free with no setup fee: $390, $690 or $1,290 a year. Creating an account and previewing your site are free; you pick a plan when you go live.",
+      "Starter is $39 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $390, $690 or $1,290 a year. Creating an account and previewing your site are free; you pick a plan when you go live.",
   },
   {
     question: "Can I cancel?",
@@ -63,7 +63,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes, on Pro and Premium, if you already own one (from any domain registrar). On your site’s page we show the DNS records to add and verify the connection. Every plan can publish on a free nosweatfd.com/s/ address.",
+      "Yes, on every plan, if you already own one (from any domain registrar). On your site’s page we show the DNS records to add and verify the connection. You can also publish on a free nosweatfd.com/s/ address.",
   },
 ];
 
@@ -76,7 +76,7 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes, on Pro and Premium. You connect a domain you already own and we show you the DNS records to add at your registrar. Domain registration is not included.",
+      "Yes, on every plan. You connect a domain you already own and we show you the DNS records to add at your registrar. Domain registration is not included.",
   },
   {
     question: "Can I cancel?",

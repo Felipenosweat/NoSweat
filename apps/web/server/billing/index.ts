@@ -210,7 +210,7 @@ export async function customDomainBlocked(user: CurrentUser): Promise<Response |
   return errorResponse(
     402,
     "payment_required",
-    "Connecting your own domain is part of the Pro and Premium plans.",
+    "Connecting your own domain needs an active plan.",
   );
 }
 

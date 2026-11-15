@@ -146,13 +146,14 @@ describe("plan rules", () => {
     expect((await getBillingStatus(user)).enabled).toBe(false);
   });
 
-  it("asks for a plan to publish, and for Pro or Premium to connect a domain", async () => {
+  it("asks for a plan to publish and to connect a domain", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
     expect((await publishBlocked(user))?.status).toBe(402);
+    expect((await customDomainBlocked(user))?.status).toBe(402);
 
     await subscribe("starter");
     expect(await publishBlocked(user)).toBeNull();
-    expect((await customDomainBlocked(user))?.status).toBe(402);
+    expect(await customDomainBlocked(user)).toBeNull();
 
     await subscribe("pro");
     expect(await customDomainBlocked(user)).toBeNull();
@@ -352,7 +353,7 @@ describe("published sites limit", () => {
 });
 
 describe("createCheckoutUrl", () => {
-  it("adds the one-time setup fee only to monthly Starter and Pro", async () => {
+  it("charges only the plan price, with no setup fee", async () => {
     const calls: { url: string; body: string }[] = [];
     vi.stubGlobal(
       "fetch",
@@ -376,7 +377,7 @@ describe("createCheckoutUrl", () => {
       calls.find((c) => c.url.endsWith("/checkout/sessions"))!.body,
     );
     expect(monthly).toContain("line_items[0][price_data][unit_amount]=3900");
-    expect(monthly).toContain("line_items[1][price_data][unit_amount]=24900");
+    expect(monthly).not.toContain("line_items[1]");
     expect(monthly).toContain("mode=subscription");
     expect((await getBillingStore().get(user.id))?.stripeCustomerId).toBe("cus_new");
 

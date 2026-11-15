@@ -141,7 +141,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "billing",
     title: "Billing",
-    body: "Billing shows your plan and your AI credits. Your plan decides how many websites you can have online and whether you can use your own domain, which comes with Pro and Premium.",
+    body: "Billing shows your plan and your AI credits. Your plan decides how many websites you can have online and how many AI credits you get each month.",
     cta: { label: "Open Billing", href: "/billing" },
     steps: [
       "Open Billing to see your plan.",
@@ -170,7 +170,7 @@ export const GUIDE_FAQ: readonly GuideFaq[] = [
     id: "domain",
     question: "How do I connect my domain?",
     answer:
-      "Open your website and go to Domain. Type the domain you own, like yourbusiness.com. First you add a TXT record that proves it’s yours, then an A record and a CNAME record where you bought the domain. We show you the exact values. Your own domain comes with the Pro and Premium plans.",
+      "Open your website and go to Domain. Type the domain you own, like yourbusiness.com. First you add a TXT record that proves it’s yours, then an A record and a CNAME record where you bought the domain. We show you the exact values. Every plan can connect your own domain.",
   },
   {
     id: "ai-posts",

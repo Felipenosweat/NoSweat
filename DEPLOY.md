@@ -262,8 +262,8 @@ Recomendado também: `IP_HASH_SALT` (texto aleatório) para o hash de IP dos lim
 ## Passo 6: cobrança (Stripe)
 
 Enquanto as chaves abaixo não existirem, publicar e conectar domínio continuam **grátis**.
-Com elas, publicar passa a exigir um plano (Starter, Pro ou Premium) e domínio próprio exige
-Pro ou Premium. Os preços ficam no código (`apps/web/server/billing/plans.ts`): **não** precisa
+Com elas, publicar e conectar domínio próprio passam a exigir um plano (Starter, Pro ou
+Premium). Os preços ficam no código (`apps/web/server/billing/plans.ts`): **não** precisa
 criar produtos no Stripe.
 
 1. Crie a conta em https://dashboard.stripe.com/register (use o modo **Test** para testar).
