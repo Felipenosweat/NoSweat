@@ -590,10 +590,7 @@ function SidebarNav({
 function TabBar({
   account,
   supportHref,
-}: Omit<
-  ChromeProps,
-  "children" | "banner" | "tour" | "latestSiteId" | "admin" | "credits" | "creditsReadOnly"
->) {
+}: Pick<ChromeProps, "account" | "supportHref">) {
   const { currentItem, pathname } = useCurrent();
   const moreMenu = useDetailsMenu(pathname);
   const createMenu = useDetailsMenu(pathname);
