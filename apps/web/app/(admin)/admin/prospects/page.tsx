@@ -64,6 +64,12 @@ function matches(prospect: ProspectView, state: State): boolean {
   return true;
 }
 
+/** 2 = assumiu a prévia; 1 = abriu; 0 = nenhum sinal. */
+function heat(prospect: ProspectView): number {
+  if (prospect.claimedAt) return 2;
+  return prospect.previewViews > 0 ? 1 : 0;
+}
+
 export default async function AdminProspectsPage({ searchParams }: ProspectsPageProps) {
   await connection();
   await requireAdmin();
@@ -77,7 +83,12 @@ export default async function AdminProspectsPage({ searchParams }: ProspectsPage
       filter === "all" ? all.length : all.filter((p) => p.websiteStatus === filter).length,
     ]),
   ) as Record<WsFilter, number>;
-  const shown = all.filter((prospect) => matches(prospect, state));
+  // Quem mostrou interesse sobe: primeiro quem assumiu a prévia ("Make it yours"), depois quem
+  // abriu. O resto fica na ordem de sempre (mais novos primeiro; o sort é estável).
+  const shown = all
+    .filter((prospect) => matches(prospect, state))
+    .sort((a, b) => heat(b) - heat(a));
+  const hot = all.filter((p) => heat(p) > 0 && p.status !== "do_not_contact").length;
   // Lista de ligações: quem não tem e-mail, tem telefone e não pediu para não ser contatado.
   const calls = all.filter((p) => !p.email && p.phone && p.status !== "do_not_contact");
   const emailable = all.filter((p) => p.email && p.status !== "do_not_contact").length;
@@ -88,7 +99,11 @@ export default async function AdminProspectsPage({ searchParams }: ProspectsPage
       <AdminPageHeader
         title="Prospects"
         count={narrowed && state.view === "list" ? `${shown.length} of ${all.length}` : all.length}
-        description="Find small businesses without a good website, make each one a preview site, and export the list for your email tool or call sheet."
+        description={
+          hot > 0
+            ? `${hot} ${hot === 1 ? "prospect has" : "prospects have"} opened or claimed their preview. They are at the top of the list: call them first.`
+            : "Find small businesses without a good website, make each one a preview site, and export the list for your email tool or call sheet."
+        }
         actions={
           <>
             <GlassButton

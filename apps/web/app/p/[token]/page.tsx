@@ -1,16 +1,22 @@
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
+import { isAdmin } from "@/server/admin";
+import { getCurrentUser } from "@/server/auth/session";
+import { recordPreviewView } from "@/server/prospects/claim";
 import { getPublicPreview } from "@/server/prospects/service";
+import type { ProspectRecord } from "@/server/prospects/types";
 import { PreviewBarOffset } from "./PreviewBarOffset";
 
 // Prévia que a No Sweat fez para uma empresa da prospecção (/admin/prospects), aberta pelo link
 // /p/<token> do e-mail ou da ligação. Público (sem login) e nunca indexado. Mostra o RASCUNHO do
 // site com uma faixa no topo deixando claro que não é o site oficial da empresa. Sem formulário
 // de contato funcionando (nenhum pedido vai para lugar nenhum) e com o selo da No Sweat.
+// "Make it yours" é um POST para /p/<token>/claim: quem clica ganha uma cópia deste site e cai
+// no editor (server/prospects/claim.ts). Cada abertura conta para o admin saber quem olhou.
 
 type PreviewPageProps = { params: Promise<{ token: string }> };
 
@@ -36,6 +42,17 @@ export async function generateMetadata({ params }: PreviewPageProps): Promise<Me
   };
 }
 
+/** Conta a abertura (menos as do próprio admin e de robôs). Nunca derruba a página. */
+async function countView(prospect: ProspectRecord): Promise<void> {
+  try {
+    const user = await getCurrentUser();
+    if (user && (await isAdmin(user.id))) return;
+    await recordPreviewView(prospect, (await headers()).get("user-agent"));
+  } catch {
+    // Fora de um request (testes) ou sessão ilegível: só não conta.
+  }
+}
+
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
 
@@ -45,6 +62,7 @@ export default async function ProspectPreviewPage({ params }: PreviewPageProps) 
   const preview = await load(token);
   if (!preview) notFound();
   const business = preview.prospect.name;
+  await countView(preview.prospect);
 
   return (
     <>
@@ -61,12 +79,14 @@ export default async function ProspectPreviewPage({ params }: PreviewPageProps) 
             <span className="font-semibold text-white">{business}</span>. It isn&rsquo;t live and
             isn&rsquo;t affiliated with {business} until they say so.
           </p>
-          <Link
-            href="/create"
-            className={`inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 px-3.5 text-[13px] font-semibold whitespace-nowrap text-white hover:bg-emerald-400 sm:px-4 sm:text-sm ${focusRing}`}
-          >
-            Make it yours &rarr;
-          </Link>
+          <form method="post" action={`/p/${token}/claim`} className="shrink-0">
+            <button
+              type="submit"
+              className={`inline-flex min-h-10 cursor-pointer items-center justify-center rounded-full bg-emerald-500 px-3.5 text-[13px] font-semibold whitespace-nowrap text-white hover:bg-emerald-400 sm:px-4 sm:text-sm ${focusRing}`}
+            >
+              Make it yours &rarr;
+            </button>
+          </form>
         </div>
       </div>
       <PreviewBarOffset targetId="ns-preview-bar" />

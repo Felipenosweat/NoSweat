@@ -50,6 +50,9 @@ export const TRADE_SUGGESTIONS = [
   "restaurant",
 ] as const;
 
+/** Cópias que uma mesma prévia aceita ("Make it yours"): trava contra abuso do link. */
+export const MAX_CLAIMS_PER_PROSPECT = 5;
+
 /** Prévias por clique: cada uma gasta uma geração da IA (controle de custo). */
 export const MAX_PREVIEWS_PER_RUN = 10;
 
@@ -131,6 +134,11 @@ export const ProspectView = z.object({
   siteId: z.string().nullable(),
   /** Caminho da prévia pública (`/p/<token>`), ou `null` antes de criar. */
   previewPath: z.string().nullable(),
+  /** Quantas vezes a prévia foi aberta e quando foi a última. */
+  previewViews: z.number().int(),
+  previewLastViewedAt: z.string().nullable(),
+  /** Quando alguém clicou em "Make it yours" (`null` = ninguém ainda). O lead mais quente. */
+  claimedAt: z.string().nullable(),
 });
 export type ProspectView = z.infer<typeof ProspectView>;
 

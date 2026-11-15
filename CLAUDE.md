@@ -190,6 +190,11 @@ Como as peças se ligam:
   afiliado"; "do not contact" tira do ar). CSV para a ferramenta de e-mail e lista de ligações;
   nada de envio de e-mail no app. Google: só o `place_id` é guardado sem prazo; o resto é cache
   de 30 dias (`last_fetched_at`) renovado antes de usar (`ensureFresh`). Linhas do OSM não vencem.
+  "Make it yours" na prévia é um POST para `/p/<token>/claim` (`server/prospects/claim.ts`,
+  migration 0028): quem clica ganha uma CÓPIA do site (visitante ou conta, sem IA nem créditos) e
+  cai no editor; até 5 cópias por prévia. A primeira marca `claimed_at`, leva o status para
+  "replied" e avisa a equipe (SALES_EMAIL/ALERT_EMAIL, Resend). Cada abertura da prévia conta
+  (`preview_views`, sem robôs nem o admin) e quem abriu ou assumiu sobe na lista do admin.
 
 ## Princípio do produto: o cliente fala pouco, nós entregamos muito
 
