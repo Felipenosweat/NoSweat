@@ -43,9 +43,17 @@ export type ProspectRecord = {
   previewToken: string | null;
   notes: string | null;
   lastFetchedAt: string | null;
+  /** Quantas vezes a prévia pública foi aberta (sem contar robôs conhecidos nem o admin). */
+  previewViews: number;
+  previewLastViewedAt: string | null;
+  /** Primeira vez que alguém clicou em "Make it yours" (`null` = ninguém ainda). */
+  claimedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
+
+/** Cópia da prévia que alguém assumiu (tabela prospect_claims, migration 0028). */
+export type ProspectClaim = { prospectId: string; siteId: string; createdAt: string };
 
 /** O que uma busca grava: os dados do Places + o resultado da conferência do site. */
 export type ProspectUpsert = PlaceBusiness & {
@@ -75,5 +83,8 @@ export type ProspectPatch = Partial<
     | "rating"
     | "reviewCount"
     | "lastFetchedAt"
+    | "previewViews"
+    | "previewLastViewedAt"
+    | "claimedAt"
   >
 >;

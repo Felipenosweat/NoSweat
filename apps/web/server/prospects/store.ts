@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ProspectStatus, WebsiteStatus } from "@/lib/prospects";
 import { normalizeSupabaseUrl } from "../store/supabase";
-import type { ProspectPatch, ProspectRecord, ProspectUpsert } from "./types";
+import type { ProspectClaim, ProspectPatch, ProspectRecord, ProspectUpsert } from "./types";
 
 // Persistência da prospecção (tabela public.prospects, migration 0025). Supabase em produção,
 // memória no dev/testes (mesma regra do server/store e do server/clients).
@@ -18,6 +18,9 @@ export interface ProspectStore {
    */
   upsertMany(rows: ProspectUpsert[]): Promise<{ added: number; updated: number }>;
   update(id: string, patch: ProspectPatch): Promise<ProspectRecord | null>;
+  /** Cópias da prévia já assumidas (mais antigas primeiro). */
+  listClaims(prospectId: string): Promise<ProspectClaim[]>;
+  addClaim(prospectId: string, siteId: string): Promise<void>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -50,9 +53,15 @@ const Row = z.object({
   preview_token: z.string().nullable(),
   notes: z.string().nullable(),
   last_fetched_at: z.string().nullable(),
+  // Colunas da migration 0028: opcionais para a tela não quebrar se o código subir antes dela.
+  preview_views: z.coerce.number().nullish(),
+  preview_last_viewed_at: z.string().nullish(),
+  claimed_at: z.string().nullish(),
   created_at: z.string(),
   updated_at: z.string(),
 });
+
+const ClaimRow = z.object({ prospect_id: z.string(), site_id: z.string(), created_at: z.string() });
 
 function toRecord(row: z.infer<typeof Row>): ProspectRecord {
   return {
@@ -77,6 +86,9 @@ function toRecord(row: z.infer<typeof Row>): ProspectRecord {
     previewToken: row.preview_token,
     notes: row.notes,
     lastFetchedAt: row.last_fetched_at,
+    previewViews: row.preview_views ?? 0,
+    previewLastViewedAt: row.preview_last_viewed_at ?? null,
+    claimedAt: row.claimed_at ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -121,6 +133,9 @@ const PATCH_COLUMNS: Record<keyof ProspectPatch, string> = {
   rating: "rating",
   reviewCount: "review_count",
   lastFetchedAt: "last_fetched_at",
+  previewViews: "preview_views",
+  previewLastViewedAt: "preview_last_viewed_at",
+  claimedAt: "claimed_at",
 };
 
 const PAGE = 1000;
@@ -210,12 +225,50 @@ export class SupabaseProspectStore implements ProspectStore {
     const [row] = await this.call(`?id=eq.${id}`, { method: "PATCH", body: JSON.stringify(body) });
     return row ?? null;
   }
+
+  private async claims(query: string, init: RequestInit = {}): Promise<ProspectClaim[]> {
+    const url = `${normalizeSupabaseUrl(this.config.url)}/rest/v1/prospect_claims${query}`;
+    const res = await this.fetchImpl(url, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        apikey: this.config.serviceKey,
+        Authorization: `Bearer ${this.config.serviceKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+    });
+    if (!res.ok) throw new Error(`Supabase request failed (${res.status}): ${await res.text()}`);
+    const text = res.status === 204 ? "" : await res.text();
+    return z
+      .array(ClaimRow)
+      .parse(text ? JSON.parse(text) : [])
+      .map((row) => ({
+        prospectId: row.prospect_id,
+        siteId: row.site_id,
+        createdAt: row.created_at,
+      }));
+  }
+
+  async listClaims(prospectId: string) {
+    if (!UUID.test(prospectId)) return [];
+    const select = "select=prospect_id,site_id,created_at&order=created_at.asc&limit=100";
+    return this.claims(`?prospect_id=eq.${prospectId}&${select}`);
+  }
+
+  async addClaim(prospectId: string, siteId: string) {
+    await this.claims("", {
+      method: "POST",
+      body: JSON.stringify({ prospect_id: prospectId, site_id: siteId }),
+    });
+  }
 }
 
 // ---------- Memória (dev e testes) ----------
 
 const globalForProspects = globalThis as typeof globalThis & {
   __nosweatProspects?: Map<string, ProspectRecord>;
+  __nosweatProspectClaims?: ProspectClaim[];
 };
 
 export class MemoryProspectStore implements ProspectStore {
@@ -276,6 +329,9 @@ export class MemoryProspectStore implements ProspectStore {
           siteId: null,
           previewToken: null,
           notes: null,
+          previewViews: 0,
+          previewLastViewedAt: null,
+          claimedAt: null,
           createdAt: now,
         };
         this.rows.set(record.id, record);
@@ -297,9 +353,25 @@ export class MemoryProspectStore implements ProspectStore {
     return { ...next };
   }
 
+  private get claimRows(): ProspectClaim[] {
+    globalForProspects.__nosweatProspectClaims ??= [];
+    return globalForProspects.__nosweatProspectClaims;
+  }
+
+  async listClaims(prospectId: string) {
+    return this.claimRows
+      .filter((claim) => claim.prospectId === prospectId)
+      .map((claim) => ({ ...claim }));
+  }
+
+  async addClaim(prospectId: string, siteId: string) {
+    this.claimRows.push({ prospectId, siteId, createdAt: nowIso() });
+  }
+
   /** Só para testes: apaga tudo. */
   clear(): void {
     this.rows.clear();
+    this.claimRows.length = 0;
   }
 }
 
