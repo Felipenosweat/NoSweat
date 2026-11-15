@@ -1,4 +1,5 @@
 import { MAX_CLAIMS_PER_PROSPECT } from "@/lib/prospects";
+import { isLikelyBot } from "../bots";
 import { sendProspectClaimNotification } from "../notify/prospect-email";
 import type { Actor } from "../sites";
 import { getSiteStore, type SiteRecord } from "../store";
@@ -86,14 +87,6 @@ export async function claimPreview(
   return { kind: "claimed", siteId: copy.id, created: true };
 }
 
-/** Robôs e pré-visualizadores de link conhecidos: não contam como "abriu a prévia". */
-const BOT_UA =
-  /bot|crawl|spider|preview|scan|monitor|headless|lighthouse|curl|wget|python|axios|node-fetch|go-http|facebookexternalhit|whatsapp|slack|telegram|discord|skype|outlook|proofpoint|mimecast|barracuda/i;
-
-export function isLikelyBot(userAgent: string | null | undefined): boolean {
-  return !userAgent || BOT_UA.test(userAgent);
-}
-
 /**
  * Conta uma abertura da prévia (quem abriu é quem vale a ligação). Robôs conhecidos ficam de
  * fora; quem chama pula o próprio admin. Leitura + gravação sem trava: duas aberturas no mesmo
@@ -113,3 +106,5 @@ export async function recordPreviewView(
     console.error("[prospects] could not count the preview view", error);
   }
 }
+
+export { isLikelyBot };
