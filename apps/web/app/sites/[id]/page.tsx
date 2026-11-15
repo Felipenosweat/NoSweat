@@ -54,14 +54,20 @@ const RECENT_LEADS = 3;
 /** Título de painel com o quadradinho do ícone na frente (como os grupos dos Ajustes do iOS). */
 const RESULTS_DAYS = 30;
 
-/** Visitas do site desde `since`. Erro no banco = `null` (o painel some, a página segue). */
-async function visitsSince(siteId: string, since: Date): Promise<number | null> {
+/**
+ * Visitas do site nos últimos 30 dias e o começo do período. Erro no banco = `visits: null` (o
+ * painel some, a página segue).
+ */
+async function recentResults(siteId: string): Promise<{ visits: number | null; sinceIso: string }> {
+  const now = new Date();
+  const since = new Date(now.getTime() - RESULTS_DAYS * 24 * 60 * 60 * 1000);
+  const sinceIso = since.toISOString();
   try {
-    const totals = await getVisitStore().totals(dayKey(since), dayKey(new Date()), [siteId]);
-    return totals.get(siteId) ?? 0;
+    const totals = await getVisitStore().totals(dayKey(since), dayKey(now), [siteId]);
+    return { visits: totals.get(siteId) ?? 0, sinceIso };
   } catch (error) {
     console.error("[visits] could not read the visits", error);
-    return null;
+    return { visits: null, sinceIso };
   }
 }
 
@@ -114,9 +120,9 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   ]);
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   // Resultado dos últimos 30 dias (visitas contadas pelo VisitBeacon do site publicado).
-  const since = new Date(Date.now() - RESULTS_DAYS * 24 * 60 * 60 * 1000);
-  const recentVisits = await visitsSince(site.id, since);
-  const recentRequests = leads.filter((lead) => lead.createdAt >= since.toISOString()).length;
+  const results = await recentResults(site.id);
+  const recentVisits = results.visits;
+  const recentRequests = leads.filter((lead) => lead.createdAt >= results.sinceIso).length;
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
   // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
