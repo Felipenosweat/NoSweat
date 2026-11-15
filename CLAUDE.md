@@ -172,6 +172,10 @@ Como as peças se ligam:
   cliente + job "Booked online" na agenda; cancelar o job cancela a marcação. E-mails pela Resend.
 - Créditos à vista: `CreditsPill` no menu lateral e no topo do celular (`ns:credits` atualiza na
   hora); o custo de cada ação de IA aparece antes de usar. Preços só em `server/credits/pricing.ts`.
+- Painel com a cara do cliente (`server/workspace-brand.ts`, `AccountShell`, `DashboardChrome`): com o
+  plano em dia (`ownerHasLiveAccess`), a moldura do painel usa a cor principal (ajustada para AA com
+  branco) e o nome da empresa do site do cliente no lugar do logo da No Sweat (`--color-brand`,
+  `--color-accent`); sem plano, admin no próprio painel ou sem site, volta ao visual da No Sweat.
 - Cabeçalho dos sites (`styles.css` "Vidro líquido", `Signature.tsx`, `Motion.tsx` `adaptHeader`,
   `tone.ts`): vidro que muda de tom (claro/escuro) conforme a seção sob a barra (`data-tone`).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
