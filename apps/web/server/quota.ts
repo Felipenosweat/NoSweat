@@ -29,8 +29,10 @@ const ENV: Record<AiUsageKind, string> = {
 
 type GuestLimits = { perGuest: number; perIp: number; global: number };
 const GUEST_DEFAULTS: Record<AiUsageKind, GuestLimits> = {
-  generate: { perGuest: 2, perIp: 4, global: 300 },
-  ai_edit: { perGuest: 5, perIp: 15, global: 2000 },
+  // Tetos globais pequenos de propósito: limitam o pior caso (robôs com muitos IPs) a poucos
+  // dólares por dia. Subir pelas variáveis GUEST_GLOBAL_* quando houver tráfego de verdade.
+  generate: { perGuest: 2, perIp: 4, global: 40 },
+  ai_edit: { perGuest: 5, perIp: 15, global: 200 },
   // Redes sociais são só para contas: visitante sempre recebe 429.
   social_plan: { perGuest: 0, perIp: 0, global: 0 },
   social_caption: { perGuest: 0, perIp: 0, global: 0 },
