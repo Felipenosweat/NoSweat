@@ -131,7 +131,7 @@ const STEPS = [
   },
   {
     title: "Go live",
-    body: "A free nosweatfd.com address, or your own domain on Pro.",
+    body: "Your own domain, or a free nosweatfd.com address.",
     Art: LiveArt,
   },
 ];
