@@ -1,0 +1,461 @@
+<!doctype html>
+<!--
+ns:direction
+Concept: one chair and one rule, walk in. The page is the walk-in ticket for Sal's chair, built from Sal's own words (same chair since his dad handed him the shop, walk-ins only, sports radio on, no fuss). Layout: hard-bordered cells on a visible 12-column grid; a SAL'S wordmark at 23vw on top of a full-color chair photo and a cobalt "walk-ins only" cell in the first screen, an ink-black statement spread with Sal's sentence filling in word by word, a pinned black-and-white photo stack that swaps as the service rows scroll past, a full cobalt hours section, and a footer wordmark cropped by the page edge. Type: Archivo Black for display, JetBrains Mono for every small, precise fact. Palette: concrete grey, off-white cells, ink black, barber-pole cobalt as the only accent. Photos are hard-cropped, color in the hero, statement and hours, high-contrast black and white inside the service stack. Signature motion: the two hours lines slide across each other from opposite edges as the cobalt section crosses the screen, always fully readable.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sal’s Barber Shop | Barber on Federal Hill, Providence</title>
+<meta name="description" content="Sal’s Barber Shop on Federal Hill, Providence, RI. Hot towel shaves, straight razor, flat tops, cuts for guys and kids. Walk-ins only. Tue–Sat 8–5.">
+<meta name="theme-color" content="#dcdad4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232339ff'/%3E%3Ctext x='16' y='25' font-family='Arial Black,Arial,sans-serif' font-weight='900' font-size='25' text-anchor='middle' fill='white'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#dcdad4;--paper2:#ecebe6;--ink:#101010;--blue:#2339ff;--mute:#3d3c39;
+  --pad:clamp(16px,2.2vw,32px);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --disp:'Archivo Black','Arial Black',Impact,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.55 var(--mono);font-variant-numeric:tabular-nums;padding-bottom:calc(60px + env(safe-area-inset-bottom));overflow-x:clip}
+@media (min-width:720px){body{padding-bottom:0}}
+img{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-weight:400}
+::selection{background:var(--blue);color:#fff}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.hours :focus-visible,.foot :focus-visible,.bar :focus-visible,.said :focus-visible{outline-color:#fff}
+section[id]{scroll-margin-top:46px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:8px;top:-60px;background:var(--ink);color:#fff;padding:12px 16px;z-index:100;font-size:14px}
+.skip:focus{top:8px}
+.k{font:500 11px/1.3 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--mute);display:block}
+.disp{font-family:var(--disp);text-transform:uppercase;letter-spacing:-.02em;line-height:.92;text-wrap:balance}
+.ul{background:linear-gradient(currentColor,currentColor) no-repeat 0 100%/0 2px;transition:background-size .18s}
+.ul:hover{background-size:100% 2px}
+.frame{position:relative;overflow:hidden;background:var(--ink)}
+.frame img{width:100%;height:100%;object-fit:cover}
+
+/* header */
+.top{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:stretch;min-height:46px}
+.brand{display:flex;align-items:center;gap:8px;padding:0 var(--pad);font:700 12px/1 var(--mono);letter-spacing:.05em;text-transform:uppercase;text-decoration:none}
+.brand::before{content:"";width:10px;height:10px;background:var(--blue)}
+.top nav{display:flex}
+.top nav a{display:flex;align-items:center;min-height:44px;padding:0 clamp(10px,1.6vw,22px);border-left:1px solid var(--ink);font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:background .12s,color .12s}
+.top nav a:hover{background:var(--ink);color:var(--paper)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr;border-bottom:2px solid var(--ink)}
+.hero-h{position:relative;padding:clamp(12px,1.6vw,24px) var(--pad) 0;font-family:var(--disp);text-transform:uppercase;letter-spacing:-.03em;line-height:.86;font-size:29vw}
+.hero-h .ln{display:block;overflow:hidden;padding:.05em 0 .03em}
+.hero-h .ln>span{display:block;margin-left:-.03em}
+.hero-h .ln2{font-size:.38em;line-height:.95;letter-spacing:-.02em;padding-top:.02em}
+.hero-photo{aspect-ratio:1/1;border-top:2px solid var(--ink);margin-top:14px}
+.hero-photo img{position:absolute;left:0;top:-8%;height:116%;object-position:52% 80%}
+.hero-side{display:block}
+.walk{background:var(--blue);color:#fff;padding:18px var(--pad) 20px;border-bottom:2px solid var(--ink)}
+.walk .k{color:#e4e7ff}
+.walk-t{font-family:var(--disp);text-transform:uppercase;letter-spacing:-.02em;line-height:.92;font-size:11.4vw;margin:8px 0 12px}
+.walk-p{font-size:14px;max-width:38ch;line-height:1.5}
+.ticket{margin:var(--pad);background:var(--paper2);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);font-size:13px}
+.tk-h{background:var(--ink);color:var(--paper2);padding:9px 14px;font:700 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.ticket dl div{display:flex;justify-content:space-between;gap:14px;padding:10px 14px;border-bottom:1px dashed rgba(16,16,16,.5)}
+.ticket dl div:last-child{border-bottom:0}
+.ticket dt{color:var(--mute);text-transform:uppercase;font-size:11px;letter-spacing:.08em;padding-top:2px}
+.ticket dd{font-weight:700;text-align:right}
+.strip{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--ink)}
+.strip>div{padding:12px var(--pad);border-bottom:1px solid var(--ink)}
+.strip>div:nth-child(odd){border-right:1px solid var(--ink)}
+.strip>div:nth-last-child(-n+2){border-bottom:0}
+.strip b,.strip a{font:700 14px/1.3 var(--mono);display:block;margin-top:3px}
+.s-tel{display:none}
+@media (min-width:900px){
+  .hero{grid-template-columns:repeat(12,1fr);grid-template-rows:auto 1fr auto;min-height:calc(100svh - 46px)}
+  .hero-h{grid-column:1/-1;grid-row:1;font-size:23.5vw;padding-bottom:0}
+  .hero-h .ln2{position:absolute;right:var(--pad);bottom:2.3vw;font-size:4vw;max-width:5.4em;line-height:.98}
+  .hero-photo{grid-column:1/9;grid-row:2;aspect-ratio:auto;margin-top:0;min-height:340px;border-top:2px solid var(--ink)}
+  .hero-photo img{object-position:50% 74%}
+  .hero-side{grid-column:9/13;grid-row:2;display:flex;flex-direction:column;border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+  .walk{border-bottom:2px solid var(--ink)}
+  .walk-t{font-size:3.4vw}
+  .ticket{margin:auto 16px 18px 16px}
+  .strip{grid-column:1/-1;grid-row:3;grid-template-columns:1.1fr 1fr 1.25fr 1.1fr}
+  .strip>div{border-bottom:0;border-right:1px solid var(--ink)}
+  .strip>div:last-child{border-right:0}
+  .s-tel{display:block}
+  .s-tel a{font-size:clamp(15px,1.5vw,22px);text-decoration:none;background:linear-gradient(var(--blue),var(--blue)) no-repeat 0 100%/100% 3px;transition:background-size .15s,color .15s}
+  .s-tel a:hover{background-size:100% 100%;color:#fff}
+}
+
+/* statement */
+.said{background:var(--ink);color:var(--paper2);display:grid;grid-template-columns:1fr;border-bottom:2px solid var(--ink)}
+.said .k{color:#b9b7b0}
+.said-t{padding:clamp(40px,7vw,110px) var(--pad) clamp(36px,5vw,80px);display:flex;flex-direction:column;justify-content:space-between;gap:36px}
+.said-p{font-family:var(--disp);font-size:clamp(2.1rem,6.2vw,7.4rem);line-height:.98;letter-spacing:-.02em;margin:18px 0 0;text-wrap:balance}
+.said-s{max-width:46ch;font-size:16px;text-wrap:pretty;border-top:1px solid rgba(236,235,230,.35);padding-top:16px;color:#e6e4de}
+.said-img{aspect-ratio:4/5}
+.said-img img{position:absolute;left:0;top:-7%;height:114%;object-position:50% 40%}
+@media (min-width:900px){
+  .said{grid-template-columns:repeat(12,1fr)}
+  .said-t{grid-column:1/9;min-height:78vh}
+  .said-img{grid-column:9/13;aspect-ratio:auto;min-height:100%}
+}
+
+/* services */
+.cuts{border-bottom:2px solid var(--ink)}
+.sec-h{padding:clamp(32px,5vw,84px) var(--pad) clamp(24px,3vw,48px);border-bottom:2px solid var(--ink);display:grid;gap:20px}
+.sec-h h2{font-size:clamp(2.5rem,8.6vw,9.5rem);margin-top:14px}
+.sec-n{font-size:15px;max-width:30ch;align-self:end}
+.cuts-g{display:block}
+.stack{position:sticky;top:46px;z-index:2;height:38svh;border-bottom:2px solid var(--ink)}
+.stack img{position:absolute;inset:0;filter:grayscale(1) contrast(1.15);transition:transform .5s}
+.stack:hover img{transform:scale(1.035)}
+.rows{list-style:none;background:var(--paper);position:relative}
+.rows li{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;gap:12px 16px;padding:clamp(18px,2.4vw,34px) var(--pad);min-height:170px;border-bottom:2px solid var(--ink);transition:background .12s,color .12s}
+.rows li:last-child{border-bottom:0}
+@media (hover:hover){.rows li:hover{background:var(--ink);color:var(--paper2)}}
+.rows h3{grid-column:1;grid-row:1;font-family:var(--disp);text-transform:uppercase;font-size:clamp(1.6rem,7.2vw,5rem);letter-spacing:-.02em;line-height:.95;text-wrap:balance}
+.rows p{grid-column:1;grid-row:2;align-self:end;font-size:15px;max-width:34ch}
+.tag{grid-column:2;grid-row:1;font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;border:1.5px solid currentColor;padding:6px 8px;align-self:start}
+@media (min-width:900px){
+  .sec-h{grid-template-columns:repeat(12,1fr);column-gap:var(--pad)}
+  .sec-h>div{grid-column:1/10}
+  .sec-n{grid-column:10/13}
+  .cuts-g{display:grid;grid-template-columns:5fr 7fr;align-items:start}
+  .stack{height:calc(100svh - 46px);border-bottom:0;border-right:2px solid var(--ink)}
+  .rows li{min-height:clamp(240px,36vh,420px)}
+  .rows h3{font-size:clamp(1.8rem,4.4vw,5rem)}
+  .rows p{font-size:17px}
+}
+
+/* hours */
+.hours{background:var(--blue);color:#fff;border-bottom:2px solid var(--ink)}
+.hours .k{color:#e4e7ff}
+.bigwrap{overflow:clip;border-bottom:1px solid rgba(255,255,255,.6);padding:clamp(24px,3vw,44px) var(--pad) clamp(18px,2vw,30px)}
+.bigline{font-family:var(--disp);text-transform:uppercase;letter-spacing:-.025em;line-height:.92;margin-top:12px}
+.hl{display:block;width:max-content;white-space:nowrap}
+.hl.a{font-size:15vw}
+.hl.b{font-size:11.5vw;margin-top:.04em}
+.h-g{display:grid;grid-template-columns:1fr}
+.h-l{padding:clamp(24px,3vw,48px) var(--pad);display:flex;flex-direction:column}
+.now{font:700 clamp(18px,1.7vw,24px)/1.3 var(--mono);margin:4px 0 22px}
+.hrs{width:100%;border-collapse:collapse;font-size:15px}
+.hrs th,.hrs td{padding:clamp(13px,1.6vw,22px) 8px;border-top:1px solid rgba(255,255,255,.55);text-align:left}
+.hrs td{text-align:right;font-weight:700}
+.hrs tr:last-child th,.hrs tr:last-child td{border-bottom:1px solid rgba(255,255,255,.55)}
+.hrs th{font-weight:500;text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+.hrs tr.off td{font-weight:400}
+.hrs tr.is-today th,.hrs tr.is-today td{background:var(--paper2);color:var(--blue)}
+.hrs tr.is-today th::after{content:" · today"}
+.h-n{margin-top:auto;padding-top:22px;font-size:14px;max-width:42ch}
+.h-img{aspect-ratio:4/5;border-top:2px solid var(--ink)}
+.h-img img{position:absolute;inset:0;object-position:62% 30%;transition:transform .6s}
+.h-img:hover img{transform:scale(1.04)}
+@media (min-width:900px){
+  .hl.a{font-size:15vw}
+  .h-g{grid-template-columns:repeat(12,1fr)}
+  .h-l{grid-column:1/8}
+  .h-img{grid-column:8/13;aspect-ratio:auto;min-height:620px;border-top:0;border-left:2px solid var(--ink)}
+}
+
+/* visit */
+.visit{display:grid;grid-template-columns:minmax(0,1fr);border-bottom:2px solid var(--ink)}
+.visit dd,.visit a{overflow-wrap:anywhere}
+.v-call{grid-column:1/-1;background:var(--paper2);padding:clamp(22px,3vw,44px) var(--pad) clamp(22px,3vw,40px);border-bottom:2px solid var(--ink)}
+.bigtel{display:block;width:max-content;max-width:100%;margin-top:10px;font-family:var(--disp);font-size:10.4vw;letter-spacing:-.025em;line-height:1.02;text-decoration:none;white-space:nowrap;background:linear-gradient(var(--blue),var(--blue)) no-repeat 0 100%/100% 8px;transition:background-size .15s,color .15s;padding-bottom:6px;margin-left:-.02em}
+.bigtel:hover{background-size:100% 100%;color:#fff}
+.v-l{padding:clamp(32px,5vw,80px) var(--pad)}
+.v-l h2{font-size:clamp(2.3rem,5.6vw,6rem);margin:14px 0 clamp(22px,3vw,40px)}
+.addr div{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:11px 0;border-top:1px solid var(--ink);font-size:15px}
+.addr div:last-child{border-bottom:1px solid var(--ink)}
+.addr dt{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);padding-top:3px}
+.tkt{background:var(--paper2);border-top:2px solid var(--ink)}
+.tkt h3{background:var(--ink);color:var(--paper2);padding:12px var(--pad);font:700 12px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.tkt-b{padding:var(--pad)}
+.fld{margin-bottom:16px}
+.fld label{display:block;font:500 11px/1.2 var(--mono);letter-spacing:.09em;text-transform:uppercase;margin-bottom:6px}
+.fld input,.fld textarea{width:100%;font:400 16px/1.4 var(--mono);color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:0;padding:12px;min-height:48px}
+.fld textarea{resize:vertical;min-height:130px}
+.fld input:focus-visible,.fld textarea:focus-visible{outline:3px solid var(--blue);outline-offset:0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note{font-size:13px;color:var(--mute);margin:2px 0 18px;max-width:48ch}
+.send{width:100%;min-height:52px;border:2px solid var(--ink);border-radius:0;cursor:pointer;color:#fff;font:700 14px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(var(--blue),var(--blue)) no-repeat 0 0/0% 100%,var(--ink);transition:background-size .22s}
+.send:hover{background-size:100% 100%}
+@media (min-width:900px){
+  .visit{grid-template-columns:repeat(12,1fr)}
+  .bigtel{font-size:10.6vw}
+  .v-l{grid-column:1/7}
+  .tkt{grid-column:7/13;border-top:0;border-left:2px solid var(--ink)}
+}
+
+/* footer */
+.foot{background:var(--ink);color:var(--paper);overflow:clip}
+.f-g{display:grid;grid-template-columns:1fr 1fr;gap:20px var(--pad);padding:clamp(28px,4vw,56px) var(--pad) 0;font-size:14px}
+.f-g .k{color:#b9b7b0;margin-bottom:4px}
+.f-g a{text-decoration:none;font-weight:700}
+.f-b{padding:28px var(--pad) 0;font-size:12px;color:#b9b7b0;position:relative;z-index:1}
+.wm{font-family:var(--disp);text-transform:uppercase;letter-spacing:-.04em;line-height:.8;font-size:32vw;margin:.05em 0 -.14em 0;padding-left:var(--pad);white-space:nowrap}
+@media (min-width:720px){.f-g{grid-template-columns:repeat(4,1fr)}}
+
+/* mobile bar */
+.bar{display:none}
+@media (max-width:719px){
+  .bar{display:grid;grid-template-columns:1fr auto;position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--ink);padding-bottom:env(safe-area-inset-bottom);border-top:2px solid var(--ink)}
+  .bar a{display:flex;align-items:center;justify-content:center;min-height:56px;padding:0 18px;font:700 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:#fff}
+  .bar .call{background:var(--blue)}
+  .bar .hrs-l{border-left:2px solid var(--ink);background:var(--paper2);color:var(--ink)}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="#top">Sal’s Barber Shop</a>
+  <nav aria-label="Primary"><a href="#cuts">Cuts</a><a href="#hours">Hours</a><a href="#visit">Visit</a></nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-label="Sal’s Barber Shop">
+    <h1 class="hero-h"><span class="ln"><span>Sal’s</span></span> <span class="ln ln2"><span>Barber Shop</span></span></h1>
+    <figure class="hero-photo frame"><img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8b2xkJTIwYmFyYmVyc2hvcCUyMGNoYWlyfGVufDF8fHx8MTc5NDY5MTg0OXww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="black leather barber chair near brown brick wall" width="4288" height="2848" fetchpriority="high"></figure>
+    <div class="hero-side">
+      <div class="walk">
+        <span class="k">Federal Hill, Providence</span>
+        <p class="walk-t">Walk-ins only</p>
+        <p class="walk-p">Hot towel shaves, straight razor, flat tops and regular cuts for guys and kids.</p>
+      </div>
+      <aside class="ticket" aria-label="How the shop works">
+        <p class="tk-h">Walk-in ticket</p>
+        <dl>
+          <div><dt>Booking</dt><dd>None, walk in</dd></div>
+          <div><dt>Pay</dt><dd>Cash or card</dd></div>
+          <div><dt>Radio</dt><dd>Sports</dd></div>
+          <div><dt>Closed</dt><dd>Sun, Mon</dd></div>
+        </dl>
+      </aside>
+    </div>
+    <div class="strip">
+      <div><span class="k">Status</span><b data-status>Tue–Sat, walk-ins only</b></div>
+      <div><span class="k">Hours</span><b>Tue–Sat 8 AM–5 PM</b></div>
+      <div><span class="k">Where</span><b>Federal Hill, Providence, RI</b></div>
+      <div class="s-tel"><span class="k">Phone</span><a href="tel:+14015550143">(401) 555-0143</a></div>
+    </div>
+  </section>
+
+  <section class="said" aria-labelledby="said-h">
+    <div class="said-t">
+      <div>
+        <h2 class="k" id="said-h">Sal Russo, owner</h2>
+        <p class="said-p">I’ve been cutting hair in this same chair since my dad handed me the shop.</p>
+      </div>
+      <p class="said-s" data-rv>Old school: hot towel shaves, straight razor, flat tops, regular cuts for guys and kids. Sports radio on, no appointments, no fuss.</p>
+    </div>
+    <figure class="said-img frame"><img src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c3RyYWlnaHQlMjByYXpvciUyMHNoYXZlfGVufDF8fHx8MTc5NDY5MTg1MHww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="A tattooed barber using a straight razor to trim a man's hair" width="4016" height="6016" loading="lazy"></figure>
+  </section>
+
+  <section class="cuts" id="cuts" aria-labelledby="cuts-h">
+    <div class="sec-h">
+      <div>
+        <span class="k">What gets done in the chair</span>
+        <h2 class="disp split" id="cuts-h">Old school shaves and cuts</h2>
+      </div>
+      <p class="sec-n">Everything below is walk-in only. Cash or card.</p>
+    </div>
+    <div class="cuts-g">
+      <figure class="stack frame">
+        <img data-i="4" src="https://images.unsplash.com/photo-1549271568-e87e07c5406b?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8YmFyYmVyJTIwaG90JTIwdG93ZWwlMjBzaGF2ZXxlbnwxfHx8fDE3OTQ2OTE4NTB8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="gray stainless steel scissors on towel" width="3000" height="2000" loading="lazy" style="object-position:40% 50%">
+        <img data-i="3" src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c3RyYWlnaHQlMjByYXpvciUyMHNoYXZlfGVufDF8fHx8MTc5NDY5MTg1MHww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="man sitting on barber's chair" width="4858" height="3239" loading="lazy" style="object-position:48% 40%">
+        <img data-i="2" src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8YmFyYmVyJTIwcG9sZXxlbnwxfHx8fDE3OTQ2OTE4NTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="Two hair clippers, scissors, a comb, and grooming products on a slate board" width="5760" height="3840" loading="lazy" style="object-position:65% 50%">
+        <img data-i="1" src="https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c3RyYWlnaHQlMjByYXpvciUyMHNoYXZlfGVufDF8fHx8MTc5NDY5MTg1MHww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="A tattooed barber using a straight razor to trim a man's hair" width="4016" height="6016" loading="lazy" style="object-position:50% 36%">
+        <img data-i="0" src="https://images.unsplash.com/photo-1532710093739-9470acff878f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8YmFyYmVyJTIwaG90JTIwdG93ZWwlMjBzaGF2ZXxlbnwxfHx8fDE3OTQ2OTE4NTB8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="grayscale photo of man shaving his beard" width="4272" height="2848" loading="lazy" style="object-position:62% 50%">
+      </figure>
+      <ul class="rows">
+        <li><h3>Hot towel shave</h3><p>Hot towel first, then the straight razor.</p><span class="tag">Shave</span></li>
+        <li><h3>Straight razor</h3><p>Edges and necklines, done with a straight razor.</p><span class="tag">Razor</span></li>
+        <li><h3>Flat tops</h3><p>Flat tops, cut level with the clippers.</p><span class="tag">Clippers</span></li>
+        <li><h3>Regular cuts, guys</h3><p>A regular haircut. Sit down and tell Sal.</p><span class="tag">Scissors</span></li>
+        <li><h3>Kids’ cuts</h3><p>Regular cuts for kids. Walk in with them.</p><span class="tag">Kids</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="hours" id="hours" aria-labelledby="hours-h">
+    <div class="bigwrap">
+      <span class="k">Hours, Providence time</span>
+      <h2 class="bigline" id="hours-h"><span class="hl a">Tue–Sat</span> <span class="hl b">8 AM–5 PM</span></h2>
+    </div>
+    <div class="h-g">
+      <div class="h-l">
+        <p class="now" data-status>Walk-ins only, Tuesday to Saturday</p>
+        <table class="hrs">
+          <caption class="sr">Weekly hours</caption>
+          <tbody>
+            <tr class="off" data-day="Mon"><th scope="row">Monday</th><td>Closed</td></tr>
+            <tr data-day="Tue"><th scope="row">Tuesday</th><td>8 AM–5 PM</td></tr>
+            <tr data-day="Wed"><th scope="row">Wednesday</th><td>8 AM–5 PM</td></tr>
+            <tr data-day="Thu"><th scope="row">Thursday</th><td>8 AM–5 PM</td></tr>
+            <tr data-day="Fri"><th scope="row">Friday</th><td>8 AM–5 PM</td></tr>
+            <tr data-day="Sat"><th scope="row">Saturday</th><td>8 AM–5 PM</td></tr>
+            <tr class="off" data-day="Sun"><th scope="row">Sunday</th><td>Closed</td></tr>
+          </tbody>
+        </table>
+        <p class="h-n">Walk-ins only, no appointments. Cash or card.</p>
+      </div>
+      <figure class="h-img frame"><img src="https://images.unsplash.com/photo-1536520002442-39764a41e987?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8b2xkJTIwYmFyYmVyc2hvcCUyMGNoYWlyfGVufDF8fHx8MTc5NDY5MTg0OXww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="salon interior with lighted pendant lamps" width="4305" height="6457" loading="lazy"></figure>
+    </div>
+  </section>
+
+  <section class="visit" id="visit" aria-labelledby="visit-h">
+    <div class="v-call">
+      <span class="k">Call the shop</span>
+      <a class="bigtel" href="tel:+14015550143">(401) 555-0143</a>
+    </div>
+    <div class="v-l">
+      <span class="k">Find the shop</span>
+      <h2 class="disp split" id="visit-h">Find Sal on Federal Hill</h2>
+      <dl class="addr">
+        <div><dt>Address</dt><dd>Federal Hill, Providence</dd></div>
+        <div><dt>Area</dt><dd>Federal Hill, Providence, RI</dd></div>
+        <div><dt>Email</dt><dd><a class="ul" href="mailto:hello@salsbarbershop.example.com">hello@salsbarbershop.example.com</a></dd></div>
+        <div><dt>Hours</dt><dd>Tue–Sat 8 AM–5 PM</dd></div>
+        <div><dt>Pay</dt><dd>Cash or card</dd></div>
+      </dl>
+    </div>
+    <div class="tkt">
+      <h3>Leave a message for Sal</h3>
+      <div class="tkt-b">
+        <form data-ns-contact>
+          <div class="fld"><label for="f-name">Name</label><input id="f-name" name="name" type="text" required autocomplete="name"></div>
+          <div class="fld"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
+          <div class="fld"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+          <div class="fld"><label for="f-msg">Message</label><textarea id="f-msg" name="message" required></textarea></div>
+          <div class="hp" aria-hidden="true"><label>Company <input name="company" tabindex="-1" autocomplete="off"></label></div>
+          <p class="note">Add a phone or an email so Sal can reply. For a cut or a shave, just walk in; there are no appointments.</p>
+          <button class="send" type="submit">Send message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="f-g">
+    <div><span class="k">Shop</span>Sal’s Barber Shop</div>
+    <div><span class="k">Phone</span><a href="tel:+14015550143">(401) 555-0143</a></div>
+    <div><span class="k">Area</span>Federal Hill, Providence, RI</div>
+    <div><span class="k">Hours</span>Tue–Sat 8 AM–5 PM</div>
+  </div>
+  <p class="f-b">© 2026 Sal’s Barber Shop. Photos: Nathon Oski, Jason Leung, Allef Vinicius, Agustin Fernandez, Arthur Humeau and Andrea Donato on Unsplash.</p>
+  <p class="wm" aria-hidden="true">Sal’s</p>
+</footer>
+
+<div class="bar" role="region" aria-label="Quick actions">
+  <a class="call" href="tel:+14015550143">Call (401) 555-0143</a>
+  <a class="hrs-l" href="#hours">Hours</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script>
+(function(){
+  var $=function(s,c){return (c||document).querySelector(s)};
+  var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGsap=!!window.gsap&&!reduce;
+
+  /* Computed open/closed status, Providence time */
+  var names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  try{
+    var p={};
+    new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});
+    var d=names.indexOf(p.weekday),m=(+p.hour)*60+(+p.minute),openDay=d>=2&&d<=6,t;
+    if(openDay&&m>=480&&m<1020)t='Open now, until 5 PM';
+    else if(openDay&&m<480)t='Closed, opens today at 8 AM';
+    else if(d>=1&&d<=5)t='Closed, opens tomorrow at 8 AM';
+    else t='Closed, opens Tuesday at 8 AM';
+    $$('[data-status]').forEach(function(el){el.textContent=t});
+    $$('[data-day]').forEach(function(r){if(r.getAttribute('data-day')===p.weekday)r.classList.add('is-today')});
+  }catch(e){}
+
+  /* Services: the photo stack follows the list */
+  var imgs=$$('.stack img'),rows=$$('.rows li'),cur=0,z=10;
+  function show(i){
+    if(i===cur||i<0)return;cur=i;
+    var im=imgs.filter(function(x){return +x.getAttribute('data-i')===i})[0];
+    if(!im)return;
+    im.style.zIndex=++z;
+    if(hasGsap)gsap.fromTo(im,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:.3,ease:'power2.out',overwrite:true});
+  }
+  rows.forEach(function(r,i){r.addEventListener('mouseenter',function(){show(i)})});
+  if('IntersectionObserver' in window){
+    var wide=matchMedia('(min-width:900px)'),io;
+    var setIO=function(){
+      if(io)io.disconnect();
+      io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)show(rows.indexOf(e.target))})},{rootMargin:wide.matches?'-47% 0px -47% 0px':'-56% 0px -42% 0px'});
+      rows.forEach(function(r){io.observe(r)});
+    };
+    setIO();
+    if(wide.addEventListener)wide.addEventListener('change',setIO);
+  }
+
+  if(!hasGsap)return;
+  gsap.registerPlugin(ScrollTrigger);
+  var hasSplit=!!window.SplitText;
+  if(hasSplit)gsap.registerPlugin(SplitText);
+
+  /* Intro, under 1.4 s */
+  var tl=gsap.timeline({defaults:{ease:'power4.out'}});
+  tl.from('.hero-h .ln>span',{yPercent:112,duration:.55,stagger:.09})
+    .from('.hero-photo',{clipPath:'inset(0 100% 0 0)',duration:.6},.1)
+    .from('.hero-photo img',{scale:1.15,duration:.9},.1)
+    .from('.hero-side > *',{opacity:0,y:16,duration:.45,stagger:.08},.3);
+
+  /* Headline line reveals */
+  if(hasSplit){
+    $$('.split').forEach(function(el){
+      SplitText.create(el,{type:'lines',mask:'lines',autoSplit:true,onSplit:function(self){
+        return gsap.from(self.lines,{yPercent:110,duration:.5,stagger:.08,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
+      }});
+    });
+    /* Sal's sentence fills in word by word as you scroll */
+    var sp=$('.said-p');
+    SplitText.create(sp,{type:'words',autoSplit:true,onSplit:function(self){
+      return gsap.fromTo(self.words,{opacity:.2},{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:sp,start:'top 85%',end:'bottom 55%',scrub:true}});
+    }});
+  }
+
+  $$('[data-rv]').forEach(function(el){
+    gsap.from(el,{y:24,opacity:0,duration:.5,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 94%',once:true}});
+  });
+  gsap.from('.rows li',{opacity:0,y:18,duration:.4,stagger:.07,ease:'power3.out',scrollTrigger:{trigger:'.rows',start:'top 92%',once:true}});
+  gsap.from('.hrs tr',{opacity:0,x:-14,duration:.35,stagger:.05,ease:'power2.out',scrollTrigger:{trigger:'.hrs',start:'top 90%',once:true}});
+
+  var mm=gsap.matchMedia();
+  mm.add('(min-width:0px)',function(){
+    gsap.fromTo('.said-img img',{yPercent:-5},{yPercent:5,ease:'none',scrollTrigger:{trigger:'.said-img',start:'top bottom',end:'bottom top',scrub:true}});
+    gsap.fromTo('.hero-photo img',{yPercent:-4},{yPercent:4,ease:'none',scrollTrigger:{trigger:'.hero-photo',start:'top bottom',end:'bottom top',scrub:true}});
+  });
+  mm.add('(min-width:900px)',function(){
+    /* Hours: the two lines cross each other, always inside the frame */
+    var wrap=$('.bigwrap'),a=$('.hl.a'),b=$('.hl.b');
+    var avail=function(){var cs=getComputedStyle(wrap);return wrap.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)};
+    var st={trigger:wrap,start:'top bottom',end:'bottom top',scrub:true,invalidateOnRefresh:true};
+    gsap.fromTo(a,{x:0},{x:function(){return Math.max(0,avail()-a.offsetWidth)},ease:'none',scrollTrigger:st});
+    gsap.fromTo(b,{x:function(){return Math.max(0,avail()-b.offsetWidth)}},{x:0,ease:'none',scrollTrigger:st});
+    gsap.from('.wm',{yPercent:30,ease:'none',scrollTrigger:{trigger:'.foot',start:'top bottom',end:'bottom bottom',scrub:true}});
+  });
+
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){ScrollTrigger.refresh()});
+  window.addEventListener('load',function(){ScrollTrigger.refresh()});
+})();
+</script>
+</body>
+</html>

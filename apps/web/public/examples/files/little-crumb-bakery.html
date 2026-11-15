@@ -1,0 +1,489 @@
+<!doctype html>
+<!-- ns:direction
+Concept: Little Crumb is only open from 7 to 2, so the whole page is one morning on Pine Street. The headline says "baked this morning", a pinned reel scrolls through the hours 7 to 2 while the background turns from dawn blue to blush and a clock runs 7:00 to 2:00, and the current hour lights up from the real Burlington clock.
+Layout: a four-line headline with a crumb-textured pill set inside the sentence, beside a half-pill photo that bleeds off the right edge. After it come a pinned horizontal reel, a full-width typographic menu list with pill hovers, an overlapping collage of capsule, wide-pill and circle masks, a forest-green cake section whose three headline lines slide against each other, a counter photo that widens as you scroll, and a blush visit section.
+Type: Fraunces (soft, wonky, heavy) for display, Satoshi for everything small. Palette: pale sage, sky, butter, blush, deep forest, berry accent.
+Photos stay in full color and only appear in pill, capsule and circle masks, each with a springy unmask on entry. Signature motion: the 1.3 s intro (line-masked headline, the crumb pill popping in, the hero photo unmasking) and the 7-to-2 reel. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Crumb Bakery | Bakery in Burlington, Vermont</title>
+<meta name="description" content="Little Crumb Bakery on Pine Street in Burlington, Vermont. Sourdough, morning buns, maple scones, fruit galettes and birthday cakes. Open Wed–Sun, 7 AM–2 PM.">
+<meta name="theme-color" content="#DDE9D5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%231D3527'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Georgia,serif' font-size='38' font-weight='700' fill='%23FFF0B3'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,500..800,100,1&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sage:#DDE9D5;--sky:#CFE4EE;--butter:#FFF0B3;--blush:#F8D9D8;--forest:#1D3527;--ink:#17231B;--berry:#A5224A;--berry-lt:#FFB3C4;
+  --line:rgba(23,35,27,.22);--pad:clamp(20px,4vw,64px);--r:999px;--ease:cubic-bezier(.3,1.4,.5,1);
+  --display:'Fraunces',Georgia,'Times New Roman',serif;--sans:'Satoshi',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --crumb:url("https://images.unsplash.com/photo-1624323210693-198b0ca184b1?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c291cmRvdWdoJTIwYnJlYWQlMjBjcnVtYnxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max");
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+body{font:400 17px/1.55 var(--sans);background:var(--sage);color:var(--ink);font-variant-numeric:lining-nums}
+img{display:block;max-width:100%}
+a{color:inherit}
+::selection{background:var(--berry);color:var(--butter)}
+:focus-visible{outline:3px solid var(--berry);outline-offset:3px}
+.dark :focus-visible,footer :focus-visible,.bar :focus-visible,.top nav :focus-visible,.brand:focus-visible{outline-color:var(--butter)}
+.skip{position:absolute;left:12px;top:-70px;background:var(--forest);color:var(--butter);padding:12px 18px;border-radius:var(--r);z-index:100;text-decoration:none;font-weight:700}
+.skip:focus{top:12px}
+h1,h2,h3{font-family:var(--display);font-weight:650;font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.03em;line-height:.92;text-wrap:balance}
+p{text-wrap:pretty}
+.lbl{font:700 12px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.ul{background:linear-gradient(currentColor,currentColor) 0 100%/0 1.5px no-repeat;transition:background-size .5s ease;text-decoration:none;padding-bottom:3px}
+.ul:hover{background-size:100% 1.5px}
+main{overflow-x:clip}
+.mask{position:relative;overflow:hidden;border-radius:var(--r);background:#c4d3bb;isolation:isolate}
+.z{position:absolute;inset:0;transition:scale .9s var(--ease)}
+.mask:hover .z{scale:1.05}
+.z img{width:100%;height:100%;object-fit:cover;filter:saturate(1.05) contrast(1.02)}
+.par .z img{height:120%;margin-top:-10%}
+.ln{display:block;overflow:hidden;padding:.04em 0 .14em;margin:-.04em 0 -.14em}
+.ln>span{display:block}
+
+/* header */
+.top{position:absolute;inset:0 0 auto 0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:18px var(--pad)}
+.brand{font:700 19px/1 var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.02em;text-decoration:none}
+.top nav{display:flex;gap:18px;font-size:14px;font-weight:500}
+.tel{display:none}
+
+/* hero */
+.hero{display:flex;flex-direction:column;padding:88px var(--pad) 28px;min-height:100svh;position:relative}
+.h1{font-size:14.2vw;margin-left:-.03em}
+.pill{display:inline-block;width:1.7em;height:.68em;border-radius:var(--r);background:var(--crumb) center/cover;transform-origin:0 50%;margin-left:.1em;vertical-align:.04em}
+.hero-status{margin-top:18px}
+.hero-ph{margin:22px calc(var(--pad)*-1) 0 0}
+.hero-ph .mask{aspect-ratio:1/1.05;border-radius:var(--r) 0 0 var(--r)}
+.hero-ph img{object-position:50% 58%}
+.hero-p{margin-top:22px;max-width:36ch}
+.status{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--forest);flex:none}
+.dot.open{background:#1f8a4c}
+.dot.shut{background:var(--berry)}
+
+/* buttons */
+.btn{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 30px;border-radius:var(--r);background:var(--butter);color:var(--forest);font:700 16px/1 var(--sans);text-decoration:none;border:0;cursor:pointer}
+.btn::before{content:"";position:absolute;inset:0;background:var(--berry-lt);transform:translateY(101%);transition:transform .5s var(--ease);z-index:-1;border-radius:var(--r)}
+.btn:hover::before,.btn:focus-visible::before{transform:none}
+.btn.solid{background:var(--forest);color:var(--butter)}
+.btn.solid::before{background:var(--berry)}
+.btn.solid:hover{color:#fff}
+
+/* reel: static grid by default, horizontal when JS adds .is-h */
+.reel{background:var(--sky);padding:clamp(70px,10vw,140px) var(--pad);position:relative;overflow-x:clip}
+.reel-track{display:grid;grid-template-columns:repeat(4,1fr);gap:26px 10px;align-items:end}
+.reel-intro{grid-column:1/-1;margin-bottom:12px}
+.reel-intro h2{font-size:clamp(2.5rem,11.4vw,5rem)}
+.hr{display:flex;flex-direction:column;font:700 17vw/.8 var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.04em;font-variant-numeric:lining-nums;color:var(--forest);align-self:end}
+.hr small{font:700 11px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;margin-top:12px;white-space:nowrap}
+.hr.now{color:var(--berry)}
+.rf{grid-column:1/-1;order:20}
+.rf-a{width:64%;justify-self:end}.rf-a .mask{aspect-ratio:1}
+.rf-b{order:21;margin:6px calc(var(--pad)*-1) 0 0}.rf-b .mask{aspect-ratio:16/11;border-radius:var(--r) 0 0 var(--r)}
+.reel-end{grid-column:1/-1;order:30;margin-top:18px;display:grid;gap:8px}
+.reel-end h3{font-size:clamp(2rem,9vw,3.4rem)}
+.clock,.prog{display:none}
+.rf-a img{object-position:50% 60%}
+.rf-b img{object-position:50% 45%}
+
+/* bakes */
+.bakes{background:var(--butter);padding:clamp(80px,12vw,180px) var(--pad) clamp(70px,9vw,140px)}
+.bk-head{display:grid;gap:18px;margin-bottom:clamp(32px,5vw,72px)}
+.bk-head h2{font-size:clamp(2.3rem,5vw,5.4rem)}
+.bk-head p{max-width:34ch}
+.menu{list-style:none;border-top:1.5px solid var(--ink)}
+.menu li{position:relative;isolation:isolate;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;column-gap:20px;padding:.14em 0 .2em;border-bottom:1px solid var(--line);font:650 clamp(2rem,9vw,2.8rem)/1.02 var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.03em}
+.menu li::before{content:"";position:absolute;inset:.1em -.22em;background:var(--berry-lt);border-radius:var(--r);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease);z-index:-1}
+.menu li:hover::before{transform:scaleX(1)}
+.menu small{font:700 13px/1.2 var(--sans);letter-spacing:.04em;color:var(--berry);padding-bottom:.4em}
+.col{display:grid;margin-top:clamp(56px,8vw,120px)}
+.c1{width:80%;margin-left:auto}.c1 .mask{aspect-ratio:3/4}
+.c2{position:relative;z-index:2;margin:-18% calc(var(--pad)*-1) 0 0}.c2 .mask{aspect-ratio:16/10;box-shadow:0 0 0 8px var(--butter);border-radius:var(--r) 0 0 var(--r)}
+.c3{position:relative;z-index:3;width:58%;margin-top:-12%}.c3 .mask{aspect-ratio:1;box-shadow:0 0 0 8px var(--butter)}
+.c3 img{object-position:50% 49%;transform:scale(1.55)}
+
+/* cakes */
+.cakes{background:var(--forest);color:var(--butter);padding:clamp(90px,12vw,190px) var(--pad) clamp(80px,10vw,150px);overflow-x:clip}
+.cakes h2{font-size:11vw;line-height:.88}
+.cakes .r2{color:var(--berry-lt)}
+.cakes-row{display:grid;gap:44px;margin-top:44px}
+.cakes-body{display:grid;gap:24px;max-width:44ch;border-top:1px solid rgba(255,240,179,.3);padding-top:24px;align-content:start}
+.cakes-body p{font-size:18px}
+.cakes-body .btn{justify-self:start}
+.cakes-ph{width:78%}.cakes-ph .mask{aspect-ratio:1}
+.cakes-ph img{object-position:50% 60%}
+
+/* story */
+.story{background:var(--sage);padding:clamp(70px,10vw,150px) var(--pad);display:grid;gap:clamp(34px,4vw,64px)}
+.wide{margin-inline:calc(var(--pad)*-1)}
+.wide .mask{aspect-ratio:4/5}
+.wide img{object-position:58% 50%}
+.story h2{font-size:12.6vw}
+.story-t{display:grid;gap:28px}
+.story-t p{max-width:34ch}
+
+/* visit */
+.visit{background:var(--blush);padding:clamp(80px,11vw,170px) var(--pad);display:grid;gap:clamp(44px,6vw,88px)}
+.visit h2{font-size:clamp(3rem,12.4vw,10.6rem)}
+.vtop{display:grid;gap:30px}
+.vgrid{display:grid;gap:56px}
+.hours{list-style:none;border-top:1.5px solid var(--ink);font-variant-numeric:tabular-nums}
+.hours li{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font-size:19px}
+.hours .today{font-weight:700;color:var(--berry)}
+.hours .x{opacity:.72}
+address{font-style:normal;display:grid;gap:4px;font-size:18px;align-content:end}
+address a{font-weight:700}
+.area{margin-top:10px;font-size:15px}
+.form-h{font-size:clamp(2rem,3.4vw,3.2rem);margin-bottom:26px}
+.f{display:grid;gap:22px}
+.two{display:grid;gap:22px}
+.fld label{display:block;margin:0 0 7px 22px}
+.fld input,.fld textarea{width:100%;font:400 18px/1.4 var(--sans);background:rgba(255,255,255,.62);color:var(--ink);border:1.5px solid rgba(23,35,27,.4);border-radius:var(--r);padding:15px 22px;transition:border-color .3s,background .3s}
+.fld textarea{min-height:150px;resize:vertical;border-radius:28px}
+.fld input:focus,.fld textarea:focus{border-color:var(--berry);background:#fff}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note{font-size:14px;max-width:44ch}
+.f .btn{justify-self:start;min-height:56px;padding:0 38px}
+
+/* footer */
+footer{background:var(--forest);color:var(--butter);padding:64px var(--pad) calc(96px + env(safe-area-inset-bottom));overflow-x:clip}
+.fcols{display:grid;gap:22px;font-size:15px;padding-bottom:48px}
+.fcols a{font-weight:700}
+.fcols small{display:block;font-size:13px;margin-top:6px;opacity:.85;max-width:46ch}
+.mark{font:700 30vw/.8 var(--display);font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.045em;white-space:nowrap;margin-left:-.04em;padding-bottom:.08em}
+.mark span{display:block}
+
+/* bar */
+.bar{position:fixed;inset:auto 0 0 0;z-index:50;background:var(--forest);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr auto;gap:10px;border-top:1px solid rgba(255,240,179,.25)}
+.bar a{min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);font:700 15px/1 var(--sans);text-decoration:none;padding:0 20px;white-space:nowrap}
+.bar-call{background:var(--butter);color:var(--forest)}
+.bar-btn{border:1.5px solid var(--butter);color:var(--butter)}
+
+@media(min-width:720px){
+  footer{padding-bottom:0}
+  .bar{display:none}
+  .top nav{gap:30px;font-size:15px}
+  .two{grid-template-columns:1fr 1fr}
+  .mark{font-size:18.4vw}
+  .mark span{display:inline-block}
+  .fcols{grid-template-columns:1.2fr 1fr 1.4fr;gap:40px}
+  .menu li{font-size:clamp(2rem,6.8vw,9.6rem)}
+  .menu li:nth-child(2),.menu li:nth-child(3){padding-left:.8em}
+  .bk-head{grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:end}
+  .bk-head h2{grid-column:1/8}.bk-head p{grid-column:9/13}
+}
+@media(min-width:900px){
+  .top{position:fixed;display:grid;grid-template-columns:1fr auto 1fr;pointer-events:none}
+  .top>*{pointer-events:auto}
+  .brand{justify-self:start;background:var(--forest);color:var(--butter);padding:0 22px;min-height:44px;display:inline-flex;align-items:center;border-radius:var(--r);border:1px solid rgba(255,240,179,.3)}
+  .top nav{justify-self:center;background:var(--forest);color:var(--butter);padding:0 6px;gap:0;min-height:44px;align-items:center;border-radius:var(--r);border:1px solid rgba(255,240,179,.3)}
+  .top nav a{background:none;padding:9px 18px;border-radius:var(--r);transition:background .3s}
+  .top nav a:hover{background:rgba(255,240,179,.18)}
+  .tel{display:inline-flex;justify-self:end;align-items:center;min-height:44px;padding:0 22px;background:var(--butter);color:var(--forest);border:1.5px solid var(--forest);border-radius:var(--r);font-weight:700;text-decoration:none;font-variant-numeric:tabular-nums;transition:background .3s}
+  .tel:hover{background:var(--berry-lt)}
+
+  .hero{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:1fr auto;column-gap:20px;padding:108px var(--pad) 36px}
+  .h1{grid-column:1/9;grid-row:1;align-self:center;font-size:clamp(3rem,11vw,13rem)}
+  .h1 .ln:nth-child(3){padding-left:.5em}
+  .h1 .ln:nth-child(4){padding-left:1.1em}
+  .hero-ph{grid-column:9/13;grid-row:1/3;margin:0 calc(var(--pad)*-1) 0 0;display:flex}
+  .hero-ph .mask{flex:1;aspect-ratio:auto;min-height:420px}
+  .hero-status{grid-column:1/5;grid-row:2;align-self:end;margin:0;border-top:1px solid var(--line);padding-top:16px}
+  .hero-p{grid-column:5/9;grid-row:2;align-self:end;margin:0;border-top:1px solid var(--line);padding-top:14px}
+
+  .reel-track{grid-template-columns:repeat(8,1fr);gap:40px 14px}
+  .hr{font-size:8vw}
+  .reel-intro h2{font-size:clamp(2.6rem,6vw,7rem)}
+  .reel.is-h{height:100vh;padding:0;display:flex;align-items:center}
+  .reel.is-h .reel-track{display:flex;width:max-content;height:100%;align-items:center;gap:0;padding:0 var(--pad)}
+  .reel.is-h .reel-intro{flex:none;width:46vw;margin:0 7vw 0 0}
+  .reel.is-h .hr{flex:none;font-size:46vh;margin-right:6vw;align-self:center}
+  .reel.is-h .rf{flex:none;order:0;margin:0 6vw 0 0;width:auto;align-self:center}
+  .reel.is-h .rf .mask{height:100%;aspect-ratio:auto;border-radius:var(--r);box-shadow:none}
+  .reel.is-h .rf-a{height:54vh;aspect-ratio:1}
+  .reel.is-h .rf-b{height:66vh;aspect-ratio:.62}
+  .reel.is-h .reel-end{flex:none;order:0;width:34vw;margin:0 var(--pad) 0 0}
+  .reel.is-h .reel-end h3{font-size:clamp(2.4rem,4.6vw,5.4rem)}
+  .reel.is-h .clock{display:flex;position:absolute;left:var(--pad);bottom:34px;font:700 15px/1 var(--sans);letter-spacing:.08em;font-variant-numeric:tabular-nums;align-items:center;gap:12px;z-index:2}
+  .reel.is-h .prog{display:block;position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--berry);transform:scaleX(0);transform-origin:left}
+
+  .bakes{padding-bottom:clamp(90px,10vw,160px)}
+  .col{grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:start}
+  .c1{grid-column:1/6;grid-row:1/3;width:auto;margin:0}.c1 .mask{aspect-ratio:3/4.1}
+  .c2{grid-column:5/13;grid-row:1;margin:10vw calc(var(--pad)*-1) 0 0}.c2 .mask{aspect-ratio:16/9;box-shadow:0 0 0 12px var(--butter)}
+  .c3{grid-column:8/12;grid-row:2;width:auto;margin-top:-5vw}.c3 .mask{box-shadow:0 0 0 12px var(--butter)}
+
+  .cakes h2{font-size:11.4vw}
+  .cakes-row{grid-template-columns:repeat(12,1fr);column-gap:20px;margin-top:3vw;align-items:start}
+  .cakes-body{grid-column:1/6;margin-top:5vw}
+  .cakes-ph{grid-column:8/13;width:auto;margin-top:-6vw}
+
+  .wide{margin-inline:0}
+  .wide .mask{aspect-ratio:21/9}
+  .story h2{font-size:clamp(3rem,9.4vw,11rem)}
+  .story h2 .ln:nth-child(2){padding-left:1.1em}
+  .story-t{grid-template-columns:8fr 4fr;column-gap:20px;align-items:end}
+
+  .vtop{grid-template-columns:repeat(12,1fr);column-gap:20px;align-items:end}
+  .vtop h2{grid-column:1/9}
+  .vtop address{grid-column:9/13}
+  .vgrid{grid-template-columns:5fr 6fr;column-gap:8vw}
+}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <a class="brand" href="#top">Little Crumb</a>
+  <nav aria-label="Sections"><a class="ul" href="#hours">Hours</a><a class="ul" href="#bakes">Bakes</a><a class="ul" href="#cakes">Cakes</a></nav>
+  <a class="tel" href="tel:+18025550136">(802) 555-0136</a>
+</header>
+
+<main id="main">
+<section class="hero">
+  <h1 class="h1"><span class="ln"><span>Baked <i class="pill" aria-hidden="true"></i></span></span><span class="ln"><span>this morning</span></span><span class="ln"><span>on Pine</span></span><span class="ln"><span>Street.</span></span></h1>
+  <p class="status hero-status"><span class="dot" id="dot"></span><span id="statusTxt">Wed–Sun, 7 AM–2 PM</span></p>
+  <div class="hero-ph">
+    <div class="mask"><div class="z"><img src="https://images.unsplash.com/photo-1590301157172-7ba48dd1c2b2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c291cmRvdWdoJTIwYnJlYWQlMjBjcnVtYnxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="bread on brown wooden table" width="2400" height="3200" fetchpriority="high"></div></div>
+  </div>
+  <p class="hero-p">Sourdough loaves, morning buns, maple scones, seasonal fruit galettes and custom birthday cakes from a small shop in Burlington, Vermont.</p>
+</section>
+
+<section class="reel" id="hours" aria-labelledby="hours-h">
+  <div class="reel-track">
+    <div class="reel-intro"><h2 id="hours-h">Open 7 AM to 2 PM, Wednesday through Sunday.</h2></div>
+    <div class="hr" data-h="7" aria-hidden="true">7<small>AM, we open</small></div>
+    <div class="hr" data-h="8" aria-hidden="true">8<small>AM</small></div>
+    <figure class="rf rf-a"><div class="mask"><div class="z"><img src="https://images.unsplash.com/photo-1681218424681-b4f8228ecea9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bW9ybmluZyUyMGJ1biUyMHBhc3RyeXxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="a piece of bread sitting on top of a cork coaster" width="2400" height="1800" loading="lazy"></div></div></figure>
+    <div class="hr" data-h="9" aria-hidden="true">9<small>AM</small></div>
+    <div class="hr" data-h="10" aria-hidden="true">10<small>AM</small></div>
+    <div class="hr" data-h="11" aria-hidden="true">11<small>AM</small></div>
+    <figure class="rf rf-b"><div class="mask"><div class="z"><img src="https://images.unsplash.com/photo-1602077812176-1bd3ff433d74?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8bW9ybmluZyUyMGJ1biUyMHBhc3RyeXxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="brown bread on white paper" width="2400" height="2998" loading="lazy"></div></div></figure>
+    <div class="hr" data-h="12" aria-hidden="true">12<small>PM</small></div>
+    <div class="hr" data-h="13" aria-hidden="true">1<small>PM</small></div>
+    <div class="hr" data-h="14" aria-hidden="true">2<small>PM, we close</small></div>
+    <div class="reel-end"><h3>Closed Monday and Tuesday.</h3><p>Pine Street, Burlington, Vermont.</p></div>
+  </div>
+  <p class="clock" aria-hidden="true"><span id="clk">7:00 AM</span></p>
+  <i class="prog" aria-hidden="true"></i>
+</section>
+
+<section class="bakes" id="bakes">
+  <div class="bk-head">
+    <h2 data-rv>What we bake on Pine Street.</h2>
+    <p data-rv>Everything is baked in the morning in our small shop on Pine Street.</p>
+  </div>
+  <ul class="menu" data-rv>
+    <li>Sourdough loaves</li>
+    <li>Morning buns</li>
+    <li>Maple scones</li>
+    <li>Seasonal fruit galettes</li>
+    <li>Custom birthday cakes<small>with a week’s notice</small></li>
+  </ul>
+  <div class="col">
+    <figure class="c1"><div class="mask par"><div class="z"><img src="https://images.unsplash.com/photo-1602077812176-1bd3ff433d74?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8bW9ybmluZyUyMGJ1biUyMHBhc3RyeXxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="brown bread on white paper" width="2400" height="2998" loading="lazy"></div></div></figure>
+    <figure class="c2"><div class="mask par"><div class="z"><img src="https://images.unsplash.com/photo-1624323210693-198b0ca184b1?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c291cmRvdWdoJTIwYnJlYWQlMjBjcnVtYnxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="white and gray stone fragments" width="2400" height="1600" loading="lazy"></div></div></figure>
+    <figure class="c3"><div class="mask"><div class="z"><img src="https://images.unsplash.com/photo-1590301157172-7ba48dd1c2b2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c291cmRvdWdoJTIwYnJlYWQlMjBjcnVtYnxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="bread on brown wooden table" width="2400" height="3200" loading="lazy"></div></div></figure>
+  </div>
+</section>
+
+<section class="cakes dark" id="cakes">
+  <h2><span class="ln"><span>Birthday cakes</span></span><span class="ln r2"><span>need a week’s</span></span><span class="ln"><span>notice.</span></span></h2>
+  <div class="cakes-row">
+    <div class="cakes-body" data-rv>
+      <p>Custom birthday cakes take a week’s notice. Send us the day you need it and what you have in mind.</p>
+      <a class="btn" href="#contact">Ask about a cake</a>
+    </div>
+    <figure class="cakes-ph"><div class="mask par"><div class="z"><img src="https://images.unsplash.com/photo-1600477064324-92a31919ffd2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8ZnJ1aXQlMjBnYWxldHRlfGVufDF8fHx8MTc5NDY5NjkxMnww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="fruit salad on white ceramic plate" width="2400" height="1600" loading="lazy"></div></div></figure>
+  </div>
+</section>
+
+<section class="story">
+  <figure class="wide"><div class="mask par"><div class="z"><img src="https://images.unsplash.com/photo-1711672284661-bd70e38f31b2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8YmFrZXJ5JTIwY291bnRlciUyMG1vcm5pbmclMjBsaWdodHxlbnwxfHx8fDE3OTQ2OTY5MTF8MA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="a bakery filled with lots of baked goods" width="2400" height="1600" loading="lazy"></div></div></figure>
+  <div class="story-t">
+    <h2 data-rv><span class="ln"><span>Hannah bakes.</span></span><span class="ln"><span>Luis runs</span></span><span class="ln"><span>the counter.</span></span></h2>
+    <p data-rv>The shop on Pine Street is small, and everything in the case is baked that morning. Come by Wednesday through Sunday and Luis will have you taken care of.</p>
+  </div>
+</section>
+
+<section class="visit" id="visit">
+  <div class="vtop">
+    <h2 data-rv>Find us on Pine Street.</h2>
+    <address data-rv>
+      <strong>Little Crumb Bakery</strong>
+      <span>Pine Street, Burlington, Vermont</span>
+      <a class="ul" href="tel:+18025550136" style="justify-self:start">(802) 555-0136</a>
+      <a class="ul" href="mailto:hello@littlecrumb.example.com" style="justify-self:start">hello@littlecrumb.example.com</a>
+      <span class="area">Area: Burlington, Vermont.</span>
+    </address>
+  </div>
+  <div class="vgrid">
+    <div data-rv>
+      <ul class="hours" aria-label="Opening hours">
+        <li data-d="1" class="x"><span>Monday</span><span>Closed</span></li>
+        <li data-d="2" class="x"><span>Tuesday</span><span>Closed</span></li>
+        <li data-d="3"><span>Wednesday</span><span>7 AM to 2 PM</span></li>
+        <li data-d="4"><span>Thursday</span><span>7 AM to 2 PM</span></li>
+        <li data-d="5"><span>Friday</span><span>7 AM to 2 PM</span></li>
+        <li data-d="6"><span>Saturday</span><span>7 AM to 2 PM</span></li>
+        <li data-d="0"><span>Sunday</span><span>7 AM to 2 PM</span></li>
+      </ul>
+    </div>
+    <div id="contact">
+      <h3 class="form-h">Cake orders and questions</h3>
+      <form data-ns-contact class="f">
+        <div class="fld"><label class="lbl" for="n">Name</label><input id="n" name="name" type="text" autocomplete="name" required></div>
+        <div class="two">
+          <div class="fld"><label class="lbl" for="e">Email</label><input id="e" name="email" type="email" autocomplete="email"></div>
+          <div class="fld"><label class="lbl" for="p">Phone</label><input id="p" name="phone" type="tel" autocomplete="tel"></div>
+        </div>
+        <div class="fld"><label class="lbl" for="m">Message</label><textarea id="m" name="message" required></textarea></div>
+        <div class="hp" aria-hidden="true"><label>Company <input name="company" tabindex="-1" autocomplete="off"></label></div>
+        <p class="note">Leave a phone number or an email so we can write back. For a cake, include the day you need it.</p>
+        <button class="btn solid" type="submit">Send message</button>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="fcols">
+    <div><strong>Little Crumb Bakery</strong><br>Burlington, Vermont<br>Wed–Sun, 7 AM–2 PM</div>
+    <div><a class="ul" href="tel:+18025550136">(802) 555-0136</a><br>Pine Street, Burlington, Vermont</div>
+    <div>© 2026 Little Crumb Bakery<small>Photos: Vicky Ng, Spring Fed Images, Vicky Nguyen, Oscar Nord, Elisha Terada and Crystal Jo on Unsplash</small></div>
+  </div>
+  <div class="mark" aria-hidden="true"><span>Little</span> <span>Crumb</span></div>
+</footer>
+
+<div class="bar">
+  <a class="bar-call" href="tel:+18025550136">Call (802) 555-0136</a>
+  <a class="bar-btn" href="#contact">Order a cake</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>
+(function(){
+  /* live status from the Burlington clock */
+  try{
+    var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    var parts=new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"long",hour:"numeric",minute:"numeric",hourCycle:"h23"}).formatToParts(new Date());
+    var o={};parts.forEach(function(p){o[p.type]=p.value});
+    var di=days.indexOf(o.weekday),mins=(+o.hour)*60+(+o.minute);
+    var openDays=[0,3,4,5,6],isOpen=openDays.indexOf(di)>-1,txt,cls="shut";
+    if(isOpen&&mins>=420&&mins<840){
+      txt="Open now, until 2 PM";cls="open";
+      var cur=document.querySelector('.hr[data-h="'+Math.floor(mins/60)+'"]');
+      if(cur)cur.classList.add("now");
+    }else if(isOpen&&mins<420){txt="Closed now, opens today at 7 AM"}
+    else{var n=(di+1)%7;while(openDays.indexOf(n)<0)n=(n+1)%7;txt="Closed now, opens "+(n===(di+1)%7?"tomorrow":days[n])+" at 7 AM"}
+    document.getElementById("statusTxt").textContent=txt;
+    document.getElementById("dot").className="dot "+cls;
+    var row=document.querySelector('.hours li[data-d="'+di+'"]');
+    if(row){row.classList.add("today");row.setAttribute("aria-current","date")}
+  }catch(e){}
+
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!window.gsap||!window.ScrollTrigger||reduce)return;
+  gsap.registerPlugin(ScrollTrigger);
+  var lenis=null,mm=gsap.matchMedia();
+
+  /* desktop part 1: smooth scroll + the 7-to-2 reel (created first so later triggers measure after the pin) */
+  mm.add("(min-width:900px)",function(){
+    if(window.Lenis){
+      lenis=new Lenis({lerp:.1});
+      lenis.on("scroll",ScrollTrigger.update);
+      var tick=function(t){lenis.raf(t*1000)};
+      gsap.ticker.add(tick);gsap.ticker.lagSmoothing(0);
+    }
+    var reel=document.querySelector(".reel"),track=reel.querySelector(".reel-track");
+    var clk=document.getElementById("clk"),prog=reel.querySelector(".prog");
+    reel.classList.add("is-h");
+    var len=function(){return Math.max(0,track.scrollWidth-document.documentElement.clientWidth)};
+    var tl=gsap.timeline({scrollTrigger:{trigger:reel,start:"top top",end:function(){return "+="+len()},pin:true,scrub:true,invalidateOnRefresh:true,anticipatePin:1,refreshPriority:1,
+      onUpdate:function(s){
+        var t=7+s.progress*7,h=Math.floor(t),m=Math.min(59,Math.floor((t-h)*60));
+        clk.textContent=(h>12?h-12:h)+":"+(m<10?"0":"")+m+" "+(h>=12?"PM":"AM");
+        prog.style.transform="scaleX("+s.progress+")";
+      }}});
+    tl.to(track,{x:function(){return -len()},ease:"none"},0).to(reel,{backgroundColor:"#F8D9D8",ease:"none"},0);
+    return function(){
+      reel.classList.remove("is-h");
+      if(lenis){lenis.destroy();lenis=null;gsap.ticker.lagSmoothing(500,33)}
+    };
+  });
+
+  /* intro */
+  gsap.set(".h1 .ln>span",{yPercent:115});
+  gsap.set(".hero-ph .mask",{clipPath:"inset(100% 0% 0% 0%)"});
+  gsap.set(".hero-ph img",{scale:1.15});
+  gsap.set(".pill",{scale:0});
+  gsap.set(".hero-status,.hero-p",{y:18,opacity:0});
+  gsap.timeline({defaults:{ease:"power4.out"}})
+    .to(".h1 .ln>span",{yPercent:0,duration:.8,stagger:.09})
+    .to(".hero-ph .mask",{clipPath:"inset(0% 0% 0% 0%)",duration:1,ease:"power3.inOut"},0)
+    .to(".hero-ph img",{scale:1,duration:1.2},0)
+    .to(".pill",{scale:1,duration:.6,ease:"back.out(2)"},.5)
+    .to(".hero-status,.hero-p",{y:0,opacity:1,duration:.6,stagger:.08},.6);
+
+  /* reveals, all sizes */
+  gsap.utils.toArray("[data-rv]").forEach(function(el){
+    gsap.from(el,{y:36,opacity:0,duration:.9,ease:"power3.out",scrollTrigger:{trigger:el,start:"top 90%",once:true}});
+  });
+  gsap.utils.toArray(".cakes h2 .ln>span").forEach(function(s,i){
+    gsap.from(s,{yPercent:115,duration:.9,ease:"power4.out",delay:i*.08,scrollTrigger:{trigger:".cakes h2",start:"top 85%",once:true}});
+  });
+  gsap.utils.toArray(".col .mask,.cakes-ph .mask").forEach(function(m){
+    gsap.fromTo(m,{clipPath:"inset(16% 12% 16% 12% round 999px)"},{clipPath:"inset(0% 0% 0% 0% round 999px)",duration:1.1,ease:"back.out(1.1)",clearProps:"clipPath",scrollTrigger:{trigger:m,start:"top 90%",once:true}});
+  });
+  gsap.utils.toArray(".menu li").forEach(function(li,i){
+    gsap.from(li,{y:30,opacity:0,duration:.7,ease:"power3.out",delay:i*.06,scrollTrigger:{trigger:".menu",start:"top 88%",once:true}});
+  });
+  gsap.from(".mark span",{yPercent:45,opacity:0,duration:1,stagger:.1,ease:"back.out(1.3)",scrollTrigger:{trigger:".mark",start:"top 98%",once:true}});
+
+  /* desktop part 2: scrubbed moments */
+  mm.add("(min-width:900px)",function(){
+    gsap.utils.toArray(".par img").forEach(function(img){
+      gsap.fromTo(img,{yPercent:-6},{yPercent:6,ease:"none",scrollTrigger:{trigger:img.closest(".mask"),start:"top bottom",end:"bottom top",scrub:true}});
+    });
+    gsap.utils.toArray(".h1 .ln").forEach(function(l,i){
+      gsap.to(l,{x:i%2?"3vw":"-2.5vw",ease:"none",scrollTrigger:{trigger:".hero",start:"top top",end:"bottom top",scrub:true}});
+    });
+    var cl=gsap.utils.toArray(".cakes h2 .ln"),from=["4vw","-4vw","4vw"],to=["-4vw","6vw","-4vw"];
+    cl.forEach(function(l,i){
+      gsap.fromTo(l,{x:from[i]},{x:to[i],ease:"none",scrollTrigger:{trigger:".cakes",start:"top bottom",end:"bottom top",scrub:true}});
+    });
+    gsap.fromTo(".wide .mask",{clipPath:"inset(0% 26% 0% 26% round 999px)"},{clipPath:"inset(0% 0% 0% 0% round 999px)",ease:"none",scrollTrigger:{trigger:".wide",start:"top 88%",end:"top 20%",scrub:true}});
+  });
+  /* phone: simple reveal for the counter photo */
+  mm.add("(max-width:899px)",function(){
+    gsap.fromTo(".wide .mask",{clipPath:"inset(10% 8% 10% 8% round 999px)"},{clipPath:"inset(0% 0% 0% 0% round 999px)",duration:1.1,ease:"back.out(1.1)",clearProps:"clipPath",scrollTrigger:{trigger:".wide",start:"top 88%",once:true}});
+  });
+
+  document.addEventListener("click",function(e){
+    var a=e.target.closest&&e.target.closest('a[href^="#"]');
+    if(!a||!lenis)return;
+    var id=a.getAttribute("href");
+    if(id.length>1){var t=document.querySelector(id);if(t){e.preventDefault();lenis.scrollTo(t)}}
+  });
+
+  var refresh=function(){ScrollTrigger.refresh()};
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refresh);
+  window.addEventListener("load",refresh);
+})();
+</script>
+</body>
+</html>

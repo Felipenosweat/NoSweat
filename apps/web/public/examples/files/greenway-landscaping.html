@@ -1,0 +1,522 @@
+<!doctype html>
+<!-- ns:direction The concept is "an issue about your yard, edited by Mike and Jen": a bright magazine with a huge Bodoni masthead, a dateline, captioned plates, and each job treated as its own spread. The layout runs a masthead over a bleeding lawn photo, a type-only statement whose words light up on scroll, a contents list, a left-bleed lawn plate, a pale spread with a wide panorama, one deep-green spread where "Mulch" straddles a dark photo, an overlapped stone collage, and a town list in giant type that finishes the sentence "Greenway works on homes in". Type is Bodoni Moda (display at 16-30vw, sturdier optical size for mid-size headings) with Inter Tight for labels and body. The palette is cool white paper, pale lawn green, near-black green ink, one deep green and a single lime on the dark spread; photos keep full natural color under one light shared grade. The signature moment is the masthead rising out of its mask while the lawn photo unrolls, then slow clip-path unmasks, parallax and a scrubbed Mulch headline. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greenway Landscaping – Lawns in Overland Park, KS</title>
+<meta name="description" content="Family-run lawn mowing, cleanups, mulch, shrub trimming, small patios and retaining walls in Overland Park, Olathe and Leawood, Kansas. Free estimates.">
+<meta name="theme-color" content="#F4F8F5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2314502D'/%3E%3Ctext x='32' y='47' font-family='Georgia,serif' font-size='44' font-weight='700' text-anchor='middle' fill='%23F4F8F5'%3EG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F8F5;--ink:#0C1A12;--green:#14502D;--lime:#C4E87A;--pale:#E2EDE5;--deep:#0D2718;
+  --line:rgba(12,26,18,.22);--focus:var(--green);
+  --m:clamp(20px,4.2vw,64px);--gap:clamp(12px,1.6vw,24px);--hh:62px;
+  --serif:"Bodoni Moda","Didot","Bodoni 72",Georgia,"Times New Roman",serif;
+  --sans:"Inter Tight",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+body{background:var(--paper);color:var(--ink);font:400 17px/1.55 var(--sans);padding-bottom:calc(64px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+@media(min-width:720px){body{padding-bottom:0}}
+::selection{background:var(--green);color:#fff}
+.page{overflow-x:clip}
+img{display:block;max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
+.dark{--focus:var(--lime);--line:rgba(244,248,245,.26)}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--ink);color:#fff;padding:12px 18px;text-decoration:none}
+.skip:focus{top:12px}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.02em;text-wrap:balance;font-kerning:normal}
+h2{line-height:.95}
+.mid{font-variation-settings:"opsz" 40}
+p{text-wrap:pretty}
+em{font-style:italic}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.label{font:500 12px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.sm{padding-bottom:.16em;margin-bottom:-.16em}
+
+/* images */
+.frame{position:relative;overflow:hidden;background:#cbd9ce}
+.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.06) contrast(1.03)}
+figcaption,.cap{font:400 12.5px/1.4 var(--sans);letter-spacing:.02em;padding-top:10px;margin-top:12px;border-top:1px solid var(--line);opacity:.85}
+figcaption b,.cap b{font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11px;margin-right:.9em}
+.zoom img{transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+@media(hover:hover){.zoom:hover img{transform:scale(1.045)}}
+
+/* buttons + links */
+.btn{display:inline-flex;align-items:center;gap:.8em;min-height:52px;padding:0 26px;background:var(--green);color:#fff;border:1px solid var(--green);font:500 16px/1 var(--sans);text-decoration:none;position:relative;overflow:hidden;isolation:isolate;cursor:pointer;border-radius:0;transition:color .5s}
+.btn::before{content:"";position:absolute;inset:0;background:var(--ink);transform:translateY(101%);transition:transform .55s cubic-bezier(.7,0,.2,1);z-index:-1}
+@media(hover:hover){.btn:hover::before{transform:none}}
+.btn:focus-visible::before{transform:none}
+.ul{background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .55s cubic-bezier(.7,0,.2,1);text-decoration:none}
+@media(hover:hover){.ul:hover{background-size:100% 1px}}
+
+/* header */
+.mast{display:flex;justify-content:space-between;align-items:center;height:var(--hh);padding:0 var(--m);border-bottom:1px solid var(--line)}
+.brand{font:500 19px/1 var(--serif);letter-spacing:-.01em;text-decoration:none;font-variation-settings:"opsz" 24}
+.brand i{font-style:italic}
+.mast nav{display:flex;gap:clamp(14px,2.4vw,36px);font:500 13px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.mast nav a{padding:12px 0}
+@media(max-width:559px){.mast nav a:not(:last-child){display:none}}
+
+/* hero */
+.hero{padding:0 var(--m);display:flex;flex-direction:column;min-height:calc(100svh - var(--hh) - 64px - env(safe-area-inset-bottom))}
+.dateline{display:flex;justify-content:space-between;gap:16px;padding-top:14px}
+.dateline span:first-child{display:none}
+.hero h1{font-size:20vw;line-height:.86;letter-spacing:-.03em;margin:clamp(8px,1.4vw,20px) 0 0 -.04em;font-variation-settings:"opsz" 56}
+.hero .ln{display:block;overflow:hidden;padding:0 .06em .16em;margin-bottom:-.12em;white-space:nowrap}
+.hero .ln>span{display:block}
+.hero .l2{font-size:.58em;font-style:italic;text-align:right;line-height:.92}
+.hero-row{flex:1;display:flex;flex-direction:column;gap:16px;margin-top:clamp(14px,2vw,28px)}
+.deck p.lede{font-size:17px;max-width:40ch}
+.deck .btn,.deck .hero-cap{display:none}
+.hero-fig{flex:1;min-height:270px;margin:0 calc(var(--m)*-1)}
+.hero-fig img{object-position:50% 45%}
+@media(min-width:720px){.hero{min-height:0}.deck .btn{display:inline-flex}.dateline span:first-child{display:block}}
+@media(min-width:900px){
+  .hero h1{font-size:16vw;font-variation-settings:"opsz" 96}
+  .hero .l2{text-align:left;padding-left:24vw}
+  .hero-row{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+  .deck{grid-column:1/5;display:flex;flex-direction:column;align-items:flex-start;gap:20px;padding-bottom:var(--m)}
+  .deck .hero-cap{display:block;margin-top:auto;width:100%}
+  .hero-fig{grid-column:5/13;margin:0 calc(var(--m)*-1) 0 0;min-height:max(54vh,380px)}
+}
+
+/* statement */
+.state{padding:clamp(96px,14vw,240px) var(--m)}
+.state h2{font-size:clamp(38px,6.8vw,116px);line-height:1.02;letter-spacing:-.015em;max-width:16em}
+.state p.body{margin-top:clamp(28px,4vw,64px);max-width:34ch;font-size:clamp(17px,1.5vw,21px)}
+@media(min-width:900px){.state .body{margin-left:50%}}
+
+/* contents */
+.svc-sec{padding:0 var(--m) clamp(96px,13vw,220px);display:block}
+.svc-head h2{font-size:clamp(40px,5vw,80px)}
+.svc-head p{margin-top:18px;max-width:26ch}
+.svc{list-style:none;padding:0;margin-top:clamp(32px,5vw,56px)}
+.svc li{border-top:1px solid var(--line)}
+.svc li:last-child{border-bottom:1px solid var(--line)}
+.svc a{display:flex;justify-content:space-between;align-items:center;gap:20px;position:relative;padding:clamp(20px,2.6vw,36px) 0;text-decoration:none}
+.svc a::before{content:"";position:absolute;left:0;right:0;top:-1px;height:1px;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .8s cubic-bezier(.7,0,.2,1)}
+.svc h3{font-size:clamp(32px,5.4vw,84px);line-height:.98;transition:transform .7s cubic-bezier(.2,.7,.2,1),color .4s}
+.svc .ar{font:400 26px/1 var(--sans);flex:none;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+@media(hover:hover){.svc a:hover::before{transform:none}.svc a:hover h3{transform:translateX(16px);color:var(--green)}.svc a:hover .ar{transform:translateY(6px)}}
+@media(min-width:900px){
+  .svc-sec{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+  .svc-head{grid-column:1/5;position:sticky;top:40px;align-self:start}
+  .svc{grid-column:6/13;margin-top:0}
+}
+
+/* lawn */
+.lawn{padding:0 0 clamp(88px,13vw,220px)}
+.lawn .frame{aspect-ratio:4/5}
+.lawn .frame img{object-position:30% 50%}
+.lawn figcaption{margin-left:var(--m);margin-right:var(--m)}
+.lawn-copy{padding:36px var(--m) 0}
+.lawn h2{font-size:clamp(56px,10vw,170px);line-height:.9}
+.lawn-copy p.t{margin-top:22px;max-width:36ch}
+@media(min-width:900px){
+  .lawn{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);padding-right:var(--m);align-items:end}
+  .lawn .fig{grid-column:1/9}
+  .lawn .frame{aspect-ratio:auto;height:min(84vh,60vw)}
+  .lawn-copy{grid-column:9/13;padding:0 0 clamp(0px,3vw,48px)}
+  .lawn h2{margin-left:-3vw;position:relative;z-index:2}
+}
+
+/* cleanups + shrubs */
+.hedges{background:var(--pale);padding:clamp(72px,11vw,180px) 0 clamp(64px,8vw,130px)}
+.hedges-top{padding:0 var(--m);display:grid;gap:36px}
+.hedges h2{font-size:clamp(60px,12.5vw,230px);line-height:.88;letter-spacing:-.025em}
+.hedges .frame{aspect-ratio:4/5;margin-top:clamp(28px,4vw,64px)}
+.hedges .frame img{object-position:62% 35%}
+.hedges h3{font-size:clamp(26px,2.6vw,40px);line-height:1;margin-bottom:10px}
+.hedges .notes>div+div{margin-top:28px;padding-top:28px;border-top:1px solid var(--line)}
+.hedges .notes p{max-width:38ch}
+.hedges .cap{margin:14px var(--m) 0}
+@media(min-width:900px){
+  .hedges-top{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:end}
+  .hedges h2{grid-column:1/9}
+  .hedges .notes{grid-column:9/13;padding-bottom:1.2vw}
+  .hedges .frame{aspect-ratio:auto;height:min(82vh,54vw)}
+  .hedges .cap{width:max-content;max-width:50%}
+}
+
+/* mulch (dark spread) */
+.mulch{background:var(--deep);color:var(--paper);padding:0 0 clamp(80px,11vw,180px)}
+.band{height:clamp(300px,62vh,640px)}
+.band::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,39,24,.5),rgba(13,39,24,.97));z-index:1}
+.mulch-h{position:relative;z-index:2;font-size:30vw;line-height:.8;letter-spacing:-.035em;padding:0 var(--m);margin-top:-.42em;color:var(--paper)}
+.mulch-body{padding:clamp(40px,5vw,72px) var(--m) 0;display:grid;gap:36px}
+.mulch-copy{display:flex;flex-direction:column;justify-content:space-between;gap:28px}
+.mulch-copy p:not(.label){font-family:var(--serif);font-variation-settings:"opsz" 30;font-size:clamp(22px,2.3vw,34px);line-height:1.22;max-width:19em;font-weight:500;letter-spacing:-.01em}
+.mulch-copy .label{color:var(--lime);padding-top:14px;border-top:1px solid var(--line)}
+.mulch .fig{margin:0 calc(var(--m)*-1)}
+.mulch .fig .frame{aspect-ratio:4/3}
+.mulch figcaption{margin-left:var(--m);margin-right:var(--m)}
+@media(min-width:900px){
+  .mulch-h{font-size:clamp(100px,25vw,430px);margin-top:-.5em}
+  .mulch-body{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap);align-items:stretch}
+  .mulch-copy{grid-column:1/6;padding-top:clamp(0px,2vw,30px)}
+  .mulch .fig{grid-column:7/13;margin:0 calc(var(--m)*-1) 0 0}
+  .mulch figcaption{margin-left:0}
+}
+
+/* stone */
+.stone{padding:clamp(96px,13vw,220px) var(--m) clamp(80px,12vw,200px)}
+.stone h2{font-size:clamp(46px,8.6vw,146px);line-height:.93}
+.stone .f6{margin:clamp(28px,4vw,56px) calc(var(--m)*-1) 0}
+.stone .f6 .frame{aspect-ratio:4/3}
+.stone .f5{position:relative;z-index:2;width:78%;margin-top:-48px}
+.stone .f5 .frame{aspect-ratio:5/4;border:8px solid var(--paper)}
+.stone .stone-copy{margin-top:28px}
+.stone-copy p{max-width:30ch;font-size:clamp(18px,1.8vw,26px);line-height:1.4}
+@media(min-width:900px){
+  .stone{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+  .stone h2{grid-column:1/11;grid-row:1}
+  .stone .f6{grid-column:3/13;grid-row:2;margin:clamp(28px,4vw,56px) calc(var(--m)*-1) 0 0}
+  .stone .f6 .frame{aspect-ratio:16/8}
+  .stone .f5{grid-column:1/6;grid-row:3;width:auto;margin-top:-11vw}
+  .stone .stone-copy{grid-column:7/12;grid-row:3;margin-top:3vw;padding-top:18px;border-top:1px solid var(--line)}
+}
+
+/* areas */
+.areas{background:var(--pale);padding:clamp(72px,10vw,160px) var(--m)}
+.areas h2{font-size:clamp(26px,3.4vw,52px);font-style:italic;font-weight:500;line-height:1.05;max-width:20ch}
+.towns{list-style:none;padding:0;margin-top:clamp(24px,4vw,56px)}
+.towns li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid var(--line);padding:clamp(10px,1.4vw,22px) 0}
+.towns li:last-child{border-bottom:1px solid var(--line)}
+.towns li>span{font:500 clamp(46px,12vw,200px)/.95 var(--serif);letter-spacing:-.03em;transition:transform .8s cubic-bezier(.2,.7,.2,1),color .4s}
+.towns small{font:500 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;flex:none}
+@media(hover:hover){.towns li:hover>span{transform:translateX(1.4vw);color:var(--green)}}
+@media(min-width:900px){.towns li:nth-child(2){padding-left:14vw}.towns li:nth-child(3){padding-left:28vw}}
+
+/* contact */
+.contact{padding:clamp(96px,13vw,220px) var(--m);display:grid;gap:clamp(40px,6vw,72px)}
+.contact h2{font-size:clamp(42px,6vw,100px);line-height:.96}
+.contact .lead{margin-top:22px;max-width:30ch}
+.bigtel{display:inline-block;margin-top:26px;font:500 clamp(34px,4.4vw,68px)/1 var(--serif);font-variation-settings:"opsz" 40;letter-spacing:-.02em;background-size:100% 1px;padding-bottom:6px}
+@media(hover:hover){.bigtel:hover{background-size:0 1px}}
+.form{display:grid;gap:26px}
+.row2{display:grid;gap:26px}
+.form label{display:block;font:500 12px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.form input,.form textarea{width:100%;font:400 18px/1.4 var(--sans);color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--ink);border-radius:0;padding:10px 0 12px;transition:background .3s,border-color .3s}
+.form textarea{resize:vertical;min-height:130px}
+.form input:hover,.form textarea:hover{background:rgba(20,80,45,.05)}
+.form input:focus-visible,.form textarea:focus-visible{outline:2px solid var(--green);outline-offset:3px;border-bottom-color:var(--green)}
+.hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.form .note{font-size:14px;opacity:.85}
+.form .btn{justify-content:space-between;width:100%;font-size:17px;min-height:58px}
+@media(min-width:720px){.row2{grid-template-columns:1fr 1fr}}
+@media(min-width:900px){
+  .contact{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gap)}
+  .contact-l{grid-column:1/6}
+  .form{grid-column:7/13;padding-top:clamp(0px,1vw,16px)}
+}
+
+/* footer */
+.foot{background:var(--deep);color:var(--paper);padding:clamp(56px,7vw,104px) var(--m) 28px;overflow:hidden}
+.foot a{color:var(--paper)}
+.foot-top{display:grid;gap:28px}
+.foot .label{color:rgba(244,248,245,.74);margin-bottom:8px}
+.foot .tel{font:500 28px/1 var(--serif);font-variation-settings:"opsz" 30;letter-spacing:-.01em;background-size:100% 1px}
+@media(hover:hover){.foot .tel:hover{background-size:0 1px}}
+.foot-word{font:500 19vw/.9 var(--serif);letter-spacing:-.035em;white-space:nowrap;overflow:hidden;margin:clamp(40px,6vw,96px) 0 0 -.04em;padding:.06em 0 .3em .04em}
+.foot-word span{display:block}
+.foot-bot{display:grid;gap:8px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:rgba(244,248,245,.8)}
+@media(min-width:900px){
+  .foot-top{grid-template-columns:repeat(3,1fr)}
+  .foot-word{font-size:21vw}
+  .foot-bot{grid-template-columns:auto 1fr;gap:32px}
+  .foot-bot .credits{text-align:right}
+}
+
+/* sticky bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:1fr 92px;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--paper);border-top:1px solid var(--line)}
+.bar a{display:flex;align-items:center;justify-content:center;min-height:48px;font:500 16px/1 var(--sans);text-decoration:none;border:1px solid var(--green)}
+.bar-call{background:var(--green);color:#fff;gap:.5em}
+.bar-text{color:var(--green)}
+@media(min-width:720px){.bar{display:none}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page" id="top">
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="mast">
+  <a class="brand" href="#top">Greenway <i>Landscaping</i></a>
+  <nav aria-label="Primary">
+    <a class="ul" href="#services">Services</a>
+    <a class="ul" href="#areas">Areas</a>
+    <a class="ul" href="#contact">Contact</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="h1">
+    <p class="dateline label"><span>Run by Mike and Jen Patterson</span><span>Overland Park · Olathe · Leawood, Kansas</span></p>
+    <h1 id="h1"><span class="ln l1"><span>Greenway</span></span> <span class="ln l2"><span>Landscaping</span></span></h1>
+    <div class="hero-row">
+      <div class="deck">
+        <p class="lede">Mowing, spring and fall cleanups, mulch, shrub trimming and small patio and retaining wall installs for homes in Overland Park, Olathe and Leawood. Free estimates.</p>
+        <a class="btn" href="tel:+19135550122">Call or text <span class="num">(913) 555-0122</span></a>
+        <p class="cap hero-cap"><b>Lawns</b>Mown stripes on a lawn.</p>
+      </div>
+      <figure class="frame hero-fig">
+        <img src="https://images.unsplash.com/photo-1628340981113-fe1949fe5cc0?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8ZnJlc2hseSUyMG1vd2VkJTIwbGF3biUyMHN0cmlwZXN8ZW58MXx8fHwxNzk0NjkzNDIwfDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="green grass field during daytime" width="2400" height="1600" fetchpriority="high">
+      </figure>
+    </div>
+  </section>
+
+  <section class="state" aria-labelledby="state-h">
+    <h2 class="mid" id="state-h" data-words>Mike and Jen Patterson run Greenway. It’s a <em>family business,</em> and the yards are in Overland Park, Olathe and Leawood.</h2>
+    <p class="body" data-fade>Lawns get mowed, beds get mulched, shrubs get trimmed, and small patios and retaining walls go in.</p>
+  </section>
+
+  <section class="svc-sec" id="services" aria-labelledby="svc-h">
+    <div class="svc-head">
+      <h2 class="mid" id="svc-h" data-split>What Greenway does in your yard</h2>
+      <p data-fade>Five jobs for homes in Overland Park, Olathe and Leawood.</p>
+    </div>
+    <ul class="svc">
+      <li data-fade><a href="#lawn"><h3 class="mid">Lawn mowing</h3><span class="ar" aria-hidden="true">↓</span></a></li>
+      <li data-fade><a href="#hedges"><h3 class="mid">Spring and fall cleanups</h3><span class="ar" aria-hidden="true">↓</span></a></li>
+      <li data-fade><a href="#mulch"><h3 class="mid">Mulch</h3><span class="ar" aria-hidden="true">↓</span></a></li>
+      <li data-fade><a href="#hedges"><h3 class="mid">Shrub trimming</h3><span class="ar" aria-hidden="true">↓</span></a></li>
+      <li data-fade><a href="#stone"><h3 class="mid">Small patio and retaining wall installs</h3><span class="ar" aria-hidden="true">↓</span></a></li>
+    </ul>
+  </section>
+
+  <section class="lawn" id="lawn" aria-labelledby="lawn-h">
+    <figure class="fig">
+      <div class="frame" data-par data-reveal>
+        <img src="https://images.unsplash.com/photo-1766203400694-b4ed65e6c11b?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8ZnJlc2hseSUyMG1vd2VkJTIwbGF3biUyMHN0cmlwZXN8ZW58MXx8fHwxNzk0NjkzNDIwfDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="Sunlight casts striped shadows on green grass near fence" width="2400" height="1600" loading="lazy">
+      </div>
+      <figcaption><b>Mowing</b>Sunlight through a fence, onto a lawn.</figcaption>
+    </figure>
+    <div class="lawn-copy">
+      <h2 id="lawn-h" data-split>Lawn <em>mowing</em></h2>
+      <p class="t" data-fade>Mowing for front and back lawns in Overland Park, Olathe and Leawood. Tell Mike or Jen about your yard and ask for a free estimate.</p>
+    </div>
+  </section>
+
+  <section class="hedges" id="hedges" aria-labelledby="hedges-h">
+    <div class="hedges-top">
+      <h2 id="hedges-h" data-split>Cleanups and <em>shrubs</em></h2>
+      <div class="notes">
+        <div data-fade>
+          <h3 class="mid">Spring and fall cleanups</h3>
+          <p>Leaves, sticks and winter debris cleared from the lawn and the beds at the start and end of the season.</p>
+        </div>
+        <div data-fade>
+          <h3 class="mid">Shrub trimming</h3>
+          <p>Shrubs and hedges around the house trimmed back to shape.</p>
+        </div>
+      </div>
+    </div>
+    <div class="frame" data-par data-reveal>
+      <img src="https://images.unsplash.com/photo-1786289321514-7b3ba7459087?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8dHJpbW1lZCUyMHNocnVicyUyMGhvdXNlfGVufDF8fHx8MTc5NDY5MzQyMXww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="A stone house behind a tall hedge and wall in golden light" width="2400" height="1800" loading="lazy">
+    </div>
+    <p class="cap"><b>Shrubs</b>A stone house behind a hedge, in late light.</p>
+  </section>
+
+  <section class="mulch dark" id="mulch" aria-labelledby="mulch-h">
+    <div class="frame band" data-par data-reveal>
+      <img src="https://images.unsplash.com/photo-1599776765440-3504b0d25653?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bXVsY2glMjBnYXJkZW4lMjBiZWR8ZW58MXx8fHwxNzk0NjkzNDIxfDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="brown dried leaves on ground" width="2400" height="1600" loading="lazy">
+    </div>
+    <h2 class="mulch-h" id="mulch-h" data-split>Mulch</h2>
+    <div class="mulch-body">
+      <div class="mulch-copy">
+        <p data-fade>Mulch spread in the beds around your house, up to the edge of the lawn and the stone.</p>
+        <p class="label" data-fade>Free estimates by phone or text</p>
+      </div>
+      <figure class="fig zoom">
+        <div class="frame" data-reveal>
+          <img src="https://images.unsplash.com/photo-1786550028419-2f6696405f60?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8bXVsY2glMjBnYXJkZW4lMjBiZWR8ZW58MXx8fHwxNzk0NjkzNDIxfDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="A garden bed with colorful petunias and crushed terracotta mulch between large rocks" width="2400" height="1600" loading="lazy">
+        </div>
+        <figcaption><b>Mulch</b>Terracotta mulch between rocks and petunias.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="stone" id="stone" aria-labelledby="stone-h">
+    <h2 id="stone-h" data-split>Small patios and <em>retaining walls</em></h2>
+    <figure class="f6">
+      <div class="frame" data-par data-reveal>
+        <img src="https://images.unsplash.com/photo-1694432759476-8db2bef4b334?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c3RvbmUlMjByZXRhaW5pbmclMjB3YWxsJTIwZ2FyZGVufGVufDF8fHx8MTc5NDY5MzQyMXww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="a stone wall with potted plants on it" width="2400" height="1600" loading="lazy">
+      </div>
+    </figure>
+    <figure class="f5 zoom">
+      <div class="frame" data-reveal>
+        <img src="https://images.unsplash.com/photo-1761637823941-0ffae96ec487?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c3RvbmUlMjByZXRhaW5pbmclMjB3YWxsJTIwZ2FyZGVufGVufDF8fHx8MTc5NDY5MzQyMXww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="Stone wall with plants in the foreground" width="2400" height="1600" loading="lazy">
+      </div>
+      <figcaption><b>Walls</b>A block wall at the edge of a garden bed.</figcaption>
+    </figure>
+    <div class="stone-copy">
+      <p data-fade>Small installs for home yards: a patio, a retaining wall. Greenway builds them in Overland Park, Olathe and Leawood. Ask Mike or Jen for a free estimate.</p>
+    </div>
+  </section>
+
+  <section class="areas" id="areas" aria-labelledby="areas-h">
+    <h2 class="mid" id="areas-h" data-split>Greenway works on homes in</h2>
+    <ul class="towns">
+      <li data-fade><span>Overland Park</span><small>Kansas</small></li>
+      <li data-fade><span>Olathe</span><small>Kansas</small></li>
+      <li data-fade><span>Leawood</span><small>Kansas</small></li>
+    </ul>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-h">
+    <div class="contact-l">
+      <h2 class="mid" id="contact-h" data-split>Ask Mike or Jen for a free estimate</h2>
+      <p class="lead" data-fade>Call or text, or write below. Say which town you are in and what the yard needs.</p>
+      <a class="bigtel ul num" href="tel:+19135550122">(913) 555-0122</a>
+    </div>
+    <form class="form" data-ns-contact>
+      <div class="row2">
+        <div><label for="f-name">Name</label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
+        <div><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
+      </div>
+      <div><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+      <div><label for="f-msg">Message</label><textarea id="f-msg" name="message" required></textarea></div>
+      <div class="hp" aria-hidden="true"><label for="f-co">Company</label><input id="f-co" name="company" tabindex="-1" autocomplete="off"></div>
+      <p class="note">Add a phone number or an email so Mike or Jen can reply.</p>
+      <button class="btn" type="submit"><span>Send to Mike and Jen</span><span aria-hidden="true">&rarr;</span></button>
+    </form>
+  </section>
+</main>
+
+<footer class="foot dark">
+  <div class="foot-top">
+    <div><p class="label">Greenway Landscaping</p><p>A family business run by Mike and Jen Patterson.</p></div>
+    <div><p class="label">Call or text</p><a class="tel ul num" href="tel:+19135550122">(913) 555-0122</a></div>
+    <div><p class="label">Area served</p><p>Overland Park, Olathe and Leawood, Kansas</p></div>
+  </div>
+  <p class="foot-word" aria-hidden="true"><span>Greenway</span></p>
+  <div class="foot-bot">
+    <p>© 2026 Greenway Landscaping</p>
+    <p class="credits">Photos: Se. Tsuchiya, 雙 film, Jonathan Kemper, David Billington, Sergej *****, Ronin and martin fenton on Unsplash. Stock images, not Greenway’s own work.</p>
+  </div>
+</footer>
+</div>
+
+<div class="bar" role="group" aria-label="Call or text Greenway">
+  <a class="bar-call" href="tel:+19135550122">Call <span class="num">(913) 555-0122</span></a>
+  <a class="bar-text" href="sms:+19135550122">Text</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>
+(function(){
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !window.gsap || !window.ScrollTrigger) return;
+  var plugins = [ScrollTrigger];
+  if (window.SplitText) plugins.push(SplitText);
+  gsap.registerPlugin.apply(gsap, plugins);
+
+  /* smooth scroll, desktop pointer devices only */
+  var lenis = null;
+  if (window.Lenis && window.matchMedia("(min-width:900px) and (hover:hover)").matches) {
+    lenis = new Lenis({ lerp: 0.1 });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(function(t){ lenis.raf(t * 1000); });
+    gsap.ticker.lagSmoothing(0);
+    document.querySelectorAll('a[href^="#"]:not(.skip)').forEach(function(a){
+      a.addEventListener("click", function(e){
+        var id = a.getAttribute("href");
+        var t = id.length > 1 && document.querySelector(id);
+        if (!t) return;
+        e.preventDefault();
+        lenis.scrollTo(t, { duration: 1.4 });
+        history.pushState(null, "", id);
+      });
+    });
+  }
+
+  /* intro (about 1.4 s) */
+  var tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+  tl.from(".hero .ln > span", { yPercent: 115, duration: 1, stagger: 0.14 })
+    .fromTo(".hero-fig", { clipPath: "inset(0% 0% 100% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 1.1, ease: "power3.inOut", clearProps: "clipPath" }, 0.1)
+    .from(".hero-fig img", { scale: 1.15, duration: 1.4 }, 0.1)
+    .from(".mast, .dateline, .deck .lede, .hero-cap", { y: 14, opacity: 0, duration: 0.8, stagger: 0.08 }, 0.35);
+
+  /* headline line reveals */
+  if (window.SplitText) {
+    gsap.utils.toArray("[data-split]").forEach(function(el){
+      SplitText.create(el, {
+        type: "lines", mask: "lines", maskClass: "sm", autoSplit: true,
+        onSplit: function(self){
+          return gsap.from(self.lines, {
+            yPercent: 112, duration: 1.1, stagger: 0.1, ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 88%", once: true }
+          });
+        }
+      });
+    });
+    /* statement: words light up as you scroll (scrubbed) */
+    var st = document.querySelector("[data-words]");
+    if (st) {
+      SplitText.create(st, {
+        type: "words", autoSplit: true,
+        onSplit: function(self){
+          return gsap.fromTo(self.words, { opacity: 0.14 }, {
+            opacity: 1, ease: "none", stagger: 0.08,
+            scrollTrigger: { trigger: st, start: "top 85%", end: "bottom 55%", scrub: true }
+          });
+        }
+      });
+    }
+  }
+
+  /* photo unmasks */
+  gsap.utils.toArray("[data-reveal]").forEach(function(f){
+    gsap.fromTo(f, { clipPath: "inset(0% 0% 100% 0%)" }, {
+      clipPath: "inset(0% 0% 0% 0%)", duration: 1.5, ease: "power3.inOut", clearProps: "clipPath",
+      scrollTrigger: { trigger: f, start: "top 88%", once: true }
+    });
+  });
+
+  /* text fades (never the phone, the form or the bar) */
+  gsap.utils.toArray("[data-fade]").forEach(function(el){
+    gsap.from(el, { y: 26, opacity: 0, duration: 1, ease: "power3.out",
+      scrollTrigger: { trigger: el, start: "top 92%", once: true } });
+  });
+
+  /* footer wordmark rises inside its own mask */
+  gsap.from(".foot-word span", { yPercent: 70, ease: "none",
+    scrollTrigger: { trigger: ".foot", start: "top 90%", end: "bottom bottom", scrub: true } });
+
+  /* desktop scrubbed effects only */
+  var mm = gsap.matchMedia();
+  mm.add("(min-width:900px) and (prefers-reduced-motion: no-preference)", function(){
+    gsap.utils.toArray("[data-par] img").forEach(function(img){
+      gsap.fromTo(img, { yPercent: -7, scale: 1.16 }, {
+        yPercent: 7, scale: 1.16, ease: "none",
+        scrollTrigger: { trigger: img.parentElement, start: "top bottom", end: "bottom top", scrub: true }
+      });
+    });
+    gsap.to(".hero h1", { yPercent: -8, ease: "none",
+      scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
+    gsap.to(".mulch-h", { xPercent: 4, ease: "none",
+      scrollTrigger: { trigger: ".mulch-h", start: "top bottom", end: "bottom top", scrub: true } });
+  });
+
+  var refresh = function(){ ScrollTrigger.refresh(); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+  window.addEventListener("load", refresh);
+})();
+</script>
+</body>
+</html>

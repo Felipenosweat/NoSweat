@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { FREEFORM_EXAMPLES } from "@/lib/freeform-examples";
 
 // Exemplos (#looks): uma lista numerada só de texto, cada linha abre o site de exemplo de verdade
 // (/examples/<slug>). Negócios fictícios, avisado no texto. Sem imagens. Numa bolha branca, só 6
-// (o suficiente para ver a variedade sem encher a página).
+// (o suficiente para ver a variedade sem encher a página). Os primeiros são os exemplos em código
+// livre (lib/freeform-examples.ts); os de SiteSpec continuam no ar em /examples/<slug>.
 
 const SITES = [
+  ...FREEFORM_EXAMPLES,
   { slug: "still-water-spa", name: "Still Water Spa", kind: "Day spa", place: "Scottsdale" },
   { slug: "smoke-and-rail-bbq", name: "Smoke & Rail BBQ", kind: "Barbecue", place: "Kansas City" },
   { slug: "mercer-law", name: "Mercer Law", kind: "Family law", place: "Columbus" },

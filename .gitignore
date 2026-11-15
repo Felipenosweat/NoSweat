@@ -34,3 +34,6 @@ coverage/
 qa/out/
 qa/out-local/
 qa/out-photos/
+
+# Experimento "caminho A" (código livre): páginas geradas e prints
+.freeform-samples/

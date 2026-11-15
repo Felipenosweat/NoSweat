@@ -42,7 +42,25 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@nosweat/schema", "@nosweat/fixtures", "@nosweat/templates"],
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+    return [
+      { source: "/:path*", headers: SECURITY_HEADERS },
+      // Exemplos em código livre (lib/freeform-examples.ts): HTML com JavaScript escrito
+      // pela IA. `sandbox` põe o documento numa origem opaca mesmo se aberto direto (sem cookies,
+      // sessão nem /api da plataforma) e sem envio de formulário. A regra de baixo vale por cima
+      // da de cima (mesma chave), por isso repete as outras diretivas.
+      {
+        source: "/examples/files/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value:
+              "sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox allow-top-navigation-to-custom-protocols; " +
+              "frame-ancestors 'self'; base-uri 'self'; object-src 'none'",
+          },
+          { key: "X-Robots-Tag", value: "noindex" },
+        ],
+      },
+    ];
   },
   images: {
     // AVIF primeiro (menor), WebP como alternativa.
