@@ -238,7 +238,7 @@ Apple funciona igual (provider "Apple"), mas exige conta Apple Developer (US$ 99
 
 ## Passo 5: tarefas automáticas (Cron da Vercel)
 
-O `apps/web/vercel.json` agenda três crons diários:
+O `apps/web/vercel.json` agenda três crons diários e um mensal:
 
 - `/api/cron/cleanup-guests` (07:17 UTC): apaga sites criados sem conta e abandonados (mais de
   30 dias) e manda os lembretes de vencimento do acesso manual (Passo 6b): ao cliente faltando
@@ -249,10 +249,14 @@ O `apps/web/vercel.json` agenda três crons diários:
   rodada no **Supabase → SQL Editor** (Passo 1);
 - `/api/cron/social-refresh` (08:23 UTC): renova os tokens do Instagram antes de vencerem;
 - `/api/cron/social-publish` (13:05 UTC): **reserva** do publicador de posts. O publicador de
-  verdade roda a cada minuto pelo próprio Supabase (Passo 7.6).
+  verdade roda a cada minuto pelo próprio Supabase (Passo 7.6);
+- `/api/cron/monthly-report` (dia 1, 15:41 UTC): manda para cada dono o resumo do mês que
+  acabou (visitas, pedidos e marcações do site). Só sai com a `RESEND_API_KEY`, para conta com
+  plano em dia e com alguma atividade no mês, e precisa da migration
+  [`0029_site_visits.sql`](supabase/migrations/0029_site_visits.sql).
 
-Os três exigem a variável `CRON_SECRET` na Vercel (Settings → Environment Variables), com um
-texto aleatório longo. **Sem ela, os três respondem 401 e nada roda.** Confira em Vercel →
+Todos exigem a variável `CRON_SECRET` na Vercel (Settings → Environment Variables), com um
+texto aleatório longo. **Sem ela, todos respondem 401 e nada roda.** Confira em Vercel →
 Settings → **Cron Jobs**. Quando um cron termina com falhas (post que não publicou, token que
 não renovou, lembrete que não saiu), a equipe recebe um alerta no `ALERT_EMAIL` (seção _Fotos e
 e-mails_).

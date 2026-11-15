@@ -172,6 +172,14 @@ Como as peças se ligam:
   cliente + job "Booked online" na agenda; cancelar o job cancela a marcação. E-mails pela Resend.
 - Créditos à vista: `CreditsPill` no menu lateral e no topo do celular (`ns:credits` atualiza na
   hora); o custo de cada ação de IA aparece antes de usar. Preços só em `server/credits/pricing.ts`.
+- Visitas e resumo do mês (`server/visits/`, migration 0029): o site publicado manda um POST sem
+  corpo para `/api/public/sites/[id]/visit` (`components/VisitBeacon.tsx`, uma vez por aba); a
+  função SQL `count_site_visit` soma 1 no dia (UTC) só de site publicado. Nada do visitante é
+  guardado (sem IP nem cookie); robôs conhecidos (`server/bots.ts`) e mais de 20 por hora por IP
+  não contam. `/sites/[id]` mostra "Results, last 30 days" (visitas e pedidos). No dia 1 o cron
+  `/api/cron/monthly-report` (precisa de `CRON_SECRET` e `RESEND_API_KEY`) manda o resumo do mês
+  anterior ao dono: só conta com plano em dia e com alguma atividade, uma vez por mês
+  (`monthly_reports`, gravado antes do envio).
 - Painel com a cara do cliente (`server/workspace-brand.ts`, `AccountShell`, `DashboardChrome`): com o
   plano em dia (`ownerHasLiveAccess`), a moldura do painel usa a cor principal (ajustada para AA com
   branco) e o nome da empresa do site do cliente no lugar do logo da No Sweat (`--color-brand`,

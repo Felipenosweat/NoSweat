@@ -29,6 +29,7 @@ import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "
 import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
+import { dayKey, getVisitStore } from "@/server/visits/store";
 import { PublishButton } from "./PublishButton";
 import { SiteActionsMenu } from "./SiteActionsMenu";
 import { DomainSection, VersionsSection } from "./SiteSections";
@@ -51,6 +52,32 @@ const linkClass = `rounded-sm font-medium text-brand underline-offset-4 hover:un
 const RECENT_LEADS = 3;
 
 /** Título de painel com o quadradinho do ícone na frente (como os grupos dos Ajustes do iOS). */
+const RESULTS_DAYS = 30;
+
+/** Visitas do site desde `since`. Erro no banco = `null` (o painel some, a página segue). */
+async function visitsSince(siteId: string, since: Date): Promise<number | null> {
+  try {
+    const totals = await getVisitStore().totals(dayKey(since), dayKey(new Date()), [siteId]);
+    return totals.get(siteId) ?? 0;
+  } catch (error) {
+    console.error("[visits] could not read the visits", error);
+    return null;
+  }
+}
+
+/** Um número grande com o rótulo embaixo (painel "Results"). */
+function ResultNumber({ value, label }: { value: number; label: string }) {
+  return (
+    // No HTML o rótulo (dt) vem antes do valor (dd); na tela o número fica em cima.
+    <div className="flex flex-col-reverse gap-1.5">
+      <dt className="text-[13px] text-(--glass-fg-muted)">{label}</dt>
+      <dd className="font-display text-3xl leading-none font-bold tracking-[-0.02em] text-(--glass-fg) tabular-nums">
+        {value.toLocaleString("en-US")}
+      </dd>
+    </div>
+  );
+}
+
 function PanelHeading({
   id,
   icon,
@@ -86,6 +113,10 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
     getSiteStore().listLeads(site.id),
   ]);
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
+  // Resultado dos últimos 30 dias (visitas contadas pelo VisitBeacon do site publicado).
+  const since = new Date(Date.now() - RESULTS_DAYS * 24 * 60 * 60 * 1000);
+  const recentVisits = await visitsSince(site.id, since);
+  const recentRequests = leads.filter((lead) => lead.createdAt >= since.toISOString()).length;
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
   // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
@@ -253,6 +284,33 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 </p>
               )}
             </section>
+
+            {isPublished && recentVisits !== null && (
+              <section aria-labelledby="results-title" className={panelClass}>
+                <h2 id="results-title" className={panelTitle}>
+                  Results, last {RESULTS_DAYS} days
+                </h2>
+                <dl className="mt-4 flex flex-wrap gap-x-12 gap-y-4">
+                  <ResultNumber
+                    value={recentVisits}
+                    label={recentVisits === 1 ? "visit to your website" : "visits to your website"}
+                  />
+                  <ResultNumber
+                    value={recentRequests}
+                    label={
+                      recentRequests === 1 ? "request from your form" : "requests from your form"
+                    }
+                  />
+                </dl>
+                <p className={`mt-4 max-w-[60ch] ${panelText}`}>
+                  {recentVisits === 0
+                    ? "No visits yet. Put your website link on your Google Business Profile, your Instagram bio and your business cards."
+                    : emailAlerts
+                      ? "You also get this summary by email at the start of each month."
+                      : "Each visit is someone who opened your website."}
+                </p>
+              </section>
+            )}
 
             <section
               id="messages"
