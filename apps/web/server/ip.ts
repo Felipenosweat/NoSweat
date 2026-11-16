@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
 import { isIP } from "node:net";
-import { serverSecret } from "./secret";
+import { ipHashSecret } from "./secret";
 
 /**
  * Parte do IP que identifica "uma pessoa/rede" para os limites anti-abuso:
@@ -30,6 +30,9 @@ export function ipBucket(ip: string): string | null {
 
 /**
  * Hash do IP de quem fez o pedido (HMAC-SHA256 com segredo). Nunca guardamos o IP puro.
+ * O sal é `ipHashSecret()`: continua o valor antigo (IP_HASH_SALT ou a chave do Supabase) até o
+ * dono definir NOSWEAT_SECRET_IP_HASH, porque trocar o sal zera os limites anti-abuso por IP e a
+ * contagem de visitas únicas (os hashes guardados deixam de bater). Ver server/secret.ts.
  * Route Handlers podem passar `request.headers`; sem isso, lê os headers do request atual.
  */
 export async function requestIpHash(source?: Headers): Promise<string | null> {
@@ -38,5 +41,5 @@ export async function requestIpHash(source?: Headers): Promise<string | null> {
   const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim();
   const bucket = ip ? ipBucket(ip) : null;
   if (!bucket) return null;
-  return createHmac("sha256", serverSecret()).update(bucket).digest("hex");
+  return createHmac("sha256", ipHashSecret()).update(bucket).digest("hex");
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createOAuthState, verifyOAuthState } from "./oauth";
 
 const USER = "6f1c2a3b-4d5e-4f60-8a9b-0c1d2e3f4a5b";
@@ -24,5 +24,16 @@ describe("OAuth state", () => {
     const { state, cookieValue } = createOAuthState(USER, start);
     expect(verifyOAuthState(state, cookieValue, USER, start + 9 * 60_000)).toBe(true);
     expect(verifyOAuthState(state, cookieValue, USER, start + 11 * 60_000)).toBe(false);
+  });
+
+  it("keeps verifying a state signed with the previous secret during a rotation", () => {
+    vi.stubEnv("NOSWEAT_SECRET_OAUTH_STATE", "old");
+    const { state, cookieValue } = createOAuthState(USER);
+    vi.stubEnv("NOSWEAT_SECRET_OAUTH_STATE", "new,old");
+    expect(verifyOAuthState(state, cookieValue, USER)).toBe(true);
+    vi.stubEnv("NOSWEAT_SECRET_OAUTH_STATE", "new");
+    vi.stubEnv("NOSWEAT_SECRET_LEGACY", "off");
+    expect(verifyOAuthState(state, cookieValue, USER)).toBe(false);
+    vi.unstubAllEnvs();
   });
 });

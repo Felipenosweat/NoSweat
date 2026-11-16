@@ -78,6 +78,14 @@ Como as peças se ligam:
   `ns_view_as` assinado (HMAC, 1 hora, amarrado ao admin); `getViewer()` (`server/auth/viewer.ts`)
   faz `/dashboard`, `/clients`, `/social` e `/billing` mostrarem a conta vista, e o `proxy.ts`
   recusa toda escrita em `/api/*` (403) até sair do modo.
+- Segurança do admin (DEPLOY.md Passo 9): admin só age com a sessão em AAL2 (MFA TOTP do Supabase,
+  `server/admin/mfa.ts`; `requireAdmin` manda para `/admin/mfa`, `requireAdminApi` dá 403
+  `mfa_required`, `getOwnedSite` e "ver como" exigem AAL2 no ramo do admin; `ADMIN_REQUIRE_MFA=false`
+  só para recuperar). Ações sensíveis vão para `admin_audit_log` (migration 0030, só acrescenta) por
+  `recordAdminAction` (`server/admin/audit.ts`), nunca só `console.info`; "ver como" exige motivo;
+  `/admin/audit` mostra as últimas 100. Segredos de HMAC: um por finalidade (`server/secret.ts`,
+  `secretsFor`/`signingSecret`, `NOSWEAT_SECRET*`, rotação por vírgula); nunca reusar a chave do
+  Supabase.
 - Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um

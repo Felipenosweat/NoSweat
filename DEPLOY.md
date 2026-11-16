@@ -503,6 +503,83 @@ day" a 30 (≈ 900 por mês).
 
 Regras de uso (e-mails, ligações, descadastro) em [`docs/prospecting.md`](docs/prospecting.md).
 
+## Passo 9: segurança do admin (MFA, registro de auditoria e segredos de assinatura)
+
+### 9.1 Registro de auditoria
+
+Rode `supabase/migrations/0030_admin_audit_log.sql` (como as outras, no SQL Editor). Ele cria a
+tabela `admin_audit_log`, que **só acrescenta**: nem o servidor consegue alterar ou apagar linhas
+(permissões revogadas + gatilho). Toda ação sensível do admin vai para lá ("ver como" com motivo,
+créditos, planos, contas de teste, login, sites de clientes abertos ou apagados, finanças,
+prospects). Veja as últimas 100 em **/admin/audit**.
+
+### 9.2 Verificação em duas etapas (MFA) dos admins
+
+Admin só usa o painel com senha **e** o código de um aplicativo autenticador (sessão AAL2 do
+Supabase). Sem o segundo passo, as páginas do /admin mandam para **/admin/mfa** e as rotas
+`/api/admin/*` respondem 403 `mfa_required`; abrir site de cliente e "ver como" também param.
+Contas normais não mudam nada.
+
+1. Confira no Supabase: **Authentication → Sign In / Providers → Multi-Factor** (ou
+   **Authentication → MFA**) com **TOTP** ligado (vem ligado por padrão).
+2. (Opcional) Antes de publicar esta versão, coloque `ADMIN_REQUIRE_MFA=false` na Vercel para
+   cadastrar com calma. Sem isso também não há bloqueio: o /admin manda para o /admin/mfa, onde
+   o cadastro funciona só com a senha enquanto a conta não tem autenticador.
+3. Cada admin entra, abre **/admin/mfa**, clica **Set up authenticator**, lê o QR com o
+   aplicativo (1Password, Google Authenticator, Authy…) e digita o código. Guarde também a chave
+   em texto num cofre de senhas (é o que permite recuperar o autenticador num celular novo).
+4. Saia, entre de novo e confira que o /admin pede o código e abre depois dele.
+5. Se usou o passo 2, **apague** `ADMIN_REQUIRE_MFA` da Vercel (o padrão, com Supabase, é
+   exigir) e faça o deploy.
+   Confira em /admin/audit as linhas "Set up two-step verification" e "Verified two-step code".
+
+> Faça o passo 3 logo: enquanto um admin não cadastra o autenticador, quem roubar a senha dele
+> poderia cadastrar um autenticador próprio.
+
+**Recuperação (perdi o celular / o autenticador):**
+
+- Jeito rápido: `ADMIN_REQUIRE_MFA=false` na Vercel → deploy → entre só com a senha → cadastre
+  de novo (passo 3) → apague a variável e faça o deploy.
+- Para trocar o autenticador: apague o fator antigo em **Supabase → Authentication → Users → (a
+  conta) → MFA factors → Delete** (ou no SQL Editor:
+  `delete from auth.mfa_factors where user_id = (select id from auth.users where email = 'voce@nosweatfd.com');`)
+  e cadastre de novo em /admin/mfa.
+- Sem o Supabase configurado (dev local) não existe MFA: o `DEV_USER` com `DEV_ADMIN=true`
+  continua entrando no /admin como antes.
+
+### 9.3 Segredos de assinatura (um por finalidade)
+
+Antes, a chave secreta do Supabase também assinava os links de descadastro, os códigos TXT de
+domínio, o cookie "ver como", o `state` do Instagram e o hash de IP. Agora cada um tem o seu
+segredo (`apps/web/server/secret.ts`). O jeito simples é **um** segredo-mestre:
+
+| Name                     | Value                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `NOSWEAT_SECRET`         | `openssl rand -hex 32` (Production; outro valor diferente em Preview)                 |
+| `NOSWEAT_SECRET_IP_HASH` | o valor **atual** de `IP_HASH_SALT`; se não existir, o da `SUPABASE_SERVICE_ROLE_KEY` |
+
+- Do `NOSWEAT_SECRET` sai um segredo diferente para cada finalidade (HMAC com o nome dela).
+  Também dá para definir cada um à parte: `NOSWEAT_SECRET_UNSUBSCRIBE`,
+  `NOSWEAT_SECRET_DOMAIN_VERIFY`, `NOSWEAT_SECRET_VIEW_AS`, `NOSWEAT_SECRET_OAUTH_STATE`.
+- **Rotação**: separe por vírgula, o novo primeiro (`novo,antigo`). O primeiro assina; os outros
+  só conferem. Tire o antigo depois de 30 dias (links de descadastro) ou na hora (os outros
+  vencem em até 1 hora).
+- **Nada quebra na troca**: o segredo ANTIGO (`IP_HASH_SALT`, senão a chave do Supabase) continua
+  aceito só para CONFERIR, então links de descadastro já enviados (o CAN-SPAM exige que funcionem
+  por 30 dias), códigos TXT `_nosweat` que clientes já criaram e cookies "ver como" abertos seguem
+  valendo. A tela de domínio passa a mostrar o código novo; o TXT antigo continua aceito.
+- **Hash de IP**: um hash não se confere com vários segredos; trocar o sal zera os limites
+  anti-abuso por IP e a contagem de visitas únicas. Por isso ele fica no valor antigo até você
+  definir `NOSWEAT_SECRET_IP_HASH`, e o certo é definir com o **mesmo** valor antigo (tabela
+  acima). Assim a chave do Supabase pode ser trocada sem mexer nos hashes.
+- **Antes de trocar a chave do Supabase**: defina `NOSWEAT_SECRET_LEGACY` com o valor ATUAL dela
+  (ou de `IP_HASH_SALT`), para os links e códigos antigos continuarem valendo depois da troca.
+- **Depois de 30 dias** com `NOSWEAT_SECRET` em todos os ambientes: `NOSWEAT_SECRET_LEGACY=off`
+  desliga o segredo antigo de vez. Atenção: um cliente que criou o TXT `_nosweat` antes e ainda
+  não ligou o domínio vai precisar trocar o TXT pelo código que a tela mostra.
+- Sem `NOSWEAT_SECRET` nada muda (continua assinando com o segredo antigo e avisa no log); sem
+  nenhum segredo em produção o servidor recusa assinar.
+
 ## Conferência final
 
 - [ ] `https://nosweatfd.com` abre a landing page (e o endereço vira `https://www.nosweatfd.com`).
@@ -553,6 +630,8 @@ Faça tudo isto antes de cobrar o primeiro cliente:
       leaked passwords**.
 - [ ] **IA real**: `AI_PROVIDER=anthropic` e `ANTHROPIC_API_KEY` em Production (Passo 2), com
       limite de gasto no console da Anthropic.
+- [ ] **Admins com MFA** e `ADMIN_REQUIRE_MFA` apagada da Vercel; **`NOSWEAT_SECRET`** e
+      **`NOSWEAT_SECRET_IP_HASH`** definidos; migration `0030` rodada (Passo 9).
 
 ## Limitações atuais (conhecidas)
 

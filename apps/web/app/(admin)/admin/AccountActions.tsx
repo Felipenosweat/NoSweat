@@ -37,6 +37,7 @@ export type AccountTarget = {
 };
 
 type Dialog =
+  | { kind: "view-as"; target: AccountTarget }
   | { kind: "login-off"; target: AccountTarget }
   | { kind: "delete-test"; target: AccountTarget }
   | { kind: "delete-customer"; target: AccountTarget };
@@ -71,14 +72,17 @@ export function useAccountActions({ manageEnabled }: { manageEnabled: boolean })
     setDialogError(null);
   };
 
-  const viewAs = (target: AccountTarget) => {
+  const viewAs = (target: AccountTarget, reason: string) => {
     setResult(null);
+    const data = new FormData();
+    data.set("reason", reason);
     startTransition(async () => {
       try {
-        // Grava o cookie e redireciona para o /dashboard da conta vista.
-        await startViewAs(target.id);
+        // Deu certo: grava o cookie e redireciona para o /dashboard da conta vista (sem resposta).
+        const response = await startViewAs(target.id, { error: null }, data);
+        if (response?.error) setDialogError(response.error);
       } catch {
-        setResult({ ok: false, message: OFFLINE });
+        setDialogError(OFFLINE);
       }
     });
   };
@@ -127,7 +131,11 @@ export function useAccountActions({ manageEnabled }: { manageEnabled: boolean })
   ): GlassMenuItem[] => {
     const items: GlassMenuItem[] = [];
     if (opts.viewAs !== false && !target.self) {
-      items.push({ label: "View as", onSelect: () => viewAs(target), key: "view-as" });
+      items.push({
+        label: "View as…",
+        onSelect: () => openDialog({ kind: "view-as", target }),
+        key: "view-as",
+      });
     }
     if (opts.manageLink !== false) {
       items.push({
@@ -178,8 +186,52 @@ export function useAccountActions({ manageEnabled }: { manageEnabled: boolean })
   const expected = target ? (target.email ?? target.id) : "";
   const typedOk = confirmText.trim().toLowerCase() === expected.trim().toLowerCase();
 
+  const reasonOk = confirmText.trim().length >= 3;
+
   const dialogs: ReactNode = (
     <>
+      <GlassSheet
+        open={dialog?.kind === "view-as"}
+        onClose={closeDialog}
+        size="sm"
+        dismissible={!pending}
+        title={`View as ${target?.label ?? "this account"}`}
+        description="Read-only for 1 hour. The reason goes to the audit log."
+        footer={
+          <>
+            <GlassButton variant="secondary" onClick={closeDialog} disabled={pending}>
+              Cancel
+            </GlassButton>
+            <GlassButton
+              variant="primary"
+              disabled={!reasonOk}
+              loading={pending}
+              onClick={() => {
+                if (target && reasonOk) viewAs(target, confirmText.trim());
+              }}
+            >
+              {pending ? "Opening…" : "View as"}
+            </GlassButton>
+          </>
+        }
+      >
+        <label className={labelClass}>
+          Reason
+          <input
+            value={confirmText}
+            onChange={(event) => setConfirmText(event.target.value)}
+            maxLength={300}
+            placeholder="e.g. Support ticket: site not loading"
+            className={fieldClass}
+          />
+        </label>
+        {dialogError && (
+          <Notice tone="error" size="sm" className="mt-3">
+            {dialogError}
+          </Notice>
+        )}
+      </GlassSheet>
+
       <ConfirmDialog
         open={dialog?.kind === "login-off"}
         title={`Disable login for ${target?.email ?? target?.label ?? "this account"}?`}
