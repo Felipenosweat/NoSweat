@@ -39,14 +39,14 @@ const PLANS: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    summary: "A complete site on a free No Sweat address.",
+    summary: "A complete site on your own domain.",
     monthly: "$39",
     annual: "$390",
     annualPerMonth: "$32.50",
-    setupMonthly: "$249",
+    setupMonthly: null,
     features: [
       "Up to 3 websites",
-      "Free nosweatfd.com/s/ address",
+      "Connect your own domain, or use a free nosweatfd.com/s/ address",
       "Editor with live preview",
       "Photo uploads and a photo gallery",
       "Contact form with messages in your dashboard",
@@ -57,14 +57,14 @@ const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    summary: "Your own domain and more live websites.",
+    summary: "More live websites and Instagram posts.",
     monthly: "$69",
     annual: "$690",
     annualPerMonth: "$57.50",
-    setupMonthly: "$249",
+    setupMonthly: null,
     recommended: true,
     intro: "Everything in Starter, plus:",
-    features: ["Up to 5 websites", "Connect your own domain", "More Instagram posts each month"],
+    features: ["Up to 5 websites", "More Instagram posts each month"],
   },
   {
     id: "premium",
@@ -87,7 +87,7 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
 const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
 export function PricingPlans({ checkout }: { checkout: boolean }) {
-  // Anual por padrão: sem taxa de implantação e 2 meses grátis.
+  // Anual por padrão: 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
 

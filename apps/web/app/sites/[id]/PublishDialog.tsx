@@ -517,7 +517,7 @@ export function PublishDialog({
                 disabled={pending}
                 aria-busy={pending}
                 aria-describedby={needsPlan ? "publish-plan-note" : undefined}
-                className={`glass-tint mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-[background-color,scale] duration-150 [--glass-tint:#0066ff] hover:[--glass-tint:#0052cc] active:scale-[0.98] disabled:cursor-wait disabled:opacity-80 motion-reduce:transition-none ${focusRing}`}
+                className={`glass-tint mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-[background-color,scale] duration-150 [--glass-tint:var(--color-brand)] hover:[--glass-tint:var(--color-brand-dark)] active:scale-[0.98] disabled:cursor-wait disabled:opacity-80 motion-reduce:transition-none ${focusRing}`}
               >
                 <Svg className="size-4">
                   <path d="M4.5 12h15m0 0-6.75-6.75M19.5 12l-6.75 6.75" strokeWidth={2} />

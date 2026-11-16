@@ -8,6 +8,7 @@ import {
   useState,
   type KeyboardEvent,
   type SyntheticEvent,
+  type CSSProperties,
   type ReactElement,
   type ReactNode,
   type SVGProps,
@@ -19,6 +20,7 @@ import { Logo } from "@/components/Logo";
 import type { PillBalance } from "@/lib/credits-ui";
 import { SOON_MODULES } from "@/lib/modules";
 import type { TourConfig } from "@/lib/onboarding";
+import type { WorkspaceBrand } from "@/server/workspace-brand";
 import {
   AccountIcon,
   AdminIcon,
@@ -52,6 +54,11 @@ import { WelcomeTour, openWelcomeTour } from "./WelcomeTour";
 
 type ChromeProps = {
   admin: boolean;
+  /**
+   * Cara do site do cliente (cor e nome da empresa no lugar da marca No Sweat). `null` = visual
+   * padrão (sem site, plano vencido ou admin no próprio painel). Ver AccountShell.
+   */
+  brand: WorkspaceBrand | null;
   /** Conta logada (com login ligado). `null` no dev sem Supabase: sem e-mail e sem "Log out". */
   account: { email: string | null } | null;
   /** Site mais recente (o tour usa para o passo do editor). `null` = conta sem sites. */
@@ -96,6 +103,42 @@ const menuItem = sheetItem.replace("min-h-12", "min-h-10");
  * celular (ex.: a barra de aprovar posts) soma a altura da barra (4rem) + um respiro.
  */
 const TAB_BAR_BOTTOM = "bottom-[max(0.75rem,env(safe-area-inset-bottom))]";
+
+/**
+ * Troca as cores da marca No Sweat pelas do site do cliente em tudo que fica dentro da moldura:
+ * as utilidades `bg-brand`, `text-brand`, `glass-tint` e o fundo `glass-backdrop` leem estas
+ * variáveis. A principal já vem ajustada para contraste AA com branco (server/workspace-brand).
+ */
+function brandStyle(brand: WorkspaceBrand | null): CSSProperties | undefined {
+  if (!brand) return undefined;
+  return {
+    "--color-brand": brand.primary,
+    "--color-brand-dark": brand.primaryDark,
+    "--color-accent": brand.accent,
+  } as CSSProperties;
+}
+
+/** Topo da moldura: selo e nome da empresa do cliente; sem marca própria, o logo da No Sweat. */
+function HomeMark({ brand }: { brand: WorkspaceBrand | null }) {
+  if (!brand) return <Logo />;
+  return (
+    <Link
+      href="/dashboard"
+      title={brand.name}
+      className={`inline-flex max-w-full min-w-0 items-center gap-2.5 rounded-xl ${focusRing}`}
+    >
+      <span
+        aria-hidden="true"
+        className="glass-tint grid size-[34px] shrink-0 place-items-center rounded-[11px] font-display text-lg leading-none font-bold text-white [--glass-tint:var(--color-brand)]"
+      >
+        {brand.initial}
+      </span>
+      <span className="min-w-0 truncate font-display text-lg leading-tight font-bold tracking-[-0.02em] text-ink">
+        {brand.name}
+      </span>
+    </Link>
+  );
+}
 
 // ---------- itens da navegação ----------
 // Ordem pensada para o dia a dia de quem presta serviço: primeiro a agenda e os clientes, depois o
@@ -392,6 +435,7 @@ function AdminButton({ compact = false }: { compact?: boolean }) {
 
 function SidebarNav({
   admin,
+  brand,
   account,
   supportHref,
   credits,
@@ -415,7 +459,7 @@ function SidebarNav({
     // trás, desfocado.
     <aside className="glass-strong fixed inset-y-3 left-3 z-30 hidden w-60 flex-col overflow-y-auto overscroll-contain rounded-[28px] px-3 pt-5 pb-3 lg:flex">
       <div className="px-3 pb-5">
-        <Logo />
+        <HomeMark brand={brand} />
       </div>
       {admin && (
         <div className="pb-3">
@@ -534,6 +578,9 @@ function SidebarNav({
               </form>
             </div>
           )}
+          {brand && (
+            <p className="px-3 pt-3 text-[11px] text-(--glass-fg-muted)">Powered by No Sweat</p>
+          )}
         </div>
       </nav>
     </aside>
@@ -543,10 +590,7 @@ function SidebarNav({
 function TabBar({
   account,
   supportHref,
-}: Omit<
-  ChromeProps,
-  "children" | "banner" | "tour" | "latestSiteId" | "admin" | "credits" | "creditsReadOnly"
->) {
+}: Pick<ChromeProps, "account" | "supportHref">) {
   const { currentItem, pathname } = useCurrent();
   const moreMenu = useDetailsMenu(pathname);
   const createMenu = useDetailsMenu(pathname);
@@ -719,6 +763,7 @@ const topLink = `inline-flex min-h-11 items-center rounded-full px-3 text-sm fon
 
 export function DashboardChrome({
   admin,
+  brand,
   account,
   latestSiteId,
   supportHref,
@@ -733,11 +778,11 @@ export function DashboardChrome({
   // /create: tela de foco. Sem barra lateral nem abas; só o logo, a volta ao painel e "Log out".
   if (isCreate) {
     return (
-      <div className="min-h-screen bg-surface">
+      <div className="min-h-screen bg-surface" style={brandStyle(brand)}>
         {banner}
         <header className="glass-bar sticky top-0 z-30">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-3 px-5 sm:px-8">
-            <Logo />
+            <HomeMark brand={brand} />
             <div className="flex items-center gap-1 sm:gap-3">
               {credits && (
                 <CreditsPill initial={credits} readOnly={creditsReadOnly} variant="chip" />
@@ -766,10 +811,11 @@ export function DashboardChrome({
   }
 
   return (
-    <div className="relative isolate min-h-screen">
+    <div className="relative isolate min-h-screen" style={brandStyle(brand)}>
       <GlassBackdrop />
       <SidebarNav
         admin={admin}
+        brand={brand}
         account={account}
         supportHref={supportHref}
         credits={credits}
@@ -777,7 +823,9 @@ export function DashboardChrome({
       />
       {/* Criar fica no "+" da barra de abas. */}
       <header className="glass-bar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:hidden">
-        <Logo />
+        <div className="min-w-0">
+          <HomeMark brand={brand} />
+        </div>
         <div className="flex items-center gap-2">
           {credits && <CreditsPill initial={credits} readOnly={creditsReadOnly} variant="chip" />}
           {admin && <AdminButton compact />}

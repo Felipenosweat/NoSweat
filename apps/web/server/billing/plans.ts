@@ -1,8 +1,9 @@
 import type { BillingInterval, PlanId } from "@nosweat/schema";
 
 // Preços cobrados de verdade (em centavos de dólar). Precisam bater com a tabela mostrada no site
-// (components/marketing/PricingPlans.tsx). Anual = 10× o mensal; a taxa de implantação só existe
-// nos planos mensais Starter e Pro.
+// (components/marketing/PricingPlans.tsx). Anual = 10× o mensal. Sem taxa de implantação desde
+// nov/2026 (decisão do fundador para o lançamento); `setupCents` continua para poder voltar.
+// Todo plano pode ligar domínio próprio (o cliente compra o domínio; para nós não custa nada).
 
 export type Plan = {
   id: PlanId;
@@ -31,8 +32,8 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Starter",
     monthlyCents: 3900,
     annualCents: 39000,
-    setupCents: 24900,
-    customDomain: false,
+    setupCents: null,
+    customDomain: true,
     socialPostsPerMonth: 12,
     socialAccounts: 1,
   },
@@ -42,7 +43,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Pro",
     monthlyCents: 6900,
     annualCents: 69000,
-    setupCents: 24900,
+    setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 30,
     socialAccounts: 1,

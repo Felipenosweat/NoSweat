@@ -117,17 +117,47 @@ function Rating({ row }: { row: ProspectView }) {
   );
 }
 
+const shortDate = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+
+/**
+ * Sinal de interesse: "Claimed" (clicou em "Make it yours": ligar primeiro) ou quantas vezes a
+ * prévia foi aberta. Sem nenhum dos dois, nada.
+ */
+function Interest({ row }: { row: ProspectView }) {
+  if (row.claimedAt) {
+    return (
+      <GlassBadge tone="live" size="sm">
+        Claimed {shortDate.format(new Date(row.claimedAt))}
+      </GlassBadge>
+    );
+  }
+  if (row.previewViews > 0) {
+    return (
+      <GlassBadge tone="pending" size="sm">
+        Opened {row.previewViews}×
+        {row.previewLastViewedAt
+          ? ` · ${shortDate.format(new Date(row.previewLastViewedAt))}`
+          : ""}
+      </GlassBadge>
+    );
+  }
+  return null;
+}
+
 function Preview({ row }: { row: ProspectView }) {
   if (!row.previewPath) return <span className="text-(--glass-fg-muted)">—</span>;
   return (
-    <a
-      href={row.previewPath}
-      target="_blank"
-      rel="noreferrer"
-      className={cx(linkClass, "whitespace-nowrap")}
-    >
-      Open preview
-    </a>
+    <div className="flex flex-col items-start gap-1">
+      <a
+        href={row.previewPath}
+        target="_blank"
+        rel="noreferrer"
+        className={cx(linkClass, "whitespace-nowrap")}
+      >
+        Open preview
+      </a>
+      <Interest row={row} />
+    </div>
   );
 }
 

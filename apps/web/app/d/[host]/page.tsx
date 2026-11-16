@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
 import { SiteUnavailable } from "@/components/SiteUnavailable";
+import { VisitBeacon } from "@/components/VisitBeacon";
 import { appOrigin } from "@/server/notify";
 import { getPublicSiteByDomain, type PublicSite } from "@/server/store/public-site";
 
@@ -75,6 +76,8 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
         contactEndpoint={`/api/sites/${site.id}/leads`}
         bookingEndpoint={bookingEndpoint}
       />
+      {/* Conta a visita para o dono ver no painel e no resumo do mês (sem dados do visitante). */}
+      <VisitBeacon siteId={site.id} />
     </>
   );
 }

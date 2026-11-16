@@ -7,8 +7,11 @@ import { isAdminUser } from "@/server/admin";
 import { getSupabaseAuthConfig } from "@/server/auth/config";
 import { getSessionClaims } from "@/server/auth/session";
 import { getViewer, type Viewer } from "@/server/auth/viewer";
+import { ownerHasLiveAccess } from "@/server/billing";
 import { getBalance } from "@/server/credits";
 import { listOwnerSites } from "@/server/owner-sites";
+import { liveSpec } from "@/server/sites";
+import { brandFromSpec, type WorkspaceBrand } from "@/server/workspace-brand";
 import { DashboardChrome } from "./DashboardChrome";
 
 // Moldura do painel (barra lateral + abas do celular) para quem tem conta. Usada pelo layout do
@@ -26,6 +29,25 @@ async function latestSiteId(ownerId: string): Promise<string | null> {
     const site = sites.find((s) => s.status === "published") ?? sites[0];
     return site?.id ?? null;
   } catch {
+    return null;
+  }
+}
+
+/**
+ * Cara do painel: a cor e o nome do site do cliente (o publicado ou, sem nenhum no ar, o mais
+ * recente), só enquanto o plano estiver em dia (`ownerHasLiveAccess`: sem planos valendo, todo
+ * mundo). O admin no próprio painel fica com a marca No Sweat; no "ver como", vê a do cliente.
+ * Erro = `null` (visual padrão).
+ */
+async function workspaceBrand(viewer: Viewer, admin: boolean): Promise<WorkspaceBrand | null> {
+  if (admin && !viewer.viewingAs) return null;
+  try {
+    const sites = await listOwnerSites(viewer.ownerId);
+    const site = sites.find((s) => s.status === "published") ?? sites[0];
+    if (!site || !(await ownerHasLiveAccess(viewer.ownerId))) return null;
+    return brandFromSpec(liveSpec(site));
+  } catch (error) {
+    console.error("[brand] could not read the site for the dashboard look", error);
     return null;
   }
 }
@@ -95,11 +117,13 @@ export async function AccountShell({
     authEnabled && !viewingAs ? sessionMetadata() : Promise.resolve(null),
     creditsFor(viewer.ownerId),
   ]);
+  const brand = await workspaceBrand(viewer, admin);
   const tour = tourConfig({ accountId: viewer.user.id, authEnabled, viewingAs, metadata });
 
   return (
     <DashboardChrome
       admin={admin}
+      brand={brand}
       account={authEnabled ? { email: viewer.user.email } : null}
       latestSiteId={latest}
       supportHref={supportHref(viewer.user.email)}

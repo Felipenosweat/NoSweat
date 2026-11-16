@@ -544,6 +544,9 @@ describe("preview brief", () => {
     previewToken: null,
     notes: "owner is nice",
     lastFetchedAt: null,
+    previewViews: 0,
+    previewLastViewedAt: null,
+    claimedAt: null,
     createdAt: "",
     updatedAt: "",
   };

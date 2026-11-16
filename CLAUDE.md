@@ -118,8 +118,8 @@ Como as peças se ligam:
 - Cobrança: Stripe Checkout + webhook, sem SDK (`server/billing/`, API REST via fetch). Preços
   cobrados em `server/billing/plans.ts`; a assinatura de cada conta fica em `subscriptions`
   (migration 0011, atualizada pelo webhook `/api/billing/webhook`). Sem `STRIPE_SECRET_KEY` a
-  cobrança fica desligada. Com ela: publicar exige plano ativo e domínio próprio exige Pro ou
-  Premium (`publishBlocked` / `customDomainBlocked`, 402 `payment_required` → página `/billing`).
+  cobrança fica desligada. Com ela: publicar e ligar domínio próprio exigem plano ativo (qualquer
+  plano; sem taxa de implantação) (`publishBlocked` / `customDomainBlocked`, 402 `payment_required` → página `/billing`).
 - Acesso manual (Pix/WhatsApp): `REQUIRE_PLAN=true` liga os planos sem Stripe; o admin libera
   plano por X dias em `/admin/clients/[id]` (tabela `access_grants`, migration 0012,
   `server/billing/grants.ts`). Com planos valendo, site publicado de dono sem plano ativo mostra
@@ -172,6 +172,18 @@ Como as peças se ligam:
   cliente + job "Booked online" na agenda; cancelar o job cancela a marcação. E-mails pela Resend.
 - Créditos à vista: `CreditsPill` no menu lateral e no topo do celular (`ns:credits` atualiza na
   hora); o custo de cada ação de IA aparece antes de usar. Preços só em `server/credits/pricing.ts`.
+- Visitas e resumo do mês (`server/visits/`, migration 0029): o site publicado manda um POST sem
+  corpo para `/api/public/sites/[id]/visit` (`components/VisitBeacon.tsx`, uma vez por aba); a
+  função SQL `count_site_visit` soma 1 no dia (UTC) só de site publicado. Nada do visitante é
+  guardado (sem IP nem cookie); robôs conhecidos (`server/bots.ts`) e mais de 20 por hora por IP
+  não contam. `/sites/[id]` mostra "Results, last 30 days" (visitas e pedidos). No dia 1 o cron
+  `/api/cron/monthly-report` (precisa de `CRON_SECRET` e `RESEND_API_KEY`) manda o resumo do mês
+  anterior ao dono: só conta com plano em dia e com alguma atividade, uma vez por mês
+  (`monthly_reports`, gravado antes do envio).
+- Painel com a cara do cliente (`server/workspace-brand.ts`, `AccountShell`, `DashboardChrome`): com o
+  plano em dia (`ownerHasLiveAccess`), a moldura do painel usa a cor principal (ajustada para AA com
+  branco) e o nome da empresa do site do cliente no lugar do logo da No Sweat (`--color-brand`,
+  `--color-accent`); sem plano, admin no próprio painel ou sem site, volta ao visual da No Sweat.
 - Cabeçalho dos sites (`styles.css` "Vidro líquido", `Signature.tsx`, `Motion.tsx` `adaptHeader`,
   `tone.ts`): vidro que muda de tom (claro/escuro) conforme a seção sob a barra (`data-tone`).
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
@@ -186,6 +198,11 @@ Como as peças se ligam:
   afiliado"; "do not contact" tira do ar). CSV para a ferramenta de e-mail e lista de ligações;
   nada de envio de e-mail no app. Google: só o `place_id` é guardado sem prazo; o resto é cache
   de 30 dias (`last_fetched_at`) renovado antes de usar (`ensureFresh`). Linhas do OSM não vencem.
+  "Make it yours" na prévia é um POST para `/p/<token>/claim` (`server/prospects/claim.ts`,
+  migration 0028): quem clica ganha uma CÓPIA do site (visitante ou conta, sem IA nem créditos) e
+  cai no editor; até 5 cópias por prévia. A primeira marca `claimed_at`, leva o status para
+  "replied" e avisa a equipe (SALES_EMAIL/ALERT_EMAIL, Resend). Cada abertura da prévia conta
+  (`preview_views`, sem robôs nem o admin) e quem abriu ou assumiu sobe na lista do admin.
 
 ## Princípio do produto: o cliente fala pouco, nós entregamos muito
 

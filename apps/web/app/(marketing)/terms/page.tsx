@@ -284,10 +284,6 @@ const SECTIONS: LegalSection[] = [
             shown in your account unless you renew.
           </li>
           <li>
-            The monthly Starter and Pro plans include a one-time setup fee on the first bill. Annual
-            plans have no setup fee.
-          </li>
-          <li>
             <strong>For plans bought through online checkout, you can cancel anytime</strong> in
             your account, online, in a few clicks. You don’t need to call or email us. Canceling
             stops the next renewal; you keep your plan until the end of the period you already paid
@@ -397,8 +393,8 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      updatedIso="2026-10-20"
-      updatedLabel="October 20, 2026"
+      updatedIso="2026-11-15"
+      updatedLabel="November 15, 2026"
       intro={
         <p>
           The rules for using No Sweat, in plain English. They cover your account, the websites you

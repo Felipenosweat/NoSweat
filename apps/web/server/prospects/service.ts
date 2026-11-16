@@ -371,6 +371,9 @@ export function toView(prospect: ProspectRecord): ProspectView {
     status: prospect.status,
     siteId: prospect.siteId,
     previewPath: previewPath(prospect),
+    previewViews: prospect.previewViews,
+    previewLastViewedAt: prospect.previewLastViewedAt,
+    claimedAt: prospect.claimedAt,
   };
 }
 

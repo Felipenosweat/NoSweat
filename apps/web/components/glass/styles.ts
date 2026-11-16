@@ -12,7 +12,8 @@ const BUTTON_BASE = `relative inline-flex shrink-0 items-center justify-center g
 
 const BUTTON_VARIANTS: Record<GlassButtonVariant, string> = {
   // Vidro "tingido" com a cor da marca: cor sólida (texto branco com contraste AA) + brilho no topo.
-  primary: "glass-tint text-white [--glass-tint:#0066ff] hover:[--glass-tint:#0052cc]",
+  primary:
+    "glass-tint text-white [--glass-tint:var(--color-brand)] hover:[--glass-tint:var(--color-brand-dark)]",
   secondary: "glass glass-interactive text-(--glass-fg)",
   destructive: "glass-tint text-white [--glass-tint:#dc2626] hover:[--glass-tint:#b91c1c]",
   ghost:

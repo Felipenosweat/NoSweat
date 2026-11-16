@@ -36,7 +36,12 @@ e-mail frio (Instantly, Smartlead...). Ligações são feitas por você, uma a u
    está como _Do not contact_). Importe na ferramenta e use `{{business}}`, `{{city}}`,
    `{{preview_url}}` nos modelos abaixo. **Call list** (aba ou CSV) lista quem não tem e-mail:
    nome, telefone, cidade e link da prévia.
-5. **Acompanhar.** Depois de enviar, marque **Mark contacted**. Quando alguém responde, mude o
+5. **Ligar primeiro para quem mostrou interesse.** A lista mostra quem **abriu** a prévia
+   ("Opened 3×") e quem clicou em **Make it yours** ("Claimed"); esses sobem para o topo. Quem
+   clica em _Make it yours_ ganha uma cópia do site, cai direto no editor (sem criar conta
+   antes) e o status vira _Replied_. Com a Resend ligada, a equipe recebe um e-mail "Hot lead"
+   na hora (vai para `SALES_EMAIL`).
+6. **Acompanhar.** Depois de enviar, marque **Mark contacted**. Quando alguém responde, mude o
    status da linha (Replied / Won / Lost). Pediu para parar? **Do not contact** na hora: a pessoa
    sai das exportações e a prévia dela sai do ar.
 
