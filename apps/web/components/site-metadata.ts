@@ -2,6 +2,7 @@ import type { SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
 import { SITE_ORIGIN } from "@/lib/site";
 import type { SiteRecord } from "@/server/store";
+import { businessJsonLd } from "./site-jsonld";
 
 /**
  * O que os metadados precisam de um site: o id e a versão no ar. Serve um `SiteRecord` inteiro
@@ -60,6 +61,14 @@ export function searchSnippet(spec: SiteSpec): { title: string; description?: st
 }
 
 /**
+ * Caminho do ícone do site (letra na cor do site). `v` muda quando a cor muda, para o navegador
+ * não ficar com o ícone antigo guardado. /api passa direto pelo proxy também no domínio do cliente.
+ */
+function siteIconPath(id: string, spec: SiteSpec): string {
+  return `/api/sites/${id}/icon?v=${spec.theme.primary.replace(/^#/, "").toLowerCase()}`;
+}
+
+/**
  * Título, descrição e cartões de compartilhamento de um site publicado
  * (usado em /s/<slug> e no domínio do cliente). `url` = endereço onde a página está sendo vista.
  */
@@ -74,8 +83,7 @@ export function siteMetadata(site: MetadataSite, url: string): Metadata {
   const images = image
     ? [{ url: image.url, alt: image.alt, width: image.width, height: image.height }]
     : [{ url: `${SITE_ORIGIN}/api/sites/${site.id}/og`, alt: business.name, ...SITE_OG_SIZE }];
-  // `v` muda quando a cor muda, para o navegador não ficar com o ícone antigo guardado.
-  const iconUrl = `/api/sites/${site.id}/icon?v=${spec.theme.primary.replace(/^#/, "").toLowerCase()}`;
+  const iconUrl = siteIconPath(site.id, spec);
 
   return {
     // `absolute` para não herdar o " · No Sweat" do layout: o site é do cliente.
@@ -109,32 +117,17 @@ export function siteMetadata(site: MetadataSite, url: string): Metadata {
 }
 
 /**
- * JSON-LD (schema.org LocalBusiness) só com o que está no SiteSpec — nada inventado.
- * Devolve o texto pronto para <script type="application/ld+json">, já escapado.
+ * JSON-LD (schema.org: o subtipo do LocalBusiness pelo ramo) só com o que está no SiteSpec, nada
+ * inventado (regra 8; ver site-jsonld.ts). Devolve o texto pronto para
+ * <script type="application/ld+json">, já escapado.
  */
 export function siteJsonLd(site: MetadataSite, url: string): string {
-  const { business } = specOf(site);
-  const address =
-    business.address || business.city || business.state
-      ? {
-          "@type": "PostalAddress",
-          streetAddress: business.address || undefined,
-          addressLocality: business.city || undefined,
-          addressRegion: business.state || undefined,
-        }
-      : undefined;
-
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: business.name,
+  const spec = specOf(site);
+  const data = businessJsonLd(spec, {
     url,
-    telephone: business.phone || undefined,
-    email: business.email || undefined,
-    address,
-    areaServed: business.serviceArea || undefined,
-  };
-
+    origin: SITE_ORIGIN,
+    logoPath: `${siteIconPath(site.id, spec)}&size=180`,
+  });
   // JSON.stringify já omite os campos `undefined`.
   return escapeJsonForScript(JSON.stringify(data));
 }
