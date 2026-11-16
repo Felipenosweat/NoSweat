@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CheckIcon } from "./icons";
-import { primaryButton, secondaryButton, textLink } from "./styles";
+import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
 
 // Tabela de planos da landing: três cartões rounded-xl com linhas de recibo; o recomendado tem
-// o anel azul (ring-2 ring-brand), o único destaque de cor da seção.
+// um anel em tinta e o rótulo neutro. O único azul da seção é o botão do plano recomendado (a
+// ação principal; os outros planos têm o botão secundário).
 // Único componente de cliente da seção: só guarda a escolha mensal/anual.
 // Preços combinados com o fundador (2026-10-13). Anual = 10× o mensal ("2 months free" é exato).
 // Nada de preço riscado, "mais popular" ou desconto inventado.
@@ -107,7 +108,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
                 onChange={() => setBilling(option.value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand hover:text-ink peer-checked:hover:text-white">
+              <span className="flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold text-slate-600 transition-colors duration-150 peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink peer-focus-visible:shadow-[0_0_0_2px_#fff] hover:text-ink peer-checked:hover:text-white">
                 {option.label}
                 {option.note && <span className="font-normal tabular-nums">{option.note}</span>}
               </span>
@@ -125,7 +126,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
             key={plan.id}
             aria-labelledby={`plan-${plan.id}`}
             className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
-              plan.recommended ? "ring-2 ring-brand" : "border border-slate-200"
+              plan.recommended ? "ring-2 ring-ink" : "border border-slate-200"
             }`}
           >
             <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -136,7 +137,7 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
                 {plan.name}
               </h3>
               {plan.recommended && (
-                <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+                <span className="inline-flex h-7 items-center rounded-lg bg-slate-100 px-2.5 text-[13px] font-semibold text-ink">
                   Recommended
                 </span>
               )}
@@ -191,7 +192,10 @@ export function PricingPlans({ checkout }: { checkout: boolean }) {
               className="mt-3 text-[13px] leading-relaxed text-pretty text-(--glass-fg-muted)"
             >
               {renewalTerms(plan, annual, checkout)}{" "}
-              <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">
+              <Link
+                href="/terms#renewal"
+                className={`rounded-sm underline underline-offset-2 hover:text-ink ${focusRing}`}
+              >
                 Renewal terms
               </Link>
             </p>

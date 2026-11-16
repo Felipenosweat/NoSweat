@@ -59,7 +59,7 @@ export function LegalPage({ title, intro, updatedIso, updatedLabel, sections }: 
                 <li key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className="-ml-px flex gap-2 border-l border-transparent py-1.5 pl-4 leading-snug text-slate-600 transition-colors hover:border-slate-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    className="-ml-px flex gap-2 border-l border-transparent py-1.5 pl-4 leading-snug text-slate-600 transition-colors hover:border-slate-400 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:shadow-[0_0_0_2px_#fff]"
                   >
                     <span className="w-5 shrink-0 text-(--glass-fg-muted) tabular-nums">
                       {index + 1}.

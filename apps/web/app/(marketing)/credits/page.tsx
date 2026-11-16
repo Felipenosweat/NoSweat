@@ -2,7 +2,7 @@ import { fixtures, MODEL_LIBRARY, MODEL_PHOTO_LICENSES } from "@nosweat/fixtures
 import type { SiteImage, SiteSpec } from "@nosweat/schema";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { container, focusRing, h2Class, leadClass } from "@/components/marketing/styles";
+import { container, focusRing, h2Class, leadClass, textLink } from "@/components/marketing/styles";
 import { allPhotos } from "@/components/photos";
 
 // Créditos das imagens do site da No Sweat (/credits): as fotos documentais (components/photos.ts)
@@ -157,17 +157,11 @@ export default function CreditsPage() {
         <p className={`mt-4 ${leadClass}`}>
           City suggestions use the U.S. Census Bureau Gazetteer and population estimates (public
           domain) and population figures from{" "}
-          <a
-            href="https://www.geonames.org/"
-            className="font-semibold text-brand underline-offset-4 hover:underline"
-          >
+          <a href="https://www.geonames.org/" className={textLink}>
             GeoNames
           </a>
           , used under the{" "}
-          <a
-            href="https://creativecommons.org/licenses/by/4.0/"
-            className="font-semibold text-brand underline-offset-4 hover:underline"
-          >
+          <a href="https://creativecommons.org/licenses/by/4.0/" className={textLink}>
             Creative Commons Attribution 4.0 license
           </a>
           .

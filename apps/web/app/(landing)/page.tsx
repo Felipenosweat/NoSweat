@@ -9,6 +9,7 @@ import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
+import { focusRing, focusRingOnDark } from "@/components/marketing/styles";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
@@ -45,8 +46,8 @@ export const metadata: Metadata = {
 const tag = "lp-tag";
 const h2 = "lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]";
 
-const linkDark =
-  "lp-underline rounded-sm font-medium text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+// Links no texto: tinta com sublinhado (o azul fica só no botão da ação principal).
+const linkDark = `rounded-sm font-medium text-[#071b33] underline decoration-[#071b33]/35 underline-offset-4 transition-colors hover:decoration-[#071b33] ${focusRing}`;
 
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
@@ -100,7 +101,9 @@ export default function LandingPage() {
                 name="faq"
                 className={`border-b border-[var(--lp-hair)] ${index === 0 ? "border-t" : ""}`}
               >
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm px-0.5 py-5 text-[17px] font-semibold tracking-[-0.01em] text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                <summary
+                  className={`flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm px-0.5 py-5 text-[17px] font-semibold tracking-[-0.01em] text-[#071b33] ${focusRing} [&::-webkit-details-marker]:hidden`}
+                >
                   {faq.question}
                   <span aria-hidden="true" className="lp-fx" />
                 </summary>
@@ -129,7 +132,8 @@ export default function LandingPage() {
         </section>
       </div>
 
-      {/* FIM — bolha escura com um botão só, de volta às perguntas do topo. */}
+      {/* FIM — bolha escura com um botão só (o azul da ação principal), de volta às perguntas do
+          topo. */}
       <div className="px-3 pt-3 pb-3 sm:px-5 sm:pt-5 sm:pb-5">
         <section
           aria-labelledby="final-title"
@@ -142,12 +146,12 @@ export default function LandingPage() {
             <span className="text-white/55">It takes about a minute.</span>
           </h2>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Pill href="#start" tone="light">
+            <Pill href="#start" tone="blue" onDark>
               Start your website
             </Pill>
             <Link
               href="/pricing"
-              className="lp-underline rounded-sm px-3 text-[15px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className={`lp-underline rounded-sm px-3 text-[15px] font-medium text-white ${focusRingOnDark}`}
             >
               See pricing
             </Link>

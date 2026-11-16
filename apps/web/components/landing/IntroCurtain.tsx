@@ -5,9 +5,8 @@
 // do fundador: o Windows liga essa opção quando "Efeitos de animação" está desligado e a abertura
 // sumia). É curta, não segura cliques e não repete enquanto a pessoa navega pela página.
 
-const NAME = [..."No"]
-  .map((c) => ({ c, blue: false }))
-  .concat([..."Sweat"].map((c) => ({ c, blue: true })));
+// Letras em tinta: o azul fica só para a ação principal (P5 "Mono + Blue").
+const NAME = [..."NoSweat"];
 
 export function IntroCurtain() {
   return (
@@ -23,13 +22,13 @@ export function IntroCurtain() {
             className="lp-intro-mark size-12"
           />
           <span className="font-display text-[2.5rem] leading-none font-bold tracking-[-0.03em]">
-            {NAME.map((l, i) => (
+            {NAME.map((c, i) => (
               <span
                 key={i}
-                className={`lp-intro-l ${l.blue ? "text-[#0066ff]" : "text-[#071b33]"}`}
+                className="lp-intro-l text-[#071b33]"
                 style={{ "--d": i } as React.CSSProperties}
               >
-                {l.c}
+                {c}
               </span>
             ))}
           </span>
