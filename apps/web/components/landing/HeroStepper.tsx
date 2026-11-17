@@ -2,26 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { LANDING_BRIEF_KEY, LANDING_NAME_KEY } from "@/app/(dashboard)/create/brief";
+import { heroBrief, heroCreateUrl, KINDS } from "./hero-brief";
 import { PillArrow } from "./Pill";
 
 // As perguntas do topo, uma de cada vez (forma do averaks.com): que tipo de negócio, onde, o
 // nome e, se quiser, um detalhe. No fim viram uma frase (o mesmo `brief` do campo antigo) e
-// vão para /create?brief=…&start=1, que monta o site na hora. O texto também fica no
-// sessionStorage `ns-brief`, como no PromptForm.
+// vão para /create?brief=…&name=…&start=1, que monta o site na hora. O nome vai à parte (é um
+// fato do dono, ver hero-brief.ts). Texto e nome também ficam no sessionStorage (`ns-brief` e
+// `ns-brief-name`).
 // Sem JavaScript: o <noscript> leva direto para o /create.
 // Um evento `ns:preset-kind` (de qualquer botão da página) preenche a primeira pergunta.
-
-const STORAGE_KEY = "ns-brief";
-
-export const KINDS = [
-  { label: "Home services", phrase: "Home services business" },
-  { label: "Food & drink", phrase: "Restaurant or food business" },
-  { label: "Beauty & wellness", phrase: "Beauty and wellness business" },
-  { label: "Health & fitness", phrase: "Health and fitness business" },
-  { label: "Professional services", phrase: "Professional services firm" },
-  { label: "Shop & retail", phrase: "Local shop" },
-  { label: "Something else", phrase: "Local business" },
-] as const;
 
 const STEPS = ["kind", "where", "name", "details"] as const;
 type Step = (typeof STEPS)[number];
@@ -96,20 +87,16 @@ export function HeroStepper() {
       if (step !== "kind") next();
       return;
     }
-    const phrase = KINDS.find((k) => k.label === kind)?.phrase ?? "Local business";
-    const brief = [
-      name.trim() && `${name.trim()}.`,
-      `${phrase} in ${where.trim()}.`,
-      details.trim(),
-    ]
-      .filter(Boolean)
-      .join(" ");
+    const answers = { kind, where, name, details };
+    const { brief, name: businessName } = heroBrief(answers);
     try {
-      sessionStorage.setItem(STORAGE_KEY, brief);
+      sessionStorage.setItem(LANDING_BRIEF_KEY, brief);
+      if (businessName) sessionStorage.setItem(LANDING_NAME_KEY, businessName);
+      else sessionStorage.removeItem(LANDING_NAME_KEY);
     } catch {
       // Modo privado: o parâmetro da URL já basta.
     }
-    router.push(`/create?brief=${encodeURIComponent(brief)}&start=1`);
+    router.push(heroCreateUrl(answers));
   };
 
   const prompt = PROMPTS[step];

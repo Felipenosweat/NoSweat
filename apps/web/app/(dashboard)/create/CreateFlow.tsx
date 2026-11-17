@@ -24,6 +24,8 @@ import {
   EMPTY_CHOICES,
   EMPTY_FIELDS,
   LANDING_BRIEF_KEY,
+  LANDING_NAME_KEY,
+  landingName,
   LAYOUT_OPTIONS,
   LIMITS,
   PROMPT_LIMIT,
@@ -202,20 +204,33 @@ function validateFirstStep(fields: CreateFields, choices: CreateChoices): FieldE
   return errors;
 }
 
-/** Lê o que dá para preencher: rascunho desta aba, ?brief= da landing ou sessionStorage. */
-function initialState(initialBrief: string, canReadStorage: boolean): InitialState {
-  const fromText = (text: string): InitialState => ({
+/**
+ * Lê o que dá para preencher: rascunho desta aba, ?brief= (e ?name=) da landing ou
+ * sessionStorage. O nome digitado na landing vai para o campo "Business name" (e daí para o
+ * servidor como `businessName`), nunca fica só dentro do texto.
+ */
+function initialState(
+  initialBrief: string,
+  initialName: string,
+  canReadStorage: boolean,
+): InitialState {
+  const fromText = (text: string, name: string): InitialState => ({
     source: text,
     step: 0,
-    fields: { ...EMPTY_FIELDS, what: text.slice(0, PROMPT_LIMIT) },
+    fields: { ...EMPTY_FIELDS, what: text.slice(0, PROMPT_LIMIT), name },
     choices: { ...EMPTY_CHOICES },
   });
-  if (!canReadStorage) return fromText(initialBrief);
+  if (!canReadStorage) return fromText(initialBrief, initialName);
   let source = initialBrief;
+  let name = initialName;
   let draft: StoredDraft | null = null;
   let choices: CreateChoices = { ...EMPTY_CHOICES };
   try {
-    if (!source) source = sessionStorage.getItem(LANDING_BRIEF_KEY)?.trim().slice(0, 2000) ?? "";
+    if (!source) {
+      source = sessionStorage.getItem(LANDING_BRIEF_KEY)?.trim().slice(0, 2000) ?? "";
+      // O nome guardado só vale junto do texto guardado (os dois vieram da mesma landing).
+      if (source && !name) name = landingName(sessionStorage.getItem(LANDING_NAME_KEY));
+    }
     draft = parseDraft(sessionStorage.getItem(DRAFT_KEY));
     // O tipo de negócio não é mais perguntado (a IA deduz pelo pedido): um valor antigo da aba
     // não pode entrar escondido no brief.
@@ -230,11 +245,17 @@ function initialState(initialBrief: string, canReadStorage: boolean): InitialSta
       .join("\n\n");
     return {
       ...draft,
-      fields: { ...draft.fields, what: prompt.slice(0, PROMPT_LIMIT), details: "" },
+      fields: {
+        ...draft.fields,
+        what: prompt.slice(0, PROMPT_LIMIT),
+        details: "",
+        // Nome que acabou de vir da landing vale sobre o do rascunho.
+        name: name || draft.fields.name,
+      },
       choices,
     };
   }
-  return fromText(source);
+  return fromText(source, name);
 }
 
 const noopSubscribe = () => () => {};
@@ -245,11 +266,14 @@ const noopSubscribe = () => () => {};
  */
 export function CreateFlow({
   initialBrief,
+  initialName = "",
   signedIn = false,
   autoStart = false,
   credits = null,
 }: {
   initialBrief: string;
+  /** Nome do negócio digitado na landing (`?name=`); vazio = não veio. */
+  initialName?: string;
   /** Há uma conta logada (muda as mensagens de limite e o aviso de rascunho de visitante). */
   signedIn?: boolean;
   /** Créditos: mostra o custo antes de criar. Visitante, admin e IA desligada: `null` (sem aviso). */
@@ -266,6 +290,7 @@ export function CreateFlow({
     <Flow
       key={hydrated ? "client" : "server"}
       initialBrief={initialBrief}
+      initialName={initialName}
       canReadStorage={hydrated}
       signedIn={signedIn}
       autoStart={hydrated && autoStart}
@@ -276,18 +301,20 @@ export function CreateFlow({
 
 function Flow({
   initialBrief,
+  initialName,
   canReadStorage,
   signedIn,
   autoStart,
   credits,
 }: {
   initialBrief: string;
+  initialName: string;
   canReadStorage: boolean;
   signedIn: boolean;
   autoStart: boolean;
   credits: CreateCredits | null;
 }) {
-  const [initial] = useState(() => initialState(initialBrief, canReadStorage));
+  const [initial] = useState(() => initialState(initialBrief, initialName, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
   const [choices, setChoices] = useState<CreateChoices>(initial.choices);
   const [cardError, setCardError] = useState<string | null>(null);

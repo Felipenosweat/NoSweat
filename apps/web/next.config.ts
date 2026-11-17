@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
+  // /faq não é uma página: as perguntas ficam na landing (seção #faq).
+  async redirects() {
+    return [{ source: "/faq", destination: "/#faq", permanent: false }];
+  },
   images: {
     // AVIF primeiro (menor), WebP como alternativa.
     formats: ["image/avif", "image/webp"],
