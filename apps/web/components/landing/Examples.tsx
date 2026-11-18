@@ -1,91 +1,105 @@
+import Image from "next/image";
 import Link from "next/link";
-import { focusRing } from "@/components/marketing/styles";
+import { container, focusRing, frameShadow, h2Class } from "@/components/marketing/styles";
 
-// Exemplos (#looks): uma lista numerada só de texto, cada linha abre o site de exemplo de verdade
-// (/examples/<slug>). Negócios fictícios, avisado no texto. Sem imagens. Numa bolha branca, só 6
-// (o suficiente para ver a variedade sem encher a página).
+// Exemplos (#examples): capturas reais de sites feitos com a No Sweat (negócios inventados,
+// avisado na legenda). Cada site tem a própria composição, não só outra cor. No celular, uma
+// fileira que rola de lado com o dedo (capturas de celular, sem passar sozinha); no computador,
+// grade de 3 colunas com capturas de computador, a primeira ocupando duas linhas.
+// Cada cartão é um link só para /examples/<slug>. Capturas em public/landing/signature.
 
 const SITES = [
-  { slug: "still-water-spa", name: "Still Water Spa", kind: "Day spa", place: "Scottsdale" },
-  { slug: "smoke-and-rail-bbq", name: "Smoke & Rail BBQ", kind: "Barbecue", place: "Kansas City" },
-  { slug: "mercer-law", name: "Mercer Law", kind: "Family law", place: "Columbus" },
   {
     slug: "greenline-landscaping",
     name: "Greenline Landscaping",
-    kind: "Landscaping",
-    place: "Charlotte",
+    trade: "Landscaping",
+    city: "Charlotte, NC",
   },
-  { slug: "fade-and-co-barbers", name: "Fade & Co. Barbers", kind: "Barbershop", place: "Chicago" },
-  { slug: "sunrise-bakery", name: "Sunrise Bakery", kind: "Bakery", place: "Sacramento" },
-  { slug: "iron-lotus-tattoo", name: "Iron Lotus Tattoo", kind: "Tattoo studio", place: "Denver" },
+  { slug: "mercer-law", name: "Mercer Law", trade: "Family law", city: "Columbus, OH" },
   {
-    slug: "hollis-interiors",
-    name: "Hollis Interiors",
-    kind: "Interior design",
-    place: "Nashville",
+    slug: "smoke-and-rail-bbq",
+    name: "Smoke & Rail BBQ",
+    trade: "Barbecue",
+    city: "Kansas City, MO",
   },
+  { slug: "still-water-spa", name: "Still Water Spa", trade: "Day spa", city: "Scottsdale, AZ" },
   {
-    slug: "north-loop-coffee",
-    name: "North Loop Coffee",
-    kind: "Coffee shop",
-    place: "Minneapolis",
+    slug: "fade-and-co-barbers",
+    name: "Fade & Co. Barbers",
+    trade: "Barbershop",
+    city: "Chicago, IL",
   },
-  {
-    slug: "bright-spark-electric",
-    name: "Bright Spark Electric",
-    kind: "Electrician",
-    place: "Phoenix",
-  },
-];
+] as const;
 
 export function Examples() {
   return (
-    <div className="px-3 sm:px-5">
-      <section
-        id="looks"
-        aria-labelledby="looks-title"
-        className="lp-bubble scroll-mt-16 px-5 py-14 sm:px-10 lg:py-20"
-      >
-        <div className="mx-auto w-full max-w-[860px]">
-          <div className="text-center">
-            <span className="lp-tag">Examples</span>
-            <h2 id="looks-title" className="lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]">
-              Example sites.
-              <br />
-              <span className="dim">Open one and scroll.</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-[44ch] text-[16px] leading-relaxed text-[#6e6e73]">
-              Made-up businesses, real No Sweat sites.
-            </p>
-          </div>
-          <ul className="mt-10 border-b border-[var(--lp-line)] lg:mt-14">
-            {SITES.slice(0, 6).map((site, index) => (
-              <li key={site.slug} className="border-t border-[var(--lp-line)]">
+    <section
+      id="examples"
+      aria-labelledby="examples-title"
+      className="scroll-mt-16 bg-surface py-16 lg:py-24"
+    >
+      <div className={container}>
+        <h2 id="examples-title" className={h2Class}>
+          Sites made with No Sweat.
+        </h2>
+        <p className="mt-3 text-[15px] text-slate-600">The businesses are made up.</p>
+
+        <ul className="lp-rail -mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-4 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:scroll-px-8 sm:px-8 lg:mx-0 lg:mt-12 lg:grid lg:grid-cols-3 lg:gap-x-8 lg:gap-y-10 lg:overflow-visible lg:p-0">
+          {SITES.map((site, index) => {
+            const tall = index === 0;
+            return (
+              <li
+                key={site.slug}
+                className={`w-[72%] shrink-0 snap-start sm:w-[44%] lg:w-auto ${tall ? "lg:row-span-2" : ""}`}
+              >
                 <Link
                   href={`/examples/${site.slug}`}
-                  className={`lp-row group flex min-h-16 items-baseline gap-4 rounded-sm py-5 sm:gap-8 ${focusRing}`}
+                  className={`group flex h-full flex-col rounded-lg ${focusRing}`}
                 >
-                  <span className="w-7 shrink-0 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/45">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="lp-row-name min-w-0 flex-1 text-[clamp(1.25rem,2.4vw,1.75rem)] leading-tight font-semibold tracking-[-0.02em] transition-colors duration-300">
-                    {site.name}
-                  </span>
-                  <span className="hidden shrink-0 text-sm text-[#071b33]/60 sm:block">
-                    {site.kind}, {site.place}
-                  </span>
                   <span
-                    aria-hidden="true"
-                    className="shrink-0 text-xl text-[#071b33] transition-transform duration-300 group-hover:translate-x-1"
+                    className={`relative block overflow-hidden rounded-2xl border border-slate-200 bg-white ${frameShadow} ${
+                      tall
+                        ? "aspect-[640/1385] lg:aspect-auto lg:flex-1"
+                        : "aspect-[640/1385] lg:aspect-[16/10]"
+                    }`}
                   >
-                    →
+                    {/* Celular: captura de celular. Computador: captura de computador (o primeiro
+                        cartão, mais alto, segue com a de celular). A versão escondida não baixa. */}
+                    <Image
+                      src={`/landing/signature/${site.slug}-m.webp`}
+                      width={640}
+                      height={1385}
+                      alt={`The ${site.name} example site on a phone.`}
+                      sizes="(min-width: 1024px) 360px, (min-width: 640px) 44vw, 72vw"
+                      className={`absolute inset-0 h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transition-none ${
+                        tall ? "" : "lg:hidden"
+                      }`}
+                    />
+                    {!tall && (
+                      <Image
+                        src={`/landing/signature/${site.slug}-d.webp`}
+                        width={1600}
+                        height={1000}
+                        alt={`The ${site.name} example site on a computer.`}
+                        sizes="360px"
+                        className="absolute inset-0 hidden h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transition-none lg:block"
+                      />
+                    )}
+                  </span>
+                  <span className="mt-3 flex min-h-11 flex-col justify-center">
+                    <span className="text-[15px] font-semibold text-ink underline decoration-transparent underline-offset-4 transition-colors duration-150 group-hover:decoration-ink">
+                      {site.name}
+                    </span>
+                    <span className="text-[13px] text-slate-600">
+                      {site.trade}, {site.city}
+                    </span>
                   </span>
                 </Link>
               </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </div>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
   );
 }

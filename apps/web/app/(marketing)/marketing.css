@@ -36,8 +36,43 @@
   }
 }
 
+/* ---------- Dúvidas (FaqList): + que vira − ---------- */
+.faq-fx {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  margin-left: auto;
+  color: var(--color-slate-500, #64748b);
+}
+
+.faq-fx::before,
+.faq-fx::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  transition: rotate 150ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.faq-fx::after {
+  rotate: 90deg;
+}
+
+details[open] > summary .faq-fx::after {
+  rotate: 0deg;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ns-faq::details-content {
+    transition: none;
+  }
+
+  .faq-fx::before,
+  .faq-fx::after {
     transition: none;
   }
 }

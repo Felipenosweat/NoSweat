@@ -1,32 +1,46 @@
-import { HeroGrid } from "./HeroGrid";
+import { container, h1Class, leadClass } from "@/components/marketing/styles";
+import { HeroPhone } from "./HeroPhone";
 import { HeroStepper } from "./HeroStepper";
-import { HeroTitle } from "./HeroTitle";
-import { TypedTag } from "./TypedTag";
+import { PriceLine, PriceReceipt } from "./PriceReceipt";
 
-// Topo da landing V12: ocupa a primeira tela inteira. Título com brilho e verbo que se digita,
-// uma frase em cinza e as perguntas, uma de cada vez. Sem fotos. Dentro de uma bolha branca.
+// Topo da landing: à esquerda (7 colunas) o título, a frase, as quatro perguntas e o preço como
+// recibo; à direita (5 colunas) o celular com um site de exemplo que acompanha a 1ª resposta. No
+// celular: título, frase, perguntas, a linha do preço e o celular abaixo da dobra.
+// Sem animação de entrada: o h1 é o maior elemento do primeiro quadro e aparece parado.
 
-export function Hero() {
+export function Hero({ fromPrice }: { fromPrice?: string }) {
   return (
-    <div className="px-3 pt-2 sm:px-5">
-      <section
-        id="start"
-        aria-labelledby="hero-title"
-        data-hide-mobile-cta
-        className="lp-bubble relative isolate flex min-h-[calc(100svh-4.5rem)] scroll-mt-14 flex-col overflow-hidden items-center justify-center px-5 pt-12 pb-8 text-center sm:px-8"
+    <section
+      id="start"
+      aria-labelledby="hero-title"
+      data-hide-mobile-cta
+      className="scroll-mt-16 bg-white"
+    >
+      <div
+        className={`${container} grid grid-cols-1 gap-y-12 pt-6 pb-12 lg:grid-cols-12 lg:gap-x-8 lg:pt-16 lg:pb-24`}
       >
-        <HeroGrid />
-        <TypedTag className="lp-rise mb-7" />
-        <HeroTitle />
-        <p
-          className="lp-rise-solid mt-4 max-w-[44ch] text-[clamp(1.15rem,2vw,1.55rem)] leading-[1.35] text-[#6e6e73]"
-          style={{ animationDelay: "calc(var(--lp-intro) + 300ms)" }}
-        >
-          Websites for local businesses, built from a few answers.
-          <br className="hidden sm:block" /> Free to make. Pay only when it goes live.
-        </p>
-        <HeroStepper />
-      </section>
-    </div>
+        <div className="lg:col-span-7">
+          <h1 id="hero-title" className={h1Class}>
+            A website that books the job.
+          </h1>
+          <p className={`mt-4 lg:mt-6 ${leadClass}`}>
+            And the office behind it: every request, estimate, invoice and Google review request in
+            one place. Answer four questions. It’s free until your site goes live.
+          </p>
+          <div className="mt-8 lg:mt-10">
+            <HeroStepper />
+          </div>
+          {fromPrice && (
+            <>
+              <PriceLine fromPrice={fromPrice} className="mt-2 lg:hidden" />
+              <PriceReceipt fromPrice={fromPrice} className="mt-6 hidden lg:block" />
+            </>
+          )}
+        </div>
+        <div className="lg:col-span-5 lg:flex lg:justify-end lg:pt-2">
+          <HeroPhone />
+        </div>
+      </div>
+    </section>
   );
 }

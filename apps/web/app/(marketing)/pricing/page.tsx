@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PlusIcon } from "@/components/marketing/icons";
+import { FaqList } from "@/components/marketing/FaqList";
 import { PRICING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { planPrices, pricingCredits } from "@/components/marketing/pricing-data";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
-import { container, focusRing, primaryButton, textLink } from "@/components/marketing/styles";
+import { container, h2Class, primaryButton, textLink } from "@/components/marketing/styles";
 import { checkoutReady } from "@/server/billing";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
@@ -34,9 +34,6 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: `${TITLE} · No Sweat`, description: DESCRIPTION },
 };
 
-const h2Class =
-  "font-display text-3xl leading-tight font-bold tracking-[-0.025em] text-balance text-ink lg:text-[2.5rem]";
-
 export default function PricingPage() {
   return (
     <>
@@ -45,7 +42,7 @@ export default function PricingPage() {
         <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
           <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
             <div className="lg:col-span-7">
-              <p className="font-display text-sm font-semibold text-slate-600">Pricing</p>
+              <p className="text-[13px] font-semibold text-slate-600">Pricing</p>
               <h1
                 id="pricing-title"
                 className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
@@ -84,7 +81,7 @@ export default function PricingPage() {
       <section aria-labelledby="pricing-faq-title" className="bg-white py-16 lg:py-24">
         <div className={`${container} grid gap-y-10 lg:grid-cols-12 lg:gap-x-8`}>
           <div className="lg:col-span-4">
-            <h2 id="pricing-faq-title" className={`max-w-[20ch] ${h2Class}`}>
+            <h2 id="pricing-faq-title" className={h2Class}>
               <TightPunctuation>Questions about pricing.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[40ch] text-base leading-[1.65] text-pretty text-slate-600">
@@ -95,20 +92,8 @@ export default function PricingPage() {
               .
             </p>
           </div>
-          <div className="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-8">
-            {PRICING_FAQS.map((faq) => (
-              <details key={faq.question} className="group">
-                <summary
-                  className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink transition-colors hover:text-slate-600 ${focusRing} [&::-webkit-details-marker]:hidden`}
-                >
-                  {faq.question}
-                  <PlusIcon className="size-5 shrink-0 text-slate-500 motion-safe:transition-transform group-open:rotate-45" />
-                </summary>
-                <p className="max-w-[65ch] pr-10 pb-6 text-base leading-[1.65] text-pretty text-slate-600">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
+          <div className="lg:col-span-8">
+            <FaqList faqs={PRICING_FAQS} />
           </div>
         </div>
       </section>
@@ -122,7 +107,7 @@ export default function PricingPage() {
       >
         <div className={`${container} grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8`}>
           <div className="lg:col-span-7">
-            <h2 id="pricing-cta-title" className={`max-w-[20ch] ${h2Class}`}>
+            <h2 id="pricing-cta-title" className={h2Class}>
               <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
@@ -131,7 +116,7 @@ export default function PricingPage() {
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">
             <Link href="/create" className={`w-full sm:w-auto ${primaryButton}`}>
-              Start building
+              Build my website
             </Link>
           </div>
         </div>

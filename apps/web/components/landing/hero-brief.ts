@@ -16,6 +16,9 @@ export const KINDS = [
   { label: "Something else", phrase: "Local business" },
 ] as const;
 
+/** Evento da janela com o tipo escolhido na 1ª pergunta (`detail` = label). Ouvido pelo HeroPhone. */
+export const KIND_PICKED_EVENT = "ns:kind-picked";
+
 export type HeroAnswers = { kind: string; where: string; name: string; details: string };
 
 /** O texto (sem o nome) e o nome que a landing manda para o /create. */

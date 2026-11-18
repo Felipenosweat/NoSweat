@@ -9,7 +9,7 @@ import { CheckIcon } from "./icons";
 import type { PlanPrice, PricingCredits } from "./pricing-data";
 import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
 
-// Tabela de planos da landing: três cartões rounded-xl com linhas de recibo; o recomendado tem
+// Tabela de planos da landing: três cartões rounded-lg com linhas de recibo; o recomendado tem
 // um anel em tinta e o rótulo neutro. O único azul da seção é o botão do plano recomendado (a
 // ação principal; os outros planos têm o botão secundário).
 // Único componente de cliente da seção: só guarda a escolha mensal/anual.
@@ -133,7 +133,7 @@ export function PricingPlans({
             <li
               key={plan.id}
               aria-labelledby={`plan-${plan.id}`}
-              className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
+              className={`flex min-w-0 flex-col rounded-lg bg-white p-6 sm:p-8 ${
                 plan.recommended ? "ring-2 ring-ink" : "border border-slate-200"
               }`}
             >
@@ -150,12 +150,13 @@ export function PricingPlans({
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-base leading-snug text-pretty text-slate-600">
+              {/* Altura fixa no computador: os preços dos três cartões ficam na mesma linha. */}
+              <p className="mt-1 text-base leading-snug text-pretty text-slate-600 lg:min-h-[2.75rem]">
                 {plan.summary}
               </p>
 
               <p className="mt-6 flex flex-wrap items-baseline gap-1 font-display text-ink">
-                <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
+                <span className="text-[2.5rem] leading-none font-bold tracking-[-0.02em] tabular-nums lg:text-[3rem]">
                   {annual ? price.annual : price.monthly}
                 </span>
                 <span className="text-base font-normal text-(--glass-fg-muted)">
@@ -221,11 +222,19 @@ export function PricingPlans({
         })}
       </ul>
 
+      {/* Garantia de devolução (decisão do fundador): uma linha logo abaixo dos botões, com o link da política. */}
+      <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
+        <strong className="font-semibold text-ink">{GUARANTEE_LINE}</strong>{" "}
+        <Link href="/refund" className={textLink}>
+          Read the refund policy
+        </Link>
+      </p>
+
       {/* Créditos da IA: o que cada ação custa (de server/credits/pricing.ts), em uma faixa
           clara embaixo dos cartões. Editar à mão é grátis; a cota do mês não acumula. */}
       <section
         aria-labelledby="ai-credits-title"
-        className="mt-6 rounded-xl border border-slate-200 bg-white p-6 sm:p-8"
+        className="mt-6 rounded-lg border border-slate-200 bg-white p-6 sm:p-8"
       >
         <div className="grid gap-x-8 gap-y-4 lg:grid-cols-12">
           <div className="lg:col-span-5">
@@ -253,16 +262,8 @@ export function PricingPlans({
         </div>
       </section>
 
-      {/* Garantia de devolução (decisão do fundador): uma linha, com o link da política. */}
-      <p className="mt-8 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
-        <strong className="font-semibold text-ink">{GUARANTEE_LINE}</strong>{" "}
-        <Link href="/refund" className={textLink}>
-          Refund policy
-        </Link>
-      </p>
-
       {/* Quem já criou o site e volta para comprar vai direto para /billing (pede login). */}
-      <p className="mt-3 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
+      <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
         Already built your site?{" "}
         <Link href="/billing" className={textLink}>
           Choose your plan
