@@ -17,7 +17,7 @@ export const maxDuration = 300;
 const templateLimiter = new RateLimiter(20, 60 * 60 * 1000);
 
 /**
- * POST /api/sites/generate: { brief, photos? } → { siteId, spec }
+ * POST /api/sites/generate: { brief, photos?, businessName? } → { siteId, spec }
  * Funciona sem login: quem não tem conta vira visitante (cookie) e o site fica guardado
  * para ele até criar a conta (ver server/guest.ts). Visitantes têm limites menores.
  */
@@ -46,10 +46,16 @@ export async function POST(request: Request): Promise<Response> {
 
     let spec: SiteSpec;
     try {
-      spec = await generateSiteSpec(input.data.brief, generator, {
-        recent: await recentCompositions(actor),
-        photos: hasImageProvider(),
-      });
+      spec = await generateSiteSpec(
+        input.data.brief,
+        generator,
+        {
+          recent: await recentCompositions(actor),
+          photos: hasImageProvider(),
+        },
+        // O nome digitado pelo dono é fato: vale sobre o que o gerador escolher.
+        { businessName: input.data.businessName },
+      );
     } catch (error) {
       console.error("[api] site generation failed", error);
       // A IA falhou: os créditos voltam para a conta.

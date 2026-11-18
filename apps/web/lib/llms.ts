@@ -44,6 +44,8 @@ export function llmsText(): string {
     "",
     `- [Home](${siteUrl()}): how it works, examples, features and FAQ`,
     `- [Pricing](${siteUrl("/pricing")}): plans, billing and cancellation`,
+    `- [Refund Policy](${siteUrl("/refund")}): 30-day money-back guarantee on the first payment`,
+    `- [Contact](${siteUrl("/contact")})`,
     `- [Terms of Service](${siteUrl("/terms")})`,
     `- [Privacy Policy](${siteUrl("/privacy")})`,
     "",

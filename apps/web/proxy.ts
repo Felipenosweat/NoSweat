@@ -59,7 +59,15 @@ const PUBLIC_PATTERNS = [
   /^\/api\/billing\/webhook\/?$/,
   /^\/api\/unsubscribe\/?$/,
 ];
-const PUBLIC_PAGES = new Set(["/", "/pricing", "/terms", "/privacy", "/credits"]);
+const PUBLIC_PAGES = new Set([
+  "/",
+  "/pricing",
+  "/terms",
+  "/privacy",
+  "/refund",
+  "/contact",
+  "/credits",
+]);
 
 /** O caminho dispensa a sessão do Supabase (ver PUBLIC_PREFIXES). */
 function isPublicPath(path: string): boolean {

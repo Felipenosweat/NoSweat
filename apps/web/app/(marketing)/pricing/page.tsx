@@ -5,6 +5,7 @@ import { PRICING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
+import { planPrices, pricingCredits } from "@/components/marketing/pricing-data";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, focusRing, primaryButton, textLink } from "@/components/marketing/styles";
 import { checkoutReady } from "@/server/billing";
@@ -61,7 +62,11 @@ export default function PricingPage() {
           <div className="mt-12 lg:mt-16">
             {/* Título invisível: os nomes dos planos são h3 (mesmo componente da landing). */}
             <h2 className="sr-only">Plans</h2>
-            <PricingPlans checkout={checkoutReady()} />
+            <PricingPlans
+              checkout={checkoutReady()}
+              prices={planPrices()}
+              credits={pricingCredits()}
+            />
           </div>
 
           <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">

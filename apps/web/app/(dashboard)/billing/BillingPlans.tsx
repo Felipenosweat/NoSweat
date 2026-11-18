@@ -140,12 +140,15 @@ export function BillingPlans({
   siteId,
   contact,
   ended = null,
+  chosen = null,
 }: {
   plans: PlanCard[];
   current: BillingStatusResponse;
   siteId: string | null;
   contact: SalesContact;
   ended?: EndedPlan | null;
+  /** Plano escolhido antes na /pricing: ganha o destaque (no lugar do "Recommended"). */
+  chosen?: PlanId | null;
 }) {
   const checkout = current.checkoutEnabled !== false;
   const [interval, setBillingInterval] = useState<BillingInterval>(current.interval ?? "annual");
@@ -185,6 +188,8 @@ export function BillingPlans({
     hasPlan && current.plan === planId && (manualActive || current.interval === interval);
   const renewText = `Hi! I'd like to renew my ${currentName} plan.`;
   const publishHref = siteId ? `/sites/${siteId}#publish` : "/dashboard#sites";
+  // Quem já tem plano não precisa do lembrete da escolha feita na /pricing.
+  const picked = !hasPlan && chosen ? plans.find((p) => p.id === chosen) : undefined;
 
   return (
     <div className="mt-8">
@@ -252,6 +257,12 @@ export function BillingPlans({
           </p>
         </section>
       )}
+      {picked && (
+        <p className="mb-4 text-[15px] text-slate-700">
+          You picked <strong className="font-semibold text-ink">{picked.name}</strong> on the
+          pricing page. You can still choose any plan.
+        </p>
+      )}
       <GlassSegmented
         aria-label="Billing period"
         options={[
@@ -264,7 +275,8 @@ export function BillingPlans({
 
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         {plans.map((plan) => {
-          const recommended = plan.id === "pro";
+          // O plano escolhido na /pricing leva o destaque; sem escolha, o Pro (recomendado).
+          const recommended = picked ? plan.id === picked.id : plan.id === "pro";
           return (
             <li
               key={plan.id}
@@ -277,7 +289,7 @@ export function BillingPlans({
                 </h2>
                 {recommended && (
                   <GlassBadge tone="info" dot={false}>
-                    Recommended
+                    {picked ? "Your pick" : "Recommended"}
                   </GlassBadge>
                 )}
               </div>

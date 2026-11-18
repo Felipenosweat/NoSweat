@@ -302,7 +302,13 @@ export async function createPreview(admin: CurrentUser, id: string): Promise<Pro
   const brief = buildPreviewBrief({ ...prospect, trade: tradeFromSearch(prospect.search) });
   let spec;
   try {
-    spec = await generateSiteSpec(brief, generator, { photos: hasImageProvider() });
+    // O nome vem da fonte (OSM/Google): fato, não sugestão da IA.
+    spec = await generateSiteSpec(
+      brief,
+      generator,
+      { photos: hasImageProvider() },
+      { businessName: prospect.name },
+    );
   } catch (error) {
     console.error("[prospects] preview generation failed", error);
     await refundUse(actor, "generate");

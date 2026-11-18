@@ -66,6 +66,16 @@ export const GenerateSiteRequest = z.object({
     .max(2000, "Please keep the description under 2,000 characters."),
   /** Opcional; sem ele, "auto" (comportamento de sempre). */
   photos: PhotoMode.default("auto"),
+  /**
+   * Nome do negócio digitado pelo dono (opcional). Quando vem, é ESTE o nome do site, em
+   * qualquer gerador (mock, modelo ou IA): é um fato do dono, não uma sugestão. Texto puro
+   * (nunca HTML). Vazio = sem nome (a plataforma sugere um).
+   */
+  businessName: z
+    .string()
+    .trim()
+    .max(80, "Please keep the business name under 80 characters.")
+    .optional(),
 });
 export type GenerateSiteRequest = z.infer<typeof GenerateSiteRequest>;
 
