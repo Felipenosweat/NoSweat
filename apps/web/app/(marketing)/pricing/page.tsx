@@ -7,7 +7,14 @@ import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { planPrices, pricingCredits } from "@/components/marketing/pricing-data";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
-import { container, h2Class, primaryButton, textLink } from "@/components/marketing/styles";
+import {
+  container,
+  h1Class,
+  h2Class,
+  primaryButton,
+  textLink,
+} from "@/components/marketing/styles";
+import { PriceReceipt } from "@/components/landing/PriceReceipt";
 import { checkoutReady } from "@/server/billing";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
@@ -40,20 +47,15 @@ export default function PricingPage() {
       <JsonLd data={jsonLd(product(), faqPage(PRICING_FAQS, "/pricing"))} />
       <section aria-labelledby="pricing-title" className="bg-surface">
         <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
-          <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
-            <div className="lg:col-span-7">
-              <p className="text-[13px] font-semibold text-slate-600">Pricing</p>
-              <h1
-                id="pricing-title"
-                className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
-              >
-                <TightPunctuation>Build it free. Pay when it goes live.</TightPunctuation>
-              </h1>
-            </div>
-            <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-span-5 lg:self-end">
-              Describe your business, get a full website draft and edit it as much as you like. Pick
-              a plan when you’re ready to publish and get messages from customers.
-            </p>
+          {/* Mesma promessa e mesmo recibo da seção de preço da landing. */}
+          <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8">
+            <h1 id="pricing-title" className={`lg:col-span-7 ${h1Class}`}>
+              <TightPunctuation>Free to build. Pay when it goes live.</TightPunctuation>
+            </h1>
+            <PriceReceipt
+              fromPrice={planPrices().starter.monthly}
+              className="lg:col-span-5 lg:justify-self-end"
+            />
           </div>
 
           <div className="mt-12 lg:mt-16">
@@ -111,7 +113,7 @@ export default function PricingPage() {
               <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
-              Start with a sentence about your business. No account or credit card needed.
+              Answer four questions. No account or credit card needed.
             </p>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">

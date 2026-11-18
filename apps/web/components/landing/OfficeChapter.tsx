@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { container, frameShadow } from "@/components/marketing/styles";
 import { OfficeIndex } from "./OfficeIndex";
 
@@ -6,7 +6,10 @@ import { OfficeIndex } from "./OfficeIndex";
 // primeiro toque no site até o pedido de avaliação, em seis capítulos, cada um com uma TELA REAL
 // do app (capturas do app rodando com AI_PROVIDER=mock e dados de demonstração da Greenline
 // Landscaping, negócio inventado, avisado na legenda). Capturas em public/landing/office
-// (2x, 1200px de largura). Sem botão aqui: azul sobre ink não tem contraste.
+// (2x, 1200px de largura). No celular (< 768px) a tela inteira ficava ilegível (texto de 5-6px):
+// cada capítulo tem um recorte fechado só do painel que importa (`*-m.webp`, 720px de largura,
+// altura em `mobileHeight`; tela de 440px em 2x), trocado por <picture>.
+// Sem botão aqui: azul sobre ink não tem contraste.
 // No computador, o índice da esquerda fica preso e marca o capítulo da vez (OfficeIndex).
 
 export const OFFICE_CHAPTERS = [
@@ -15,15 +18,19 @@ export const OFFICE_CHAPTERS = [
     title: "Someone books a spring cleanup from your site",
     body: "Turn on booking and your live site shows your services and open times. Each booking adds the client and the job to your office.",
     src: "/landing/office/book.webp",
+    mobileSrc: "/landing/office/book-m.webp",
+    mobileHeight: 903,
     width: 1200,
     height: 878,
-    alt: "The Book a visit section of the Greenline Landscaping site: Spring cleanup, 3 hours for $240, is selected, with open morning and afternoon times and 9:00 AM picked.",
+    alt: "The Book a visit section of the Greenline Landscaping site: hedge trimming, lawn mowing and a spring cleanup, each with its length and price (Spring cleanup, 3 hours for $240), and open times to pick.",
   },
   {
     id: "office-clients",
     title: "It lands in Clients",
     body: "Every booking and contact-form request becomes a client, with a Reply button for email or text.",
     src: "/landing/office/clients.webp",
+    mobileSrc: "/landing/office/clients-m.webp",
+    mobileHeight: 1054,
     width: 1200,
     height: 900,
     alt: "The No Sweat Clients screen: 3 new requests waiting, Dana Whitfield marked Quoted, and Tom Alvarez, Priya Raman and Marcus Bell marked New, each with a Reply button.",
@@ -33,6 +40,8 @@ export const OFFICE_CHAPTERS = [
     title: "Send the estimate",
     body: "Build it from your price list and send a link. Your client approves it online.",
     src: "/landing/office/estimate.webp",
+    mobileSrc: "/landing/office/estimate-m.webp",
+    mobileHeight: 596,
     width: 1200,
     height: 1009,
     alt: "Estimate #1001 for Dana Whitfield, waiting for approval: a spring cleanup for $240 and 6 cubic yards of mulch for $390, $630 in total.",
@@ -42,6 +51,8 @@ export const OFFICE_CHAPTERS = [
     title: "It’s on your schedule",
     body: "Online bookings and the jobs you add share one calendar.",
     src: "/landing/office/schedule.webp",
+    mobileSrc: "/landing/office/schedule-m.webp",
+    mobileHeight: 1121,
     width: 1200,
     height: 900,
     alt: "The No Sweat Schedule on Friday, November 20: Spring cleanup for Dana Whitfield from 9:00 AM to 12:00 PM and hedge trimming for Tom Alvarez from 1:30 to 3:30 PM.",
@@ -51,6 +62,8 @@ export const OFFICE_CHAPTERS = [
     title: "Invoice when it’s done",
     body: "Send the invoice as a link and record each payment when it comes in.",
     src: "/landing/office/invoice.webp",
+    mobileSrc: "/landing/office/invoice-m.webp",
+    mobileHeight: 637,
     width: 1200,
     height: 1009,
     alt: "Invoice #1001 for Dana Whitfield, unpaid, due December 2: $630 balance due, with a Record payment button.",
@@ -60,6 +73,8 @@ export const OFFICE_CHAPTERS = [
     title: "Ask for a Google review",
     body: "Text or email your review link, or print the QR code for your truck.",
     src: "/landing/office/reviews.webp",
+    mobileSrc: "/landing/office/reviews-m.webp",
+    mobileHeight: 807,
     width: 1200,
     height: 661,
     alt: "The Ask your clients panel: a ready-to-send message for Dana with the Google review link, buttons to copy, text or email it, and a QR code to print.",
@@ -118,14 +133,7 @@ export function OfficeChapter() {
                 <div
                   className={`mt-6 overflow-hidden rounded-2xl border border-white/15 bg-white ${frameShadow}`}
                 >
-                  <Image
-                    src={chapter.src}
-                    width={chapter.width}
-                    height={chapter.height}
-                    alt={chapter.alt}
-                    sizes="(min-width: 1200px) 760px, (min-width: 1024px) 64vw, 92vw"
-                    className="h-auto w-full"
-                  />
+                  <OfficeShot chapter={chapter} />
                 </div>
               </li>
             ))}
@@ -143,5 +151,43 @@ export function OfficeChapter() {
         </div>
       </div>
     </section>
+  );
+}
+
+/** Recortes de celular: todos com 720px de largura (a altura vem de cada capítulo). */
+const MOBILE_WIDTH = 720;
+/** Abaixo de md a tela inteira fica pequena demais; a partir de 768px ela já é legível. */
+const MOBILE_MEDIA = "(max-width: 767px)";
+
+/** Captura do capítulo: recorte fechado no celular, tela inteira no tablet e no computador. */
+function OfficeShot({ chapter }: { chapter: (typeof OFFICE_CHAPTERS)[number] }) {
+  const {
+    props: { srcSet: mobileSrcSet },
+  } = getImageProps({
+    alt: chapter.alt,
+    src: chapter.mobileSrc,
+    width: MOBILE_WIDTH,
+    height: chapter.mobileHeight,
+    sizes: "92vw",
+  });
+  const { props: desktop } = getImageProps({
+    alt: chapter.alt,
+    src: chapter.src,
+    width: chapter.width,
+    height: chapter.height,
+    sizes: "(min-width: 1200px) 760px, (min-width: 1024px) 64vw, 92vw",
+  });
+  return (
+    <picture>
+      <source
+        media={MOBILE_MEDIA}
+        srcSet={mobileSrcSet}
+        sizes="92vw"
+        width={MOBILE_WIDTH}
+        height={chapter.mobileHeight}
+      />
+      {/* Props do getImageProps (next/image): srcset otimizado da tela inteira. */}
+      <img {...desktop} alt={chapter.alt} className="h-auto w-full" />
+    </picture>
   );
 }

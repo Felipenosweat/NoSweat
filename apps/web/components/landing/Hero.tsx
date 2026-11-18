@@ -5,7 +5,7 @@ import { PriceLine, PriceReceipt } from "./PriceReceipt";
 
 // Topo da landing: à esquerda (7 colunas) o título, a frase, as quatro perguntas e o preço como
 // recibo; à direita (5 colunas) o celular com um site de exemplo que acompanha a 1ª resposta. No
-// celular: título, frase, perguntas, a linha do preço e o celular abaixo da dobra.
+// celular e no tablet: título, frase, perguntas, a linha do preço e o celular centralizado abaixo.
 // Sem animação de entrada: o h1 é o maior elemento do primeiro quadro e aparece parado.
 
 export function Hero({ fromPrice }: { fromPrice?: string }) {
@@ -37,7 +37,7 @@ export function Hero({ fromPrice }: { fromPrice?: string }) {
             </>
           )}
         </div>
-        <div className="lg:col-span-5 lg:flex lg:justify-end lg:pt-2">
+        <div className="flex justify-center lg:col-span-5 lg:justify-end lg:pt-2">
           <HeroPhone />
         </div>
       </div>

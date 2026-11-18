@@ -49,6 +49,12 @@ const PLANS: Plan[] = [
       "Photo uploads and a photo gallery",
       "Contact form with messages in your dashboard",
       "Clients area",
+      // Ferramentas do office: nenhum plano trava (server/booking só pede plano ativo,
+      // server/office não confere plano), então todas entram já no Starter.
+      "Online booking",
+      "Estimates and invoices",
+      "Schedule",
+      "Google review requests",
       "Instagram post calendar",
     ],
   },
@@ -212,7 +218,7 @@ export function PricingPlans({
                 {renewalTerms(price, annual, checkout)}{" "}
                 <Link
                   href="/terms#renewal"
-                  className={`rounded-sm underline underline-offset-2 hover:text-ink ${focusRing}`}
+                  className={`inline-flex min-h-11 items-center rounded-sm underline underline-offset-2 hover:text-ink ${focusRing}`}
                 >
                   Renewal terms
                 </Link>
@@ -225,7 +231,7 @@ export function PricingPlans({
       {/* Garantia de devolução (decisão do fundador): uma linha logo abaixo dos botões, com o link da política. */}
       <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
         <strong className="font-semibold text-ink">{GUARANTEE_LINE}</strong>{" "}
-        <Link href="/refund" className={textLink}>
+        <Link href="/refund" className={`inline-flex min-h-11 items-center ${textLink}`}>
           Read the refund policy
         </Link>
       </p>
@@ -265,7 +271,7 @@ export function PricingPlans({
       {/* Quem já criou o site e volta para comprar vai direto para /billing (pede login). */}
       <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-pretty text-slate-600">
         Already built your site?{" "}
-        <Link href="/billing" className={textLink}>
+        <Link href="/billing" className={`inline-flex min-h-11 items-center ${textLink}`}>
           Choose your plan
         </Link>
         .

@@ -132,7 +132,7 @@ export function HeroStepper() {
         <button
           type="button"
           onClick={back}
-          className={`inline-flex min-h-11 items-center rounded-lg px-3 text-[15px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-ink ${focusRing}`}
+          className={`inline-flex min-h-11 items-center rounded-lg px-3 text-[15px] font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-50 hover:text-ink motion-reduce:transition-none ${focusRing}`}
         >
           Back
         </button>
@@ -140,7 +140,7 @@ export function HeroStepper() {
     </div>
   );
 
-  const field = `w-full rounded-lg border border-slate-300 bg-white px-4 text-ink transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-400 focus:border-ink focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`;
+  const field = `w-full rounded-lg border border-slate-300 bg-white px-4 text-ink transition-colors duration-150 motion-reduce:transition-none placeholder:text-slate-500 hover:border-slate-400 focus:border-ink focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink`;
   const question =
     "block font-display text-[22px] leading-tight font-semibold tracking-[-0.02em] text-ink lg:text-2xl";
 
@@ -149,7 +149,7 @@ export function HeroStepper() {
       <form
         onSubmit={submit}
         noValidate
-        className="min-h-[372px] w-full sm:min-h-[300px]"
+        className="min-h-[372px] w-full sm:min-h-[260px]"
         aria-label="Tell us about your business"
       >
         {/* Progresso: 4 segmentos, os já feitos em tinta. */}
@@ -161,7 +161,7 @@ export function HeroStepper() {
             {STEPS.map((s, i) => (
               <span
                 key={s}
-                className={`h-1 flex-1 transition-colors duration-150 ${i <= index ? "bg-ink" : "bg-slate-200"}`}
+                className={`h-1 flex-1 transition-colors duration-150 motion-reduce:transition-none ${i <= index ? "bg-ink" : "bg-slate-200"}`}
               />
             ))}
           </div>
@@ -181,7 +181,7 @@ export function HeroStepper() {
                   type="button"
                   onClick={() => goTo(a.step)}
                   aria-label={`Change: ${a.value}`}
-                  className={`inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg border border-slate-200 bg-surface px-3 text-[14px] text-ink transition-colors duration-150 hover:border-slate-400 ${focusRing}`}
+                  className={`inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg border border-slate-200 bg-surface px-3 text-[14px] text-ink transition-colors duration-150 hover:border-slate-400 motion-reduce:transition-none ${focusRing}`}
                 >
                   <span className="truncate">{a.value}</span>
                   <span aria-hidden="true" className="text-[13px] text-slate-600 underline">
@@ -212,7 +212,7 @@ export function HeroStepper() {
                   aria-pressed={kind === k.label}
                   data-first-chip={i === 0 ? "" : undefined}
                   onClick={() => pickKind(k.label)}
-                  className={`flex min-h-12 items-center rounded-lg border px-4 text-left text-[16px] leading-tight font-medium transition-colors duration-150 active:translate-y-px ${focusRing} ${
+                  className={`flex min-h-12 items-center rounded-lg border px-4 text-left text-[16px] leading-tight font-medium transition-colors duration-150 active:translate-y-px motion-reduce:transition-none ${focusRing} ${
                     k.label === "Something else" ? "col-span-2" : ""
                   } ${
                     kind === k.label

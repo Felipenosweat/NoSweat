@@ -10,7 +10,8 @@ import { focusRing, primaryTone } from "@/components/marketing/styles";
 // Cabeçalho do marketing (landing "/" e páginas claras como /pricing, os mesmos links e o mesmo
 // botão "Build my website"). Barra branca de 64px; a linha de baixo só aparece depois de rolar.
 // O botão azul fica `invisible` (não some do layout) enquanto as perguntas do topo (#start) estão
-// na tela: o azul da ação principal já está ali. No celular o botão fica só na barra fixa de baixo
+// na tela: o azul da ação principal já está ali. Abaixo de lg o botão não aparece no topo (o
+// `invisible` reservava ~150px vazios no tablet): no celular ele fica na barra fixa de baixo
 // (MobileCtaBar); no topo ficam o logo, "Log in" e o menu.
 
 export const MARKETING_NAV = [
@@ -78,7 +79,7 @@ export function LandingHeader() {
           </Link>
           <Link
             href="/create"
-            className={`hidden h-10 items-center rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:inline-flex ${primaryTone} ${focusRing} ${
+            className={`hidden h-10 items-center rounded-lg px-4 text-sm font-semibold whitespace-nowrap transition-colors duration-150 active:translate-y-px lg:inline-flex ${primaryTone} ${focusRing} ${
               heroInView ? "invisible" : ""
             }`}
           >

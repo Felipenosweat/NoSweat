@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { focusRing } from "@/components/marketing/styles";
 import { SITE_ORIGIN } from "@/lib/site";
 import { fontVariables } from "./fonts";
 import "./globals.css";
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Pular para o conteúdo: o alvo é o <main id="main"> de cada layout. */}
         <a
           href="#main"
-          className="sr-only z-50 rounded-lg bg-white px-4 py-3 font-semibold text-ink ring-2 ring-brand focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+          className={`sr-only z-50 rounded-lg bg-white px-4 py-3 font-semibold text-ink ring-1 ring-slate-300 focus:not-sr-only focus:fixed focus:top-3 focus:left-3 ${focusRing}`}
         >
           Skip to content
         </a>
