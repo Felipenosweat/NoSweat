@@ -14,16 +14,19 @@ import type { SiteGenerator } from "./types";
 
 /**
  * Modelos padrão (trocáveis por variável, sem mexer no código):
- * - criar o site (primeira impressão do cliente, textos de marketing): Sonnet, ANTHROPIC_MODEL;
- * - editar com IA (quase toda chamada, mudança pequena no mesmo JSON): Haiku, ~20× mais barato,
- *   ANTHROPIC_EDIT_MODEL.
+ * - criar o site (a primeira impressão do cliente e o que faz alguém assinar): Opus, ANTHROPIC_MODEL.
+ *   Custa uns US$ 0,15 a 0,30 por site, e um site magro custa muito mais (cliente que não assina);
+ * - editar com IA (mexe no site inteiro e precisa seguir as regras sem estragar o resto): Sonnet,
+ *   ANTHROPIC_EDIT_MODEL. O Haiku só fica para as legendas do Instagram (server/social).
  */
-const DEFAULT_MODEL = "claude-sonnet-5-5";
-const DEFAULT_EDIT_MODEL = "claude-haiku-5-5";
+const DEFAULT_MODEL = "claude-opus-5-5";
+const DEFAULT_EDIT_MODEL = "claude-sonnet-5-5";
 
 /**
- * Geração a partir do modelo (padrão ligado; AI_MODEL_FIRST=false desliga): o modelo barato
+ * Geração a partir do modelo (padrão DESLIGADO; AI_MODEL_FIRST=true liga): o modelo barato
  * (o mesmo da edição) escreve só o ModelFill; se falhar duas vezes, volta para o caminho completo.
+ * Ficou desligada porque preencher um site-modelo com texto saía genérico e todos os sites
+ * pareciam iguais: o padrão agora é o modelo principal escrever o site inteiro.
  */
 // Folga para o visual (tema, estilo, ordem) e a busca de foto de cada serviço.
 const MODEL_FIRST_MAX_TOKENS = 2600;
@@ -39,7 +42,7 @@ const GENERATION_BUDGET_MS = 270_000;
 const FULL_MIN_TIMEOUT_MS = 20_000;
 
 export function modelFirstEnabled(value = process.env.AI_MODEL_FIRST): boolean {
-  return value?.trim().toLowerCase() !== "false";
+  return value?.trim().toLowerCase() === "true";
 }
 
 /** Caminho usado na última geração (para o log e para os testes). */
@@ -198,8 +201,9 @@ export class AnthropicGenerator implements SiteGenerator {
         {
           model: this.model,
           max_tokens: 16000,
-          // Pensamento adaptativo é o padrão neste modelo; "medium" equilibra qualidade e espera.
-          output_config: { effort: "medium" },
+          // Pensamento adaptativo é o padrão neste modelo; "high" porque é aqui que o site ganha ou
+          // perde o cliente (estrutura, escolha de seções, texto específico do negócio).
+          output_config: { effort: "high" },
           system: [
             {
               type: "text",

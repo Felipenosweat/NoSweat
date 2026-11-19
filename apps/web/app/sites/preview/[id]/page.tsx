@@ -1,3 +1,4 @@
+import { PreviewBarOffset } from "@/app/p/[token]/PreviewBarOffset";
 import { liveBookingEndpoint } from "@/server/booking/service";
 import { SiteRenderer } from "@nosweat/templates";
 import type { Metadata } from "next";
@@ -49,8 +50,12 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
 
   return (
     <>
-      {/* Barra da No Sweat: fica fora do site do cliente. */}
-      <div className="flex h-10 items-center justify-between gap-4 bg-slate-950 px-4 text-xs font-medium text-slate-300">
+      {/* Barra da No Sweat: fica fora do site do cliente, presa no topo; o cabeçalho do site
+          desce para baixo dela (PreviewBarOffset mede a altura e o CSS abaixo usa). */}
+      <div
+        id="ns-preview-bar"
+        className="sticky top-0 z-50 flex h-10 items-center justify-between gap-4 bg-slate-950 px-4 text-xs font-medium text-slate-300"
+      >
         <p>
           Preview <span className="text-slate-500">·</span>{" "}
           <span className="text-white">No Sweat</span>
@@ -75,6 +80,8 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
           </Link>
         </div>
       </div>
+      <PreviewBarOffset targetId="ns-preview-bar" />
+      <style>{`.ns-nav{top:var(--ns-preview-bar,0px)}`}</style>
       <SiteRenderer
         spec={site.spec}
         bookingEndpoint={await liveBookingEndpoint(site.id, site.spec)}

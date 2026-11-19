@@ -4,10 +4,10 @@ import type { AiUsageKind } from "../store/types";
 // é uma média aproximada de quanto cada chamada gasta (tokens de entrada + saída).
 // ATUALIZAR quando o preço do provedor (Anthropic/OpenAI), o modelo ou o tamanho dos prompts mudar.
 export const AI_COST_PER_USE_USD: Record<AiUsageKind, number> = {
-  // Média ponderada: quase todo site sai pelo caminho barato (site-modelo + ModelFill no Haiku,
-  // ~US$0,005) e alguns voltam para o caminho completo (Sonnet, ~US$0,06). Ver server/ai/anthropic.ts.
-  generate: 0.012,
-  ai_edit: 0.01,
+  // Site novo: o modelo principal (Opus 5.5, esforço alto) escreve o site inteiro, ~US$ 0,15 a
+  // 0,30. Edição: Sonnet 5.5 com o site inteiro na entrada, ~US$ 0,03 a 0,08. Ver anthropic.ts.
+  generate: 0.25,
+  ai_edit: 0.06,
   social_plan: 0.03,
   social_caption: 0.002,
 };
