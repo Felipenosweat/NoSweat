@@ -1,6 +1,6 @@
 import { IntakeAnswer } from "@nosweat/schema";
 import { describe, expect, it } from "vitest";
-import { answersFrom, kindForQuestions, questionsFor } from "./questions";
+import { answersFrom, kindForQuestions, parsePicked, questionsFor } from "./questions";
 
 describe("kindForQuestions", () => {
   it("uses the chosen type, and otherwise guesses from the words", () => {
@@ -52,5 +52,16 @@ describe("answersFrom", () => {
   it("ignores options that are not on the list and sends nothing when nothing is picked", () => {
     expect(answersFrom(questions, { picks: { appointments: ["Made up"] }, others: {} })).toEqual([]);
     expect(answersFrom(questions, { picks: {}, others: {} })).toEqual([]);
+  });
+});
+
+describe("parsePicked", () => {
+  it("reads what was saved and drops anything that is not the right shape", () => {
+    expect(
+      parsePicked(JSON.stringify({ picks: { pay: ["Cash only", 3] }, others: { hours: "9-5" } })),
+    ).toEqual({ picks: { pay: ["Cash only"] }, others: { hours: "9-5" } });
+    expect(parsePicked(null)).toEqual({ picks: {}, others: {} });
+    expect(parsePicked("not json")).toEqual({ picks: {}, others: {} });
+    expect(parsePicked("[1,2]")).toEqual({ picks: {}, others: {} });
   });
 });

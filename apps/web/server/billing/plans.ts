@@ -22,19 +22,21 @@ export type Plan = {
   socialAccounts: number;
 };
 
-// TODO: os limites de redes sociais (12/30/60 posts por mês, 1 conta) são sugestão; o fundador
-// ainda não decidiu preços nem o texto da tabela. Não mudar preços nem PricingPlans.tsx até lá.
+// Starter a US$ 19 (decisão do fundador, nov/2026, oferta de Black Friday): 1 site no ar, 60
+// créditos de IA por mês (server/credits/pricing.ts) e 4 posts no Instagram por mês; o sistema de
+// gestão (clientes, agenda, agendamento, avaliações) continua inteiro. Pro e Premium não mudaram.
+// Preço e limites aqui precisam bater com components/marketing/PricingPlans.tsx.
 
 export const PLANS: Record<PlanId, Plan> = {
   starter: {
     id: "starter",
-    publishedSitesLimit: 3,
+    publishedSitesLimit: 1,
     name: "Starter",
-    monthlyCents: 3900,
-    annualCents: 39000,
+    monthlyCents: 1900,
+    annualCents: 19000,
     setupCents: null,
     customDomain: true,
-    socialPostsPerMonth: 12,
+    socialPostsPerMonth: 4,
     socialAccounts: 1,
   },
   pro: {

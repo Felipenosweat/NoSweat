@@ -129,7 +129,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     <div className="max-w-4xl">
       <PageHeader
         title="Plans and billing"
-        description="Building and previewing is free. A plan puts your website live and keeps it there."
+        description="Pick a plan to build your website. It keeps your site live and gives you AI credits every month."
       />
 
       {status === "success" && (
@@ -137,13 +137,22 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           {billing.active
             ? "Payment received. Your plan is active."
             : "Payment received. It can take a few seconds to show here."}
-          {siteId && (
+          {siteId ? (
             <>
               {" "}
               <Link href={`/sites/${siteId}`} className="font-semibold underline">
                 Go publish your website →
               </Link>
             </>
+          ) : (
+            billing.active && (
+              <>
+                {" "}
+                <Link href="/create" className="font-semibold underline">
+                  Build your website →
+                </Link>
+              </>
+            )
           )}
         </Notice>
       )}
@@ -157,7 +166,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         <Notice tone="info" className="mt-6">
           Pick a plan to put{" "}
           <strong className="font-semibold">{pendingSite.spec.business.name}</strong> live. Your
-          draft is saved; building and previewing stay free.
+          draft is saved; editing and previewing stay free.
         </Notice>
       )}
       {planLimit !== null && (

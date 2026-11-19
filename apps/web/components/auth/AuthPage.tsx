@@ -24,7 +24,7 @@ type AuthMode = "login" | "signup" | "forgot";
 const COPY = {
   signup: {
     heading: "Create your account",
-    intro: "Accounts are free. You’ll need one to publish your website.",
+    intro: "Accounts are free. You’ll need one, and a plan, to build your website.",
     switchPrompt: "Already have an account?",
     switchLabel: "Log in",
     switchPath: "/login",

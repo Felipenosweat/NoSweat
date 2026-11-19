@@ -14,9 +14,12 @@ import type { AiUsageKind } from "../store/types";
 /** Ações da IA que custam créditos. `regenerate_section` ainda não existe na API (TODO). */
 export type CreditAction = AiUsageKind | "regenerate_section";
 
+// Conta (nov/2026, preço do crédito mais barato = US$ 0,05 no pacote de 300): um site novo custa
+// ~US$ 0,25 de IA (Opus), então 10 créditos = US$ 0,50 já dá margem; uma edição custa ~US$ 0,06
+// (Sonnet), então 3 créditos = US$ 0,15.
 export const CREDIT_COSTS: Record<CreditAction, number> = {
-  generate: 5,
-  ai_edit: 2,
+  generate: 10,
+  ai_edit: 3,
   regenerate_section: 1,
   social_plan: 5,
   social_caption: 1,
@@ -42,7 +45,7 @@ export const CREDIT_ACTIONS: CreditAction[] = [
 /** Créditos por mês de cada plano, e de quem não tem plano (para experimentar). */
 export const MONTHLY_CREDITS: Record<PlanId | "none", number> = {
   none: 30,
-  starter: 150,
+  starter: 60,
   pro: 400,
   premium: 1000,
 };

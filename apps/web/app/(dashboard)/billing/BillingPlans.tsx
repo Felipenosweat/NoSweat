@@ -295,7 +295,9 @@ export function BillingPlans({
               <ul className="mt-4 space-y-2 text-sm text-slate-700">
                 <li className="flex gap-2">
                   <CheckIcon className="mt-0.5 size-4 shrink-0 text-brand" />
-                  Up to {plan.publishedSitesLimit} live websites
+                  {plan.publishedSitesLimit === 1
+                    ? "1 live website"
+                    : `Up to ${plan.publishedSitesLimit} live websites`}
                 </li>
                 <li className="flex gap-2">
                   <CheckIcon className="mt-0.5 size-4 shrink-0 text-brand" />

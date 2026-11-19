@@ -117,6 +117,11 @@ Como as peças se ligam:
   `proxy.ts` deixa `/api/*` passar sem reescrever.
 - Erros da API sempre no formato `{ error: { code, message } }` (ver `ERROR_CODES`).
 
+- Criar site exige plano (`generateBlocked`, `server/billing`): com os planos valendo (Stripe ou
+  `REQUIRE_PLAN=true`), `POST /api/sites/generate` responde 402 `payment_required` para visitante e
+  para conta sem plano ativo (cada site custa de US$ 0,15 a 0,30 de IA). Começar é de graça:
+  descrever o negócio e responder as perguntas rápidas (`/create`, respostas guardadas na aba);
+  o plano é escolhido ao clicar em "Create website". Editar e prever rascunhos continua livre.
 - Criar sem conta (modo visitante): `/create`, o editor e a prévia funcionam sem login. Quem
   não está logado ganha o cookie `ns_guest` (`server/guest.ts`); o site fica com `owner_id` nulo
   e `guest_id` = cookie. Rotas que visitantes usam chamam `requireSiteAccess` / `getActor`
