@@ -10,6 +10,8 @@ export type Plan = {
   name: string;
   monthlyCents: number;
   annualCents: number;
+  /** Preço normal mensal, que volta quando a oferta de lançamento acaba (ver `PROMO`). */
+  regularMonthlyCents: number;
   /** Taxa única, cobrada na primeira fatura do plano MENSAL. `null` = não tem. */
   setupCents: number | null;
   /** Pode ligar domínio próprio. */
@@ -22,19 +24,22 @@ export type Plan = {
   socialAccounts: number;
 };
 
-// TODO: os limites de redes sociais (12/30/60 posts por mês, 1 conta) são sugestão; o fundador
-// ainda não decidiu preços nem o texto da tabela. Não mudar preços nem PricingPlans.tsx até lá.
+// Starter a US$ 19 (decisão do fundador, nov/2026, oferta de Black Friday): 1 site no ar, 60
+// créditos de IA por mês (server/credits/pricing.ts) e 4 posts no Instagram por mês; o sistema de
+// gestão (clientes, agenda, agendamento, avaliações) continua inteiro. Pro e Premium não mudaram.
+// Preço e limites aqui precisam bater com components/marketing/PricingPlans.tsx.
 
 export const PLANS: Record<PlanId, Plan> = {
   starter: {
     id: "starter",
-    publishedSitesLimit: 3,
+    publishedSitesLimit: 1,
     name: "Starter",
-    monthlyCents: 3900,
-    annualCents: 39000,
+    monthlyCents: 1900,
+    annualCents: 19000,
+    regularMonthlyCents: 3900,
     setupCents: null,
     customDomain: true,
-    socialPostsPerMonth: 12,
+    socialPostsPerMonth: 4,
     socialAccounts: 1,
   },
   pro: {
@@ -43,6 +48,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Pro",
     monthlyCents: 6900,
     annualCents: 69000,
+    regularMonthlyCents: 14900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 30,
@@ -54,6 +60,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Premium",
     monthlyCents: 12900,
     annualCents: 129000,
+    regularMonthlyCents: 29900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 60,
@@ -68,4 +75,21 @@ export function priceCents(plan: Plan, interval: BillingInterval): number {
 /** Taxa de implantação cobrada nesta compra (só no mensal). */
 export function setupCentsFor(plan: Plan, interval: BillingInterval): number | null {
   return interval === "monthly" ? plan.setupCents : null;
+}
+
+// Oferta de lançamento (Black Friday): os planos custam menos que o preço normal até `endsOn`.
+// O preço normal só pode aparecer riscado enquanto a oferta vale E se a empresa for mesmo cobrar
+// esse valor depois (regra de preço de referência da FTC e dos estados): por isso a data é
+// decisão do fundador, e passada a data a tela deixa de mostrar o risco. O que é COBRADO vem de
+// `monthlyCents`/`annualCents`, não daqui. Anual = 10× o mensal normal, como no preço de oferta.
+export const PROMO = { endsOn: "2026-12-01", lastDayLabel: "Nov 30" } as const;
+
+/** A oferta ainda vale em `now`? (`endsOn` é o primeiro dia SEM oferta, em UTC.) */
+export function promoActive(now: Date = new Date()): boolean {
+  return now.getTime() < Date.parse(`${PROMO.endsOn}T00:00:00Z`);
+}
+
+/** Desconto do preço de oferta em relação ao normal, em % inteiro. */
+export function promoPercentOff(plan: Plan): number {
+  return Math.round((1 - plan.monthlyCents / plan.regularMonthlyCents) * 100);
 }

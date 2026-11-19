@@ -72,7 +72,7 @@ describe("SEO do nosweatfd.com", () => {
   it("o llms.txt resume o produto com os mesmos preços e perguntas do site", () => {
     const text = llmsText();
     expect(text.startsWith("# No Sweat\n")).toBe(true);
-    expect(text).toContain("$39/month");
+    expect(text).toContain("$19/month");
     expect(text).toContain(LANDING_FAQS[0]!.question);
     expect(text).toContain(`${SITE_ORIGIN}/pricing`);
   });

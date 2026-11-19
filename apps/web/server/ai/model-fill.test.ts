@@ -491,11 +491,11 @@ describe("AnthropicGenerator, model-first", () => {
   const clientWith = (parse: (...args: unknown[]) => Promise<unknown>) =>
     ({ messages: { parse } }) as unknown as Client;
 
-  it("is on by default and off with AI_MODEL_FIRST=false", () => {
-    expect(modelFirstEnabled(undefined)).toBe(true);
-    expect(modelFirstEnabled("true")).toBe(true);
+  it("is off by default and on with AI_MODEL_FIRST=true", () => {
+    expect(modelFirstEnabled(undefined)).toBe(false);
     expect(modelFirstEnabled("false")).toBe(false);
-    expect(modelFirstEnabled(" FALSE ")).toBe(false);
+    expect(modelFirstEnabled("true")).toBe(true);
+    expect(modelFirstEnabled(" TRUE ")).toBe(true);
   });
 
   it("builds the site from the model with the cheap model and a cached prompt", async () => {

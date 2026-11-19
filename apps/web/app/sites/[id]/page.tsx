@@ -256,7 +256,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 ) : isPublished ? (
                   "Your website is live. Anyone with the link can see it."
                 ) : needsPlan ? (
-                  "Pick a plan to put it online. Building and previewing stay free."
+                  "Pick a plan to put it online. Editing and previewing stay free."
                 ) : (
                   "Happy with the preview? Put your website online in one click."
                 )}

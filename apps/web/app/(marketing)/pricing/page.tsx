@@ -8,6 +8,7 @@ import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
 import { container, focusRing, primaryButton, textLink } from "@/components/marketing/styles";
 import { checkoutReady } from "@/server/billing";
+import { PROMO, promoActive } from "@/server/billing/plans";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
 // Criar e ver a prévia é grátis; a cobrança (Stripe) só acontece ao escolher um plano para
@@ -16,7 +17,10 @@ import { checkoutReady } from "@/server/billing";
 
 const TITLE = "Pricing";
 const DESCRIPTION =
-  "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.";
+  "Start free. Pick Starter, Pro or Premium when you build your website, monthly or yearly.";
+
+// A oferta de lançamento acaba sozinha: a página se refaz de hora em hora e confere a data.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -49,24 +53,28 @@ export default function PricingPage() {
                 id="pricing-title"
                 className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
               >
-                <TightPunctuation>Build it free. Pay when it goes live.</TightPunctuation>
+                <TightPunctuation>Start free. Pick a plan to build.</TightPunctuation>
               </h1>
             </div>
             <p className="max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-span-5 lg:self-end">
-              Describe your business, get a full website draft and edit it as much as you like. Pick
-              a plan when you’re ready to publish and get messages from customers.
+              Describe your business and answer a few quick questions for free. Pick a plan when
+              you’re ready to build your website, edit it as much as you like and get messages from
+              customers.
             </p>
           </div>
 
           <div className="mt-12 lg:mt-16">
             {/* Título invisível: os nomes dos planos são h3 (mesmo componente da landing). */}
             <h2 className="sr-only">Plans</h2>
-            <PricingPlans checkout={checkoutReady()} />
+            <PricingPlans checkout={checkoutReady()} promo={promoActive()} />
           </div>
 
           <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
-            Prices in US dollars. Creating and previewing your site is free; you pay when you choose
-            a plan to publish. Domain registration is not included. See our{" "}
+            Prices in US dollars. Starting is free; you pay when you choose a plan to build your
+            website.{" "}
+            {promoActive() &&
+              `Launch prices end on ${PROMO.lastDayLabel}; after that the regular price applies. `}
+            Domain registration is not included. See our{" "}
             <Link href="/terms" className={textLink}>
               Terms of Service
             </Link>
@@ -121,7 +129,7 @@ export default function PricingPage() {
               <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
-              Start with a sentence about your business. No account or credit card needed.
+              Start with a sentence about your business. It’s free until you build your site.
             </p>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">

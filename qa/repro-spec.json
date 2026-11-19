@@ -1,0 +1,105 @@
+{
+  "theme": {
+    "font": "luxe",
+    "text": "#241A24",
+    "primary": "#3D2B3D",
+    "secondary": "#C9A96E",
+    "background": "#FAF7F2"
+  },
+  "design": {
+    "header": "classic",
+    "buttons": "sharp",
+    "contact": "stacked",
+    "density": "airy",
+    "rationale": "Business type: beauty; owner style: elegant; tone: premium, refined; main action: book; composition: editorial; references: tandjung-sari, kummerlein, lpas",
+    "references": [
+      "tandjung-sari",
+      "kummerlein",
+      "lpas"
+    ],
+    "composition": "editorial",
+    "primaryAction": "book",
+    "imageTreatment": "natural"
+  },
+  "version": 1,
+  "business": {
+    "city": "Miami",
+    "name": "Downtown Miami Hair Salon",
+    "category": "Hair salon",
+    "serviceArea": "Downtown Miami"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "image": {
+        "alt": "Three maroon salon chairs facing a long white counter with a large mirror",
+        "url": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTE5NDEzfDB8MXxzZWFyY2h8MXx8YnJpZ2h0JTIwbW9kZXJuJTIwaGFpciUyMHNhbG9uJTIwY2hhaXJ8ZW58MXwwfHx8MTc5NTExNDEzN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "kind": "scene",
+        "width": 1080,
+        "credit": {
+          "url": "https://unsplash.com/@guipetri?utm_source=nosweat&utm_medium=referral",
+          "name": "Guilherme Petri"
+        },
+        "height": 720,
+        "source": "unsplash"
+      },
+      "title": "Hair cuts and treatments in downtown Miami",
+      "ctaLabel": "Book an appointment",
+      "subtitle": "A full menu of cuts, color and hair treatments, for clients who want their hair done well.",
+      "imageQuery": "bright modern hair salon chair"
+    },
+    {
+      "type": "services",
+      "items": [
+        {
+          "name": "Haircut",
+          "group": "Cut & style",
+          "description": "A cut shaped to your face, hair type and the way you wear it day to day."
+        },
+        {
+          "name": "Blowout",
+          "group": "Cut & style",
+          "description": "A wash and blow-dry, smooth or with volume, ready for the rest of your day."
+        },
+        {
+          "name": "Hair color",
+          "group": "Color",
+          "description": "Full color, root touch-up or highlights, planned with you before we begin."
+        },
+        {
+          "name": "Hair treatments",
+          "group": "Treatments",
+          "description": "Deep conditioning and repair treatments for dry, damaged or stressed hair."
+        }
+      ]
+    },
+    {
+      "type": "booking",
+      "intro": "Choose a service and a time that works for you.",
+      "title": "Book online"
+    },
+    {
+      "type": "faq",
+      "items": [
+        {
+          "a": "We take walk-ins when a stylist has an opening. Booking ahead is the surer way to get a time that suits you.",
+          "q": "Do you take walk-ins?"
+        },
+        {
+          "a": "It depends on the service. A cut or blowout is usually under an hour, and color takes longer. You will see the time when you book.",
+          "q": "How long does an appointment take?"
+        },
+        {
+          "a": "Please give us at least 24 hours' notice so we can offer your time to another client.",
+          "q": "What is your cancellation policy?"
+        }
+      ]
+    },
+    {
+      "type": "contact",
+      "showMap": true,
+      "showForm": true
+    }
+  ],
+  "template": "beauty"
+}
