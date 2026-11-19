@@ -24,6 +24,11 @@ export type AccessGrant = {
    */
   reminderStage?: ReminderStage | null;
   remindedFor?: string | null;
+  /**
+   * Quando o admin confirmou que o pagamento chegou (migration 0031). Sem isso o acesso vale, mas
+   * a conta não conta como cliente de verdade. Opcional: ausente no upsert = o banco mantém.
+   */
+  paymentConfirmedAt?: string | null;
 };
 
 export interface GrantStore {
@@ -60,6 +65,8 @@ const Row = z.object({
   // Colunas da migration 0018: opcionais para a leitura funcionar antes de ela rodar.
   reminder_stage: z.enum(["7d", "1d", "ended"]).nullish(),
   reminded_for: z.string().nullish(),
+  // Coluna da migration 0031: opcional para a leitura funcionar antes de ela rodar.
+  payment_confirmed_at: z.string().nullish(),
 });
 
 const toGrant = (row: z.infer<typeof Row>): AccessGrant => ({
@@ -73,6 +80,7 @@ const toGrant = (row: z.infer<typeof Row>): AccessGrant => ({
   // partir deste registro não manda colunas que o banco ainda não tem.
   reminderStage: row.reminder_stage,
   remindedFor: row.reminded_for,
+  paymentConfirmedAt: row.payment_confirmed_at,
 });
 
 /** Mesmo instante? (o Postgres devolve `+00:00` onde o JS escreve `Z`.) */
@@ -147,6 +155,9 @@ export class SupabaseGrantStore implements GrantStore {
         // Só manda as colunas do lembrete quando vieram (undefined = o banco mantém o valor).
         ...(grant.reminderStage !== undefined ? { reminder_stage: grant.reminderStage } : {}),
         ...(grant.remindedFor !== undefined ? { reminded_for: grant.remindedFor } : {}),
+        ...(grant.paymentConfirmedAt !== undefined
+          ? { payment_confirmed_at: grant.paymentConfirmedAt }
+          : {}),
       }),
     });
     // Acesso liberado, trocado ou cortado: os sites no ar da conta aparecem/somem já.
@@ -210,6 +221,10 @@ export class MemoryGrantStore implements GrantStore {
         grant.reminderStage !== undefined ? grant.reminderStage : (previous?.reminderStage ?? null),
       remindedFor:
         grant.remindedFor !== undefined ? grant.remindedFor : (previous?.remindedFor ?? null),
+      paymentConfirmedAt:
+        grant.paymentConfirmedAt !== undefined
+          ? grant.paymentConfirmedAt
+          : (previous?.paymentConfirmedAt ?? null),
     });
     revalidateOwnerSites(grant.userId);
   }

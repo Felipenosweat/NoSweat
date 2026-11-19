@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "@/components/marketing/icons";
 
 // Pop-up de planos do /create: abre quando a pessoa clica em "Create website" sem ter plano.
@@ -20,12 +20,16 @@ export type OfferPlan = {
   percentOff: number | null;
   features: string[];
   recommended: boolean;
+  /** Sem Stripe: link do WhatsApp/e-mail com o pedido deste plano já escrito (só conta logada). */
+  contactHref: string | null;
 };
 
 export type LaunchOffer = {
   plans: OfferPlan[];
   /** Nome da oferta do momento ("Black Friday"); `null` quando não há oferta valendo. */
   name: string | null;
+  /** O Stripe está ligado: "Choose" abre o pagamento direto. Senão, abre o contato. */
+  checkout: boolean;
 };
 
 const focusRing =
@@ -47,9 +51,44 @@ export function PlansPopup({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    else if (!open && dialog.open) dialog.close();
+    if (open && !dialog.open) {
+      // O assistente do /create (outro <dialog>) volta a abrir no mesmo instante e, se este abrisse
+      // primeiro, ficaria por cima. Esperar um quadro garante que o pop-up de planos fica na frente.
+      const frame = requestAnimationFrame(() => {
+        if (!dialog.open) dialog.showModal();
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+    if (!open && dialog.open) dialog.close();
   }, [open]);
+
+  const [pending, setPending] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  /** Stripe ligado: cria o pagamento do plano e vai direto para ele. */
+  async function checkoutPlan(planId: string) {
+    setPending(planId);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, interval: "monthly" }),
+      });
+      const json: { url?: string; error?: { message?: string } } | null = await res
+        .json()
+        .catch(() => null);
+      if (!res.ok || !json?.url) {
+        setError(json?.error?.message ?? "We couldn’t open the payment page. Please try again.");
+        setPending(null);
+        return;
+      }
+      window.location.assign(json.url);
+    } catch {
+      setError("We couldn’t reach our servers. Please try again.");
+      setPending(null);
+    }
+  }
 
   const href = signedIn ? "/billing#plans" : "/signup?next=/billing";
   const promo = offer.name !== null;
@@ -91,8 +130,7 @@ export function PlansPopup({
 
           {promo && offer.name && (
             <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
-              <strong className="font-semibold">{offer.name}.</strong> Launch prices for our first
-              customers. The regular price shown applies once we raise prices.
+              <strong className="font-semibold">{offer.name}.</strong> Launch pricing for our first customers.
             </p>
           )}
 
@@ -134,22 +172,56 @@ export function PlansPopup({
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href={href}
-                  className={`mt-4 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-[15px] font-semibold transition-colors duration-150 ${focusRing} ${
+                {(() => {
+                  const cls = `mt-4 inline-flex min-h-11 items-center justify-center rounded-xl px-4 text-[15px] font-semibold transition-colors duration-150 ${focusRing} ${
                     plan.recommended
                       ? "bg-brand text-white hover:bg-brand-dark"
                       : "border border-slate-300 bg-white text-ink hover:border-slate-400"
-                  }`}
-                >
-                  Choose {plan.name}
-                </Link>
+                  }`;
+                  if (!signedIn) {
+                    return (
+                      <Link href={href} className={cls}>
+                        Choose {plan.name}
+                      </Link>
+                    );
+                  }
+                  if (offer.checkout) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => void checkoutPlan(plan.id)}
+                        disabled={pending !== null}
+                        className={`${cls} disabled:cursor-wait disabled:opacity-60`}
+                      >
+                        {pending === plan.id ? "Opening…" : `Choose ${plan.name}`}
+                      </button>
+                    );
+                  }
+                  return (
+                    <a
+                      href={plan.contactHref ?? href}
+                      target={plan.contactHref?.startsWith("mailto:") ? undefined : "_blank"}
+                      rel="noopener noreferrer"
+                      className={cls}
+                    >
+                      Choose {plan.name}
+                    </a>
+                  );
+                })()}
               </li>
             ))}
           </ul>
 
+          {error && (
+            <p role="alert" className="mt-3 text-sm text-red-700">
+              {error}
+            </p>
+          )}
           <p className="mt-4 text-[13px] leading-relaxed text-slate-500">
-            Prices in US dollars, billed monthly (yearly saves 2 months). Cancel anytime.
+            {signedIn && !offer.checkout
+              ? "Tap a plan and we finish the payment with you in a message. As soon as it’s confirmed, your plan turns on and we build your website. "
+              : "Prices in US dollars, billed monthly (yearly saves 2 months). Cancel anytime. "}
+            Your answers are saved.
           </p>
           <button
             type="button"

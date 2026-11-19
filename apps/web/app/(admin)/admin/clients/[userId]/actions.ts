@@ -105,6 +105,7 @@ export async function grantAccess(
     return { ok: false, message: "Check the plan and the number of days (0 to 3660)." };
   }
   const input = parsed.data;
+  const paymentReceived = formData.get("paymentReceived") === "on";
   const store = getGrantStore();
   const current = await store.get(userId);
   const unchanged =
@@ -130,6 +131,11 @@ export async function grantAccess(
     note: input.note ? withNote(input.note, current?.note) : (current?.note ?? null),
     grantedBy: admin.id,
     updatedAt: new Date().toISOString(),
+    // "Payment received": só marca (nunca desmarca) e só na primeira vez; é o que faz a conta
+    // contar como cliente de verdade no /admin (meta de 10 para subir os preços).
+    ...(paymentReceived && !current?.paymentConfirmedAt
+      ? { paymentConfirmedAt: new Date().toISOString() }
+      : {}),
   });
   refresh(userId);
   await recordAdminAction({
@@ -138,7 +144,7 @@ export async function grantAccess(
     targetType: "user",
     targetId: userId,
     reason: input.note ?? null,
-    metadata: { plan: input.plan, days: input.days, expiresAt },
+    metadata: { plan: input.plan, days: input.days, expiresAt, paymentReceived },
   });
 
   const planName = PLANS[input.plan].name;
