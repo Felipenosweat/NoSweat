@@ -133,9 +133,9 @@ describe("revenueModel", () => {
       NOW,
     );
     expect(model.accounts.map((account) => account.userId).sort()).toEqual(["a", "b", "e", "f"]);
-    expect(model.stripe).toEqual({ count: 3, mrrCents: 6900 + 10_750 + 3900 });
-    expect(model.manual).toEqual({ count: 1, mrrCents: 3900 });
-    expect(model.mrrCents).toBe(6900 + 10_750 + 3900 + 3900);
+    expect(model.stripe).toEqual({ count: 3, mrrCents: 6900 + 10_750 + 1900 });
+    expect(model.manual).toEqual({ count: 1, mrrCents: 1900 });
+    expect(model.mrrCents).toBe(6900 + 10_750 + 1900 + 1900);
   });
 
   it("leaves admins and test accounts out", () => {
@@ -191,10 +191,10 @@ describe("assumptions", () => {
       revenue,
       aiPerClient: { cents: 12, sample: 2 },
     });
-    expect(assumptions.arpuCents).toBe(5400);
+    expect(assumptions.arpuCents).toBe(4400);
     expect(assumptions.arpuSource).toBe("actual");
     expect(assumptions.aiSource).toBe("actual");
-    expect(assumptions.variableCents).toBe(stripeFeeCents(5400) + 12);
+    expect(assumptions.variableCents).toBe(stripeFeeCents(4400) + 12);
   });
 
   it("lets the admin override ARPU and the variable cost", () => {

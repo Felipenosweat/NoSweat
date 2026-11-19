@@ -30,7 +30,7 @@ export function llmsText(): string {
     "",
     "Key facts:",
     "",
-    "- Creating and previewing a website is free and needs no credit card; a plan is needed to publish.",
+    "- Starting is free and needs no credit card (describe the business and answer a few quick questions); a plan is needed to have the website built and to publish it.",
     "- Each site gets its own page layout chosen for the business, not one fixed template.",
     "- Contact-form requests arrive by email and are saved in the owner's dashboard.",
     "- AI changes are saved as drafts; nothing goes live until the owner publishes.",

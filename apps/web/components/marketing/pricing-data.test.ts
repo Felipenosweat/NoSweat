@@ -15,9 +15,9 @@ describe("pricing data", () => {
     expect(usd(129000)).toBe("$1,290");
     const prices = planPrices();
     expect(prices.starter).toMatchObject({
-      monthly: "$39",
-      annual: "$390",
-      annualPerMonth: "$32.50",
+      monthly: "$19",
+      annual: "$190",
+      annualPerMonth: "$15.83",
     });
     expect(prices.pro.publishedSitesLimit).toBe(PLANS.pro.publishedSitesLimit);
     expect(prices.premium.annualPerMonth).toBe("$107.50");

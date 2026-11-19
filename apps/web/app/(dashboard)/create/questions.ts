@@ -233,3 +233,31 @@ export function answersFrom(questions: readonly Question[], picked: Picked): Int
   }
   return out.slice(0, 12);
 }
+
+/** Onde as respostas ficam na aba (para voltar do login ou do plano sem perder nada). */
+export const ANSWERS_KEY = "ns-create-answers";
+
+/** Lê o que ficou guardado; qualquer coisa fora do formato volta ao vazio. */
+export function parsePicked(raw: string | null): Picked {
+  if (!raw) return { picks: {}, others: {} };
+  try {
+    const data: unknown = JSON.parse(raw);
+    if (!data || typeof data !== "object") return { picks: {}, others: {} };
+    const { picks, others } = data as { picks?: unknown; others?: unknown };
+    const cleanPicks: Record<string, string[]> = {};
+    if (picks && typeof picks === "object") {
+      for (const [id, value] of Object.entries(picks)) {
+        if (Array.isArray(value)) cleanPicks[id] = value.filter((v) => typeof v === "string");
+      }
+    }
+    const cleanOthers: Record<string, string> = {};
+    if (others && typeof others === "object") {
+      for (const [id, value] of Object.entries(others)) {
+        if (typeof value === "string") cleanOthers[id] = value.slice(0, 80);
+      }
+    }
+    return { picks: cleanPicks, others: cleanOthers };
+  } catch {
+    return { picks: {}, others: {} };
+  }
+}

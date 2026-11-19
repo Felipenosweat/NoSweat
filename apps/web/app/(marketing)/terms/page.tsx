@@ -258,8 +258,8 @@ const SECTIONS: LegalSection[] = [
     content: (
       <>
         <p>
-          <strong>Creating an account and previewing your site are free.</strong> You pay when you
-          choose a plan to publish.
+          <strong>Creating an account is free.</strong> You pay when you choose a plan to build and
+          publish your website.
         </p>
         <p>
           Before you pay anything, we show you the price, what’s included, how often you’ll be

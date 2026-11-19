@@ -243,7 +243,7 @@ export function HeroStepper() {
           {buttons}
           {step === "details" && (
             <p className="text-[12.5px] text-[#6e6e73]">
-              Free to create. No account or credit card needed.
+              Free to start. No credit card until you build your site.
             </p>
           )}
         </fieldset>

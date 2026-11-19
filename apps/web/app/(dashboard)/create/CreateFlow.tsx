@@ -50,7 +50,14 @@ import { LocationFields } from "./LocationFields";
 import { addOwnPhotos } from "./ownPhotos";
 import { PhotoStep } from "./PhotoStep";
 import { QuestionsStep } from "./QuestionsStep";
-import { answersFrom, kindForQuestions, questionsFor, type Picked } from "./questions";
+import {
+  ANSWERS_KEY,
+  answersFrom,
+  kindForQuestions,
+  parsePicked,
+  questionsFor,
+  type Picked,
+} from "./questions";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
@@ -137,6 +144,8 @@ type FormError = {
   dashboardLink?: boolean;
   /** Conta sem créditos da IA: o caminho é /billing (mais créditos ou outro plano). */
   billingLink?: boolean;
+  /** Criar o site exige plano: visitante vai criar a conta e escolher; conta logada escolhe. */
+  planLink?: "signup" | "billing";
 };
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
@@ -172,6 +181,12 @@ function errorFor(code: string, fallback: string, signedIn = false): FormError {
         title: "You’ve reached today’s limit.",
         body: fallback.replace(SIGN_UP_HINT_RE, "") || "Please try again tomorrow.",
         signupLink: true,
+      };
+    case "payment_required":
+      return {
+        title: "Pick a plan to build your website.",
+        body: "Describing your business and answering the questions is free. Choosing a plan builds your site right away, and your answers stay saved.",
+        planLink: signedIn ? "billing" : "signup",
       };
     case "out_of_credits":
       return {
@@ -335,7 +350,13 @@ function Flow({
   const [photoMode, setPhotoMode] = useState<PhotoMode>("auto");
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   // Perguntas rápidas (sim/não ou uma opção): a IA lê as respostas junto da descrição.
-  const [picked, setPicked] = useState<Picked>({ picks: {}, others: {} });
+  const [picked, setPicked] = useState<Picked>(() => {
+    try {
+      return canReadStorage ? parsePicked(sessionStorage.getItem(ANSWERS_KEY)) : parsePicked(null);
+    } catch {
+      return parsePicked(null);
+    }
+  });
   // Quais perguntas: pelo tipo de negócio escolhido ou, sem escolha, pelo que a pessoa escreveu.
   const questions = useMemo(
     () => questionsFor(kindForQuestions(choices.kind, `${fields.name} ${fields.what}`)),
@@ -392,15 +413,17 @@ function Flow({
       if (phase === "ready") {
         sessionStorage.removeItem(DRAFT_KEY);
         sessionStorage.removeItem(CHOICES_KEY);
+        sessionStorage.removeItem(ANSWERS_KEY);
       } else {
         const draft: StoredDraft = { source: initial.source, step, fields };
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
         sessionStorage.setItem(CHOICES_KEY, JSON.stringify(choices));
+        sessionStorage.setItem(ANSWERS_KEY, JSON.stringify(picked));
       }
     } catch {
       // Sem armazenamento: o fluxo continua funcionando, só não lembra as respostas.
     }
-  }, [canReadStorage, initial.source, step, fields, choices, phase]);
+  }, [canReadStorage, initial.source, step, fields, choices, picked, phase]);
 
   // Avança as etapas da construção; a última só termina quando a resposta da API chega.
   useEffect(() => {
@@ -976,6 +999,23 @@ function Flow({
                                   className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
                                 >
                                   Go to your sites
+                                </Link>
+                              </>
+                            )}
+                            {formError.planLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href={
+                                    formError.planLink === "signup"
+                                      ? "/signup?next=/billing"
+                                      : "/billing"
+                                  }
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  {formError.planLink === "signup"
+                                    ? "Create your account and pick a plan"
+                                    : "Choose a plan"}
                                 </Link>
                               </>
                             )}

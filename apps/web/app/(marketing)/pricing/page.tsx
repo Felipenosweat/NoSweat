@@ -124,7 +124,7 @@ export default function PricingPage() {
               <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
-              Start with a sentence about your business. No account or credit card needed.
+              Start with a sentence about your business. It’s free until you build your site.
             </p>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">

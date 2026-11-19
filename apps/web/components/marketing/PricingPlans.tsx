@@ -17,7 +17,7 @@ import { primaryButton, secondaryButton, textLink } from "./styles";
 // Os NÚMEROS vêm por props das fontes únicas (components/marketing/pricing-data.ts lê
 // server/billing/plans.ts e server/credits/pricing.ts): preço, sites no ar, créditos da IA por
 // mês, custo de cada ação e pacotes avulsos. Aqui ficam só os textos de cada plano.
-// "Up to N websites" = sites publicados ao mesmo tempo (`publishedSitesLimit`).
+// "1 live website" / "Up to N live websites" = sites publicados ao mesmo tempo (`publishedSitesLimit`).
 // A IA gasta créditos (auditoria J9): nada de "AI edits: Included".
 // `checkout`: o Stripe Checkout está ligado (`checkoutReady()` de server/billing, lido pela
 // página, que é server component). Sem ele a venda é manual (WhatsApp/e-mail + acesso liberado
@@ -48,7 +48,7 @@ const PLANS: Plan[] = [
       "Photo uploads and a photo gallery",
       "Contact form with messages in your dashboard",
       "Clients area",
-      "Instagram post calendar",
+      "Instagram post calendar, 4 posts a month",
     ],
   },
   {
@@ -127,7 +127,11 @@ export function PricingPlans({
       <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {PLANS.map((plan) => {
           const price = prices[plan.id];
-          const features = [`Up to ${price.publishedSitesLimit} websites`, ...plan.features];
+          const sites = price.publishedSitesLimit;
+          const features = [
+            sites === 1 ? "1 live website" : `Up to ${sites} live websites`,
+            ...plan.features,
+          ];
           return (
             <li
               key={plan.id}

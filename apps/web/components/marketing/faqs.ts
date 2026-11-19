@@ -68,7 +68,7 @@ export const LANDING_FAQS: Faq[] = [
   },
   {
     question: "How much does it cost?",
-    answer: `Starter is ${prices.starter.monthly} a month, Pro ${prices.pro.monthly} and Premium ${prices.premium.monthly}, with no setup fee. Pay yearly and get 2 months free: ${prices.starter.annual}, ${prices.pro.annual} or ${prices.premium.annual} a year. Creating an account and previewing your site are free; you pick a plan when you go live. ${REFUND_TERMS}`,
+    answer: `Starter is ${prices.starter.monthly} a month, Pro ${prices.pro.monthly} and Premium ${prices.premium.monthly}, with no setup fee. Pay yearly and get 2 months free: ${prices.starter.annual}, ${prices.pro.annual} or ${prices.premium.annual} a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built. ${REFUND_TERMS}`,
   },
   {
     question: "Can I cancel?",
@@ -85,7 +85,7 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Do I need a credit card to start?",
     answer:
-      "No. Describe your business and get a full website draft without a credit card. You don’t even need an account to start.",
+      "No. Describe your business and answer a few quick questions for free, without a credit card. You pick a plan when you want your website built.",
   },
   {
     question: "Can I use my own domain?",
