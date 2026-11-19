@@ -43,11 +43,12 @@ packages/templates/             @nosweat/templates: <SiteRenderer />, seções e
 Como as peças se ligam:
 
 - `POST /api/sites/generate` → `server/design` escolhe a direção de arte → `server/ai` gera o
-  SiteSpec para ela → `SiteSpec.parse` → `server/store`. Com a Anthropic, primeiro a geração a
-  partir do modelo (`server/ai/models.ts` + `model-fill.ts`): parte do site-modelo da categoria
-  (fixtures) e o Haiku devolve só um `ModelFill` (textos + fatos que estão no pedido), juntado por
-  `applyModelFill` (apaga os fatos do modelo) e conferido por `lintFill`; falhou duas vezes ou
-  categoria incerta → caminho completo (Sonnet escreve o SiteSpec). `AI_MODEL_FIRST=false` desliga.
+  SiteSpec para ela → `SiteSpec.parse` → `server/store`. Com a Anthropic, o padrão é o modelo
+  principal (Opus 5.5, esforço alto, `ANTHROPIC_MODEL`) escrever o SiteSpec inteiro; editar com IA usa
+  o Sonnet 5.5 (`ANTHROPIC_EDIT_MODEL`). O caminho barato (`AI_MODEL_FIRST=true`, desligado: saía
+  genérico e todo site parecia igual) parte do site-modelo da categoria (`server/ai/models.ts` +
+  `model-fill.ts`): o Haiku devolve só um `ModelFill`, juntado por `applyModelFill` e conferido por
+  `lintFill`; se falhar duas vezes, cai no caminho completo.
 - Páginas (server components) leem dados direto de `@/server/store`; componentes de cliente
   chamam a API com `fetch` e validam a resposta com os schemas de `@nosweat/schema`.
 - `<SiteRenderer spec />` escolhe a composição por `spec.design.composition` (sem `design`:
