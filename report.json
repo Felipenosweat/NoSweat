@@ -1,0 +1,14 @@
+[
+  {
+    "viewport": "mobile",
+    "total": 5436,
+    "steps": 8,
+    "errors": []
+  },
+  {
+    "viewport": "desktop",
+    "total": 4946,
+    "steps": 7,
+    "errors": []
+  }
+]
