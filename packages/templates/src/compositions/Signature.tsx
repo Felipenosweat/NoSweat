@@ -34,21 +34,24 @@ import { heroTone, tonesOf, type Tone } from "./tone";
 // Molde SIGNATURE: o padrão de site premiado aprovado pelo dono (protótipo do Still Water Spa).
 // Uma arquitetura só, com o topo num de 5 formatos (um por composição do plano de design) e as
 // peças premium em todas: abertura, menu de vidro, frase que acende, fotos com movimento, lista
-// de serviços com foto que segue o mouse, galeria que corre de lado e rodapé gigante.
+// de serviços, galeria que corre de lado e rodapé gigante.
 // O movimento (Motion.tsx) só liga no site de verdade: no editor e nas miniaturas fica parado.
 
 const wrap = "w-full px-5 @min-[40rem]:px-8 @5xl:px-16";
 const label = "text-[0.6875rem] tracking-[0.22em] uppercase";
 const display = "font-ns-heading font-ns-display tracking-[-0.035em]";
 
-/** Título com a última palavra em itálico ("Before your *visit*"). */
+/**
+ * Título com a última palavra em destaque ("Before your *visit*"). Itálico só nas fontes que têm
+ * itálico de verdade (styles.css, `.ns-accent`); nas outras vira a cor principal.
+ */
 function Accent({ text }: { text: string }) {
   const words = text.trim().split(/\s+/);
   if (words.length < 2) return <>{text}</>;
   const last = words.pop();
   return (
     <>
-      {words.join(" ")} <em className="italic">{last}</em>
+      {words.join(" ")} <em className="ns-accent">{last}</em>
     </>
   );
 }
@@ -121,7 +124,6 @@ export function SignatureComposition({
             id={id}
             model={model}
             data={section}
-            pool={pool}
             variant={composition}
             bandTone={tones.band}
           />
@@ -792,14 +794,12 @@ function ServiceIndex({
   id,
   model,
   data,
-  pool,
   variant,
   bandTone,
 }: {
   id?: string;
   model: SiteModel;
   data: SectionOf<"services">;
-  pool: SiteImage[];
   variant: Composition;
   bandTone: Tone;
 }) {
@@ -821,14 +821,6 @@ function ServiceIndex({
   const rowsOf = (entries: ServiceEntry[]) =>
     listOnly ? entries : entries.filter((entry) => !entry.item.image);
   const rows = groups.flatMap((group) => rowsOf(group.entries));
-  // Foto que segue o mouse: a do próprio item; sem ela, uma das fotos do site.
-  const floatImages =
-    pool.length > 0
-      ? rows.map((entry, i) => entry.item.image ?? pool[i % pool.length] ?? pool[0])
-      : rows.every((entry) => entry.item.image)
-        ? rows.map((entry) => entry.item.image)
-        : [];
-  const floating = floatImages.filter((image): image is SiteImage => Boolean(image));
   return (
     <section id={id} className="scroll-mt-28">
       {names.length >= 3 && (
@@ -864,7 +856,6 @@ function ServiceIndex({
         </div>
       )}
       <div
-        data-ns-float
         data-tone={bandTone}
         className={`relative bg-ns-text py-(--ns-section-y) text-ns-background ${wrap}`}
       >
@@ -894,30 +885,6 @@ function ServiceIndex({
             </div>
           );
         })}
-        {floating.length > 0 && (
-          <div
-            aria-hidden="true"
-            data-ns-float-box
-            className="ns-float pointer-events-none fixed top-0 left-0 z-30"
-          >
-            <div className="ns-float-inner relative aspect-[4/5] w-72 overflow-hidden rounded-sm">
-              {floating.map((image, i) => (
-                <div
-                  key={`${image.url}-${i}`}
-                  data-ns-float-img
-                  className="absolute inset-0"
-                  style={{ opacity: i === 0 ? 1 : 0 }}
-                >
-                  <Photo
-                    image={image}
-                    sizes="288px"
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </section>
   );
@@ -928,13 +895,12 @@ function ServiceRow({ item, n, level }: ServiceEntry & { level: "h3" | "h4" }) {
   const Heading = level;
   return (
     <li
-      data-ns-float-row
       data-ns-rise
       className="ns-row group grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-2 border-t border-ns-background/15 py-6 @3xl:grid-cols-[4rem_1fr_1.1fr_10rem]"
     >
       <span className="hidden text-xs tabular-nums opacity-50 @3xl:block">{pad(n)}</span>
       <Heading
-        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none transition duration-700 group-hover:translate-x-4 motion-reduce:transition-none`}
+        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none`}
       >
         {item.name}
         {item.image && (
@@ -1164,7 +1130,12 @@ function ServiceCards({
   );
 }
 
-/** Galeria: no site de verdade, corre de lado com a rolagem; no editor, uma grade simples. */
+/**
+ * Galeria que corre de lado. Base (celular, tablet, sem JavaScript, "reduzir movimento", editor):
+ * uma faixa que se arrasta com o dedo, com encaixe (snap). No computador, com movimento ligado, o
+ * Motion.tsx marca a seção com `data-ns-on` e ela fica presa enquanto a rolagem vertical empurra
+ * as fotos para o lado (styles.css, "Galeria que corre de lado").
+ */
 function Rail({
   id,
   model,
@@ -1178,7 +1149,6 @@ function Rail({
 }) {
   const images = data.images.filter((image) => isOwnerPhoto(image));
   if (images.length === 0) return null;
-  const widths = ["w-[62vh]", "w-[92vh]", "w-[46vh]"];
   const head = (
     <div className={`mb-8 flex items-baseline justify-between gap-6 ${wrap}`}>
       <h2
@@ -1197,22 +1167,23 @@ function Rail({
       id={id}
       data-gallery="rail"
       data-ns-hscroll={motion ? "" : undefined}
-      className={`scroll-mt-28 ${motion ? "ns-hscroll" : "py-(--ns-section-y)"}`}
+      className="ns-hscroll scroll-mt-28 py-(--ns-section-y)"
     >
-      <div className={motion ? "ns-hscroll-sticky" : ""}>
+      <div className="ns-hscroll-sticky">
         {head}
         <ul
-          className={`ns-rail flex gap-6 ${motion ? "pl-5 @min-[40rem]:pl-8 @5xl:pl-16" : `overflow-x-auto pb-4 ${wrap}`}`}
+          className={`ns-rail flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 ${wrap}`}
         >
           {images.map((image, i) => (
             <li
               key={`${image.url}-${i}`}
-              className={`shrink-0 ${motion ? widths[i % 3] : "w-[78%] @3xl:w-[42%]"}`}
+              data-w={i % 3}
+              className="ns-rail-item w-[78%] shrink-0 snap-start @3xl:w-[42%]"
             >
               <figure>
                 <div
                   data-kind="owner"
-                  className={`ns-photo relative overflow-hidden bg-ns-surface ${motion ? "h-[56vh]" : "aspect-[4/3]"}`}
+                  className="ns-photo ns-rail-photo relative aspect-[4/3] overflow-hidden bg-ns-surface"
                 >
                   <Photo
                     image={image}

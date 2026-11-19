@@ -692,37 +692,58 @@
 .ns-site .ns-row:hover::before {
   transform: scaleX(1);
 }
-.ns-site .ns-float {
-  will-change: transform;
+/* Galeria que corre de lado. Base: faixa que se arrasta com o dedo (snap). No computador, com
+   movimento ligado, o Motion.tsx marca a seção com `data-ns-on`: ela fica alta e a faixa fica
+   presa (sticky) enquanto a rolagem vertical passa. `svh`: a altura não pula com a barra do
+   Safari. */
+.ns-site .ns-rail {
+  scrollbar-width: none;
 }
-.ns-site .ns-float .ns-float-inner {
-  translate: -50% -50%;
-  opacity: 0;
-  scale: 0.85;
-  transition:
-    opacity 0.35s,
-    scale 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+.ns-site .ns-rail::-webkit-scrollbar {
+  display: none;
 }
-.ns-site .ns-float[data-show] .ns-float-inner {
-  opacity: 1;
-  scale: 1;
+.ns-site .ns-hscroll[data-ns-on] {
+  height: 300svh;
+  padding-block: 0;
 }
-.ns-site .ns-float [data-ns-float-img] {
-  transition: opacity 0.4s;
-}
-
-/* Galeria que corre de lado: a seção é alta e a faixa fica presa enquanto a rolagem passa. */
-.ns-site .ns-hscroll {
-  height: 300vh;
-}
-.ns-site .ns-hscroll-sticky {
+.ns-site .ns-hscroll[data-ns-on] .ns-hscroll-sticky {
   position: sticky;
   top: 0;
   display: flex;
-  height: 100vh;
+  height: 100svh;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
+}
+.ns-site .ns-hscroll[data-ns-on] .ns-rail {
+  overflow: visible;
+  scroll-snap-type: none;
+  padding-bottom: 0;
+}
+.ns-site .ns-hscroll[data-ns-on] .ns-rail-item[data-w="0"] {
+  width: 62svh;
+}
+.ns-site .ns-hscroll[data-ns-on] .ns-rail-item[data-w="1"] {
+  width: 92svh;
+}
+.ns-site .ns-hscroll[data-ns-on] .ns-rail-item[data-w="2"] {
+  width: 46svh;
+}
+.ns-site .ns-hscroll[data-ns-on] .ns-rail-photo {
+  aspect-ratio: auto;
+  height: 56svh;
+}
+
+/* Palavra em destaque dos títulos: itálico só nas fontes que têm itálico de verdade; nas outras
+   (itálico falso fica torto) vira a cor principal. */
+.ns-site .ns-accent {
+  font-style: normal;
+  color: var(--ns-primary);
+}
+.ns-site:is([data-font="editorial"], [data-font="refined"], [data-font="luxe"], [data-font="classic"])
+  .ns-accent {
+  font-style: italic;
+  color: inherit;
 }
 
 /* Depoimentos: com o movimento ligado, um de cada vez trocando devagar. */

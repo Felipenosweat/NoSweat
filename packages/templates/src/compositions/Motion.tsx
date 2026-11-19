@@ -13,8 +13,8 @@ import type { Tone } from "./tone";
 // - data-ns-zoom: a foto do cartão assenta (escala 1,14 → 1) enquanto entra na tela;
 // - data-ns-reveal: a moldura da foto se abre de baixo para cima ao entrar na tela;
 // - data-ns-words: o parágrafo acende palavra por palavra conforme a rolagem;
-// - data-ns-hscroll (com .ns-rail dentro): a rolagem vertical empurra a galeria para o lado;
-// - data-ns-float (com [data-ns-float-row] e [data-ns-float-img]): foto que segue o mouse;
+// - data-ns-hscroll (com .ns-rail dentro): no computador, a rolagem vertical empurra a galeria
+//   para o lado (marca `data-ns-on`; no celular e no tablet a galeria corre com o dedo);
 // - data-ns-magnetic: o botão puxa na direção do mouse;
 // - data-ns-quotes (com [data-ns-quote]): depoimentos que trocam sozinhos;
 // - data-tone="light|dark" (seções e faixas): o menu de vidro troca de tom conforme o que passa
@@ -123,7 +123,7 @@ export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
           walk(p);
           gsap.fromTo(
             words,
-            { opacity: 0.16 },
+            { opacity: 0.45 },
             {
               opacity: 1,
               stagger: 0.05,
@@ -133,11 +133,14 @@ export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
           );
         }
 
-        // A galeria fica presa mesmo em máquina fraca: o CSS já deixa a seção alta (um só
-        // transform por quadro).
+        // A galeria fica presa mesmo em máquina fraca: o CSS deixa a seção alta (um só transform
+        // por quadro). Só no computador: no celular e no tablet o dedo já arrasta a faixa, e
+        // sequestrar a rolagem vertical no toque atrapalha.
         for (const section of all("[data-ns-hscroll]")) {
           const rail = section.querySelector<HTMLElement>(".ns-rail");
-          if (!rail) continue;
+          if (!rail || root.clientWidth < 1024) continue;
+          section.setAttribute("data-ns-on", "");
+          cleanups.push(() => section.removeAttribute("data-ns-on"));
           gsap.to(rail, {
             x: () => -Math.max(0, rail.scrollWidth - root.clientWidth + 64),
             ease: "none",
@@ -166,49 +169,8 @@ export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
       }, root);
       cleanups.push(() => ctx.revert());
 
-      // Foto que segue o mouse na lista de serviços (só com mouse de verdade).
+      // Efeitos que só fazem sentido com mouse de verdade.
       if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-        for (const list of Array.from(root.querySelectorAll<HTMLElement>("[data-ns-float]"))) {
-          const float = list.querySelector<HTMLElement>("[data-ns-float-box]");
-          const images = Array.from(list.querySelectorAll<HTMLElement>("[data-ns-float-img]"));
-          if (!float || images.length === 0) continue;
-          let x = 0;
-          let y = 0;
-          let tx = 0;
-          let ty = 0;
-          const move = (event: MouseEvent) => {
-            tx = event.clientX;
-            ty = event.clientY;
-          };
-          const tick = () => {
-            x += (tx - x) * 0.12;
-            y += (ty - y) * 0.12;
-            float.style.transform = `translate(${x}px, ${y}px)`;
-          };
-          window.addEventListener("mousemove", move);
-          gsap.ticker.add(tick);
-          const rows = Array.from(list.querySelectorAll<HTMLElement>("[data-ns-float-row]"));
-          rows.forEach((row, index) => {
-            const enter = () => {
-              float.dataset.show = "";
-              images.forEach(
-                (img, k) => (img.style.opacity = k === index % images.length ? "1" : "0"),
-              );
-            };
-            const leave = () => delete float.dataset.show;
-            row.addEventListener("mouseenter", enter);
-            row.addEventListener("mouseleave", leave);
-            cleanups.push(() => {
-              row.removeEventListener("mouseenter", enter);
-              row.removeEventListener("mouseleave", leave);
-            });
-          });
-          cleanups.push(() => {
-            window.removeEventListener("mousemove", move);
-            gsap.ticker.remove(tick);
-          });
-        }
-
         for (const button of Array.from(root.querySelectorAll<HTMLElement>("[data-ns-magnetic]"))) {
           const move = (event: MouseEvent) => {
             const box = button.getBoundingClientRect();
