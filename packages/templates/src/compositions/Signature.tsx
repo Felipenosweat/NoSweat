@@ -820,7 +820,6 @@ function ServiceIndex({
   const listOnly = variant === "typographic";
   const rowsOf = (entries: ServiceEntry[]) =>
     listOnly ? entries : entries.filter((entry) => !entry.item.image);
-  const rows = groups.flatMap((group) => rowsOf(group.entries));
   return (
     <section id={id} className="scroll-mt-28">
       {names.length >= 3 && (
