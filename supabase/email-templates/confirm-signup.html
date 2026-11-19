@@ -1,10 +1,22 @@
-<!-- Supabase → Authentication → Emails → "Confirm sign up".
+<!-- Supabase → Authentication → Emails → "Confirm sign up" (aba Source).
      Assunto: Confirm your No Sweat account
-     Só HTML com estilo na linha (e-mail não aceita CSS externo). {{ .ConfirmationURL }} é do Supabase. -->
+     Só HTML com estilo na linha (e-mail não aceita CSS externo).
+     Variáveis do Supabase: {{ .RedirectTo }} (o /auth/callback que o app manda), {{ .TokenHash }} (vale em
+     qualquer navegador, não só no que criou a conta) e {{ .Token }} (o código de 6 dígitos). -->
 <div style="margin:0;padding:32px 16px;background:#f4f6f9;font-family:Arial,Helvetica,sans-serif;color:#16202a">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto">
     <tr>
-      <td style="padding:0 0 16px;font-size:20px;font-weight:700;letter-spacing:-0.01em">No Sweat</td>
+      <td style="padding:0 0 16px">
+        <table role="presentation" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding-right:10px;vertical-align:middle">
+              <img src="https://www.nosweatfd.com/brand/nosweat-mark-128.png" width="40" height="40" alt="No Sweat"
+                   style="display:block;border:0;outline:none;text-decoration:none;width:40px;height:40px" />
+            </td>
+            <td style="vertical-align:middle;font-size:20px;font-weight:700;letter-spacing:-0.01em;color:#16202a">No Sweat</td>
+          </tr>
+        </table>
+      </td>
     </tr>
     <tr>
       <td style="background:#ffffff;border:1px solid #dfe4e9;border-radius:12px;padding:32px">
@@ -13,14 +25,20 @@
           Welcome! Tap the button to confirm your email and start building your website.
         </p>
         <p style="margin:0 0 24px">
-          <a href="{{ .ConfirmationURL }}"
+          <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=signup"
              style="display:inline-block;background:#005ce6;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 28px;border-radius:999px">
             Confirm my email
           </a>
         </p>
+        <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#4a5866">
+          Signing up in the No Sweat app? Type this code on the sign-up screen instead:
+        </p>
+        <p style="margin:0 0 24px;font-size:32px;line-height:1.2;font-weight:700;letter-spacing:0.25em;font-family:Menlo,Consolas,monospace;color:#16202a">
+          {{ .Token }}
+        </p>
         <p style="margin:0;font-size:14px;line-height:1.6;color:#4a5866">
           If the button doesn't work, copy this link into your browser:<br />
-          <a href="{{ .ConfirmationURL }}" style="color:#005ce6;word-break:break-all">{{ .ConfirmationURL }}</a>
+          <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=signup" style="color:#005ce6;word-break:break-all">{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=signup</a>
         </p>
       </td>
     </tr>

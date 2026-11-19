@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { Turnstile } from "@/components/auth/Turnstile";
 import { latestBirthDate, PASSWORD_MAX } from "@/lib/signup-rules";
-import { resendConfirmation, signIn, type AuthFormState, type EmailFormState } from "./actions";
+import {
+  resendConfirmation,
+  signIn,
+  verifyEmailCode,
+  type AuthFormState,
+  type EmailFormState,
+} from "./actions";
 
 export const inputClass =
   "mt-1.5 block h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base font-normal text-ink placeholder:text-slate-500 focus:border-brand focus:ring-4 focus:ring-brand/15 focus:outline-none aria-invalid:border-red-400";
@@ -60,6 +66,9 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
             .
           </p>
           <ResendConfirmationForm email={state.unconfirmedEmail} next={next} className="mt-3" />
+          <div className="mt-5 border-t border-slate-200 pt-4">
+            <VerifyCodeForm email={state.unconfirmedEmail} next={next} />
+          </div>
         </div>
       )}
     </>
@@ -183,6 +192,50 @@ export function ResendConfirmationForm({
         className={`inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-ink transition-colors duration-150 hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`}
       >
         {pending ? "Sending…" : waiting ? `Resend the link (${secondsLeft}s)` : "Resend the link"}
+      </button>
+    </form>
+  );
+}
+
+/**
+ * "Enter the code": confirma a conta com o código de 6 dígitos do e-mail, sem sair da tela. É o
+ * caminho de quem criou a conta no app instalado (o link do e-mail abriria o navegador).
+ */
+export function VerifyCodeForm({ email, next }: { email: string; next: string }) {
+  const [state, action, pending] = useActionState<EmailFormState, FormData>(verifyEmailCode, {});
+  const errorId = "code-error";
+
+  return (
+    <form action={action} className="space-y-3" aria-busy={pending}>
+      <input type="hidden" name="next" value={next} />
+      <input type="hidden" name="email" value={email} />
+      <label className={labelClass}>
+        6-digit code from the email
+        <input
+          name="code"
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          pattern="[0-9 ]*"
+          maxLength={11}
+          required
+          placeholder="123456"
+          aria-invalid={state.error ? true : undefined}
+          aria-describedby={state.error ? errorId : undefined}
+          className={`${inputClass} text-center font-mono text-xl tracking-[0.3em]`}
+        />
+      </label>
+      {state.error && !pending && (
+        <p id={errorId} role="alert" className="text-sm leading-relaxed text-red-700">
+          {state.error}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={pending}
+        className={`inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-brand px-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60 ${focusRing}`}
+      >
+        {pending ? "Checking…" : "Confirm my account"}
       </button>
     </form>
   );

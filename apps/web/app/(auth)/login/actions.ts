@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   confirmationErrors,
+  hasCompleteProfile,
   PASSWORD_MIN,
   profileMetadata,
   signUpSchema,
@@ -15,7 +16,7 @@ import { isOAuthProvider } from "@/server/auth/providers";
 import { createSupabaseServerClient } from "@/server/auth/session";
 import { VIEW_AS_COOKIE } from "@/server/auth/view-as-token";
 import { claimGuestSitesForUser, rememberGuestForSignup } from "@/server/guest";
-import { joinLaunchListLater } from "@/server/marketing";
+import { joinLaunchListLater, marketingFromMetadata } from "@/server/marketing";
 
 /** Valores que voltam para o formulário depois de um erro (nunca as senhas). */
 export type SignUpValues = {
@@ -185,7 +186,7 @@ export async function signUp(prev: AuthFormState, formData: FormData): Promise<A
   if (text("website")) {
     return {
       attempt,
-      message: "Almost there! Check your email and click the link to confirm your account.",
+      message: "Almost there! Check your email to confirm your account.",
     };
   }
 
@@ -255,7 +256,7 @@ export async function signUp(prev: AuthFormState, formData: FormData): Promise<A
   if (data.user) await rememberGuestForSignup(data.user.id);
   return {
     attempt,
-    message: "Almost there! Check your email and click the link to confirm your account.",
+    message: "Almost there! Check your email to confirm your account.",
   };
 }
 
@@ -295,6 +296,50 @@ export async function resendConfirmation(
     console.error("[auth] resend failed", error.code ?? "no_code", error.status, error.message);
   }
   return { attempt, values, message: RESEND_SENT };
+}
+
+const CODE_ERROR = "That code didn’t work. Check it and try again, or send a new one.";
+
+/**
+ * Confirma o cadastro com o código de 6 dígitos do e-mail. Serve para quem criou a conta no app
+ * instalado: o link do e-mail abre no navegador (outro "aparelho" para o login), o código é
+ * digitado na própria tela e a pessoa continua onde estava. Faz o mesmo que o /auth/callback.
+ */
+export async function verifyEmailCode(
+  prev: EmailFormState,
+  formData: FormData,
+): Promise<EmailFormState> {
+  const next = safeNextPath(formData.get("next"));
+  const supabase = await createSupabaseServerClient();
+  if (!supabase) redirect(next);
+
+  const attempt = nextAttempt(prev);
+  const email = readEmail(formData);
+  const values = { email };
+  const token = String(formData.get("code") ?? "").replace(/\s/g, "");
+  if (!EmailInput.safeParse(email).success || !/^\d{6,10}$/.test(token)) {
+    return { attempt, values, error: CODE_ERROR };
+  }
+
+  const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+  if (error || !data.user) {
+    const common = error ? commonAuthError(error) : null;
+    return { attempt, values, error: common ?? CODE_ERROR };
+  }
+
+  // Igual ao /auth/callback: passa os sites feitos sem conta e entra na lista (se aceitou).
+  await claimGuestSitesForUser(data.user);
+  const metadata = data.user.user_metadata;
+  if (!hasCompleteProfile(metadata)) {
+    redirect(`/welcome?next=${encodeURIComponent(next)}`);
+  }
+  joinLaunchListLater({
+    userId: data.user.id,
+    email: data.user.email ?? null,
+    ...marketingFromMetadata(metadata),
+    origin: await siteOrigin(),
+  });
+  redirect(next);
 }
 
 /**
