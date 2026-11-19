@@ -85,6 +85,8 @@ export function setupCentsFor(plan: Plan, interval: BillingInterval): number | n
 // subir (regra da FTC e dos estados). Por isso NÃO há relógio nem "acaba em": prazo que se renova
 // sem o preço mudar é urgência falsa. Quando o preço subir de verdade, ponha `regularMonthlyCents`
 // igual a `monthlyCents` e a oferta some sozinha.
+// Plano do fundador (nov/2026): o Starter fica em $19 até ter ~10 clientes ativos pagando; depois
+// sobe aos poucos ($24, $29, até o normal de $39). Pro e Premium ainda sem degraus definidos.
 // Para subir os preços: igualar `monthlyCents`/`annualCents` ao normal; quem já assina mantém o
 // valor do checkout em que entrou (o Stripe guarda o preço na assinatura).
 
