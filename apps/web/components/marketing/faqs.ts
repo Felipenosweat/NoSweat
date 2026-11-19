@@ -53,7 +53,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "How much does it cost?",
     answer:
-      "Starter is $39 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $390, $690 or $1,290 a year. Creating an account and previewing your site are free; you pick a plan when you go live.",
+      "Starter is $39 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $390, $690 or $1,290 a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built.",
   },
   {
     question: "Can I cancel?",
@@ -71,7 +71,7 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Do I need a credit card to start?",
     answer:
-      "No. Describe your business and get a full website draft without a credit card. You don’t even need an account to start.",
+      "No. Describe your business and answer a few quick questions for free, without a credit card. You pick a plan when you want your website built.",
   },
   {
     question: "Can I use my own domain?",

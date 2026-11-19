@@ -4,6 +4,7 @@ import {
   accessSummary,
   createCheckoutUrl,
   customDomainBlocked,
+  generateBlocked,
   getBillingStatus,
   extendExpiry,
   getGrantStore,
@@ -167,6 +168,34 @@ describe("plan rules", () => {
 
     await subscribe("pro", "canceled");
     expect((await publishBlocked(user))?.status).toBe(402);
+  });
+});
+
+describe("generateBlocked", () => {
+  it("lets everyone build while billing is off", async () => {
+    expect(await generateBlocked({ kind: "guest" })).toBeNull();
+    expect(await generateBlocked({ kind: "user", user })).toBeNull();
+  });
+
+  it("asks guests and accounts without a plan to pick one, and lets plan holders build", async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_123";
+    expect((await generateBlocked({ kind: "guest" }))?.status).toBe(402);
+    const noPlan = await generateBlocked({ kind: "user", user });
+    expect(noPlan?.status).toBe(402);
+    expect(await noPlan?.json()).toMatchObject({ error: { code: "payment_required" } });
+
+    await subscribe("starter");
+    expect(await generateBlocked({ kind: "user", user })).toBeNull();
+    // Guest still has no plan: only accounts can have one.
+    expect((await generateBlocked({ kind: "guest" }))?.status).toBe(402);
+
+    await subscribe("starter", "canceled");
+    expect((await generateBlocked({ kind: "user", user }))?.status).toBe(402);
+  });
+
+  it("works with REQUIRE_PLAN=true and no Stripe", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    expect((await generateBlocked({ kind: "guest" }))?.status).toBe(402);
   });
 });
 

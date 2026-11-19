@@ -492,7 +492,7 @@ export function PublishDialog({
                 {state === "current"
                   ? "Your site already has the latest version."
                   : needsPlan
-                    ? "Pick a plan to put it online. Building and previewing stay free."
+                    ? "Pick a plan to put it online. Editing and previewing stay free."
                     : "Check the preview before publishing."}
               </p>
               {needsPlan && state !== "current" && (

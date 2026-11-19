@@ -202,6 +202,27 @@ export async function publishBlocked(
   );
 }
 
+/**
+ * 402 pronto se criar um site com a IA exige um plano. Cada site novo custa de US$ 0,15 a 0,30 de
+ * IA (Opus), então com os planos valendo só quem tem plano ativo cria: visitante e conta sem plano
+ * começam o pedido de graça (descrever e responder as perguntas) e escolhem o plano ao clicar em
+ * "Create website". Admin e cobrança desligada: livre.
+ */
+export async function generateBlocked(
+  actor: { kind: "user"; user: CurrentUser } | { kind: "guest" },
+): Promise<Response | null> {
+  if (!billingEnforced()) return null;
+  if (actor.kind === "user") {
+    if (await isAdmin(actor.user.id)) return null;
+    if (await activePlan(actor.user.id)) return null;
+  }
+  return errorResponse(
+    402,
+    "payment_required",
+    "Choose a plan to build your website. Your answers are saved.",
+  );
+}
+
 /** 402 pronto se o plano da conta não inclui domínio próprio; senão `null`. */
 export async function customDomainBlocked(user: CurrentUser): Promise<Response | null> {
   if (!billingEnforced() || (await isAdmin(user.id))) return null;
