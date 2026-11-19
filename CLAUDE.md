@@ -184,8 +184,11 @@ Como as peças se ligam:
   plano em dia (`ownerHasLiveAccess`), a moldura do painel usa a cor principal (ajustada para AA com
   branco) e o nome da empresa do site do cliente no lugar do logo da No Sweat (`--color-brand`,
   `--color-accent`); sem plano, admin no próprio painel ou sem site, volta ao visual da No Sweat.
-- Cabeçalho dos sites (`styles.css` "Vidro líquido", `Signature.tsx`, `Motion.tsx` `adaptHeader`,
-  `tone.ts`): vidro que muda de tom (claro/escuro) conforme a seção sob a barra (`data-tone`).
+- Cabeçalho dos sites (`styles.css` "Cabeçalho", `Signature.tsx` `SiteNav`, `NavMenu.tsx`,
+  `Motion.tsx` `adaptHeader`, `tone.ts`): barra presa no alto, de ponta a ponta (nada de cápsula
+  flutuando). No topo (`data-top`) é transparente, com a letra no tom do hero (`data-tone`); ao
+  rolar vira o fundo do tema com linha fina e botão na cor principal. Sempre tem botão: "Call now"
+  no celular e no tablet, telefone + ação principal no computador. Menu em painel de ponta a ponta.
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 - Prospecção (`/admin/prospects`, `server/prospects/`, migration 0025, `docs/prospecting.md`):
