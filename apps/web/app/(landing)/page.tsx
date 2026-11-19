@@ -12,6 +12,7 @@ import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
+import { promoActive } from "@/server/billing/plans";
 
 // Landing V13: fundo cinza-claro e cada bloco numa "bolha" branca arredondada, intercalando com
 // cartões direto no cinza (passos, preços). Topo com perguntas uma de cada vez → o que você ganha
@@ -26,6 +27,9 @@ const DESCRIPTION =
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const viewport: Viewport = { themeColor: "#ffffff" };
+
+// A oferta de lançamento acaba sozinha: a página se refaz de hora em hora e confere a data.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -67,16 +71,16 @@ export default function LandingPage() {
       >
         <span className={tag}>Pricing</span>
         <h2 id="pricing-title" className={h2}>
-          Build it free.
+          Start free.
           <br />
-          <span className="dim">Pay when it’s live.</span>
+          <span className="dim">Pick a plan to build.</span>
         </h2>
         <p className="mx-auto mt-4 max-w-[46ch] text-[17px] leading-relaxed text-[#6e6e73]">
-          Create and preview your whole site without paying. You only pay when you pick a plan to
-          publish.
+          Describe your business and answer a few quick questions for free. You pick a plan when
+          you’re ready to build your website.
         </p>
         <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} />
+          <PricingPlans checkout={checkoutReady()} promo={promoActive()} />
         </div>
       </section>
 

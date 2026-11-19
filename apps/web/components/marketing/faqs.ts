@@ -81,7 +81,7 @@ export const PRICING_FAQS: Faq[] = [
   {
     question: "Can I cancel?",
     answer:
-      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew. Creating and previewing your site is free; you’re only charged when you choose a plan to publish.",
+      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew. Starting is free; you’re only charged when you choose a plan to build your website.",
   },
   {
     question: "What happens to my website if I don’t publish?",
