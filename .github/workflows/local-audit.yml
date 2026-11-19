@@ -14,7 +14,8 @@ permissions:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
+    # Versão fixa: o Playwright 1.56 não suporta o Ubuntu 26.04 que o ubuntu-latest passou a usar.
+    runs-on: ubuntu-24.04
     env:
       NEXT_TELEMETRY_DISABLED: "1"
       AI_PROVIDER: mock
