@@ -157,3 +157,35 @@ describe("quota with credits", () => {
     expect((await getBalance(actor.user)).monthlyUsed).toBe(0);
   });
 });
+
+describe("credits and plans", () => {
+  afterEach(() => {
+    delete process.env.REQUIRE_PLAN;
+  });
+
+  it("only spends credits with an active plan once plans are on", async () => {
+    process.env.REQUIRE_PLAN = "true";
+    const actor = newUser();
+    const blocked = await reserveUse(actor, "ai_edit");
+    expect(blocked?.status).toBe(402);
+    const body = ApiError.parse(await blocked?.json());
+    expect(body.error.code).toBe("payment_required");
+    // Nada foi gasto: os créditos de presente continuam inteiros.
+    expect((await getBalance(actor.user)).total).toBe(ALLOWANCE);
+
+    await getGrantStore().upsert({
+      userId: actor.user.id,
+      plan: "starter",
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
+      note: null,
+      grantedBy: null,
+      updatedAt: new Date().toISOString(),
+    });
+    expect(await reserveUse(actor, "ai_edit")).toBeNull();
+  });
+
+  it("keeps spending free credits while plans are off", async () => {
+    const actor = newUser();
+    expect(await reserveUse(actor, "ai_edit")).toBeNull();
+  });
+});
