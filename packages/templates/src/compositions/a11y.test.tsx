@@ -58,9 +58,8 @@ describe("botões no estilo line", () => {
       /background: transparent/,
     );
     expect(css).not.toMatch(/\[data-buttons="line"\][^{]*ns-btn-primary[^{]*,/);
-    // O botão do menu é cheio em todos os estilos.
-    expect(css).toContain(".ns-site .ns-nav .ns-nav-cta {");
-    expect(css).not.toContain(':not([data-buttons="line"]) .ns-nav .ns-nav-cta');
+    // O botão do menu (`ns-nav-btn`) é cheio em todos os estilos: nenhuma regra do estilo line o toca.
+    expect(css).not.toMatch(/\[data-buttons="line"\][^{]*ns-nav-btn/);
   });
 });
 

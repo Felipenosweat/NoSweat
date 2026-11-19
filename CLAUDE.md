@@ -78,6 +78,14 @@ Como as peças se ligam:
   `ns_view_as` assinado (HMAC, 1 hora, amarrado ao admin); `getViewer()` (`server/auth/viewer.ts`)
   faz `/dashboard`, `/clients`, `/social` e `/billing` mostrarem a conta vista, e o `proxy.ts`
   recusa toda escrita em `/api/*` (403) até sair do modo.
+- Segurança do admin (DEPLOY.md Passo 9): admin só age com a sessão em AAL2 (MFA TOTP do Supabase,
+  `server/admin/mfa.ts`; `requireAdmin` manda para `/admin/mfa`, `requireAdminApi` dá 403
+  `mfa_required`, `getOwnedSite` e "ver como" exigem AAL2 no ramo do admin; `ADMIN_REQUIRE_MFA=false`
+  só para recuperar). Ações sensíveis vão para `admin_audit_log` (migration 0030, só acrescenta) por
+  `recordAdminAction` (`server/admin/audit.ts`), nunca só `console.info`; "ver como" exige motivo;
+  `/admin/audit` mostra as últimas 100. Segredos de HMAC: um por finalidade (`server/secret.ts`,
+  `secretsFor`/`signingSecret`, `NOSWEAT_SECRET*`, rotação por vírgula); nunca reusar a chave do
+  Supabase.
 - Publicação: `POST /api/sites/[id]/publish` gera o `slug` e o site fica em `/s/<slug>`.
   Domínio próprio: `PUT /api/sites/[id]/domain` registra `dominio.com` + `www` no projeto da
   Vercel (precisa de `VERCEL_TOKEN`; sem ele o status fica `manual`) e o cliente cria um
@@ -184,8 +192,11 @@ Como as peças se ligam:
   plano em dia (`ownerHasLiveAccess`), a moldura do painel usa a cor principal (ajustada para AA com
   branco) e o nome da empresa do site do cliente no lugar do logo da No Sweat (`--color-brand`,
   `--color-accent`); sem plano, admin no próprio painel ou sem site, volta ao visual da No Sweat.
-- Cabeçalho dos sites (`styles.css` "Vidro líquido", `Signature.tsx`, `Motion.tsx` `adaptHeader`,
-  `tone.ts`): vidro que muda de tom (claro/escuro) conforme a seção sob a barra (`data-tone`).
+- Cabeçalho dos sites (`styles.css` "Cabeçalho", `Signature.tsx` `SiteNav`, `NavMenu.tsx`,
+  `Motion.tsx` `adaptHeader`, `tone.ts`): barra presa no alto, de ponta a ponta (nada de cápsula
+  flutuando). No topo (`data-top`) é transparente, com a letra no tom do hero (`data-tone`); ao
+  rolar vira o fundo do tema com linha fina e botão na cor principal. Sempre tem botão: "Call now"
+  no celular e no tablet, telefone + ação principal no computador. Menu em painel de ponta a ponta.
 - Apagar site: `DELETE /api/sites/[id]` (dono ou admin) tira do ar, libera o domínio na Vercel e
   apaga versões e mensagens (cascade). Não devolve créditos da IA: o limite diário conta usos.
 - Prospecção (`/admin/prospects`, `server/prospects/`, migration 0025, `docs/prospecting.md`):

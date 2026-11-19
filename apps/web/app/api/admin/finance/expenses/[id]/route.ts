@@ -3,6 +3,7 @@ import {
   DeleteCompanyExpenseResponse,
   UpdateCompanyExpenseRequest,
 } from "@nosweat/schema";
+import { recordAdminAction } from "@/server/admin/audit";
 import { revalidateAdmin } from "@/server/admin/cache";
 import { ExpenseInputError, deleteExpense, updateExpense } from "@/server/admin/finance";
 import { errorResponse, handle, jsonResponse, notFound, readJson } from "@/server/http";
@@ -24,7 +25,13 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     try {
       const expense = await updateExpense(id, input.data);
       if (!expense) return notFound("Expense");
-      console.info(`[admin] ${admin.user.id} updated company expense ${id}`);
+      await recordAdminAction({
+        adminId: admin.user.id,
+        action: "expense.update",
+        targetType: "expense",
+        targetId: id,
+        metadata: { fields: Object.keys(input.data) },
+      });
       revalidateAdmin();
       return jsonResponse(CompanyExpenseResponse, { expense });
     } catch (error) {
@@ -43,7 +50,12 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     if (!admin.ok) return admin.response;
     const { id } = await params;
     if (!(await deleteExpense(id))) return notFound("Expense");
-    console.info(`[admin] ${admin.user.id} deleted company expense ${id}`);
+    await recordAdminAction({
+      adminId: admin.user.id,
+      action: "expense.delete",
+      targetType: "expense",
+      targetId: id,
+    });
     revalidateAdmin();
     return jsonResponse(DeleteCompanyExpenseResponse, { deleted: true });
   }, "/api/admin/finance/expenses/[id]");

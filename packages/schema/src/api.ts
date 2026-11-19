@@ -30,6 +30,8 @@ export const ERROR_CODES = [
   "places_error",
   /** O envio de e-mails ainda não está ligado (sem RESEND_API_KEY): respostas ao cliente dão 503. */
   "email_not_configured",
+  /** Admin sem o segundo passo (código do autenticador, sessão AAL2): rotas /api/admin/* dão 403. */
+  "mfa_required",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 

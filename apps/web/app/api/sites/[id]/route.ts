@@ -1,3 +1,4 @@
+import { recordAdminAction } from "@/server/admin/audit";
 import {
   DeleteSiteResponse,
   GetSiteResponse,
@@ -102,6 +103,16 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     if (!site) return notFound();
 
     if (!(await deleteSiteForever(site))) return notFound();
+    // Site de outra pessoa = admin (getOwnedSite só devolve assim para admin em AAL2).
+    if (site.ownerId !== user.id) {
+      await recordAdminAction({
+        adminId: user.id,
+        action: "site.delete",
+        targetType: "site",
+        targetId: site.id,
+        metadata: { ownerId: site.ownerId, via: "api" },
+      });
+    }
     return jsonResponse(DeleteSiteResponse, { siteId: site.id, deleted: true });
   }, "/api/sites/[id]");
 }

@@ -87,6 +87,15 @@ export function notFound(what = "Site"): Response {
   return errorResponse(404, "not_found", `${what} not found.`);
 }
 
+/** Admin sem o segundo passo (código do autenticador) nesta sessão. */
+export function mfaRequired(): Response {
+  return errorResponse(
+    403,
+    "mfa_required",
+    "Admin access needs two-step verification. Open /admin/mfa to continue.",
+  );
+}
+
 export function unauthorized(): Response {
   return errorResponse(401, "unauthorized", "Please log in to continue.");
 }

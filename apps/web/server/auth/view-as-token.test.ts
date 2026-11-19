@@ -57,6 +57,27 @@ describe("view-as cookie (HMAC)", () => {
     expect(await verifyViewAsToken(token, ADMIN, { secret: "other", now: NOW })).toBeNull();
   });
 
+  it("keeps verifying a cookie signed with a previous secret (rotation)", async () => {
+    const token = await signViewAsToken(ADMIN, TARGET, { secret: "old", now: NOW });
+    expect(await verifyViewAsToken(token, ADMIN, { secrets: ["new", "old"], now: NOW })).toBe(
+      TARGET,
+    );
+    expect(await verifyViewAsToken(token, ADMIN, { secrets: ["new"], now: NOW })).toBeNull();
+  });
+
+  it("signs with the new secret by default and accepts the legacy one", async () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service");
+    vi.stubEnv("IP_HASH_SALT", "");
+    vi.stubEnv("NOSWEAT_SECRET_VIEW_AS", "");
+    vi.stubEnv("NOSWEAT_SECRET", "master");
+    const legacy = await signViewAsToken(ADMIN, TARGET, { secret: "service", now: NOW });
+    expect(await verifyViewAsToken(legacy, ADMIN, { now: NOW })).toBe(TARGET);
+    const fresh = await signViewAsToken(ADMIN, TARGET, { now: NOW });
+    expect(await verifyViewAsToken(fresh, ADMIN, { secret: "service", now: NOW })).toBeNull();
+    expect(await verifyViewAsToken(fresh, ADMIN, { now: NOW })).toBe(TARGET);
+    vi.unstubAllEnvs();
+  });
+
   it("does not sign an invalid account id", async () => {
     await expect(signViewAsToken(ADMIN, "../etc", { secret: SECRET })).rejects.toThrow();
   });
