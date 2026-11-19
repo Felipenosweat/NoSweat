@@ -3,6 +3,7 @@ import {
   CompanyExpensesResponse,
   CreateCompanyExpenseRequest,
 } from "@nosweat/schema";
+import { recordAdminAction } from "@/server/admin/audit";
 import { revalidateAdmin } from "@/server/admin/cache";
 import { ExpenseInputError, createExpense, listExpenses } from "@/server/admin/finance";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
@@ -33,7 +34,17 @@ export async function POST(request: Request): Promise<Response> {
     if (!input.ok) return input.response;
     try {
       const expense = await createExpense(input.data);
-      console.info(`[admin] ${admin.user.id} added company expense ${expense.id}`);
+      await recordAdminAction({
+        adminId: admin.user.id,
+        action: "expense.create",
+        targetType: "expense",
+        targetId: expense.id,
+        metadata: {
+          name: expense.name,
+          amountCents: expense.amountCents,
+          frequency: expense.frequency,
+        },
+      });
       revalidateAdmin();
       return jsonResponse(CompanyExpenseResponse, { expense }, 201);
     } catch (error) {

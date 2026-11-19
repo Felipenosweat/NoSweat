@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { BackLink, StatTile } from "@/components/DashboardUi";
-import { GlassBadge, GlassButton, GlassCard, Notice } from "@/components/glass";
+import { GlassBadge, GlassCard, Notice } from "@/components/glass";
 import { accountName, canManageAccounts, getAccount, isAdmin, requireAdmin } from "@/server/admin";
 import { loginDisabled, planStatus } from "@/server/admin/accounts";
 import {
@@ -29,6 +29,7 @@ import { AccessPanel } from "./AccessPanel";
 import { CreditsPanel } from "./CreditsPanel";
 import { SocialPanel } from "./SocialPanel";
 import { adjustCreditsAction, startViewAs } from "./actions";
+import { ViewAsForm } from "./ViewAsForm";
 
 export const metadata: Metadata = { title: "Account · Admin" };
 
@@ -181,14 +182,8 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
             <p className="mt-1 font-mono text-xs break-all text-(--glass-fg-muted)">{account.id}</p>
           </div>
 
-          <div className="flex max-w-sm flex-wrap items-center justify-end gap-2">
-            {!isSelf && (
-              <form action={startViewAs.bind(null, account.id)}>
-                <GlassButton type="submit" variant="primary">
-                  View as this account
-                </GlassButton>
-              </form>
-            )}
+          <div className="flex max-w-sm flex-wrap items-end justify-end gap-2">
+            {!isSelf && <ViewAsForm action={startViewAs.bind(null, account.id)} />}
             <AccountMenu
               manageEnabled={manageEnabled}
               target={{
@@ -206,7 +201,8 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
         </div>
         {!isSelf && (
           <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
-            &ldquo;View as&rdquo; opens their dashboard with their data, read-only for 1 hour.
+            &ldquo;View as&rdquo; opens their dashboard with their data, read-only for 1 hour. The
+            reason goes to the audit log.
             {loginOff && " Login is disabled: they can't log in. Re-enable it from the ⋯ menu."}
           </p>
         )}

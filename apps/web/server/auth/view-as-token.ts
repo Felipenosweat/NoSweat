@@ -1,9 +1,9 @@
-import { serverSecret } from "../secret";
+import { secretsFor, signingSecret } from "../secret";
 import type { CurrentUser } from "./session";
 
 // "Ver como esta conta" (só leitura): o admin abre o painel de outra conta para ver o que ela vê.
 // O cookie httpOnly `ns_view_as` guarda `<id da conta>.<expira em (segundos)>.<hmac>`. O HMAC
-// (SHA-256 com o segredo do servidor) amarra o cookie ao admin que pediu: copiado para outro
+// (SHA-256 com o segredo "view-as", ver server/secret.ts) amarra o cookie ao admin que pediu: copiado para outro
 // navegador ou outra conta, não vale nada. Vale 1 hora.
 // Usa Web Crypto (crypto.subtle), que existe no Node, no proxy.ts e nos testes.
 // Sem imports do Next: o proxy.ts e os testes importam este arquivo direto.
@@ -59,7 +59,11 @@ function fromBase64Url(text: string) {
   }
 }
 
-type TokenOptions = { secret?: string; now?: number };
+/**
+ * `secret`: assina (e confere) só com ele; `secrets`: confere com todos. Os dois só para testes;
+ * o padrão é o segredo atual para assinar e atual + anteriores para conferir (rotação).
+ */
+type TokenOptions = { secret?: string; secrets?: readonly string[]; now?: number };
 
 const nowSeconds = (now?: number) => Math.floor((now ?? Date.now()) / 1000);
 
@@ -71,7 +75,7 @@ export async function signViewAsToken(
 ): Promise<string> {
   if (!TARGET_ID.test(targetId)) throw new Error("Invalid account id.");
   const expiresAt = nowSeconds(options.now) + VIEW_AS_TTL_SECONDS;
-  const key = await hmacKey(options.secret ?? serverSecret());
+  const key = await hmacKey(options.secret ?? signingSecret("view-as"));
   const signature = await crypto.subtle.sign("HMAC", key, signedText(adminId, targetId, expiresAt));
   return `${targetId}.${expiresAt}.${toBase64Url(signature)}`;
 }
@@ -97,15 +101,15 @@ export async function verifyViewAsToken(
 
   const signature = fromBase64Url(rawSignature);
   if (!signature) return null;
-  const key = await hmacKey(options.secret ?? serverSecret());
-  // `verify` compara em tempo constante.
-  const valid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    signature,
-    signedText(adminId, targetId, expiresAt),
+  const secrets = options.secrets ?? (options.secret ? [options.secret] : secretsFor("view-as"));
+  const text = signedText(adminId, targetId, expiresAt);
+  // `verify` compara em tempo constante; confere com todos os segredos (sem parar no primeiro).
+  const results = await Promise.all(
+    secrets.map(async (secret) =>
+      crypto.subtle.verify("HMAC", await hmacKey(secret), signature, text),
+    ),
   );
-  return valid ? targetId : null;
+  return results.some(Boolean) ? targetId : null;
 }
 
 export type ViewingAs = { id: string; email: string | null };

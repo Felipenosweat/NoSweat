@@ -1,12 +1,16 @@
 import { isAdminUser } from "../admin";
+import { adminMfaSatisfied } from "../admin/mfa";
 import { getCurrentUser, type CurrentUser } from "../auth/session";
-import { errorResponse, notFound, unauthorized } from "../http";
+import { errorResponse, mfaRequired, notFound, unauthorized } from "../http";
 import { ModelStudioError } from "./index";
 
 // Helpers das rotas /api/admin/models/*. Nas rotas não dá para usar requireAdmin() (ele
 // redireciona/404 de página): aqui a resposta é o JSON de erro padrão.
 
-/** Admin logado, ou a resposta de erro (401 sem login; 404 para quem não é admin). */
+/**
+ * Admin logado com a sessão em AAL2, ou a resposta de erro (401 sem login; 404 para quem não é
+ * admin; 403 `mfa_required` para admin sem o segundo passo). Todas as rotas /api/admin/* usam.
+ */
 export async function requireAdminApi(): Promise<
   { ok: true; user: CurrentUser } | { ok: false; response: Response }
 > {
@@ -14,6 +18,7 @@ export async function requireAdminApi(): Promise<
   if (!user) return { ok: false, response: unauthorized() };
   // Quem não é admin não fica sabendo que a rota existe.
   if (!(await isAdminUser(user))) return { ok: false, response: notFound("Page") };
+  if (!(await adminMfaSatisfied())) return { ok: false, response: mfaRequired() };
   return { ok: true, user };
 }
 

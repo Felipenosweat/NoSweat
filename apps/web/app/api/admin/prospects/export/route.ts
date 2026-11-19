@@ -1,3 +1,4 @@
+import { recordAdminAction } from "@/server/admin/audit";
 import { errorResponse, handle } from "@/server/http";
 import { requireAdminApi } from "@/server/models/http";
 import { appOrigin } from "@/server/notify";
@@ -30,6 +31,13 @@ export async function GET(request: Request): Promise<Response> {
     // O link da prévia aponta para o endereço oficial em produção (NEXT_PUBLIC_SITE_URL).
     const origin = process.env.NEXT_PUBLIC_SITE_URL || appOrigin(request.url);
     const csv = prospectsToCsv(fresh, kind, origin);
+    // Exportação em massa de contatos: fica no registro de auditoria.
+    await recordAdminAction({
+      adminId: admin.user.id,
+      action: "prospects.export",
+      targetType: "prospect",
+      metadata: { kind, rows: fresh.length },
+    });
     const day = new Date().toISOString().slice(0, 10);
     return new Response(csv, {
       status: 200,

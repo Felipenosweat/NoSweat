@@ -1,3 +1,4 @@
+import { recordAdminAction } from "@/server/admin/audit";
 import { SiteSpec, UpdateSiteRequest } from "@nosweat/schema";
 import { z } from "zod";
 import { ModelSummary } from "@/lib/model-studio";
@@ -81,6 +82,13 @@ export async function DELETE(_request: Request, { params }: Context): Promise<Re
     const { slug } = await params;
     const result = await resetModel(slug);
     if (!result) return notFound("Model");
+    await recordAdminAction({
+      adminId: admin.user.id,
+      action: "model.delete",
+      targetType: "model",
+      targetId: slug,
+      metadata: { deleted: "deleted" in result },
+    });
     if ("deleted" in result)
       return jsonResponse(ResetModelResponse, { deleted: true, model: null });
     return jsonResponse(ResetModelResponse, { deleted: false, model: summarize(result) });

@@ -1,3 +1,4 @@
+import { recordAdminAction } from "@/server/admin/audit";
 import { CreateModelRequest, ModelListResponse, ModelResponse } from "@/lib/model-studio";
 import { handle, jsonResponse, readJson } from "@/server/http";
 import { createModel, listModels, summarize } from "@/server/models";
@@ -27,6 +28,13 @@ export async function POST(request: Request): Promise<Response> {
       const model = await createModel(input.data.category, input.data.fromSlug, {
         slug: input.data.slug,
         userId: admin.user.id,
+      });
+      await recordAdminAction({
+        adminId: admin.user.id,
+        action: "model.create",
+        targetType: "model",
+        targetId: model.slug,
+        metadata: { category: input.data.category, fromSlug: input.data.fromSlug },
       });
       return jsonResponse(ModelResponse, { model: summarize(model) }, 201);
     } catch (error) {

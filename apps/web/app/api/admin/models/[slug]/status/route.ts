@@ -1,3 +1,4 @@
+import { recordAdminAction } from "@/server/admin/audit";
 import { ModelResponse, SetModelStatusRequest } from "@/lib/model-studio";
 import { handle, jsonResponse, notFound, readJson } from "@/server/http";
 import { setStatus, summarize } from "@/server/models";
@@ -18,6 +19,13 @@ export async function POST(request: Request, { params }: Context): Promise<Respo
     if (!input.ok) return input.response;
     const model = await setStatus(slug, input.data.status, admin.user.id);
     if (!model) return notFound("Model");
+    await recordAdminAction({
+      adminId: admin.user.id,
+      action: "model.status",
+      targetType: "model",
+      targetId: slug,
+      metadata: { status: input.data.status },
+    });
     return jsonResponse(ModelResponse, { model: summarize(model) });
   }, "/api/admin/models/[slug]/status");
 }
