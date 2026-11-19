@@ -26,6 +26,27 @@ describe("unsubscribe token", () => {
     expect(isValidUnsubscribeToken("other@example.com", token, "s")).toBe(false);
     expect(isValidUnsubscribeToken("maria@example.com", "x", "s")).toBe(false);
   });
+
+  it("links signed with a previous secret keep working after a rotation", () => {
+    const old = unsubscribeToken("maria@example.com", "old");
+    expect(isValidUnsubscribeToken("maria@example.com", old, ["new", "old"])).toBe(true);
+    expect(isValidUnsubscribeToken("maria@example.com", old, ["new"])).toBe(false);
+  });
+
+  it("signs with the new secret and still accepts links signed with the legacy key", () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service");
+    vi.stubEnv("IP_HASH_SALT", "");
+    vi.stubEnv("NOSWEAT_SECRET_UNSUBSCRIBE", "");
+    vi.stubEnv("NOSWEAT_SECRET", "");
+    const legacyToken = unsubscribeToken("maria@example.com");
+    expect(legacyToken).toBe(unsubscribeToken("maria@example.com", "service"));
+    vi.stubEnv("NOSWEAT_SECRET_UNSUBSCRIBE", "fresh");
+    expect(unsubscribeToken("maria@example.com")).toBe(
+      unsubscribeToken("maria@example.com", "fresh"),
+    );
+    expect(isValidUnsubscribeToken("maria@example.com", legacyToken)).toBe(true);
+    vi.unstubAllEnvs();
+  });
 });
 
 describe("buildWelcomeEmail", () => {

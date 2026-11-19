@@ -4,6 +4,7 @@ import type { PlanId } from "@nosweat/schema";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/admin";
+import { recordAdminAction } from "@/server/admin/audit";
 import { revalidateAdmin } from "@/server/admin/cache";
 import {
   DeleteSitesInput,
@@ -45,7 +46,13 @@ export async function createTestAccountAction(
       { email: email || undefined, plan: planFrom(formData.get("plan")) },
       admin.id,
     );
-    console.info(`[admin] ${admin.id} created test account ${created.userId}`);
+    await recordAdminAction({
+      adminId: admin.id,
+      action: "test_account.create",
+      targetType: "user",
+      targetId: created.userId,
+      metadata: { plan: created.plan },
+    });
     revalidateAdmin();
     revalidatePath("/admin", "layout");
     return { status: "created", ...created };
@@ -85,9 +92,13 @@ export async function deleteAccountAction(
         });
     if (!result.ok) return { error: result.error };
     email = result.email;
-    console.info(
-      `[admin] ${admin.id} deleted ${testAccount ? "test " : ""}account ${userId} and ${result.sitesDeleted} site(s)`,
-    );
+    await recordAdminAction({
+      adminId: admin.id,
+      action: "account.delete",
+      targetType: "user",
+      targetId: userId,
+      metadata: { testAccount, sitesDeleted: result.sitesDeleted },
+    });
   } catch (error) {
     console.error("[admin] could not delete the account", error);
     return {
@@ -127,7 +138,13 @@ export async function unpublishSiteAction(input: unknown): Promise<AdminActionRe
   try {
     const result = await adminUnpublishSite(parsed.data.siteId);
     if (!result.ok) return { ok: false, message: result.error };
-    console.info(`[admin] ${admin.id} took site ${parsed.data.siteId} offline`);
+    await recordAdminAction({
+      adminId: admin.id,
+      action: "site.unpublish",
+      targetType: "site",
+      targetId: parsed.data.siteId,
+      metadata: { alreadyOffline: result.alreadyOffline },
+    });
     refreshAdmin();
     return {
       ok: true,
@@ -153,11 +170,18 @@ export async function deleteSitesAction(input: unknown): Promise<AdminActionResu
   }
   try {
     const result = await adminDeleteSites(parsed.data.siteIds);
-    console.info(
-      `[admin] ${admin.id} deleted ${result.deleted.length} site(s): ${result.deleted
-        .map((site) => site.id)
-        .join(", ")}${result.failed.length ? ` (failed: ${result.failed.join(", ")})` : ""}`,
-    );
+    for (const site of result.deleted) {
+      await recordAdminAction({
+        adminId: admin.id,
+        action: "site.delete",
+        targetType: "site",
+        targetId: site.id,
+        metadata: { name: site.name },
+      });
+    }
+    if (result.failed.length > 0) {
+      console.error(`[admin] ${admin.id} could not delete site(s): ${result.failed.join(", ")}`);
+    }
     if (result.deleted.length > 0 || result.missing.length > 0) refreshAdmin();
     const done =
       result.deleted.length === 1
@@ -189,7 +213,12 @@ export async function deleteGuestDraftsAction(input: unknown): Promise<AdminActi
   const { days } = parsed.data;
   try {
     const deleted = await adminDeleteGuestDrafts(days);
-    console.info(`[admin] ${admin.id} deleted ${deleted} guest draft(s) older than ${days} day(s)`);
+    await recordAdminAction({
+      adminId: admin.id,
+      action: "guest_drafts.delete",
+      targetType: "guest_sites",
+      metadata: { deleted, olderThanDays: days },
+    });
     refreshAdmin();
     return {
       ok: true,

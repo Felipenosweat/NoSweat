@@ -310,8 +310,15 @@ export function buildModel(spec: SiteSpec, withAnchors = true): SiteModel {
     primaryAction,
     words,
     style: siteStyle(spec),
-    titleOf: (section) =>
-      (section.type === "hero" ? "" : section.title?.trim()) || defaultTitles[section.type],
+    titleOf: (section) => {
+      const own = section.type === "hero" ? "" : section.title?.trim();
+      if (own) return own;
+      // "Services and prices" sem nenhum preço na lista seria uma promessa que o site não cumpre.
+      if (section.type === "services" && !section.items.some((item) => item.price?.trim())) {
+        return defaultTitles.services.replace(/ and prices$/i, "");
+      }
+      return defaultTitles[section.type];
+    },
   };
 }
 

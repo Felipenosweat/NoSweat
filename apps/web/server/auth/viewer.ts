@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { getAccount, isAdmin } from "../admin";
+import { getAccount, isElevatedAdmin } from "../admin";
 import { getCurrentUser } from "./session";
 import { resolveViewer, VIEW_AS_COOKIE, type Viewer } from "./view-as-token";
 
@@ -21,7 +21,8 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     return await resolveViewer({
       user,
       token,
-      isAdmin,
+      // "Ver como" só vale com a sessão do admin em AAL2 (MFA).
+      isAdmin: isElevatedAdmin,
       findAccount: async (id) => {
         const account = await getAccount(id);
         return account ? { id: account.id, email: account.email } : null;

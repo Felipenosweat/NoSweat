@@ -70,3 +70,27 @@ describe("tone marks in the rendered site", () => {
     }
   });
 });
+
+describe("site header", () => {
+  const header = (html: string) => html.slice(html.indexOf("<header"), html.indexOf("</header>"));
+
+  it.each(Object.entries(fixtures))("is an attached bar with a call button in %s", (_slug, spec) => {
+    const html = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
+    // Barra presa e de ponta a ponta: nada de cápsula de vidro flutuando.
+    expect(html).toMatch(/class="ns-nav fixed inset-x-0 top-0 /);
+    expect(html).toContain("ns-navbar");
+    expect(html).not.toContain("ns-glass");
+    expect(html).not.toContain("ns-bubble");
+    // Sempre há um botão para chamar ou para a ação principal.
+    expect(html).toContain("ns-nav-btn");
+    if (spec.business.phone) expect(html).toContain("Call now");
+  });
+
+  it("is solid from the start in the editor, where nothing tracks the scroll", () => {
+    const spec = fixtures["joes-plumbing"];
+    const live = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
+    const editing = header(renderToStaticMarkup(<SiteRenderer spec={spec} editable />));
+    expect(live).toContain('data-top=""');
+    expect(editing).not.toContain("data-top");
+  });
+});

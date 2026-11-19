@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -48,6 +49,8 @@ import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
 import { addOwnPhotos } from "./ownPhotos";
 import { PhotoStep } from "./PhotoStep";
+import { QuestionsStep } from "./QuestionsStep";
+import { answersFrom, kindForQuestions, questionsFor, type Picked } from "./questions";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
@@ -75,12 +78,19 @@ const STEPS = [
     lead: "Choose who picks the pictures for your site. You can change them later in the editor.",
   },
   {
+    title: "A few quick questions",
+    lead: "Tap an answer, or skip any of them. The more we know, the better your site.",
+  },
+  {
     title: "Ready to start?",
     lead: "Check your request and create the first version.",
   },
 ] as const;
 
 const LAST_STEP = STEPS.length - 1;
+/** Perguntas rápidas: logo antes da revisão. As fotos vêm um passo antes delas. */
+const QUESTIONS_STEP = LAST_STEP - 1;
+const PHOTO_STEP = LAST_STEP - 2;
 
 /** Linha de apoio da revisão no atalho (layout e cores ficam com a No Sweat). */
 const QUICK_REVIEW_LEAD =
@@ -324,6 +334,13 @@ function Flow({
   // que o site é gerado, porque o upload precisa do id do site).
   const [photoMode, setPhotoMode] = useState<PhotoMode>("auto");
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  // Perguntas rápidas (sim/não ou uma opção): a IA lê as respostas junto da descrição.
+  const [picked, setPicked] = useState<Picked>({ picks: {}, others: {} });
+  // Quais perguntas: pelo tipo de negócio escolhido ou, sem escolha, pelo que a pessoa escreveu.
+  const questions = useMemo(
+    () => questionsFor(kindForQuestions(choices.kind, `${fields.name} ${fields.what}`)),
+    [choices.kind, fields.name, fields.what],
+  );
   // Atalho do cartão / "Let AI decide the rest": a revisão sem "Step X of 4" e com a frase própria.
   // Vira `false` quando a pessoa abre um dos passos (aí ela está percorrendo o assistente).
   const [quick, setQuick] = useState(false);
@@ -425,7 +442,7 @@ function Flow({
   }
 
   function goTo(next: number) {
-    if (next !== LAST_STEP) setQuick(false);
+    if (next !== LAST_STEP && next !== QUESTIONS_STEP) setQuick(false);
     setDirection(next > step ? "forward" : "back");
     setFieldErrors({});
     shouldFocusHeading.current = true;
@@ -464,7 +481,7 @@ function Flow({
     setFieldErrors({});
     setQuick(true);
     setDirection("forward");
-    setStep(LAST_STEP);
+    setStep(QUESTIONS_STEP);
     shouldFocusHeading.current = true;
     setWizardOpen(true);
   }
@@ -479,7 +496,10 @@ function Flow({
   }
 
   async function generate() {
-    const input = GenerateSiteRequest.safeParse(generateRequest(fields, choices, photoMode));
+    const input = GenerateSiteRequest.safeParse({
+      ...generateRequest(fields, choices, photoMode),
+      answers: answersFrom(questions, picked),
+    });
     if (!input.success) {
       setFormError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
       return;
@@ -554,7 +574,7 @@ function Flow({
     setChoices((current) => ({ ...current, layout: "auto" }));
     update("style", "auto");
     setQuick(true);
-    goTo(LAST_STEP);
+    goTo(QUESTIONS_STEP);
   }
 
   function applyExample(text: string, target: HTMLTextAreaElement | null) {
@@ -621,6 +641,7 @@ function Flow({
     LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
   const colorLabel =
     STYLE_OPTIONS.find((option) => option.id === fields.style)?.label ?? "No Sweat chooses";
+  const answeredCount = answersFrom(questions, picked).length;
   const photoLabel =
     photoMode === "own"
       ? signedIn && photoFiles.length > 0
@@ -749,7 +770,7 @@ function Flow({
                   />
                   Create website
                 </p>
-                {!quickReview && (
+                {!quick && (
                   <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     Step {step + 1} of {STEPS.length}
                   </p>
@@ -763,8 +784,12 @@ function Flow({
                   <CloseIcon />
                 </button>
               </div>
-              {!quickReview && (
-                <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
+              {!quick && (
+                <ol
+                  aria-hidden="true"
+                  className="mt-2 grid gap-1.5"
+                  style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}
+                >
                   {STEPS.map((item, index) => (
                     <li
                       key={item.title}
@@ -917,7 +942,11 @@ function Flow({
                     />
                   )}
 
-                  {step === LAST_STEP - 1 && (
+                  {step === QUESTIONS_STEP && (
+                    <QuestionsStep questions={questions} picked={picked} onChange={setPicked} />
+                  )}
+
+                  {step === PHOTO_STEP && (
                     <PhotoStep
                       mode={photoMode}
                       onModeChange={setPhotoMode}
@@ -1023,8 +1052,13 @@ function Flow({
                         <SummaryRow label="Colors" onChange={() => goTo(2)}>
                           {colorLabel}
                         </SummaryRow>
-                        <SummaryRow label="Photos" onChange={() => goTo(LAST_STEP - 1)}>
+                        <SummaryRow label="Photos" onChange={() => goTo(PHOTO_STEP)}>
                           {photoLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Quick questions" onChange={() => goTo(QUESTIONS_STEP)}>
+                          {answeredCount > 0
+                            ? `${answeredCount} answered`
+                            : "Skipped. You can still add details in the editor."}
                         </SummaryRow>
                       </dl>
                     </>
@@ -1048,7 +1082,13 @@ function Flow({
                 <button
                   type="button"
                   // Na revisão do atalho, "Back" volta ao cartão (a pessoa não viu os passos).
-                  onClick={() => (quickReview ? setWizardOpen(false) : goTo(step - 1))}
+                  onClick={() =>
+                    quick
+                      ? step === QUESTIONS_STEP
+                        ? setWizardOpen(false)
+                        : goTo(QUESTIONS_STEP)
+                      : goTo(step - 1)
+                  }
                   className={secondaryButtonCompact}
                 >
                   Back
