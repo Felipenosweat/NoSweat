@@ -1,5 +1,6 @@
 import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@nosweat/schema";
 import { generateSiteSpec, getSiteGenerator } from "@/server/ai";
+import { briefWithAnswers } from "@/server/ai/answers";
 import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
@@ -46,7 +47,7 @@ export async function POST(request: Request): Promise<Response> {
 
     let spec: SiteSpec;
     try {
-      spec = await generateSiteSpec(input.data.brief, generator, {
+      spec = await generateSiteSpec(briefWithAnswers(input.data.brief, input.data.answers), generator, {
         recent: await recentCompositions(actor),
         photos: hasImageProvider(),
       });

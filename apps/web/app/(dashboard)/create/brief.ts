@@ -440,7 +440,13 @@ export function parseDraft(raw: string | null): StoredDraft | null {
       fields.style = "auto";
     }
     const step =
-      draft.step === 1 || draft.step === 2 || draft.step === 3 || draft.step === 4 ? draft.step : 0;
+      draft.step === 1 ||
+      draft.step === 2 ||
+      draft.step === 3 ||
+      draft.step === 4 ||
+      draft.step === 5
+        ? draft.step
+        : 0;
     return { source: draft.source, step, fields };
   } catch {
     return null;
