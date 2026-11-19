@@ -32,10 +32,14 @@ import {
   monthlyAllowance,
   TOPUP_PACKS,
 } from "@/server/credits";
+import { nextPlanId, upgradeGains } from "@/server/billing/upgrade";
 import { getOwnedSite } from "@/server/sites";
+import { getSocialState } from "@/server/social/api";
+import { getSiteStore } from "@/server/store";
 import { BillingIcon } from "../NavIcons";
 import { BillingPlans, type EndedPlan, type PlanCard, type SalesContact } from "./BillingPlans";
 import { CreditsPanel } from "./CreditsPanel";
+import { PlanUsage, type NextPlan, type UsageRow } from "./PlanUsage";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
@@ -60,6 +64,49 @@ function endedPlan(grant: AccessGrant | null): EndedPlan | null {
 
 const usd = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: cents % 100 ? 2 : 0 })}`;
+
+/**
+ * Uso do plano (sites no ar, posts do Instagram do mês) e o convite para o plano de cima. Nunca
+ * derruba a página: se algo falhar, o painel simplesmente não aparece.
+ */
+async function planUsage(
+  user: Parameters<typeof getSocialState>[0],
+  planId: keyof typeof PLANS,
+): Promise<{ rows: UsageRow[]; next: NextPlan | null } | null> {
+  try {
+    const plan = PLANS[planId];
+    const [sites, social] = await Promise.all([getSiteStore().list(user.id), getSocialState(user)]);
+    const rows: UsageRow[] = [
+      {
+        label: "Live websites",
+        used: sites.filter((site) => site.status === "published").length,
+        limit: plan.publishedSitesLimit,
+      },
+    ];
+    if (social.usage.cap !== null && social.usage.cap > 0) {
+      rows.push({
+        label: "Instagram posts this month",
+        used: social.usage.used,
+        limit: social.usage.cap,
+      });
+    }
+    const nextId = nextPlanId(planId);
+    const next = nextId
+      ? {
+          name: PLANS[nextId].name,
+          price: usd(PLANS[nextId].monthlyCents),
+          gains: upgradeGains(plan, PLANS[nextId], {
+            from: monthlyAllowance(planId),
+            to: monthlyAllowance(nextId),
+          }),
+        }
+      : null;
+    return { rows, next };
+  } catch (error) {
+    console.error("[billing] could not read the plan usage", error);
+    return null;
+  }
+}
 
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
@@ -139,6 +186,9 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     price: usd(pack.priceCents),
   }));
 
+  const usage =
+    billing.enabled && billing.active && billing.plan ? await planUsage(user, billing.plan) : null;
+
   return (
     <div className="max-w-4xl">
       <PageHeader
@@ -202,6 +252,10 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         </Notice>
       )}
 
+      {usage && billing.plan && (
+        <PlanUsage planName={PLANS[billing.plan].name} rows={usage.rows} next={usage.next} />
+      )}
+
       <CreditsPanel
         balance={credits}
         costs={creditCosts}
@@ -227,14 +281,16 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           </div>
         </section>
       ) : (
-        <BillingPlans
-          plans={plans}
-          current={billing}
-          siteId={siteId}
-          contact={contact}
-          ended={ended}
-          chosen={chosenPlan}
-        />
+        <div id="plans" className="scroll-mt-6">
+          <BillingPlans
+            plans={plans}
+            current={billing}
+            siteId={siteId}
+            contact={contact}
+            ended={ended}
+            chosen={chosenPlan}
+          />
+        </div>
       )}
     </div>
   );
