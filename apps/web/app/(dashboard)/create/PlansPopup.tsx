@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { CheckIcon } from "@/components/marketing/icons";
 
 // Pop-up de planos do /create: abre quando a pessoa clica em "Create website" sem ter plano.
-// Mostra os três planos com o preço de lançamento e o tempo que falta para a oferta acabar.
-// O relógio conta até o fim REAL da oferta (PROMO em server/billing/plans.ts), nunca um prazo
-// que recomeça para cada visitante: relógio falso é propaganda enganosa. As respostas da pessoa
+// Mostra os três planos com o nome da oferta do momento (Black Friday, Cyber Week...), o preço de
+// lançamento e o preço normal. Sem relógio: a oferta não tem data final (vale até o fundador subir
+// os preços), e um prazo que se renova sem o preço mudar é urgência falsa. As respostas da pessoa
 // ficam guardadas na aba (CreateFlow), então escolher o plano não perde nada.
 
 export type OfferPlan = {
@@ -24,46 +24,12 @@ export type OfferPlan = {
 
 export type LaunchOffer = {
   plans: OfferPlan[];
-  /** Fim da oferta (ISO); `null` quando não há oferta valendo. */
-  endsAt: string | null;
-  /** "Nov 30" */
-  endsLabel: string;
+  /** Nome da oferta do momento ("Black Friday"); `null` quando não há oferta valendo. */
+  name: string | null;
 };
 
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
-
-const two = (value: number) => String(value).padStart(2, "0");
-
-/** "9d 04:12:30" (ou só "04:12:30" no último dia). `null` quando já acabou. */
-function remaining(endsAt: string, now: number): string | null {
-  const ms = Date.parse(endsAt) - now;
-  if (!Number.isFinite(ms) || ms <= 0) return null;
-  const total = Math.floor(ms / 1000);
-  const days = Math.floor(total / 86_400);
-  const clock = `${two(Math.floor((total % 86_400) / 3600))}:${two(Math.floor((total % 3600) / 60))}:${two(total % 60)}`;
-  return days > 0 ? `${days}d ${clock}` : clock;
-}
-
-function Countdown({ endsAt }: { endsAt: string }) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  const left = remaining(endsAt, now);
-  if (!left) return null;
-  return (
-    <span
-      className="font-mono text-base font-bold tracking-tight tabular-nums"
-      // Lido uma vez ao abrir, não a cada segundo.
-      role="timer"
-      aria-live="off"
-    >
-      {left}
-    </span>
-  );
-}
 
 export function PlansPopup({
   open,
@@ -86,7 +52,7 @@ export function PlansPopup({
   }, [open]);
 
   const href = signedIn ? "/billing#plans" : "/signup?next=/billing";
-  const promo = offer.endsAt !== null;
+  const promo = offer.name !== null;
 
   return (
     <dialog
@@ -123,14 +89,10 @@ export function PlansPopup({
             </button>
           </div>
 
-          {promo && offer.endsAt && (
-            <p className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
-              <span>
-                <strong className="font-semibold">Launch prices</strong> end {offer.endsLabel}
-              </span>
-              <span className="flex items-center gap-2">
-                Ends in <Countdown endsAt={offer.endsAt} />
-              </span>
+          {promo && offer.name && (
+            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
+              <strong className="font-semibold">{offer.name}.</strong> Launch prices for our first
+              customers. The regular price shown applies once we raise prices.
             </p>
           )}
 

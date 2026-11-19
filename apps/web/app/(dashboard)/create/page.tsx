@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { aiEnabled } from "@/server/ai";
 import { getCurrentUser } from "@/server/auth/session";
-import { PLANS, PROMO, promoActive, promoPercentOff } from "@/server/billing/plans";
+import { currentOffer, PLANS, promoActive, promoPercentOff } from "@/server/billing/plans";
 import { creditCost, getBalance, monthlyAllowance } from "@/server/credits";
 import { CreateFlow, type CreateCredits } from "./CreateFlow";
 import type { LaunchOffer } from "./PlansPopup";
@@ -30,12 +30,11 @@ async function createCredits(userId: string): Promise<CreateCredits | null> {
 
 const dollars = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
 
-/** Planos do pop-up "pick a plan" e, enquanto vale, a oferta de lançamento (preço normal e fim). */
+/** Planos do pop-up "pick a plan" e, enquanto vale, a oferta de lançamento (nome e preço normal). */
 function launchOffer(): LaunchOffer {
   const promo = promoActive();
   return {
-    endsAt: promo ? `${PROMO.endsOn}T00:00:00Z` : null,
-    endsLabel: PROMO.lastDayLabel,
+    name: promo ? currentOffer() : null,
     plans: Object.values(PLANS).map((plan) => ({
       id: plan.id,
       name: plan.name,
