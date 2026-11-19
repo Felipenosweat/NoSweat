@@ -16,15 +16,11 @@ describe("launch offer", () => {
 
   it("has no end date: it lasts while the charged price is under the regular price", () => {
     expect(promoActive()).toBe(true);
+    // Só o Starter tem preço normal acima do cobrado; Pro e Premium não sobem.
     expect(promoPercentOff(PLANS.starter)).toBe(51);
-    expect(promoPercentOff(PLANS.pro)).toBe(54);
-    expect(promoPercentOff(PLANS.premium)).toBe(57);
+    expect(promoPercentOff(PLANS.pro)).toBe(0);
+    expect(promoPercentOff(PLANS.premium)).toBe(0);
     // Preços subidos (normal igual ao cobrado): sem desconto.
     expect(promoPercentOff({ ...PLANS.pro, regularMonthlyCents: PLANS.pro.monthlyCents })).toBe(0);
-  });
-
-  it("gives the biggest saving to the most expensive plan", () => {
-    const off = [PLANS.starter, PLANS.pro, PLANS.premium].map(promoPercentOff);
-    expect(off).toEqual([...off].sort((a, b) => a - b));
   });
 });
