@@ -317,7 +317,7 @@ describe("social plan rules", () => {
   it("caps approved posts per month by plan", async () => {
     process.env.REQUIRE_PLAN = "true";
     await grant("starter");
-    expect(await socialMonthlyCap(user)).toBe(12);
+    expect(await socialMonthlyCap(user)).toBe(4);
     await grant("pro");
     expect(await socialMonthlyCap(user)).toBe(30);
     await grant("premium");
