@@ -45,7 +45,7 @@ export const CREDIT_ACTIONS: CreditAction[] = [
 /** Créditos por mês de cada plano, e de quem não tem plano (para experimentar). */
 export const MONTHLY_CREDITS: Record<PlanId | "none", number> = {
   none: 30,
-  starter: 150,
+  starter: 60,
   pro: 400,
   premium: 1000,
 };

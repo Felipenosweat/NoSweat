@@ -53,7 +53,7 @@ export const LANDING_FAQS: Faq[] = [
   {
     question: "How much does it cost?",
     answer:
-      "Starter is $39 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $390, $690 or $1,290 a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built.",
+      "Starter is $19 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $190, $690 or $1,290 a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built.",
   },
   {
     question: "Can I cancel?",

@@ -358,10 +358,10 @@ describe("published sites limit", () => {
     expect(await publishBlocked(owner, draft)).toBeNull();
   });
 
-  it("allows 3 live sites on Starter, more on Pro, and always lets a live site republish", async () => {
+  it("allows 1 live site on Starter, more on Pro, and always lets a live site republish", async () => {
     process.env.REQUIRE_PLAN = "true";
     await grant("starter");
-    const live = [await liveSite(), await liveSite(), await liveSite()];
+    const live = [await liveSite()];
 
     const draft = await getSiteStore().create(fixtures["glow-salon"], owner.id);
     const blocked = await publishBlocked(owner, draft);
@@ -370,7 +370,7 @@ describe("published sites limit", () => {
       error: {
         code: "plan_limit",
         message:
-          "Your plan includes 3 live websites. Upgrade your plan in Billing to publish more.",
+          "Your plan includes 1 live website. Upgrade your plan in Billing to publish more.",
       },
     });
     // Publicar as mudanças de um site que já está no ar nunca é bloqueado pelo limite.
@@ -405,7 +405,7 @@ describe("createCheckoutUrl", () => {
     const monthly = decodeURIComponent(
       calls.find((c) => c.url.endsWith("/checkout/sessions"))!.body,
     );
-    expect(monthly).toContain("line_items[0][price_data][unit_amount]=3900");
+    expect(monthly).toContain("line_items[0][price_data][unit_amount]=1900");
     expect(monthly).not.toContain("line_items[1]");
     expect(monthly).toContain("mode=subscription");
     expect((await getBillingStore().get(user.id))?.stripeCustomerId).toBe("cus_new");
@@ -420,7 +420,7 @@ describe("createCheckoutUrl", () => {
     const annual = decodeURIComponent(
       calls.find((c) => c.url.endsWith("/checkout/sessions"))!.body,
     );
-    expect(annual).toContain("line_items[0][price_data][unit_amount]=39000");
+    expect(annual).toContain("line_items[0][price_data][unit_amount]=19000");
     expect(annual).not.toContain("line_items[1]");
     // O cliente do Stripe é reaproveitado.
     expect(calls.some((c) => c.url.endsWith("/customers"))).toBe(false);
