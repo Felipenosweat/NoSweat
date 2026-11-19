@@ -21,7 +21,7 @@ import {
   type SignUpField,
 } from "@/lib/signup-rules";
 import { signUp, type AuthFormState } from "./actions";
-import { ResendConfirmationForm } from "./AuthForm";
+import { ResendConfirmationForm, VerifyCodeForm } from "./AuthForm";
 
 // Cadastro por e-mail (/signup). As regras são as do servidor (lib/signup-rules), checadas
 // também aqui: o erro de um campo só aparece depois que a pessoa mexeu nele e saiu, ou ao
@@ -166,7 +166,7 @@ export function SignUpForm({
           Check your inbox
         </h1>
         <p className="mt-3 text-base leading-relaxed text-slate-600">
-          We sent a confirmation link to{" "}
+          We sent a confirmation link and a 6-digit code to{" "}
           {sentTo ? (
             <strong className="block font-semibold [overflow-wrap:anywhere] text-ink">
               {sentTo}
@@ -174,8 +174,14 @@ export function SignUpForm({
           ) : (
             "your email. "
           )}
-          Open it to finish creating your account.
+          Tap the button in the email, or type the code here to finish creating your account.
         </p>
+        {/* Sem o e-mail (envio sem JavaScript) não há como confirmar por código: só o link. */}
+        {sentTo && (
+          <div className="mt-6">
+            <VerifyCodeForm email={sentTo} next={next} />
+          </div>
+        )}
         <ul className="mt-6 space-y-2 border-t border-slate-200 pt-6 text-sm leading-relaxed text-slate-600">
           <li>The email can take a minute or two to arrive.</li>
           <li>Not there? Check your spam or promotions folder.</li>
