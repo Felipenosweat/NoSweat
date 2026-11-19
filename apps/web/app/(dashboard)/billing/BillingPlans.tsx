@@ -39,6 +39,8 @@ export type PlanCard = {
   publishedSitesLimit: number;
   /** Créditos da IA por mês (server/credits/pricing.ts). */
   monthlyCredits: number;
+  /** Preço normal (riscado na oferta) e desconto; `null` se este plano não tem desconto. */
+  regular: { monthly: string; annual: string; percentOff: number } | null;
 };
 
 /** Plano manual que já acabou (a página mostra o aviso e o link para renovar). */
@@ -113,12 +115,15 @@ export function BillingPlans({
   siteId,
   contact,
   ended = null,
+  offerName = null,
 }: {
   plans: PlanCard[];
   current: BillingStatusResponse;
   siteId: string | null;
   contact: SalesContact;
   ended?: EndedPlan | null;
+  /** Nome da oferta do momento ("Black Friday"); `null` = sem oferta valendo. */
+  offerName?: string | null;
 }) {
   const checkout = current.checkoutEnabled !== false;
   const [interval, setBillingInterval] = useState<BillingInterval>(current.interval ?? "annual");
@@ -225,6 +230,12 @@ export function BillingPlans({
           </p>
         </section>
       )}
+      {offerName && (
+        <p className="mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
+          <strong className="font-semibold">{offerName}.</strong> Launch pricing for our first
+          customers.
+        </p>
+      )}
       <GlassSegmented
         aria-label="Billing period"
         options={[
@@ -237,7 +248,7 @@ export function BillingPlans({
 
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         {plans.map((plan) => {
-          const recommended = plan.id === "pro";
+          const recommended = plan.id === "premium";
           return (
             <li
               key={plan.id}
@@ -250,11 +261,27 @@ export function BillingPlans({
                 </h2>
                 {recommended && (
                   <GlassBadge tone="info" dot={false}>
-                    Recommended
+                    {offerName ? "Best value" : "Recommended"}
                   </GlassBadge>
                 )}
               </div>
-              <p className="mt-3 font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
+              {offerName && plan.regular && (
+                <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                  <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[12px] font-semibold text-emerald-800 tabular-nums">
+                    Save {plan.regular.percentOff}%
+                  </span>
+                  <span className="tabular-nums">
+                    Regular price{" "}
+                    <s>
+                      {interval === "annual" ? plan.regular.annual : plan.regular.monthly}
+                      {interval === "annual" ? "/yr" : "/mo"}
+                    </s>
+                  </span>
+                </p>
+              )}
+              <p
+                className={`font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums ${offerName && plan.regular ? "mt-1" : "mt-3"}`}
+              >
                 {interval === "annual" ? plan.annual : plan.monthly}
                 <span className="text-base font-medium text-(--glass-fg-muted)">
                   {interval === "annual" ? "/yr" : "/mo"}
