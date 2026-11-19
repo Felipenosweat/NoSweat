@@ -99,6 +99,7 @@ export function AccessPanel({
         plans={Object.values(PLANS).map((plan) => ({ id: plan.id, name: plan.name }))}
         enforced={enforced}
         emailOn={accessEmailConfigured()}
+        paymentConfirmedAt={grant?.paymentConfirmedAt ?? null}
       />
     </GlassCard>
   );
