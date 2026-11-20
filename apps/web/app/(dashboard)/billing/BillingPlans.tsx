@@ -19,6 +19,9 @@ import {
 } from "@/components/DashboardUi";
 import { GlassBadge, GlassSegmented, Notice } from "@/components/glass";
 import { CheckIcon } from "@/components/marketing/icons";
+import { contactHref, emailHref, whatsappHref, type SalesContact } from "@/lib/sales-contact";
+
+export { contactHref, type SalesContact };
 
 export type PlanCard = {
   id: PlanId;
@@ -31,45 +34,12 @@ export type PlanCard = {
   publishedSitesLimit: number;
   /** Créditos da IA por mês (server/credits/pricing.ts). */
   monthlyCredits: number;
-};
-
-/** Como falar com a No Sweat para pagar à mão (Pix/WhatsApp) quando não há checkout. */
-export type SalesContact = {
-  whatsapp: string | null;
-  email: string;
-  accountEmail: string | null;
-  /** Id da conta: o admin acha a conta certa no /admin mesmo se o e-mail vier diferente. */
-  accountId: string | null;
+  /** Preço normal (riscado na oferta) e desconto; `null` se este plano não tem desconto. */
+  regular: { monthly: string; annual: string; percentOff: number } | null;
 };
 
 /** Plano manual que já acabou (a página mostra o aviso e o link para renovar). */
 export type EndedPlan = { name: string; endedOn: string };
-
-/** Mensagem pronta: o pedido, o e-mail da conta e o id da conta. */
-function salesMessage(contact: SalesContact, text: string): string {
-  return [
-    text,
-    contact.accountEmail ? `My account: ${contact.accountEmail}` : null,
-    contact.accountId ? `Account ID: ${contact.accountId}` : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
-
-function whatsappHref(whatsapp: string, contact: SalesContact, text: string): string {
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(salesMessage(contact, text))}`;
-}
-
-function emailHref(contact: SalesContact, text: string): string {
-  return `mailto:${contact.email}?subject=${encodeURIComponent("No Sweat plan")}&body=${encodeURIComponent(salesMessage(contact, text))}`;
-}
-
-/** Link do WhatsApp (se houver número) ou do e-mail, com a mensagem já escrita. */
-export function contactHref(contact: SalesContact, text: string): string {
-  return contact.whatsapp
-    ? whatsappHref(contact.whatsapp, contact, text)
-    : emailHref(contact, text);
-}
 
 /**
  * Link de contato: o WhatsApp abre em outra aba; o e-mail (mailto:) não, porque sem programa de
@@ -141,6 +111,7 @@ export function BillingPlans({
   contact,
   ended = null,
   chosen = null,
+  offerName = null,
 }: {
   plans: PlanCard[];
   current: BillingStatusResponse;
@@ -149,6 +120,8 @@ export function BillingPlans({
   ended?: EndedPlan | null;
   /** Plano escolhido antes na /pricing: ganha o destaque (no lugar do "Recommended"). */
   chosen?: PlanId | null;
+  /** Nome da oferta do momento ("Black Friday"); `null` = sem oferta valendo. */
+  offerName?: string | null;
 }) {
   const checkout = current.checkoutEnabled !== false;
   const [interval, setBillingInterval] = useState<BillingInterval>(current.interval ?? "annual");
@@ -257,6 +230,12 @@ export function BillingPlans({
           </p>
         </section>
       )}
+      {offerName && (
+        <p className="mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
+          <strong className="font-semibold">{offerName}.</strong> Launch pricing for our first
+          customers.
+        </p>
+      )}
       {picked && (
         <p className="mb-4 text-[15px] text-slate-700">
           You picked <strong className="font-semibold text-ink">{picked.name}</strong> on the
@@ -275,8 +254,8 @@ export function BillingPlans({
 
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         {plans.map((plan) => {
-          // O plano escolhido na /pricing leva o destaque; sem escolha, o Pro (recomendado).
-          const recommended = picked ? plan.id === picked.id : plan.id === "pro";
+          // O plano escolhido na /pricing leva o destaque; sem escolha, o Premium (melhor oferta).
+          const recommended = picked ? plan.id === picked.id : plan.id === "premium";
           return (
             <li
               key={plan.id}
@@ -289,11 +268,27 @@ export function BillingPlans({
                 </h2>
                 {recommended && (
                   <GlassBadge tone="info" dot={false}>
-                    {picked ? "Your pick" : "Recommended"}
+                    {picked ? "Your pick" : offerName ? "Best value" : "Recommended"}
                   </GlassBadge>
                 )}
               </div>
-              <p className="mt-3 font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums">
+              {offerName && plan.regular && (
+                <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                  <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[12px] font-semibold text-emerald-800 tabular-nums">
+                    Save {plan.regular.percentOff}%
+                  </span>
+                  <span className="tabular-nums">
+                    Regular price{" "}
+                    <s>
+                      {interval === "annual" ? plan.regular.annual : plan.regular.monthly}
+                      {interval === "annual" ? "/yr" : "/mo"}
+                    </s>
+                  </span>
+                </p>
+              )}
+              <p
+                className={`font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums ${offerName && plan.regular ? "mt-1" : "mt-3"}`}
+              >
                 {interval === "annual" ? plan.annual : plan.monthly}
                 <span className="text-base font-medium text-(--glass-fg-muted)">
                   {interval === "annual" ? "/yr" : "/mo"}

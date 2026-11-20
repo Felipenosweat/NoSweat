@@ -1,4 +1,5 @@
 import { isAdmin } from "./admin";
+import { activePlan, billingEnforced } from "./billing";
 import { refundCredits, spendCredits, usesLeft } from "./credits";
 import { errorResponse } from "./http";
 import { requestIpHash } from "./ip";
@@ -193,6 +194,15 @@ export async function reserveUse(
     if (await isAdmin(actor.user.id)) {
       await store.recordAiUsage(actor.user.id, kind);
       return null;
+    }
+    // Com os planos valendo, os créditos (inclusive os 30 de presente da conta nova) só se usam
+    // com um plano ativo: sem plano, o caminho é escolher um.
+    if (billingEnforced() && !(await activePlan(actor.user.id))) {
+      return errorResponse(
+        402,
+        "payment_required",
+        "Pick a plan to use your AI credits. Your free credits unlock with any plan.",
+      );
     }
     const limit = dailyLimit(kind);
     const before = await store.countAiUsage(actor.user.id, kind, since24h());

@@ -49,6 +49,7 @@ import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
 import { addOwnPhotos } from "./ownPhotos";
 import { PhotoStep } from "./PhotoStep";
+import { PlansPopup, type LaunchOffer } from "./PlansPopup";
 import { QuestionsStep } from "./QuestionsStep";
 import {
   ANSWERS_KEY,
@@ -295,6 +296,7 @@ export function CreateFlow({
   signedIn = false,
   autoStart = false,
   credits = null,
+  offer = null,
 }: {
   initialBrief: string;
   /** Nome do negócio digitado na landing (`?name=`); vazio = não veio. */
@@ -305,6 +307,8 @@ export function CreateFlow({
   credits?: CreateCredits | null;
   /** Veio da landing com `start=1`: monta o site na hora, sem o assistente. */
   autoStart?: boolean;
+  /** Planos e oferta de lançamento do pop-up que abre quando falta plano para criar. */
+  offer?: LaunchOffer | null;
 }) {
   const hydrated = useSyncExternalStore(
     noopSubscribe,
@@ -320,6 +324,7 @@ export function CreateFlow({
       signedIn={signedIn}
       autoStart={hydrated && autoStart}
       credits={credits}
+      offer={offer}
     />
   );
 }
@@ -331,6 +336,7 @@ function Flow({
   signedIn,
   autoStart,
   credits,
+  offer,
 }: {
   initialBrief: string;
   initialName: string;
@@ -338,6 +344,7 @@ function Flow({
   signedIn: boolean;
   autoStart: boolean;
   credits: CreateCredits | null;
+  offer: LaunchOffer | null;
 }) {
   const [initial] = useState(() => initialState(initialBrief, initialName, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
@@ -368,6 +375,8 @@ function Flow({
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<FormError | null>(null);
+  /** Pop-up de planos: abre quando o servidor responde que criar o site exige plano. */
+  const [plansOpen, setPlansOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("form");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<Generated | null>(null);
@@ -555,6 +564,7 @@ function Flow({
             : "internal_error";
         const message = apiError.success ? apiError.data.error.message : "";
         backToWizard(errorFor(code, message, signedIn));
+        if (code === "payment_required" && offer) setPlansOpen(true);
         return;
       }
 
@@ -1142,6 +1152,14 @@ function Flow({
           </form>
         )}
       </dialog>
+      {offer && (
+        <PlansPopup
+          open={plansOpen}
+          onClose={() => setPlansOpen(false)}
+          signedIn={signedIn}
+          offer={offer}
+        />
+      )}
     </div>
   );
 }

@@ -32,6 +32,7 @@ import {
   monthlyAllowance,
   TOPUP_PACKS,
 } from "@/server/credits";
+import { currentOffer, promoActive, promoPercentOff } from "@/server/billing/plans";
 import { nextPlanId, upgradeGains } from "@/server/billing/upgrade";
 import { getOwnedSite } from "@/server/sites";
 import { getSocialState } from "@/server/social/api";
@@ -173,6 +174,15 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     customDomain: plan.customDomain,
     publishedSitesLimit: plan.publishedSitesLimit,
     monthlyCredits: monthlyAllowance(plan.id),
+    // Preço normal riscado só onde ele vai mesmo subir (Starter); Pro e Premium não têm desconto.
+    regular:
+      promoActive() && promoPercentOff(plan) > 0
+        ? {
+            monthly: usd(plan.regularMonthlyCents),
+            annual: usd(plan.regularMonthlyCents * 10),
+            percentOff: promoPercentOff(plan),
+          }
+        : null,
   }));
 
   // Créditos da IA da conta (a vista, no "ver como"). Comprar é manual por enquanto.
@@ -289,6 +299,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
             contact={contact}
             ended={ended}
             chosen={chosenPlan}
+            offerName={promoActive() ? currentOffer() : null}
           />
         </div>
       )}
