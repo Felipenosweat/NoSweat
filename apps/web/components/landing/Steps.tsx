@@ -2,11 +2,13 @@
 
 import { Unbounded } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
+import { focusRing } from "@/components/marketing/styles";
 
 // "How it works" (#story), direto no fundo cinza: o slogan em caixa alta numa fonte larga
 // (Unbounded, só nesta seção, sem preload) e os quatro passos como cartões brancos arredondados
 // lado a lado, que rolam de lado (com o dedo ou pelas setas). Cada cartão tem um desenho de
-// linha simples, nas cores da marca, do que acontece naquele passo. Só o que o produto faz hoje.
+// linha simples, em tinta e cinza (o azul é só da ação principal), do que acontece naquele
+// passo. Só o que o produto faz hoje.
 
 const wide = Unbounded({
   subsets: ["latin"],
@@ -16,9 +18,10 @@ const wide = Unbounded({
   variable: "--font-lp-wide",
 });
 
-const BLUE = "#0066ff";
 const INK = "#071b33";
 const SOFT = "#d6dce6";
+/** Fundo do item em destaque nos desenhos (cinza da página, sem azul). */
+const TINT = "#eef1f6";
 
 // Desenhos dos passos (decorativos: o texto do cartão já diz tudo).
 function AnswerArt() {
@@ -32,8 +35,8 @@ function AnswerArt() {
             width="180"
             height="24"
             rx="12"
-            fill={i === 1 ? "#eef4ff" : "#fff"}
-            stroke={i === 1 ? BLUE : SOFT}
+            fill={i === 1 ? TINT : "#fff"}
+            stroke={i === 1 ? INK : SOFT}
             strokeDasharray={i === 1 ? undefined : "3 3"}
           />
           <rect
@@ -50,8 +53,8 @@ function AnswerArt() {
             width="24"
             height="12"
             rx="6"
-            fill={i === 1 ? BLUE : "#fff"}
-            stroke={i === 1 ? BLUE : INK}
+            fill={i === 1 ? INK : "#fff"}
+            stroke={INK}
           />
           <circle cx={i === 1 ? 182 : 170} cy={y + 12} r="3.5" fill={i === 1 ? "#fff" : INK} />
         </g>
@@ -70,10 +73,10 @@ function DraftArt() {
       ))}
       <rect x="44" y="38" width="92" height="8" rx="4" fill={INK} />
       <rect x="44" y="52" width="62" height="5" rx="2.5" fill={SOFT} />
-      <rect x="44" y="64" width="40" height="12" rx="6" fill={BLUE} />
-      <rect x="44" y="86" width="40" height="18" rx="5" fill="#eef1f6" />
-      <rect x="90" y="86" width="40" height="18" rx="5" fill="#eef1f6" />
-      <rect x="136" y="86" width="40" height="18" rx="5" fill="#eef4ff" stroke={BLUE} />
+      <rect x="44" y="64" width="40" height="12" rx="6" fill={INK} />
+      <rect x="44" y="86" width="40" height="18" rx="5" fill={TINT} />
+      <rect x="90" y="86" width="40" height="18" rx="5" fill={TINT} />
+      <rect x="136" y="86" width="40" height="18" rx="5" fill={TINT} stroke={INK} />
     </svg>
   );
 }
@@ -83,9 +86,9 @@ function EditArt() {
     <svg viewBox="0 0 220 120" className="h-auto w-full max-w-[220px]" aria-hidden="true">
       <rect x="24" y="22" width="150" height="10" rx="5" fill={SOFT} />
       <rect x="24" y="44" width="40" height="10" rx="5" fill={SOFT} />
-      <rect x="68" y="40" width="96" height="18" rx="4" fill="#e3edff" />
-      <rect x="72" y="44" width="88" height="10" rx="5" fill={BLUE} />
-      <line x1="164" y1="36" x2="164" y2="62" stroke={BLUE} strokeWidth="2" />
+      <rect x="68" y="40" width="96" height="18" rx="4" fill={TINT} />
+      <rect x="72" y="44" width="88" height="10" rx="5" fill={INK} />
+      <line x1="164" y1="36" x2="164" y2="62" stroke={INK} strokeWidth="2" />
       <rect x="24" y="68" width="120" height="10" rx="5" fill={SOFT} />
       <path
         d="M150 70 L150 100 L158 92 L164 106 L170 103 L164 90 L175 90 Z"
@@ -104,10 +107,10 @@ function LiveArt() {
       <circle cx="56" cy="60" r="34" fill="#fff" stroke={SOFT} />
       <ellipse cx="56" cy="60" rx="14" ry="34" fill="none" stroke={SOFT} />
       <line x1="22" y1="60" x2="90" y2="60" stroke={SOFT} />
-      <circle cx="56" cy="60" r="6" fill={BLUE} />
+      <circle cx="56" cy="60" r="6" fill={INK} />
       <path d="M62 60 H112" stroke={INK} strokeDasharray="2 4" strokeLinecap="round" />
-      <rect x="112" y="46" width="94" height="28" rx="14" fill="#eef4ff" stroke={BLUE} />
-      <circle cx="128" cy="60" r="4" fill={BLUE} />
+      <rect x="112" y="46" width="94" height="28" rx="14" fill={TINT} stroke={INK} />
+      <circle cx="128" cy="60" r="4" fill={INK} />
       <rect x="140" y="57" width="54" height="6" rx="3" fill={INK} />
     </svg>
   );
@@ -135,9 +138,6 @@ const STEPS = [
     Art: LiveArt,
   },
 ];
-
-const focus =
-  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
 
 export function Steps() {
   const track = useRef<HTMLOListElement>(null);
@@ -181,7 +181,7 @@ export function Steps() {
         >
           Start with a few answers.
           <br />
-          <span className="text-[#0066ff]">Build with clarity.</span>
+          <span>Build with clarity.</span>
         </h2>
         <div className="hidden shrink-0 gap-2 sm:flex">
           <button
@@ -189,7 +189,7 @@ export function Steps() {
             onClick={() => move(-1)}
             disabled={edge.start}
             aria-label="Previous step"
-            className={`lp-round w-10 ${focus}`}
+            className={`lp-round w-10 ${focusRing}`}
           >
             <span aria-hidden="true">←</span>
           </button>
@@ -198,7 +198,7 @@ export function Steps() {
             onClick={() => move(1)}
             disabled={edge.end}
             aria-label="Next step"
-            className={`lp-round lp-round-blue ${focus}`}
+            className={`lp-round lp-round-wide ${focusRing}`}
           >
             <span aria-hidden="true">⟶</span>
           </button>
@@ -215,7 +215,7 @@ export function Steps() {
             key={title}
             className="flex w-[min(82vw,360px)] shrink-0 flex-col items-center rounded-[28px] bg-white px-7 pt-9 pb-8 text-center"
           >
-            <span className="text-[12px] font-semibold tracking-[0.14em] text-[#0066ff] tabular-nums">
+            <span className="text-[12px] font-semibold tracking-[0.14em] text-[#6e6e73] tabular-nums">
               STEP {index + 1}
             </span>
             <h3 className="mt-3 text-[21px] leading-tight font-semibold tracking-[-0.02em] text-[#071b33]">

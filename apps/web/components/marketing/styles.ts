@@ -1,14 +1,27 @@
 // Classes compartilhadas da landing (Design Brief V3: tipografia, botões, container).
 // Uma só fonte para o CTA "Build my website" ficar idêntico no header, hero, preço e CTA final.
 
-export const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+// Cor (seção 9.5 do estudo de design, P5 "Mono + Blue"): o azul da marca (`brand`) é só da ação
+// principal. Foco, links, rótulos e enfeites ficam em tinta e cinza.
 
-export const primaryButton = `inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-brand px-6 font-semibold text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px ${focusRing}`;
+/** Foco do teclado: anel duplo (branco por dentro, tinta por fora), visível em qualquer fundo claro. */
+export const focusRing =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:shadow-[0_0_0_2px_#fff]";
+
+/** Foco sobre fundo escuro (bolha ink): o anel vira branco. */
+export const focusRingOnDark =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+
+/** Única cor da ação principal (fundo azul, texto branco 5,97:1). A landing usa a mesma cor na
+ * forma de pílula (.lp-pill-blue em landing.css lê --color-brand). */
+export const primaryTone = "bg-brand text-white hover:bg-brand-dark";
+
+export const primaryButton = `inline-flex h-12 items-center justify-center gap-2 rounded-lg ${primaryTone} px-6 font-semibold transition-colors duration-150 active:translate-y-px ${focusRing}`;
 
 export const secondaryButton = `inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 font-semibold text-ink transition-colors duration-150 hover:border-slate-400 hover:bg-slate-50 active:translate-y-px ${focusRing}`;
 
-export const textLink = `rounded-sm font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`;
+/** Link no meio do texto: tinta com sublinhado (azul sobre o cinza dava 4,27:1). */
+export const textLink = `rounded-sm font-semibold text-ink underline decoration-ink/35 underline-offset-4 transition-colors duration-150 hover:decoration-ink ${focusRing}`;
 
 /** Container do brief: 1200px com as margens laterais de 20/32px. */
 export const container = "mx-auto w-full max-w-[1200px] px-5 sm:px-8";

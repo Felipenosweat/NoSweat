@@ -42,7 +42,7 @@ export function SocialLinks({
             className={`grid size-12 place-items-center rounded-full border transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
               dark
                 ? "border-white/20 text-white hover:border-white hover:bg-white hover:text-ink focus-visible:outline-white"
-                : "border-slate-300 text-ink hover:border-ink hover:bg-ink hover:text-white focus-visible:outline-brand"
+                : "border-slate-300 text-ink hover:border-ink hover:bg-ink hover:text-white focus-visible:shadow-[0_0_0_2px_#fff] focus-visible:outline-ink"
             }`}
           >
             <svg

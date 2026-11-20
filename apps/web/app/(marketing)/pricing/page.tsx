@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, product } from "@/lib/structured-data";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { TightPunctuation } from "@/components/marketing/TightPunctuation";
-import { container, primaryButton, textLink } from "@/components/marketing/styles";
+import { container, focusRing, primaryButton, textLink } from "@/components/marketing/styles";
 import { checkoutReady } from "@/server/billing";
 import { currentOffer, promoActive } from "@/server/billing/plans";
 
@@ -48,7 +48,7 @@ export default function PricingPage() {
         <div className={`${container} pt-14 pb-20 lg:pt-24 lg:pb-28`}>
           <div className="grid gap-y-6 lg:grid-cols-12 lg:gap-x-8">
             <div className="lg:col-span-7">
-              <p className="font-display text-sm font-semibold text-brand">Pricing</p>
+              <p className="font-display text-sm font-semibold text-slate-600">Pricing</p>
               <h1
                 id="pricing-title"
                 className="mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold tracking-[-0.03em] text-balance text-ink lg:text-6xl lg:leading-[1.02]"
@@ -101,7 +101,9 @@ export default function PricingPage() {
           <div className="divide-y divide-slate-200 border-y border-slate-200 lg:col-span-8">
             {PRICING_FAQS.map((faq) => (
               <details key={faq.question} className="group">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink transition-colors hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+                <summary
+                  className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 py-5 font-display text-lg font-semibold tracking-[-0.01em] text-ink transition-colors hover:text-slate-600 ${focusRing} [&::-webkit-details-marker]:hidden`}
+                >
                   {faq.question}
                   <PlusIcon className="size-5 shrink-0 text-slate-500 motion-safe:transition-transform group-open:rotate-45" />
                 </summary>

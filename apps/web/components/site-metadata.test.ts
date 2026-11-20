@@ -25,16 +25,36 @@ function record(spec: SiteSpec): SiteRecord {
 describe("siteJsonLd", () => {
   it("só usa dados presentes no SiteSpec", () => {
     const data = JSON.parse(siteJsonLd(record(joesPlumbing), URL));
-    expect(data).toEqual({
+    const { hasOfferCatalog, ...rest } = data;
+    const hero = joesPlumbing.sections.find((s) => s.type === "hero");
+    const version = joesPlumbing.theme.primary.slice(1).toLowerCase();
+    expect(rest).toEqual({
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": "Plumber",
       name: "Joe's Plumbing",
+      description: hero?.type === "hero" ? hero.subtitle : undefined,
       url: URL,
       telephone: "(512) 555-0142",
       email: "service@joesplumbing.example.com",
-      address: { "@type": "PostalAddress", addressLocality: "Austin", addressRegion: "TX" },
-      areaServed: "Austin, Round Rock, Cedar Park and nearby",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Austin",
+        addressRegion: "TX",
+        addressCountry: "US",
+      },
+      areaServed: ["Austin", "Round Rock", "Cedar Park"],
+      image:
+        hero?.type === "hero" && hero.image
+          ? new globalThis.URL(hero.image.url, "https://www.nosweatfd.com").href
+          : undefined,
+      logo: `https://www.nosweatfd.com/api/sites/site_1/icon?v=${version}&size=180`,
+      // Só o "from $149" do dono; o horário ("Emergencies 24/7") não dá para ler: fica de fora.
+      priceRange: "$149+",
     });
+    expect(hasOfferCatalog.itemListElement).toHaveLength(6);
+    // Regra 8: depoimentos nunca viram nota nem avaliação.
+    expect(data.aggregateRating).toBeUndefined();
+    expect(data.review).toBeUndefined();
   });
 
   it("omite endereço e área atendida quando não existem; inclui serviceArea quando existe", () => {
@@ -63,6 +83,7 @@ describe("siteJsonLd", () => {
       streetAddress: "2196 Logan Ave",
       addressLocality: "San Diego",
       addressRegion: "CA",
+      addressCountry: "US",
     });
   });
 

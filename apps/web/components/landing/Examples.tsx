@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { focusRing } from "@/components/marketing/styles";
 import { FREEFORM_EXAMPLES } from "@/lib/freeform-examples";
 
 // Exemplos (#looks): uma lista numerada só de texto, cada linha abre o site de exemplo de verdade
@@ -65,7 +66,7 @@ export function Examples() {
               <li key={site.slug} className="border-t border-[var(--lp-line)]">
                 <Link
                   href={`/examples/${site.slug}`}
-                  className="lp-row group flex min-h-16 items-baseline gap-4 rounded-sm py-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0066ff] sm:gap-8"
+                  className={`lp-row group flex min-h-16 items-baseline gap-4 rounded-sm py-5 sm:gap-8 ${focusRing}`}
                 >
                   <span className="w-7 shrink-0 text-[13px] font-semibold tracking-[0.14em] text-[#071b33]/45">
                     {String(index + 1).padStart(2, "0")}
@@ -78,7 +79,7 @@ export function Examples() {
                   </span>
                   <span
                     aria-hidden="true"
-                    className="shrink-0 text-xl text-[#0066ff] transition-transform duration-300 group-hover:translate-x-1"
+                    className="shrink-0 text-xl text-[#071b33] transition-transform duration-300 group-hover:translate-x-1"
                   >
                     →
                   </span>

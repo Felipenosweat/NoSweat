@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { MarketingMenu } from "./MobileCtaBar";
 import { SocialLinks } from "./SocialLinks";
-import { container, focusRing } from "./styles";
+import { container, focusRing, primaryTone } from "./styles";
 
 // Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
 // "dark" (o header da landing, sobre o ink do hero e do tour). Mesmos links nos dois.
@@ -135,7 +135,7 @@ export function MarketingHeader({
                 ? "rounded-full bg-white text-ink hover:bg-slate-200"
                 : dark
                   ? "bg-white text-ink hover:bg-slate-200"
-                  : "bg-brand text-white hover:bg-brand-dark"
+                  : primaryTone
             }`}
           >
             <span className="sm:hidden">Start free</span>
