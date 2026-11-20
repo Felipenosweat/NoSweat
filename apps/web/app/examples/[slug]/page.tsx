@@ -3,27 +3,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exampleMetadata, exampleParams, exampleSpec } from "./example-spec";
+import { FREEFORM_EXAMPLES, freeformExample, freeformExampleFile } from "@/lib/freeform-examples";
 
 // Site de exemplo (fixture) para a landing page: nosweatfd.com/examples/<slug>.
 // Totalmente estático. Sem a faixa de aviso (molduras de navegador/celular da landing):
-// /examples/<slug>/embed.
+// /examples/<slug>/embed. Os exemplos "código livre" (lib/freeform-examples.ts) abrem num iframe isolado.
 
 type ExamplePageProps = { params: Promise<{ slug: string }> };
 
 export const dynamicParams = false;
 
 export function generateStaticParams(): { slug: string }[] {
-  return exampleParams();
+  return [...exampleParams(), ...FREEFORM_EXAMPLES.map(({ slug }) => ({ slug }))];
 }
 
 export async function generateMetadata({ params }: ExamplePageProps): Promise<Metadata> {
-  return exampleMetadata((await params).slug);
+  const { slug } = await params;
+  const freeform = freeformExample(slug);
+  if (freeform) return { title: `Example: ${freeform.name}`, robots: { index: false } };
+  return exampleMetadata(slug);
 }
 
 export default async function ExamplePage({ params }: ExamplePageProps) {
   const { slug } = await params;
-  const spec = exampleSpec(slug);
-  if (!spec) notFound();
+  const freeform = freeformExample(slug);
+  const spec = freeform ? null : exampleSpec(slug);
+  if (!freeform && !spec) notFound();
 
   return (
     <>
@@ -46,8 +51,20 @@ export default async function ExamplePage({ params }: ExamplePageProps) {
           </Link>
         </p>
       </aside>
-      {/* Sem contactEndpoint: o formulário de exemplo fica desligado. */}
-      <SiteRenderer spec={spec} />
+      {freeform ? (
+        // Origem opaca: sem allow-same-origin (o código não toca na nosweatfd.com) e sem
+        // allow-forms (o formulário de exemplo não envia). tel:/mailto: ainda abrem o app.
+        <iframe
+          src={freeformExampleFile(freeform.slug)}
+          title={`${freeform.name}, fictional example site`}
+          sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-top-navigation-to-custom-protocols"
+          referrerPolicy="no-referrer"
+          className="fixed inset-0 h-dvh w-full border-0"
+        />
+      ) : (
+        // Sem contactEndpoint: o formulário de exemplo fica desligado.
+        spec && <SiteRenderer spec={spec} />
+      )}
     </>
   );
 }

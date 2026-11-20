@@ -13,7 +13,7 @@ import { focusRing, focusRingOnDark } from "@/components/marketing/styles";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
-import { promoActive } from "@/server/billing/plans";
+import { currentOffer, promoActive } from "@/server/billing/plans";
 
 // Landing V13: fundo cinza-claro e cada bloco numa "bolha" branca arredondada, intercalando com
 // cartões direto no cinza (passos, preços). Topo com perguntas uma de cada vez → o que você ganha
@@ -29,7 +29,7 @@ const DESCRIPTION =
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const viewport: Viewport = { themeColor: "#ffffff" };
 
-// A oferta de lançamento acaba sozinha: a página se refaz de hora em hora e confere a data.
+// O nome da oferta (Black Friday, Cyber Week...) muda pela data: a página se refaz de hora em hora.
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
@@ -81,7 +81,7 @@ export default function LandingPage() {
           you’re ready to build your website.
         </p>
         <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} promo={promoActive()} />
+          <PricingPlans checkout={checkoutReady()} promo={promoActive()} offerName={currentOffer()} />
         </div>
       </section>
 

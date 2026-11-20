@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PLANS as BILLING_PLANS, PROMO, promoPercentOff } from "@/server/billing/plans";
+import { PLANS as BILLING_PLANS, promoPercentOff } from "@/server/billing/plans";
 import { CheckIcon } from "./icons";
 import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
 
@@ -100,7 +100,16 @@ function regularOf(id: string) {
 
 const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
-export function PricingPlans({ checkout, promo = false }: { checkout: boolean; promo?: boolean }) {
+export function PricingPlans({
+  checkout,
+  promo = false,
+  offerName = "Launch price",
+}: {
+  checkout: boolean;
+  promo?: boolean;
+  /** Nome da oferta do momento (Black Friday, Cyber Week...), de `currentOffer()`. */
+  offerName?: string;
+}) {
   // Anual por padrão: 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
@@ -135,9 +144,8 @@ export function PricingPlans({ checkout, promo = false }: { checkout: boolean; p
 
       {promo && (
         <p className="mt-6 max-w-[70ch] text-base leading-snug text-pretty text-ink">
-          <strong className="font-semibold">Launch prices until {PROMO.lastDayLabel}.</strong> Up to{" "}
-          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off. The more you take,
-          the more you save.
+          <strong className="font-semibold">{offerName}.</strong> Launch pricing: Starter is{" "}
+          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off its regular price.
         </p>
       )}
 
@@ -165,7 +173,7 @@ export function PricingPlans({ checkout, promo = false }: { checkout: boolean; p
             </div>
             <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
 
-            {promo && (
+            {promo && regularOf(plan.id).percentOff > 0 && (
               <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
                 <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[13px] font-semibold text-emerald-800 tabular-nums">
                   Save {regularOf(plan.id).percentOff}%
@@ -180,7 +188,7 @@ export function PricingPlans({ checkout, promo = false }: { checkout: boolean; p
               </p>
             )}
             <p
-              className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${promo ? "mt-2" : "mt-6"}`}
+              className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${promo && regularOf(plan.id).percentOff > 0 ? "mt-2" : "mt-6"}`}
             >
               <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
                 {annual ? plan.annual : plan.monthly}

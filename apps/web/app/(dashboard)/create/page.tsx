@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { contactHref, type SalesContact } from "@/lib/sales-contact";
 import { aiEnabled } from "@/server/ai";
 import { getCurrentUser } from "@/server/auth/session";
-import { creditCost, getBalance } from "@/server/credits";
+import { checkoutReady } from "@/server/billing";
+import { currentOffer, PLANS, promoActive, promoPercentOff } from "@/server/billing/plans";
+import { creditCost, getBalance, monthlyAllowance } from "@/server/credits";
 import { CreateFlow, type CreateCredits } from "./CreateFlow";
+import type { LaunchOffer } from "./PlansPopup";
 
 export const metadata: Metadata = { title: "Create your website" };
 
@@ -26,6 +30,36 @@ async function createCredits(userId: string): Promise<CreateCredits | null> {
   }
 }
 
+const dollars = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
+
+/** Planos do pop-up "pick a plan" e, enquanto vale, a oferta de lançamento (nome e preço normal). */
+function launchOffer(contact: SalesContact | null): LaunchOffer {
+  const promo = promoActive();
+  return {
+    name: promo ? currentOffer() : null,
+    checkout: checkoutReady(),
+    plans: Object.values(PLANS).map((plan) => ({
+      id: plan.id,
+      name: plan.name,
+      price: dollars(plan.monthlyCents),
+      regular: promo ? dollars(plan.regularMonthlyCents) : null,
+      percentOff: promo ? promoPercentOff(plan) : null,
+      features: [
+        plan.publishedSitesLimit === 1
+          ? "1 live website"
+          : `${plan.publishedSitesLimit} live websites`,
+        `${monthlyAllowance(plan.id).toLocaleString("en-US")} AI credits a month`,
+        `${plan.socialPostsPerMonth} Instagram posts a month`,
+        "Bookings, clients and your own domain",
+      ],
+      recommended: plan.id === "premium",
+      contactHref: contact
+        ? contactHref(contact, `Hi! I'd like the ${plan.name} plan (monthly) for my website.`)
+        : null,
+    })),
+  };
+}
+
 // A landing manda o visitante para /create?brief=…&start=1 (o mesmo texto também fica no
 // sessionStorage `ns-brief`, lido no cliente quando não há parâmetro). Com `start=1` o site
 // começa a ser montado na hora, com layout e cores escolhidos pela No Sweat (um clique só).
@@ -41,6 +75,16 @@ export default async function CreatePage({ searchParams }: CreatePageProps) {
       signedIn={Boolean(user)}
       autoStart={autoStart}
       credits={user ? await createCredits(user.id) : null}
+      offer={launchOffer(
+        user
+          ? {
+              whatsapp: process.env.SALES_WHATSAPP?.replace(/\D/g, "") || null,
+              email: process.env.SALES_EMAIL || "hello@nosweatfd.com",
+              accountEmail: user.email,
+              accountId: user.id,
+            }
+          : null,
+      )}
     />
   );
 }

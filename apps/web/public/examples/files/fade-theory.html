@@ -1,0 +1,437 @@
+<!doctype html>
+<!-- ns:direction
+Concept: a fade is a gradient cut in hard steps, so the page is built from one stepped scale from black to light grey (the "ruler") that wipes in on load like clipper passes and closes the page in the footer. Layout: a strict 12-column Swiss grid that is broken on purpose, with a hero where the headline fills 8 columns beside a bleeding portrait and a flat blue band, a black statement poster, a pinned photo stack that advances with the service list, a pinned horizontal headline, and a blue spec panel overlapping a tall photo. Type: Inter Tight 800 at 11-20vw, tracked tight, with IBM Plex Mono for 12px labels. Palette: light grey ground, black ink, one electric blue (#1b3dff) as large flat fields. Photos stay full color in hard rectangles and each gets a different treatment (stepped wipe, pinned swap, half-blue panorama, parallax bleed). Signature motion: hero lines rise out of masks while the photo and the ruler wipe in with steps(10), then the pinned headline travels sideways on scroll. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fade Theory | Barber Studio in East Austin</title>
+<meta name="description" content="Fade Theory is a modern barber studio in East Austin run by Dani Okafor. Skin fades, tapers, textured crops, beard sculpting, hair designs. Appointments only.">
+<meta name="theme-color" content="#1b3dff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%231b3dff'/%3E%3Cpath d='M18 14h30v9H28v7h16v9H28v11h-10z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#f0f0ee;--ink:#0a0a0a;--blue:#1b3dff;--line:rgba(10,10,10,.22);--pad:clamp(16px,3vw,48px);--gap:clamp(12px,1.6vw,24px);
+--sans:'Inter Tight','Helvetica Neue',Arial,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;--ease:cubic-bezier(.2,.7,.2,1)}
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{background:var(--ground);color:var(--ink);font:400 17px/1.5 var(--sans);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+main,footer{overflow-x:clip}
+::selection{background:var(--blue);color:#fff}
+.on-blue ::selection,.statement ::selection{background:#fff;color:var(--blue)}
+img{display:block;width:100%;height:100%;object-fit:cover}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-weight:800;letter-spacing:-.045em;line-height:.9;text-wrap:balance}
+p{text-wrap:pretty}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.on-blue :focus-visible,.on-blue:focus-visible{outline-color:#fff}
+.skip{position:absolute;left:8px;top:-60px;z-index:100;background:var(--ink);color:#fff;padding:12px 16px;font-weight:600}
+.skip:focus{top:8px}
+.label{font:500 12px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.mk{padding:.06em 0 .26em;margin:-.06em 0 -.26em}
+
+/* header */
+.site-header{display:flex;justify-content:space-between;align-items:center;gap:16px;height:54px;padding:0 var(--pad);position:relative;z-index:5}
+.wordmark{font-weight:800;font-size:18px;letter-spacing:-.04em}
+.site-header ul{display:flex;gap:clamp(14px,2vw,28px);list-style:none;padding:0}
+.site-header ul a,.tel,.contact a,.foot a{background:linear-gradient(currentColor,currentColor) left 100%/0 2px no-repeat;transition:background-size .35s var(--ease);padding-bottom:2px}
+.site-header ul a{font-size:14px;font-weight:500}
+.site-header ul a:hover,.tel:hover,.contact a:hover,.foot a:hover{background-size:100% 2px}
+
+/* ruler: the fade, in steps */
+.ruler{height:14px;background:linear-gradient(90deg,#0a0a0a 0 10%,#232323 10% 20%,#3d3d3d 20% 30%,#585858 30% 40%,#747474 40% 50%,#909090 50% 60%,#ababab 60% 70%,#c2c2c2 70% 80%,#d6d6d6 80% 90%,#e6e6e4 90% 100%)}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 30px;background:var(--blue);color:#fff;font:600 16px var(--sans);border:0;cursor:pointer;overflow:hidden;isolation:isolate;border-radius:0}
+.btn::before{content:'';position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);z-index:-1}
+.btn:hover::before{transform:scaleX(1)}
+.btn-w{background:#fff;color:var(--ink)}
+.btn-w:hover{color:#fff}
+
+/* hero, mobile first */
+.hero{display:grid;grid-template-columns:1fr;grid-template-rows:auto minmax(260px,1fr) auto auto;grid-template-areas:"h" "p" "b" "r";min-height:calc(100svh - 110px - env(safe-area-inset-bottom))}
+.hero-h{grid-area:h;padding:10px var(--pad) 14px}
+.hero h1{font-size:27vw;line-height:.86;margin-left:-.04em}
+.hero-photo{grid-area:p;position:relative;overflow:hidden;min-height:0}
+.hero-photo img{position:absolute;inset:0;object-position:50% 20%}
+.hero-band{grid-area:b;background:var(--blue);color:#fff;padding:16px var(--pad) 18px}
+.hero-band .label{margin-bottom:8px}
+.lede{font-size:19px;line-height:1.3;font-weight:500;max-width:30ch}
+.actions{display:none;align-items:center;gap:26px;flex-wrap:wrap}
+.tel{font-weight:600;font-size:18px}
+.hero .ruler{grid-area:r;height:10px}
+
+/* statement */
+.statement{background:var(--ink);color:#fff;padding:clamp(72px,12vw,180px) var(--pad)}
+.statement .label{display:block;margin-bottom:30px}
+.statement .big{font-size:clamp(2rem,6.6vw,7.4rem);font-weight:800;line-height:.98;letter-spacing:-.045em;max-width:15em}
+
+/* services */
+.services{padding:clamp(72px,10vw,150px) var(--pad) clamp(40px,6vw,90px)}
+.services h2{font-size:clamp(3rem,11vw,13rem);line-height:.86;margin:18px 0 clamp(36px,6vw,90px)}
+.svc-photo{margin:0 calc(var(--pad)*-1) 24px}
+.svc-photo .frame{position:relative;aspect-ratio:4/3;overflow:hidden}
+.svc-photo img{position:absolute;inset:0}
+.svc-photo img:nth-child(1){object-position:82% 50%;z-index:3}
+.svc-photo img:nth-child(2){object-position:50% 40%;z-index:2;display:none}
+.svc-photo img:nth-child(3){object-position:55% 50%;z-index:1;display:none}
+.svc-list{list-style:none;padding:0}
+.svc-list li{position:relative;padding:22px 0 26px;border-top:1px solid var(--line);isolation:isolate;transition:color .3s}
+.svc-list li:last-child{border-bottom:1px solid var(--line)}
+.svc-list h3{font-size:12.4vw;line-height:.95;margin-bottom:10px}
+.svc-list p{max-width:36ch;font-size:16px}
+
+/* panorama: half on a blue field */
+.pano{margin:0;padding-top:clamp(24px,5vw,72px);background:linear-gradient(var(--blue),var(--blue)) 0 0/100% 64% no-repeat}
+.pano .frame{position:relative;margin-left:16.66%;height:min(70svh,480px);overflow:hidden}
+.px img{position:absolute;left:0;top:-10%;height:120%;width:100%}
+.pano img{object-position:50% 55%}
+
+/* pinned headline */
+.drift-wrap{padding:clamp(56px,8vw,120px) var(--pad);overflow-x:clip}
+.drift{font-size:14vw;line-height:.88;letter-spacing:-.05em;font-weight:800;text-wrap:balance}
+
+/* studio */
+.studio{padding:clamp(56px,8vw,120px) var(--pad) clamp(72px,10vw,150px);display:grid;gap:32px}
+.studio h2{font-size:clamp(2.6rem,10.6vw,8.4rem);margin:16px 0 24px}
+.studio p.body{font-size:18px;max-width:34ch}
+.st-a{margin:0 calc(var(--pad)*-1)}
+.st-a .frame{position:relative;aspect-ratio:3/4;overflow:hidden}
+.st-a img{object-position:50% 40%}
+.spec{background:var(--blue);color:#fff;margin:0 calc(var(--pad)*-1);padding:14px var(--pad) 18px;position:relative;z-index:2}
+.spec div{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:16px 0;border-top:1px solid rgba(255,255,255,.4)}
+.spec div:first-child{border-top:0}
+.spec dt{font:500 12px/2 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.spec dd{font-size:22px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+
+/* booking */
+.book{background:var(--blue);color:#fff;padding:clamp(64px,10vw,150px) var(--pad) clamp(64px,8vw,120px)}
+.book h2{font-size:19vw;line-height:.82;margin:20px 0 clamp(36px,6vw,80px);margin-left:-.04em}
+.book-grid{display:grid;gap:44px}
+.book .intro{font-size:20px;line-height:1.35;max-width:26ch;margin-bottom:24px}
+.book .note-link{display:block;margin-top:10px;font:500 12px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.contact{display:grid;margin-top:34px;padding:0}
+.contact div{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:14px 0;border-top:1px solid rgba(255,255,255,.4);font-size:16px}
+.contact dt{font:500 12px/1.8 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.contact dd{margin:0}
+form{display:grid;gap:26px}
+.field label{display:block;font:500 12px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.field input,.field textarea{width:100%;background:transparent;border:0;border-bottom:2px solid #fff;color:#fff;font:500 22px/1.3 var(--sans);padding:10px 0 12px;border-radius:0;resize:vertical}
+.field input:focus,.field textarea:focus{background:rgba(255,255,255,.14);outline:3px solid #fff;outline-offset:3px}
+.hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.note{font-size:14px;max-width:44ch}
+form .btn{width:100%}
+
+/* footer */
+.foot{padding:clamp(48px,7vw,100px) var(--pad) 28px}
+.foot-grid{display:grid;gap:22px;font-size:15px;margin-bottom:clamp(36px,6vw,80px)}
+.foot-grid strong{font-weight:800;font-size:18px;letter-spacing:-.03em}
+.foot .ruler{margin:0 calc(var(--pad)*-1)}
+.wm{font-size:17vw;font-weight:800;letter-spacing:-.06em;line-height:.8;white-space:nowrap;margin:clamp(24px,4vw,56px) 0 -.1em -.05em;padding-bottom:.26em;overflow:hidden}
+.wm-in{display:block}
+.fine{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;font-size:13px;border-top:1px solid var(--line);padding-top:16px;margin-top:10px}
+
+/* sticky bar */
+.bar{display:none}
+@media (max-width:719px){
+ body{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+ .bar{display:grid;grid-template-columns:1.5fr 1fr;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--ink);padding-bottom:env(safe-area-inset-bottom)}
+ .bar a{min-height:56px;display:flex;align-items:center;justify-content:center;font:600 16px var(--sans);color:#fff}
+ .bar a:first-child{background:var(--blue)}
+ .bar a:last-child{border-left:1px solid rgba(255,255,255,.3)}
+ .bar a:focus-visible{outline-color:#fff;outline-offset:-4px}
+}
+@media (min-width:720px){
+ .actions{display:flex}
+ .studio h2{font-size:clamp(2.6rem,8vw,8.4rem)}
+}
+@media (min-width:900px){
+ .site-header{position:absolute;top:0;left:0;width:66.66%;height:auto;padding-top:24px}
+ .hero{grid-template-columns:8fr 4fr;grid-template-rows:1fr auto auto;grid-template-areas:"h p" "b p" "r r";min-height:100svh}
+ .hero-h{align-self:end;padding:130px var(--pad) 2.2vw}
+ .hero h1{font-size:min(18vw,36svh)}
+ .hero-photo img{object-position:38% 20%}
+ .hero-band{display:grid;grid-template-columns:1fr auto;gap:20px 32px;align-items:end;padding:26px var(--pad)}
+ .lede{font-size:22px}
+ .hero .ruler{height:2.4vw}
+ .statement .st-in{padding-left:calc(100%/12)}
+ .services h2{font-size:clamp(3rem,11vw,13rem)}
+ .svc{display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--gap)}
+ .svc-photo{grid-column:1/6;margin:0 0 0 calc(var(--pad)*-1);position:sticky;top:0;height:100svh;align-self:start}
+ .svc-photo .frame{height:100%;aspect-ratio:auto}
+ .svc-photo img:nth-child(n+2){display:block}
+ .svc-list{grid-column:6/13;margin-right:calc(var(--pad)*-1)}
+ .svc-list li{padding:30px var(--pad) 34px 20px}
+ .svc-list li::before{content:'';position:absolute;inset:-1px 0 0 0;background:var(--blue);transform:scaleY(0);transform-origin:bottom;transition:transform .4s var(--ease);z-index:-1}
+ .svc-list li:hover::before{transform:scaleY(1)}
+ .svc-list li:hover{color:#fff}
+ .svc-list h3{font-size:clamp(2.6rem,6.4vw,7rem)}
+ .pano .frame{height:min(90svh,820px)}
+ .drift-wrap{min-height:100svh;display:flex;align-items:center}
+ .drift{font-size:clamp(3rem,16vw,19rem)}
+ .studio{grid-template-columns:repeat(12,1fr);gap:0 var(--gap);align-items:start}
+ .st-a{grid-column:1/6;grid-row:1/3;margin:0 0 0 calc(var(--pad)*-1)}
+ .st-a .frame{aspect-ratio:2/3}
+ .st-copy{grid-column:7/13;grid-row:1;padding-top:5vw}
+ .studio h2{font-size:clamp(2.6rem,6vw,7rem)}
+ .spec{grid-column:6/13;grid-row:2;align-self:end;margin:0 calc(var(--pad)*-1) -3vw -4vw;padding:20px var(--pad) 26px calc(4vw + 28px)}
+ .spec div{grid-template-columns:130px 1fr;padding:20px 0}
+ .spec dd{font-size:clamp(1.4rem,2.3vw,2.4rem)}
+ .book h2{font-size:20.5vw}
+ .book-grid{grid-template-columns:repeat(12,1fr);gap:0 var(--gap)}
+ .book-l{grid-column:1/6;position:sticky;top:8vh;align-self:start}
+ .book-form{grid-column:7/13}
+ .foot-grid{grid-template-columns:repeat(12,1fr);gap:0 var(--gap)}
+ .foot-grid>*:nth-child(1){grid-column:1/5}
+ .foot-grid>*:nth-child(2){grid-column:5/8}
+ .foot-grid>*:nth-child(3){grid-column:8/13}
+ .wm{font-size:17.4vw}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+ <a class="wordmark" href="#top" aria-label="Fade Theory, home">Fade Theory</a>
+ <nav aria-label="Primary"><ul>
+  <li><a href="#services">Services</a></li>
+  <li><a href="#studio">Studio</a></li>
+  <li><a href="#book">Book</a></li>
+ </ul></nav>
+</header>
+
+<main id="main">
+ <section class="hero" id="top">
+  <div class="hero-h"><h1>Fade<br>Theory</h1></div>
+  <figure class="hero-photo"><img src="https://images.unsplash.com/photo-1629189784191-9afdcbcb0398?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c2tpbiUyMGZhZGUlMjBoYWlyY3V0fGVufDF8fHx8MTc5NDY5MjMyOXww&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="topless man with black beard" width="1080" height="1620" fetchpriority="high"></figure>
+  <div class="hero-band on-blue">
+   <div data-in>
+    <p class="label">Appointments only, booked online</p>
+    <p class="lede">Modern barber studio in East Austin, run by Dani Okafor.</p>
+   </div>
+   <div class="actions">
+    <a class="btn btn-w" href="#book">Book online</a>
+    <a class="tel" href="tel:+15125550191">(512) 555-0191</a>
+   </div>
+  </div>
+  <div class="ruler" aria-hidden="true"></div>
+ </section>
+
+ <section class="statement" aria-label="About Fade Theory">
+  <div class="st-in">
+   <span class="label">The studio</span>
+   <p class="big" data-words>Dani Okafor runs Fade Theory, a barber studio in East Austin that does skin fades, tapers, textured crops, beard sculpting and hair designs. Appointments only.</p>
+  </div>
+ </section>
+
+ <section class="services" id="services" aria-labelledby="sv-h">
+  <span class="label" data-reveal>Services</span>
+  <h2 id="sv-h" data-split>Skin fades to hair designs</h2>
+  <div class="svc">
+   <figure class="svc-photo"><div class="frame">
+    <img src="https://images.unsplash.com/photo-1593702275687-f8b402bf1fb5?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c2tpbiUyMGZhZGUlMjBoYWlyY3V0fGVufDF8fHx8MTc5NDY5MjMyOXww&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="man in white dress shirt cutting hair of man" width="2400" height="1600" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1635273051937-a0ddef9573b6?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8aGFpciUyMGRlc2lnbiUyMGJhcmJlcnxlbnwxfHx8fDE3OTQ2OTIzMzB8MA&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="a man getting his hair cut by a barber" width="1600" height="2400" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8YmFyYmVyJTIwY2xpcHBlcnN8ZW58MXx8fHwxNzk0NjkyMzMwfDA&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="Two hair clippers, scissors, a comb, and grooming products on a slate board" width="2400" height="1600" loading="lazy">
+   </div></figure>
+   <ul class="svc-list">
+    <li data-reveal><h3>Skin fade</h3><p>Cut down to skin at the bottom and blended up into the length on top.</p></li>
+    <li data-reveal><h3>Taper</h3><p>Shorter at the neckline and around the ears, with the length kept on top.</p></li>
+    <li data-reveal><h3>Textured crop</h3><p>A short cut with texture through the top and a clean fringe.</p></li>
+    <li data-reveal><h3>Beard sculpting</h3><p>Shape, line and blend the beard into the fade.</p></li>
+    <li data-reveal><h3>Hair designs</h3><p>Lines and shapes cut into the hair.</p></li>
+   </ul>
+  </div>
+ </section>
+
+ <figure class="pano">
+  <div class="frame px" data-unmask><img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bW9kZXJuJTIwYmFyYmVyc2hvcCUyMGludGVyaW9yfGVufDF8fHx8MTc5NDY5MjMyOXww&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="black leather barber chair near brown brick wall" width="2400" height="1594" loading="lazy"></div>
+ </figure>
+
+ <div class="drift-wrap"><p class="drift">The music is loud and the room is clean.</p></div>
+
+ <section class="studio" id="studio" aria-labelledby="studio-h">
+  <figure class="st-a"><div class="frame px" data-unmask><img src="https://images.unsplash.com/photo-1536520002442-39764a41e987?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8bW9kZXJuJTIwYmFyYmVyc2hvcCUyMGludGVyaW9yfGVufDF8fHx8MTc5NDY5MjMyOXww&amp;ixlib=rb-4.1.0&amp;w=2400&amp;q=80&amp;auto=format&amp;fit=max" alt="salon interior with lighted pendant lamps" width="1600" height="2400" loading="lazy"></div></figure>
+  <div class="st-copy">
+   <span class="label" data-reveal>East Austin</span>
+   <h2 id="studio-h" data-split>Clean and minimal, in East Austin</h2>
+   <p class="body" data-reveal>Fade Theory is a modern barber studio run by Dani Okafor. Lots of creative clients from the neighborhood come through, and every cut is booked ahead.</p>
+  </div>
+  <dl class="spec on-blue" data-reveal>
+   <div><dt>Studio</dt><dd>Fade Theory, East Austin</dd></div>
+   <div><dt>Run by</dt><dd>Dani Okafor</dd></div>
+   <div><dt>Booking</dt><dd>Appointments only, online</dd></div>
+   <div><dt>Clients</dt><dd>Creative people from the neighborhood</dd></div>
+  </dl>
+ </section>
+
+ <section class="book on-blue" id="book" aria-labelledby="book-h">
+  <span class="label" data-reveal>Appointments only</span>
+  <h2 id="book-h" data-split>Book Dani</h2>
+  <div class="book-grid">
+   <div class="book-l">
+    <p class="intro" data-reveal>Booking happens online. Use the button below, or send a message and we will get back to you.</p>
+    <a class="btn btn-w" href="#book">Book online</a>
+    <span class="note-link">fadetheory.example.com/book</span>
+    <dl class="contact">
+     <div><dt>Email</dt><dd><a href="mailto:hello@fadetheory.example">hello@fadetheory.example</a></dd></div>
+     <div><dt>Phone</dt><dd><a href="tel:+15125550191">(512) 555-0191</a></dd></div>
+     <div><dt>Studio</dt><dd>East Austin</dd></div>
+    </dl>
+   </div>
+   <div class="book-form">
+    <form data-ns-contact>
+     <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
+     <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
+     <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+     <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="message" rows="4" required data-lenis-prevent></textarea></div>
+     <div class="hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
+     <p class="note">Add a phone or an email so we can reply.</p>
+     <button class="btn btn-w" type="submit">Send message</button>
+    </form>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer class="foot">
+ <div class="foot-grid">
+  <p><strong>Fade Theory</strong><br>Barber studio, appointments only</p>
+  <p>East Austin, Texas</p>
+  <p><a href="tel:+15125550191">(512) 555-0191</a><br><a href="mailto:hello@fadetheory.example">hello@fadetheory.example</a></p>
+ </div>
+ <div class="ruler" aria-hidden="true"></div>
+ <p class="wm" aria-hidden="true"><span class="wm-in">Fade Theory</span></p>
+ <div class="fine"><span>© 2026 Fade Theory</span><span>Photos: Ahmad Ebadi, Michael DeMoya, Nathon Oski, Jason Leung, Andrea Donato and Salah Regouane on Unsplash</span></div>
+</footer>
+
+<div class="bar"><a href="#book">Book online</a><a href="tel:+15125550191" aria-label="Call Fade Theory">Call</a></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!window.gsap || !window.ScrollTrigger || reduce) return;
+  var hasSplit = !!window.SplitText;
+  gsap.registerPlugin(ScrollTrigger);
+  if (hasSplit) gsap.registerPlugin(SplitText);
+
+  /* smooth scroll, desktop pointer only */
+  if (window.Lenis && matchMedia('(min-width:900px) and (pointer:fine)').matches) {
+    var lenis = new Lenis({ lerp: 0.12 });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+    gsap.ticker.lagSmoothing(0);
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var id = a.getAttribute('href');
+        var t = id.length > 1 && document.querySelector(id);
+        if (t) { e.preventDefault(); lenis.scrollTo(t); }
+      });
+    });
+  }
+
+  /* intro: lines rise out of masks, photo and ruler wipe in ten clipper steps */
+  var tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+  var h1 = document.querySelector('.hero h1');
+  if (hasSplit) {
+    var hs = SplitText.create(h1, { type: 'lines', mask: 'lines', linesClass: 'ln', maskClass: 'mk' });
+    tl.from(hs.lines, { yPercent: 115, duration: 0.9, stagger: 0.09 }, 0);
+  } else {
+    tl.from(h1, { y: 40, opacity: 0, duration: 0.8 }, 0);
+  }
+  tl.from('.hero-photo', { clipPath: 'inset(0 0 0 100%)', duration: 0.9, ease: 'steps(10)', clearProps: 'clipPath' }, 0)
+    .from('.hero-photo img', { scale: 1.15, duration: 1.3 }, 0)
+    .from('.hero .ruler', { clipPath: 'inset(0 100% 0 0)', duration: 0.8, ease: 'steps(10)', clearProps: 'clipPath' }, 0.2)
+    .from('.hero [data-in]', { y: 22, opacity: 0, duration: 0.7 }, 0.45)
+    .from('.site-header', { y: -16, opacity: 0, duration: 0.6 }, 0.2);
+
+  /* headings: line reveals */
+  function reveal(el) {
+    if (!hasSplit) {
+      gsap.from(el, { y: 30, opacity: 0, duration: 0.8, scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+      return;
+    }
+    SplitText.create(el, {
+      type: 'lines', mask: 'lines', linesClass: 'ln', maskClass: 'mk', autoSplit: true,
+      onSplit: function (self) {
+        return gsap.from(self.lines, { yPercent: 115, duration: 0.9, ease: 'expo.out', stagger: 0.08,
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+      }
+    });
+  }
+  gsap.utils.toArray('[data-split]').forEach(reveal);
+
+  gsap.utils.toArray('[data-reveal]').forEach(function (el) {
+    gsap.from(el, { y: 36, opacity: 0, duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 92%', once: true } });
+  });
+
+  gsap.utils.toArray('[data-unmask]').forEach(function (el) {
+    var st = { trigger: el, start: 'top 88%', once: true };
+    gsap.from(el, { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'expo.out', clearProps: 'clipPath', scrollTrigger: st });
+  });
+
+  /* statement: words fill in with scroll */
+  var stmt = document.querySelector('[data-words]');
+  if (stmt && hasSplit) {
+    var sw = SplitText.create(stmt, { type: 'words' });
+    gsap.from(sw.words, { opacity: 0.28, ease: 'none', stagger: 0.08,
+      scrollTrigger: { trigger: stmt, start: 'top 82%', end: 'bottom 62%', scrub: true } });
+  }
+
+  /* footer wordmark */
+  gsap.from('.wm-in', { yPercent: 100, duration: 1, ease: 'expo.out',
+    scrollTrigger: { trigger: '.wm', start: 'top 95%', once: true } });
+
+  /* desktop only: parallax, pinned photo stack, pinned horizontal headline */
+  var mm = gsap.matchMedia();
+  mm.add('(min-width:900px) and (prefers-reduced-motion: no-preference)', function () {
+    gsap.utils.toArray('.px').forEach(function (fr) {
+      var img = fr.querySelector('img');
+      gsap.fromTo(img, { yPercent: -6 }, { yPercent: 6, ease: 'none',
+        scrollTrigger: { trigger: fr, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    /* photo stack advances with the service list */
+    var imgs = gsap.utils.toArray('.svc-photo img');
+    var lis = gsap.utils.toArray('.svc-list li');
+    var map = [0, 0, 1, 1, 2];
+    imgs.forEach(function (im, i) { if (i) gsap.set(im, { clipPath: 'inset(100% 0 0 0)' }); });
+    function show(k) {
+      imgs.forEach(function (im, j) {
+        if (!j) return;
+        gsap.to(im, { clipPath: j <= k ? 'inset(0% 0 0 0)' : 'inset(100% 0 0 0)', duration: 0.7, ease: 'expo.inOut', overwrite: true });
+      });
+    }
+    lis.forEach(function (li, i) {
+      ScrollTrigger.create({ trigger: li, start: 'top 60%', end: 'bottom 60%',
+        onToggle: function (self) { if (self.isActive) show(map[i]); } });
+    });
+
+    /* headline pinned, travels sideways */
+    var wrap = document.querySelector('.drift-wrap');
+    var d = document.querySelector('.drift');
+    d.style.whiteSpace = 'nowrap';
+    d.style.width = 'max-content';
+    d.style.flexShrink = '0';
+    gsap.fromTo(d, { x: function () { return innerWidth * 0.02; } },
+      { x: function () { return -(d.offsetWidth - innerWidth * 0.96); }, ease: 'none',
+        scrollTrigger: { trigger: wrap, start: 'top top', end: function () { return '+=' + Math.round(d.offsetWidth * 0.6); },
+          pin: true, scrub: true, invalidateOnRefresh: true } });
+    return function () { d.style.whiteSpace = ''; d.style.width = ''; d.style.flexShrink = ''; };
+  });
+
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+  window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+})();
+</script>
+</body>
+</html>
