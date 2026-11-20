@@ -21,6 +21,8 @@ const PAGES: {
 }[] = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/contact", priority: 0.4, changeFrequency: "yearly" },
+  { path: "/refund", priority: 0.3, changeFrequency: "yearly" },
   { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
   { path: "/credits", priority: 0.2, changeFrequency: "yearly" },

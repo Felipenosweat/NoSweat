@@ -5,6 +5,7 @@ import { keepReviewUrl } from "../reviews";
 import { AnthropicGenerator } from "./anthropic";
 import { MockGenerator } from "./mock";
 import { OpenAIGenerator } from "./openai";
+import { withOwnerName } from "./owner-name";
 import type { SiteGenerator } from "./types";
 
 export type { SiteGenerator } from "./types";
@@ -73,6 +74,7 @@ export function aiEnabled(provider = process.env.AI_PROVIDER || "mock"): boolean
  *    a partir do site-modelo da categoria (só um ModelFill no modelo barato, ver model-fill.ts);
  *    se falhar, o caminho completo.
  * 3. O plano fica gravado em `spec.design` (com os ids das referências, para depuração).
+ * 4. `owner.businessName` (nome digitado pelo dono) substitui o nome que o gerador escolheu.
  * A IA não escolhe fotos: `image` e galerias da saída dela são descartados (a foto do topo é
  * buscada depois pelo servidor a partir de `hero.imageQuery`, ver server/images).
  */
@@ -80,6 +82,7 @@ export async function generateSiteSpec(
   brief: string,
   generator: SiteGenerator = getSiteGenerator(),
   planOptions: PlanOptions = {},
+  owner: { businessName?: string | null } = {},
 ): Promise<SiteSpec> {
   const plan = planDesign(brief, planOptions);
   console.info("[design] plan", {
@@ -91,7 +94,9 @@ export async function generateSiteSpec(
   const raw: unknown = await generator.generateSite(brief, plan);
   // O link de avaliações do Google só vem do dono (página /reviews): a IA nunca põe um.
   const spec = SiteSpec.parse(keepReviewUrl(sanitizeAiImages(SiteSpec.parse(raw)), null));
-  return SiteSpec.parse({ ...spec, design: applyDesignPlan(spec.design, plan) });
+  // Nome digitado pelo dono: vale sobre o que o gerador escolheu (ver owner-name.ts).
+  const named = withOwnerName(spec, owner.businessName);
+  return SiteSpec.parse({ ...named, design: applyDesignPlan(named.design, plan) });
 }
 
 /**

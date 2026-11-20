@@ -340,13 +340,20 @@ export function composeBrief(fields: CreateFields, choices: CreateChoices = EMPT
   return paragraphs.filter(Boolean).join("\n\n");
 }
 
-/** O corpo do POST /api/sites/generate: o texto único + de onde vêm as fotos. */
+/** O corpo do POST /api/sites/generate: o texto único, de onde vêm as fotos e o nome do dono. */
 export function generateRequest(
   fields: CreateFields,
   choices: CreateChoices = EMPTY_CHOICES,
   photos: PhotoMode = "auto",
-): { brief: string; photos: PhotoMode } {
-  return { brief: composeBrief(fields, choices), photos };
+): { brief: string; photos: PhotoMode; businessName?: string } {
+  // O nome também vai à parte: o servidor usa ESTE nome no site, seja qual for o gerador (ler o
+  // nome de dentro do texto falhava com nomes como "Yahoo! Cleaning").
+  const businessName = fields.name.trim();
+  return {
+    brief: composeBrief(fields, choices),
+    photos,
+    ...(businessName ? { businessName } : {}),
+  };
 }
 
 /** Corta no último espaço antes do limite, para não quebrar uma palavra no meio. */
@@ -419,6 +426,13 @@ export function publishedSlug(name: string, id: string): string {
 export const DRAFT_KEY = "ns-create-draft";
 /** Texto que a landing deixa para o /create. */
 export const LANDING_BRIEF_KEY = "ns-brief";
+/** Nome do negócio que a landing deixa para o /create (separado do texto: é um fato do dono). */
+export const LANDING_NAME_KEY = "ns-brief-name";
+
+/** Nome do negócio vindo da landing (`?name=` ou sessionStorage), limpo e no limite do campo. */
+export function landingName(raw: string | null | undefined): string {
+  return (raw ?? "").replace(/\s+/g, " ").trim().slice(0, LIMITS.name);
+}
 
 export type StoredDraft = { source: string; step: number; fields: CreateFields };
 
