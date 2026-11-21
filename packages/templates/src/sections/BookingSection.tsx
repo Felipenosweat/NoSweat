@@ -111,7 +111,11 @@ export function BookingSection({
   const split = layout === "split";
   return (
     <section id={id} className={className} aria-busy={state.status === "loading"}>
-      <div className={split ? "grid gap-10 @5xl:grid-cols-12" : "grid gap-8"}>
+      {/* grid-cols-1 = minmax(0, 1fr): sem isso a coluna única cresce até a largura da fileira de
+          dias e dos horários e a seção estoura a tela do celular. */}
+      <div
+        className={split ? "grid grid-cols-1 gap-10 @5xl:grid-cols-12" : "grid grid-cols-1 gap-8"}
+      >
         <div className={split ? "@5xl:col-span-4" : ""}>
           {heading}
           {intro && <p className="mt-5 max-w-prose text-base text-ns-muted">{intro}</p>}
@@ -133,7 +137,7 @@ export function BookingSection({
             </p>
           </noscript>
         </div>
-        <div className={split ? "@5xl:col-span-7 @5xl:col-start-6" : ""}>
+        <div className={split ? "min-w-0 @5xl:col-span-7 @5xl:col-start-6" : "min-w-0"}>
           {state.status === "ready" ? (
             <BookingPanel
               endpoint={endpoint ?? ""}
