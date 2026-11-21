@@ -42,7 +42,7 @@ import { currentOffer, promoActive } from "@/server/billing/plans";
 // O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
 const TITLE = "No Sweat: AI Website Builder for Local Businesses";
 const FROM_PRICE = planPrices().starter.monthly;
-const DESCRIPTION = `Answer four questions and get a website that takes bookings, plus the office behind it: requests, estimates, your schedule, invoices and Google review requests. Free to build; plans from ${FROM_PRICE}/month.`;
+const DESCRIPTION = `Answer four questions and get a website that takes bookings, plus the office behind it: requests, estimates, your schedule, invoices and Google review requests. Start free; plans from ${FROM_PRICE}/month.`;
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const viewport: Viewport = { themeColor: "#ffffff" };
@@ -67,15 +67,15 @@ export const metadata: Metadata = {
 
 const STEPS = [
   {
-    title: "Answer four questions.",
-    body: "Your kind of business, your city, the name if you have one and anything a customer should know. The first draft is ready in about a minute.",
+    title: "Answer a few questions, free.",
+    body: "Your kind of business, your city, the name if you have one and anything a customer should know. No credit card for this part.",
   },
   {
-    title: "Change anything.",
-    body: "Editing by hand is free; asking the AI uses credits, and you see the cost first.",
+    title: "Pick a plan and build your site.",
+    body: "The first draft is ready in about a minute. Editing by hand is free; asking the AI uses credits, and you see the cost first.",
   },
   {
-    title: "Pick a plan and go live on your own domain.",
+    title: "Go live on your own domain.",
     body: "Every plan can connect a domain you own or use a free nosweatfd.com address.",
   },
 ];
@@ -155,7 +155,7 @@ export default function LandingPage() {
         <div className={container}>
           <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8">
             <h2 id="pricing-title" className={`lg:col-span-7 ${h2Class}`}>
-              Free to build. Pay when it goes live.
+              Start free. Pick a plan to build.
             </h2>
             <PriceReceipt fromPrice={FROM_PRICE} className="lg:col-span-5 lg:justify-self-end" />
           </div>
@@ -164,6 +164,8 @@ export default function LandingPage() {
               checkout={checkoutReady()}
               prices={planPrices()}
               credits={pricingCredits()}
+              promo={promoActive()}
+              offerName={currentOffer()}
             />
           </div>
         </div>

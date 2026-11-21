@@ -2,7 +2,8 @@ import { REFUND_WINDOW_DAYS } from "@/components/marketing/legal/policy";
 
 // O preço como linhas de recibo (linha pontilhada até o valor, números tabulares). Os números vêm
 // das fontes únicas: `fromPrice` = planPrices().starter.monthly (pricing-data.ts) e o prazo de
-// devolução de legal/policy.ts. Nada digitado à mão além do "$0" de criar e ver a prévia.
+// devolução de legal/policy.ts. Regra atual (CLAUDE.md "Criar site exige plano"): descrever o
+// negócio e responder as perguntas é grátis; criar o site com a IA e publicar pedem plano.
 
 export function PriceReceipt({
   fromPrice,
@@ -12,8 +13,8 @@ export function PriceReceipt({
   className?: string;
 }) {
   const rows = [
-    { label: "Build and preview", value: "$0" },
-    { label: "Go live", value: `from ${fromPrice}/mo` },
+    { label: "Describe your business", value: "free" },
+    { label: "Build and go live", value: `from ${fromPrice}/mo` },
     {
       label: `Not happy in ${REFUND_WINDOW_DAYS} days`,
       value: "full refund of your first payment",
@@ -47,8 +48,8 @@ export function PriceLine({
 }) {
   return (
     <p className={`text-[13px] leading-normal text-slate-600 tabular-nums ${className}`}>
-      Free to build · from {fromPrice}/mo when it goes live · {REFUND_WINDOW_DAYS}-day money-back
-      guarantee.
+      Describing your business is free · build and go live from {fromPrice}/mo ·{" "}
+      {REFUND_WINDOW_DAYS}-day money-back guarantee.
     </p>
   );
 }

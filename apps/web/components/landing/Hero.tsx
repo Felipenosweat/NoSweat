@@ -25,7 +25,7 @@ export function Hero({ fromPrice }: { fromPrice?: string }) {
           </h1>
           <p className={`mt-4 lg:mt-6 ${leadClass}`}>
             And the office behind it: every request, estimate, invoice and Google review request in
-            one place. Answer four questions. It’s free until your site goes live.
+            one place. Start free with four questions, then pick a plan to build your site.
           </p>
           <div className="mt-8 lg:mt-10">
             <HeroStepper />

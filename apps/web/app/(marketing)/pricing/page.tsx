@@ -19,8 +19,8 @@ import { checkoutReady } from "@/server/billing";
 import { currentOffer, promoActive } from "@/server/billing/plans";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
-// Criar e ver a prévia é grátis; a cobrança (Stripe) só acontece ao escolher um plano para
-// publicar (Stripe, ou à mão por WhatsApp/e-mail sem Stripe). As respostas do FAQ dizem só o
+// Começar é grátis (descrever o negócio e responder as perguntas); criar o site com a IA e
+// publicar pedem um plano (Stripe, ou à mão por WhatsApp/e-mail sem Stripe). As respostas do FAQ dizem só o
 // que é verdade hoje. A imagem de compartilhamento vem de ./opengraph-image.tsx.
 
 const TITLE = "Pricing";
@@ -54,7 +54,7 @@ export default function PricingPage() {
           {/* Mesma promessa e mesmo recibo da seção de preço da landing. */}
           <div className="grid grid-cols-1 gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8">
             <h1 id="pricing-title" className={`lg:col-span-7 ${h1Class}`}>
-              <TightPunctuation>Free to build. Pay when it goes live.</TightPunctuation>
+              <TightPunctuation>Start free. Pick a plan to build.</TightPunctuation>
             </h1>
             <PriceReceipt
               fromPrice={planPrices().starter.monthly}
@@ -119,10 +119,10 @@ export default function PricingPage() {
         <div className={`${container} grid gap-y-8 lg:grid-cols-12 lg:items-end lg:gap-x-8`}>
           <div className="lg:col-span-7">
             <h2 id="pricing-cta-title" className={h2Class}>
-              <TightPunctuation>See your website before you spend a dollar.</TightPunctuation>
+              <TightPunctuation>Start with four questions.</TightPunctuation>
             </h2>
             <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600">
-              Answer four questions. No account or credit card needed.
+              Describing your business is free. Pick a plan when you’re ready to build your site.
             </p>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">
