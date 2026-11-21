@@ -13,6 +13,7 @@ import {
   loadSiteSummaries,
   planState,
 } from "@/server/admin/data";
+import { realCustomers } from "@/server/admin/customers";
 import { PLANS } from "@/server/billing";
 import { getVercelConfig } from "@/server/domains/vercel";
 import { CardSkeleton, TileItemsSkeleton } from "../AdminSkeletons";
@@ -178,6 +179,59 @@ async function PlanTiles() {
   );
 }
 
+/** Clientes de verdade (pagaram) contra a meta de 10 para subir os preços. */
+async function CustomerGoal() {
+  const data = await loadAccountsData();
+  if (!data.subscriptions) return null;
+  const excluded = new Set<string>(data.adminIds);
+  for (const account of data.accounts) if (account.testAccount) excluded.add(account.id);
+  const result = realCustomers(data.subscriptions, data.grants, excluded, data.now);
+  const share = Math.min(100, Math.round((result.count / result.goal) * 100));
+
+  return (
+    <GlassCard as="section" aria-labelledby="customers-heading">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="customers-heading" className={panelTitle}>
+          Paying customers
+        </h2>
+        <p className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-(--glass-fg) tabular-nums">
+          {result.count}
+          <span className="ml-1 text-base font-medium text-(--glass-fg-muted)">
+            of {result.goal}
+          </span>
+        </p>
+      </div>
+      <div
+        role="progressbar"
+        aria-label="Paying customers toward the goal"
+        aria-valuemin={0}
+        aria-valuemax={result.goal}
+        aria-valuenow={Math.min(result.count, result.goal)}
+        className="mt-3 h-2 overflow-hidden rounded-full bg-(--glass-rim)"
+      >
+        <div
+          className={`h-full rounded-full ${result.reached ? "bg-emerald-600" : "bg-brand"}`}
+          style={{ width: `${share}%` }}
+        />
+      </div>
+      <p className={`mt-3 ${panelText}`}>
+        {result.reached
+          ? "You reached the goal: time to raise the Starter price."
+          : `${result.goal - result.count} more before raising the Starter price.`}{" "}
+        Counts card subscriptions ({result.stripe}) and manual access with payment confirmed (
+        {result.manual}). Admins, test accounts and free access don&rsquo;t count.
+      </p>
+      {result.unconfirmed > 0 && (
+        <p className={`mt-2 ${panelText}`}>
+          {result.unconfirmed} manual {result.unconfirmed === 1 ? "access is" : "accesses are"} not
+          confirmed yet: open the client and tick &ldquo;Payment received&rdquo; if the money
+          arrived.
+        </p>
+      )}
+    </GlassCard>
+  );
+}
+
 /** Cartões de planos ativos e acessos manuais vencendo. */
 async function PlanCards() {
   const data = await loadAccountsData();
@@ -279,6 +333,10 @@ export default async function AdminOverviewPage() {
           </Suspense>
         </ul>
       </section>
+
+      <Suspense fallback={<CardSkeleton lines={3} />}>
+        <CustomerGoal />
+      </Suspense>
 
       <Suspense
         fallback={

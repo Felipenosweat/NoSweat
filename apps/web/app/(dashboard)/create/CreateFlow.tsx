@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -48,6 +49,16 @@ import styles from "./create.module.css";
 import { LocationFields } from "./LocationFields";
 import { addOwnPhotos } from "./ownPhotos";
 import { PhotoStep } from "./PhotoStep";
+import { PlansPopup, type LaunchOffer } from "./PlansPopup";
+import { QuestionsStep } from "./QuestionsStep";
+import {
+  ANSWERS_KEY,
+  answersFrom,
+  kindForQuestions,
+  parsePicked,
+  questionsFor,
+  type Picked,
+} from "./questions";
 import { focusRing, inputClass, primaryButtonCompact, secondaryButtonCompact } from "./ui";
 import { ColorPicker, LayoutPicker, SparkIcon } from "./WizardPickers";
 
@@ -75,12 +86,19 @@ const STEPS = [
     lead: "Choose who picks the pictures for your site. You can change them later in the editor.",
   },
   {
+    title: "A few quick questions",
+    lead: "Tap an answer, or skip any of them. The more we know, the better your site.",
+  },
+  {
     title: "Ready to start?",
     lead: "Check your request and create the first version.",
   },
 ] as const;
 
 const LAST_STEP = STEPS.length - 1;
+/** Perguntas rápidas: logo antes da revisão. As fotos vêm um passo antes delas. */
+const QUESTIONS_STEP = LAST_STEP - 1;
+const PHOTO_STEP = LAST_STEP - 2;
 
 /** Linha de apoio da revisão no atalho (layout e cores ficam com a No Sweat). */
 const QUICK_REVIEW_LEAD =
@@ -127,6 +145,8 @@ type FormError = {
   dashboardLink?: boolean;
   /** Conta sem créditos da IA: o caminho é /billing (mais créditos ou outro plano). */
   billingLink?: boolean;
+  /** Criar o site exige plano: visitante vai criar a conta e escolher; conta logada escolhe. */
+  planLink?: "signup" | "billing";
 };
 type FieldErrors = Partial<Record<keyof CreateFields, string>>;
 type Phase = "form" | "building" | "ready";
@@ -162,6 +182,12 @@ function errorFor(code: string, fallback: string, signedIn = false): FormError {
         title: "You’ve reached today’s limit.",
         body: fallback.replace(SIGN_UP_HINT_RE, "") || "Please try again tomorrow.",
         signupLink: true,
+      };
+    case "payment_required":
+      return {
+        title: "Pick a plan to build your website.",
+        body: "Describing your business and answering the questions is free. Choosing a plan builds your site right away, and your answers stay saved.",
+        planLink: signedIn ? "billing" : "signup",
       };
     case "out_of_credits":
       return {
@@ -270,6 +296,7 @@ export function CreateFlow({
   signedIn = false,
   autoStart = false,
   credits = null,
+  offer = null,
 }: {
   initialBrief: string;
   /** Nome do negócio digitado na landing (`?name=`); vazio = não veio. */
@@ -280,6 +307,8 @@ export function CreateFlow({
   credits?: CreateCredits | null;
   /** Veio da landing com `start=1`: monta o site na hora, sem o assistente. */
   autoStart?: boolean;
+  /** Planos e oferta de lançamento do pop-up que abre quando falta plano para criar. */
+  offer?: LaunchOffer | null;
 }) {
   const hydrated = useSyncExternalStore(
     noopSubscribe,
@@ -295,6 +324,7 @@ export function CreateFlow({
       signedIn={signedIn}
       autoStart={hydrated && autoStart}
       credits={credits}
+      offer={offer}
     />
   );
 }
@@ -306,6 +336,7 @@ function Flow({
   signedIn,
   autoStart,
   credits,
+  offer,
 }: {
   initialBrief: string;
   initialName: string;
@@ -313,6 +344,7 @@ function Flow({
   signedIn: boolean;
   autoStart: boolean;
   credits: CreateCredits | null;
+  offer: LaunchOffer | null;
 }) {
   const [initial] = useState(() => initialState(initialBrief, initialName, canReadStorage));
   const [fields, setFields] = useState<CreateFields>(initial.fields);
@@ -324,12 +356,27 @@ function Flow({
   // que o site é gerado, porque o upload precisa do id do site).
   const [photoMode, setPhotoMode] = useState<PhotoMode>("auto");
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  // Perguntas rápidas (sim/não ou uma opção): a IA lê as respostas junto da descrição.
+  const [picked, setPicked] = useState<Picked>(() => {
+    try {
+      return canReadStorage ? parsePicked(sessionStorage.getItem(ANSWERS_KEY)) : parsePicked(null);
+    } catch {
+      return parsePicked(null);
+    }
+  });
+  // Quais perguntas: pelo tipo de negócio escolhido ou, sem escolha, pelo que a pessoa escreveu.
+  const questions = useMemo(
+    () => questionsFor(kindForQuestions(choices.kind, `${fields.name} ${fields.what}`)),
+    [choices.kind, fields.name, fields.what],
+  );
   // Atalho do cartão / "Let AI decide the rest": a revisão sem "Step X of 4" e com a frase própria.
   // Vira `false` quando a pessoa abre um dos passos (aí ela está percorrendo o assistente).
   const [quick, setQuick] = useState(false);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<FormError | null>(null);
+  /** Pop-up de planos: abre quando o servidor responde que criar o site exige plano. */
+  const [plansOpen, setPlansOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("form");
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<Generated | null>(null);
@@ -375,15 +422,17 @@ function Flow({
       if (phase === "ready") {
         sessionStorage.removeItem(DRAFT_KEY);
         sessionStorage.removeItem(CHOICES_KEY);
+        sessionStorage.removeItem(ANSWERS_KEY);
       } else {
         const draft: StoredDraft = { source: initial.source, step, fields };
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
         sessionStorage.setItem(CHOICES_KEY, JSON.stringify(choices));
+        sessionStorage.setItem(ANSWERS_KEY, JSON.stringify(picked));
       }
     } catch {
       // Sem armazenamento: o fluxo continua funcionando, só não lembra as respostas.
     }
-  }, [canReadStorage, initial.source, step, fields, choices, phase]);
+  }, [canReadStorage, initial.source, step, fields, choices, picked, phase]);
 
   // Avança as etapas da construção; a última só termina quando a resposta da API chega.
   useEffect(() => {
@@ -425,7 +474,7 @@ function Flow({
   }
 
   function goTo(next: number) {
-    if (next !== LAST_STEP) setQuick(false);
+    if (next !== LAST_STEP && next !== QUESTIONS_STEP) setQuick(false);
     setDirection(next > step ? "forward" : "back");
     setFieldErrors({});
     shouldFocusHeading.current = true;
@@ -464,7 +513,7 @@ function Flow({
     setFieldErrors({});
     setQuick(true);
     setDirection("forward");
-    setStep(LAST_STEP);
+    setStep(QUESTIONS_STEP);
     shouldFocusHeading.current = true;
     setWizardOpen(true);
   }
@@ -479,7 +528,10 @@ function Flow({
   }
 
   async function generate() {
-    const input = GenerateSiteRequest.safeParse(generateRequest(fields, choices, photoMode));
+    const input = GenerateSiteRequest.safeParse({
+      ...generateRequest(fields, choices, photoMode),
+      answers: answersFrom(questions, picked),
+    });
     if (!input.success) {
       setFormError(errorFor("invalid_request", input.error.issues[0]?.message ?? ""));
       return;
@@ -512,6 +564,7 @@ function Flow({
             : "internal_error";
         const message = apiError.success ? apiError.data.error.message : "";
         backToWizard(errorFor(code, message, signedIn));
+        if (code === "payment_required" && offer) setPlansOpen(true);
         return;
       }
 
@@ -554,7 +607,7 @@ function Flow({
     setChoices((current) => ({ ...current, layout: "auto" }));
     update("style", "auto");
     setQuick(true);
-    goTo(LAST_STEP);
+    goTo(QUESTIONS_STEP);
   }
 
   function applyExample(text: string, target: HTMLTextAreaElement | null) {
@@ -621,6 +674,7 @@ function Flow({
     LAYOUT_OPTIONS.find((option) => option.id === choices.layout)?.label ?? "No Sweat chooses";
   const colorLabel =
     STYLE_OPTIONS.find((option) => option.id === fields.style)?.label ?? "No Sweat chooses";
+  const answeredCount = answersFrom(questions, picked).length;
   const photoLabel =
     photoMode === "own"
       ? signedIn && photoFiles.length > 0
@@ -749,7 +803,7 @@ function Flow({
                   />
                   Create website
                 </p>
-                {!quickReview && (
+                {!quick && (
                   <p className="text-[13px] text-(--glass-fg-muted) tabular-nums">
                     Step {step + 1} of {STEPS.length}
                   </p>
@@ -763,8 +817,12 @@ function Flow({
                   <CloseIcon />
                 </button>
               </div>
-              {!quickReview && (
-                <ol aria-hidden="true" className="mt-2 grid grid-cols-4 gap-1.5">
+              {!quick && (
+                <ol
+                  aria-hidden="true"
+                  className="mt-2 grid gap-1.5"
+                  style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}
+                >
                   {STEPS.map((item, index) => (
                     <li
                       key={item.title}
@@ -917,7 +975,11 @@ function Flow({
                     />
                   )}
 
-                  {step === LAST_STEP - 1 && (
+                  {step === QUESTIONS_STEP && (
+                    <QuestionsStep questions={questions} picked={picked} onChange={setPicked} />
+                  )}
+
+                  {step === PHOTO_STEP && (
                     <PhotoStep
                       mode={photoMode}
                       onModeChange={setPhotoMode}
@@ -947,6 +1009,23 @@ function Flow({
                                   className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
                                 >
                                   Go to your sites
+                                </Link>
+                              </>
+                            )}
+                            {formError.planLink && (
+                              <>
+                                {" "}
+                                <Link
+                                  href={
+                                    formError.planLink === "signup"
+                                      ? "/signup?next=/billing"
+                                      : "/billing"
+                                  }
+                                  className={`font-semibold text-red-800 underline underline-offset-4 ${focusRing}`}
+                                >
+                                  {formError.planLink === "signup"
+                                    ? "Create your account and pick a plan"
+                                    : "Choose a plan"}
                                 </Link>
                               </>
                             )}
@@ -1023,8 +1102,13 @@ function Flow({
                         <SummaryRow label="Colors" onChange={() => goTo(2)}>
                           {colorLabel}
                         </SummaryRow>
-                        <SummaryRow label="Photos" onChange={() => goTo(LAST_STEP - 1)}>
+                        <SummaryRow label="Photos" onChange={() => goTo(PHOTO_STEP)}>
                           {photoLabel}
+                        </SummaryRow>
+                        <SummaryRow label="Quick questions" onChange={() => goTo(QUESTIONS_STEP)}>
+                          {answeredCount > 0
+                            ? `${answeredCount} answered`
+                            : "Skipped. You can still add details in the editor."}
                         </SummaryRow>
                       </dl>
                     </>
@@ -1048,7 +1132,13 @@ function Flow({
                 <button
                   type="button"
                   // Na revisão do atalho, "Back" volta ao cartão (a pessoa não viu os passos).
-                  onClick={() => (quickReview ? setWizardOpen(false) : goTo(step - 1))}
+                  onClick={() =>
+                    quick
+                      ? step === QUESTIONS_STEP
+                        ? setWizardOpen(false)
+                        : goTo(QUESTIONS_STEP)
+                      : goTo(step - 1)
+                  }
                   className={secondaryButtonCompact}
                 >
                   Back
@@ -1062,6 +1152,14 @@ function Flow({
           </form>
         )}
       </dialog>
+      {offer && (
+        <PlansPopup
+          open={plansOpen}
+          onClose={() => setPlansOpen(false)}
+          signedIn={signedIn}
+          offer={offer}
+        />
+      )}
     </div>
   );
 }

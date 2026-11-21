@@ -1,0 +1,461 @@
+<!doctype html>
+<!-- ns:direction
+Concept: a scared person should feel they can simply call Marisol. The idea comes from the owner's own words ("I want people who are scared and stressed to feel like they can call me"), so the hero reads "Scared? Call Marisol." at poster scale and the phone number itself becomes display type that closes the services spread.
+Layout: each section is its own flat color spread (deep green, lilac, sun yellow) that changes the mood completely. The hero puts the call button in the headline's empty corner, services is a wall of type rows, the books photo rises over the mountain panorama, and the form sits beside a sticky photo.
+Type: Bricolage Grotesque only, heavy and tight at 12-15vw against small 12-17px labels and body.
+Palette and photos: green #0B3B2C, lilac #CDB8FF, yellow #FFD23F. The rain-puddle sky opens the page as "after the storm", the black-and-white baby hand is multiplied into the lilac so it dissolves into the color, the pink hand sits beside the form, and a dusk strip closes the page.
+Motion: bouncy line reveals, a yellow 20-minute disc whose ring of text pops in and turns with scroll, service names that slide on scroll, and a panorama that unmasks as you arrive. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marisol Vega Law | Family Law Attorney, Tucson AZ</title>
+<meta name="description" content="Marisol Vega Law: family law attorney in Tucson, Arizona. Divorce, child custody, parenting plans, child support and adoptions. English and Spanish. Free 20-minute call.">
+<meta name="theme-color" content="#0B3B2C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B3B2C'/%3E%3Ccircle cx='32' cy='32' r='26' fill='%23FFD23F'/%3E%3Ctext x='32' y='43' font-size='32' font-family='Arial,sans-serif' font-weight='700' text-anchor='middle' fill='%230B3B2C'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+:root{--g:#0B3B2C;--l:#CDB8FF;--y:#FFD23F;--pad:clamp(20px,4vw,64px);--focus:#0B3B2C;--ease:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{margin:0;font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.5;color:var(--g);background:var(--g);padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+img{display:block;max-width:100%}
+a{color:inherit}
+::selection{background:var(--y);color:var(--g)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.dark{--focus:var(--y)}
+h1,h2,h3,p,dl,dd,figure{margin:0}
+h1,h2{text-wrap:balance}
+p{text-wrap:pretty}
+.skip{position:absolute;left:12px;top:-60px;background:var(--y);color:var(--g);padding:12px 18px;font-weight:700;z-index:100;text-decoration:none}
+.skip:focus{top:12px}
+.tab{font-variant-numeric:tabular-nums lining-nums}
+.label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.y{color:var(--y)}
+
+/* buttons + links */
+.btn{position:relative;display:inline-flex;flex-direction:column;justify-content:center;gap:2px;min-height:56px;padding:14px 26px;background:var(--y);color:var(--g);text-decoration:none;font-weight:800;font-size:1.5rem;letter-spacing:-.02em;border:2px solid var(--y);overflow:hidden;isolation:isolate;cursor:pointer;font-family:inherit;line-height:1.1}
+.btn::before{content:"";position:absolute;inset:0;background:var(--l);transform:translateY(101%);transition:transform .5s var(--ease);z-index:-1}
+.btn:hover::before,.btn:focus-visible::before{transform:none}
+.btn small{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.btn.solid{background:var(--g);color:var(--y);border-color:var(--g)}
+.btn.solid::before{background:var(--y)}
+.btn.solid:hover,.btn.solid:focus-visible{color:var(--g)}
+.ul{background:linear-gradient(currentColor,currentColor) 0 100%/0 2px no-repeat;transition:background-size .4s ease;text-decoration:none;padding-bottom:2px}
+.ul:hover,.ul:focus-visible{background-size:100% 2px}
+
+/* photo frames */
+.pf{position:relative;overflow:hidden;isolation:isolate}
+.pf img{position:absolute;left:0;top:-10%;width:100%;height:120%;object-fit:cover}
+.pf.st img{top:0;height:100%}
+
+/* header */
+.top{position:absolute;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px var(--pad);color:var(--l)}
+.mark{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none}
+.top nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;font-size:15px;font-weight:500}
+.top nav li.d{display:none}
+
+/* hero */
+.hero{position:relative;background:var(--g);color:var(--l);padding:92px var(--pad) 0;overflow-x:clip}
+.hero-h{font-size:min(25vw,200px);line-height:.88;letter-spacing:-.045em;font-weight:800;margin-left:-.04em}
+.ln{display:block;overflow:clip;padding:.04em .06em .08em 0;margin-bottom:-.04em}
+.l{display:block}
+.ln:last-child .l{color:var(--y)}
+.hero-cta{margin-top:22px}
+.hero-cta .btn{font-size:1.3rem}
+.hero-grid{display:grid;gap:20px;margin-top:20px}
+.hero-copy p{font-size:1.15rem;max-width:34ch}
+.hero-copy .es{margin-top:10px;font-size:1rem;opacity:.9}
+.hero-media{position:relative;margin:0 calc(var(--pad)*-1)}
+.hero-photo{height:72vw;min-height:240px;overflow:hidden}
+.hero-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 58%}
+.disc{position:absolute;right:var(--pad);top:16px;width:128px;z-index:2}
+.disc svg{display:block;width:100%;height:auto;overflow:visible}
+.disc text{font-family:inherit}
+
+/* call statement */
+.call{background:var(--l);color:var(--g);overflow-x:clip}
+.call-txt{padding:64px var(--pad) 0}
+.call h2{font-size:11vw;line-height:.95;letter-spacing:-.04em;font-weight:800}
+.call-copy{margin-top:30px}
+.call-copy p{font-size:1.2rem;max-width:40ch}
+.call-copy p+p{margin-top:14px}
+.es-tag{display:inline-block;background:var(--y);padding:6px 12px;font-weight:700;margin-top:22px}
+.call-ph{margin-top:40px;background:var(--l);aspect-ratio:5/4}
+.call-ph img{mix-blend-mode:multiply;object-position:50% 50%}
+
+/* services */
+.svc{background:var(--y);color:var(--g);padding:72px 0 0;overflow-x:clip}
+.svc-h{padding:0 var(--pad)}
+.svc h2{font-size:12vw;line-height:.92;letter-spacing:-.04em;font-weight:800;max-width:13ch}
+.rows{list-style:none;margin:44px 0 0;padding:0;border-bottom:1px solid rgba(11,59,44,.3)}
+.row{position:relative;overflow:hidden;padding:22px var(--pad);border-top:1px solid rgba(11,59,44,.3);display:grid;gap:8px;isolation:isolate;transition:color .3s}
+.row::before{content:"";position:absolute;inset:0;background:var(--g);transform:scaleY(0);transform-origin:50% 100%;transition:transform .5s var(--ease);z-index:-1}
+.nm{font-size:13vw;line-height:.92;letter-spacing:-.045em;font-weight:800;text-wrap:balance;will-change:transform}
+.row p{font-size:1.05rem;max-width:32ch}
+.svc-note{padding:44px var(--pad) 0;font-size:1.25rem;max-width:40ch;font-weight:500}
+.bignum{display:block;width:max-content;max-width:100%;margin:14px var(--pad) 0;font-size:10.4vw;line-height:1;letter-spacing:-.045em;font-weight:800;white-space:nowrap;text-decoration:none;background:linear-gradient(currentColor,currentColor) 0 100%/0 .07em no-repeat;padding-bottom:.08em;transition:background-size .45s ease,transform .5s var(--ease)}
+.bignum:hover,.bignum:focus-visible{background-size:100% .07em;transform:translateX(.8vw)}
+.svc-end{height:72px}
+@media(hover:hover){.row:hover{color:var(--y)}.row:hover::before{transform:scaleY(1)}}
+
+/* band */
+.band{background:var(--y);position:relative;overflow-x:clip}
+.band-fig{height:420px}
+.band-fig img{object-position:50% 60%}
+.band-lab{position:absolute;left:0;bottom:0;background:var(--g);color:var(--l);padding:20px var(--pad) 22px;z-index:2;max-width:92%}
+.band-lab b{display:block;font-size:11vw;line-height:.92;letter-spacing:-.045em;font-weight:800;margin-top:6px;color:var(--y)}
+
+/* office */
+.office{position:relative;background:var(--g);color:var(--l);overflow-x:clip}
+.office-txt{padding:72px var(--pad) 56px}
+.office h2{font-size:11vw;line-height:.94;letter-spacing:-.04em;font-weight:800}
+.hours{margin-top:40px;border-bottom:1px solid rgba(205,184,255,.3)}
+.hours>div{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:14px 0;border-top:1px solid rgba(205,184,255,.3)}
+.hours dt{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;opacity:.9}
+.hours dd{font-size:1.65rem;font-weight:800;letter-spacing:-.03em;color:var(--y);text-align:right}
+.status{margin-top:20px;color:var(--y);font-weight:600}
+.status:empty{display:none}
+.office-txt p+p{margin-top:12px}
+.office-info{margin-top:22px;font-size:1.1rem;max-width:38ch}
+.ph{display:inline-block;background:rgba(205,184,255,.16);padding:2px 8px}
+.office-ph{aspect-ratio:4/5}
+.office-ph img{object-position:90% 50%}
+
+/* contact */
+.contact{background:var(--l);color:var(--g)}
+.contact-ph{height:70vw;min-height:250px}
+.contact-ph img{object-position:60% 52%}
+.contact-body{padding:56px var(--pad) 72px}
+.contact h2{font-size:11vw;line-height:.94;letter-spacing:-.04em;font-weight:800}
+.contact-body>p{margin-top:16px;max-width:40ch;font-size:1.1rem}
+form{margin-top:34px;display:grid;gap:22px;max-width:640px}
+.f{display:grid;gap:4px}
+.f label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.f input,.f textarea{font:inherit;font-size:1.25rem;color:var(--g);background:transparent;border:0;border-bottom:2px solid var(--g);border-radius:0;padding:10px 0;width:100%;min-height:48px}
+.f textarea{min-height:130px;resize:vertical}
+.f input:focus,.f textarea:focus{outline:0;background:rgba(255,255,255,.4);box-shadow:0 4px 0 0 var(--g)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note{font-size:.95rem;max-width:44ch}
+form .btn{justify-self:start}
+
+/* dusk strip */
+.dusk{height:clamp(240px,46vh,560px);background:var(--g)}
+.dusk img{object-position:50% 45%}
+
+/* footer */
+.foot{background:var(--g);color:var(--l);padding:72px var(--pad) 28px;overflow-x:clip}
+.foot-top{display:grid;gap:18px;font-size:1.05rem}
+.foot-top a.tel{font-size:2rem;font-weight:800;letter-spacing:-.03em;color:var(--y);font-variant-numeric:tabular-nums}
+.wm{font-size:21vw;line-height:.86;letter-spacing:-.05em;font-weight:800;margin:44px 0 36px -.04em;color:var(--l)}
+.foot-end{border-top:1px solid rgba(205,184,255,.3);padding-top:18px;display:grid;gap:6px;font-size:13px}
+
+/* mobile bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--g);border-top:1px solid rgba(205,184,255,.35)}
+.bar a{display:flex;align-items:center;justify-content:center;min-height:48px;font-weight:800;text-decoration:none;font-size:1.05rem;--focus:var(--y)}
+.bar-call{flex:1;background:var(--y);color:var(--g);font-variant-numeric:tabular-nums}
+.bar-write{padding:0 20px;color:var(--l);border:2px solid var(--l)}
+
+@media(max-width:719px){.hero-cta{display:none}}
+@media(min-width:720px){
+  body{padding-bottom:0}
+  .bar{display:none}
+  .top nav li.d{display:block}
+}
+@media(min-width:900px){
+  .top nav ul{gap:36px;font-size:16px}
+  .hero{padding-top:112px}
+  .hero-h{font-size:min(15vw,290px);white-space:nowrap}
+  .ln{display:inline-block;vertical-align:top}
+  .ln:first-child{display:block}
+  .ln:nth-child(2){margin-left:min(6vw,110px)}
+  .hero-cta{position:absolute;right:var(--pad);top:122px;margin:0;z-index:3}
+  .hero-cta .btn{font-size:clamp(1.1rem,1.9vw,1.5rem);padding:14px 22px}
+  .hero-grid{grid-template-columns:4fr 8fr;align-items:end;gap:48px;margin-top:2.4vw}
+  .hero-copy{padding-bottom:56px}
+  .hero-media{margin:0 calc(var(--pad)*-1) 0 0}
+  .hero-photo{height:clamp(300px,34vw,560px);min-height:0}
+  .disc{right:auto;left:-84px;top:30px;width:min(11vw,168px)}
+
+  .call-grid{display:grid;grid-template-columns:7fr 5fr}
+  .call-txt{padding:110px 48px 96px var(--pad)}
+  .call h2{font-size:6.6vw}
+  .call-copy{margin-top:48px}
+  .call-ph{margin:0;aspect-ratio:auto}
+
+  .svc{padding-top:110px}
+  .svc h2{font-size:7.4vw;max-width:none}
+  .row{grid-template-columns:1fr 22ch;align-items:end;gap:40px;padding-block:2.2vw}
+  .nm{font-size:min(9vw,170px)}
+  .row p{padding-bottom:1.2vw}
+  .svc-note{padding-top:72px;font-size:1.6rem}
+  .bignum{font-size:11.4vw;margin-top:20px}
+  .svc-end{height:110px}
+
+  .band-fig{height:min(86vh,800px)}
+  .band-lab{padding:28px var(--pad) 30px;max-width:none}
+  .band-lab b{font-size:min(8vw,150px)}
+
+  .office-grid{display:grid;grid-template-columns:7fr 5fr;align-items:stretch}
+  .office-txt{padding:110px 48px 110px var(--pad)}
+  .office h2{font-size:6vw}
+  .hours dd{font-size:clamp(1.7rem,3vw,3rem)}
+  .office-ph{aspect-ratio:auto;margin-top:-14vw;position:relative;z-index:3}
+  .office-ph img{object-position:72% 50%}
+
+  .contact{display:grid;grid-template-columns:5fr 7fr}
+  .contact-ph{height:100vh;position:sticky;top:0;align-self:start;min-height:0}
+  .contact-body{padding-block:110px}
+  .contact h2{font-size:5.4vw}
+
+  .foot{padding-top:110px}
+  .foot-top{grid-template-columns:2fr 1fr 1fr;align-items:end}
+  .wm{font-size:13vw;white-space:nowrap}
+  .foot-end{grid-template-columns:1fr auto}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top dark">
+  <a class="mark" href="#top">Marisol Vega Law</a>
+  <nav aria-label="Main">
+    <ul>
+      <li><a class="ul" href="#services">Services</a></li>
+      <li class="d"><a class="ul" href="#office">Office</a></li>
+      <li><a class="ul" href="#contact">Write me</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+<section class="hero dark" id="top">
+  <h1 class="hero-h"><span class="ln"><span class="l">Scared?</span></span> <span class="ln"><span class="l">Call</span></span> <span class="ln"><span class="l">Marisol.</span></span></h1>
+  <div class="hero-cta">
+    <a class="btn" href="tel:+15205550187"><small>Free 20-minute phone consultation</small><span class="tab">Call (520) 555-0187</span></a>
+  </div>
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <p>Family law attorney in Tucson, Arizona. Divorce, child custody, parenting plans, child support and adoptions, in English and Spanish.</p>
+      <p class="es" lang="es">Hablo español.</p>
+    </div>
+    <div class="hero-media">
+      <figure class="hero-photo">
+        <img src="https://images.unsplash.com/photo-1549318558-02fe75fc51d2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8c2FndWFybyUyMGRlc2VydCUyMGR1c2t8ZW58MXx8fHwxNzk0NjkyOTE3fDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="Rain puddles reflecting a warm orange sky in a desert landscape with cacti" width="4396" height="3465" fetchpriority="high" style="filter:saturate(1.08) contrast(1.03)">
+      </figure>
+      <div class="disc" aria-hidden="true">
+        <svg viewBox="0 0 200 200" focusable="false">
+          <defs><path id="dp" d="M100,100 m-80,0 a80,80 0 1,1 160,0 a80,80 0 1,1 -160,0"/></defs>
+          <circle cx="100" cy="100" r="100" fill="#FFD23F"/>
+          <g class="ring"><text font-size="15" font-weight="700" fill="#0B3B2C"><textPath href="#dp" textLength="497" lengthAdjust="spacing">FREE 20-MINUTE PHONE CONSULTATION ·</textPath></text></g>
+          <text x="100" y="114" text-anchor="middle" font-size="60" font-weight="800" letter-spacing="-3" fill="#0B3B2C">20</text>
+          <text x="100" y="138" text-anchor="middle" font-size="20" font-weight="800" letter-spacing="2" fill="#0B3B2C">MIN</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="call" aria-labelledby="call-h">
+  <div class="call-grid">
+    <div class="call-txt">
+      <h2 id="call-h">If you’re scared and stressed, I want you to feel you can call me.</h2>
+      <div class="call-copy">
+        <p data-rv>I’m Marisol Vega, a family law attorney in Tucson. I handle divorce, child custody, parenting plans, child support and adoptions.</p>
+        <p data-rv>New clients get a free 20-minute phone consultation. You don’t need to have it figured out first.</p>
+        <p class="es-tag" data-rv><span lang="es">Hablo español. Llámeme al</span> <a href="tel:+15205550187" class="tab">(520) 555-0187</a>.</p>
+      </div>
+    </div>
+    <figure class="call-ph pf" data-par>
+      <img src="https://images.unsplash.com/photo-1685495445623-c0f98f1b4831?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8cGFyZW50JTIwY2hpbGQlMjBob2xkaW5nJTIwaGFuZHN8ZW58MXx8fHwxNzk0NjkyOTE4fDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="a black and white photo of a person holding a baby's hand" width="5184" height="3456" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<section class="svc" id="services" aria-labelledby="svc-h">
+  <div class="svc-h"><h2 id="svc-h" data-split>Family law, in English and Spanish.</h2></div>
+  <ul class="rows">
+    <li class="row"><h3 class="nm">Divorce</h3><p>Ending a marriage and sorting out what comes after.</p></li>
+    <li class="row"><h3 class="nm">Child custody</h3><p>Where the kids live and how decisions get made.</p></li>
+    <li class="row"><h3 class="nm">Parenting plans</h3><p>A written schedule for the kids that both parents can follow.</p></li>
+    <li class="row"><h3 class="nm">Child support</h3><p>Setting it up, or asking for a change.</p></li>
+    <li class="row"><h3 class="nm">Adoptions</h3><p>Making a family official in court.</p></li>
+  </ul>
+  <p class="svc-note" data-rv>Not sure which one is yours? Call, and we’ll sort it out in the first 20 minutes. It’s free.</p>
+  <a class="bignum tab" href="tel:+15205550187">(520) 555-0187</a>
+  <div class="svc-end"></div>
+</section>
+
+<section class="band" aria-label="Tucson, Arizona">
+  <figure class="band-fig pf" data-par>
+    <img src="https://images.unsplash.com/photo-1711653145792-43ecaca32b9e?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8VHVjc29uJTIwbW91bnRhaW5zfGVufDF8fHx8MTc5NDY5MjkxOHww&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="a scenic view of a winding road in the mountains" width="6192" height="4128" loading="lazy" style="filter:saturate(1.08) contrast(1.03)">
+  </figure>
+  <div class="band-lab dark"><span class="label">Serving</span><b>Tucson, Arizona</b></div>
+</section>
+
+<section class="office dark" id="office" aria-labelledby="office-h">
+  <div class="office-grid">
+    <div class="office-txt">
+      <h2 id="office-h" data-split>Near downtown Tucson, <span class="y">Monday to Friday, 9 AM to 5 PM.</span></h2>
+      <dl class="hours tab">
+        <div><dt>Monday–Friday</dt><dd>9 AM–5 PM</dd></div>
+        <div><dt>Languages</dt><dd>English · Español</dd></div>
+      </dl>
+      <p class="status tab" id="status" aria-live="polite"></p>
+      <div class="office-info">
+        <p>Office near downtown Tucson</p>
+        <p>Free 20-minute phone consultation for new clients. Call <a class="ul tab" href="tel:+15205550187" style="color:var(--y);font-weight:800">(520) 555-0187</a>.</p>
+      </div>
+    </div>
+    <figure class="office-ph pf" data-par>
+      <img src="https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bGF3JTIwYm9va3MlMjBkZXNrJTIwbGlnaHR8ZW58MXx8fHwxNzk0NjkyOTE5fDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="books in glass bookcase" width="5472" height="3648" loading="lazy" style="filter:saturate(1.08) contrast(1.03)">
+    </figure>
+  </div>
+</section>
+
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <figure class="contact-ph pf st">
+    <img src="https://images.unsplash.com/photo-1552819289-824d37ca69d2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8cGFyZW50JTIwY2hpbGQlMjBob2xkaW5nJTIwaGFuZHN8ZW58MXx8fHwxNzk0NjkyOTE4fDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="person holding baby's hand in close up photography" width="5532" height="3693" loading="lazy">
+  </figure>
+  <div class="contact-body">
+    <h2 id="contact-h" data-split>Prefer to write? Tell me what’s going on.</h2>
+    <p>Or call <a class="ul tab" href="tel:+15205550187" style="font-weight:800">(520) 555-0187</a>, Monday–Friday, 9 AM–5 PM.</p>
+    <form data-ns-contact>
+      <div class="f"><label for="n">Your name</label><input id="n" name="name" type="text" autocomplete="name" required></div>
+      <div class="f"><label for="e">Email</label><input id="e" name="email" type="email" autocomplete="email"></div>
+      <div class="f"><label for="p">Phone</label><input id="p" name="phone" type="tel" autocomplete="tel"></div>
+      <div class="f"><label for="m">What’s going on</label><textarea id="m" name="message" required></textarea></div>
+      <div class="hp" aria-hidden="true"><label>Company <input name="company" tabindex="-1" autocomplete="off"></label></div>
+      <p class="note">Please add a phone number or an email so I can reply.</p>
+      <button class="btn solid" type="submit">Send to Marisol</button>
+    </form>
+  </div>
+</section>
+
+<figure class="dusk pf" data-par>
+  <img src="https://images.unsplash.com/photo-1526111787490-c108ba3880b3?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8c2FndWFybyUyMGRlc2VydCUyMGR1c2t8ZW58MXx8fHwxNzk0NjkyOTE3fDA&ixlib=rb-4.1.0&w=2400&q=80&auto=format&fit=max" alt="brown and green grass" width="5582" height="3248" loading="lazy" style="filter:saturate(1.08) contrast(1.03)">
+</figure>
+</main>
+
+<footer class="foot dark">
+  <div class="foot-top">
+    <a class="tel" href="tel:+15205550187">(520) 555-0187</a>
+    <p>Serving Tucson, Arizona.<br>Office near downtown.</p>
+    <p class="tab">Monday–Friday<br>9 AM–5 PM</p>
+  </div>
+  <p class="wm" id="wm">Marisol Vega Law</p>
+  <div class="foot-end">
+    <span>© 2026 Marisol Vega Law</span>
+    <span>Photos: Dulcey Lima, Muhamad Harun Rabiyudin, JC Cervantes, Clarisse Meyer, Hu Chen and Robert Murray on Unsplash</span>
+  </div>
+</footer>
+
+<div class="bar">
+  <a class="bar-call" href="tel:+15205550187">Call (520) 555-0187</a>
+  <a class="bar-write" href="#contact">Write</a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>
+(function(){
+  // Real office status, Tucson time (Arizona does not observe DST)
+  try{
+    var el=document.getElementById('status');
+    var parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Phoenix',weekday:'short',hour:'numeric',minute:'numeric',hourCycle:'h23'}).formatToParts(new Date());
+    var o={};parts.forEach(function(p){o[p.type]=p.value});
+    var mins=(+o.hour)*60+(+o.minute);
+    var wk=['Mon','Tue','Wed','Thu','Fri'].indexOf(o.weekday)>-1;
+    el.textContent=(wk&&mins>=540&&mins<1020)?'The office is open right now, until 5 PM Tucson time.':'The office is closed right now. Hours are Monday–Friday, 9 AM–5 PM Tucson time.';
+  }catch(e){}
+
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!window.gsap||reduce||!window.ScrollTrigger)return;
+  var hasSplit=!!window.SplitText;
+  gsap.registerPlugin(ScrollTrigger);
+  if(hasSplit)gsap.registerPlugin(SplitText);
+
+  var lenis=null;
+  if(window.Lenis&&matchMedia('(min-width:900px)').matches&&matchMedia('(pointer:fine)').matches){
+    lenis=new Lenis({lerp:.1});
+    lenis.on('scroll',ScrollTrigger.update);
+    gsap.ticker.add(function(t){lenis.raf(t*1000)});
+    gsap.ticker.lagSmoothing(0);
+    document.querySelectorAll('a[href^="#"]').forEach(function(a){
+      a.addEventListener('click',function(e){
+        var id=a.getAttribute('href');var t=id.length>1&&document.querySelector(id);
+        if(t){e.preventDefault();lenis.scrollTo(t,{offset:0})}
+      });
+    });
+  }
+
+  // intro (about 1.3 s)
+  var tl=gsap.timeline({defaults:{ease:'power3.out'}});
+  tl.from('.top',{yPercent:-100,opacity:0,duration:.5},0)
+    .from('.hero .l',{yPercent:115,duration:.8,stagger:.1,ease:'back.out(1.3)'},.05)
+    .fromTo('.hero-photo',{clipPath:'inset(100% 0% 0% 0%)'},{clipPath:'inset(0% 0% 0% 0%)',duration:.9,ease:'power4.inOut',clearProps:'clipPath'},.25)
+    .from('.hero-photo img',{scale:1.15,duration:1.1},.25)
+    .from('.hero-copy p',{y:22,opacity:0,stagger:.08,duration:.6},.55)
+    .from('.hero-cta',{y:24,duration:.6,ease:'back.out(1.6)',clearProps:'transform'},.6)
+    .from('.disc',{scale:0,duration:.6,ease:'back.out(2.6)'},.75);
+
+  // headline line reveals
+  document.querySelectorAll('[data-split]').forEach(function(h){
+    if(hasSplit){
+      SplitText.create(h,{type:'lines',mask:'lines',autoSplit:true,onSplit:function(self){
+        return gsap.from(self.lines,{yPercent:110,duration:.8,stagger:.09,ease:'back.out(1.2)',scrollTrigger:{trigger:h,start:'top 88%',once:true}});
+      }});
+    }else{
+      gsap.from(h,{y:40,opacity:0,duration:.7,scrollTrigger:{trigger:h,start:'top 88%',once:true}});
+    }
+  });
+  gsap.utils.toArray('[data-rv]').forEach(function(el){
+    gsap.from(el,{y:36,opacity:0,duration:.7,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
+  });
+  gsap.utils.toArray('.row').forEach(function(r){
+    gsap.from(r,{y:50,opacity:0,duration:.7,ease:'power3.out',scrollTrigger:{trigger:r,start:'top 92%',once:true}});
+  });
+  gsap.from('.hours>div',{y:30,opacity:0,stagger:.12,duration:.7,ease:'back.out(1.4)',scrollTrigger:{trigger:'.hours',start:'top 90%',once:true}});
+  if(hasSplit){
+    var wm=SplitText.create('#wm',{type:'words'});
+    gsap.from(wm.words,{yPercent:70,opacity:0,rotate:4,duration:.9,stagger:.12,ease:'back.out(1.8)',scrollTrigger:{trigger:'.foot',start:'top 70%',once:true}});
+  }
+
+  var mm=gsap.matchMedia();
+  mm.add('(min-width:900px)',function(){
+    var split=null;
+    var h=document.querySelector('#call-h');
+    if(hasSplit&&h){
+      split=SplitText.create(h,{type:'words'});
+      gsap.fromTo(split.words,{opacity:.18},{opacity:1,stagger:.12,ease:'none',scrollTrigger:{trigger:h,start:'top 80%',end:'bottom 50%',scrub:true}});
+    }
+    gsap.utils.toArray('[data-par] img').forEach(function(img){
+      gsap.fromTo(img,{yPercent:-7},{yPercent:7,ease:'none',scrollTrigger:{trigger:img.parentNode,start:'top bottom',end:'bottom top',scrub:true}});
+    });
+    gsap.utils.toArray('.nm').forEach(function(n,i){
+      var a=i%2?5:0,b=i%2?0:5;
+      gsap.fromTo(n,{x:a+'vw'},{x:b+'vw',ease:'none',scrollTrigger:{trigger:n.parentNode,start:'top bottom',end:'bottom 30%',scrub:true}});
+    });
+    gsap.fromTo('.band-fig',{clipPath:'inset(14% 18% 14% 18%)'},{clipPath:'inset(0% 0% 0% 0%)',ease:'none',scrollTrigger:{trigger:'.band',start:'top 85%',end:'top 15%',scrub:true}});
+    gsap.to('.ring',{rotate:300,svgOrigin:'100 100',ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+    return function(){if(split)split.revert()};
+  });
+  mm.add('(max-width:899px)',function(){
+    gsap.from('#call-h',{y:36,opacity:0,duration:.7,scrollTrigger:{trigger:'#call-h',start:'top 90%',once:true}});
+    gsap.from('.band-lab',{xPercent:-100,duration:.7,ease:'back.out(1.2)',scrollTrigger:{trigger:'.band-lab',start:'top 95%',once:true}});
+  });
+
+  var refresh=function(){ScrollTrigger.refresh()};
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refresh);
+  window.addEventListener('load',refresh);
+})();
+</script>
+</body>
+</html>

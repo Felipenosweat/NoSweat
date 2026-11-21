@@ -1,0 +1,48 @@
+name: Repro site
+
+# Roda o site (qa/repro-spec.json) no app desta branch, sem Supabase e sem chaves, e tira prints
+# do que o visitante vê. Roda quando qa/trigger-repro.txt muda; o resultado vai para a ref
+# refs/qa/repro (fora da branch).
+on:
+  push:
+    branches: ["claude/dreamy-maxwell-19fv98"]
+    paths: ["qa/trigger-repro.txt"]
+
+permissions:
+  contents: write
+
+jobs:
+  repro:
+    runs-on: ubuntu-24.04
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      AI_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @nosweat/web build
+      - name: Start app
+        run: |
+          (cd apps/web && nohup pnpm start -p 3000 > /tmp/next.log 2>&1 &)
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/ >/dev/null && break; sleep 2; done
+      - name: Install Playwright
+        run: |
+          mkdir -p /tmp/qa && cp qa/*.mjs qa/*.json /tmp/qa/
+          cd /tmp/qa && npm init -y >/dev/null && npm install playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Shots
+        run: cd /tmp/qa && BASE_URL=http://localhost:3000 OUT_DIR="$GITHUB_WORKSPACE/qa/out-repro" node repro-site.mjs
+      - name: Server log
+        if: always()
+        run: tail -n 60 /tmp/next.log || true
+      - name: Publish results to refs/qa/repro
+        run: |
+          cd qa/out-repro
+          git init -q -b results && git add -A
+          git -c user.name="site-audit" -c user.email="site-audit@users.noreply.github.com" commit -qm "repro results for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" results:refs/qa/repro

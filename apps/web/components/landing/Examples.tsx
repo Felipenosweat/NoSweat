@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { container, focusRing, frameShadow, h2Class } from "@/components/marketing/styles";
+import { FREEFORM_EXAMPLES } from "@/lib/freeform-examples";
 
 // Exemplos (#examples): capturas reais de sites feitos com a No Sweat (negócios inventados,
 // avisado na legenda). Cada site tem a própria composição, não só outra cor. No celular, uma
 // fileira que rola de lado com o dedo (capturas de celular, sem passar sozinha); no computador,
 // grade de 3 colunas com capturas de computador, a primeira ocupando duas linhas.
 // Cada cartão é um link só para /examples/<slug>. Capturas em public/landing/signature.
+// Abaixo, os seis exemplos em código livre (lib/freeform-examples.ts) numa lista só de texto:
+// ainda não têm captura, então nada de imagem inventada; cada linha abre o exemplo de verdade.
 
 const SITES = [
   {
@@ -98,6 +101,28 @@ export function Examples() {
               </li>
             );
           })}
+        </ul>
+
+        {/* Mais exemplos (código livre): lista de texto, uma linha por site, cada uma um link. */}
+        <h3 className="mt-14 text-[13px] font-semibold text-slate-600 lg:mt-20">
+          More example sites
+        </h3>
+        <ul className="mt-3 grid grid-cols-1 border-t border-slate-200 lg:grid-cols-2 lg:gap-x-8">
+          {FREEFORM_EXAMPLES.map((site) => (
+            <li key={site.slug} className="border-b border-slate-200">
+              <Link
+                href={`/examples/${site.slug}`}
+                className={`group flex min-h-12 flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 rounded-lg py-3 ${focusRing}`}
+              >
+                <span className="text-[15px] font-semibold text-ink underline decoration-transparent underline-offset-4 transition-colors duration-150 group-hover:decoration-ink">
+                  {site.name}
+                </span>
+                <span className="text-[13px] text-slate-600">
+                  {site.kind}, {site.place}
+                </span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     </section>

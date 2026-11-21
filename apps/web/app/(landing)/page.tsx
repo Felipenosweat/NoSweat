@@ -30,6 +30,7 @@ import {
 } from "@/components/marketing/styles";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
+import { currentOffer, promoActive } from "@/server/billing/plans";
 
 // Landing (redesenho de 2026-11): a página acompanha um serviço inventado do primeiro toque no
 // site até a fatura paga. Topo com as quatro perguntas e o celular → três fatos → "The office"
@@ -45,6 +46,9 @@ const DESCRIPTION = `Answer four questions and get a website that takes bookings
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
 export const viewport: Viewport = { themeColor: "#ffffff" };
+
+// O nome da oferta (Black Friday, Cyber Week...) muda pela data: a página se refaz de hora em hora.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },

@@ -7,6 +7,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { getAccount, requireAdmin } from "@/server/admin";
 import { AccountAccessError, setLoginDisabled } from "@/server/admin/account-access";
+import { AuditReason, recordAdminAction } from "@/server/admin/audit";
 import { revalidateAdmin } from "@/server/admin/cache";
 import { VIEW_AS_COOKIE, signViewAsToken, viewAsCookieOptions } from "@/server/auth/view-as-token";
 import { extendExpiry, getGrantStore, isGrantActive, PLANS } from "@/server/billing";
@@ -21,7 +22,8 @@ import { adminAdjustCredits } from "@/server/credits";
 import { getSocialStore } from "@/server/social/store";
 
 // Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp),
-// o testador do Instagram e o modo "ver como" (só leitura).
+// o testador do Instagram e o modo "ver como" (só leitura). Toda ação vai para o
+// admin_audit_log (server/admin/audit.ts).
 
 const GrantForm = z.object({
   plan: z.enum(["starter", "pro", "premium"]),
@@ -103,6 +105,7 @@ export async function grantAccess(
     return { ok: false, message: "Check the plan and the number of days (0 to 3660)." };
   }
   const input = parsed.data;
+  const paymentReceived = formData.get("paymentReceived") === "on";
   const store = getGrantStore();
   const current = await store.get(userId);
   const unchanged =
@@ -128,11 +131,21 @@ export async function grantAccess(
     note: input.note ? withNote(input.note, current?.note) : (current?.note ?? null),
     grantedBy: admin.id,
     updatedAt: new Date().toISOString(),
+    // "Payment received": só marca (nunca desmarca) e só na primeira vez; é o que faz a conta
+    // contar como cliente de verdade no /admin (meta de 10 para subir os preços).
+    ...(paymentReceived && !current?.paymentConfirmedAt
+      ? { paymentConfirmedAt: new Date().toISOString() }
+      : {}),
   });
   refresh(userId);
-  console.info(
-    `[admin] ${admin.id} granted ${input.plan} to ${userId} until ${expiresAt} (${input.days} day(s))`,
-  );
+  await recordAdminAction({
+    adminId: admin.id,
+    action: "access.grant",
+    targetType: "user",
+    targetId: userId,
+    reason: input.note ?? null,
+    metadata: { plan: input.plan, days: input.days, expiresAt, paymentReceived },
+  });
 
   const planName = PLANS[input.plan].name;
   const account = await getAccount(userId);
@@ -172,7 +185,13 @@ export async function revokeAccess(
     updatedAt: now,
   });
   refresh(userId);
-  console.info(`[admin] ${admin.id} removed manual access from ${userId}`);
+  await recordAdminAction({
+    adminId: admin.id,
+    action: "access.revoke",
+    targetType: "user",
+    targetId: userId,
+    metadata: { plan: current.plan, previousExpiresAt: current.expiresAt },
+  });
   return { ok: true, message: "Manual access removed." };
 }
 
@@ -189,20 +208,55 @@ export async function toggleSocialTester(userId: string): Promise<void> {
     action: "admin_set_tester",
     detail: { tester },
   });
-  console.info(`[admin] ${admin.id} set Instagram tester=${tester} for ${userId}`);
+  await recordAdminAction({
+    adminId: admin.id,
+    action: "social.tester",
+    targetType: "user",
+    targetId: userId,
+    metadata: { tester },
+  });
   refresh(userId);
 }
 
+/** Resposta do formulário "ver como" (ViewAsForm.tsx): só há resposta quando dá erro. */
+export type ViewAsState = { error: string | null };
+
 /**
- * "Ver como esta conta": grava o cookie `ns_view_as` (httpOnly, assinado, 1 hora) e abre o
- * painel com os dados dela. Só leitura: o proxy.ts recusa qualquer escrita na API até sair.
+ * "Ver como esta conta": exige um motivo curto, grava no admin_audit_log ANTES (sem registro, não
+ * abre), grava o cookie `ns_view_as` (httpOnly, assinado, 1 hora) e abre o painel com os dados
+ * dela. Só leitura: o proxy.ts recusa qualquer escrita na API até sair.
  */
-export async function startViewAs(userId: string): Promise<void> {
+export async function startViewAs(
+  userId: string,
+  _prev: ViewAsState,
+  formData: FormData,
+): Promise<ViewAsState> {
   const admin = await requireClient(userId);
   if (userId === admin.id) redirect("/dashboard");
+  const reason = AuditReason.safeParse(formData.get("reason") ?? "");
+  if (!reason.success) {
+    return {
+      error: reason.error.issues[0]?.message ?? "Tell us why you need to view this account.",
+    };
+  }
+  try {
+    await recordAdminAction(
+      {
+        adminId: admin.id,
+        action: "view_as.start",
+        targetType: "user",
+        targetId: userId,
+        reason: reason.data,
+      },
+      { strict: true },
+    );
+  } catch {
+    return {
+      error: "We couldn't record this in the audit log, so view mode stays off. Try again.",
+    };
+  }
   const token = await signViewAsToken(admin.id, userId);
   (await cookies()).set(VIEW_AS_COOKIE, token, viewAsCookieOptions());
-  console.info(`[admin] ${admin.id} started view-as for ${userId}`);
   redirect("/dashboard");
 }
 
@@ -232,7 +286,12 @@ export async function setLoginDisabledAction(
         error instanceof AccountAccessError ? error.message : "Something went wrong. Try again.",
     };
   }
-  console.info(`[admin] ${admin.id} ${disabled ? "disabled" : "re-enabled"} login for ${userId}`);
+  await recordAdminAction({
+    adminId: admin.id,
+    action: disabled ? "account.login_disabled" : "account.login_enabled",
+    targetType: "user",
+    targetId: userId,
+  });
   refresh(userId);
   return {
     ok: true,
@@ -275,7 +334,14 @@ export async function adjustCreditsAction(
   const { delta, note } = parsed.data;
   try {
     const balance = await adminAdjustCredits(userId, delta, note ?? null, admin.id);
-    console.info(`[admin] ${admin.id} adjusted credits for ${userId} by ${delta}`);
+    await recordAdminAction({
+      adminId: admin.id,
+      action: "credits.adjust",
+      targetType: "user",
+      targetId: userId,
+      reason: note ?? null,
+      metadata: { delta, balance: balance.total },
+    });
     refresh(userId);
     return {
       ok: true,

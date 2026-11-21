@@ -90,6 +90,7 @@ export function GrantAccessForm({
   plans,
   enforced,
   emailOn,
+  paymentConfirmedAt,
 }: {
   grantAction: AccessAction;
   revokeAction: AccessAction;
@@ -102,6 +103,8 @@ export function GrantAccessForm({
   enforced: boolean;
   /** E-mails ligados (RESEND_API_KEY): o cliente recebe "seu plano está ativo". */
   emailOn: boolean;
+  /** Quando o pagamento foi confirmado (conta como cliente de verdade); `null` = ainda não. */
+  paymentConfirmedAt: string | null;
 }) {
   const [state, dispatch, pending] = useActionState(grantAction, initialState);
   const [revokeState, revokeDispatch, revoking] = useActionState(revokeAction, initialState);
@@ -146,6 +149,20 @@ export function GrantAccessForm({
             className={fieldClass}
           />
         </label>
+        {paymentConfirmedAt ? (
+          <p className="text-sm text-(--glass-fg-muted) sm:col-span-3">
+            Payment confirmed on {new Date(paymentConfirmedAt).toLocaleDateString("en-US")}. This
+            account counts as a real customer.
+          </p>
+        ) : (
+          <label className="flex items-start gap-2.5 text-sm text-(--glass-fg) sm:col-span-3">
+            <input type="checkbox" name="paymentReceived" className="mt-1 size-4" />
+            <span>
+              Payment received (Pix, WhatsApp, cash). Tick it only when the money really arrived:
+              it makes this account count as a real customer toward raising prices.
+            </span>
+          </label>
+        )}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:col-span-3">
           <GlassButton type="submit" variant="secondary" loading={pending}>
             {pending ? "Saving…" : active ? "Add days" : "Grant access"}

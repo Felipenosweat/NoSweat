@@ -16,6 +16,7 @@ import {
 } from "@/components/marketing/styles";
 import { PriceReceipt } from "@/components/landing/PriceReceipt";
 import { checkoutReady } from "@/server/billing";
+import { currentOffer, promoActive } from "@/server/billing/plans";
 
 // Página de preços. A tabela é a mesma da landing (<PricingPlans />, única fonte dos preços).
 // Criar e ver a prévia é grátis; a cobrança (Stripe) só acontece ao escolher um plano para
@@ -24,7 +25,10 @@ import { checkoutReady } from "@/server/billing";
 
 const TITLE = "Pricing";
 const DESCRIPTION =
-  "Build and preview your website free. Pick Starter, Pro or Premium when you go live, monthly or yearly.";
+  "Start free. Pick Starter, Pro or Premium when you build your website, monthly or yearly.";
+
+// O nome da oferta (Black Friday, Cyber Week...) muda pela data: a página se refaz de hora em hora.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -65,12 +69,17 @@ export default function PricingPage() {
               checkout={checkoutReady()}
               prices={planPrices()}
               credits={pricingCredits()}
+              promo={promoActive()}
+              offerName={currentOffer()}
             />
           </div>
 
           <p className="mt-8 max-w-[70ch] text-[13px] leading-relaxed text-slate-500">
-            Prices in US dollars. Creating and previewing your site is free; you pay when you choose
-            a plan to publish. Domain registration is not included. See our{" "}
+            Prices in US dollars. Starting is free; you pay when you choose a plan to build your
+            website.{" "}
+            {promoActive() &&
+              "Launch prices are for our first customers; the regular price shown applies once we raise prices. "}
+            Domain registration is not included. See our{" "}
             <Link href="/terms" className={textLink}>
               Terms of Service
             </Link>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createHrefForPlan } from "@/lib/chosen-plan";
 import { GUARANTEE_LINE } from "./legal/policy";
+import { PLANS as BILLING_PLANS, promoPercentOff } from "@/server/billing/plans";
 import { CheckIcon } from "./icons";
 import type { PlanPrice, PricingCredits } from "./pricing-data";
 import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
@@ -14,11 +15,12 @@ import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
 // ação principal; os outros planos têm o botão secundário).
 // Único componente de cliente da seção: só guarda a escolha mensal/anual.
 // Preços combinados com o fundador (2026-10-13). Anual = 10× o mensal ("2 months free" é exato).
-// Nada de preço riscado, "mais popular" ou desconto inventado.
+// Preço riscado só na oferta de lançamento (`PROMO` em server/billing/plans.ts, com data de fim e
+// preço normal que será cobrado depois); nada de "mais popular" ou desconto inventado.
 // Os NÚMEROS vêm por props das fontes únicas (components/marketing/pricing-data.ts lê
 // server/billing/plans.ts e server/credits/pricing.ts): preço, sites no ar, créditos da IA por
 // mês, custo de cada ação e pacotes avulsos. Aqui ficam só os textos de cada plano.
-// "Up to N websites" = sites publicados ao mesmo tempo (`publishedSitesLimit`).
+// "1 live website" / "Up to N live websites" = sites publicados ao mesmo tempo (`publishedSitesLimit`).
 // A IA gasta créditos (auditoria J9): nada de "AI edits: Included".
 // `checkout`: o Stripe Checkout está ligado (`checkoutReady()` de server/billing, lido pela
 // página, que é server component). Sem ele a venda é manual (WhatsApp/e-mail + acesso liberado
@@ -55,14 +57,13 @@ const PLANS: Plan[] = [
       "Estimates and invoices",
       "Schedule",
       "Google review requests",
-      "Instagram post calendar",
+      "Instagram post calendar, 4 posts a month",
     ],
   },
   {
     id: "pro",
     name: "Pro",
     summary: "More live websites and Instagram posts.",
-    recommended: true,
     intro: "Everything in Starter, plus:",
     features: ["More Instagram posts each month"],
   },
@@ -70,6 +71,7 @@ const PLANS: Plan[] = [
     id: "premium",
     name: "Premium",
     summary: "The most live websites and Instagram posts.",
+    recommended: true,
     intro: "Everything in Pro, plus:",
     features: ["The most Instagram posts each month"],
   },
@@ -80,6 +82,18 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
   { value: "annual", label: "Annual", note: "2 months free" },
 ];
 
+const dollars = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
+
+/** Preço normal (riscado na oferta) e desconto de cada plano, lidos de server/billing/plans.ts. */
+function regularOf(id: string) {
+  const plan = BILLING_PLANS[id as keyof typeof BILLING_PLANS];
+  return {
+    monthly: dollars(plan.regularMonthlyCents),
+    annual: dollars(plan.regularMonthlyCents * 10),
+    percentOff: promoPercentOff(plan),
+  };
+}
+
 const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
 const count = (n: number) => n.toLocaleString("en-US");
@@ -88,12 +102,18 @@ export function PricingPlans({
   checkout,
   prices,
   credits,
+  promo = false,
+  offerName = "Launch price",
 }: {
   checkout: boolean;
   /** Preços de server/billing/plans.ts (ver pricing-data.ts). */
   prices: Record<PlanId, PlanPrice>;
   /** Créditos da IA de server/credits/pricing.ts (ver pricing-data.ts). */
   credits: PricingCredits;
+  /** Oferta de lançamento valendo (`promoActive()` de server/billing/plans.ts). */
+  promo?: boolean;
+  /** Nome da oferta do momento (Black Friday, Cyber Week...), de `currentOffer()`. */
+  offerName?: string;
 }) {
   // Anual por padrão: 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
@@ -131,10 +151,21 @@ export function PricingPlans({
         {annual ? "Showing annual prices." : "Showing monthly prices."}
       </p>
 
+      {promo && (
+        <p className="mt-6 max-w-[70ch] text-base leading-snug text-pretty text-ink">
+          <strong className="font-semibold">{offerName}.</strong> Launch pricing: Starter is{" "}
+          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off its regular price.
+        </p>
+      )}
+
       <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
         {PLANS.map((plan) => {
           const price = prices[plan.id];
-          const features = [`Up to ${price.publishedSitesLimit} websites`, ...plan.features];
+          const sites = price.publishedSitesLimit;
+          const features = [
+            sites === 1 ? "1 live website" : `Up to ${sites} live websites`,
+            ...plan.features,
+          ];
           return (
             <li
               key={plan.id}
@@ -152,7 +183,7 @@ export function PricingPlans({
                 </h3>
                 {plan.recommended && (
                   <span className="inline-flex h-7 items-center rounded-lg bg-slate-100 px-2.5 text-[13px] font-semibold text-ink">
-                    Recommended
+                    {promo ? "Best value" : "Recommended"}
                   </span>
                 )}
               </div>
@@ -161,7 +192,24 @@ export function PricingPlans({
                 {plan.summary}
               </p>
 
-              <p className="mt-6 flex flex-wrap items-baseline gap-1 font-display text-ink">
+              {/* Oferta de lançamento: rótulo neutro (o azul fica só no botão). */}
+              {promo && regularOf(plan.id).percentOff > 0 && (
+                <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                  <span className="inline-flex h-6 items-center rounded-md bg-slate-100 px-2 text-[13px] font-semibold text-ink tabular-nums">
+                    Save {regularOf(plan.id).percentOff}%
+                  </span>
+                  <span className="tabular-nums">
+                    Regular price{" "}
+                    <s>
+                      {annual ? regularOf(plan.id).annual : regularOf(plan.id).monthly}
+                      {annual ? "/yr" : "/mo"}
+                    </s>
+                  </span>
+                </p>
+              )}
+              <p
+                className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${promo && regularOf(plan.id).percentOff > 0 ? "mt-2" : "mt-6"}`}
+              >
                 <span className="text-[2.5rem] leading-none font-bold tracking-[-0.02em] tabular-nums lg:text-[3rem]">
                   {annual ? price.annual : price.monthly}
                 </span>

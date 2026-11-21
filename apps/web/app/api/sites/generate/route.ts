@@ -1,5 +1,7 @@
 import { GenerateSiteRequest, GenerateSiteResponse, type SiteSpec } from "@nosweat/schema";
 import { generateSiteSpec, getSiteGenerator } from "@/server/ai";
+import { generateBlocked } from "@/server/billing";
+import { briefWithAnswers } from "@/server/ai/answers";
 import { ensureGuestId } from "@/server/guest";
 import { errorResponse, handle, jsonResponse, readJson } from "@/server/http";
 import { fitDesignToPhoto } from "@/server/design";
@@ -27,6 +29,9 @@ export async function POST(request: Request): Promise<Response> {
     if (!input.ok) return input.response;
 
     const actor: Actor = (await getActor()) ?? { kind: "guest", guestId: await ensureGuestId() };
+    // Com os planos valendo, criar um site exige plano ativo (cada site custa IA de verdade).
+    const needsPlan = await generateBlocked(actor);
+    if (needsPlan) return needsPlan;
     // Monta o gerador ANTES de gastar um crédito: erro de configuração (ex.: falta a chave da
     // IA) vira 500 sem descontar nada do cliente.
     const generator = getSiteGenerator();
@@ -47,7 +52,7 @@ export async function POST(request: Request): Promise<Response> {
     let spec: SiteSpec;
     try {
       spec = await generateSiteSpec(
-        input.data.brief,
+        briefWithAnswers(input.data.brief, input.data.answers),
         generator,
         {
           recent: await recentCompositions(actor),

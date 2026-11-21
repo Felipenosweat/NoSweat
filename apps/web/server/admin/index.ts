@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { DEV_USER, getCurrentUser, type CurrentUser } from "../auth/session";
 import { getAuthUser, listAuthUsers, serviceConfig, type AuthUser } from "./auth-api";
+import { adminMfaSatisfied } from "./mfa";
 
 // Administradores da plataforma (tabela public.platform_admins) e lista de contas.
 // A conta da No Sweat (admin) manda em tudo: vê todas as contas e sites, cria contas de teste,
@@ -46,6 +47,16 @@ export const isAdmin = cache(async (userId: string): Promise<boolean> => {
 
 export async function isAdminUser(user: CurrentUser | null): Promise<boolean> {
   return user ? isAdmin(user.id) : false;
+}
+
+/**
+ * Admin com a sessão atual em AAL2 (ou MFA desligado): pode usar os poderes de admin sobre os
+ * dados dos outros (sites de clientes, "ver como"). `userId` precisa ser o da sessão atual.
+ * Para as vantagens na própria conta (sem limite de IA, sem cobrança) basta `isAdmin`.
+ */
+export async function isElevatedAdmin(userId: string): Promise<boolean> {
+  if (!(await isAdmin(userId))) return false;
+  return adminMfaSatisfied();
 }
 
 /** Ids de todos os admins (para os selos da lista de contas). Erro no banco = lista vazia. */
@@ -146,12 +157,23 @@ export const getAccount = cache(async (userId: string): Promise<ClientAccount | 
   return user ? toAccount(user) : null;
 });
 
+/** Página do segundo passo (cadastrar o autenticador ou digitar o código). */
+export const ADMIN_MFA_PATH = "/admin/mfa";
+
 /**
- * Garante que quem está vendo é admin; senão manda para o login ou responde 404.
+ * Garante que quem está vendo é admin com a sessão em AAL2; senão manda para o login, para o
+ * /admin/mfa (falta o código do autenticador) ou responde 404 (não é admin).
  * Cada página do /admin chama isto: o layout sozinho não basta, porque o Next pode buscar
  * só a página (navegação no cliente) sem rodar o layout de novo.
  */
 export async function requireAdmin(): Promise<CurrentUser> {
+  const user = await requireAdminRole();
+  if (!(await adminMfaSatisfied())) redirect(ADMIN_MFA_PATH);
+  return user;
+}
+
+/** Admin, sem exigir o segundo passo. Só para o próprio /admin/mfa. */
+export async function requireAdminRole(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/admin");
   if (!(await isAdminUser(user))) notFound();

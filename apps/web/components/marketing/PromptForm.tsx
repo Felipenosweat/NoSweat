@@ -41,7 +41,7 @@ const TYPED = [
 
 export function PromptForm({
   examples = true,
-  caption = "Free to create and preview. Pick a plan when you go live.",
+  caption = "Free to start. Pick a plan to have your site built.",
   tone = "light",
 }: {
   /** Mostra os chips de exemplo que preenchem o campo. */

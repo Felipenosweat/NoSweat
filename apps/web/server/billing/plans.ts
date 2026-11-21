@@ -10,6 +10,8 @@ export type Plan = {
   name: string;
   monthlyCents: number;
   annualCents: number;
+  /** Preço normal mensal, o que será cobrado quando os preços subirem (ver `OFFERS`). */
+  regularMonthlyCents: number;
   /** Taxa única, cobrada na primeira fatura do plano MENSAL. `null` = não tem. */
   setupCents: number | null;
   /** Pode ligar domínio próprio. */
@@ -22,19 +24,22 @@ export type Plan = {
   socialAccounts: number;
 };
 
-// TODO: os limites de redes sociais (12/30/60 posts por mês, 1 conta) são sugestão; o fundador
-// ainda não decidiu preços nem o texto da tabela. Não mudar preços nem PricingPlans.tsx até lá.
+// Starter a US$ 19 (decisão do fundador, nov/2026, oferta de Black Friday): 1 site no ar, 60
+// créditos de IA por mês (server/credits/pricing.ts) e 4 posts no Instagram por mês; o sistema de
+// gestão (clientes, agenda, agendamento, avaliações) continua inteiro. Pro e Premium não mudaram.
+// Preço e limites aqui precisam bater com components/marketing/PricingPlans.tsx.
 
 export const PLANS: Record<PlanId, Plan> = {
   starter: {
     id: "starter",
-    publishedSitesLimit: 3,
+    publishedSitesLimit: 1,
     name: "Starter",
-    monthlyCents: 3900,
-    annualCents: 39000,
+    monthlyCents: 1900,
+    annualCents: 19000,
+    regularMonthlyCents: 3900,
     setupCents: null,
     customDomain: true,
-    socialPostsPerMonth: 12,
+    socialPostsPerMonth: 4,
     socialAccounts: 1,
   },
   pro: {
@@ -43,6 +48,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Pro",
     monthlyCents: 6900,
     annualCents: 69000,
+    regularMonthlyCents: 6900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 30,
@@ -54,6 +60,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Premium",
     monthlyCents: 12900,
     annualCents: 129000,
+    regularMonthlyCents: 12900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 60,
@@ -68,4 +75,45 @@ export function priceCents(plan: Plan, interval: BillingInterval): number {
 /** Taxa de implantação cobrada nesta compra (só no mensal). */
 export function setupCentsFor(plan: Plan, interval: BillingInterval): number | null {
   return interval === "monthly" ? plan.setupCents : null;
+}
+
+// Oferta de lançamento: os planos custam menos que o preço normal (`regularMonthlyCents`) até o
+// fundador decidir subir os preços (decisão dele, a partir de ~10 clientes ativos). Não há data
+// final: a oferta vale enquanto o preço cobrado for menor que o normal, e o nome dela muda sozinho
+// pelo calendário abaixo (só o NOME e o texto: nada aqui muda o preço cobrado).
+// Honestidade: o preço normal só aparece como referência porque é o que a empresa vai cobrar quando
+// subir (regra da FTC e dos estados). Por isso NÃO há relógio nem "acaba em": prazo que se renova
+// sem o preço mudar é urgência falsa. Quando o preço subir de verdade, ponha `regularMonthlyCents`
+// igual a `monthlyCents` e a oferta some sozinha.
+// Plano do fundador (nov/2026): o Starter fica em $19 até ter ~10 clientes ativos pagando; depois
+// sobe aos poucos ($24, $29, até o normal de $39). Pro e Premium NÃO sobem (decisão do fundador):
+// por isso o preço normal deles é o próprio preço, sem desconto riscado (riscar um "normal" que
+// nunca vai ser cobrado seria propaganda enganosa).
+// Para subir os preços: igualar `monthlyCents`/`annualCents` ao normal; quem já assina mantém o
+// valor do checkout em que entrou (o Stripe guarda o preço na assinatura).
+
+/** Nomes sazonais, em ordem de data. Cada um vale até `endsOn` (1º dia SEM ele, em UTC). */
+export const OFFERS: readonly { name: string; endsOn: string }[] = [
+  { name: "Black Friday", endsOn: "2026-11-29" },
+  { name: "Cyber Week", endsOn: "2026-12-07" },
+  { name: "Holiday Special", endsOn: "2026-12-20" },
+  { name: "Christmas Offer", endsOn: "2026-12-27" },
+  { name: "New Year’s Offer", endsOn: "2027-01-06" },
+];
+
+/** Nome da oferta em `now`; passada a última data do calendário, "Launch price". */
+export function currentOffer(now: Date = new Date()): string {
+  const found = OFFERS.find((offer) => now.getTime() < Date.parse(`${offer.endsOn}T00:00:00Z`));
+  return found ? found.name : "Launch price";
+}
+
+/** Há oferta de lançamento valendo? (algum plano custa menos que o preço normal) */
+export function promoActive(): boolean {
+  return Object.values(PLANS).some((plan) => plan.regularMonthlyCents > plan.monthlyCents);
+}
+
+/** Desconto do preço de oferta em relação ao normal, em % inteiro (0 se não há desconto). */
+export function promoPercentOff(plan: Plan): number {
+  if (plan.regularMonthlyCents <= plan.monthlyCents) return 0;
+  return Math.round((1 - plan.monthlyCents / plan.regularMonthlyCents) * 100);
 }

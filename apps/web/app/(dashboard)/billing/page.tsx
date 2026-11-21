@@ -32,10 +32,15 @@ import {
   monthlyAllowance,
   TOPUP_PACKS,
 } from "@/server/credits";
+import { currentOffer, promoActive, promoPercentOff } from "@/server/billing/plans";
+import { nextPlanId, upgradeGains } from "@/server/billing/upgrade";
 import { getOwnedSite } from "@/server/sites";
+import { getSocialState } from "@/server/social/api";
+import { getSiteStore } from "@/server/store";
 import { BillingIcon } from "../NavIcons";
 import { BillingPlans, type EndedPlan, type PlanCard, type SalesContact } from "./BillingPlans";
 import { CreditsPanel } from "./CreditsPanel";
+import { PlanUsage, type NextPlan, type UsageRow } from "./PlanUsage";
 
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
@@ -60,6 +65,49 @@ function endedPlan(grant: AccessGrant | null): EndedPlan | null {
 
 const usd = (cents: number) =>
   `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: cents % 100 ? 2 : 0 })}`;
+
+/**
+ * Uso do plano (sites no ar, posts do Instagram do mês) e o convite para o plano de cima. Nunca
+ * derruba a página: se algo falhar, o painel simplesmente não aparece.
+ */
+async function planUsage(
+  user: Parameters<typeof getSocialState>[0],
+  planId: keyof typeof PLANS,
+): Promise<{ rows: UsageRow[]; next: NextPlan | null } | null> {
+  try {
+    const plan = PLANS[planId];
+    const [sites, social] = await Promise.all([getSiteStore().list(user.id), getSocialState(user)]);
+    const rows: UsageRow[] = [
+      {
+        label: "Live websites",
+        used: sites.filter((site) => site.status === "published").length,
+        limit: plan.publishedSitesLimit,
+      },
+    ];
+    if (social.usage.cap !== null && social.usage.cap > 0) {
+      rows.push({
+        label: "Instagram posts this month",
+        used: social.usage.used,
+        limit: social.usage.cap,
+      });
+    }
+    const nextId = nextPlanId(planId);
+    const next = nextId
+      ? {
+          name: PLANS[nextId].name,
+          price: usd(PLANS[nextId].monthlyCents),
+          gains: upgradeGains(plan, PLANS[nextId], {
+            from: monthlyAllowance(planId),
+            to: monthlyAllowance(nextId),
+          }),
+        }
+      : null;
+    return { rows, next };
+  } catch (error) {
+    console.error("[billing] could not read the plan usage", error);
+    return null;
+  }
+}
 
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
@@ -126,6 +174,15 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     customDomain: plan.customDomain,
     publishedSitesLimit: plan.publishedSitesLimit,
     monthlyCredits: monthlyAllowance(plan.id),
+    // Preço normal riscado só onde ele vai mesmo subir (Starter); Pro e Premium não têm desconto.
+    regular:
+      promoActive() && promoPercentOff(plan) > 0
+        ? {
+            monthly: usd(plan.regularMonthlyCents),
+            annual: usd(plan.regularMonthlyCents * 10),
+            percentOff: promoPercentOff(plan),
+          }
+        : null,
   }));
 
   // Créditos da IA da conta (a vista, no "ver como"). Comprar é manual por enquanto.
@@ -139,11 +196,14 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     price: usd(pack.priceCents),
   }));
 
+  const usage =
+    billing.enabled && billing.active && billing.plan ? await planUsage(user, billing.plan) : null;
+
   return (
     <div className="max-w-4xl">
       <PageHeader
         title="Plans and billing"
-        description="Building and previewing is free. A plan puts your website live and keeps it there."
+        description="Pick a plan to build your website. It keeps your site live and gives you AI credits every month."
       />
 
       {status === "success" && (
@@ -151,13 +211,22 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           {billing.active
             ? "Payment received. Your plan is active."
             : "Payment received. It can take a few seconds to show here."}
-          {siteId && (
+          {siteId ? (
             <>
               {" "}
               <Link href={`/sites/${siteId}`} className="font-semibold underline">
                 Go publish your website →
               </Link>
             </>
+          ) : (
+            billing.active && (
+              <>
+                {" "}
+                <Link href="/create" className="font-semibold underline">
+                  Build your website →
+                </Link>
+              </>
+            )
           )}
         </Notice>
       )}
@@ -171,7 +240,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
         <Notice tone="info" className="mt-6">
           Pick a plan to put{" "}
           <strong className="font-semibold">{pendingSite.spec.business.name}</strong> live. Your
-          draft is saved; building and previewing stay free.
+          draft is saved; editing and previewing stay free.
         </Notice>
       )}
       {planLimit !== null && (
@@ -191,6 +260,10 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           </Link>{" "}
           and choose &ldquo;Take website offline&rdquo;.
         </Notice>
+      )}
+
+      {usage && billing.plan && (
+        <PlanUsage planName={PLANS[billing.plan].name} rows={usage.rows} next={usage.next} />
       )}
 
       <CreditsPanel
@@ -218,14 +291,17 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           </div>
         </section>
       ) : (
-        <BillingPlans
-          plans={plans}
-          current={billing}
-          siteId={siteId}
-          contact={contact}
-          ended={ended}
-          chosen={chosenPlan}
-        />
+        <div id="plans" className="scroll-mt-6">
+          <BillingPlans
+            plans={plans}
+            current={billing}
+            siteId={siteId}
+            contact={contact}
+            ended={ended}
+            chosen={chosenPlan}
+            offerName={promoActive() ? currentOffer() : null}
+          />
+        </div>
       )}
     </div>
   );

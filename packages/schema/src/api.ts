@@ -30,6 +30,8 @@ export const ERROR_CODES = [
   "places_error",
   /** O envio de e-mails ainda não está ligado (sem RESEND_API_KEY): respostas ao cliente dão 503. */
   "email_not_configured",
+  /** Admin sem o segundo passo (código do autenticador, sessão AAL2): rotas /api/admin/* dão 403. */
+  "mfa_required",
 ] as const;
 export type KnownErrorCode = (typeof ERROR_CODES)[number];
 
@@ -58,6 +60,16 @@ export type SiteStatus = z.infer<typeof SiteStatus>;
 export const PhotoMode = z.enum(["auto", "own"]);
 export type PhotoMode = z.infer<typeof PhotoMode>;
 
+/**
+ * Resposta do dono a uma pergunta rápida do /create ("Do you take walk-ins?" → "Both"). São fatos
+ * que o dono declarou: o gerador os trata como se estivessem na descrição dele.
+ */
+export const IntakeAnswer = z.object({
+  question: z.string().trim().min(1).max(120),
+  answer: z.string().trim().min(1).max(240),
+});
+export type IntakeAnswer = z.infer<typeof IntakeAnswer>;
+
 export const GenerateSiteRequest = z.object({
   brief: z
     .string()
@@ -76,6 +88,8 @@ export const GenerateSiteRequest = z.object({
     .trim()
     .max(80, "Please keep the business name under 80 characters.")
     .optional(),
+  /** Opcional: respostas às perguntas rápidas (sim/não ou uma opção) que a IA lê junto da descrição. */
+  answers: z.array(IntakeAnswer).max(12).optional(),
 });
 export type GenerateSiteRequest = z.infer<typeof GenerateSiteRequest>;
 

@@ -275,7 +275,7 @@ export function HeroStepper() {
           {step !== "kind" && <div className="mt-2">{buttons}</div>}
           {step === "details" && (
             <p className="mt-3 text-[13px] text-slate-600">
-              Free to create. No account or credit card needed.
+              Free to start. No credit card until you build your site.
             </p>
           )}
         </fieldset>

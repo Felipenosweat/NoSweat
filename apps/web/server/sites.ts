@@ -1,4 +1,5 @@
-import { isAdmin } from "./admin";
+import { isElevatedAdmin } from "./admin";
+import { noteAdminSiteAccess } from "./admin/audit";
 import { getCurrentUser, type CurrentUser } from "./auth/session";
 import { getVercelConfig, removeDomain } from "./domains/vercel";
 import { getGuestId } from "./guest";
@@ -7,13 +8,17 @@ import { revalidatePublicSite } from "./store/revalidate";
 
 /**
  * Site do usuário logado, ou `null` se não existir ou for de outra pessoa (tratamos igual: 404).
- * Admins da plataforma acessam qualquer site.
+ * Admins da plataforma acessam qualquer site, mas só com a sessão em AAL2 (MFA; ver
+ * server/admin/mfa.ts), e cada acesso a site de outra pessoa fica no admin_audit_log.
+ * `user` é sempre o usuário da sessão atual.
  */
 export async function getOwnedSite(user: CurrentUser, id: string): Promise<SiteRecord | null> {
   const site = await getSiteStore().get(id);
   if (!site) return null;
   if (site.ownerId === user.id) return site;
-  return (await isAdmin(user.id)) ? site : null;
+  if (!(await isElevatedAdmin(user.id))) return null;
+  noteAdminSiteAccess(user.id, site);
+  return site;
 }
 
 /** Quem está usando: uma conta, ou um visitante sem conta (ver server/guest.ts). */

@@ -11,8 +11,8 @@ import {
 describe("AI cost estimate", () => {
   it("uses the price table for every kind", () => {
     expect(AI_COST_PER_USE_USD).toEqual({
-      generate: 0.012,
-      ai_edit: 0.01,
+      generate: 0.25,
+      ai_edit: 0.06,
       social_plan: 0.03,
       social_caption: 0.002,
     });
@@ -20,23 +20,23 @@ describe("AI cost estimate", () => {
   });
 
   it("multiplies uses by the price of each kind and adds them up", () => {
-    expect(estimateKindCostUsd("generate", 10)).toBe(0.12);
+    expect(estimateKindCostUsd("generate", 10)).toBe(2.5);
     expect(estimateKindCostUsd("social_caption", 3)).toBe(0.006);
-    // 10 × 0.012 + 5 × 0.01 + 2 × 0.03 + 7 × 0.002 = 0.12 + 0.05 + 0.06 + 0.014 = 0.244
+    // 10 × 0.25 + 5 × 0.06 + 2 × 0.03 + 7 × 0.002 = 2.5 + 0.3 + 0.06 + 0.014 = 2.874
     expect(estimateAiCostUsd({ generate: 10, ai_edit: 5, social_plan: 2, social_caption: 7 })).toBe(
-      0.244,
+      2.874,
     );
   });
 
   it("does not drift with many small uses", () => {
     expect(estimateAiCostUsd({ social_caption: 1000 })).toBe(2);
-    expect(estimateAiCostUsd({ ai_edit: 333 })).toBe(3.33);
+    expect(estimateAiCostUsd({ ai_edit: 333 })).toBe(19.98);
   });
 
   it("treats missing, negative or fractional counts safely", () => {
     expect(estimateAiCostUsd({})).toBe(0);
     expect(estimateAiCostUsd({ generate: -4 })).toBe(0);
-    expect(estimateAiCostUsd({ generate: 2.9 })).toBe(0.024);
+    expect(estimateAiCostUsd({ generate: 2.9 })).toBe(0.5);
     expect(totalUses({ generate: 2, social_caption: 5 })).toBe(7);
   });
 
