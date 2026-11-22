@@ -13,7 +13,14 @@ import { focusRing, primaryButton } from "./styles";
  * repetir o botão azul que já está na tela. Página sem nenhum desses blocos (termos,
  * privacidade…): a barra fica sempre visível. Respeita a área segura do iPhone.
  */
-export function MobileCtaBar({ tone = "light" }: { tone?: "light" | "dark" }) {
+export function MobileCtaBar({
+  tone = "light",
+  label = "Build my website",
+}: {
+  tone?: "light" | "dark";
+  /** Texto do botão (a landing usa "Start my website"); o destino é sempre /create. */
+  label?: string;
+}) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -44,7 +51,7 @@ export function MobileCtaBar({ tone = "light" }: { tone?: "light" | "dark" }) {
       }`}
     >
       <Link href="/create" className={`w-full ${primaryButton}`}>
-        Build my website
+        {label}
       </Link>
     </div>
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { PLANS as BILLING_PLANS, promoPercentOff } from "@/server/billing/plans";
+import { MONTHLY_CREDITS } from "@/server/credits/pricing";
 import { CheckIcon } from "./icons";
 import { primaryButton, secondaryButton, textLink } from "./styles";
 
@@ -99,16 +100,43 @@ function regularOf(id: string) {
 
 const captionClass = "text-[13px] text-(--glass-fg-muted)";
 
+/**
+ * Variante "plain" (landing "Your name on it"): sem as linhas de recibo, o Starter em destaque
+ * (anel ink, rótulo neutro, único botão azul) e 4 limites reais por plano, lidos de
+ * server/billing/plans.ts e server/credits/pricing.ts. Mesmo toggle, mesmos links e mesmas
+ * regras de renovação da variante padrão.
+ */
+type Variant = "cards" | "plain";
+
+/** Plano destacado na variante "plain": o de entrada. */
+const PLAIN_HIGHLIGHT = "starter";
+
+function plainLimits(id: string): string[] {
+  const plan = BILLING_PLANS[id as keyof typeof BILLING_PLANS];
+  return [
+    plan.publishedSitesLimit === 1
+      ? "1 live website"
+      : `Up to ${plan.publishedSitesLimit} live websites`,
+    `${MONTHLY_CREDITS[plan.id].toLocaleString("en-US")} AI credits a month`,
+    `${plan.socialPostsPerMonth} Instagram posts a month`,
+    "Clients, booking, estimates and your own domain",
+  ];
+}
+
 export function PricingPlans({
   checkout,
   promo = false,
   offerName = "Launch price",
+  variant = "cards",
 }: {
   checkout: boolean;
   promo?: boolean;
   /** Nome da oferta do momento (Black Friday, Cyber Week...), de `currentOffer()`. */
   offerName?: string;
+  /** "plain": visual da landing "Your name on it" (ver `Variant`). Padrão: os cartões de sempre. */
+  variant?: Variant;
 }) {
+  const plain = variant === "plain";
   // Anual por padrão: 2 meses grátis.
   const [billing, setBilling] = useState<Billing>("annual");
   const annual = billing === "annual";
@@ -149,99 +177,131 @@ export function PricingPlans({
       )}
 
       <ul className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
-        {PLANS.map((plan) => (
-          <li
-            key={plan.id}
-            aria-labelledby={`plan-${plan.id}`}
-            className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
-              plan.recommended ? "ring-2 ring-brand" : "border border-slate-200"
-            }`}
-          >
-            <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-2">
-              <h3
-                id={`plan-${plan.id}`}
-                className="font-display text-lg font-semibold tracking-[-0.015em] text-ink lg:text-xl"
-              >
-                {plan.name}
-              </h3>
-              {plan.recommended && (
-                <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
-                  {promo ? "Best value" : "Recommended"}
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
+        {PLANS.map((plan) => {
+          const highlighted = plain ? plan.id === PLAIN_HIGHLIGHT : Boolean(plan.recommended);
+          const offer = promo ? regularOf(plan.id) : null;
+          return (
+            <li
+              key={plan.id}
+              aria-labelledby={`plan-${plan.id}`}
+              className={`flex min-w-0 flex-col rounded-xl bg-white p-6 sm:p-8 ${
+                highlighted
+                  ? plain
+                    ? "ring-2 ring-ink"
+                    : "ring-2 ring-brand"
+                  : "border border-slate-200"
+              }`}
+            >
+              <div className="flex min-h-7 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                <h3
+                  id={`plan-${plan.id}`}
+                  className="font-display text-lg font-semibold tracking-[-0.015em] text-ink lg:text-xl"
+                >
+                  {plan.name}
+                </h3>
+                {highlighted &&
+                  (plain ? (
+                    <span className="inline-flex h-7 items-center rounded-lg bg-surface px-2.5 text-[13px] font-semibold text-ink ring-1 ring-slate-200">
+                      A good place to start
+                    </span>
+                  ) : (
+                    <span className="inline-flex h-7 items-center rounded-lg bg-white px-2.5 text-[13px] font-semibold text-brand ring-1 ring-brand/30">
+                      {promo ? "Best value" : "Recommended"}
+                    </span>
+                  ))}
+              </div>
+              <p className="mt-1 text-base leading-snug text-pretty text-slate-600">
+                {plan.summary}
+              </p>
 
-            {promo && regularOf(plan.id).percentOff > 0 && (
-              <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
-                <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[13px] font-semibold text-emerald-800 tabular-nums">
-                  Save {regularOf(plan.id).percentOff}%
+              {!plain && offer && offer.percentOff > 0 && (
+                <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                  <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[13px] font-semibold text-emerald-800 tabular-nums">
+                    Save {regularOf(plan.id).percentOff}%
+                  </span>
+                  <span className="tabular-nums">
+                    Regular price{" "}
+                    <s>
+                      {annual ? regularOf(plan.id).annual : regularOf(plan.id).monthly}
+                      {annual ? "/yr" : "/mo"}
+                    </s>
+                  </span>
+                </p>
+              )}
+              <p
+                className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${!plain && offer && offer.percentOff > 0 ? "mt-2" : "mt-6"}`}
+              >
+                {/* Na variante "plain" o preço normal vem riscado ao lado, só quando é maior. */}
+                {plain && offer && offer.percentOff > 0 && (
+                  <span className="mr-2 text-xl font-normal text-slate-500 tabular-nums">
+                    <span className="sr-only">Regular price </span>
+                    <s>{annual ? offer.annual : offer.monthly}</s>
+                    <span className="sr-only">, now</span>
+                  </span>
+                )}
+                <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
+                  {annual ? plan.annual : plan.monthly}
                 </span>
-                <span className="tabular-nums">
-                  Regular price{" "}
-                  <s>
-                    {annual ? regularOf(plan.id).annual : regularOf(plan.id).monthly}
-                    {annual ? "/yr" : "/mo"}
-                  </s>
+                <span className="text-base font-normal text-(--glass-fg-muted)">
+                  {annual ? "/yr" : "/mo"}
                 </span>
               </p>
-            )}
-            <p
-              className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${promo && regularOf(plan.id).percentOff > 0 ? "mt-2" : "mt-6"}`}
-            >
-              <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
-                {annual ? plan.annual : plan.monthly}
-              </span>
-              <span className="text-base font-normal text-(--glass-fg-muted)">
-                {annual ? "/yr" : "/mo"}
-              </span>
-            </p>
-            <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
-              {annual ? `${plan.annualPerMonth}/mo, billed yearly` : "Billed monthly · no contract"}
-            </p>
+              <p className={`mt-2 min-h-5 tabular-nums ${captionClass}`}>
+                {annual
+                  ? `${plan.annualPerMonth}/mo, billed yearly`
+                  : "Billed monthly · no contract"}
+              </p>
 
-            {/* Linhas do recibo, com a linha pontilhada até o valor. */}
-            <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
-              <ReceiptLine
-                label="Setup, one time"
-                value={plan.setupMonthly === null ? "None" : annual ? "Waived" : plan.setupMonthly}
-              />
-              <ReceiptLine label="AI edits" value="Included" />
-            </dl>
+              {/* Linhas do recibo, com a linha pontilhada até o valor (só na variante padrão). */}
+              {!plain && (
+                <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
+                  <ReceiptLine
+                    label="Setup, one time"
+                    value={
+                      plan.setupMonthly === null ? "None" : annual ? "Waived" : plan.setupMonthly
+                    }
+                  />
+                  <ReceiptLine label="AI edits" value="Included" />
+                </dl>
+              )}
 
-            <div className="mt-6 flex-1">
-              {plan.intro && <p className="text-sm font-semibold text-ink">{plan.intro}</p>}
-              <ul className={`grid grid-cols-1 gap-y-3 ${plan.intro ? "mt-3" : ""}`}>
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-3 text-base leading-snug text-slate-600">
-                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-slate-500" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <div className={`flex-1 ${plain ? "mt-6 border-t border-slate-200 pt-6" : "mt-6"}`}>
+                {!plain && plan.intro && (
+                  <p className="text-sm font-semibold text-ink">{plan.intro}</p>
+                )}
+                <ul className={`grid grid-cols-1 gap-y-3 ${!plain && plan.intro ? "mt-3" : ""}`}>
+                  {(plain ? plainLimits(plan.id) : plan.features).map((feature) => (
+                    <li key={feature} className="flex gap-3 text-base leading-snug text-slate-600">
+                      <CheckIcon className="mt-0.5 size-4 shrink-0 text-slate-500" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-            <Link
-              href="/create"
-              aria-describedby={`renewal-${plan.id}`}
-              className={`mt-8 w-full ${plan.recommended ? primaryButton : secondaryButton}`}
-            >
-              Build my website<span className="sr-only">, {plan.name} plan</span>
-            </Link>
-            {/* Regras de renovação junto do botão (leis de renovação automática dos EUA, como a
+              <Link
+                href="/create"
+                aria-describedby={`renewal-${plan.id}`}
+                className={`mt-8 w-full ${highlighted ? primaryButton : secondaryButton}`}
+              >
+                {plain ? "Start my website" : "Build my website"}
+                <span className="sr-only">, {plan.name} plan</span>
+              </Link>
+              {/* Regras de renovação junto do botão (leis de renovação automática dos EUA, como a
                 da Califórnia, e a regra "click to cancel" da FTC): valor, frequência, se
                 renova sozinho e como cancelar, antes de qualquer cobrança. */}
-            <p
-              id={`renewal-${plan.id}`}
-              className="mt-3 text-[13px] leading-relaxed text-pretty text-(--glass-fg-muted)"
-            >
-              {renewalTerms(plan, annual, checkout)}{" "}
-              <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">
-                Renewal terms
-              </Link>
-            </p>
-          </li>
-        ))}
+              <p
+                id={`renewal-${plan.id}`}
+                className="mt-3 text-[13px] leading-relaxed text-pretty text-(--glass-fg-muted)"
+              >
+                {renewalTerms(plan, annual, checkout)}{" "}
+                <Link href="/terms#renewal" className="underline underline-offset-2 hover:text-ink">
+                  Renewal terms
+                </Link>
+              </p>
+            </li>
+          );
+        })}
       </ul>
 
       {/* Quem já criou o site e volta para comprar vai direto para /billing (pede login). */}

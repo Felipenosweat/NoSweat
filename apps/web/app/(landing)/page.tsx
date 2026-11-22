@@ -1,24 +1,29 @@
+import { joesPlumbing } from "@nosweat/fixtures";
+import { siteStyle } from "@nosweat/templates";
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
-import { Examples } from "@/components/landing/Examples";
-import { Hero } from "@/components/landing/Hero";
-import { LandingMotion } from "@/components/landing/LandingMotion";
-import { Pill } from "@/components/landing/Pill";
-import { Steps } from "@/components/landing/Steps";
-import { WhatYouGet } from "@/components/landing/WhatYouGet";
-import { PricingPlans } from "@/components/marketing/PricingPlans";
+import { Hero } from "@/components/landing-your-name/Hero";
+import { previewBase } from "@/components/landing-your-name/personalize";
+import {
+  FaqSection,
+  FinalCta,
+  HowItsBuilt,
+  Office,
+  Pricing,
+  Styles,
+} from "@/components/landing-your-name/Sections";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 import { checkoutReady } from "@/server/billing";
-import { currentOffer, promoActive } from "@/server/billing/plans";
+import { currentOffer, PLANS, promoActive } from "@/server/billing/plans";
+import { creditCost, monthlyAllowance } from "@/server/credits/pricing";
 
-// Landing V13: fundo cinza-claro e cada bloco numa "bolha" branca arredondada, intercalando com
-// cartões direto no cinza (passos, preços). Topo com perguntas uma de cada vez → o que você ganha
-// (site, clientes, Instagram) → como funciona → exemplos → preço → dúvidas → fim (bolha escura).
-// Pouco texto por bloco: o cliente quer praticidade. Sem vidro/transparência. Sem fotos. Só afirmações que o produto cumpre hoje;
-// nada de números, logos, notas ou depoimentos inventados.
+// Landing "Your name on it": o visitante digita o nome da empresa e um site de exemplo de
+// verdade (<SiteRenderer>, carregado depois do título) repinta com ele → o mesmo nome em três
+// composições → o escritório (clientes, agenda...) → como o site real é feito → preço → dúvidas →
+// fim. Só afirmações que o produto cumpre hoje; todo exemplo diz que o negócio é inventado.
+// Preços e créditos sempre lidos do código (billing/plans.ts, credits/pricing.ts).
 
 // O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
 const TITLE = "No Sweat: AI Website Builder for Local Businesses";
@@ -46,120 +51,35 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-const tag = "lp-tag";
-const h2 = "lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]";
+const dollars = (cents: number) =>
+  `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
-const linkDark =
-  "lp-underline rounded-sm font-medium text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+/** Preço de entrada: o menor mensal entre os planos. */
+const lowestMonthly = Math.min(...Object.values(PLANS).map((plan) => plan.monthlyCents));
+
+const PRICE_LINE = `Describing your business is free. Plans from ${dollars(lowestMonthly)}/mo when you build.`;
 
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
   const whatsapp = salesWhatsappUrl();
+  // Base da prévia: o site de exemplo do encanador (inventado), com menu e botões travados.
+  const base = previewBase(joesPlumbing, siteStyle(joesPlumbing));
+  const creditsLine = `The AI runs on credits: a new website uses ${creditCost("generate")}, and each change you ask it for uses ${creditCost("ai_edit")}. Starter includes ${monthlyAllowance("starter")} credits a month. Editing by hand is always free.`;
   return (
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
-      <Hero />
-      <WhatYouGet />
-      <Steps />
-      <Examples />
-
-      {/* PREÇO — o mesmo componente da página /pricing. */}
-      <section
-        id="pricing"
-        aria-labelledby="pricing-title"
-        className="scroll-mt-14 px-5 py-20 text-center sm:px-8 lg:py-28"
-      >
-        <span className={tag}>Pricing</span>
-        <h2 id="pricing-title" className={h2}>
-          Start free.
-          <br />
-          <span className="dim">Pick a plan to build.</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-[46ch] text-[17px] leading-relaxed text-[#6e6e73]">
-          Describe your business and answer a few quick questions for free. You pick a plan when
-          you’re ready to build your website.
-        </p>
-        <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} promo={promoActive()} offerName={currentOffer()} />
-        </div>
-      </section>
-
-      {/* DÚVIDAS — centralizadas; abrir uma fecha as outras (details com o mesmo name). */}
-      <div className="px-3 sm:px-5">
-        <section
-          id="faq"
-          aria-labelledby="faq-title"
-          className="lp-bubble scroll-mt-16 px-5 py-14 text-center sm:px-10 lg:py-20"
-        >
-          <span className={tag}>FAQ</span>
-          <h2 id="faq-title" className={h2}>
-            Questions,
-            <br />
-            <span className="dim">answered.</span>
-          </h2>
-          <div className="mx-auto mt-12 w-full max-w-[760px] text-left">
-            {LANDING_FAQS.map((faq, index) => (
-              <details
-                key={faq.question}
-                name="faq"
-                className={`border-b border-[var(--lp-hair)] ${index === 0 ? "border-t" : ""}`}
-              >
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm px-0.5 py-5 text-[17px] font-semibold tracking-[-0.01em] text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
-                  {faq.question}
-                  <span aria-hidden="true" className="lp-fx" />
-                </summary>
-                <p className="max-w-[60ch] px-0.5 pb-5 text-[15px] leading-[1.65] text-pretty text-[#6e6e73]">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
-          </div>
-          <p className="mx-auto mt-8 max-w-[52ch] text-[15px] leading-relaxed text-[#6e6e73]">
-            Still wondering? Write to{" "}
-            <a href="mailto:hello@nosweatfd.com" className={linkDark}>
-              hello@nosweatfd.com
-            </a>
-            {whatsapp && (
-              <>
-                {" "}
-                or{" "}
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={linkDark}>
-                  message us on WhatsApp
-                </a>
-              </>
-            )}
-            . A real person writes back.
-          </p>
-        </section>
-      </div>
-
-      {/* FIM — bolha escura com um botão só, de volta às perguntas do topo. */}
-      <div className="px-3 pt-3 pb-3 sm:px-5 sm:pt-5 sm:pb-5">
-        <section
-          aria-labelledby="final-title"
-          data-hide-mobile-cta
-          className="lp-bubble lp-bubble-dark px-5 py-16 text-center sm:px-10 lg:py-24"
-        >
-          <h2 id="final-title" className="lp-h text-[clamp(1.9rem,3.9vw,3.375rem)] text-white">
-            Ready when you are.
-            <br />
-            <span className="text-white/55">It takes about a minute.</span>
-          </h2>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Pill href="#start" tone="light">
-              Start your website
-            </Pill>
-            <Link
-              href="/pricing"
-              className="lp-underline rounded-sm px-3 text-[15px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              See pricing
-            </Link>
-          </div>
-        </section>
-      </div>
-
-      <LandingMotion />
+      <Hero base={base} priceLine={PRICE_LINE} />
+      <Styles base={base} />
+      <Office />
+      <HowItsBuilt creditsLine={creditsLine} />
+      <Pricing
+        checkout={checkoutReady()}
+        promo={promoActive()}
+        offerName={currentOffer()}
+        intro="Describing your business and answering the quick questions costs nothing. Pick a plan when you want the site built. There’s no contract."
+      />
+      <FaqSection faqs={LANDING_FAQS} whatsapp={whatsapp} />
+      <FinalCta priceLine={PRICE_LINE} />
     </>
   );
 }

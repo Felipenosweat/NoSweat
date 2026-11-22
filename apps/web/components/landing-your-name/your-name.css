@@ -1,0 +1,6 @@
+/* Landing "Your name on it": ajustes do site de exemplo dentro das molduras da prévia.
+   O topo dos sites usa min-height em svh (altura da JANELA do navegador); dentro da moldura a
+   "janela" é a caixa desenhada (--yn-h), então o topo passa a ocupar exatamente a moldura. */
+.yn-viewport .ns-site .ns-hero {
+  min-height: var(--yn-h);
+}
