@@ -150,7 +150,7 @@ export function LivePhone() {
         )}
       </div>
 
-      <p className="mt-3 text-[15px] text-white">Made-up business. Built with No Sweat.</p>
+      <p className="mt-3 text-[15px] text-white">Made-up business. A No Sweat design example.</p>
       <p aria-live="polite" className="sr-only">
         Showing {current.business}.
       </p>
