@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { focusRing, focusRingOnDark } from "@/components/marketing/styles";
 
 type LogoProps = {
   /** Mostra a linha "AI websites for businesses" embaixo do nome (ex.: rodapé). */
@@ -14,7 +15,10 @@ export function Logo({ tagline = false, tone = "light" }: LogoProps) {
     <Link
       href="/"
       aria-label="NoSweat home"
-      className="inline-flex items-center gap-2.5 whitespace-nowrap"
+      // min-h-11: alvo de toque de 44px sem mudar o tamanho do logo.
+      className={`inline-flex min-h-11 items-center gap-2.5 rounded-sm whitespace-nowrap ${
+        tone === "dark" ? focusRingOnDark : focusRing
+      }`}
     >
       <Image
         src="/brand/nosweat-mark-128.png"

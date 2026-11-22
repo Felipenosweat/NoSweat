@@ -1,6 +1,6 @@
 import type { Composition, Section, SectionOf, SiteImage } from "@nosweat/schema";
 import type { CSSProperties, ReactNode } from "react";
-import { PhoneIcon } from "../components/icons";
+import { PauseIcon, PhoneIcon, PlayIcon } from "../components/icons";
 import { Photo, PhotoCredits, specImages } from "../components/photo";
 import { BookingSection } from "../sections/BookingSection";
 import type { TemplateProps } from "../types";
@@ -196,14 +196,28 @@ export function SignatureComposition({
     }
   };
 
+  const opening = motion && Boolean(model.hero);
   return (
     <div
       id={anchors ? "top" : undefined}
       className="relative flex min-h-full flex-col overflow-x-clip"
+      // O script da abertura põe `data-ns-opening` aqui antes da hidratação (ver OPENING_SCRIPT).
+      suppressHydrationWarning={opening || undefined}
     >
-      {motion && model.hero && <Intro name={model.business.name} place={model.where} />}
+      {opening && (
+        <>
+          {/* Antes da pintura: decide se a abertura toca (primeira visita da sessão). */}
+          <script dangerouslySetInnerHTML={{ __html: OPENING_SCRIPT }} />
+          <Intro name={model.business.name} place={model.where} />
+        </>
+      )}
+      {anchors && <SkipLink />}
       <SiteNav model={model} tone={topTone} atTop={motion} />
-      <main id={anchors ? "main" : undefined} className="flex-1">
+      <main
+        id={anchors ? "main" : undefined}
+        tabIndex={anchors ? -1 : undefined}
+        className="flex-1"
+      >
         {renderSections(spec, render, editable, selectedSection)}
       </main>
       <GiantFooter model={model} bandTone={tones.band} />
@@ -213,12 +227,39 @@ export function SignatureComposition({
   );
 }
 
+/**
+ * Link "Skip to content" (WCAG 2.4.1): o primeiro item focável da página, antes do menu de vidro.
+ * Fica fora da tela até receber o foco do teclado; leva o foco para o `<main id="main">`.
+ */
+function SkipLink() {
+  return (
+    <a
+      href="#main"
+      className="fixed top-3 left-3 z-[70] inline-flex min-h-11 -translate-y-[200%] items-center rounded-full bg-ns-text px-5 text-sm font-medium text-ns-background transition-transform focus:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-text motion-reduce:transition-none"
+    >
+      Skip to content
+    </a>
+  );
+}
+
+/** Chave do sessionStorage que marca a abertura como vista (uma por endereço, por sessão). */
+const OPENING_KEY = "ns-opened:";
+
+/**
+ * Script da abertura, no começo do site e antes da cortina: roda antes da pintura e liga
+ * `data-ns-opening` no wrapper do molde só na PRIMEIRA visita da sessão a este endereço. Visita
+ * repetida, "reduzir movimento" ou sessionStorage bloqueado (exceção) = sem cortina. Sem
+ * JavaScript o atributo nunca aparece e a cortina não existe (styles.css, .ns-intro).
+ */
+export const OPENING_SCRIPT = `(function(){try{var r=document.currentScript.parentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;var k=${JSON.stringify(OPENING_KEY)}+location.pathname;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1");r.setAttribute("data-ns-opening","")}catch(e){}})()`;
+
 /** Atraso de cada letra da abertura: 20 ms por letra, no máximo 100 ms (nome comprido não atrasa). */
 const introDelay = (index: number) => `${Math.min(index * 0.02, 0.1).toFixed(2)}s`;
 
 /**
  * Abertura: o nome sobe letra por letra e a cortina sobe. Só CSS (styles.css, .ns-intro), tudo
- * em até 0,6 s para não atrasar o topo (LCP); com "reduzir movimento", não aparece.
+ * em até 0,6 s para não atrasar o topo (LCP). Só toca quando OPENING_SCRIPT liga
+ * `data-ns-opening` (uma vez por sessão; nunca com "reduzir movimento").
  */
 function Intro({ name, place }: { name: string; place?: string }) {
   return (
@@ -898,9 +939,7 @@ function ServiceRow({ item, n, level }: ServiceEntry & { level: "h3" | "h4" }) {
       className="ns-row group grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-2 border-t border-ns-background/15 py-6 @3xl:grid-cols-[4rem_1fr_1.1fr_10rem]"
     >
       <span className="hidden text-xs tabular-nums opacity-50 @3xl:block">{pad(n)}</span>
-      <Heading
-        className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none`}
-      >
+      <Heading className={`${display} text-[length:clamp(1.75rem,3.4cqw,3.5rem)] leading-none`}>
         {item.name}
         {item.image && (
           // Pílula de foto no fim do nome (composição tipográfica: a letra continua mandando).
@@ -1170,9 +1209,7 @@ function Rail({
     >
       <div className="ns-hscroll-sticky">
         {head}
-        <ul
-          className={`ns-rail flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 ${wrap}`}
-        >
+        <ul className={`ns-rail flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 ${wrap}`}>
           {images.map((image, i) => (
             <li
               key={`${image.url}-${i}`}
@@ -1203,7 +1240,11 @@ function Rail({
   );
 }
 
-/** Depoimentos grandes em itálico (trocam sozinhos no site; sem movimento, um embaixo do outro). */
+/**
+ * Depoimentos grandes em itálico. No site, com movimento, trocam sozinhos (Motion.tsx) e o botão
+ * Pause/Play aparece (WCAG 2.2.2); sem JavaScript ou com "reduzir movimento", ficam um embaixo
+ * do outro e o botão continua escondido.
+ */
 function Quotes({
   id,
   model,
@@ -1234,6 +1275,21 @@ function Quotes({
           </figure>
         ))}
       </div>
+      {data.items.length > 1 && (
+        // Ligado pelo Motion.tsx só quando a troca automática começa. `data-paused` troca o
+        // ícone e o texto (o nome acessível é o texto visível).
+        <button
+          type="button"
+          hidden
+          data-ns-quotes-toggle
+          className={`group mt-10 inline-flex min-h-11 items-center gap-2 rounded-full border border-ns-border px-5 text-sm text-ns-muted transition-colors hover:border-ns-text hover:text-ns-text motion-reduce:transition-none ${focus}`}
+        >
+          <PauseIcon className="size-3.5 group-data-paused:hidden" />
+          <PlayIcon className="hidden size-3.5 group-data-paused:block" />
+          <span className="group-data-paused:hidden">Pause testimonials</span>
+          <span className="hidden group-data-paused:inline">Play testimonials</span>
+        </button>
+      )}
     </section>
   );
 }

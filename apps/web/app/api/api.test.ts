@@ -71,6 +71,22 @@ describe("POST /api/sites/generate", () => {
     expect(spec.business.phone).toBeUndefined();
   });
 
+  // Bug J1: o nome digitado pelo dono é o nome do site (texto puro, nunca HTML).
+  it.each(["Joe's Plumbing", '<b>Glow</b> & "Co" 💅 Ñandú', "Yahoo! Cleaning"])(
+    "uses the business name the owner typed: %s",
+    async (businessName) => {
+      const res = await generate(
+        jsonRequest("/sites/generate", "POST", {
+          brief: `The business is called ${businessName}. Home services business in Austin, TX.`,
+          businessName,
+        }),
+      );
+      expect(res.status).toBe(201);
+      const { spec } = GenerateSiteResponse.parse(await res.json());
+      expect(spec.business.name).toBe(businessName);
+    },
+  );
+
   it("rejects a brief that is too short", async () => {
     const res = await generate(jsonRequest("/sites/generate", "POST", { brief: "hi" }));
     expect(res.status).toBe(400);

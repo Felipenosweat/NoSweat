@@ -1,22 +1,13 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
-import { MarketingMenu } from "./MobileCtaBar";
 import { SocialLinks } from "./SocialLinks";
 import { container, focusRing } from "./styles";
 
-// Header e rodapé do site de marketing, em dois tons: "light" (preço, termos, créditos…) e
-// "dark" (o header da landing, sobre o ink do hero e do tour). Mesmos links nos dois.
+// Rodapé do site de marketing (landing e páginas claras), em dois tons. O cabeçalho é o
+// LandingHeader (components/landing), o mesmo na landing e em /pricing.
 // Server component: lê SALES_WHATSAPP direto do ambiente (sem a variável, o link não aparece).
 
 type Tone = "light" | "dark";
-
-const NAV = [
-  { href: "/#story", label: "How it works" },
-  { href: "/#looks", label: "Examples" },
-  { href: "/#pricing", label: "Pricing" },
-  { href: "/#faq", label: "FAQ" },
-];
 
 type FooterLink = { href: string; label: string; external?: boolean };
 
@@ -32,10 +23,9 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   {
     title: "Product",
     links: [
-      { href: "/#story", label: "Websites" },
-      { href: "/#clients", label: "Clients" },
-      { href: "/#social", label: "Instagram posts" },
-      { href: "/#looks", label: "Examples" },
+      { href: "/#how", label: "How it works" },
+      { href: "/#office", label: "The office" },
+      { href: "/#examples", label: "Examples" },
       { href: "/pricing", label: "Pricing" },
       { href: "/#faq", label: "FAQ" },
     ],
@@ -45,6 +35,7 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
     links: [
       { href: "/create", label: "Build my website" },
       { href: "/login", label: "Log in" },
+      { href: "/contact", label: "Contact" },
       { href: "mailto:hello@nosweatfd.com", label: "hello@nosweatfd.com", external: true },
     ],
   },
@@ -53,6 +44,7 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
     links: [
       { href: "/terms", label: "Terms of Service" },
       { href: "/privacy", label: "Privacy Policy" },
+      { href: "/refund", label: "Refund Policy" },
       { href: "/data-deletion", label: "Data deletion" },
     ],
     note: "Example businesses on this site are fictional.",
@@ -63,91 +55,6 @@ const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
     note: "Photos from Unsplash and Pexels, credited to each photographer.",
   },
 ];
-
-export function MarketingHeader({
-  tone = "light",
-  float = false,
-  actions,
-}: {
-  tone?: Tone;
-  /** Landing: menu de vidro flutuando sobre a página (fixo, em pílula), em vez da barra. */
-  float?: boolean;
-  /** Botões extras antes do "Log in" (ex.: o som da landing). */
-  actions?: ReactNode;
-}) {
-  const dark = tone === "dark";
-  // No fundo escuro o contorno de foco é branco (o azul da marca some no ink).
-  const ring = dark
-    ? "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-    : focusRing;
-  return (
-    <header
-      className={
-        float
-          ? "lp-nav fixed inset-x-3 top-3 z-40 sm:inset-x-5 sm:top-4"
-          : `sticky top-0 z-30 border-b backdrop-blur-md ${
-              dark ? "border-white/10 bg-ink/75" : "border-slate-200/80 bg-white/90"
-            }`
-      }
-    >
-      {/* min-h + flex-wrap: com o texto aumentado (zoom 200%), os itens descem de linha em vez
-          de sair da tela. No tamanho normal fica uma linha só de 64px. */}
-      <div
-        className={
-          float
-            ? "lp-glass mx-auto flex min-h-14 w-full max-w-[1240px] flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[1.75rem] py-1.5 pr-1.5 pl-4 sm:pl-5"
-            : `${container} flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2.5`
-        }
-      >
-        <Logo tone={tone} />
-        <nav aria-label="Main" className="hidden flex-wrap items-center gap-x-8 text-sm lg:flex">
-          {NAV.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={`inline-flex min-h-11 items-center rounded-sm font-medium transition-colors duration-150 ${ring} ${
-                dark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-ink"
-              }`}
-            >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold sm:gap-3">
-          {actions}
-          {/* No celular o "Log in" fica dentro do menu (abaixo de sm não cabe tudo numa linha). */}
-          <Link
-            href="/login"
-            className={`hidden h-11 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 sm:inline-flex ${ring} ${
-              dark
-                ? "text-slate-200 hover:bg-white/10 hover:text-white"
-                : "text-slate-700 hover:bg-slate-50 hover:text-ink"
-            }`}
-          >
-            Log in
-          </Link>
-          {/* No celular o CTA fica compacto ("Start free"): a barra fixa de baixo some durante
-              o tour inteiro (#story), então o header precisa ter sempre um caminho para /create. */}
-          <Link
-            href="/create"
-            className={`inline-flex h-10 items-center rounded-lg px-3 whitespace-nowrap transition-colors duration-150 active:translate-y-px sm:h-11 sm:px-4 ${ring} ${
-              float
-                ? "rounded-full bg-white text-ink hover:bg-slate-200"
-                : dark
-                  ? "bg-white text-ink hover:bg-slate-200"
-                  : "bg-brand text-white hover:bg-brand-dark"
-            }`}
-          >
-            <span className="sm:hidden">Start free</span>
-            <span className="hidden sm:inline">Build my website</span>
-          </Link>
-          {/* Abaixo de lg a navegação principal some; o menu leva às mesmas seções e ao login. */}
-          <MarketingMenu tone={tone} items={[...NAV, { href: "/login", label: "Log in" }]} />
-        </div>
-      </div>
-    </header>
-  );
-}
 
 export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
   const dark = tone === "dark";
@@ -180,7 +87,8 @@ export function MarketingFooter({ tone = "light" }: { tone?: Tone }) {
           <p
             className={`mt-4 max-w-xs text-sm leading-relaxed ${dark ? "text-slate-400" : "text-slate-600"}`}
           >
-            Websites for small businesses, built from a sentence and easy to keep up to date.
+            Websites for local businesses, built from four questions, with the office tools behind
+            them.
           </p>
           <p className={`mt-6 text-sm font-semibold ${dark ? "text-white" : "text-ink"}`}>
             Follow @nosweatfd
