@@ -1,24 +1,22 @@
 import type { ReactNode } from "react";
-import { IntroCurtain } from "@/components/landing/IntroCurtain";
-import { LandingHeader } from "@/components/landing/LandingHeader";
+import { AnswersHeader } from "@/components/landing-answers/AnswersHeader";
 import { MobileCtaBar } from "@/components/marketing/MobileCtaBar";
 import { MarketingFooter } from "@/components/marketing/SiteChrome";
 import "../(marketing)/marketing.css";
-import "./landing.css";
 
-// Landing V12: página branca, tipografia de sistema, cabeçalho fino com o logo no centro (ver
-// landing.css). As outras páginas de marketing (preço, termos…) ficam em app/(marketing).
+// Landing "Straight answers": página branca, cabeçalho preso no alto com linha fina, o rodapé de
+// sempre e a barra fixa do celular (some quando o hero ou o CTA final estão na tela). O antigo
+// landing.css (V12/V13) não é mais carregado aqui; o arquivo fica para consulta.
 
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="lp flex min-h-svh flex-col">
-      <IntroCurtain />
-      <LandingHeader />
+    <div className="flex min-h-svh flex-col bg-white text-ink">
+      <AnswersHeader />
       <main id="main" className="flex-1">
         {children}
       </main>
       <MarketingFooter />
-      <MobileCtaBar />
+      <MobileCtaBar label="Start my website" />
     </div>
   );
 }
