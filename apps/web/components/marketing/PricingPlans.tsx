@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { PLANS as BILLING_PLANS, promoPercentOff } from "@/server/billing/plans";
+import { MONTHLY_CREDITS } from "@/server/credits/pricing";
 import { CheckIcon } from "./icons";
 import { primaryButton, secondaryButton, textLink } from "./styles";
 
@@ -19,9 +20,9 @@ import { primaryButton, secondaryButton, textLink } from "./styles";
 // pelo admin por X dias): pago adiantado e SEM renovação automática, então o texto muda.
 // Nenhum dos dois modos promete e-mail de lembrete: hoje nenhum código manda esse e-mail.
 
-type Billing = "monthly" | "annual";
+export type Billing = "monthly" | "annual";
 
-type Plan = {
+export type Plan = {
   id: string;
   name: string;
   summary: string;
@@ -80,7 +81,7 @@ const PLANS: Plan[] = [
   },
 ];
 
-const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
+export const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
   { value: "monthly", label: "Monthly" },
   { value: "annual", label: "Annual", note: "2 months free" },
 ];
@@ -88,7 +89,7 @@ const BILLING_OPTIONS: { value: Billing; label: string; note?: string }[] = [
 const dollars = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
 
 /** Preço normal (riscado na oferta) e desconto de cada plano, lidos de server/billing/plans.ts. */
-function regularOf(id: string) {
+export function regularOf(id: string) {
   const plan = BILLING_PLANS[id as keyof typeof BILLING_PLANS];
   return {
     monthly: dollars(plan.regularMonthlyCents),
@@ -261,6 +262,32 @@ export function PricingPlans({
       </p>
     </div>
   );
+}
+
+/** Os planos como mostrados no site (o mesmo texto da tabela acima). */
+export const DISPLAY_PLANS: readonly Plan[] = PLANS;
+
+/**
+ * Os limites principais de cada plano em 4 linhas curtas (landing "Showroom"), lidos de
+ * server/billing/plans.ts e server/credits/pricing.ts. Posts do Instagram: só o Starter tem
+ * número fechado (ver o comentário do topo); Pro e Premium usam o texto da tabela.
+ */
+export function planLimits(id: string): string[] {
+  const plan = BILLING_PLANS[id as keyof typeof BILLING_PLANS];
+  const sites = plan.publishedSitesLimit;
+  const social: Record<string, string> = {
+    starter: `Instagram post calendar, ${plan.socialPostsPerMonth} posts a month`,
+    pro: "More Instagram posts each month",
+    premium: "The most Instagram posts each month",
+  };
+  return [
+    sites === 1 ? "1 live website" : `Up to ${sites} live websites`,
+    plan.customDomain
+      ? "Your own domain, or a free nosweatfd.com address"
+      : "Free nosweatfd.com address",
+    `${MONTHLY_CREDITS[plan.id].toLocaleString("en-US")} AI credits a month`,
+    social[plan.id] ?? "Instagram post calendar",
+  ];
 }
 
 /**
