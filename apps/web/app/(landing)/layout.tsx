@@ -1,24 +1,21 @@
 import type { ReactNode } from "react";
-import { IntroCurtain } from "@/components/landing/IntroCurtain";
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { MobileCtaBar } from "@/components/marketing/MobileCtaBar";
-import { MarketingFooter } from "@/components/marketing/SiteChrome";
-import "../(marketing)/marketing.css";
-import "./landing.css";
+import { LiveFooter } from "@/components/landing-live/LiveFooter";
+import { LiveMobileBar } from "@/components/landing-live/LiveMobileBar";
+import "@/components/landing-live/live.css";
 
-// Landing V12: página branca, tipografia de sistema, cabeçalho fino com o logo no centro (ver
-// landing.css). As outras páginas de marketing (preço, termos…) ficam em app/(marketing).
+// Landing "Live" (versão D): o cabeçalho fica dentro do herói azul (components/landing-live/
+// LiveHero.tsx), então o layout só tem o conteúdo, o rodapé e a barra fixa do celular.
+// Os componentes das versões antigas (components/landing, marketing.css, landing.css) continuam
+// no repositório, mas esta rota não os carrega mais.
 
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="lp flex min-h-svh flex-col">
-      <IntroCurtain />
-      <LandingHeader />
+    <div className="live flex min-h-svh flex-col">
       <main id="main" className="flex-1">
         {children}
       </main>
-      <MarketingFooter />
-      <MobileCtaBar />
+      <LiveFooter />
+      <LiveMobileBar />
     </div>
   );
 }

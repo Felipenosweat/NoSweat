@@ -1,0 +1,142 @@
+/* Landing "Live" (versão D). Blocos sólidos que alternam: azul (herói), branco (escritório),
+   ink (preço), branco (dúvidas), azul (fim) e rodapé azul-escuro. Sem degradê, vidro ou brilho.
+   Letra: Bricolage Grotesque nos títulos e números, Inter no texto, Instrument Serif itálico em
+   duas palavras ("no sweat"). As três já vêm de app/fonts.ts (nenhuma fonte nova).
+   Sem JS ou com "reduzir movimento", tudo aparece parado e completo. */
+
+.live {
+  --live-blue: #0066ff;
+  --live-blue-dark: #0052cc;
+  --live-ink: #071b33;
+  --live-cyan: #00c2ff;
+  --live-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  font-family: var(--ns-font-modern-body), ui-sans-serif, system-ui, sans-serif;
+  color: var(--live-ink);
+  background: #fff;
+}
+
+/* Títulos e números grandes. */
+.live-d {
+  font-family: var(--ns-font-bold-heading), ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-kerning: normal;
+}
+
+/* As duas palavras com voz: "no sweat". */
+.live-serif {
+  font-family: var(--ns-font-editorial-heading), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Título do herói: as duas linhas sobem 12px, 80ms uma da outra ----------
+   Animação de CSS (sem esperar o JS): sem suporte, o texto já está lá. */
+@keyframes live-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-rise {
+    display: block;
+    animation: live-rise 460ms var(--live-ease) both;
+  }
+  .live-rise + .live-rise {
+    animation-delay: 80ms;
+  }
+}
+
+/* ---------- O celular ao vivo ----------
+   Moldura de 390×780 reduzida para caber; a escala (--live-scale) vem do LivePhone. */
+.live-phone {
+  --live-phone-w: min(86vw, 360px);
+  position: relative;
+  width: var(--live-phone-w);
+  aspect-ratio: 390 / 780;
+  border: 10px solid var(--live-ink);
+  border-radius: 2.5rem;
+  background: var(--live-ink);
+  overflow: hidden;
+  /* Recorte arredondado também no iframe (Safari). */
+  isolation: isolate;
+}
+
+@media (min-width: 768px) {
+  .live-phone {
+    --live-phone-w: 360px;
+  }
+}
+
+/* No computador o celular acompanha a altura da tela, para a fila de abas caber embaixo. */
+@media (min-width: 1024px) {
+  .live-phone {
+    --live-phone-w: clamp(290px, calc((100svh - 270px) / 2), 380px);
+  }
+}
+
+.live-phone iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 390px;
+  height: 780px;
+  border: 0;
+  transform-origin: 0 0;
+  transform: scale(var(--live-scale, 0.87));
+  background: #fff;
+}
+
+/* Camada "Tap to try it": só em telas de toque (no mouse a roda já rola o exemplo). */
+@media (hover: hover) and (pointer: fine) {
+  .live-tap {
+    display: none;
+  }
+}
+
+/* Fila de abas do celular: rola de lado no celular, sem barra visível. */
+.live-scroller {
+  scrollbar-width: none;
+}
+.live-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sublinhado que desliza entre as abas (posição vem do JS; sem JS ele não aparece e a aba
+   ativa continua marcada pelo peso da letra). */
+.live-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: var(--live-ind-w, 0);
+  transform: translateX(var(--live-ind-x, 0));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-indicator {
+    transition:
+      transform 260ms var(--live-ease),
+      width 260ms var(--live-ease);
+  }
+}
+
+/* ---------- Fim: o título cresce de leve ao entrar na tela (o único efeito de rolagem) ---------- */
+@keyframes live-grow {
+  from {
+    transform: scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .live-grow {
+      transform-origin: 0 100%;
+      animation: live-grow linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+  }
+}
