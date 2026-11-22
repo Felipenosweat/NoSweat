@@ -50,7 +50,7 @@ export function buildWelcomeEmail(
     "",
     "Thanks for creating your No Sweat account.",
     "",
-    "Your account is ready. Build and preview your website for free; when you’re happy with it, pick a plan and we’ll put it live.",
+    "Your account is ready. Telling us about your business is free; when you’re ready, pick a plan and we’ll build your website and put it live.",
     "",
     `Your dashboard: ${dashboard}`,
     `Plans: ${billing}`,
@@ -70,9 +70,9 @@ export function buildWelcomeEmail(
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#071B33;max-width:560px">
 <p>${escapeHtml(hello)}</p>
 <p>Thanks for creating your No Sweat account.</p>
-<p>Your account is ready. Build and preview your website for free; when you’re happy with it, pick a plan and we’ll put it live.</p>
+<p>Your account is ready. Telling us about your business is free; when you’re ready, pick a plan and we’ll build your website and put it live.</p>
 <p><a href="${escapeHtml(dashboard)}" style="display:inline-block;background:#0066FF;color:#ffffff;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:8px">Go to my dashboard</a></p>
-<p>Ready to go live? <a href="${escapeHtml(billing)}" style="color:#0066FF">See the plans</a>.</p>
+<p>Ready to build your site? <a href="${escapeHtml(billing)}" style="color:#0066FF">See the plans</a>.</p>
 <p>Now and then we’ll also send product news and tips. Not often, and your email is never sold to anyone.</p>
 <p>Questions? Just reply to this email. A person on our team reads every message.</p>
 <p>— The No Sweat team</p>
