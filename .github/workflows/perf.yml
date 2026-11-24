@@ -47,9 +47,12 @@ jobs:
             {"name":"example-restaurant","url":"https://www.nosweatfd.com/examples/rosas-kitchen"},
             {"name":"customer-site","url":"https://www.nosweatfd.com/s/miami-hair-salon-a7589a"}
           ]' node perf.mjs
-      - name: Logged-in pages (local app)
+      - name: Logged-in pages and this branch's public pages (local app)
         run: |
           cd /tmp/perf && CHROME_PATH=$(which google-chrome) OUT_DIR="$GITHUB_WORKSPACE/qa/out-perf/local" TARGETS='[
+            {"name":"landing","url":"http://localhost:3000/"},
+            {"name":"example-plumbing","url":"http://localhost:3000/examples/joes-plumbing"},
+            {"name":"example-restaurant","url":"http://localhost:3000/examples/rosas-kitchen"},
             {"name":"dashboard","url":"http://localhost:3000/dashboard"},
             {"name":"schedule","url":"http://localhost:3000/schedule"},
             {"name":"clients","url":"http://localhost:3000/clients"},

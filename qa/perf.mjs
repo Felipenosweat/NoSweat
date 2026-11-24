@@ -58,6 +58,21 @@ for (const target of TARGETS) {
           .filter((a) => a.details?.type === "opportunity" && (a.numericValue ?? 0) > 100)
           .map((a) => ({ id: a.id, savingsMs: Math.round(a.numericValue) })),
         biggest,
+        // Onde o LCP gasta o tempo: TTFB, atraso para começar a baixar, download, atraso de pintura.
+        lcpPhases: (audit("largest-contentful-paint-element")?.details?.items?.[1]?.items ?? []).map(
+          (p) => ({ phase: p.phase, ms: Math.round(p.timing ?? 0) }),
+        ),
+        // Quem ocupa o processador (o que trava a página): scripts e tarefas longas.
+        bootup: (audit("bootup-time")?.details?.items ?? [])
+          .slice(0, 5)
+          .map((i) => ({ url: i.url, scriptingMs: Math.round(i.scripting ?? 0), totalMs: Math.round(i.total ?? 0) })),
+        longTasks: (audit("long-tasks")?.details?.items ?? [])
+          .slice(0, 6)
+          .map((i) => ({ url: i.url, startMs: Math.round(i.startTime ?? 0), ms: Math.round(i.duration ?? 0) })),
+        mainThread: (audit("mainthread-work-breakdown")?.details?.items ?? []).map((i) => ({
+          group: i.groupLabel ?? i.group,
+          ms: Math.round(i.duration ?? 0),
+        })),
       };
       summary.push(entry);
       console.log(`${target.name} ${formFactor}: ${entry.score} LCP ${entry.lcpMs}ms`);
