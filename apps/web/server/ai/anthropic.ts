@@ -11,6 +11,7 @@ import {
 import { jsonInstructions, rawJson } from "./json-output";
 import { dropInvalidLook, lookHint, paletteProblems } from "./look";
 import type { SiteGenerator } from "./types";
+import { logAiUsage } from "./usage-log";
 
 /**
  * Modelos padrão (trocáveis por variável, sem mexer no código):
@@ -137,6 +138,7 @@ export class AnthropicGenerator implements SiteGenerator {
           // Sem nova tentativa do SDK: no pior caso (2 × 30 s) ainda sobra tempo para o completo.
           { timeout: MODEL_FIRST_TIMEOUT_MS, maxRetries: 0 },
         );
+        logAiUsage("generate_model_first", this.editModel, response, { attempt, effort: "low" });
         if (response.stop_reason === "refusal" || response.stop_reason === "max_tokens") {
           console.warn("[ai] model-first fallback", { reason: response.stop_reason, attempt });
           return null;
@@ -216,6 +218,7 @@ export class AnthropicGenerator implements SiteGenerator {
         { ...options, timeout: Math.max(FULL_MIN_TIMEOUT_MS, deadline - Date.now()) },
       );
 
+      logAiUsage("generate", this.model, response, { attempt, effort: "high" });
       if (response.stop_reason === "refusal") {
         throw new Error(
           `Claude declined to generate this site (${response.stop_details?.category ?? "unknown"}).`,
@@ -256,6 +259,7 @@ export class AnthropicGenerator implements SiteGenerator {
       ],
     });
 
+    logAiUsage("ai_edit", this.editModel, response, { effort: "medium" });
     if (response.stop_reason === "refusal") {
       throw new Error(
         `Claude declined this change (${response.stop_details?.category ?? "unknown"}).`,
