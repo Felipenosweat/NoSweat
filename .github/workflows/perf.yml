@@ -44,7 +44,8 @@ jobs:
             {"name":"create","url":"https://www.nosweatfd.com/create"},
             {"name":"example-plumbing","url":"https://www.nosweatfd.com/examples/joes-plumbing"},
             {"name":"example-salon","url":"https://www.nosweatfd.com/examples/glow-salon"},
-            {"name":"example-restaurant","url":"https://www.nosweatfd.com/examples/rosas-kitchen"}
+            {"name":"example-restaurant","url":"https://www.nosweatfd.com/examples/rosas-kitchen"},
+            {"name":"customer-site","url":"https://www.nosweatfd.com/s/miami-hair-salon-a7589a"}
           ]' node perf.mjs
       - name: Logged-in pages (local app)
         run: |
