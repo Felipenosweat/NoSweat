@@ -2,7 +2,7 @@
 
 import { GlassButton } from "@/components/glass";
 import { TourIcon } from "../NavIcons";
-import { openWelcomeTour } from "../WelcomeTour";
+import { openWelcomeTour } from "../tour/open";
 
 // "Take the tour" do /guide: abre o tour de boas-vindas (que mora na moldura do painel).
 
