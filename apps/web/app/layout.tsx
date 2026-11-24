@@ -29,7 +29,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={fontVariables}>
+    // suppressHydrationWarning: o script da landing marca o <html> (data-lp-seen) antes do React.
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body className="min-h-screen bg-white font-sans text-ink antialiased">
         {/* Pular para o conteúdo: o alvo é o <main id="main"> de cada layout. */}
         <a
