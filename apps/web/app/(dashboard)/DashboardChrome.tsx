@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -43,7 +44,13 @@ import {
   WebsiteIcon,
 } from "./NavIcons";
 import { CreditsPill } from "./CreditsPill";
-import { WelcomeTour, openWelcomeTour } from "./WelcomeTour";
+import { openWelcomeTour } from "./tour/open";
+
+// O tour de boas-vindas (~550 linhas com as figuras) só é baixado depois da página, em separado:
+// não pesa no carregamento de nenhuma tela do painel.
+const WelcomeTour = dynamic(() => import("./WelcomeTour").then((m) => m.WelcomeTour), {
+  ssr: false,
+});
 
 // Moldura do painel para quem tem conta (ou o DEV_USER): barra lateral de vidro flutuante no
 // computador; barra de cima de vidro + barra de abas flutuante (como a do iOS 26) no celular, com o
