@@ -18,7 +18,14 @@ describe("SEO do nosweatfd.com", () => {
 
   it("lista as páginas públicas no sitemap e esconde as áreas logadas no robots", async () => {
     const urls = (await sitemap()).map((e) => e.url);
-    expect(urls).toEqual(expect.arrayContaining([`${SITE_ORIGIN}/`, `${SITE_ORIGIN}/pricing`]));
+    expect(urls).toEqual(
+      expect.arrayContaining([
+        `${SITE_ORIGIN}/`,
+        `${SITE_ORIGIN}/pricing`,
+        `${SITE_ORIGIN}/refund`,
+        `${SITE_ORIGIN}/contact`,
+      ]),
+    );
     const rules = robots().rules;
     const disallow = Array.isArray(rules) ? [] : [rules.disallow].flat();
     expect(disallow).toEqual(expect.arrayContaining(["/api/", "/dashboard", "/sites"]));

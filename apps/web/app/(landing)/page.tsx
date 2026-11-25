@@ -7,6 +7,7 @@ import { Pill } from "@/components/landing/Pill";
 import { Steps } from "@/components/landing/Steps";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
+import { planPrices, pricingCredits } from "@/components/marketing/pricing-data";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { JsonLd } from "@/components/marketing/JsonLd";
@@ -80,7 +81,13 @@ export default function LandingPage() {
           you’re ready to build your website.
         </p>
         <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} promo={promoActive()} offerName={currentOffer()} />
+          <PricingPlans
+            checkout={checkoutReady()}
+            prices={planPrices()}
+            credits={pricingCredits()}
+            promo={promoActive()}
+            offerName={currentOffer()}
+          />
         </div>
       </section>
 

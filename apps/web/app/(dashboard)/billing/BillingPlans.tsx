@@ -19,12 +19,7 @@ import {
 } from "@/components/DashboardUi";
 import { GlassBadge, GlassSegmented, Notice } from "@/components/glass";
 import { CheckIcon } from "@/components/marketing/icons";
-import {
-  contactHref,
-  emailHref,
-  whatsappHref,
-  type SalesContact,
-} from "@/lib/sales-contact";
+import { contactHref, emailHref, whatsappHref, type SalesContact } from "@/lib/sales-contact";
 
 export { contactHref, type SalesContact };
 
@@ -117,6 +112,7 @@ export function BillingPlans({
   siteId,
   contact,
   ended = null,
+  chosen = null,
   offerName = null,
   offerBonus = 0,
 }: {
@@ -125,6 +121,8 @@ export function BillingPlans({
   siteId: string | null;
   contact: SalesContact;
   ended?: EndedPlan | null;
+  /** Plano escolhido antes na /pricing: ganha o destaque (no lugar do "Recommended"). */
+  chosen?: PlanId | null;
   /** Nome da oferta do momento ("Black Friday"); `null` = sem oferta valendo. */
   offerName?: string | null;
   /** Créditos de bônus da oferta no primeiro pagamento (0 = sem bônus). */
@@ -168,6 +166,8 @@ export function BillingPlans({
     hasPlan && current.plan === planId && (manualActive || current.interval === interval);
   const renewText = `Hi! I'd like to renew my ${currentName} plan.`;
   const publishHref = siteId ? `/sites/${siteId}#publish` : "/dashboard#sites";
+  // Quem já tem plano não precisa do lembrete da escolha feita na /pricing.
+  const picked = !hasPlan && chosen ? plans.find((p) => p.id === chosen) : undefined;
 
   return (
     <div className="mt-8">
@@ -242,6 +242,12 @@ export function BillingPlans({
           Whatever you pay today is yours for life: it never goes up while you stay subscribed.
         </p>
       )}
+      {picked && (
+        <p className="mb-4 text-[15px] text-slate-700">
+          You picked <strong className="font-semibold text-ink">{picked.name}</strong> on the
+          pricing page. You can still choose any plan.
+        </p>
+      )}
       <GlassSegmented
         aria-label="Billing period"
         options={[
@@ -254,7 +260,8 @@ export function BillingPlans({
 
       <ul className="mt-6 grid gap-4 md:grid-cols-3">
         {plans.map((plan) => {
-          const recommended = plan.id === "premium";
+          // O plano escolhido na /pricing leva o destaque; sem escolha, o Premium (melhor oferta).
+          const recommended = picked ? plan.id === picked.id : plan.id === "premium";
           return (
             <li
               key={plan.id}
@@ -267,7 +274,7 @@ export function BillingPlans({
                 </h2>
                 {recommended && (
                   <GlassBadge tone="info" dot={false}>
-                    {offerName ? "Best value" : "Recommended"}
+                    {picked ? "Your pick" : offerName ? "Best value" : "Recommended"}
                   </GlassBadge>
                 )}
               </div>

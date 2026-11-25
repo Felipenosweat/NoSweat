@@ -11,6 +11,9 @@ import {
 import type { PublishSiteResponse } from "@nosweat/schema";
 import { markShared, splitSiteUrl } from "@/components/DashboardUi";
 import { Notice, glassButtonClass } from "@/components/glass";
+import { GUARANTEE_LINE } from "@/components/marketing/legal/policy";
+import { planPrices } from "@/components/marketing/pricing-data";
+import { PLANS } from "@/server/billing/plans";
 
 // Modal "Publish website": status, endereço grátis (copiar/abrir), domínio próprio e o botão
 // de publicar. Usado na página do site (PublishButton) e no editor (SiteEditor). Quem chama
@@ -32,6 +35,15 @@ const smallAction = `inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 t
 const shareLink = `${glassButtonClass({ variant: "secondary", size: "sm" })} max-sm:min-h-11`;
 
 type QrDrawing = { value: string; size: number; path: string };
+
+// Preços dos planos para quem ainda não tem plano (auditoria J10: o preço aparece ANTES do clique
+// em "Publish website", não só depois do desvio para /billing). Fonte: server/billing/plans.ts.
+const PRICES = planPrices();
+const PLAN_ROWS = Object.values(PLANS).map((plan) => ({
+  id: plan.id,
+  name: plan.name,
+  ...PRICES[plan.id],
+}));
 
 /**
  * QR code desenhado como SVG (um <path> só), na cor do texto: nada de canvas nem imagem.
@@ -136,6 +148,48 @@ const CheckIcon = () => (
     <path d="m4.5 12.75 6 6 9-13.5" strokeWidth={2} />
   </Svg>
 );
+
+/** Planos e garantia, no diálogo de publicar quando publicar exige um plano. */
+function PlanPrices() {
+  return (
+    <section aria-labelledby="publish-plans-title" className="glass-inset mt-4 rounded-xl p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 id="publish-plans-title" className="text-[13px] font-semibold text-ink">
+          Plans to go live
+        </h3>
+        <span className="text-[12px] text-(--glass-fg-muted)">Yearly: 2 months free</span>
+      </div>
+      <ul className="mt-2 divide-y divide-slate-900/[0.08] text-[14px]">
+        {PLAN_ROWS.map((plan) => (
+          <li key={plan.id} className="flex items-center justify-between gap-3 py-2">
+            <span className="min-w-0">
+              <span className="block font-semibold text-ink">{plan.name}</span>
+              <span className="block text-[12px] text-(--glass-fg-muted)">
+                Up to {plan.publishedSitesLimit} websites
+              </span>
+            </span>
+            <span className="shrink-0 text-right tabular-nums">
+              <span className="font-semibold text-ink">{plan.monthly}</span>
+              <span className="text-(--glass-fg-muted)">/mo</span>
+              <span className="text-(--glass-fg-muted)"> or {plan.annual}/yr</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-[13px] leading-snug text-ink">{GUARANTEE_LINE}</p>
+      <a
+        href="/pricing"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`mt-1 -ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 text-[13px] font-semibold text-brand hover:text-brand-dark sm:min-h-9 ${focusRing}`}
+      >
+        Compare plans
+        <span className="sr-only"> (opens in a new tab)</span>
+        <OpenIcon />
+      </a>
+    </section>
+  );
+}
 
 /**
  * Linha "avisamos os buscadores" depois de publicar. Só aparece com o resultado da publicação
@@ -356,6 +410,8 @@ export function PublishDialog({
               <p className="mt-0.5 text-[13px] text-(--glass-fg-muted)">{status.text}</p>
               {searchEngines && <SearchEnginesNote notice={searchEngines} />}
             </div>
+
+            {needsPlan && state !== "current" && <PlanPrices />}
 
             {/* ---------- Endereço grátis ---------- */}
             <section

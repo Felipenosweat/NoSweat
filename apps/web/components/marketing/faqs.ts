@@ -2,9 +2,26 @@
 // dados estruturados (FAQPage, para o Google) e o /llms.txt (para as IAs) leem daqui também.
 // Só o que o produto faz hoje. "Can I cancel?" vale nos dois modos de venda (Stripe, que renova
 // sozinho, e o manual por WhatsApp/e-mail, pago adiantado e sem renovação) e não promete e-mail
-// de lembrete (nenhum código manda).
+// de lembrete.
+
+import { CONTACT_EMAIL } from "./legal/contact";
+import { CANCELLATION_TERMS, REFUND_TERMS } from "./legal/policy";
+import { planPrices, pricingCredits } from "./pricing-data";
+
+// Números (preços, créditos, custo de cada ação) vêm das fontes únicas via pricing-data.ts.
+// Cancelamento e reembolso: as mesmas frases dos Termos (legal/policy.ts).
 
 export type Faq = { question: string; answer: string };
+
+const prices = planPrices();
+const credits = pricingCredits();
+const count = (n: number) => n.toLocaleString("en-US");
+const costOf = (label: string) => credits.costs.find((cost) => cost.label === label)?.credits;
+const aiChangeCost = costOf("AI change to your website");
+const newSiteCost = costOf("New website");
+
+/** "Starter 150, Pro 400 and Premium 1,000 AI credits a month". */
+const MONTHLY_CREDITS_TEXT = `Starter includes ${count(credits.monthly.starter)} AI credits a month, Pro ${count(credits.monthly.pro)} and Premium ${count(credits.monthly.premium)}`;
 
 export const LANDING_FAQS: Faq[] = [
   {
@@ -24,8 +41,7 @@ export const LANDING_FAQS: Faq[] = [
   },
   {
     question: "Can AI change my site for me?",
-    answer:
-      "Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. AI edits are included in every plan.",
+    answer: `Yes. Ask for changes in plain English — “add a deep-cleaning service,” “make it warmer” — and you get a new draft to review. Nothing goes live until you publish, and you can go back to an earlier version. AI changes use credits: ${MONTHLY_CREDITS_TEXT}${aiChangeCost ? `, and each change costs ${aiChangeCost}` : ""}. Editing your site by hand is always free.`,
   },
   {
     question: "Can I add my own photos?",
@@ -52,13 +68,11 @@ export const LANDING_FAQS: Faq[] = [
   },
   {
     question: "How much does it cost?",
-    answer:
-      "Starter is $19 a month, Pro $69 and Premium $129, with no setup fee. Pay yearly and get 2 months free: $190, $690 or $1,290 a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built.",
+    answer: `Starter is ${prices.starter.monthly} a month, Pro ${prices.pro.monthly} and Premium ${prices.premium.monthly}, with no setup fee. Pay yearly and get 2 months free: ${prices.starter.annual}, ${prices.pro.annual} or ${prices.premium.annual} a year. Starting is free: describe your business and answer a few quick questions. You pick a plan when you want your website built. ${REFUND_TERMS}`,
   },
   {
     question: "Can I cancel?",
-    answer:
-      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew.",
+    answer: `Yes. ${CANCELLATION_TERMS}`,
   },
   {
     question: "Can I use my own domain?",
@@ -80,8 +94,15 @@ export const PRICING_FAQS: Faq[] = [
   },
   {
     question: "Can I cancel?",
-    answer:
-      "Yes. There’s no contract: you keep your plan until the end of the month or year you paid for, and it doesn’t continue after you cancel or choose not to renew. Starting is free; you’re only charged when you choose a plan to build your website.",
+    answer: `Yes. ${CANCELLATION_TERMS}`,
+  },
+  {
+    question: "Can I get a refund?",
+    answer: `Yes. ${REFUND_TERMS} To ask for one, email ${CONTACT_EMAIL}.`,
+  },
+  {
+    question: "What are AI credits?",
+    answer: `AI credits pay for the things AI does for you${newSiteCost ? `, like creating a new website (${newSiteCost} credits)` : ""}${aiChangeCost ? ` or changing your site (${aiChangeCost} credits)` : ""}. ${MONTHLY_CREDITS_TEXT}. Monthly credits refill on the 1st of each month and unused ones don’t roll over. Editing your website by hand is always free.`,
   },
   {
     question: "What happens to my website if I don’t publish?",

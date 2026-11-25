@@ -5,6 +5,7 @@ import {
   LegalPage,
   type LegalSection,
 } from "@/components/marketing/legal/LegalPage";
+import { CANCELLATION_TERMS, REFUND_TERMS } from "@/components/marketing/legal/policy";
 import { textLink } from "@/components/marketing/styles";
 
 // Rascunho dos Termos de Uso. Texto em inglês simples; nada de selos, certificações ou
@@ -236,7 +237,16 @@ const SECTIONS: LegalSection[] = [
           publish it.
         </p>
         <p>
-          We limit how many AI generations and edits each account can make per day. Limits may
+          AI actions, like creating a website or asking the AI for a change, use AI credits. Each
+          plan includes a number of credits every month, shown on the{" "}
+          <Link href="/pricing" className={textLink}>
+            pricing page
+          </Link>
+          . Monthly credits don’t carry over to the next month. Editing your website yourself
+          doesn’t use credits.
+        </p>
+        <p>
+          We also limit how many AI generations and edits each account can make per day. Limits may
           differ between plans and may change over time.
         </p>
       </>
@@ -293,6 +303,29 @@ const SECTIONS: LegalSection[] = [
             If a price changes, we’ll tell you by email before it applies to your next renewal.
           </li>
         </ul>
+        {/* Mesmas palavras do FAQ "Can I cancel?" (components/marketing/legal/policy.ts). */}
+        <p>
+          <strong>In short:</strong> {CANCELLATION_TERMS}
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "refunds",
+    // Decisão do fundador (nov/2026): 30 dias, devolução total, só o primeiro pagamento.
+    // Mesmas palavras do FAQ e da /refund (policy.ts). Revisar com um advogado.
+    title: "Refunds",
+    content: (
+      <>
+        <p>{REFUND_TERMS}</p>
+        <p>
+          To ask for a refund, email us at <ContactEmailLink /> from the email address on your
+          account. The details, including what happens to your website, are in our{" "}
+          <Link href="/refund" className={textLink}>
+            Refund Policy
+          </Link>
+          . Nothing in these Terms limits any refund rights you have under the law.
+        </p>
       </>
     ),
   },
@@ -393,8 +426,8 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      updatedIso="2026-11-15"
-      updatedLabel="November 15, 2026"
+      updatedIso="2026-11-17"
+      updatedLabel="November 17, 2026"
       intro={
         <p>
           The rules for using No Sweat, in plain English. They cover your account, the websites you

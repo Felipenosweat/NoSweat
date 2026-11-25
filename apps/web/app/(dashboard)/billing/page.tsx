@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -11,6 +12,7 @@ import {
   textButton,
 } from "@/components/DashboardUi";
 import { Notice } from "@/components/glass";
+import { PLAN_COOKIE, parsePlanId } from "@/lib/chosen-plan";
 import { getViewer } from "@/server/auth/viewer";
 import {
   getBillingStatus,
@@ -43,7 +45,14 @@ import { PlanUsage, type NextPlan, type UsageRow } from "./PlanUsage";
 export const metadata: Metadata = { title: "Plans and billing", robots: { index: false } };
 
 type BillingPageProps = {
-  searchParams: Promise<{ status?: string; site?: string; session_id?: string; reason?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    site?: string;
+    session_id?: string;
+    reason?: string;
+    /** Plano escolhido antes (botões da /pricing); sem ele, vale o cookie `ns_plan`. */
+    plan?: string;
+  }>;
 };
 
 /** Plano manual que já acabou (`null` se não há acesso manual ou se ele ainda vale). */
@@ -67,10 +76,7 @@ async function planUsage(
 ): Promise<{ rows: UsageRow[]; next: NextPlan | null } | null> {
   try {
     const plan = PLANS[planId];
-    const [sites, social] = await Promise.all([
-      getSiteStore().list(user.id),
-      getSocialState(user),
-    ]);
+    const [sites, social] = await Promise.all([getSiteStore().list(user.id), getSocialState(user)]);
     const rows: UsageRow[] = [
       {
         label: "Live websites",
@@ -105,7 +111,7 @@ async function planUsage(
 
 export default async function BillingPage({ searchParams }: BillingPageProps) {
   await connection();
-  const { status, site, session_id: sessionId, reason } = await searchParams;
+  const { status, site, session_id: sessionId, reason, plan: planParam } = await searchParams;
   const viewer = await getViewer();
   if (!viewer) redirect(`/login?next=${encodeURIComponent("/billing")}`);
   // No modo "ver como" do admin, o plano da conta vista (comprar fica bloqueado pelo proxy.ts).
@@ -153,6 +159,11 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     accountEmail: user.email,
     accountId: user.id,
   };
+
+  // Plano escolhido na /pricing (?plan= ou o cookie do /create): só destaca o cartão; pagar
+  // continua igual (Stripe ou contato manual).
+  const chosenPlan =
+    parsePlanId(planParam) ?? parsePlanId((await cookies()).get(PLAN_COOKIE)?.value);
 
   const plans: PlanCard[] = Object.values(PLANS).map((plan) => ({
     id: plan.id,
@@ -291,6 +302,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
             siteId={siteId}
             contact={contact}
             ended={ended}
+            chosen={chosenPlan}
             offerName={promoActive() ? offerAt().name : null}
             offerBonus={promoActive() ? offerAt().bonusCredits : 0}
           />
