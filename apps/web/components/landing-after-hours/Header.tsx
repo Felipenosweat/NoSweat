@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 
-// Cabeçalho da landing "On the job". No topo é transparente, com letra branca (sobre o painel ink
-// no computador e sobre a faixa ink do celular); ao rolar vira branco com letra ink.
+// Cabeçalho da landing "After hours". No topo é transparente, com letra branca sobre a foto da
+// barbearia; ao rolar vira uma barra ink com linha fina embaixo (a letra continua branca).
 // Sem JS ele fica no fluxo (absolute) e rola junto; com JS passa a ser fixo, sem salto (a troca
 // acontece com a página no topo). Menu do celular: painel de ponta a ponta, foco preso dentro,
 // Esc fecha e o foco volta para o botão.
@@ -19,7 +19,6 @@ export const NAV = [
 
 const ringLight =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
-const ringDark = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
@@ -94,32 +93,26 @@ export function Header() {
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  const light = scrolled;
-  const ring = light ? ringDark : ringLight;
-  const linkTone = light ? "text-slate-600 hover:text-ink" : "text-white/85 hover:text-white";
+  const linkTone = "text-white decoration-white/50 underline-offset-[6px] hover:underline";
 
   return (
     <header
       data-scrolled={scrolled || undefined}
-      className={`inset-x-0 top-0 z-40 transition-[background-color,border-color,box-shadow] duration-200 motion-reduce:transition-none ${
+      className={`inset-x-0 top-0 z-40 border-b transition-[background-color,border-color] duration-200 motion-reduce:transition-none ${
         mounted ? "fixed" : "absolute"
-      } ${
-        light
-          ? "border-b border-slate-200 bg-white"
-          : "border-b border-transparent bg-ink lg:bg-transparent"
-      }`}
+      } ${scrolled ? "border-white/10 bg-ink" : "border-transparent bg-transparent"}`}
     >
-      <div className="mx-auto flex h-16 w-full max-w-[1328px] items-center gap-6 px-5 md:px-8 lg:h-[72px] lg:px-6">
+      <div className="mx-auto flex h-16 w-full max-w-[1328px] items-center gap-8 px-5 md:px-8 lg:h-[72px] lg:px-6">
         <div className="[&>a]:min-h-11">
-          <Logo tone={light ? "light" : "dark"} />
+          <Logo tone="dark" />
         </div>
         <nav aria-label="Main" className="hidden lg:block">
-          <ul className="flex items-center gap-6 text-[15px] font-medium">
+          <ul className="flex items-center gap-7 text-[15px]">
             {NAV.map((item) => (
               <li key={item.href}>
                 <a
                   href={item.href}
-                  className={`-mx-2.5 inline-flex min-h-11 items-center rounded-sm px-2.5 transition-colors duration-150 ${ring} ${linkTone}`}
+                  className={`-mx-2.5 inline-flex min-h-11 items-center rounded-sm px-2.5 transition-colors duration-150 ${ringLight} ${linkTone}`}
                 >
                   {item.label}
                 </a>
@@ -127,18 +120,16 @@ export function Header() {
             ))}
           </ul>
         </nav>
-        <div className="ml-auto flex items-center gap-2 text-[15px] font-semibold">
+        <div className="ml-auto flex items-center gap-2 text-[15px] font-medium">
           <Link
             href="/login"
-            className={`hidden min-h-11 items-center rounded-full px-4 transition-colors duration-150 sm:inline-flex ${ring} ${
-              light ? "text-ink hover:bg-slate-100" : "bg-ink/55 text-white hover:bg-ink/75"
-            }`}
+            className={`hidden min-h-11 items-center rounded-full px-4 transition-colors duration-150 sm:inline-flex ${ringLight} ${linkTone}`}
           >
             Log in
           </Link>
           <Link
             href="/create"
-            className={`inline-flex h-11 items-center rounded-full bg-brand px-5 text-white transition-colors duration-150 hover:bg-brand-dark active:translate-y-px ${ring}`}
+            className={`inline-flex h-11 items-center rounded-full bg-white px-5 text-ink transition-colors duration-150 hover:bg-slate-200 active:translate-y-px ${ringLight}`}
           >
             Start
           </Link>
@@ -146,23 +137,21 @@ export function Header() {
             ref={menuButton}
             type="button"
             aria-expanded={open}
-            aria-controls="otj-menu"
+            aria-controls="ah-menu"
             aria-label="Menu"
             onClick={() => setOpen(true)}
-            className={`grid size-11 place-items-center rounded-full transition-colors duration-150 lg:hidden ${ring} ${
-              light ? "text-ink hover:bg-slate-100" : "text-white hover:bg-white/10"
-            }`}
+            className={`grid size-11 place-items-center rounded-full text-white transition-colors duration-150 hover:bg-white/10 lg:hidden ${ringLight}`}
           >
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth={1.75}
+              strokeWidth={1.5}
               strokeLinecap="round"
               className="size-6"
             >
-              <path d="M4 8h16M4 16h16" />
+              <path d="M4 9h16M4 15h16" />
             </svg>
           </button>
         </div>
@@ -171,28 +160,28 @@ export function Header() {
       {open && (
         <div
           ref={panel}
-          id="otj-menu"
+          id="ah-menu"
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
-          className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white lg:hidden"
+          className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-ink text-white lg:hidden"
         >
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5 md:px-8">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 px-5 md:px-8">
             <div className="[&>a]:min-h-11">
-              <Logo />
+              <Logo tone="dark" />
             </div>
             <button
               type="button"
               aria-label="Close menu"
               onClick={() => close(true)}
-              className={`grid size-11 place-items-center rounded-full text-ink hover:bg-slate-100 ${ringDark}`}
+              className={`grid size-11 place-items-center rounded-full text-white hover:bg-white/10 ${ringLight}`}
             >
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={1.75}
+                strokeWidth={1.5}
                 strokeLinecap="round"
                 className="size-6"
               >
@@ -200,14 +189,14 @@ export function Header() {
               </svg>
             </button>
           </div>
-          <nav aria-label="Site menu" className="px-5 pt-4 md:px-8">
-            <ul className="divide-y divide-slate-200 border-b border-slate-200">
+          <nav aria-label="Site menu" className="px-5 pt-6 md:px-8">
+            <ul className="divide-y divide-white/10 border-b border-white/10">
               {NAV.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
                     onClick={() => close(false)}
-                    className={`otj-display flex min-h-16 items-center rounded-sm text-[1.75rem] font-semibold text-ink ${ringDark}`}
+                    className={`ah-display flex min-h-18 items-center rounded-sm text-[2rem] text-white ${ringLight}`}
                   >
                     {item.label}
                   </a>
@@ -218,13 +207,13 @@ export function Header() {
           <div className="mt-auto grid gap-3 px-5 pt-8 pb-[calc(1.5rem+env(safe-area-inset-bottom))] md:px-8">
             <Link
               href="/create"
-              className={`inline-flex h-14 items-center justify-center rounded-full bg-brand px-6 text-[17px] font-semibold text-white hover:bg-brand-dark ${ringDark}`}
+              className={`inline-flex h-14 items-center justify-center rounded-full bg-white px-6 text-[17px] font-medium text-ink hover:bg-slate-200 ${ringLight}`}
             >
               Start my website
             </Link>
             <Link
               href="/login"
-              className={`inline-flex h-14 items-center justify-center rounded-full border border-slate-300 px-6 text-[17px] font-semibold text-ink hover:bg-slate-50 ${ringDark}`}
+              className={`inline-flex h-14 items-center justify-center rounded-full border border-white/30 px-6 text-[17px] font-medium text-white hover:bg-white/10 ${ringLight}`}
             >
               Log in
             </Link>

@@ -1,21 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Closing } from "@/components/landing-on-the-job/Closing";
-import { landingFaqs, lowestMonthly } from "@/components/landing-on-the-job/content";
-import { Examples } from "@/components/landing-on-the-job/Examples";
-import { Faq } from "@/components/landing-on-the-job/Faq";
-import { Hero } from "@/components/landing-on-the-job/Hero";
-import { Office } from "@/components/landing-on-the-job/Office";
-import { Pricing } from "@/components/landing-on-the-job/Pricing";
-import { Trades } from "@/components/landing-on-the-job/Trades";
+import { Closing } from "@/components/landing-after-hours/Closing";
+import { landingFaqs, lowestMonthly } from "@/components/landing-after-hours/content";
+import { Examples } from "@/components/landing-after-hours/Examples";
+import { Faq } from "@/components/landing-after-hours/Faq";
+import { Hero } from "@/components/landing-after-hours/Hero";
+import { Office } from "@/components/landing-after-hours/Office";
+import { Overnight } from "@/components/landing-after-hours/Overnight";
+import { Pricing } from "@/components/landing-after-hours/Pricing";
 import { JsonLd } from "@/components/marketing/JsonLd";
 import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
 
-// Landing "On the job": a página é sobre o dono, não sobre o software. Fotos documentais de gente
-// trabalhando (marceneiro, barbeiro, padeiro...) e, dentro desse mundo, o momento que a No Sweat
-// cria: um pedido chegando no celular. Cada seção responde uma pergunta: o que é, para quem, como
-// fica o site, o que acontece depois, quanto custa, dúvidas e o fim.
-// Só afirmações que o produto cumpre hoje; nada de números, logos, notas ou depoimentos inventados.
+// Landing "After hours": a loja fecha às seis, o site não. Fotos de lugares à noite (nenhuma pessoa
+// posando), letra leve e grande, fundos quase pretos e o que o produto faz de verdade: o site de
+// exemplo saindo da foto, os pedidos chegando de madrugada e a tela real do painel. Cada seção
+// responde uma pergunta: o que é, como fica o site, o que acontece depois, é de verdade, quanto
+// custa, dúvidas e o fim. Só afirmações que o produto cumpre hoje; nada de números, logos, notas
+// ou depoimentos inventados.
 
 // O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
 const TITLE = "No Sweat: AI Website Builder for Local Businesses";
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 const linkClass =
-  "rounded-sm font-semibold text-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+  "rounded-sm font-medium text-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
@@ -57,8 +58,8 @@ export default function LandingPage() {
     <>
       <JsonLd data={jsonLd(organization(), website(), product(), faqPage(faqs, "/"))} />
       <Hero />
-      <Trades />
       <Examples />
+      <Overnight />
       <Office />
       <Pricing />
       <Faq

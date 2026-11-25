@@ -41,13 +41,13 @@ export function StickyCta({ label }: { label: string }) {
     <div
       inert={!visible}
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none md:hidden ${
+      className={`fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-ink px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none md:hidden ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
       <Link
         href="/create"
-        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-brand px-6 text-[16px] font-semibold text-white hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink active:translate-y-px"
+        className="inline-flex h-12 w-full items-center justify-center rounded-full bg-white px-6 text-[16px] font-medium text-ink hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:translate-y-px"
       >
         {label}
       </Link>

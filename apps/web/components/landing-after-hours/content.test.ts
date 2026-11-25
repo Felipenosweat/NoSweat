@@ -7,18 +7,22 @@ import { LANDING_FAQS } from "@/components/marketing/faqs";
 import { PLANS } from "@/server/billing/plans";
 import { MONTHLY_CREDITS } from "@/server/credits/pricing";
 import {
+  EXAMPLE_SLUGS,
   exampleSites,
+  HERO,
+  heroProof,
   landingFaqs,
   lowestMonthly,
   OFFICE_TOOLS,
+  OVERNIGHT_REQUESTS,
   planCards,
   priceLine,
-  TRADES,
+  REQUEST_CAPTION,
   yearlyNote,
 } from "./content";
 import { photoCredits, PHOTOS } from "./photos";
 
-// Cada número e cada fato da landing "On the job" amarrado à fonte (plans.ts, credits/pricing.ts,
+// Cada número e cada fato da landing "After hours" amarrado à fonte (plans.ts, credits/pricing.ts,
 // fixtures, faqs.ts), e o texto novo livre de palavras proibidas, travessões e reembolso.
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
@@ -74,9 +78,12 @@ describe("prices and limits", () => {
   });
 });
 
-describe("examples and trades", () => {
+describe("examples", () => {
   it("example names, trades and cities come from the fixtures", () => {
-    for (const site of exampleSites()) {
+    const sites = exampleSites();
+    expect(sites.map((site) => site.slug)).toEqual([...EXAMPLE_SLUGS]);
+    expect(sites).toHaveLength(4);
+    for (const site of [...sites, heroProof()]) {
       const entry = MODEL_LIBRARY.find((model) => model.slug === site.slug);
       expect(entry).toBeDefined();
       expect(site.name).toBe(entry?.spec.business.name);
@@ -88,12 +95,31 @@ describe("examples and trades", () => {
     }
   });
 
-  it("trade links only point at example sites that exist", () => {
-    const slugs = new Set(MODEL_LIBRARY.map((model) => model.slug));
-    expect(TRADES).toHaveLength(7);
-    for (const trade of TRADES) {
-      if (trade.example) expect(slugs.has(trade.example.slug)).toBe(true);
-    }
+  it("the site rising from the hero photo says it is made up", () => {
+    const proof = heroProof();
+    expect(proof.caption).toContain(proof.name);
+    expect(proof.caption).toContain(proof.city);
+    expect(proof.caption).toMatch(/An example site; the business is made up\.$/);
+  });
+});
+
+describe("after hours", () => {
+  it("the hero promise matches what the product does after hours", () => {
+    // Pedidos do formulário e marcações viram e-mail ao dono (server/notify).
+    expect(existsSync(join(WEB, "server/notify/lead-email.ts"))).toBe(true);
+    expect(existsSync(join(WEB, "server/notify/booking-email.ts"))).toBe(true);
+    expect(HERO.lead).toMatch(/requests and bookings/);
+  });
+
+  it("the overnight list is three labeled examples through the night", () => {
+    expect(OVERNIGHT_REQUESTS).toHaveLength(3);
+    expect(REQUEST_CAPTION).toBe("Example");
+    expect(OVERNIGHT_REQUESTS.map((request) => request.time)).toEqual([
+      "9:42 PM",
+      "11:18 PM",
+      "6:05 AM",
+    ]);
+    expect(OVERNIGHT_REQUESTS.some((request) => request.kind === "Booking")).toBe(true);
   });
 
   it("every office tool exists in the dashboard", () => {
@@ -105,6 +131,10 @@ describe("examples and trades", () => {
 });
 
 describe("photos", () => {
+  it("has one photo per role", () => {
+    expect(Object.keys(PHOTOS).sort()).toEqual(["closing", "hero", "office", "overnight"]);
+  });
+
   it("every photo has an Unsplash source, alt text and photographer credit", () => {
     for (const photo of Object.values(PHOTOS)) {
       expect(photo.src.startsWith("https://images.unsplash.com/")).toBe(true);

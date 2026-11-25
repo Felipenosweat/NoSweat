@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
-import { HERO } from "@/components/landing-on-the-job/content";
-import { Footer } from "@/components/landing-on-the-job/Footer";
-import { Header } from "@/components/landing-on-the-job/Header";
-import { StickyCta } from "@/components/landing-on-the-job/StickyCta";
-import "./on-the-job.css";
+import { HERO } from "@/components/landing-after-hours/content";
+import { Footer } from "@/components/landing-after-hours/Footer";
+import { Header } from "@/components/landing-after-hours/Header";
+import { StickyCta } from "@/components/landing-after-hours/StickyCta";
+import "./after-hours.css";
 
-// Landing "On the job" (components/landing-on-the-job): fotos documentais de donos de pequenos
-// negócios trabalhando e o pedido chegando no celular deles. As landings antigas continuam em
+// Landing "After hours" (components/landing-after-hours): a loja fecha e o site continua
+// recebendo pedidos e marcações. As landings antigas continuam em
 // components/landing (sem uso aqui). As outras páginas de marketing ficam em app/(marketing).
 
 export default function LandingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="otj flex min-h-svh flex-col">
+    <div className="ah flex min-h-svh flex-col">
       <Header />
       <main id="main" className="flex-1">
         {children}

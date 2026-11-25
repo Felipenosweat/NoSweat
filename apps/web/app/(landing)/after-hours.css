@@ -1,0 +1,107 @@
+/* Landing "After hours": fotos de lugares à noite (a barbearia com as vitrines acesas, o diner
+   fechado, a cadeira de barbeiro) e a ideia de que a loja fecha e o site continua trabalhando.
+   Uma fonte só, Hanken Grotesk (variável, já declarada em app/fonts.ts como "fresh body", sem
+   preload): títulos em 300, rótulos em 500, texto em 400. Nada de 700+ nos títulos.
+   Cores: só os tokens da marca (ink, brand, accent, surface) e slate. Raios: 2px (fotos e
+   molduras) e 999px (botões e selos); o cartão de pedido mantém o raio da tela real.
+   Sem JS ou com "reduzir movimento", tudo aparece parado e completo. */
+
+.ah {
+  font-family: var(--ns-font-fresh-body), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "kern";
+  font-weight: 400;
+  color: var(--color-ink);
+  background: #fff;
+}
+
+.ah-display {
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+/* Teto de 5rem (o brief pedia 6rem): no computador o título cabe à esquerda da placa "We're
+   open" sem encostar nela. */
+.ah-h1 {
+  font-size: clamp(2.75rem, 5.5vw, 5rem);
+  line-height: 1;
+}
+
+.ah-h2 {
+  font-size: clamp(2rem, 4.5vw, 3.75rem);
+  line-height: 1.05;
+}
+
+/* Grade de 12 colunas com as margens sangrando (1fr de cada lado): até 1280 de conteúdo,
+   calha de 16 no celular e 24 a partir do tablet, margem externa mínima de 20. */
+.ah-grid {
+  display: grid;
+  column-gap: 16px;
+  grid-template-columns:
+    minmax(4px, 1fr) repeat(12, minmax(0, calc((1280px - 11 * 16px) / 12)))
+    minmax(4px, 1fr);
+}
+
+@media (min-width: 768px) {
+  .ah-grid {
+    column-gap: 24px;
+    grid-template-columns:
+      minmax(8px, 1fr) repeat(12, minmax(0, calc((1280px - 11 * 24px) / 12)))
+      minmax(8px, 1fr);
+  }
+}
+
+/* "A lista da madrugada": os cartões entram um por um (120ms entre eles, uma vez só) quando a
+   seção aparece. O estado escondido só existe com JS (data-reveal="wait", posto pelo
+   OvernightList) e sem "reduzir movimento"; sem isso, os cartões já estão no lugar. */
+@media (prefers-reduced-motion: no-preference) {
+  .ah-reveal > li {
+    transition:
+      opacity 520ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: calc(var(--i, 0) * 120ms);
+  }
+
+  .ah-reveal[data-reveal="wait"] > li {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Exemplos no celular: rolagem lateral com encaixe e sem barra. */
+.ah-snap {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.ah-snap::-webkit-scrollbar {
+  display: none;
+}
+
+.ah-snap > * {
+  scroll-snap-align: start;
+}
+
+/* Dúvidas: sem o triângulo nativo; o "+" gira ao abrir. */
+.ah-faq summary {
+  list-style: none;
+}
+
+.ah-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.ah-faq .ah-plus {
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ah-faq details[open] .ah-plus {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ah-faq .ah-plus {
+    transition: none;
+  }
+}
