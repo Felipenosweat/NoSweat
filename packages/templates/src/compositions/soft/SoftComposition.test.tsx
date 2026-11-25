@@ -43,7 +43,7 @@ describe("soft composition (beauty)", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     for (const marker of [
       "ns-s-hero",
-      "Popular services",
+      "Quick picks",
       'id="services"',
       'id="about"',
       'id="faq"',

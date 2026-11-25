@@ -194,7 +194,7 @@ export function SoftPopular({ ctx }: { ctx: SoftCtx }) {
     <div className="ns-s-sec">
       <div className="ns-s-wrap">
         <div className="ns-s-sh">
-          <h2>Popular services</h2>
+          <h2>Quick picks</h2>
           <a href="#services">See all</a>
         </div>
         <ul className="ns-s-pop">
