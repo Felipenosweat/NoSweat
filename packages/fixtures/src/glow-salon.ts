@@ -4,10 +4,12 @@ import type { SiteSpec } from "@nosweat/schema";
 export const glowSalon: SiteSpec = {
   version: 1,
   template: "beauty",
+  // Beleza usa a composição "soft", que ignora `composition` e `density`; os valores abaixo são os
+  // que o gerador escolhe para este pedido (server/design/design.test.ts confere).
   design: {
-    composition: "immersive",
+    composition: "editorial",
     primaryAction: "book",
-    density: "balanced",
+    density: "airy",
     imageTreatment: "natural",
   },
   business: {
