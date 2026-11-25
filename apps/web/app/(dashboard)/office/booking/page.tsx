@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { PageHeader } from "@/components/DashboardUi";
+import { setupKindFor } from "@/lib/setup/wizard";
 import { getViewer } from "@/server/auth/viewer";
 import { listPriceItems } from "@/server/office/service";
 import { getSiteStore, type SiteRecord } from "@/server/store";
@@ -17,6 +18,7 @@ function toBookingSite(site: SiteRecord): BookingSite {
     name: site.spec.business.name.trim() || "Untitled website",
     slug: site.status === "published" ? site.slug : null,
     hasSection: site.spec.sections.some((section) => section.type === "booking"),
+    setupHref: setupKindFor(site.spec.template) ? `/sites/${site.id}/setup` : null,
   };
 }
 

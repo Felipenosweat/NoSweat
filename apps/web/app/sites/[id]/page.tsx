@@ -24,14 +24,17 @@ import {
 import { GlassBadge, Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
+import { setupDone, setupKindFor } from "@/lib/setup/wizard";
 import { assistantOverview } from "@/server/assistant/service";
 import { getCurrentUser } from "@/server/auth/session";
 import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "@/server/billing";
+import { getBookingSettings } from "@/server/booking/service";
 import { getDomainState, makeSlug } from "@/server/domains";
 import { parseFreeDomainQuery } from "@/server/domains/free-domain";
 import { freeDomainStatus } from "@/server/domains/free-domain-access";
+import { listPriceItems } from "@/server/office/service";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
-import { getSiteStore } from "@/server/store";
+import { getSiteStore, type SiteRecord } from "@/server/store";
 import { dayKey, getVisitStore } from "@/server/visits/store";
 import { AssistantPanel } from "./AssistantPanel";
 import { PublishButton } from "./PublishButton";
@@ -72,6 +75,24 @@ async function recentResults(siteId: string): Promise<{ visits: number | null; s
   } catch (error) {
     console.error("[visits] could not read the visits", error);
     return { visits: null, sinceIso };
+  }
+}
+
+/**
+ * O dono ainda não terminou o assistente de agendamento? (Só nos ramos que têm assistente, só para
+ * o dono do site.) Pronto = agendamento ligado e ao menos um serviço agendável. Erro = sem aviso.
+ */
+async function needsBookingSetup(site: SiteRecord, userId: string): Promise<boolean> {
+  if (site.ownerId !== userId || !setupKindFor(site.spec.template)) return false;
+  try {
+    const [settings, items] = await Promise.all([
+      getBookingSettings(userId),
+      listPriceItems(userId),
+    ]);
+    return !setupDone(settings, items);
+  } catch (error) {
+    console.error("[setup] could not check the booking setup", error);
+    return false;
   }
 }
 
@@ -132,6 +153,7 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   });
   const recentVisits = results.visits;
   const recentRequests = leads.filter((lead) => lead.createdAt >= results.sinceIso).length;
+  const showSetup = await needsBookingSetup(site, user.id);
   const pendingChanges = hasUnpublishedChanges(site);
   const isPublished = site.status === "published";
   // No ar, mas o plano do dono acabou: o público vê "temporarily unavailable" (ownerHasLiveAccess).
@@ -216,6 +238,16 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               className="font-semibold underline"
             >
               Choose a plan to bring it back →
+            </Link>
+          </Notice>
+        )}
+
+        {showSetup && (
+          <Notice tone="info" className="mt-6">
+            <span className="font-semibold">Finish your booking setup.</span> Add your hours,
+            services and prices so customers can book online.{" "}
+            <Link href={`/sites/${site.id}/setup`} className="font-semibold underline">
+              Start the setup →
             </Link>
           </Notice>
         )}
