@@ -24,12 +24,14 @@ import {
 import { GlassBadge, Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
+import { assistantOverview } from "@/server/assistant/service";
 import { getCurrentUser } from "@/server/auth/session";
 import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { dayKey, getVisitStore } from "@/server/visits/store";
+import { AssistantPanel } from "./AssistantPanel";
 import { PublishButton } from "./PublishButton";
 import { SiteActionsMenu } from "./SiteActionsMenu";
 import { DomainSection, VersionsSection } from "./SiteSections";
@@ -121,6 +123,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   // Resultado dos últimos 30 dias (visitas contadas pelo VisitBeacon do site publicado).
   const results = await recentResults(site.id);
+  // Atendente de IA (Premium). Erro no banco = o painel some, a página segue.
+  const assistant = await assistantOverview(site).catch((error: unknown) => {
+    console.error("[assistant] could not read the settings", error);
+    return null;
+  });
   const recentVisits = results.visits;
   const recentRequests = leads.filter((lead) => lead.createdAt >= results.sinceIso).length;
   const pendingChanges = hasUnpublishedChanges(site);
@@ -396,6 +403,10 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
                 </p>
               )}
             </section>
+
+            {assistant && (
+              <AssistantPanel siteId={site.id} initial={assistant} isPublished={isPublished} />
+            )}
 
             {/* Domínio e versões ficam recolhidos (uma linha cada); #domain e #versions abrem. */}
             <DomainSection siteId={site.id} initial={domain} isPublished={isPublished} />
