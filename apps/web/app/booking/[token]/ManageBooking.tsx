@@ -4,6 +4,7 @@ import { PublicBookingResponse, type PublicBooking } from "@nosweat/schema";
 import { useEffect, useState } from "react";
 import { ConfirmDialog, GlassButton, Notice } from "@/components/glass";
 import { phoneHref } from "@/lib/office";
+import { zoneAbbr } from "@/lib/us-zone";
 
 // Cartão do agendamento para o cliente do dono: detalhes e "Cancel this booking" (com
 // confirmação). Horários sempre no fuso da empresa (`booking.timeZone`), nunca o do visitante.
@@ -13,7 +14,7 @@ type Load =
   | { status: "missing" }
   | { status: "ready"; booking: PublicBooking };
 
-/** "Tue, Dec 3 at 2:30 PM EST": sempre no fuso da empresa, nunca o do visitante. */
+/** "Tue, Dec 3 at 2:30 PM ET": sempre no fuso da empresa, nunca o do visitante. */
 function formatBookingDateTime(iso: string, timeZone: string): string {
   const instant = new Date(iso);
   const zone = (() => {
@@ -34,12 +35,12 @@ function formatBookingDateTime(iso: string, timeZone: string): string {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
-    timeZoneName: "short",
     timeZone: zone,
   })
     .format(instant)
     .replace(/[\u202f\u00a0]/g, " ");
-  return `${date} at ${time}`;
+  // Sigla americana (ET, PT...) e não "EST"/"EDT": o cliente só quer saber o fuso da empresa.
+  return `${date} at ${time} ${zoneAbbr(iso, zone)}`;
 }
 
 /** Mensagem de erro da API (`{ error: { message } }`), se vier. */
@@ -172,6 +173,21 @@ export function ManageBooking({ token }: { token: string }) {
           </div>
         )}
       </dl>
+
+      {booking.cancellationPolicy && (
+        // O texto que o cliente aceitou ao marcar (guardado com a marcação).
+        <section
+          aria-labelledby="policy-title"
+          className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200"
+        >
+          <h2 id="policy-title" className="text-sm font-semibold text-ink">
+            Cancellation policy you agreed to
+          </h2>
+          <p className="mt-1 text-sm leading-6 whitespace-pre-line text-slate-600">
+            {booking.cancellationPolicy}
+          </p>
+        </section>
+      )}
 
       {!canceled && booking.canCancel && (
         <div className="mt-6 border-t border-slate-200 pt-6">
