@@ -1,10 +1,12 @@
 import { liveBookingEndpoint } from "@/server/booking/service";
-import { SiteRenderer } from "@nosweat/templates";
+import { SiteRenderer, themeToCssVars } from "@nosweat/templates";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { customDomainUrl, siteJsonLd, siteMetadata } from "@/components/site-metadata";
+import { AssistantLauncher } from "@/components/assistant/AssistantLauncher";
 import { SiteUnavailable } from "@/components/SiteUnavailable";
 import { VisitBeacon } from "@/components/VisitBeacon";
+import { assistantWidgetEnabled } from "@/server/assistant/public";
 import { appOrigin } from "@/server/notify";
 import { getPublicSiteByDomain, type PublicSite } from "@/server/store/public-site";
 
@@ -63,7 +65,10 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
   if (site.slug && !site.customDomainAccess) {
     redirect(`${appOrigin("https://customer.invalid/")}/s/${encodeURIComponent(site.slug)}`);
   }
-  const bookingEndpoint = await liveBookingEndpoint(site.id, site.spec);
+  const [bookingEndpoint, assistant] = await Promise.all([
+    liveBookingEndpoint(site.id, site.spec),
+    assistantWidgetEnabled(site.id, site.ownerId),
+  ]);
   return (
     <>
       {/* JSON-LD já escapado em siteJsonLd (texto do cliente não fecha a tag). */}
@@ -78,6 +83,14 @@ export default async function DomainSitePage({ params }: DomainSitePageProps) {
       />
       {/* Conta a visita para o dono ver no painel e no resumo do mês (sem dados do visitante). */}
       <VisitBeacon siteId={site.id} />
+      {/* Atendente de IA (Premium, ligado pelo dono, com créditos): só o botão; o chat baixa ao abrir. */}
+      {assistant && (
+        <AssistantLauncher
+          siteId={site.id}
+          businessName={site.spec.business.name}
+          themeVars={themeToCssVars(site.spec.theme)}
+        />
+      )}
     </>
   );
 }

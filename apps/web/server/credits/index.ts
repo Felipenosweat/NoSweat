@@ -131,31 +131,32 @@ function reversal(
     }));
 }
 
+/** Resultado de um gasto: `spendId` identifica o gasto para devolver (`null` = nada cobrado). */
+export type SpendResult =
+  | { ok: true; spendId: string | null }
+  | { ok: false; balance: CreditBalance };
+
 /**
- * Desconta os créditos da ação ANTES de chamar a IA. Devolve o 402 `out_of_credits` pronto se
- * não há saldo, senão `null` (o gasto já ficou registrado). Visitantes e admins: sempre `null`
- * (sem créditos). Mesma ordem do server/quota.ts: confere → registra → confere de novo (pedidos
- * ao mesmo tempo não passam juntos do saldo; quem perdeu a corrida recebe a devolução).
+ * Núcleo do gasto (sem olhar se é admin). Mesma ordem do server/quota.ts: confere → registra →
+ * confere de novo (pedidos ao mesmo tempo não passam juntos do saldo; quem perdeu a corrida
+ * recebe a devolução).
  */
-export async function spendCredits(
-  actor: Actor,
+async function spendFor(
+  userId: string,
   action: CreditAction,
-  siteId?: string | null,
-): Promise<Response | null> {
-  if (actor.kind !== "user") return null;
-  const userId = actor.user.id;
-  if (await isAdmin(userId)) return null;
+  siteId: string | null,
+): Promise<SpendResult> {
   const cost = creditCost(action);
-  if (cost <= 0) return null;
+  if (cost <= 0) return { ok: true, spendId: null };
 
   const now = new Date();
   const before = toBalance(await readRaw(userId, now), now, false);
-  if (before.total < cost) return outOfCreditsResponse(action, before);
+  if (before.total < cost) return { ok: false, balance: before };
 
   const fromMonthly = Math.min(cost, before.monthlyLeft);
   const fromTopup = cost - fromMonthly;
   const spendId = crypto.randomUUID();
-  const base = { userId, reason: "spend" as const, action, siteId: siteId ?? null };
+  const base = { userId, reason: "spend" as const, action, siteId };
   const entries: NewCreditEntry[] = [];
   if (fromMonthly > 0) {
     entries.push({ ...base, delta: -fromMonthly, bucket: "monthly", meta: { spendId } });
@@ -171,9 +172,45 @@ export async function spendCredits(
   const overdrawn =
     (fromMonthly > 0 && after.allowance - after.monthlyUsed < 0) ||
     (fromTopup > 0 && after.topup < 0);
-  if (!overdrawn) return null;
+  if (!overdrawn) return { ok: true, spendId };
   await store.insert(reversal(entries, spendId, "race", now));
-  return outOfCreditsResponse(action, toBalance(await readRaw(userId, now), now, false));
+  return { ok: false, balance: toBalance(await readRaw(userId, now), now, false) };
+}
+
+/**
+ * Desconta os créditos da ação ANTES de chamar a IA. Devolve o 402 `out_of_credits` pronto se
+ * não há saldo, senão `null` (o gasto já ficou registrado). Visitantes e admins: sempre `null`
+ * (sem créditos).
+ */
+export async function spendCredits(
+  actor: Actor,
+  action: CreditAction,
+  siteId?: string | null,
+): Promise<Response | null> {
+  if (actor.kind !== "user") return null;
+  const userId = actor.user.id;
+  if (await isAdmin(userId)) return null;
+  const result = await spendFor(userId, action, siteId ?? null);
+  return result.ok ? null : outOfCreditsResponse(action, result.balance);
+}
+
+/**
+ * Cobra do DONO do site uma ação feita por outra pessoa (ex.: o atendente de IA respondendo um
+ * visitante anônimo). Admin: nada é cobrado (`spendId: null`). Para devolver: `refundSpend`.
+ */
+export async function spendOwnerCredits(
+  ownerId: string,
+  action: CreditAction,
+  siteId: string | null,
+): Promise<SpendResult> {
+  if (await isAdmin(ownerId)) return { ok: true, spendId: null };
+  return spendFor(ownerId, action, siteId);
+}
+
+/** `true` se o dono ainda pode pagar a ação (admin: sempre). */
+export async function ownerCanAfford(ownerId: string, action: CreditAction): Promise<boolean> {
+  const balance = await getBalance({ id: ownerId });
+  return balance.unlimited || balance.total >= creditCost(action);
 }
 
 /** Janela para achar o gasto a devolver (a IA mais lenta leva poucos minutos). */
@@ -219,6 +256,36 @@ export async function refundCredits(
     if (rows.length > 0) await store.insert(rows);
   } catch (error) {
     console.error("[credits] could not refund", action, error);
+  }
+}
+
+/**
+ * Devolve UM gasto pelo id (o `spendId` de `spendOwnerCredits`), se ainda não foi devolvido.
+ * `spendId` nulo (admin, nada cobrado): nada a fazer. Nunca lança erro.
+ */
+export async function refundSpend(
+  userId: string,
+  spendId: string | null,
+  why = "ai_failed",
+): Promise<void> {
+  if (!spendId) return;
+  try {
+    const now = new Date();
+    const store = getCreditStore();
+    const entries = await store.listSince(
+      userId,
+      new Date(now.getTime() - REFUND_WINDOW_MS).toISOString(),
+    );
+    if (entries.some((entry) => entry.reason === "refund" && entry.meta.refundOf === spendId)) {
+      return;
+    }
+    const group = entries.filter(
+      (entry) => entry.reason === "spend" && entry.meta.spendId === spendId,
+    );
+    const rows = reversal(group, spendId, why, now);
+    if (rows.length > 0) await store.insert(rows);
+  } catch (error) {
+    console.error("[credits] could not refund", spendId, error);
   }
 }
 

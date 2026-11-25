@@ -91,7 +91,13 @@ export async function usageSince(
   count: (kind: AiUsageKind, sinceIso: string) => Promise<number>,
 ): Promise<UsageByKind> {
   const values = await Promise.all(AI_USAGE_KINDS.map((kind) => count(kind, sinceIso)));
-  const usage: UsageByKind = { generate: 0, ai_edit: 0, social_plan: 0, social_caption: 0 };
+  const usage: UsageByKind = {
+    generate: 0,
+    ai_edit: 0,
+    social_plan: 0,
+    social_caption: 0,
+    assistant_chat: 0,
+  };
   AI_USAGE_KINDS.forEach((kind, i) => {
     usage[kind] = values[i] ?? 0;
   });

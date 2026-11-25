@@ -10,6 +10,9 @@ export const AI_COST_PER_USE_USD: Record<AiUsageKind, number> = {
   ai_edit: 0.06,
   social_plan: 0.03,
   social_caption: 0.002,
+  // Atendente do site (Haiku): cada linha é 1 crédito = até 10 mensagens do visitante, ~US$ 0,003
+  // por resposta (prompt do site + conversa na entrada).
+  assistant_chat: 0.03,
 };
 
 /** Todos os tipos de uso da IA, na ordem em que aparecem no painel. */
@@ -18,6 +21,7 @@ export const AI_USAGE_KINDS: AiUsageKind[] = [
   "ai_edit",
   "social_plan",
   "social_caption",
+  "assistant_chat",
 ];
 
 export const AI_USAGE_LABELS: Record<AiUsageKind, string> = {
@@ -25,6 +29,7 @@ export const AI_USAGE_LABELS: Record<AiUsageKind, string> = {
   ai_edit: "AI website changes",
   social_plan: "AI month plans",
   social_caption: "AI captions",
+  assistant_chat: "AI assistant chats",
 };
 
 export type AiUsageCounts = Partial<Record<AiUsageKind, number>>;
