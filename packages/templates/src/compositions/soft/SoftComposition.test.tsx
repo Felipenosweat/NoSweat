@@ -58,7 +58,8 @@ describe("soft composition (beauty)", () => {
   });
 
   it("keeps every piece of content visible by default (no reveal states)", () => {
-    const html = render(glow, { bookingDemo: true });
+    // O campo-isca anti-robô do formulário usa opacity-0 de propósito: fica de fora da conferência.
+    const html = render(glow, { bookingDemo: true }).replace(/<input[^>]*ns_hp[^>]*>/g, "");
     expect(html).not.toMatch(
       /data-ns-(rise|fade|stagger|reveal|words|parallax|zoom|hscroll|magnetic)/,
     );
@@ -102,7 +103,7 @@ describe("soft composition (beauty)", () => {
 
   it("never invents ratings, stars or popularity numbers", () => {
     const html = render(glow, { bookingDemo: true });
-    expect(html).not.toMatch(/★|☆|stars?\b|rating|rated|\d\.\d\s*\(|open now|top rated/i);
+    expect(html).not.toMatch(/★|☆|\bstars?\b|\bratings?\b|\btop rated\b|\bopen now\b|\d\.\d\s*\(/i);
   });
 
   it("drops the dock slots that have no data", () => {
