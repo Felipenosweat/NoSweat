@@ -18,6 +18,10 @@
       "schedule": "23 8 * * *"
     },
     {
+      "path": "/api/cron/social-autopilot",
+      "schedule": "11 14 * * *"
+    },
+    {
       "path": "/api/cron/monthly-report",
       "schedule": "41 15 1 * *"
     }

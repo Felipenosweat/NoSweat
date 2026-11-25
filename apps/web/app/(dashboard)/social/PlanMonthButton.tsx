@@ -167,7 +167,7 @@ export function PlanMonthButton({
 
       <p className="mt-4 text-[13px] leading-5 text-(--glass-fg-muted)">
         We write drafts from your website: your services, area and photos. Nothing goes out until
-        you approve it.
+        you approve it, or Autopilot does if you turned it on.
         {remainingText ? ` ${remainingText}.` : ""}
       </p>
       <p className="mt-1 text-[13px] leading-5 font-medium text-ink">

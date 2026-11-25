@@ -60,7 +60,16 @@ const AI_ACTIONS: { action: CaptionAction; label: string; needsCaption: boolean 
   { action: "cta", label: "Add call to action", needsCaption: true },
 ];
 
-type Busy = "save" | "approve" | "publish" | "retry" | "delete" | "upload" | CaptionAction | null;
+type Busy =
+  | "save"
+  | "approve"
+  | "publish"
+  | "retry"
+  | "delete"
+  | "upload"
+  | "skip"
+  | CaptionAction
+  | null;
 
 /** Botão de texto vermelho (apagar). */
 const dangerTextButton = textButton
@@ -137,6 +146,7 @@ export function PostComposer({
     !sameMedia(media, current.media) ||
     scheduledAt !== current.scheduledAt;
   const autoReady = capability.publishMode === "auto" && account?.status === "active";
+  const autopilotOn = settings.autopilot === true && state.features?.autopilot === true;
   const captionsLeft = state.aiRemaining.captions;
   const aiOut = captionsLeft !== null && captionsLeft <= 0;
   const missing =
@@ -298,6 +308,25 @@ export function PostComposer({
       });
       onDeleted(current.id);
       dialogRef.current?.close();
+    });
+
+  /** "Skip" do Piloto automático: liga/desliga sem mexer no texto (não conta como edição). */
+  const toggleSkip = (skip: boolean) =>
+    run("skip", async () => {
+      if (!current) return;
+      const body: UpdateSocialPostRequest = { autopilotSkip: skip };
+      const result = await socialApi(
+        `/api/social/posts/${encodeURIComponent(current.id)}`,
+        SocialPostResponse,
+        { method: "PATCH", body },
+      );
+      setCurrent(result.post);
+      onSynced(result.post);
+      setStatus(
+        skip
+          ? "Autopilot will skip this post. It stays a draft until you approve it."
+          : "Skip removed.",
+      );
     });
 
   const askAi = (action: CaptionAction) =>
@@ -651,6 +680,47 @@ export function PostComposer({
                   Your business time: {zoneName(tz)} ({tz.replace(/_/g, " ")})
                 </p>
               </fieldset>
+
+              {autopilotOn && current?.status === "draft" && current.source === "ai" && (
+                <section
+                  aria-labelledby={`${ids}-autopilot`}
+                  className="glass-inset rounded-xl p-4"
+                >
+                  <h3 id={`${ids}-autopilot`} className="text-[13px] font-medium text-ink">
+                    Autopilot
+                  </h3>
+                  <p className="mt-1 text-[13px] leading-5 text-(--glass-fg-muted)">
+                    {current.autopilotSkip
+                      ? "Skipped. Autopilot won't approve this post; it waits for you."
+                      : current.ownerEdited || dirty
+                        ? "You changed this post, so Autopilot leaves it for you to approve."
+                        : current.claimsFlagged
+                          ? "This caption mentions things you should confirm, so Autopilot leaves it for you."
+                          : media.length === 0 || !caption.trim()
+                            ? "Autopilot only posts drafts with a photo and a caption."
+                            : "We email you the day before. If you leave it as is, Autopilot approves it about 2 hours before its time."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void toggleSkip(!current.autopilotSkip)}
+                    disabled={isBusy}
+                    aria-pressed={current.autopilotSkip === true}
+                    className={`mt-2 ${textButton}`}
+                  >
+                    {busy === "skip"
+                      ? "Saving…"
+                      : current.autopilotSkip
+                        ? "Undo skip"
+                        : "Skip with Autopilot"}
+                  </button>
+                </section>
+              )}
+
+              {current?.autoApprovedAt && current.status !== "draft" && (
+                <p className="text-[13px] text-(--glass-fg-muted)">
+                  Approved by Autopilot on {formatWhen(current.autoApprovedAt, tz)}.
+                </p>
+              )}
 
               {current?.status === "approved" && !dirty && (
                 <ManualPostButton
