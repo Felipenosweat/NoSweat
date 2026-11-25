@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { focusRing } from "@/components/marketing/styles";
 import { PillArrow } from "./Pill";
 
 // As perguntas do topo, uma de cada vez (forma do averaks.com): que tipo de negócio, onde, o
@@ -35,9 +36,6 @@ const PROMPTS: Record<Step, { title: string; hint: string }> = {
     hint: "Optional. Services, hours, a phone number. Whatever you’d tell a customer.",
   },
 };
-
-const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
 
 export function HeroStepper() {
   const router = useRouter();
@@ -140,7 +138,7 @@ export function HeroStepper() {
         </button>
       ) : (
         step !== "kind" && (
-          <button type="submit" className={`lp-pill ${focusRing}`}>
+          <button type="submit" className={`lp-pill lp-pill-blue ${focusRing}`}>
             Next
             <PillArrow />
           </button>
@@ -162,9 +160,9 @@ export function HeroStepper() {
             type="button"
             onClick={() => goTo(a.step)}
             aria-label={`Change: ${a.value}`}
-            className={`lp-answer inline-flex items-center gap-2 rounded-full border border-[#071b33]/12 bg-white px-3.5 py-1.5 text-[13px] text-[#071b33] transition-colors hover:border-[#0066ff]/50 ${focusRing}`}
+            className={`lp-answer inline-flex items-center gap-2 rounded-full border border-[#071b33]/12 bg-white px-3.5 py-1.5 text-[13px] text-[#071b33] transition-colors hover:border-[#071b33]/40 ${focusRing}`}
           >
-            <span className="size-1.5 rounded-full bg-[#0066ff]" aria-hidden="true" />
+            <span className="size-1.5 rounded-full bg-[#071b33]" aria-hidden="true" />
             {a.value}
             <span aria-hidden="true" className="text-[#86868b]">
               Edit
@@ -263,7 +261,7 @@ export function HeroStepper() {
       </form>
       <noscript>
         <p className="text-center text-sm">
-          <a href="/create" className="font-semibold text-[#0066ff] underline">
+          <a href="/create" className="font-semibold text-[#071b33] underline">
             Describe your business and build your site
           </a>
         </p>

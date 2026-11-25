@@ -1,10 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { focusRing, focusRingOnDark } from "@/components/marketing/styles";
 
 // Botão em pílula da landing: texto + seta ↗ num círculo (ver .lp-pill em landing.css).
-
-const focus =
-  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
+// tone "blue" = a ação principal (a mesma cor do primaryButton); é o único lugar com azul.
 
 export function PillArrow() {
   return (
@@ -26,12 +25,15 @@ export function Pill({
   href,
   children,
   tone = "ink",
+  onDark = false,
 }: {
   href: string;
   children: ReactNode;
   tone?: "ink" | "blue" | "light";
+  /** Sobre a bolha escura: anel de foco branco. */
+  onDark?: boolean;
 }) {
-  const cls = `lp-pill ${tone === "blue" ? "lp-pill-blue" : tone === "light" ? "lp-pill-light" : ""} ${focus}`;
+  const cls = `lp-pill ${tone === "blue" ? "lp-pill-blue" : tone === "light" ? "lp-pill-light" : ""} ${onDark ? focusRingOnDark : focusRing}`;
   // Âncoras da própria página não precisam do roteador.
   return href.startsWith("#") ? (
     <a href={href} className={cls}>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { focusRing } from "@/components/marketing/styles";
 import { Pill } from "./Pill";
 
 // "What you get" (#what), numa bolha branca: título à esquerda, uma frase e o botão à direita;
@@ -46,9 +47,6 @@ const TABS = [
   },
 ] as const;
 
-const focus =
-  "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0066ff]";
-
 export function WhatYouGet() {
   const [active, setActive] = useState(0);
   const tab = TABS[active] ?? TABS[0];
@@ -72,7 +70,9 @@ export function WhatYouGet() {
               people who would rather be working.
             </p>
             <div className="mt-6">
-              <Pill href="#start">Start free</Pill>
+              <Pill href="#start" tone="blue">
+                Start free
+              </Pill>
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@ export function WhatYouGet() {
               aria-controls="what-panel"
               onClick={() => setActive(i)}
               onMouseEnter={() => setActive(i)}
-              className={`flex flex-col items-start justify-start rounded-[20px] px-5 py-4 text-left transition-colors duration-300 ${focus} ${
+              className={`flex flex-col items-start justify-start rounded-[20px] px-5 py-4 text-left transition-colors duration-300 ${focusRing} ${
                 i === active ? "bg-[#eef1f6]" : "hover:bg-[#f5f6f9]"
               }`}
             >
@@ -100,7 +100,7 @@ export function WhatYouGet() {
                 <span
                   aria-hidden="true"
                   className={`size-2 rounded-full transition-colors duration-300 ${
-                    i === active ? "bg-[#0066ff]" : "bg-[#d2d6de]"
+                    i === active ? "bg-[#071b33]" : "bg-[#d2d6de]"
                   }`}
                 />
                 <span className="text-[17px] font-semibold tracking-[-0.02em] text-[#071b33]">

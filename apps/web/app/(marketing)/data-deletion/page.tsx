@@ -196,7 +196,7 @@ export default async function DataDeletionPage({ searchParams }: { searchParams:
                 maxLength={64}
                 autoComplete="off"
                 placeholder="Confirmation code"
-                className="h-12 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 text-base text-ink placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="h-12 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 text-base text-ink placeholder:text-slate-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink focus-visible:shadow-[0_0_0_2px_#fff]"
               />
               <button type="submit" className={primaryButton}>
                 Check status

@@ -273,12 +273,16 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-/* "line": os botões do texto viram links sublinhados grandes (o do formulário e a barra do
-   celular continuam cheios: só os que têm ns-btn-primary / ns-btn-secondary mudam). */
-.ns-site[data-buttons="line"] :is(.ns-btn-primary, .ns-btn-secondary) {
+/* "line": só a ação SECUNDÁRIA vira link sublinhado grande. A ação principal continua um
+   botão cheio, com cara de clicável (NN/g: sinal de clique fraco = 25 % mais fixações), de
+   canto reto para manter o jeito do estilo. O do formulário e a barra do celular não mudam. */
+.ns-site[data-buttons="line"] .ns-btn-primary {
+  border-radius: 0;
+}
+.ns-site[data-buttons="line"] .ns-btn-secondary {
   min-height: 2.75rem;
   border: 0;
-  border-bottom: 1.5px solid currentColor;
+  border-bottom: 1.5px solid color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 0;
   background: transparent;
   color: inherit;
@@ -286,8 +290,8 @@
   margin-right: 1.5rem;
   font-size: 1.0625rem;
 }
-.ns-site[data-buttons="line"] .ns-btn-secondary {
-  border-bottom-color: color-mix(in srgb, currentColor 40%, transparent);
+.ns-site[data-buttons="line"] .ns-btn-secondary:hover {
+  border-bottom-color: currentColor;
 }
 /* ------------------------------------------------------------------------------------------
    Molde SIGNATURE (compositions/Signature.tsx): padrão de site premiado aprovado pelo dono.
@@ -740,7 +744,12 @@
   font-style: normal;
   color: var(--ns-primary);
 }
-.ns-site:is([data-font="editorial"], [data-font="refined"], [data-font="luxe"], [data-font="classic"])
+.ns-site:is(
+    [data-font="editorial"],
+    [data-font="refined"],
+    [data-font="luxe"],
+    [data-font="classic"]
+  )
   .ns-accent {
   font-style: italic;
   color: inherit;
@@ -771,11 +780,16 @@
   margin-top: 4rem;
 }
 
-/* Abertura: o nome sobe letra por letra, sai, e a cortina sobe. Só CSS e só na primeira tela
-   do site publicado; some sozinha mesmo sem JavaScript. Tudo acaba em 0,6 s (a cortina sai de
-   0,3 s a 0,6 s) para não atrasar o topo: título e foto aparecem logo (LCP). O atraso de cada
-   letra vem em --ns-intro-delay (Signature.tsx, no máximo 0,1 s). */
+/* Abertura: o nome sobe letra por letra, sai, e a cortina sobe. Só na primeira visita da sessão
+   ao site publicado: o script do começo do site (OPENING_SCRIPT em Signature.tsx) liga
+   `data-ns-opening` antes da pintura. Sem ele (visita repetida, sem JavaScript, sessionStorage
+   bloqueado, "reduzir movimento") a cortina nem existe e nada fica escondido. Ligada, é só CSS e
+   some sozinha: tudo acaba em 0,6 s (a cortina sai de 0,3 s a 0,6 s) para não atrasar o topo
+   (LCP). O atraso de cada letra vem em --ns-intro-delay (Signature.tsx, no máximo 0,1 s). */
 .ns-site .ns-intro {
+  display: none;
+}
+.ns-site [data-ns-opening] > .ns-intro {
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -812,17 +826,18 @@
     visibility: hidden;
   }
 }
-/* O topo entra junto com a cortina saindo (nenhum atraso passa de 0,4 s). */
-.ns-site .ns-hero[data-intro] .ns-hero-line > span {
+/* O topo e o menu entram junto com a cortina saindo (nenhum atraso passa de 0,4 s). Só quando a
+   abertura toca: quem volta na mesma sessão (para ligar, por exemplo) vê tudo parado na hora. */
+.ns-site [data-ns-opening] .ns-hero[data-intro] .ns-hero-line > span {
   animation: ns-line-in 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0.3s both;
 }
-.ns-site .ns-hero[data-intro] .ns-hero-line + .ns-hero-line > span {
+.ns-site [data-ns-opening] .ns-hero[data-intro] .ns-hero-line + .ns-hero-line > span {
   animation-delay: 0.36s;
 }
-.ns-site .ns-hero[data-intro] .ns-hero-fade {
+.ns-site [data-ns-opening] .ns-hero[data-intro] .ns-hero-fade {
   animation: ns-fade-up 0.6s cubic-bezier(0.19, 1, 0.22, 1) 0.4s both;
 }
-.ns-site .ns-nav {
+.ns-site [data-ns-opening] .ns-nav {
   animation: ns-nav-in 0.8s cubic-bezier(0.19, 1, 0.22, 1) 0.35s both;
 }
 @keyframes ns-line-in {
@@ -842,11 +857,11 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ns-site .ns-intro {
+  .ns-site [data-ns-opening] > .ns-intro {
     display: none;
   }
-  .ns-site .ns-hero[data-intro] :is(.ns-hero-line > span, .ns-hero-fade),
-  .ns-site .ns-nav {
+  .ns-site [data-ns-opening] .ns-hero[data-intro] :is(.ns-hero-line > span, .ns-hero-fade),
+  .ns-site [data-ns-opening] .ns-nav {
     animation: none;
   }
 }

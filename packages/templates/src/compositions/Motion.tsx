@@ -16,7 +16,8 @@ import type { Tone } from "./tone";
 // - data-ns-hscroll (com .ns-rail dentro): no computador, a rolagem vertical empurra a galeria
 //   para o lado (marca `data-ns-on`; no celular e no tablet a galeria corre com o dedo);
 // - data-ns-magnetic: o botão puxa na direção do mouse;
-// - data-ns-quotes (com [data-ns-quote]): depoimentos que trocam sozinhos;
+// - data-ns-quotes (com [data-ns-quote] e o botão [data-ns-quotes-toggle] ao lado): depoimentos
+//   que trocam sozinhos, com Pause/Play e pausa ao passar o mouse ou focar (rotateQuotes);
 // - data-tone="light|dark" (seções e faixas): o menu de vidro troca de tom conforme o que passa
 //   por baixo dele (adaptHeader). Esse gancho roda também com "reduzir movimento" (só sem a
 //   transição, que é do CSS).
@@ -32,7 +33,7 @@ export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
     let disposed = false;
     const cleanups: (() => void)[] = [stopHeader];
 
-    cleanups.push(revealOnScroll(root), smoothAnchors(root));
+    cleanups.push(revealOnScroll(root), smoothAnchors(root), rotateQuotes(root));
 
     void (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -189,22 +190,6 @@ export function Motion({ pageTone = "light" }: { pageTone?: Tone }) {
             button.removeEventListener("mouseleave", leave);
           });
         }
-      }
-
-      // Depoimentos trocam devagar.
-      for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-ns-quotes]"))) {
-        const quotes = Array.from(box.querySelectorAll<HTMLElement>("[data-ns-quote]"));
-        if (quotes.length < 2) continue;
-        // O primeiro já fica aceso antes de ligar a troca (nunca nasce apagado nem sobreposto).
-        quotes[0]?.setAttribute("data-on", "");
-        box.dataset.rotating = "";
-        let current = 0;
-        const timer = window.setInterval(() => {
-          quotes[current]?.removeAttribute("data-on");
-          current = (current + 1) % quotes.length;
-          quotes[current]?.setAttribute("data-on", "");
-        }, 5600);
-        cleanups.push(() => window.clearInterval(timer));
       }
 
       ScrollTrigger.refresh();
@@ -375,4 +360,109 @@ function smoothAnchors(root: HTMLElement): () => void {
   };
   root.addEventListener("click", click);
   return () => root.removeEventListener("click", click);
+}
+
+/** Tempo de cada depoimento na tela. */
+const QUOTE_MS = 5600;
+
+/**
+ * Depoimentos que trocam sozinhos (WCAG 2.2.2: tudo que se move sozinho por mais de 5 s precisa
+ * de pausa). Só roda fora de "reduzir movimento" (Motion sai antes). Para cada `[data-ns-quotes]`
+ * com 2+ depoimentos:
+ * - o primeiro já fica aceso antes de ligar a troca (nunca nasce apagado nem sobreposto);
+ * - o botão `[data-ns-quotes-toggle]` (irmão, escondido no HTML) aparece e pausa/retoma de vez
+ *   (`data-paused` troca o ícone e o texto);
+ * - a troca também para enquanto o mouse está em cima ou o foco está dentro da seção, e com a
+ *   aba escondida; ao voltar, o depoimento atual ganha o tempo inteiro de novo. "Play" vale na
+ *   hora, mesmo com o mouse ou o foco ainda ali (só uma nova entrada pausa de novo).
+ * Devolve a limpeza (volta ao HTML original: todos visíveis e botão escondido).
+ */
+function rotateQuotes(root: HTMLElement): () => void {
+  const cleanups: (() => void)[] = [];
+  for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-ns-quotes]"))) {
+    const quotes = Array.from(box.querySelectorAll<HTMLElement>("[data-ns-quote]"));
+    if (quotes.length < 2) continue;
+    const area = box.parentElement ?? box;
+    const toggle = area.querySelector<HTMLButtonElement>("[data-ns-quotes-toggle]");
+    quotes[0]?.setAttribute("data-on", "");
+    box.dataset.rotating = "";
+
+    let current = 0;
+    let timer = 0;
+    let userPaused = false;
+    let hovered = false;
+    let focused = false;
+
+    const next = () => {
+      quotes[current]?.removeAttribute("data-on");
+      current = (current + 1) % quotes.length;
+      quotes[current]?.setAttribute("data-on", "");
+    };
+    const sync = () => {
+      const run = !userPaused && !hovered && !focused && !document.hidden;
+      if (run && !timer) timer = window.setInterval(next, QUOTE_MS);
+      if (!run && timer) {
+        window.clearInterval(timer);
+        timer = 0;
+      }
+    };
+    const onToggle = () => {
+      userPaused = !userPaused;
+      toggle?.toggleAttribute("data-paused", userPaused);
+      // "Play" é pedido explícito: vale mesmo com o mouse em cima e o foco no próprio botão.
+      if (!userPaused) {
+        hovered = false;
+        focused = false;
+      }
+      sync();
+    };
+    const onEnter = () => {
+      hovered = true;
+      sync();
+    };
+    const onLeave = () => {
+      hovered = false;
+      sync();
+    };
+    const onFocusIn = () => {
+      focused = true;
+      sync();
+    };
+    const onFocusOut = (event: FocusEvent) => {
+      // Foco indo para outro ponto da mesma seção não conta como saída.
+      if (event.relatedTarget instanceof Node && area.contains(event.relatedTarget)) return;
+      focused = false;
+      sync();
+    };
+
+    if (toggle) {
+      toggle.hidden = false;
+      toggle.addEventListener("click", onToggle);
+    }
+    area.addEventListener("mouseenter", onEnter);
+    area.addEventListener("mouseleave", onLeave);
+    area.addEventListener("focusin", onFocusIn);
+    area.addEventListener("focusout", onFocusOut);
+    document.addEventListener("visibilitychange", sync);
+    sync();
+
+    cleanups.push(() => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", sync);
+      area.removeEventListener("mouseenter", onEnter);
+      area.removeEventListener("mouseleave", onLeave);
+      area.removeEventListener("focusin", onFocusIn);
+      area.removeEventListener("focusout", onFocusOut);
+      if (toggle) {
+        toggle.removeEventListener("click", onToggle);
+        toggle.hidden = true;
+        toggle.removeAttribute("data-paused");
+      }
+      for (const quote of quotes) quote.removeAttribute("data-on");
+      delete box.dataset.rotating;
+    });
+  }
+  return () => {
+    for (const cleanup of cleanups) cleanup();
+  };
 }
