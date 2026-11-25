@@ -1005,7 +1005,7 @@
   }
 }
 .ns-s-nav,
-.ns-s-hcta {
+.ns-s-header .ns-s-hcta {
   display: none;
 }
 .ns-s-menu-panel {
@@ -2130,7 +2130,7 @@
     font-size: 15px;
     font-weight: 500;
   }
-  .ns-s-hcta {
+  .ns-s-header .ns-s-hcta {
     display: inline-flex;
   }
   .ns-s-menu,
