@@ -6,3 +6,4 @@ export * from "./office";
 export * from "./finance";
 export * from "./booking";
 export * from "./assistant";
+export * from "./setup";
