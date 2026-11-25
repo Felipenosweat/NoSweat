@@ -146,7 +146,9 @@ export function SoftBanner({ ctx }: { ctx: SoftCtx }) {
   let photo: SiteImage | undefined;
   for (const section of spec.sections) {
     if (section.type === "gallery") {
-      photo = section.images.filter(isOwnerPhoto).find((image) => usableThumb(image));
+      photo = section.images
+        .filter((image) => isOwnerPhoto(image))
+        .find((image) => usableThumb(image));
     }
     if (photo) break;
   }

@@ -2,6 +2,7 @@ import type { SiteSpec } from "@nosweat/schema";
 import { GlassDefs } from "./components/GlassDefs";
 import { NoSweatBadge } from "./components/NoSweatBadge";
 import { COMPOSITIONS, compositionOf } from "./compositions";
+import { SoftComposition } from "./compositions/soft/SoftComposition";
 import { siteStyle } from "./compositions/model";
 import { luminance, themeToCssVars } from "./theme";
 
@@ -11,6 +12,8 @@ export type SiteRendererProps = {
   /** Base das rotas públicas de agendamento (`/api/public/booking/<siteId>`). Sem ela, a seção
    *  "booking" não aparece (no editor mostra um aviso). */
   bookingEndpoint?: string;
+  /** Só /examples: agendamento com horários de exemplo, sem API (ver TemplateProps). */
+  bookingDemo?: boolean;
   /**
    * Modo de edição (só o editor usa): cada seção ganha uma moldura com `data-section-index`,
    * contorno ao passar o mouse e um rótulo clicável. Padrão `false`: o site publicado não muda.
@@ -37,6 +40,7 @@ export function SiteRenderer({
   spec: fullSpec,
   contactEndpoint,
   bookingEndpoint,
+  bookingDemo = false,
   editable = false,
   selectedSection = null,
   anchors = true,
@@ -46,6 +50,7 @@ export function SiteRenderer({
   const hideBooking =
     !editable &&
     !bookingEndpoint &&
+    !bookingDemo &&
     fullSpec.sections.some((section) => section.type === "booking");
   const spec = hideBooking
     ? { ...fullSpec, sections: fullSpec.sections.filter((section) => section.type !== "booking") }
@@ -53,7 +58,9 @@ export function SiteRenderer({
   // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
   const composition = compositionOf(spec);
-  const Template = COMPOSITIONS[composition];
+  // Beleza tem composição própria (visual de app de salão), qualquer que seja `design.composition`.
+  const soft = spec.template === "beauty";
+  const Template = soft ? SoftComposition : COMPOSITIONS[composition];
   const style = siteStyle(spec);
   return (
     <div
@@ -61,12 +68,12 @@ export function SiteRenderer({
       style={themeToCssVars(spec.theme)}
       data-template={spec.template}
       data-font={spec.theme.font}
-      data-composition={composition}
+      data-composition={soft ? "soft" : composition}
       data-density={spec.design?.density ?? "balanced"}
       data-image={spec.design?.imageTreatment ?? "natural"}
       // Claro ou escuro: o vidro do topo escolhe a tinta por aqui (styles.css, "Vidro líquido").
       data-scheme={luminance(spec.theme.background) > 0.4 ? "light" : "dark"}
-      data-buttons={style.buttons}
+      data-buttons={soft ? "pill" : style.buttons}
       data-header={style.header}
       data-contact={style.contact}
       data-editable={editable ? "" : undefined}
@@ -78,6 +85,7 @@ export function SiteRenderer({
           spec={spec}
           contactEndpoint={contactEndpoint}
           bookingEndpoint={bookingEndpoint}
+          bookingDemo={bookingDemo}
           editable
           selectedSection={selectedSection}
           anchors={anchors}
@@ -87,6 +95,7 @@ export function SiteRenderer({
           spec={spec}
           contactEndpoint={contactEndpoint}
           bookingEndpoint={bookingEndpoint}
+          bookingDemo={bookingDemo}
           anchors={anchors}
         />
       )}

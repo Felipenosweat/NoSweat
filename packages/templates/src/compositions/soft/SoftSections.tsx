@@ -208,7 +208,9 @@ export function SoftGallery({
   data: SectionOf<"gallery">;
   id?: string;
 }) {
-  const images = data.images.filter(isOwnerPhoto).filter((image) => usableThumb(image));
+  const images = data.images
+    .filter((image) => isOwnerPhoto(image))
+    .filter((image) => usableThumb(image));
   if (images.length === 0) return null;
   const shapes = galleryShapes(images.length);
   const instagram = ctx.model.business.links?.instagram;
@@ -451,4 +453,3 @@ export function SoftFooter({ ctx }: { ctx: SoftCtx }) {
     </footer>
   );
 }
-

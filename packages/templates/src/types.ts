@@ -7,6 +7,11 @@ export type TemplateProps = {
   contactEndpoint?: string;
   /** Base das rotas públicas de agendamento (`/api/public/booking/<siteId>`); ausente = sem seção. */
   bookingEndpoint?: string;
+  /**
+   * Só nas páginas /examples: mostra o agendamento com horários de EXEMPLO (sem API). Nunca em
+   * site publicado ou prévia de cliente.
+   */
+  bookingDemo?: boolean;
   /** Modo de edição do editor (ver SiteRenderer). Ausente no site publicado. */
   editable?: boolean;
   /** Seção destacada no modo de edição. */
