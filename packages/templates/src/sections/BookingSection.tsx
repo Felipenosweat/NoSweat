@@ -38,7 +38,7 @@ import {
   isPublicBookingResponse,
   manageBookingUrl,
   slotsByDate,
-  zoneAbbreviation,
+  zoneCaption,
 } from "./booking-format";
 
 // Seção "Agendamento" dos sites. O servidor desenha só o título e um aviso "ligue para marcar"
@@ -673,8 +673,7 @@ function BookingPanel({
             )}
             {!nothingOpen && firstSlot && (
               <p className="ns-s-zone">
-                Times are in the business&rsquo;s time zone (
-                {zoneAbbreviation(firstSlot.startAt, timeZone)}).
+                {zoneCaption(timeZone)}
               </p>
             )}
           </div>
@@ -880,8 +879,7 @@ function BookingPanel({
           )}
           {!nothingOpen && firstSlot && (
             <p className="text-xs text-ns-muted">
-              Times are in the business&rsquo;s time zone (
-              {zoneAbbreviation(firstSlot.startAt, timeZone)}).
+              {zoneCaption(timeZone)}
             </p>
           )}
         </div>

@@ -101,7 +101,38 @@ export function formatTime(iso: string, timeZone: string): string {
   );
 }
 
-/** "Tue, Nov 3 at 3:30 PM EST": data, hora e abreviação do fuso da empresa. */
+export type UsZone = { name: string; abbr: string };
+
+const US_ZONES: Record<string, UsZone> = {
+  "America/New_York": { name: "Eastern Time", abbr: "ET" },
+  "America/Chicago": { name: "Central Time", abbr: "CT" },
+  "America/Denver": { name: "Mountain Time", abbr: "MT" },
+  "America/Phoenix": { name: "Mountain Standard Time", abbr: "MST" },
+  "America/Los_Angeles": { name: "Pacific Time", abbr: "PT" },
+  "America/Anchorage": { name: "Alaska Time", abbr: "AKT" },
+  "Pacific/Honolulu": { name: "Hawaii Time", abbr: "HT" },
+  "America/Puerto_Rico": { name: "Atlantic Standard Time", abbr: "AST" },
+};
+
+/** Nome e sigla americanos do fuso ("Eastern Time", "ET"); `null` para fusos fora da lista. */
+export function usZone(timeZone: string): UsZone | null {
+  return US_ZONES[timeZone] ?? null;
+}
+
+/** "Times shown in Eastern Time (ET)." (fuso desconhecido: o nome IANA). */
+export function zoneCaption(timeZone: string): string {
+  const zone = usZone(timeZone);
+  return zone ? `Times shown in ${zone.name} (${zone.abbr}).` : `Times shown in ${timeZone}.`;
+}
+
+/** Sigla do fuso da empresa ("ET", "PT"; fora dos EUA a abreviação do Intl: "GMT+1"). */
+export function zoneAbbreviation(iso: string, timeZone: string): string {
+  const us = usZone(timeZone);
+  if (us) return us.abbr;
+  return parts(new Date(iso), { timeZoneName: "short" }, timeZone).timeZoneName ?? timeZone;
+}
+
+/** "Tue, Nov 3 at 3:30 PM ET": data, hora e sigla americana do fuso da empresa. */
 export function formatDateTime(iso: string, timeZone: string): string {
   const zone = safeTimeZone(timeZone);
   const date = new Intl.DateTimeFormat("en-US", {
@@ -110,21 +141,7 @@ export function formatDateTime(iso: string, timeZone: string): string {
     day: "numeric",
     timeZone: zone,
   }).format(new Date(iso));
-  const time = plain(
-    new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZoneName: "short",
-      timeZone: zone,
-    }).format(new Date(iso)),
-  );
-  return `${date} at ${time}`;
-}
-
-/** Abreviação do fuso da empresa naquele dia ("EST", "PDT"). */
-export function zoneAbbreviation(iso: string, timeZone: string): string {
-  return parts(new Date(iso), { timeZoneName: "short" }, timeZone).timeZoneName ?? timeZone;
+  return `${date} at ${formatTime(iso, timeZone)} ${zoneAbbreviation(iso, timeZone)}`;
 }
 
 /** "Tomorrow 9:00 AM", "Tue 3:30 PM" (em até uma semana) ou "Tue, Nov 10, 3:30 PM". */

@@ -18,10 +18,12 @@ function render(props: Partial<BookingDetailsFieldsProps> = {}): string {
   );
 }
 
-describe.each([
+const VARIANTS: [string, boolean][] = [
   ["default", false],
   ["soft", true],
-])("booking details fields (%s variant)", (_name, soft) => {
+];
+
+describe.each(VARIANTS)("booking details fields (%s variant)", (_name, soft) => {
   it("has labelled name, phone, email fields with the right autocomplete", () => {
     const html = render({ soft });
     for (const label of ["First name", "Last name", "Phone", "Email"]) {
