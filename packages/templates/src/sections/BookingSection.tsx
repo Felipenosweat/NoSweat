@@ -9,12 +9,15 @@ import type {
   PublicBookingInfo,
 } from "@nosweat/schema";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { CheckIcon } from "../components/icons";
+import { CheckIcon, ChevronDownIcon } from "../components/icons";
+import { ServiceGlyph } from "../compositions/soft/ServiceGlyph";
+import { demoAvailability, demoBookingInfo, type DemoService } from "./booking-demo";
 import {
   addDaysToKey,
   dateKeyInZone,
   dayLabel,
   dayLabelLong,
+  dayParts,
   formatDateTime,
   formatDuration,
   formatNextOpening,
@@ -42,10 +45,23 @@ type InfoState =
   | { status: "off" }
   | { status: "ready"; info: PublicBookingInfo; todayKey: string };
 
+/** Dados de exemplo (só /examples): os serviços do site de exemplo e horários fixos. */
+export type BookingDemo = { services: DemoService[]; businessName: string };
+
 /** Dados públicos do agendamento; `off` = nada para mostrar (desligado, erro ou sem serviços). */
-function useBookingInfo(endpoint: string | undefined): InfoState {
+function useBookingInfo(endpoint: string | undefined, demo?: BookingDemo): InfoState {
   const [state, setState] = useState<InfoState>({ status: "loading" });
+  const demoKey = demo ? JSON.stringify(demo) : "";
   useEffect(() => {
+    if (demo) {
+      // Modo exemplo: sem API, os dados vêm prontos (e só no navegador, para a data ser a de hoje).
+      setState({
+        status: "ready",
+        info: demoBookingInfo(demo.services, demo.businessName),
+        todayKey: dateKeyInZone(new Date(), "UTC"),
+      });
+      return;
+    }
     if (!endpoint) return;
     let live = true;
     fetch(endpoint)
@@ -68,8 +84,8 @@ function useBookingInfo(endpoint: string | undefined): InfoState {
     return () => {
       live = false;
     };
-  }, [endpoint]);
-  return endpoint ? state : { status: "off" };
+  }, [endpoint, demoKey]);
+  return endpoint || demo ? state : { status: "off" };
 }
 
 export type BookingSectionProps = {
@@ -91,7 +107,14 @@ export type BookingSectionProps = {
   fallback?: ReactNode;
   /** "split": título à esquerda e seletor à direita (telas largas). "stack": um embaixo do outro. */
   layout?: "split" | "stack";
+  /** "soft": visual do app de salão (composição de beleza). Padrão: o visual de sempre. */
+  variant?: "default" | "soft";
+  /** Só /examples: horários de exemplo no lugar da API (nunca em site publicado). */
+  demo?: BookingDemo;
 };
+
+/** Evento disparado pelo "+" dos serviços: escolhe o serviço (pelo nome) no seletor. */
+export const BOOK_SERVICE_EVENT = "ns:book-service";
 
 export function BookingSection({
   endpoint,
@@ -104,14 +127,74 @@ export function BookingSection({
   className = "",
   fallback,
   layout = "split",
+  variant = "default",
+  demo,
 }: BookingSectionProps) {
-  const state = useBookingInfo(endpoint);
+  const state = useBookingInfo(endpoint, demo);
+  // Serviço pedido pelo "+" da lista; `n` sobe a cada clique (clicar de novo no mesmo reescolhe).
+  const [preselect, setPreselect] = useState<{ name: string; n: number } | null>(null);
+  useEffect(() => {
+    const listener = (event: Event) => {
+      const name = event instanceof CustomEvent ? (event.detail as { name?: unknown })?.name : null;
+      if (typeof name === "string") setPreselect((current) => ({ name, n: (current?.n ?? 0) + 1 }));
+    };
+    window.addEventListener(BOOK_SERVICE_EVENT, listener);
+    return () => window.removeEventListener(BOOK_SERVICE_EVENT, listener);
+  }, []);
   if (state.status === "off" && !editable) return <>{fallback ?? null}</>;
+
+  if (variant === "soft") {
+    return (
+      <section id={id} className={className} aria-busy={state.status === "loading"}>
+        <div className="ns-s-card ns-s-book">
+          {heading}
+          {intro && <p className="ns-s-intro">{intro}</p>}
+          {state.status === "ready" && state.info.note && (
+            <p className="ns-s-intro">{state.info.note}</p>
+          )}
+          {demo && <p className="ns-s-intro">Example times, for this demo only.</p>}
+          <noscript>
+            <p className="ns-s-intro">
+              {phone && phoneHref ? (
+                <>
+                  Call us to book: <a href={phoneHref}>{phone}</a>
+                </>
+              ) : (
+                "Contact us to book."
+              )}
+            </p>
+          </noscript>
+          {state.status === "ready" ? (
+            <BookingPanel
+              endpoint={endpoint ?? ""}
+              info={state.info}
+              todayKey={state.todayKey}
+              phone={phone}
+              phoneHref={phoneHref}
+              soft
+              demo={Boolean(demo)}
+              preselect={preselect}
+            />
+          ) : state.status === "off" ? (
+            <p className="ns-s-intro">
+              Online booking appears here once you turn it on in Business &rarr; Booking.
+            </p>
+          ) : (
+            <div aria-hidden="true" className="ns-s-skel" />
+          )}
+        </div>
+      </section>
+    );
+  }
 
   const split = layout === "split";
   return (
     <section id={id} className={className} aria-busy={state.status === "loading"}>
-      <div className={split ? "grid gap-10 @5xl:grid-cols-12" : "grid gap-8"}>
+      {/* grid-cols-1 = minmax(0, 1fr): sem isso a coluna única cresce até a largura da fileira de
+          dias e dos horários e a seção estoura a tela do celular. */}
+      <div
+        className={split ? "grid grid-cols-1 gap-10 @5xl:grid-cols-12" : "grid grid-cols-1 gap-8"}
+      >
         <div className={split ? "@5xl:col-span-4" : ""}>
           {heading}
           {intro && <p className="mt-5 max-w-prose text-base text-ns-muted">{intro}</p>}
@@ -133,7 +216,7 @@ export function BookingSection({
             </p>
           </noscript>
         </div>
-        <div className={split ? "@5xl:col-span-7 @5xl:col-start-6" : ""}>
+        <div className={split ? "min-w-0 @5xl:col-span-7 @5xl:col-start-6" : "min-w-0"}>
           {state.status === "ready" ? (
             <BookingPanel
               endpoint={endpoint ?? ""}
@@ -141,6 +224,7 @@ export function BookingSection({
               todayKey={state.todayKey}
               phone={phone}
               phoneHref={phoneHref}
+              preselect={preselect}
             />
           ) : state.status === "off" ? (
             <p className="rounded-xl border border-dashed border-ns-border p-6 text-sm text-ns-muted">
@@ -179,12 +263,18 @@ function BookingPanel({
   todayKey,
   phone,
   phoneHref,
+  soft = false,
+  demo = false,
+  preselect = null,
 }: {
   endpoint: string;
   info: PublicBookingInfo;
   todayKey: string;
   phone?: string;
   phoneHref?: string;
+  soft?: boolean;
+  demo?: boolean;
+  preselect?: { name: string; n: number } | null;
 }) {
   const [serviceChoice, setServiceChoice] = useState<string | null>(null);
   const [staffId, setStaffId] = useState<string | null>(null);
@@ -202,10 +292,11 @@ function BookingPanel({
   const dayCount = Math.min(MAX_STRIP_DAYS, Math.max(1, info.maxDaysAhead));
   const timeZone = info.timeZone;
 
-  // Um serviço só já vem escolhido.
+  // Um serviço só já vem escolhido. No visual do app de salão (soft) o primeiro já vem escolhido
+  // também: dia e horários aparecem logo, como na tela de reserva do app, e dá para trocar.
   const service: BookableService | null =
     info.services.find((item) => item.id === serviceChoice) ??
-    (info.services.length === 1 ? (info.services[0] ?? null) : null);
+    (info.services.length === 1 || soft ? (info.services[0] ?? null) : null);
   const serviceId = service?.id ?? null;
   const availabilityKey = serviceId ? `${serviceId}|${staffId ?? ""}|${refreshCount}` : null;
 
@@ -213,6 +304,10 @@ function BookingPanel({
     if (!serviceId || !availabilityKey) return;
     let live = true;
     const key = availabilityKey;
+    if (demo) {
+      setAvailability({ key, data: demoAvailability(todayKey, dayCount) });
+      return;
+    }
     const query = new URLSearchParams({
       serviceId,
       from: todayKey,
@@ -230,7 +325,15 @@ function BookingPanel({
     return () => {
       live = false;
     };
-  }, [endpoint, serviceId, staffId, availabilityKey, todayKey, dayCount]);
+  }, [endpoint, serviceId, staffId, availabilityKey, todayKey, dayCount, demo]);
+
+  // "+" da lista de serviços: escolhe o serviço de mesmo nome (sem diferenciar maiúsculas).
+  useEffect(() => {
+    if (!preselect) return;
+    const wanted = preselect.name.trim().toLowerCase();
+    const match = info.services.find((item) => item.name.trim().toLowerCase() === wanted);
+    if (match) chooseService(match.id);
+  }, [preselect]);
 
   // Move o foco para o cartão de confirmação (leitores de tela leem "You're booked").
   useEffect(() => {
@@ -274,6 +377,10 @@ function BookingPanel({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!service || !slot || submit.state === "sending") return;
+    if (demo) {
+      setNotice("This is an example, so nothing was booked.");
+      return;
+    }
     const body: CreateBookingRequest = {
       serviceId: service.id,
       startAt: slot.startAt,
@@ -332,7 +439,11 @@ function BookingPanel({
         ref={bookedRef}
         tabIndex={-1}
         role="status"
-        className="rounded-xl border border-ns-border bg-ns-background p-6 text-ns-text outline-none @min-[40rem]:p-8"
+        className={
+          soft
+            ? "ns-s-done"
+            : "rounded-xl border border-ns-border bg-ns-background p-6 text-ns-text outline-none @min-[40rem]:p-8"
+        }
       >
         <span className="flex size-12 items-center justify-center rounded-full bg-ns-primary text-ns-on-primary">
           <CheckIcon className="size-6" />
@@ -378,6 +489,271 @@ function BookingPanel({
         >
           Cancel or change
         </a>
+      </div>
+    );
+  }
+
+  if (soft) {
+    // Visual do app de salão: linhas de serviço, faixa de datas, horários em pílulas e a barra larga.
+    const flat = groups.flatMap((group) => group.slots);
+    // No exemplo, um horário já vem marcado (só para mostrar o visual); em site real, só o do cliente.
+    const shown = slot ?? (demo ? flat[1] : undefined);
+    const priceLabel = (cents: number | null) => (cents === null ? "" : formatPrice(cents));
+    const serviceRow = (item: BookableService, selected: boolean) => (
+      <>
+        <span className="ns-s-svc-ico" aria-hidden="true">
+          <ServiceGlyph name={item.name} />
+        </span>
+        <span className="ns-s-svc-text">
+          <b>{item.name}</b>
+          <small>
+            {formatDuration(item.durationMinutes)}
+            {item.priceCents !== null ? ` · ${priceLabel(item.priceCents)}` : ""}
+          </small>
+        </span>
+        {selected && <CheckIcon className="ns-s-svc-check" />}
+      </>
+    );
+    const serviceButton = (item: BookableService) => (
+      <button
+        key={item.id}
+        type="button"
+        aria-pressed={item.id === serviceId}
+        onClick={() => chooseService(item.id)}
+        className={`ns-s-svc${item.id === serviceId ? " is-on" : ""}`}
+      >
+        {serviceRow(item, item.id === serviceId)}
+      </button>
+    );
+    return (
+      <div className="ns-s-panel">
+        <div aria-live="polite" className={notice ? "ns-s-notice" : "sr-only"}>
+          {notice ? (
+            <p>{notice}</p>
+          ) : loaded?.data && activeDay ? (
+            `${daySlots.length} open ${daySlots.length === 1 ? "time" : "times"} on ${dayLabelLong(activeDay)}.`
+          ) : null}
+        </div>
+
+        <fieldset className="ns-s-fs">
+          <legend className={service ? "sr-only" : "ns-s-bh"}>Choose a service</legend>
+          {info.services.length === 1 && service ? (
+            <div className="ns-s-svc is-on">{serviceRow(service, true)}</div>
+          ) : service ? (
+            <details key={service.id} className="ns-s-change">
+              <summary className="ns-s-svc is-on">
+                {serviceRow(service, false)}
+                <ChevronDownIcon className="ns-s-svc-check" />
+                <span className="sr-only">Change service</span>
+              </summary>
+              <div className="ns-s-svc-list">
+                {info.services.filter((item) => item.id !== serviceId).map(serviceButton)}
+              </div>
+            </details>
+          ) : (
+            <div className="ns-s-svc-list">{info.services.map(serviceButton)}</div>
+          )}
+        </fieldset>
+
+        {service && info.staff.length >= 2 && (
+          <fieldset className="ns-s-fs">
+            <legend className="ns-s-bh">Who?</legend>
+            <div className="ns-s-who">
+              {[{ id: null, name: "Anyone" }, ...info.staff].map((person) => (
+                <button
+                  key={person.id ?? "anyone"}
+                  type="button"
+                  aria-pressed={person.id === staffId}
+                  onClick={() => chooseStaff(person.id)}
+                  className={`ns-s-time${person.id === staffId ? " is-on" : ""}`}
+                >
+                  {person.name}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {service && (
+          <div>
+            <p className="ns-s-bh" id="ns-book-day">
+              Select date
+            </p>
+            {loading ? (
+              <div aria-hidden="true" className="ns-s-skel ns-s-skel--days" />
+            ) : failed ? (
+              <p className="ns-s-intro">
+                We couldn&rsquo;t load the times.{" "}
+                {phone && phoneHref ? (
+                  <>
+                    Please call <a href={phoneHref}>{phone}</a> to book.
+                  </>
+                ) : (
+                  "Please try again in a moment."
+                )}
+              </p>
+            ) : (
+              <div role="group" aria-labelledby="ns-book-day" className="ns-s-days">
+                {dayKeys.map((key) => {
+                  const open = hasSlots(key);
+                  const parts = dayParts(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      disabled={!open}
+                      aria-pressed={key === activeDay}
+                      aria-label={`${dayLabelLong(key)}${open ? "" : ", full"}`}
+                      onClick={() => {
+                        setDayChoice(key);
+                        setSlotChoice(null);
+                      }}
+                      className={`ns-s-day${key === activeDay ? " is-on" : ""}`}
+                    >
+                      <span aria-hidden="true">{parts.weekday}</span>
+                      <b aria-hidden="true">{parts.day}</b>
+                      {!open && <small aria-hidden="true">Full</small>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {service && !loading && !failed && (
+          <div>
+            <p className="ns-s-bh">Select time</p>
+            {nothingOpen ? (
+              <p className="ns-s-intro">
+                No times left in the next {dayCount === 1 ? "day" : `${dayCount} days`}
+                {nextOpening && (
+                  <>
+                    {" · "}
+                    <b>Next opening: {formatNextOpening(nextOpening, timeZone, todayKey)}</b>
+                  </>
+                )}
+                {!nextOpening && phone && phoneHref && (
+                  <>
+                    {". Call "}
+                    <a href={phoneHref}>{phone}</a>
+                    {" to ask about openings."}
+                  </>
+                )}
+              </p>
+            ) : (
+              <div className="ns-s-times">
+                {flat.map((item) => (
+                  <button
+                    key={item.startAt}
+                    type="button"
+                    aria-pressed={item.startAt === shown?.startAt}
+                    onClick={() => setSlotChoice(item.startAt)}
+                    className={`ns-s-time${item.startAt === shown?.startAt ? " is-on" : ""}`}
+                  >
+                    {formatTime(item.startAt, timeZone)}
+                  </button>
+                ))}
+              </div>
+            )}
+            {!nothingOpen && firstSlot && (
+              <p className="ns-s-zone">
+                Times are in the business&rsquo;s time zone (
+                {zoneAbbreviation(firstSlot.startAt, timeZone)}).
+              </p>
+            )}
+          </div>
+        )}
+
+        {service && slot ? (
+          <form onSubmit={handleSubmit} className="ns-s-form">
+            <p className="ns-s-when">
+              {service.name} &middot; {formatDateTime(slot.startAt, timeZone)}
+            </p>
+            <label>
+              Your name
+              <input
+                name="name"
+                required
+                maxLength={120}
+                autoComplete="name"
+                value={details.name}
+                onChange={(event) => setDetail("name", event.target.value)}
+              />
+            </label>
+            <label>
+              Phone
+              <input
+                name="phone"
+                type="tel"
+                required
+                minLength={7}
+                maxLength={40}
+                autoComplete="tel"
+                placeholder="(555) 555-0100"
+                value={details.phone}
+                onChange={(event) => setDetail("phone", event.target.value)}
+              />
+            </label>
+            <label>
+              Email <span>(optional)</span>
+              <input
+                name="email"
+                type="email"
+                maxLength={200}
+                autoComplete="email"
+                value={details.email}
+                onChange={(event) => setDetail("email", event.target.value)}
+              />
+            </label>
+            <label>
+              Note <span>(optional)</span>
+              <textarea
+                name="notes"
+                rows={3}
+                maxLength={500}
+                value={details.notes}
+                onChange={(event) => setDetail("notes", event.target.value)}
+              />
+            </label>
+            {/* Isca para robôs: invisível para pessoas, precisa ficar vazia. */}
+            <input
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              value={details.website}
+              onChange={(event) => setDetail("website", event.target.value)}
+              className="ns-s-trap"
+            />
+            {submit.state === "error" && (
+              <p role="alert" className="ns-s-error">
+                {submit.message}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={submit.state === "sending"}
+              aria-busy={submit.state === "sending"}
+              className="ns-s-bar"
+            >
+              <span>{submit.state === "sending" ? "Booking..." : "Book appointment"}</span>
+              <b>{priceLabel(service.priceCents) || formatTime(slot.startAt, timeZone)}</b>
+            </button>
+            <p className="ns-s-zone">
+              Your details are sent to this business so they can reach you about your booking.
+            </p>
+          </form>
+        ) : (
+          service &&
+          shown && (
+            // Exemplo: só mostra a barra (nada é enviado); em site real ela aparece depois do horário.
+            <div className="ns-s-bar ns-s-bar--static" aria-hidden="true">
+              <span>Book appointment</span>
+              <b>{priceLabel(service.priceCents)}</b>
+            </div>
+          )
+        )}
       </div>
     );
   }

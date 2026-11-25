@@ -22,7 +22,25 @@ export type Plan = {
   socialPostsPerMonth: number;
   /** Contas de rede social conectadas. */
   socialAccounts: number;
+  /** Recursos que mudam de plano para plano (ver `PlanFeature`). */
+  features: Record<PlanFeature, boolean>;
 };
+
+/**
+ * Recursos por plano (decisão do fundador, nov/2026):
+ * - `autoReviewRequests`: pedido de avaliação no Google sai sozinho quando o job vira "done" (Pro+).
+ * - `socialBulkApprove`: aprovar todos os rascunhos do mês de uma vez no /social (Pro+).
+ * - `socialAutopilot`: Instagram no piloto automático; rascunhos são aprovados sozinhos 24 h antes
+ *   do horário, com aviso ao dono (Premium).
+ * - `aiAssistant`: atendente de IA no site publicado, gastando créditos do dono (Premium).
+ * - `freeDomain`: 1 domínio `.com`/`.net` grátis por conta, comprado por nós na Vercel (Premium).
+ */
+export type PlanFeature =
+  | "autoReviewRequests"
+  | "socialBulkApprove"
+  | "socialAutopilot"
+  | "aiAssistant"
+  | "freeDomain";
 
 // Starter a US$ 19 (decisão do fundador, nov/2026, oferta de Black Friday): 1 site no ar, 60
 // créditos de IA por mês (server/credits/pricing.ts) e 4 posts no Instagram por mês; o sistema de
@@ -41,6 +59,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 4,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: false,
+      socialBulkApprove: false,
+      socialAutopilot: false,
+      aiAssistant: false,
+      freeDomain: false,
+    },
   },
   pro: {
     id: "pro",
@@ -53,6 +78,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 30,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: true,
+      socialBulkApprove: true,
+      socialAutopilot: false,
+      aiAssistant: false,
+      freeDomain: false,
+    },
   },
   premium: {
     id: "premium",
@@ -65,6 +97,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 60,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: true,
+      socialBulkApprove: true,
+      socialAutopilot: true,
+      aiAssistant: true,
+      freeDomain: true,
+    },
   },
 };
 
@@ -92,19 +131,42 @@ export function setupCentsFor(plan: Plan, interval: BillingInterval): number | n
 // Para subir os preços: igualar `monthlyCents`/`annualCents` ao normal; quem já assina mantém o
 // valor do checkout em que entrou (o Stripe guarda o preço na assinatura).
 
-/** Nomes sazonais, em ordem de data. Cada um vale até `endsOn` (1º dia SEM ele, em UTC). */
-export const OFFERS: readonly { name: string; endsOn: string }[] = [
-  { name: "Black Friday", endsOn: "2026-11-29" },
-  { name: "Cyber Week", endsOn: "2026-12-07" },
-  { name: "Holiday Special", endsOn: "2026-12-20" },
-  { name: "Christmas Offer", endsOn: "2026-12-27" },
-  { name: "New Year’s Offer", endsOn: "2027-01-06" },
+/**
+ * Ofertas sazonais, em ordem de data. Cada uma vale até `endsOn` (1º dia SEM ela, em UTC) e tem um
+ * bônus DE VERDADE: créditos de IA extras dados uma vez por conta no primeiro pagamento
+ * (`grantOfferBonus`, server/credits/offer-bonus.ts). Nada de preço "normal" inventado: o fundador
+ * decidiu (25/nov/2026) que Pro e Premium não sobem tão cedo, então eles não têm preço riscado.
+ */
+export const OFFERS: readonly { name: string; endsOn: string; bonusCredits: number }[] = [
+  { name: "Black Friday", endsOn: "2026-11-29", bonusCredits: 100 },
+  { name: "Cyber Week", endsOn: "2026-12-07", bonusCredits: 100 },
+  { name: "Holiday Special", endsOn: "2026-12-20", bonusCredits: 100 },
+  { name: "Christmas Offer", endsOn: "2026-12-27", bonusCredits: 100 },
+  { name: "New Year’s Offer", endsOn: "2027-01-06", bonusCredits: 100 },
 ];
+
+/** Bônus depois da última data do calendário ("Launch price"). */
+export const LAUNCH_BONUS_CREDITS = 100;
 
 /** Nome da oferta em `now`; passada a última data do calendário, "Launch price". */
 export function currentOffer(now: Date = new Date()): string {
+  return offerAt(now).name;
+}
+
+/** Oferta valendo em `now` (nome e bônus de créditos). */
+export function offerAt(now: Date = new Date()): { name: string; bonusCredits: number } {
   const found = OFFERS.find((offer) => now.getTime() < Date.parse(`${offer.endsOn}T00:00:00Z`));
-  return found ? found.name : "Launch price";
+  return found
+    ? { name: found.name, bonusCredits: found.bonusCredits }
+    : { name: "Launch price", bonusCredits: LAUNCH_BONUS_CREDITS };
+}
+
+/**
+ * Economia real do plano anual em relação a pagar 12 meses no mensal (em centavos). É uma
+ * comparação verdadeira: os dois preços são cobrados hoje.
+ */
+export function annualSavingsCents(plan: Plan): number {
+  return Math.max(0, plan.monthlyCents * 12 - plan.annualCents);
 }
 
 /** Há oferta de lançamento valendo? (algum plano custa menos que o preço normal) */

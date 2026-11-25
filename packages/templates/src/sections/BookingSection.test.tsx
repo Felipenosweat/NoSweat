@@ -27,6 +27,17 @@ describe("booking section", () => {
     expect(html).toContain('href="#book"');
   });
 
+  it("keeps the booking columns inside a phone screen (grid-cols-1 + min-w-0)", () => {
+    // Sem isso a coluna da marcação crescia até a largura da fileira de dias e dos horários
+    // (~1290 px) e cortava os horários no celular.
+    const html = renderToStaticMarkup(
+      <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" />,
+    );
+    const section = html.slice(html.indexOf('id="book"'));
+    expect(section).toMatch(/class="grid grid-cols-1 gap-(8|10)/);
+    expect(section).toMatch(/class="min-w-0[ "]/);
+  });
+
   it("renders nothing without an endpoint on the published site", () => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     expect(html).not.toContain("Call us to book");

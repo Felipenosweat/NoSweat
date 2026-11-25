@@ -26,8 +26,11 @@ Fatos dos modelos (endereço, preços, pessoas, depoimentos) ficam escritos em
 - **Glow:** hero (ponto de vista, "Book an appointment" → `links.booking`) → services como cardápio
   de preços agrupado (Cut & style / Color / Treatments) → about "The chairs" com pessoas → gallery
   "Recent work" (legenda = técnica) → testimonials → faq "Before your appointment" → contact "Book
-  your visit" (link de agendamento, endereço + rota, horário, formulário "appointment"). Paleta:
-  fundo `#FBF7F3`, texto `#2B1E1A`, primária `#8C2F4B`, secundária `#C8A27A` (nunca como texto).
+  your visit" (link de agendamento, endereço + rota, horário, formulário "appointment"). O ramo de
+  beleza usa a composição própria "soft" (`compositions/soft`, cara de app de salão; ver
+  `docs/design/studies/founder-salon-app-reference.md`) e a seção "booking" logo depois dos
+  serviços. Paleta (roxa, do dono): fundo `#F5F6FD`, texto `#17164F`, primária `#181966`,
+  secundária `#D9D4FF` (nunca como texto), muted `#666B8A`; fonte `modern`.
 - **Rosa's:** hero com faixa de info (Horário · Find us + Directions · Ligar) → menu em grupos com
   preços → about "Our story" → gallery "At the table" (legenda = prato) → testimonials → faq "Good to
   know" → contact "Visit us" → placa de vitrine (horário + endereço grandes). Fonte `fresh` (não

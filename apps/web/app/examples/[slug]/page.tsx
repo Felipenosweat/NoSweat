@@ -62,8 +62,9 @@ export default async function ExamplePage({ params }: ExamplePageProps) {
           className="fixed inset-0 h-dvh w-full border-0"
         />
       ) : (
-        // Sem contactEndpoint: o formulário de exemplo fica desligado.
-        spec && <SiteRenderer spec={spec} />
+        // Sem contactEndpoint: o formulário de exemplo fica desligado. bookingDemo: o agendamento
+        // mostra horários de exemplo (só nos exemplos; nunca em site de cliente).
+        spec && <SiteRenderer spec={spec} bookingDemo />
       )}
     </>
   );

@@ -41,6 +41,8 @@ export type PlanCard = {
   monthlyCredits: number;
   /** Preço normal (riscado na oferta) e desconto; `null` se este plano não tem desconto. */
   regular: { monthly: string; annual: string; percentOff: number } | null;
+  /** Anual comparado com 12 meses no mensal (economia verdadeira). */
+  annualCompare: { monthlyForYear: string; savings: string } | null;
 };
 
 /** Plano manual que já acabou (a página mostra o aviso e o link para renovar). */
@@ -116,6 +118,7 @@ export function BillingPlans({
   contact,
   ended = null,
   offerName = null,
+  offerBonus = 0,
 }: {
   plans: PlanCard[];
   current: BillingStatusResponse;
@@ -124,6 +127,8 @@ export function BillingPlans({
   ended?: EndedPlan | null;
   /** Nome da oferta do momento ("Black Friday"); `null` = sem oferta valendo. */
   offerName?: string | null;
+  /** Créditos de bônus da oferta no primeiro pagamento (0 = sem bônus). */
+  offerBonus?: number;
 }) {
   const checkout = current.checkoutEnabled !== false;
   const [interval, setBillingInterval] = useState<BillingInterval>(current.interval ?? "annual");
@@ -232,8 +237,9 @@ export function BillingPlans({
       )}
       {offerName && (
         <p className="mb-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
-          <strong className="font-semibold">{offerName}.</strong> Launch pricing for our first
-          customers.
+          <strong className="font-semibold">{offerName}.</strong>{" "}
+          {offerBonus > 0 && <>Get {offerBonus} bonus AI credits with your first payment. </>}
+          Whatever you pay today is yours for life: it never goes up while you stay subscribed.
         </p>
       )}
       <GlassSegmented
@@ -265,7 +271,7 @@ export function BillingPlans({
                   </GlassBadge>
                 )}
               </div>
-              {offerName && plan.regular && (
+              {offerName && plan.regular ? (
                 <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
                   <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[12px] font-semibold text-emerald-800 tabular-nums">
                     Save {plan.regular.percentOff}%
@@ -278,9 +284,21 @@ export function BillingPlans({
                     </s>
                   </span>
                 </p>
+              ) : (
+                interval === "annual" &&
+                plan.annualCompare && (
+                  <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[12px] font-semibold text-emerald-800 tabular-nums">
+                      Save {plan.annualCompare.savings}
+                    </span>
+                    <span className="tabular-nums">
+                      <s>{plan.annualCompare.monthlyForYear}/yr</s> if paid monthly
+                    </span>
+                  </p>
+                )
               )}
               <p
-                className={`font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums ${offerName && plan.regular ? "mt-1" : "mt-3"}`}
+                className={`font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] text-ink tabular-nums ${(offerName && plan.regular) || (interval === "annual" && plan.annualCompare) ? "mt-1" : "mt-3"}`}
               >
                 {interval === "annual" ? plan.annual : plan.monthly}
                 <span className="text-base font-medium text-(--glass-fg-muted)">

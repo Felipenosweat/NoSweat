@@ -18,6 +18,7 @@ import { loadAccountActivity, type UsageByKind } from "@/server/admin/metrics";
 import { billingEnforced, getGrantStore, isActiveStatus, isGrantActive } from "@/server/billing";
 import { getBillingStore } from "@/server/billing/store";
 import { getBalance } from "@/server/credits";
+import { getFreeDomainStore } from "@/server/domains/free-domain-store";
 import { getSocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
 import { AccountMenu } from "../../AccountActions";
@@ -50,6 +51,7 @@ async function loadAccountPage(userId: string) {
     targetIsAdmin,
     activity,
     credits,
+    freeDomain,
   ] = await Promise.all([
     getSiteStore().list(account.id),
     getGrantStore().get(account.id),
@@ -65,6 +67,13 @@ async function loadAccountPage(userId: string) {
       console.error("[admin] could not load the credit balance", error);
       return null;
     }),
+    // Domínio grátis do Premium (migration 0033): erro não derruba a página.
+    getFreeDomainStore()
+      .get(account.id)
+      .catch((error: unknown) => {
+        console.error("[admin] could not load the free domain claim", error);
+        return null;
+      }),
   ]);
   const postCounts: Partial<Record<SocialPostStatus, number>> = {};
   for (const post of socialPosts) postCounts[post.status] = (postCounts[post.status] ?? 0) + 1;
@@ -79,6 +88,7 @@ async function loadAccountPage(userId: string) {
     targetIsAdmin,
     activity,
     credits,
+    freeDomain,
   };
 }
 
@@ -132,7 +142,7 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
   const data = await loadAccountPage(userId);
   if (!data) notFound();
   const { account, sites, grant, subscription, socialAccount, socialSettings, postCounts } = data;
-  const { targetIsAdmin, activity, credits } = data;
+  const { targetIsAdmin, activity, credits, freeDomain } = data;
   // Registro de que um admin abriu os dados sociais da conta (sem detalhes sensíveis).
   await getSocialStore().logEvent({
     ownerId: account.id,
@@ -255,6 +265,22 @@ export default async function AdminClientPage({ params }: ClientPageProps) {
           showOwner={false}
           emptyText="No websites yet."
         />
+        {freeDomain && (
+          <p className="text-[13px] text-(--glass-fg-muted)">
+            Free domain (Premium):{" "}
+            <span className="font-semibold break-all text-(--glass-fg)">{freeDomain.domain}</span>
+            {" · "}
+            {freeDomain.status === "purchased"
+              ? `registered ${formatDate(freeDomain.purchasedAt)}`
+              : freeDomain.status === "pending"
+                ? "pending (check with the registrar if it stays like this)"
+                : `failed (attempt ${freeDomain.attempts})`}
+            {" · "}
+            {formatUsd(freeDomain.priceCents / 100)}/yr · auto-renew{" "}
+            {freeDomain.autoRenew ? "on" : "off"}
+            {freeDomain.error && ` · ${freeDomain.error}`}
+          </p>
+        )}
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

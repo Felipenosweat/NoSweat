@@ -1,9 +1,10 @@
 // Abertura da landing (forma do averaks.com): tela branca, o símbolo aparece, o nome "NoSweat"
 // se escreve letra por letra com uma barrinha de progresso, e a cortina sobe. Só CSS, então
 // sobe mesmo sem JavaScript. A cortina nunca segura cliques (pointer-events: none).
-// Aparece inteira em todo carregamento da página (~1,7 s), também com "reduzir movimento" (pedido
-// do fundador: o Windows liga essa opção quando "Efeitos de animação" está desligado e a abertura
-// sumia). É curta, não segura cliques e não repete enquanto a pessoa navega pela página.
+// Aparece na primeira visita da aba (~0,9 s, mais 0,5 s subindo), também com "reduzir movimento"
+// (pedido do fundador: o Windows liga essa opção quando "Efeitos de animação" está desligado e a
+// abertura sumia). Nas visitas seguintes da mesma aba ela não aparece (script em
+// app/(landing)/layout.tsx), para a página abrir na hora. Não segura cliques.
 
 // Letras em tinta: o azul fica só para a ação principal (P5 "Mono + Blue").
 const NAME = [..."NoSweat"];

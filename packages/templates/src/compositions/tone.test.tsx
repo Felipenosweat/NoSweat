@@ -45,12 +45,15 @@ describe("heroTone", () => {
   });
 });
 
+// Beleza usa a composição "soft" (cabeçalho e rodapé próprios, testados em soft/SoftComposition.test.tsx).
+const signatureFixtures = Object.entries(fixtures).filter(([, spec]) => spec.template !== "beauty");
+
 describe("tone marks in the rendered site", () => {
   const navTone = (html: string) =>
     html.match(/<header[^>]*class="ns-nav [^"]*"[^>]*data-tone="(light|dark)"/)?.[1] ??
     html.match(/<header[^>]*data-tone="(light|dark)"[^>]*class="ns-nav /)?.[1];
 
-  it.each(Object.entries(fixtures))("marks the menu and the footer of %s", (_slug, spec) => {
+  it.each(signatureFixtures)("marks the menu and the footer of %s", (_slug, spec) => {
     const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
     const tones = tonesOf(spec.theme);
     expect(navTone(html)).toMatch(/^(light|dark)$/);
@@ -74,7 +77,7 @@ describe("tone marks in the rendered site", () => {
 describe("site header", () => {
   const header = (html: string) => html.slice(html.indexOf("<header"), html.indexOf("</header>"));
 
-  it.each(Object.entries(fixtures))("is an attached bar with a call button in %s", (_slug, spec) => {
+  it.each(signatureFixtures)("is an attached bar with a call button in %s", (_slug, spec) => {
     const html = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
     // Barra presa e de ponta a ponta: nada de cápsula de vidro flutuando.
     expect(html).toMatch(/class="ns-nav fixed inset-x-0 top-0 /);

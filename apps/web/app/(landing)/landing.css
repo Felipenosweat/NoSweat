@@ -364,8 +364,19 @@ details[open] > summary .lp-fx::before {
 
 /* ---------- Abertura (IntroCurtain) ---------- */
 .lp {
-  /* Quanto a entrada da página espera pela cortina subir. */
-  --lp-intro: 1.7s;
+  /* Quanto a entrada da página espera pela cortina subir (era 1,7 s: curto para a página aparecer
+     rápido). */
+  --lp-intro: 0.9s;
+}
+
+/* Abertura só na primeira visita da aba: nas próximas o script do layout marca a página e ela
+   aparece na hora, sem cortina e sem esperar a entrada. */
+[data-lp-seen] .lp-intro {
+  display: none;
+}
+
+[data-lp-seen] .lp {
+  --lp-intro: 0s;
 }
 
 .lp-intro {
@@ -376,7 +387,7 @@ details[open] > summary .lp-fx::before {
   place-items: center;
   background: #fff;
   pointer-events: none;
-  animation: lp-lift 0.65s cubic-bezier(0.65, 0, 0.2, 1) var(--lp-intro) forwards;
+  animation: lp-lift 0.5s cubic-bezier(0.65, 0, 0.2, 1) var(--lp-intro) forwards;
 }
 
 .lp-intro-mark {
@@ -385,8 +396,8 @@ details[open] > summary .lp-fx::before {
 
 .lp-intro-l {
   display: inline-block;
-  animation: lp-letter 0.35s var(--lp-ease) both;
-  animation-delay: calc(0.25s + var(--d) * 0.07s);
+  animation: lp-letter 0.3s var(--lp-ease) both;
+  animation-delay: calc(0.12s + var(--d) * 0.05s);
 }
 
 .lp-intro-bar {

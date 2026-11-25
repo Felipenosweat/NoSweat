@@ -129,3 +129,93 @@ export async function sendReconnectEmail(
     console.error("[social] reconnect email failed", error);
   }
 }
+
+// ---------- Piloto automático ----------
+
+export type AutopilotDigest = {
+  timezone: string;
+  /** Posts que o Piloto automático vai aprovar (cerca de 2 h antes da hora de cada um). */
+  goingOut: { scheduledAt: string; caption: string }[];
+  /** Rascunhos de hoje e amanhã que NÃO saem sozinhos (editados, sem foto, a conferir...). */
+  needsYou: number;
+  /** Frase sobre o plano do mês seguinte (planejado ou sem créditos), se houver. */
+  planNote: string | null;
+};
+
+function formatDigestWhen(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+/** Texto do e-mail de aviso (separado para testar). */
+export function buildAutopilotDigest(
+  digest: AutopilotDigest,
+  link: string,
+): { subject: string; lines: string[] } {
+  const count = digest.goingOut.length;
+  const subject =
+    count > 0
+      ? `Autopilot: ${count} Instagram post${count === 1 ? "" : "s"} going out soon`
+      : "Autopilot: an update on your Instagram posts";
+  const lines: string[] = [];
+  if (count > 0) {
+    lines.push(
+      `These posts go out by tomorrow. Autopilot approves each one about 2 hours before its time. Open ${link} to edit or skip any of them.`,
+    );
+    for (const post of digest.goingOut) {
+      const caption = post.caption.replace(/\s+/g, " ").trim();
+      const short = caption.length > 90 ? `${caption.slice(0, 90).trimEnd()}…` : caption;
+      lines.push(`• ${formatDigestWhen(post.scheduledAt, digest.timezone)}: ${short}`);
+    }
+  }
+  if (digest.needsYou > 0) {
+    lines.push(
+      `${digest.needsYou} draft${digest.needsYou === 1 ? "" : "s"} for today or tomorrow won't go out on their own (you edited them, they need a photo, or they're worth a second look). Approve them yourself if you want them posted.`,
+    );
+  }
+  if (digest.planNote) lines.push(digest.planNote);
+  return { subject, lines };
+}
+
+/**
+ * E-mail diário do Piloto automático. `true` = o aviso saiu (só então os posts contam como
+ * avisados e podem ser aprovados 12 h depois). Sem RESEND_API_KEY: em produção não sai (e nada é
+ * aprovado); fora da produção só escreve no log e conta como enviado, para o fluxo funcionar no
+ * dev. Nunca lança.
+ */
+export async function sendAutopilotDigestEmail(
+  ownerId: string,
+  digest: AutopilotDigest,
+  options: SocialNotifyOptions = {},
+): Promise<boolean> {
+  const env = options.env ?? process.env;
+  try {
+    const link = socialLink(env);
+    const { subject, lines } = buildAutopilotDigest(digest, link);
+    if (!env.RESEND_API_KEY) {
+      if (env.NODE_ENV === "production") return false;
+      console.info(`[social] autopilot digest for ${ownerId} (dev, not sent): ${subject}`);
+      return true;
+    }
+    const text = [...lines, "", link].join("\n");
+    const html = wrapHtml(lines, link, "Open your social calendar");
+    const sent = await send(ownerId, subject, text, html, env, options.fetchImpl ?? fetch);
+    if (sent) {
+      await (options.store ?? getSocialStore()).logEvent({
+        ownerId,
+        action: "autopilot_digest_email",
+        detail: { posts: digest.goingOut.length },
+      });
+    }
+    return sent;
+  } catch (error) {
+    console.error("[social] autopilot digest email failed", error);
+    return false;
+  }
+}

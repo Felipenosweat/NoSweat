@@ -1,9 +1,11 @@
 import { fixtures } from "@nosweat/fixtures";
 import {
   ApiError,
+  ApproveAllDraftsResponse,
   PlanMonthResponse,
   SocialPostResponse,
   SocialPostsResponse,
+  SocialSettingsResponse,
   SocialStateResponse,
   UploadSocialMediaResponse,
 } from "@nosweat/schema";
@@ -11,11 +13,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { DEV_USER } from "@/server/auth/session";
 import { connectInstagramAccount } from "@/server/social/accounts";
 import { getInstagramClient } from "@/server/social/config";
+import { monthOf } from "@/server/social/service";
 import { getSocialStore, resetMemorySocialStore } from "@/server/social/store";
 import { getSiteStore } from "@/server/store";
 import { POST as caption } from "./social/caption/route";
 import { POST as uploadMedia } from "./social/media/route";
 import { POST as planMonth } from "./social/plan/route";
+import { POST as approveAll } from "./social/posts/approve-all/route";
 import { POST as approve } from "./social/posts/approve/route";
 import { POST as markPosted } from "./social/posts/[id]/mark-posted/route";
 import { POST as publishNow } from "./social/posts/[id]/publish-now/route";
@@ -192,5 +196,66 @@ describe("/api/social", () => {
       jsonRequest("/settings", "PATCH", { timezone: "America/Chicago" }),
     );
     expect(ok.status).toBe(200);
+  });
+
+  it("approves all ready drafts of the month and reports the ones left", async () => {
+    const ready = await newDraft();
+    // Mesmo horário do pronto: sempre no mesmo mês.
+    const noPhoto = SocialPostResponse.parse(
+      await (
+        await createPost(
+          jsonRequest("/posts", "POST", { caption: "Hi", scheduledAt: ready.scheduledAt }),
+        )
+      ).json(),
+    ).post;
+    const month = monthOf(ready.scheduledAt ?? "", "America/New_York");
+    const res = await approveAll(jsonRequest("/posts/approve-all", "POST", { month }));
+    expect(res.status).toBe(200);
+    const body = ApproveAllDraftsResponse.parse(await res.json());
+    expect(body.posts.map((p) => p.id)).toEqual([ready.id]);
+    expect(body.posts[0]?.status).toBe("approved");
+    expect(body.leftAsDrafts).toMatchObject({ incomplete: 1, overCap: 0 });
+    const left = SocialPostResponse.parse(
+      await (await getPost(new Request(BASE), ctx(noPhoto.id))).json(),
+    );
+    expect(left.post.status).toBe("draft");
+  });
+
+  it("lets the owner skip a draft for Autopilot without counting it as an edit", async () => {
+    const draft = await newDraft();
+    const skip = await patchPost(
+      jsonRequest("/x", "PATCH", { autopilotSkip: true }),
+      ctx(draft.id),
+    );
+    const skipped = SocialPostResponse.parse(await skip.json()).post;
+    expect(skipped).toMatchObject({ autopilotSkip: true, ownerEdited: false });
+
+    // O editor manda os três campos: sem mudança de verdade, não é edição.
+    const same = await patchPost(
+      jsonRequest("/x", "PATCH", {
+        caption: draft.caption,
+        media: draft.media,
+        scheduledAt: draft.scheduledAt,
+      }),
+      ctx(draft.id),
+    );
+    expect(SocialPostResponse.parse(await same.json()).post.ownerEdited).toBe(false);
+
+    const edited = await patchPost(
+      jsonRequest("/x", "PATCH", { caption: "My own words." }),
+      ctx(draft.id),
+    );
+    expect(SocialPostResponse.parse(await edited.json()).post.ownerEdited).toBe(true);
+  });
+
+  it("turns Autopilot on and shows the plan features", async () => {
+    const res = await patchSettings(jsonRequest("/settings", "PATCH", { autopilot: true }));
+    expect(res.status).toBe(200);
+    expect(SocialSettingsResponse.parse(await res.json()).settings.autopilot).toBe(true);
+    expect((await getSocialStore().getSettings(DEV_USER.id)).autopilotSince).not.toBeNull();
+    const state = SocialStateResponse.parse(await (await getState()).json());
+    // Sem cobrança ligada (dev/testes), todos os recursos ficam liberados.
+    expect(state.features).toEqual({ bulkApprove: true, autopilot: true });
+    expect(state.settings.autopilot).toBe(true);
   });
 });

@@ -14,7 +14,7 @@ export type ContactFormPreset = "trade" | "appointment" | "catering" | "consulta
 export const VISITOR_PRIVACY_URL = "https://www.nosweatfd.com/privacy#your-visitors";
 
 /** Raio dos campos e do botão, o mesmo da composição. */
-export type ContactFormRadius = "none" | "sm" | "md" | "lg";
+export type ContactFormRadius = "none" | "sm" | "md" | "lg" | "soft";
 
 type ExtraField = {
   key: string;
@@ -121,6 +121,8 @@ const RADIUS: Record<ContactFormRadius, { field: string; frame: string }> = {
   sm: { field: "rounded-sm", frame: "rounded-sm" },
   md: { field: "rounded-md", frame: "rounded-lg" },
   lg: { field: "rounded-xl", frame: "rounded-[1.75rem]" },
+  // Composição "soft" (beleza): campos de 16px e botão em pílula.
+  soft: { field: "rounded-2xl", frame: "rounded-3xl" },
 };
 
 const fieldBase =
@@ -345,7 +347,7 @@ export function ContactForm({
       <button
         type="submit"
         disabled={!endpoint || status.state === "sending"}
-        className={`ns-btn mt-6 min-h-12 w-full ${r.field} bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary disabled:cursor-not-allowed disabled:hover:brightness-100 aria-busy:opacity-70 motion-reduce:transition-none`}
+        className={`ns-btn mt-6 min-h-12 w-full ${radius === "soft" ? "rounded-full" : r.field} bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary disabled:cursor-not-allowed disabled:hover:brightness-100 aria-busy:opacity-70 motion-reduce:transition-none`}
         aria-busy={status.state === "sending"}
       >
         {status.state === "sending" ? "Sending..." : submitLabel}

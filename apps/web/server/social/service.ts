@@ -22,6 +22,10 @@ export function toPublicPost(record: SocialPostRecord): SocialPost {
     siteId: record.siteId,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+    autopilotSkip: record.autopilotSkip,
+    ownerEdited: record.ownerEditedAt !== null,
+    autopilotNoticeAt: record.autopilotNoticeAt,
+    autoApprovedAt: record.autoApprovedAt,
   };
 }
 
@@ -94,4 +98,24 @@ export function currentMonth(timeZone: string, now = new Date()): string {
 /** Mês ("YYYY-MM") de um instante no fuso. */
 export function monthOf(iso: string, timeZone: string): string {
   return currentMonth(timeZone, new Date(iso));
+}
+
+/** Mês seguinte ("YYYY-MM" → "YYYY-MM"). */
+export function nextMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  const next = new Date(Date.UTC(y ?? 1970, m ?? 1, 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Data ("YYYY-MM-DD"), dia do mês e hora (0-23) de um instante no fuso. */
+export function localClock(
+  now: Date,
+  timeZone: string,
+): { date: string; day: number; hour: number } {
+  const wall = new Date(wallClockAsUtc(now.getTime(), timeZone));
+  return {
+    date: wall.toISOString().slice(0, 10),
+    day: wall.getUTCDate(),
+    hour: wall.getUTCHours(),
+  };
 }

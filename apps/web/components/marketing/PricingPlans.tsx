@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { PLANS as BILLING_PLANS, promoPercentOff } from "@/server/billing/plans";
+import {
+  annualSavingsCents,
+  PLANS as BILLING_PLANS,
+  offerAt,
+  promoPercentOff,
+} from "@/server/billing/plans";
 import { CheckIcon } from "./icons";
 import { focusRing, primaryButton, secondaryButton, textLink } from "./styles";
 
@@ -53,31 +58,43 @@ const PLANS: Plan[] = [
       "Photo uploads and a photo gallery",
       "Contact form with messages in your dashboard",
       "Clients area",
+      "Online booking on your website",
       "Instagram post calendar, 4 posts a month",
     ],
   },
   {
     id: "pro",
     name: "Pro",
-    summary: "More live websites and Instagram posts.",
+    summary: "More websites, and the busywork done for you.",
     monthly: "$69",
     annual: "$690",
     annualPerMonth: "$57.50",
     setupMonthly: null,
     intro: "Everything in Starter, plus:",
-    features: ["Up to 5 websites", "More Instagram posts each month"],
+    features: [
+      "Up to 5 websites",
+      "30 Instagram posts a month, planned by AI in one click",
+      "Approve the whole month of posts at once",
+      "Google review requests sent automatically when a job is done",
+    ],
   },
   {
     id: "premium",
     name: "Premium",
-    summary: "The most live websites and Instagram posts.",
+    summary: "Your business on autopilot.",
     monthly: "$129",
     annual: "$1,290",
     annualPerMonth: "$107.50",
     setupMonthly: null,
     recommended: true,
     intro: "Everything in Pro, plus:",
-    features: ["Up to 10 websites", "The most Instagram posts each month"],
+    features: [
+      "Up to 10 websites",
+      "Free .com domain for the first year",
+      "AI assistant on your website that answers your customers 24/7",
+      "Instagram on autopilot: 60 posts a month, posted for you",
+      "The most AI credits each month",
+    ],
   },
 ];
 
@@ -95,6 +112,9 @@ function regularOf(id: string) {
     monthly: dollars(plan.regularMonthlyCents),
     annual: dollars(plan.regularMonthlyCents * 10),
     percentOff: promoPercentOff(plan),
+    /** Anual x 12 meses no mensal: economia verdadeira (os dois preços são cobrados hoje). */
+    monthlyForYear: dollars(plan.monthlyCents * 12),
+    annualSavings: dollars(annualSavingsCents(plan)),
   };
 }
 
@@ -144,8 +164,10 @@ export function PricingPlans({
 
       {promo && (
         <p className="mt-6 max-w-[70ch] text-base leading-snug text-pretty text-ink">
-          <strong className="font-semibold">{offerName}.</strong> Launch pricing: Starter is{" "}
-          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off its regular price.
+          <strong className="font-semibold">{offerName}:</strong> get{" "}
+          {offerAt().bonusCredits} bonus AI credits with your first payment. Starter is{" "}
+          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off. Whatever you pay
+          today is yours for life: it never goes up while you stay subscribed.
         </p>
       )}
 
@@ -173,7 +195,7 @@ export function PricingPlans({
             </div>
             <p className="mt-1 text-base leading-snug text-pretty text-slate-600">{plan.summary}</p>
 
-            {promo && regularOf(plan.id).percentOff > 0 && (
+            {promo && regularOf(plan.id).percentOff > 0 ? (
               <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
                 <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[13px] font-semibold text-emerald-800 tabular-nums">
                   Save {regularOf(plan.id).percentOff}%
@@ -186,9 +208,20 @@ export function PricingPlans({
                   </s>
                 </span>
               </p>
+            ) : (
+              annual && (
+                <p className="mt-5 flex flex-wrap items-center gap-x-2 text-sm text-slate-600">
+                  <span className="inline-flex h-6 items-center rounded-md bg-emerald-50 px-2 text-[13px] font-semibold text-emerald-800 tabular-nums">
+                    Save {regularOf(plan.id).annualSavings}
+                  </span>
+                  <span className="tabular-nums">
+                    <s>{regularOf(plan.id).monthlyForYear}/yr</s> if paid monthly
+                  </span>
+                </p>
+              )
             )}
             <p
-              className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${promo && regularOf(plan.id).percentOff > 0 ? "mt-2" : "mt-6"}`}
+              className={`flex flex-wrap items-baseline gap-1 font-display text-ink ${(promo && regularOf(plan.id).percentOff > 0) || annual ? "mt-2" : "mt-6"}`}
             >
               <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.03em] tabular-nums">
                 {annual ? plan.annual : plan.monthly}

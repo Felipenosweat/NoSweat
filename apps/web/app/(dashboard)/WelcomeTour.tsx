@@ -19,6 +19,7 @@ import {
   type TourConfig,
 } from "@/lib/onboarding";
 import { TourArt } from "./TourArt";
+import { takePendingOpen } from "./tour/open";
 import {
   TOUR_PROGRESS_KEY,
   parseProgress,
@@ -54,10 +55,6 @@ const AUTO_OPEN_DELAY_MS = 450;
 
 type Phase = "closed" | "welcome" | "spotlight" | "finish";
 
-/** Abre o tour de novo (de qualquer lugar do painel). */
-export function openWelcomeTour(): void {
-  window.dispatchEvent(new Event(TOUR_OPEN_EVENT));
-}
 
 function readLocalDone(accountKey: string): boolean {
   try {
@@ -229,10 +226,19 @@ export function WelcomeTour({
     return () => window.clearTimeout(timer);
   }, [config, pathname, start]);
 
-  // "Take the tour" (menu, /guide): abre de novo, sempre do começo.
+  // "Take the tour" (menu, /guide): abre de novo, sempre do começo. Um clique que chegou antes de
+  // este componente carregar (ele vem sob demanda) fica guardado em tour/open.ts e abre agora.
   useEffect(() => {
-    window.addEventListener(TOUR_OPEN_EVENT, start);
-    return () => window.removeEventListener(TOUR_OPEN_EVENT, start);
+    const open = () => {
+      takePendingOpen();
+      start();
+    };
+    window.addEventListener(TOUR_OPEN_EVENT, open);
+    const timer = takePendingOpen() ? window.setTimeout(start, 0) : 0;
+    return () => {
+      window.removeEventListener(TOUR_OPEN_EVENT, open);
+      window.clearTimeout(timer);
+    };
   }, [start]);
 
   // Guarda onde o passeio está (para continuar depois de recarregar).

@@ -33,6 +33,8 @@ import {
   cx,
   type GlassSegmentOption,
 } from "@/components/glass";
+import { ApproveAllButton } from "./ApproveAllButton";
+import { AutopilotCard } from "./AutopilotCard";
 import { ConnectCard } from "./ConnectCard";
 import { PlanMonthButton } from "./PlanMonthButton";
 import {
@@ -194,7 +196,7 @@ function SocialHeader({ onNewPost }: { onNewPost?: () => void }) {
   return (
     <PageHeader
       title="Social"
-      description="Plan a month of Instagram posts in minutes. Nothing goes out until you approve it."
+      description="Plan a month of Instagram posts in minutes. You decide what goes out."
       actions={
         <GlassButton
           variant="secondary"
@@ -395,6 +397,8 @@ export function SocialCalendar({
   const sheetPast = sheet.day !== "" && sheet.day < todayKey;
   const reviewable = dated.filter((post) => post.status === "draft" && canApprove(post, nowMs));
   const { used, cap } = state.usage;
+  const autoPublish =
+    state.capability.publishMode === "auto" && state.account?.status === "active";
   const counts: Record<Filter, number> = {
     all: dated.length,
     todo: dated.filter((post) => matches(post, "todo")).length,
@@ -543,6 +547,34 @@ export function SocialCalendar({
                 </p>
               )}
             </div>
+            <div className="mt-4">
+              <ApproveAllButton
+                month={month}
+                posts={dated}
+                nowMs={nowMs}
+                allowed={state.features?.bulkApprove ?? false}
+                auto={autoPublish}
+                room={cap !== null && month === thisMonth ? Math.max(0, cap - used) : null}
+                onApproved={(result) => {
+                  setPosts((list) => [
+                    ...list.filter((p) => !result.posts.some((a) => a.id === p.id)),
+                    ...result.posts,
+                  ]);
+                  if (month === thisMonth) {
+                    setState((s) =>
+                      s
+                        ? { ...s, usage: { ...s.usage, used: s.usage.used + result.posts.length } }
+                        : s,
+                    );
+                  }
+                  const left = Object.values(result.leftAsDrafts).reduce((a, b) => a + b, 0);
+                  const approvedText = `${result.posts.length} ${plural(result.posts.length, "post", "posts")} approved.`;
+                  const leftText =
+                    left > 0 ? ` ${left} left as ${plural(left, "a draft", "drafts")} for you.` : "";
+                  setMessage(approvedText + leftText);
+                }}
+              />
+            </div>
             <SettingsForm
               settings={state.settings}
               onSaved={(settings) => {
@@ -552,6 +584,18 @@ export function SocialCalendar({
             />
           </section>
         </div>
+
+        <AutopilotCard
+          state={state}
+          onSaved={(settings) => {
+            setState((s) => (s ? { ...s, settings } : s));
+            setMessage(
+              settings.autopilot
+                ? "Autopilot is on. We'll email you the day before posts go out."
+                : "Autopilot is off. Drafts wait for your approval.",
+            );
+          }}
+        />
 
         <section aria-labelledby="calendar-heading" className="mt-10">
           {/* Barra de vidro grudada: no celular, logo abaixo da barra de cima (3.5rem). */}
