@@ -4,9 +4,11 @@ import { connection } from "next/server";
 import { PageHeader } from "@/components/DashboardUi";
 import { EmptyState, GlassButton, Notice } from "@/components/glass";
 import { getViewer } from "@/server/auth/viewer";
+import { getAutoReviewSummary } from "@/server/review-requests/service";
 import { getSiteStore, type SiteRecord } from "@/server/store";
 import { StarIcon } from "../NavIcons";
 import { sectionTitle } from "../clients/ui";
+import { AutoReviewSetting } from "./AutoReviewSetting";
 import { GuideSteps } from "./GuideSteps";
 import { ReviewLinkManager, type ReviewSite } from "./ReviewLinkManager";
 
@@ -45,7 +47,10 @@ export default async function ReviewsPage() {
   if (!viewer) redirect("/login?next=/reviews");
   const readOnly = viewer.viewingAs !== null;
 
-  const records = await loadSites(viewer.ownerId);
+  const [records, autoReview] = await Promise.all([
+    loadSites(viewer.ownerId),
+    getAutoReviewSummary(viewer.ownerId),
+  ]);
   const sites = records?.map(toReviewSite) ?? null;
   const hasLink = sites?.some((site) => site.url) ?? false;
 
@@ -100,6 +105,13 @@ export default async function ReviewsPage() {
         <div className="mt-8 grid gap-10">
           {!hasLink && guide}
           <ReviewLinkManager initialSites={sites} readOnly={readOnly} />
+          <AutoReviewSetting
+            available={autoReview.available}
+            initialEnabled={autoReview.enabled}
+            sentThisMonth={autoReview.sentThisMonth}
+            hasLink={hasLink}
+            readOnly={readOnly}
+          />
           {hasLink && guide}
         </div>
       )}
