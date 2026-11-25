@@ -2,7 +2,7 @@ import { fixtures } from "@nosweat/fixtures";
 import type { SiteSetupRequest } from "@nosweat/schema";
 import { beforeEach, describe, expect, it } from "vitest";
 import { DEV_USER } from "../auth/session";
-import { listPriceItems, listTeam } from "../office/service";
+import { getSettings, listPriceItems, listTeam } from "../office/service";
 import { resetMemoryOfficeStore } from "../office/store";
 import { OfficeError } from "../office/types";
 import { getSiteStore } from "../store";
@@ -239,5 +239,31 @@ describe("applySetup", () => {
     ).rejects.toBeInstanceOf(OfficeError);
     expect(await listPriceItems(OWNER)).toHaveLength(0);
     expect((await getBookingSettings(OWNER)).enabled).toBe(false);
+  });
+});
+
+describe("applySetup US details", () => {
+  it("saves the time zone in the office settings and rejects an unknown one", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request({ timeZone: "America/Chicago" }));
+    expect((await getSettings(OWNER)).timeZone).toBe("America/Chicago");
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await expect(applySetup(OWNER, current, request({ timeZone: "Mars/Base" }))).rejects.toThrow(
+      /time zone/,
+    );
+    expect((await getSettings(OWNER)).timeZone).toBe("America/Chicago");
+  });
+
+  it("puts city and state on the site and the ZIP in an empty office address", async () => {
+    const site = await getSiteStore().create(fixtures["joes-plumbing"], OWNER);
+    await applySetup(
+      OWNER,
+      site,
+      request({ kind: "home", team: [], city: "Austin", state: "TX", zip: "78701" }),
+    );
+    const stored = await getSiteStore().get(site.id);
+    expect(stored?.spec.business).toMatchObject({ city: "Austin", state: "TX" });
+    expect((await getSettings(OWNER)).address).toBe("Austin, TX 78701");
   });
 });

@@ -11,15 +11,17 @@ import { formatDuration, formatPriceText, nameKey } from "../../lib/setup/wizard
 import {
   createPriceItem,
   createTeamMember,
+  getSettings as getOfficeSettings,
   listPriceItems,
   listTeam,
   updatePriceItem,
+  updateSettings as updateOfficeSettings,
   updateTeamMember,
 } from "../office/service";
 import { OfficeError } from "../office/types";
 import { getSiteStore, type SiteRecord } from "../store";
 import { updateBookingSettings } from "./service";
-import { minutesOf } from "./time";
+import { isKnownTimeZone, minutesOf } from "./time";
 
 // Assistente de configuração do dono: valida TUDO antes de gravar (`planSetup`, puro) e grava
 // de novo sem duplicar (`applySetup`): serviços e pessoas são casados pelo nome. Ordem de gravação:
@@ -70,6 +72,9 @@ export function validateSetup(request: SiteSetupRequest): void {
   }
   if (settings.closedDates.some((date) => !isCalendarDate(date))) {
     throw invalid("One of the days off doesn't exist in the calendar.");
+  }
+  if (request.timeZone && !isKnownTimeZone(request.timeZone)) {
+    throw invalid("Please choose a valid time zone.");
   }
   const serviceNames = new Set<string>();
   for (const service of request.services) {
@@ -168,6 +173,8 @@ function withContact(spec: SiteSpec, request: SiteSetupRequest): SiteSpec {
   const business = { ...spec.business };
   if (request.serviceArea) business.serviceArea = request.serviceArea;
   if (request.phone) business.phone = request.phone;
+  if (request.city) business.city = request.city;
+  if (request.state) business.state = request.state;
   return { ...spec, business };
 }
 
@@ -319,11 +326,21 @@ export async function applySetup(
   });
   await part("site", async () => {
     // Mesmo caminho do editor: o rascunho vira uma linha em site_versions. Sem mudança, nada grava.
-    if (isDeepStrictEqual(plan.spec, site.spec)) return;
-    const updated = await getSiteStore().update(site.id, plan.spec, "edit");
-    if (!updated) throw new OfficeError(404, "not_found", "Site not found.");
+    if (!isDeepStrictEqual(plan.spec, site.spec)) {
+      const updated = await getSiteStore().update(site.id, plan.spec, "edit");
+      if (!updated) throw new OfficeError(404, "not_found", "Site not found.");
+    }
+    // Com CEP e sem endereço no escritório, guarda "Cidade, UF 12345" (nunca troca um endereço).
+    if (!request.zip) return;
+    const office = await getOfficeSettings(ownerId);
+    if (office.address?.trim()) return;
+    const place = [request.city, [request.state, request.zip].filter(Boolean).join(" ")]
+      .filter(Boolean)
+      .join(", ");
+    await updateOfficeSettings(ownerId, { address: place });
   });
   await part("hours", async () => {
+    if (request.timeZone) await updateOfficeSettings(ownerId, { timeZone: request.timeZone });
     await updateBookingSettings(ownerId, plan.settings);
   });
 

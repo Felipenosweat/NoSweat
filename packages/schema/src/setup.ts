@@ -52,6 +52,20 @@ export const SiteSetupRequest = z.object({
   /** Só "home": área atendida e telefone, gravados no site. */
   serviceArea: z.string().trim().max(120).optional(),
   phone: z.string().trim().max(40).optional(),
+  /** Fuso da agenda (IANA, ex.: "America/Chicago"): vai para as configurações do escritório. */
+  timeZone: z.string().trim().min(1).max(64).optional(),
+  /** Endereço dos EUA (só "home"): cidade e estado vão para o site; com CEP, para o escritório. */
+  city: z.string().trim().max(60).optional(),
+  state: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{2}$/, "Choose a state.")
+    .optional(),
+  zip: z
+    .string()
+    .trim()
+    .regex(/^\d{5}$/, "Enter a 5-digit ZIP code.")
+    .optional(),
 });
 export type SiteSetupRequest = z.infer<typeof SiteSetupRequest>;
 

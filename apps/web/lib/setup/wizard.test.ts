@@ -17,6 +17,8 @@ import {
   setupKindFor,
   shopStep,
   stateProblem,
+  stepProblem,
+  STEPS,
   windowCount,
   type DayHours,
   type WizardService,
@@ -319,5 +321,64 @@ describe("setupDone", () => {
     expect(setupDone({ enabled: true }, [])).toBe(false);
     expect(setupDone({ enabled: true }, [{ ...item, active: false }])).toBe(false);
     expect(setupDone({ enabled: true }, [{ ...item, durationMinutes: null }])).toBe(false);
+  });
+});
+
+describe("stepProblem", () => {
+  it("checks one step at a time", () => {
+    const state = shopState();
+    expect(STEPS.shop).toEqual(["hours", "services", "team", "rules", "review"]);
+    expect(STEPS.home).toEqual(["days", "services", "area", "rules", "review"]);
+    expect(stepProblem(state, "review")).toBeNull();
+    expect(stepProblem({ ...state, services: [service({ name: "" })] }, "hours")).toBeNull();
+    expect(stepProblem({ ...state, services: [] }, "services")).toMatch(/at least one service/);
+    expect(
+      stepProblem({ ...state, policyPreset: "custom", cancellationPolicy: " " }, "rules"),
+    ).toMatch(/cancellation policy/);
+    expect(
+      stepProblem({ ...state, policyPreset: "none", cancellationPolicy: "" }, "rules"),
+    ).toBeNull();
+    const lunch = state.days.map((d) => ({ ...d, open: true, lunch: true, lunchStart: "08:00" }));
+    expect(stepProblem({ ...state, days: lunch }, "hours")).toMatch(/lunch break/);
+  });
+});
+
+describe("US details", () => {
+  it("derives the time zone from the business state and keeps a saved one", () => {
+    const glow = fixtures["glow-salon"];
+    const withState = (state: string) => ({
+      ...glow,
+      business: { ...glow.business, state },
+    });
+    const base = {
+      kind: "shop" as const,
+      settings: DEFAULT_BOOKING_SETTINGS,
+      priceItems: [],
+    };
+    const tx = initialState({ ...base, spec: withState("TX"), settingsSaved: false });
+    expect(tx.timeZone).toBe("America/Chicago");
+    const saved = initialState({
+      ...base,
+      spec: withState("TX"),
+      settingsSaved: true,
+      timeZone: "America/Denver",
+    });
+    expect(saved.timeZone).toBe("America/Denver");
+  });
+
+  it("sends the time zone and, for home services, the address", () => {
+    const state = initialState({
+      kind: "home",
+      spec: fixtures["joes-plumbing"],
+      settings: DEFAULT_BOOKING_SETTINGS,
+      settingsSaved: false,
+      priceItems: [],
+    });
+    const result = buildSetupRequest({ ...state, city: "Austin", state: "TX", zip: "78701" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.request).toMatchObject({ city: "Austin", state: "TX", zip: "78701" });
+    expect(result.request.timeZone).toBeTruthy();
+    expect(buildSetupRequest({ ...state, zip: "787" }).ok).toBe(false);
   });
 });

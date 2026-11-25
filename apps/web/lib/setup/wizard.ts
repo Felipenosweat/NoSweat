@@ -7,6 +7,7 @@ import {
   type TimeRange,
 } from "@nosweat/schema";
 import { parseDollars } from "../clients";
+import { timeZoneForState } from "./us";
 
 // Regras puras do assistente de configuração (/sites/[id]/setup): estado das telas → pedido
 // `SiteSetupRequest`, valores iniciais (a partir do site e do que o dono já tem), formatação e
@@ -132,6 +133,12 @@ export type WizardState = {
   people: WizardPerson[];
   serviceArea: string;
   phone: string;
+  /** IANA, ex.: "America/Chicago". */
+  timeZone: string;
+  city: string;
+  /** Sigla de 2 letras ("" = não informado). */
+  state: string;
+  zip: string;
   policyPreset: PolicyPreset;
   cancellationPolicy: string;
   cancellationHours: number;
@@ -263,8 +270,15 @@ export function rangesForWindows(day: DayHours, windows: ArrivalWindows): TimeRa
 
 export type BuildResult = { ok: true; request: SiteSetupRequest } | { ok: false; error: string };
 
-/** Confere o que as telas já sabem conferir antes de ir ao servidor (mensagens para o dono). */
-export function stateProblem(state: WizardState): string | null {
+/** Passos do assistente, na ordem de cada ramo. */
+export type StepId = "hours" | "days" | "services" | "team" | "area" | "rules" | "review";
+
+export const STEPS: Record<SetupKind, readonly StepId[]> = {
+  shop: ["hours", "services", "team", "rules", "review"],
+  home: ["days", "services", "area", "rules", "review"],
+};
+
+function hoursProblem(state: WizardState): string | null {
   const open = state.days.filter((day) => day.open);
   if (open.length === 0) {
     return state.kind === "home"
@@ -273,17 +287,22 @@ export function stateProblem(state: WizardState): string | null {
   }
   if (state.kind === "home") {
     if (windowCount(state.windows) === 0) return "Your arrival windows need at least one window.";
-  } else {
-    for (const day of open) {
-      if (day.start >= day.end) return "Every open day must close after it opens.";
-      if (
-        day.lunch &&
-        !(day.start < day.lunchStart && day.lunchStart < day.lunchEnd && day.lunchEnd < day.end)
-      ) {
-        return "A lunch break must sit inside the open hours.";
-      }
+    return null;
+  }
+  for (const day of open) {
+    if (day.start >= day.end) return "Every open day must close after it opens.";
+    if (
+      day.lunch &&
+      !(day.start < day.lunchStart && day.lunchStart < day.lunchEnd && day.lunchEnd < day.end)
+    ) {
+      return "A lunch break must sit inside the open hours.";
     }
   }
+  return null;
+}
+
+function servicesProblem(state: WizardState): string | null {
+  if (state.services.length === 0) return "Add at least one service.";
   const names = new Set<string>();
   for (const service of state.services) {
     const key = nameKey(service.name);
@@ -293,16 +312,55 @@ export function stateProblem(state: WizardState): string | null {
     if (parseDollars(service.price) === undefined) {
       return `The price of “${service.name.trim()}” should look like 45 or 45.50.`;
     }
-  }
-  if (state.services.length === 0) return "Add at least one service.";
-  if (!state.alone) {
-    const people = new Set<string>();
-    for (const person of state.people) {
-      const key = nameKey(person.name);
-      if (!key) return "Please name every person, or choose “I work alone”.";
-      if (people.has(key)) return `“${person.name.trim()}” is listed twice.`;
-      people.add(key);
+    if (service.durationMinutes < 5 || service.durationMinutes > 480) {
+      return `How long does “${service.name.trim()}” take? Pick between 5 minutes and 8 hours.`;
     }
+  }
+  return null;
+}
+
+function teamProblem(state: WizardState): string | null {
+  if (state.alone) return null;
+  const people = new Set<string>();
+  for (const person of state.people) {
+    const key = nameKey(person.name);
+    if (!key) return "Please name every person, or choose “I work alone”.";
+    if (people.has(key)) return `“${person.name.trim()}” is listed twice.`;
+    people.add(key);
+    if (person.bio.trim().length > 200) return "Keep each bio under 200 characters.";
+  }
+  return null;
+}
+
+function rulesProblem(state: WizardState): string | null {
+  if (state.policyPreset !== "none" && !state.cancellationPolicy.trim()) {
+    return "Write your cancellation policy, or choose “No policy”.";
+  }
+  return null;
+}
+
+/** O problema de UM passo (mensagem para o dono), ou `null`. */
+export function stepProblem(state: WizardState, step: StepId): string | null {
+  switch (step) {
+    case "hours":
+    case "days":
+      return hoursProblem(state);
+    case "services":
+      return servicesProblem(state);
+    case "team":
+      return teamProblem(state);
+    case "rules":
+      return rulesProblem(state);
+    default:
+      return null;
+  }
+}
+
+/** Confere tudo o que as telas sabem conferir antes de ir ao servidor. */
+export function stateProblem(state: WizardState): string | null {
+  for (const step of STEPS[state.kind]) {
+    const problem = stepProblem(state, step);
+    if (problem) return problem;
   }
   return null;
 }
@@ -349,6 +407,10 @@ export function buildSetupRequest(state: WizardState): BuildResult {
         })),
     serviceArea: home ? state.serviceArea.trim() || undefined : undefined,
     phone: home ? state.phone.trim() || undefined : undefined,
+    timeZone: state.timeZone || undefined,
+    city: home ? state.city.trim() || undefined : undefined,
+    state: home ? state.state || undefined : undefined,
+    zip: home ? state.zip || undefined : undefined,
   };
   const parsed = SiteSetupRequest.safeParse(candidate);
   if (!parsed.success) {
@@ -401,6 +463,8 @@ export type InitialInput = {
   /** O dono já salvou regras de agendamento (senão valem os padrões). */
   settingsSaved: boolean;
   priceItems: readonly PriceItem[];
+  /** Fuso que a conta já tem nas configurações do escritório. */
+  timeZone?: string;
 };
 
 /**
@@ -483,6 +547,15 @@ export function initialState(input: InitialInput): WizardState {
     people,
     serviceArea: spec.business.serviceArea ?? "",
     phone: spec.business.phone ?? "",
+    // Sem estado conhecido, vale o fuso que a conta já tem.
+    timeZone:
+      (input.settingsSaved ? input.timeZone : undefined) ??
+      timeZoneForState(spec.business.state) ??
+      input.timeZone ??
+      "America/New_York",
+    city: spec.business.city ?? "",
+    state: spec.business.state ?? "",
+    zip: "",
     policyPreset: preset,
     cancellationPolicy: text || first?.text || "",
     cancellationHours: settings.cancellationHours ?? first?.hours ?? 24,
