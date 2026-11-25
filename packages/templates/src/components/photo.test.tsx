@@ -96,3 +96,19 @@ describe("Photo", () => {
     expect(html).toContain('src="/photos/example-plumbing.webp"');
   });
 });
+
+describe("photoSrcSet com a largura da foto", () => {
+  const src = "https://images.unsplash.com/photo-9?w=1200&q=80";
+  const widths = (maxWidth?: number) =>
+    (photoSrcSet(src, maxWidth) ?? "").split(", ").map((entry) => entry.split(" ")[1]);
+
+  it("nunca lista um tamanho maior que o original", () => {
+    expect(widths(1200)).toEqual(["480w", "768w", "1080w", "1200w"]);
+    expect(widths(1600)).toEqual(["480w", "768w", "1080w", "1600w"]);
+    expect(widths(300)).toEqual(["300w"]);
+  });
+
+  it("sem limite, mantém todas as larguras", () => {
+    expect(widths()).toEqual(SRCSET_WIDTHS.map((w) => `${w}w`));
+  });
+});

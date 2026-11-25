@@ -71,6 +71,14 @@ export function dayLabel(key: string, todayKey: string): string {
   return `${calendarFormat(key, { weekday: "short" })} ${Number(key.slice(8, 10))}`;
 }
 
+/** Pedaços do dia para a faixa de datas: { weekday: "Wed", day: "4" }. */
+export function dayParts(key: string): { weekday: string; day: string } {
+  return {
+    weekday: calendarFormat(key, { weekday: "short" }),
+    day: String(Number(key.slice(8, 10))),
+  };
+}
+
 /** "Wednesday, Nov 4" (título do dia escolhido). */
 export function dayLabelLong(key: string): string {
   return calendarFormat(key, { weekday: "long", month: "short", day: "numeric" });

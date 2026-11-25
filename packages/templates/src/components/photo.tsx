@@ -43,7 +43,7 @@ function urlAtWidth(url: URL, width: number): string | null {
  * `srcset` com as larguras de SRCSET_WIDTHS para fotos da Unsplash e da Pexels (que
  * redimensionam pelo endereço). Outros endereços: `undefined` (só o `src`).
  */
-export function photoSrcSet(src: string): string | undefined {
+export function photoSrcSet(src: string, maxWidth?: number): string | undefined {
   let url: URL;
   try {
     // Só endereços absolutos (https://...); "/photos/..." não passa.
@@ -52,7 +52,11 @@ export function photoSrcSet(src: string): string | undefined {
     return undefined;
   }
   const entries: string[] = [];
-  for (const width of SRCSET_WIDTHS) {
+  // Com `maxWidth` (largura real da foto), nunca lista um tamanho maior que o original.
+  const widths: number[] = maxWidth ? SRCSET_WIDTHS.filter((width) => width <= maxWidth) : [];
+  if (!maxWidth) widths.push(...SRCSET_WIDTHS);
+  else if (!widths.includes(maxWidth)) widths.push(maxWidth);
+  for (const width of widths) {
     const resized = urlAtWidth(url, width);
     if (!resized) return undefined;
     entries.push(`${resized} ${width}w`);
@@ -69,18 +73,29 @@ type PhotoProps = {
   priority?: boolean;
   className?: string;
   sizes?: string;
+  /** Limita o `srcset` à largura real da foto (sem ampliar e borrar). Padrão: não limita. */
+  capToSource?: boolean;
+  /** Texto alternativo próprio (foto decorativa repetida usa ""). Padrão: o da foto. */
+  alt?: string;
 };
 
 /** Foto com largura/altura reais (quando conhecidas) para o navegador reservar o espaço. */
-export function Photo({ image, priority = false, className = "", sizes }: PhotoProps) {
-  const srcSet = photoSrcSet(image.url);
+export function Photo({
+  image,
+  priority = false,
+  className = "",
+  sizes,
+  capToSource = false,
+  alt,
+}: PhotoProps) {
+  const srcSet = photoSrcSet(image.url, capToSource ? image.width : undefined);
   return (
     <img
       src={image.url}
       srcSet={srcSet}
       // Sem `sizes`, o navegador supõe 100vw (o mesmo que antes, quando não havia srcset).
       sizes={srcSet ? (sizes ?? "100vw") : sizes}
-      alt={image.alt}
+      alt={alt ?? image.alt}
       title={creditTitle(image)}
       width={image.width}
       height={image.height}
