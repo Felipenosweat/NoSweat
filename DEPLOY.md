@@ -238,7 +238,7 @@ Apple funciona igual (provider "Apple"), mas exige conta Apple Developer (US$ 99
 
 ## Passo 5: tarefas automáticas (Cron da Vercel)
 
-O `apps/web/vercel.json` agenda três crons diários e um mensal:
+O `apps/web/vercel.json` agenda quatro crons diários e um mensal:
 
 - `/api/cron/cleanup-guests` (07:17 UTC): apaga sites criados sem conta e abandonados (mais de
   30 dias) e manda os lembretes de vencimento do acesso manual (Passo 6b): ao cliente faltando
@@ -250,6 +250,8 @@ O `apps/web/vercel.json` agenda três crons diários e um mensal:
 - `/api/cron/social-refresh` (08:23 UTC): renova os tokens do Instagram antes de vencerem;
 - `/api/cron/social-publish` (13:05 UTC): **reserva** do publicador de posts. O publicador de
   verdade roda a cada minuto pelo próprio Supabase (Passo 7.6);
+- `/api/cron/social-autopilot` (14:11 UTC): **reserva** do Piloto automático do Instagram
+  (Premium). O de verdade roda a cada 15 min pelo Supabase (migration 0035, Passo 7.6);
 - `/api/cron/monthly-report` (dia 1, 15:41 UTC): manda para cada dono o resumo do mês que
   acabou (visitas, pedidos e marcações do site). Só sai com a `RESEND_API_KEY`, para conta com
   plano em dia e com alguma atividade no mês, e precisa da migration
@@ -453,6 +455,15 @@ o que passar de `SOCIAL_MAX_LATENESS_HOURS` (padrão 6 h) de atraso vira _missed
 O cron diário `/api/cron/social-publish` do `apps/web/vercel.json` continua como **reserva** (se
 o Supabase ficar fora do ar). O `/api/cron/social-refresh` diário renova os tokens. Os dois usam o
 `CRON_SECRET` do Passo 5.
+
+**Piloto automático (Premium).** A migration
+[`0035_social_autopilot.sql`](supabase/migrations/0035_social_autopilot.sql) cria as colunas do
+Piloto automático e o job `social-autopilot`, que chama `/api/cron/social-autopilot` a cada 15
+minutos com os **mesmos** segredos do Vault acima. Ele manda o e-mail de aviso do dia (a partir
+das 8 h no fuso da empresa), aprova os rascunhos avisados há 12 h ou mais quando faltam 2 h para
+a hora e, do dia 25 em diante, planeja o mês seguinte (gasta os créditos do dono). Sem
+`RESEND_API_KEY` em produção o aviso não sai e **nada é aprovado sozinho**. O cron diário da
+Vercel (14:11 UTC) é só reserva: sem o job do Supabase, quase nenhum post cai na janela de 2 h.
 
 ### 7.7 Teste com um testador
 

@@ -2,7 +2,9 @@ import { z } from "zod";
 
 // Contrato do módulo de redes sociais (calendário de posts + Instagram).
 // Fluxo: rascunho (dono ou IA) → o dono aprova → o cron publica na hora marcada.
-// A IA nunca aprova nem publica sozinha (política da Meta e princípio do produto).
+// A IA nunca aprova nem publica sozinha (política da Meta e princípio do produto). Exceção: o
+// Piloto automático (Premium), em que o próprio dono deu o consentimento permanente; mesmo assim só
+// rascunhos completos, com aviso por e-mail antes, e o dono pode editar ou pular cada um.
 
 /** Redes que dá para conectar. Novas redes entram aqui (só adicionar). */
 export const SocialProvider = z.enum(["instagram"]);
@@ -41,6 +43,8 @@ export const SocialSettings = z.object({
   /** Dias da semana dos posts sugeridos (0 = domingo ... 6 = sábado). */
   postDays: z.array(z.number().int().min(0).max(6)).max(7),
   postTime: TimeOfDay,
+  /** Piloto automático (Premium): rascunhos completos da IA são aprovados sozinhos perto da hora. */
+  autopilot: z.boolean().optional(),
 });
 export type SocialSettings = z.infer<typeof SocialSettings>;
 
@@ -113,6 +117,14 @@ export const SocialPost = z.object({
   siteId: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /** O dono marcou "Skip": o Piloto automático não aprova este rascunho. */
+  autopilotSkip: z.boolean().optional(),
+  /** O dono mexeu no texto, nas fotos ou na data: o Piloto automático deixa a aprovação com ele. */
+  ownerEdited: z.boolean().optional(),
+  /** Quando o e-mail de aviso do Piloto automático listou este post. */
+  autopilotNoticeAt: z.string().nullable().optional(),
+  /** Aprovado pelo Piloto automático (consentimento do dono), não por um clique. */
+  autoApprovedAt: z.string().nullable().optional(),
 });
 export type SocialPost = z.infer<typeof SocialPost>;
 
@@ -140,6 +152,15 @@ export const SocialStateResponse = z.object({
     plans: z.number().int().min(0).nullable(),
     captions: z.number().int().min(0).nullable(),
   }),
+  /** Recursos do plano para esta tela (sem o campo: tudo desligado). */
+  features: z
+    .object({
+      /** "Approve all drafts" (Pro e Premium). */
+      bulkApprove: z.boolean(),
+      /** Piloto automático (Premium). */
+      autopilot: z.boolean(),
+    })
+    .optional(),
 });
 export type SocialStateResponse = z.infer<typeof SocialStateResponse>;
 
@@ -165,6 +186,8 @@ export const UpdateSocialPostRequest = z.object({
   caption: z.string().max(MAX_CAPTION_LENGTH).optional(),
   media: z.array(SocialMedia).max(MAX_SOCIAL_MEDIA).optional(),
   scheduledAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  /** "Skip" do Piloto automático (só rascunhos). Não conta como edição do dono. */
+  autopilotSkip: z.boolean().optional(),
 });
 export type UpdateSocialPostRequest = z.infer<typeof UpdateSocialPostRequest>;
 
@@ -180,6 +203,33 @@ export const ApproveSocialPostsRequest = z.object({
   ids: z.array(z.string().min(1)).min(1).max(60),
 });
 export type ApproveSocialPostsRequest = z.infer<typeof ApproveSocialPostsRequest>;
+
+// ---------- POST /api/social/posts/approve-all (Pro e Premium) ----------
+
+/** Aprova de uma vez todos os rascunhos prontos do mês ("YYYY-MM", no fuso da empresa). */
+export const ApproveAllDraftsRequest = z.object({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use the YYYY-MM format."),
+});
+export type ApproveAllDraftsRequest = z.infer<typeof ApproveAllDraftsRequest>;
+
+export const ApproveAllDraftsResponse = z.object({
+  /** Posts aprovados agora. */
+  posts: z.array(SocialPost),
+  /** Rascunhos do mês que ficaram como rascunho, por motivo. */
+  leftAsDrafts: z.object({
+    /** Sem foto, sem legenda ou sem data. */
+    incomplete: z.number().int().min(0),
+    /** A hora já passou. */
+    past: z.number().int().min(0),
+    /** Legenda com afirmação que o dono precisa conferir (avaliações, garantias...). */
+    flagged: z.number().int().min(0),
+    /** O dono marcou "Skip". */
+    skipped: z.number().int().min(0),
+    /** Passariam do limite de posts do plano no mês. */
+    overCap: z.number().int().min(0),
+  }),
+});
+export type ApproveAllDraftsResponse = z.infer<typeof ApproveAllDraftsResponse>;
 
 // ---------- POST /api/social/plan (IA monta o mês) ----------
 

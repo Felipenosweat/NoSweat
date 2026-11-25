@@ -12,6 +12,12 @@ import type { SocialPostPatch } from "@/server/social/types";
 
 type Context = { params: Promise<{ id: string }> };
 
+/** Mesmo instante (o banco devolve "+00:00" e o pedido vem com "Z"). */
+function sameInstant(a: string | null, b: string | null): boolean {
+  if (a === null || b === null) return a === b;
+  return Date.parse(a) === Date.parse(b);
+}
+
 /** GET /api/social/posts/[id]: um post do dono (de outra pessoa = 404). */
 export async function GET(_request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
@@ -27,7 +33,9 @@ export async function GET(_request: Request, { params }: Context): Promise<Respo
 /**
  * PATCH /api/social/posts/[id]: muda legenda, fotos ou data. Post aprovado continua aprovado (o
  * próprio dono editou); post que deu problema (falhou, pausou, perdeu a hora) volta a rascunho
- * e precisa de nova aprovação.
+ * e precisa de nova aprovação. Mudança de verdade em texto, fotos ou data marca `ownerEditedAt`
+ * (o Piloto automático deixa a aprovação com o dono). `autopilotSkip` liga/desliga o "Skip" do
+ * Piloto automático (só rascunhos) e não conta como edição.
  */
 export async function PATCH(request: Request, { params }: Context): Promise<Response> {
   return handle(async () => {
@@ -44,7 +52,10 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
       return errorResponse(409, "invalid_request", "This post can't be changed anymore.");
     }
 
-    const { caption, media, scheduledAt } = input.data;
+    const { caption, media, scheduledAt, autopilotSkip } = input.data;
+    if (autopilotSkip !== undefined && post.status !== "draft") {
+      return errorResponse(409, "invalid_request", "Only drafts can be skipped.");
+    }
     if (media) {
       const badMedia = invalidMedia(user, media);
       if (badMedia) return badMedia;
@@ -58,6 +69,17 @@ export async function PATCH(request: Request, { params }: Context): Promise<Resp
     if (scheduledAt !== undefined) {
       patch.scheduledAt = scheduledAt ? new Date(scheduledAt).toISOString() : null;
     }
+
+    if (autopilotSkip !== undefined) patch.autopilotSkip = autopilotSkip;
+
+    // Edição de verdade do dono (o editor manda os três campos mesmo sem mudar todos).
+    const edited =
+      (caption !== undefined && caption !== post.caption) ||
+      (media !== undefined &&
+        (media.length !== post.media.length ||
+          media.some((item, index) => item.path !== post.media[index]?.path))) ||
+      (patch.scheduledAt !== undefined && !sameInstant(patch.scheduledAt, post.scheduledAt));
+    if (edited) patch.ownerEditedAt = new Date().toISOString();
 
     const when = patch.scheduledAt !== undefined ? patch.scheduledAt : post.scheduledAt;
     const queued = post.status === "scheduled" || post.status === "approved";
