@@ -3,7 +3,7 @@ import { contactHref, type SalesContact } from "@/lib/sales-contact";
 import { aiEnabled } from "@/server/ai";
 import { getCurrentUser } from "@/server/auth/session";
 import { checkoutReady } from "@/server/billing";
-import { currentOffer, PLANS, promoActive, promoPercentOff } from "@/server/billing/plans";
+import { offerAt, PLANS, promoActive, promoPercentOff } from "@/server/billing/plans";
 import { creditCost, getBalance, monthlyAllowance } from "@/server/credits";
 import { CreateFlow, type CreateCredits } from "./CreateFlow";
 import type { LaunchOffer } from "./PlansPopup";
@@ -36,14 +36,16 @@ const dollars = (cents: number) => `$${(cents / 100).toLocaleString("en-US")}`;
 function launchOffer(contact: SalesContact | null): LaunchOffer {
   const promo = promoActive();
   return {
-    name: promo ? currentOffer() : null,
+    name: promo ? offerAt().name : null,
+    bonusCredits: offerAt().bonusCredits,
     checkout: checkoutReady(),
     plans: Object.values(PLANS).map((plan) => ({
       id: plan.id,
       name: plan.name,
       price: dollars(plan.monthlyCents),
-      regular: promo ? dollars(plan.regularMonthlyCents) : null,
-      percentOff: promo ? promoPercentOff(plan) : null,
+      // Preço riscado só onde há desconto de verdade (hoje, só o Starter).
+      regular: promo && promoPercentOff(plan) > 0 ? dollars(plan.regularMonthlyCents) : null,
+      percentOff: promo && promoPercentOff(plan) > 0 ? promoPercentOff(plan) : null,
       features: [
         plan.publishedSitesLimit === 1
           ? "1 live website"
@@ -51,6 +53,11 @@ function launchOffer(contact: SalesContact | null): LaunchOffer {
         `${monthlyAllowance(plan.id).toLocaleString("en-US")} AI credits a month`,
         `${plan.socialPostsPerMonth} Instagram posts a month`,
         "Bookings, clients and your own domain",
+        ...(plan.features.aiAssistant ? ["AI assistant that answers your customers 24/7"] : []),
+        ...(plan.features.freeDomain ? ["Free .com domain for the first year"] : []),
+        ...(plan.features.autoReviewRequests && !plan.features.aiAssistant
+          ? ["Google review requests sent for you"]
+          : []),
       ],
       recommended: plan.id === "premium",
       contactHref: contact

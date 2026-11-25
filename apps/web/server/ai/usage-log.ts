@@ -3,7 +3,7 @@
 // REAL por site com a tabela de preços do dia (hoje o /admin usa um valor fixo estimado, em
 // server/admin/costs.ts). Nunca lança erro: medir não pode derrubar a geração do site.
 
-export type AiCallLabel = "generate" | "generate_model_first" | "ai_edit";
+export type AiCallLabel = "generate" | "generate_model_first" | "ai_edit" | "assistant_chat";
 
 const count = (value: unknown): number => (typeof value === "number" ? value : 0);
 

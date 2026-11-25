@@ -21,7 +21,22 @@ vi.mock("@/server/social/refresh", () => ({
   }),
 }));
 
+vi.mock("@/server/social/autopilot", () => ({
+  runAutopilot: async () => ({
+    owners: 0,
+    inactive: 0,
+    approved: 0,
+    overCap: 0,
+    digests: 0,
+    noticed: 0,
+    planned: 0,
+    outOfCredits: 0,
+    errors: 0,
+  }),
+}));
+
 const { GET: publish } = await import("./cron/social-publish/route");
+const { GET: autopilot } = await import("./cron/social-autopilot/route");
 const { GET: refresh } = await import("./cron/social-refresh/route");
 
 const BASE = "http://localhost:3000/api";
@@ -33,6 +48,7 @@ afterEach(() => {
 describe.each([
   ["social-publish", publish, "published"],
   ["social-refresh", refresh, "refreshed"],
+  ["social-autopilot", autopilot, "approved"],
 ] as const)("GET /api/cron/%s", (name, handler, key) => {
   const call = (auth?: string) =>
     handler(new Request(`${BASE}/cron/${name}`, { headers: auth ? { authorization: auth } : {} }));

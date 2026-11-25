@@ -3,6 +3,7 @@ import { z } from "zod";
 import { normalizeSupabaseUrl } from "../store/supabase";
 import {
   COUNTED_POST_STATUSES,
+  type AutopilotState,
   type DataDeletionRecord,
   type NewSocialAccount,
   type NewSocialPost,
@@ -24,6 +25,12 @@ export const DEFAULT_SOCIAL_SETTINGS = {
   postDays: [2, 4, 6],
   postTime: "10:00",
   tester: false,
+  autopilot: false,
+  autopilotSince: null,
+  autopilotDigestAt: null,
+  autopilotPlanMonth: null,
+  autopilotPlanStatus: null,
+  autopilotPlanAt: null,
 } as const;
 
 export interface SocialStore {
@@ -52,6 +59,8 @@ export interface SocialStore {
   // ---------- preferências ----------
   getSettings(ownerId: string): Promise<SocialSettingsRecord>;
   upsertSettings(ownerId: string, patch: SocialSettingsPatch): Promise<SocialSettingsRecord>;
+  /** Preferências de quem está com o Piloto automático ligado (para o cron). */
+  listAutopilotSettings(limit: number): Promise<SocialSettingsRecord[]>;
 
   // ---------- posts ----------
   createPost(post: NewSocialPost): Promise<SocialPostRecord>;
@@ -88,6 +97,12 @@ export interface SocialStore {
   claimDue(limit: number): Promise<SocialPostRecord[]>;
   /** Pega UM post da fila (atômico). `null` se outro processo já pegou. */
   claimPost(id: string): Promise<SocialPostRecord | null>;
+  /**
+   * Aprovação do Piloto automático: só muda se o post AINDA for um rascunho da IA, avisado por
+   * e-mail, sem "Skip", sem edição do dono e sem afirmação marcada (tudo conferido no mesmo
+   * UPDATE). Senão devolve `null`.
+   */
+  autoApprovePost(id: string, patch: SocialPostPatch): Promise<SocialPostRecord | null>;
 
   // ---------- histórico e exclusão ----------
   logEvent(event: SocialEventInput): Promise<void>;
@@ -168,7 +183,27 @@ const SettingsRow = z.object({
   post_days: z.array(z.number()).nullable(),
   post_time: z.string(),
   tester: z.boolean(),
+  // Colunas da migration 0035 (opcionais: o código roda antes dela, com o Piloto desligado).
+  autopilot: z.boolean().optional(),
+  autopilot_since: z.string().nullable().optional(),
+  autopilot_digest_at: z.string().nullable().optional(),
+  autopilot_plan_month: z.string().nullable().optional(),
+  autopilot_plan_status: z
+    .enum(["planned", "out_of_credits", "no_site", "failed"])
+    .nullable()
+    .optional()
+    .catch(null),
+  autopilot_plan_at: z.string().nullable().optional(),
 });
+
+const AUTOPILOT_COLUMNS: Record<keyof AutopilotState, string> = {
+  autopilot: "autopilot",
+  autopilotSince: "autopilot_since",
+  autopilotDigestAt: "autopilot_digest_at",
+  autopilotPlanMonth: "autopilot_plan_month",
+  autopilotPlanStatus: "autopilot_plan_status",
+  autopilotPlanAt: "autopilot_plan_at",
+};
 
 const PostRow = z.object({
   id: z.string(),
@@ -195,6 +230,11 @@ const PostRow = z.object({
   published_at: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
+  // Migration 0035 (opcionais pelo mesmo motivo das preferências).
+  autopilot_skip: z.boolean().optional(),
+  owner_edited_at: z.string().nullable().optional(),
+  autopilot_notice_at: z.string().nullable().optional(),
+  auto_approved_at: z.string().nullable().optional(),
 });
 
 function toPost(row: z.infer<typeof PostRow>): SocialPostRecord {
@@ -223,6 +263,10 @@ function toPost(row: z.infer<typeof PostRow>): SocialPostRecord {
     publishedAt: row.published_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    autopilotSkip: row.autopilot_skip ?? false,
+    ownerEditedAt: row.owner_edited_at ?? null,
+    autopilotNoticeAt: row.autopilot_notice_at ?? null,
+    autoApprovedAt: row.auto_approved_at ?? null,
   };
 }
 
@@ -246,6 +290,10 @@ const POST_COLUMNS: Record<keyof SocialPostPatch, string> = {
   permalink: "permalink",
   lastError: "last_error",
   publishedAt: "published_at",
+  autopilotSkip: "autopilot_skip",
+  ownerEditedAt: "owner_edited_at",
+  autopilotNoticeAt: "autopilot_notice_at",
+  autoApprovedAt: "auto_approved_at",
 };
 
 function patchToRow<K extends string>(
@@ -447,6 +495,17 @@ export class SupabaseSocialStore implements SocialStore {
   async upsertSettings(ownerId: string, patch: SocialSettingsPatch) {
     if (!isUuid(ownerId)) throw new Error(`Invalid user id: ${ownerId}`);
     const merged = { ...(await this.getSettings(ownerId)), ...stripUndefined(patch) };
+    // Colunas do Piloto automático: só as que vieram no pedido (o merge-duplicates do PostgREST
+    // só atualiza as colunas enviadas: o cron e o dono não apagam o que o outro gravou).
+    const autopilotPatch: Partial<AutopilotState> = {
+      autopilot: patch.autopilot,
+      autopilotSince: patch.autopilotSince,
+      autopilotDigestAt: patch.autopilotDigestAt,
+      autopilotPlanMonth: patch.autopilotPlanMonth,
+      autopilotPlanStatus: patch.autopilotPlanStatus,
+      autopilotPlanAt: patch.autopilotPlanAt,
+    };
+    const autopilot = patchToRow(autopilotPatch, AUTOPILOT_COLUMNS);
     const rows = z.array(SettingsRow).parse(
       await this.call("/social_settings?on_conflict=owner_id", {
         method: "POST",
@@ -458,11 +517,23 @@ export class SupabaseSocialStore implements SocialStore {
           post_days: merged.postDays,
           post_time: merged.postTime,
           tester: merged.tester,
+          ...autopilot,
           updated_at: nowIso(),
         }),
       }),
     );
     return rows[0] ? toSettings(rows[0]) : merged;
+  }
+
+  async listAutopilotSettings(limit: number) {
+    return z
+      .array(SettingsRow)
+      .parse(
+        await this.call(
+          `/social_settings?autopilot=is.true&select=*&order=owner_id.asc&limit=${Math.max(1, Math.floor(limit))}`,
+        ),
+      )
+      .map(toSettings);
   }
 
   async createPost(post: NewSocialPost) {
@@ -572,6 +643,18 @@ export class SupabaseSocialStore implements SocialStore {
     return row ?? null;
   }
 
+  async autoApprovePost(id: string, patch: SocialPostPatch) {
+    if (!isUuid(id)) return null;
+    const guard =
+      "&status=eq.draft&source=eq.ai&autopilot_skip=is.false&owner_edited_at=is.null" +
+      "&autopilot_notice_at=not.is.null&claims_flagged=is.false";
+    const [updated] = await this.posts(`/social_posts?id=eq.${id}${guard}`, {
+      method: "PATCH",
+      body: JSON.stringify({ ...patchToRow(patch, POST_COLUMNS), updated_at: nowIso() }),
+    });
+    return updated ?? null;
+  }
+
   async logEvent(event: SocialEventInput) {
     await this.call("/social_events", {
       method: "POST",
@@ -648,6 +731,12 @@ function toSettings(row: z.infer<typeof SettingsRow>): SocialSettingsRecord {
     postDays: row.post_days ?? [...DEFAULT_SOCIAL_SETTINGS.postDays],
     postTime: row.post_time,
     tester: row.tester,
+    autopilot: row.autopilot ?? false,
+    autopilotSince: row.autopilot_since ?? null,
+    autopilotDigestAt: row.autopilot_digest_at ?? null,
+    autopilotPlanMonth: row.autopilot_plan_month ?? null,
+    autopilotPlanStatus: row.autopilot_plan_status ?? null,
+    autopilotPlanAt: row.autopilot_plan_at ?? null,
   };
 }
 
@@ -759,6 +848,14 @@ export class MemorySocialStore implements SocialStore {
     return { ...next, postDays: [...next.postDays] };
   }
 
+  async listAutopilotSettings(limit: number) {
+    return [...this.state.settings.values()]
+      .filter((s) => s.autopilot)
+      .sort((a, b) => a.ownerId.localeCompare(b.ownerId))
+      .slice(0, Math.max(1, Math.floor(limit)))
+      .map((s) => ({ ...s, postDays: [...s.postDays] }));
+  }
+
   async createPost(post: NewSocialPost) {
     const now = nowIso();
     const record: SocialPostRecord = {
@@ -786,6 +883,10 @@ export class MemorySocialStore implements SocialStore {
       publishedAt: null,
       createdAt: now,
       updatedAt: now,
+      autopilotSkip: false,
+      ownerEditedAt: null,
+      autopilotNoticeAt: null,
+      autoApprovedAt: null,
     };
     this.state.posts.set(record.id, record);
     return structuredClone(record);
@@ -934,6 +1035,22 @@ export class MemorySocialStore implements SocialStore {
       updatedAt: nowStr,
     });
     return structuredClone(post);
+  }
+
+  async autoApprovePost(id: string, patch: SocialPostPatch) {
+    const current = this.state.posts.get(id);
+    if (
+      !current ||
+      current.status !== "draft" ||
+      current.source !== "ai" ||
+      current.autopilotSkip ||
+      current.ownerEditedAt !== null ||
+      current.autopilotNoticeAt === null ||
+      current.claimsFlagged
+    ) {
+      return null;
+    }
+    return this.updatePost(id, patch, ["draft"]);
   }
 
   async logEvent(event: SocialEventInput) {

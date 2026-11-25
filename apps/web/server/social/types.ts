@@ -55,13 +55,30 @@ export type SocialAccountPatch = Partial<
 
 export type NewSocialAccount = Omit<SocialAccountRecord, "createdAt" | "updatedAt">;
 
-export type SocialSettingsRecord = SocialSettings & {
-  ownerId: string;
-  /** Liberado pelo admin para publicar com o app da Meta em modo de desenvolvimento. */
-  tester: boolean;
+/** Resultado da última vez que o Piloto automático tentou planejar o mês seguinte. */
+export type AutopilotPlanStatus = "planned" | "out_of_credits" | "no_site" | "failed";
+
+/** Estado do Piloto automático guardado nas preferências (migration 0035). */
+export type AutopilotState = {
+  autopilot: boolean;
+  /** Quando o dono ligou (o consentimento permanente). */
+  autopilotSince: string | null;
+  /** Último e-mail de aviso (no máximo um por dia por dono). */
+  autopilotDigestAt: string | null;
+  /** Mês ("YYYY-MM") da última tentativa de planejar sozinho, o resultado e quando foi. */
+  autopilotPlanMonth: string | null;
+  autopilotPlanStatus: AutopilotPlanStatus | null;
+  autopilotPlanAt: string | null;
 };
 
-export type SocialSettingsPatch = Partial<SocialSettings & { tester: boolean }>;
+export type SocialSettingsRecord = SocialSettings &
+  AutopilotState & {
+    ownerId: string;
+    /** Liberado pelo admin para publicar com o app da Meta em modo de desenvolvimento. */
+    tester: boolean;
+  };
+
+export type SocialSettingsPatch = Partial<SocialSettings & AutopilotState & { tester: boolean }>;
 
 export type SocialPostType = "image" | "carousel";
 
@@ -90,6 +107,14 @@ export type SocialPostRecord = {
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  /** O dono marcou "Skip": o Piloto automático ignora este rascunho. */
+  autopilotSkip: boolean;
+  /** Quando o dono mudou texto, fotos ou data (o Piloto automático deixa a aprovação com ele). */
+  ownerEditedAt: string | null;
+  /** Quando o e-mail de aviso do Piloto automático listou este post. */
+  autopilotNoticeAt: string | null;
+  /** Quando o Piloto automático aprovou (consentimento permanente do dono). */
+  autoApprovedAt: string | null;
 };
 
 /** Para criar um post: só o essencial; o resto tem padrão. */

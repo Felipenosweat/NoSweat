@@ -176,7 +176,7 @@ export const GUIDE_FAQ: readonly GuideFaq[] = [
     id: "ai-posts",
     question: "Will AI post without me?",
     answer:
-      "Never. AI only writes drafts. Nothing goes out until you approve it, and you can edit or delete any post. If automatic posting is turned on for your account, approved posts go out on their day. If not yet, you open the post on its day, copy the caption, save the photo and share it on Instagram yourself.",
+      "Not unless you ask it to. AI only writes drafts. Nothing goes out until you approve it, and you can edit or delete any post. If automatic posting is turned on for your account, approved posts go out on their day. If not yet, you open the post on its day, copy the caption, save the photo and share it on Instagram yourself. On Premium you can turn on Autopilot: we email you the day before, and drafts you didn’t edit or skip are approved for you about 2 hours before their time.",
   },
   {
     id: "google-reviews",
