@@ -180,10 +180,10 @@ export function policyPresets(kind: SetupKind): {
 }
 
 let counter = 0;
-/** Chave estável de uma linha da lista (só para o React). */
+/** Chave de uma linha da lista (só para o React; o sufixo evita choque com linhas restauradas). */
 export function newKey(): string {
   counter += 1;
-  return `row-${counter}`;
+  return `row-${counter}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 export function emptyService(durationMinutes: number): WizardService {
