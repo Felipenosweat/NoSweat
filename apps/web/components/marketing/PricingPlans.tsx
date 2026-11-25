@@ -155,9 +155,8 @@ export function PricingPlans({
 
       {promo && (
         <p className="mt-6 max-w-[70ch] text-base leading-snug text-pretty text-ink">
-          <strong className="font-semibold">{offerName}.</strong> Every plan is up to{" "}
-          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off. Sign up now and
-          keep this price for as long as you stay subscribed.
+          <strong className="font-semibold">{offerName}.</strong> Launch pricing: Starter is{" "}
+          {Math.max(...PLANS.map((plan) => regularOf(plan.id).percentOff))}% off its regular price.
         </p>
       )}
 

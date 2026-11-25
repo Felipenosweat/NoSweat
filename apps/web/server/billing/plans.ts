@@ -73,7 +73,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Pro",
     monthlyCents: 6900,
     annualCents: 69000,
-    regularMonthlyCents: 8900,
+    regularMonthlyCents: 6900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 30,
@@ -92,7 +92,7 @@ export const PLANS: Record<PlanId, Plan> = {
     name: "Premium",
     monthlyCents: 12900,
     annualCents: 129000,
-    regularMonthlyCents: 17900,
+    regularMonthlyCents: 12900,
     setupCents: null,
     customDomain: true,
     socialPostsPerMonth: 60,
@@ -125,9 +125,9 @@ export function setupCentsFor(plan: Plan, interval: BillingInterval): number | n
 // sem o preço mudar é urgência falsa. Quando o preço subir de verdade, ponha `regularMonthlyCents`
 // igual a `monthlyCents` e a oferta some sozinha.
 // Plano do fundador (nov/2026): o Starter fica em $19 até ter ~10 clientes ativos pagando; depois
-// sobe aos poucos ($24, $29, até o normal de $39). Pro e Premium (decisão de 25/nov/2026): quando a
-// oferta acabar, os NOVOS clientes passam a pagar o preço normal ($89 e $179). Riscar um "normal"
-// que nunca vai ser cobrado seria propaganda enganosa, então estes números são compromisso.
+// sobe aos poucos ($24, $29, até o normal de $39). Pro e Premium NÃO sobem (decisão do fundador):
+// por isso o preço normal deles é o próprio preço, sem desconto riscado (riscar um "normal" que
+// nunca vai ser cobrado seria propaganda enganosa).
 // Para subir os preços: igualar `monthlyCents`/`annualCents` ao normal; quem já assina mantém o
 // valor do checkout em que entrou (o Stripe guarda o preço na assinatura).
 
