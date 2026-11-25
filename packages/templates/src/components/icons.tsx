@@ -138,3 +138,99 @@ export function StarIcon(props: IconProps) {
     </svg>
   );
 }
+
+// Ícones de linha da composição "soft" (beleza): traço fino, cor herdada.
+export function ScissorsIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <circle cx="6" cy="6" r="3" />
+      <circle cx="6" cy="18" r="3" />
+      <path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12" />
+    </Icon>
+  );
+}
+
+export function BrushIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M18 3l3 3-9 9-3-3zM9 12c-2.5 0-4 1.6-4 4 0 1.5-1 2.5-2 3 3.5 1 7-.5 7-4" />
+    </Icon>
+  );
+}
+
+export function DropletIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M12 2.7S5 10 5 15a7 7 0 0 0 14 0c0-5-7-12.3-7-12.3z" />
+    </Icon>
+  );
+}
+
+export function WindIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2" />
+    </Icon>
+  );
+}
+
+export function NailIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M9 3h6v5l-1 1v12h-4V9L9 8z" />
+      <path d="M9 8h6" />
+    </Icon>
+  );
+}
+
+export function CrownIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="m3 7 4.5 4L12 4l4.5 7L21 7l-2 12H5z" />
+    </Icon>
+  );
+}
+
+export function LotusIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M12 4c2.5 2 3.5 4.5 3.5 7S14 16 12 18c-2-2-3.5-4.5-3.5-7S9.5 6 12 4z" />
+      <path d="M12 18c-3 0-6-1.5-8-5 3-.5 5 .3 6.5 2M12 18c3 0 6-1.5 8-5-3-.5-5 .3-6.5 2" />
+    </Icon>
+  );
+}
+
+export function CalendarIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </Icon>
+  );
+}
+
+export function MenuIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </Icon>
+  );
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.75} {...props}>
+      <path d="M4 6h16M4 12h16M4 18h10" />
+    </Icon>
+  );
+}
+
+export function ImageIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={1.5} {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="m21 16-5-5-8 8" />
+    </Icon>
+  );
+}
