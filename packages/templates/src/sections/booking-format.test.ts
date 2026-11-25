@@ -18,7 +18,9 @@ import {
   partOfDay,
   safeTimeZone,
   slotDateKey,
+  usZone,
   zoneAbbreviation,
+  zoneCaption,
 } from "./booking-format";
 
 const NY = "America/New_York";
@@ -40,8 +42,29 @@ describe("time zone handling", () => {
   });
 
   it("shows the zone abbreviation in the long date", () => {
-    expect(formatDateTime("2026-12-03T19:30:00Z", NY)).toBe("Thu, Dec 3 at 2:30 PM EST");
-    expect(zoneAbbreviation("2026-07-03T19:30:00Z", NY)).toBe("EDT");
+    expect(formatDateTime("2026-12-03T19:30:00Z", NY)).toBe("Thu, Dec 3 at 2:30 PM ET");
+    // Sigla americana genérica (ET), sem separar horário de verão (EST/EDT).
+    expect(zoneAbbreviation("2026-07-03T19:30:00Z", NY)).toBe("ET");
+    expect(formatDateTime("2026-12-03T19:30:00Z", "America/Los_Angeles")).toBe(
+      "Thu, Dec 3 at 11:30 AM PT",
+    );
+  });
+
+  it("names the US zones for the caption and falls back to the IANA name", () => {
+    const names: [string, string][] = [
+      ["America/New_York", "Times shown in Eastern Time (ET)."],
+      ["America/Chicago", "Times shown in Central Time (CT)."],
+      ["America/Denver", "Times shown in Mountain Time (MT)."],
+      ["America/Phoenix", "Times shown in Mountain Standard Time (MST)."],
+      ["America/Los_Angeles", "Times shown in Pacific Time (PT)."],
+      ["America/Anchorage", "Times shown in Alaska Time (AKT)."],
+      ["Pacific/Honolulu", "Times shown in Hawaii Time (HT)."],
+      ["America/Puerto_Rico", "Times shown in Atlantic Standard Time (AST)."],
+      ["Europe/Lisbon", "Times shown in Europe/Lisbon."],
+    ];
+    for (const [zone, caption] of names) expect(zoneCaption(zone)).toBe(caption);
+    expect(usZone("Europe/Lisbon")).toBeNull();
+    expect(usZone("America/Chicago")).toEqual({ name: "Central Time", abbr: "CT" });
   });
 
   it("falls back to UTC for an unknown zone instead of throwing", () => {

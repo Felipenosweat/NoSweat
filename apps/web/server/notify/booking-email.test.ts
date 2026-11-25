@@ -32,10 +32,12 @@ afterEach(() => {
 });
 
 describe("formatWhen", () => {
-  it("writes the time in the company's zone, like 'Thu Dec 3, 3:30 PM'", () => {
-    expect(formatWhen(input.startAt, "America/New_York")).toBe("Thu Dec 3, 3:30 PM");
-    expect(formatWhen(input.startAt, "America/Los_Angeles")).toBe("Thu Dec 3, 12:30 PM");
-    expect(formatWhen("2026-12-03T14:05:00.000Z", "America/New_York")).toBe("Thu Dec 3, 9:05 AM");
+  it("writes the time in the company's zone, like 'Thu Dec 3, 3:30 PM ET'", () => {
+    expect(formatWhen(input.startAt, "America/New_York")).toBe("Thu Dec 3, 3:30 PM ET");
+    expect(formatWhen(input.startAt, "America/Los_Angeles")).toBe("Thu Dec 3, 12:30 PM PT");
+    expect(formatWhen("2026-12-03T14:05:00.000Z", "America/New_York")).toBe("Thu Dec 3, 9:05 AM ET");
+    // Fuso fora da lista dos EUA: a abreviação do Intl.
+    expect(formatWhen(input.startAt, "Europe/London")).toBe("Thu Dec 3, 8:30 PM GMT");
   });
 });
 
@@ -43,7 +45,7 @@ describe("buildOwnerBookingEmail", () => {
   it("puts service, name and time in the subject, on one line", () => {
     const email = buildOwnerBookingEmail(input);
     expect(email.subject).toMatch(
-      /^New booking: Haircut · Ana <b>Lima<\/b> Bcc: evil@example\.test · Thu Dec 3, 3:30 PM$/,
+      /^New booking: Haircut · Ana <b>Lima<\/b> Bcc: evil@example\.test · Thu Dec 3, 3:30 PM ET$/,
     );
     expect(email.subject).not.toMatch(/[\r\n]/);
   });
@@ -51,7 +53,7 @@ describe("buildOwnerBookingEmail", () => {
   it("lists the details, links the schedule and escapes the HTML", () => {
     const email = buildOwnerBookingEmail(input);
     expect(email.text).toContain("Service: Haircut");
-    expect(email.text).toContain("When: Thu Dec 3, 3:30 PM");
+    expect(email.text).toContain("When: Thu Dec 3, 3:30 PM ET");
     expect(email.text).toContain("With: Darnell");
     expect(email.text).toContain("Phone: (512) 555-0142");
     expect(email.text).toContain("https://nosweatfd.com/schedule");
@@ -65,14 +67,32 @@ describe("buildOwnerBookingEmail", () => {
 describe("buildCustomerBookingEmail", () => {
   it("has the details, the cancel link and the business phone", () => {
     const email = buildCustomerBookingEmail(input);
-    expect(email.subject).toBe("Booking confirmed: Haircut · Thu Dec 3, 3:30 PM");
+    expect(email.subject).toBe("Booking confirmed: Haircut · Thu Dec 3, 3:30 PM ET");
     expect(email.text).toContain("https://nosweatfd.com/booking/abcDEF_123-token");
     expect(email.text).toContain("(512) 555-0100");
-    expect(email.text).toContain("When: Thu Dec 3, 3:30 PM");
+    expect(email.text).toContain("When: Thu Dec 3, 3:30 PM ET");
     expect(email.html).toContain('href="https://nosweatfd.com/booking/abcDEF_123-token"');
     expect(email.html).toContain("Fade &amp; Co &lt;Barbers&gt;");
     // O que o cliente digitou nunca entra como HTML.
     expect(email.html).not.toContain("<b>");
+  });
+
+  it("shows the policy the customer agreed to, escaped, in text and HTML", () => {
+    const email = buildCustomerBookingEmail({
+      ...input,
+      cancellationPolicy: "24 hours notice <b>please</b>.\nCancel free up to 24 hours before.",
+    });
+    expect(email.text).toContain("Cancellation policy you agreed to:");
+    expect(email.text).toContain("24 hours notice <b>please</b>.");
+    expect(email.html).toContain("Cancellation policy you agreed to");
+    expect(email.html).toContain("24 hours notice &lt;b&gt;please&lt;/b&gt;.<br>Cancel free up to");
+    expect(email.html).not.toContain("<b>please");
+  });
+
+  it("has no policy block when there is no policy", () => {
+    const email = buildCustomerBookingEmail(input);
+    expect(email.text).not.toContain("Cancellation policy");
+    expect(email.html).not.toContain("Cancellation policy");
   });
 
   it("leaves out the phone line when the business has no phone", () => {

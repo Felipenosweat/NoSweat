@@ -639,3 +639,80 @@ describe("cancel", () => {
     expect(await wednesday(data)).toContain("10:00");
   });
 });
+
+describe("createBooking: formulário v2 (nome, telefone E.164 e aceite)", () => {
+  const v2 = (setupData: Setup, over: Partial<CreateBookingRequest> = {}) =>
+    request(setupData, {
+      name: "Ana Lima",
+      firstName: "Ana",
+      lastName: "Lima",
+      phone: "+13055550187",
+      phoneCountry: "US",
+      acceptedPrivacy: true,
+      ...over,
+    });
+
+  it("saves the consent with the policy text, and names the client 'First Last'", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, {
+      cancellationPolicy: "Please give 24 hours notice.",
+      cancellationHours: 24,
+    });
+    const created = await createBooking(
+      data.siteId,
+      v2(data, { acceptedCancellation: true }),
+      NOW,
+    );
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record).toMatchObject({
+      customerName: "Ana Lima",
+      customerFirstName: "Ana",
+      customerLastName: "Lima",
+      customerPhone: "+13055550187",
+      customerPhoneCountry: "US",
+      privacyAcceptedAt: NOW.toISOString(),
+      cancellationAcceptedAt: NOW.toISOString(),
+      cancellationPolicySnapshot: "Please give 24 hours notice.\nCancel free up to 24 hours before.",
+    });
+    expect(created?.booking.cancellationPolicy).toBe(record?.cancellationPolicySnapshot);
+
+    // CRM: nome completo e telefone legível (o casamento é só por dígitos, então +1 e (305) batem).
+    const clients = await getClientStore().listClients(OWNER);
+    expect(clients[0]).toMatchObject({ name: "Ana Lima", phone: "(305) 555-0187" });
+    // Aviso do dono: nome, telefone formatado e e-mail; o do cliente leva a política aceita.
+    expect(created?.notice.customer).toMatchObject({
+      name: "Ana Lima",
+      phone: "(305) 555-0187",
+      email: "ana@example.test",
+    });
+    expect(created?.notice.cancellationPolicy).toContain("24 hours");
+  });
+
+  it("matches an existing client by phone digits even when the CRM has the US format", async () => {
+    const data = await setup();
+    await createClient(OWNER, { name: "Ana L.", phone: "(305) 555-0187" });
+    await createBooking(data.siteId, v2(data, { email: "" }), NOW);
+    expect(await getClientStore().listClients(OWNER)).toHaveLength(1);
+  });
+
+  it("refuses the new shape without consent (422) and books nothing", async () => {
+    const data = await setup();
+    await expectError(
+      createBooking(data.siteId, v2(data, { acceptedPrivacy: undefined }), NOW),
+      422,
+      "invalid_request",
+    );
+    expect(await getClientStore().listClients(OWNER)).toHaveLength(0);
+    expect(await wednesday(data)).toContain("10:00");
+  });
+
+  it("the old shape (only name) books without recording any consent", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, { cancellationPolicy: "Please give 24 hours notice." });
+    const created = await createBooking(data.siteId, request(data), NOW);
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record?.privacyAcceptedAt ?? null).toBeNull();
+    expect(record?.cancellationPolicySnapshot ?? null).toBeNull();
+    expect(created?.booking.cancellationPolicy).toBeUndefined();
+  });
+});

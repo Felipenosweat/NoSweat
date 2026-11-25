@@ -28,14 +28,42 @@ export const BookingRecord = z.object({
   notes: z.string(),
   createdAt: z.string(),
   canceledAt: z.string().nullable(),
+  // Formulário v2 (migration 0038): nomes separados e prova do aceite. Marcação antiga: tudo vazio.
+  customerFirstName: z.string().nullish(),
+  customerLastName: z.string().nullish(),
+  customerPhoneCountry: z.string().nullish(),
+  privacyAcceptedAt: z.string().nullish(),
+  cancellationAcceptedAt: z.string().nullish(),
+  /** O texto da política que o cliente viu e aceitou (a do dono pode mudar depois). */
+  cancellationPolicySnapshot: z.string().nullish(),
 });
 export type BookingRecord = z.infer<typeof BookingRecord>;
 
 /** O que `bookSlot` grava (o resto o banco cria). */
 export type NewBooking = Omit<
   BookingRecord,
-  "id" | "createdAt" | "canceledAt" | "status" | "jobId"
+  | "id"
+  | "createdAt"
+  | "canceledAt"
+  | "status"
+  | "jobId"
+  | "customerFirstName"
+  | "customerLastName"
+  | "customerPhoneCountry"
+  | "privacyAcceptedAt"
+  | "cancellationAcceptedAt"
+  | "cancellationPolicySnapshot"
 >;
+
+/** Nomes separados e aceite do formulário v2, gravados logo depois de `bookSlot`. */
+export type BookingConsent = {
+  customerFirstName: string;
+  customerLastName: string | null;
+  customerPhoneCountry: string | null;
+  privacyAcceptedAt: string;
+  cancellationAcceptedAt: string | null;
+  cancellationPolicySnapshot: string | null;
+};
 
 export type BookSlotResult =
   | { ok: true; booking: BookingRecord }

@@ -173,6 +173,8 @@ export const PublicBooking = z.object({
   timeZone: z.string(),
   /** Ainda dá para cancelar pelo link (no futuro e não cancelada). */
   canCancel: z.boolean(),
+  /** Política de cancelamento que o cliente viu e aceitou ao marcar (vazio = não havia). */
+  cancellationPolicy: z.string().optional(),
 });
 export type PublicBooking = z.infer<typeof PublicBooking>;
 

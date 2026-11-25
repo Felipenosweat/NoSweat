@@ -3,7 +3,12 @@ import { z } from "zod";
 import { normalizeSupabaseUrl } from "../store/supabase";
 import { getOfficeStore } from "../office/store";
 import { appliesTo, bookingBusy, conflicts, jobBusy } from "./availability";
-import { BookingRecord, type BookSlotResult, type NewBooking } from "./types";
+import {
+  BookingRecord,
+  type BookingConsent,
+  type BookSlotResult,
+  type NewBooking,
+} from "./types";
 
 // Persistência do agendamento (tabelas da migration 0027). Supabase em produção, memória no
 // dev/testes (mesma regra de server/office/store.ts). Toda leitura e escrita recebe o dono: só a
@@ -27,6 +32,11 @@ export interface BookingStore {
   getByToken(token: string): Promise<BookingRecord | null>;
   /** Grava a marcação se o horário estiver livre (atômico). Ver o comentário no topo. */
   bookSlot(booking: NewBooking, rules: BookingRules): Promise<BookSlotResult>;
+  /**
+   * Grava os nomes separados e o aceite (formulário v2). É um UPDATE depois do `book_slot` (a função
+   * do banco não muda); só é chamado quando o pedido traz o formato novo.
+   */
+  saveConsent(ownerId: string, id: string, consent: BookingConsent): Promise<BookingRecord | null>;
   /** Liga a marcação ao serviço (job) criado na agenda. */
   attachJob(ownerId: string, id: string, jobId: string): Promise<BookingRecord | null>;
   /** Confirmada → cancelada. `null` se não existe ou já estava cancelada. */
@@ -180,6 +190,18 @@ export class SupabaseBookingStore implements BookingStore {
     return { ok: true, booking: BookingRecord.parse(fromRow(result.booking)) };
   }
 
+  async saveConsent(ownerId: string, id: string, consent: BookingConsent) {
+    if (!isUuid(ownerId) || !isUuid(id)) return null;
+    return this.patchBookings(`/bookings?id=eq.${id}&owner_id=eq.${ownerId}`, {
+      customer_first_name: consent.customerFirstName,
+      customer_last_name: consent.customerLastName,
+      customer_phone_country: consent.customerPhoneCountry,
+      privacy_accepted_at: consent.privacyAcceptedAt,
+      cancellation_accepted_at: consent.cancellationAcceptedAt,
+      cancellation_policy_snapshot: consent.cancellationPolicySnapshot,
+    });
+  }
+
   async attachJob(ownerId: string, id: string, jobId: string) {
     if (!isUuid(ownerId) || !isUuid(id) || !isUuid(jobId)) return null;
     return this.patchBookings(`/bookings?id=eq.${id}&owner_id=eq.${ownerId}`, { job_id: jobId });
@@ -295,6 +317,14 @@ export class MemoryBookingStore implements BookingStore {
       this.state.bookings.set(record.id, record);
       return { ok: true as const, booking: clone(record) };
     });
+  }
+
+  async saveConsent(ownerId: string, id: string, consent: BookingConsent) {
+    const current = this.state.bookings.get(id);
+    if (!current || current.ownerId !== ownerId) return null;
+    const updated = { ...current, ...consent };
+    this.state.bookings.set(id, updated);
+    return clone(updated);
   }
 
   async attachJob(ownerId: string, id: string, jobId: string) {
