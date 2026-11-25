@@ -28,7 +28,9 @@ export function SoftDock({ slots }: { slots: DockSlot[] }) {
 
   useEffect(() => {
     const targets = slots.flatMap((slot) =>
-      slot.href.startsWith("#") && slot.key !== "home" ? [{ key: slot.key, id: slot.href.slice(1) }] : [],
+      slot.href.startsWith("#") && slot.key !== "home"
+        ? [{ key: slot.key, id: slot.href.slice(1) }]
+        : [],
     );
     let frame = 0;
     const update = () => {

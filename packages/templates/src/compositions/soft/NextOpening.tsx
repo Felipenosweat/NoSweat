@@ -58,7 +58,11 @@ export function NextOpening({ endpoint, demo }: { endpoint?: string; demo?: Book
         const first = isPublicBookingInfo(info) ? info.services[0] : undefined;
         if (!isPublicBookingInfo(info) || !first) return null;
         const todayKey = dateKeyInZone(new Date(), info.timeZone);
-        const query = new URLSearchParams({ serviceId: first.id, from: todayKey, days: String(days) });
+        const query = new URLSearchParams({
+          serviceId: first.id,
+          from: todayKey,
+          days: String(days),
+        });
         return fetch(`${endpoint}/availability?${query.toString()}`)
           .then((res): Promise<unknown> | null => (res.ok ? res.json() : null))
           .then((data) => {

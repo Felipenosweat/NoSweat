@@ -1,4 +1,5 @@
-import type { SectionOf, SiteImage } from "@nosweat/schema";
+import type { SectionOf, SiteImage, SiteSpec } from "@nosweat/schema";
+import type { DemoService } from "../../sections/booking-demo";
 
 // Funções puras da composição "soft" (beleza): ícone por palavra-chave, rótulos curtos, grupos,
 // filtro de qualidade das fotos e o desenho da galeria sem buracos. Sem React: fácil de testar.
@@ -137,4 +138,20 @@ export function detailToMinutes(detail: string | undefined): number {
   const minutes = /(\d+)\s*min/i.exec(text);
   if (minutes?.[1]) return Math.min(480, Math.max(15, Number(minutes[1])));
   return 60;
+}
+
+/** Serviços de exemplo para o modo demo do agendamento: só os que têm preço (os "por pedido" não). */
+export function demoServicesFrom(spec: SiteSpec): DemoService[] {
+  const services = spec.sections.find(
+    (section): section is SectionOf<"services"> => section.type === "services",
+  );
+  return (services?.items ?? [])
+    .filter((item) => item.name.trim() && priceToCents(item.price) !== null)
+    .slice(0, 8)
+    .map((item) => ({
+      name: item.name,
+      description: item.description,
+      durationMinutes: detailToMinutes(item.detail),
+      priceCents: priceToCents(item.price),
+    }));
 }

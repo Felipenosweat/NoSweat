@@ -234,3 +234,11 @@ export function ImageIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2} {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </Icon>
+  );
+}
