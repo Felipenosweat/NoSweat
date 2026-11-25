@@ -22,7 +22,25 @@ export type Plan = {
   socialPostsPerMonth: number;
   /** Contas de rede social conectadas. */
   socialAccounts: number;
+  /** Recursos que mudam de plano para plano (ver `PlanFeature`). */
+  features: Record<PlanFeature, boolean>;
 };
+
+/**
+ * Recursos por plano (decisão do fundador, nov/2026):
+ * - `autoReviewRequests`: pedido de avaliação no Google sai sozinho quando o job vira "done" (Pro+).
+ * - `socialBulkApprove`: aprovar todos os rascunhos do mês de uma vez no /social (Pro+).
+ * - `socialAutopilot`: Instagram no piloto automático; rascunhos são aprovados sozinhos 24 h antes
+ *   do horário, com aviso ao dono (Premium).
+ * - `aiAssistant`: atendente de IA no site publicado, gastando créditos do dono (Premium).
+ * - `freeDomain`: 1 domínio `.com`/`.net` grátis por conta, comprado por nós na Vercel (Premium).
+ */
+export type PlanFeature =
+  | "autoReviewRequests"
+  | "socialBulkApprove"
+  | "socialAutopilot"
+  | "aiAssistant"
+  | "freeDomain";
 
 // Starter a US$ 19 (decisão do fundador, nov/2026, oferta de Black Friday): 1 site no ar, 60
 // créditos de IA por mês (server/credits/pricing.ts) e 4 posts no Instagram por mês; o sistema de
@@ -41,6 +59,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 4,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: false,
+      socialBulkApprove: false,
+      socialAutopilot: false,
+      aiAssistant: false,
+      freeDomain: false,
+    },
   },
   pro: {
     id: "pro",
@@ -53,6 +78,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 30,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: true,
+      socialBulkApprove: true,
+      socialAutopilot: false,
+      aiAssistant: false,
+      freeDomain: false,
+    },
   },
   premium: {
     id: "premium",
@@ -65,6 +97,13 @@ export const PLANS: Record<PlanId, Plan> = {
     customDomain: true,
     socialPostsPerMonth: 60,
     socialAccounts: 1,
+    features: {
+      autoReviewRequests: true,
+      socialBulkApprove: true,
+      socialAutopilot: true,
+      aiAssistant: true,
+      freeDomain: true,
+    },
   },
 };
 
