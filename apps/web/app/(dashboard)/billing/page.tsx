@@ -163,7 +163,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
     customDomain: plan.customDomain,
     publishedSitesLimit: plan.publishedSitesLimit,
     monthlyCredits: monthlyAllowance(plan.id),
-    // Preço normal riscado só onde ele vai mesmo subir (Starter); Pro e Premium não têm desconto.
+    // Preço normal riscado: o que os novos clientes vão pagar quando a oferta acabar.
     regular:
       promoActive() && promoPercentOff(plan) > 0
         ? {

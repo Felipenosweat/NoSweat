@@ -16,10 +16,10 @@ describe("launch offer", () => {
 
   it("has no end date: it lasts while the charged price is under the regular price", () => {
     expect(promoActive()).toBe(true);
-    // Só o Starter tem preço normal acima do cobrado; Pro e Premium não sobem.
+    // Preço normal depois da oferta: Starter $39, Pro $89, Premium $179.
     expect(promoPercentOff(PLANS.starter)).toBe(51);
-    expect(promoPercentOff(PLANS.pro)).toBe(0);
-    expect(promoPercentOff(PLANS.premium)).toBe(0);
+    expect(promoPercentOff(PLANS.pro)).toBe(22);
+    expect(promoPercentOff(PLANS.premium)).toBe(28);
     // Preços subidos (normal igual ao cobrado): sem desconto.
     expect(promoPercentOff({ ...PLANS.pro, regularMonthlyCents: PLANS.pro.monthlyCents })).toBe(0);
   });
