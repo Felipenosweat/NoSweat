@@ -220,6 +220,41 @@ Como as peças se ligam:
   cai no editor; até 5 cópias por prévia. A primeira marca `claimed_at`, leva o status para
   "replied" e avisa a equipe (SALES_EMAIL/ALERT_EMAIL, Resend). Cada abertura da prévia conta
   (`preview_views`, sem robôs nem o admin) e quem abriu ou assumiu sobe na lista do admin.
+- Recursos por plano (`PlanFeature` em `server/billing/plans.ts`, `ownerHasFeature`): Pro e Premium
+  têm pedido de avaliação automático e "aprovar todos" no /social; só o Premium tem atendente de IA,
+  piloto automático do Instagram e domínio grátis. `freeDomain` nunca libera sem Premium de verdade.
+- Oferta de lançamento honesta (decisão do fundador, nov/2026): só o Starter tem preço normal riscado
+  ($39, que vai ser cobrado depois de ~10 clientes); Pro e Premium não têm preço riscado. O anual
+  mostra a economia real contra 12 meses no mensal (`annualSavingsCents`). Cada oferta do calendário
+  (`OFFERS`/`offerAt`) dá créditos de bônus UMA vez por conta no primeiro pagamento
+  (`server/credits/offer-bonus.ts`, migration 0036). Preço de quem assina não sobe enquanto assinar.
+- Pedido de avaliação automático (Pro+, `server/review-requests/`, migration 0034): quando `updateJob`
+  muda um job para "done", manda pela Resend o mesmo texto do pedido manual (`lib/reviews.ts`), via
+  `after()`. Só com a chave do dono ligada (`/reviews`, padrão ligado), link de avaliações no site e
+  cliente com e-mail; um por job e nenhum para o mesmo cliente em 30 dias (`claim_auto_review_request`
+  grava ANTES do envio). Cada envio vira atividade no histórico do cliente.
+- Atendente de IA no site publicado (Premium, `server/assistant/`, migration 0032,
+  `/api/public/sites/[id]/assistant`): o dono liga por site em `/sites/[id]` (padrão desligado); o
+  botão (`components/assistant`, chat baixado só ao abrir) só aparece com o recurso, ligado e com
+  créditos. Cobra os créditos do DONO (`assistant_chat`, `spendOwnerCredits`/`refundSpend`): 1 por
+  conversa (cada abertura = conversa nova, cobrada na 1ª mensagem), +1 a cada 10 mensagens; máx. 30
+  mensagens de 500 caracteres; IA falhou = devolve. IA sem ferramentas (Haiku,
+  `ANTHROPIC_ASSISTANT_MODEL`), prompt só do `liveSpec` (regra 8), texto do visitante não confiável;
+  contato vira pedido por `saveSiteLead` (mesmo caminho do formulário). Teto de 200 conversas por site
+  por dia, robôs fora, nada do visitante guardado além do que ele digitou.
+- Aprovar em lote e Piloto automático do Instagram (migration 0035, `server/social/autopilot*.ts`):
+  "Approve all drafts" (Pro+) aprova os rascunhos prontos do mês até o limite. Piloto automático
+  (Premium) é a ÚNICA exceção a "a IA nunca aprova": o dono liga uma vez. O cron
+  `/api/cron/social-autopilot` (pg_cron a cada 15 min) manda UM e-mail de aviso por dia e aprova só
+  rascunho da IA completo, sem "Skip", sem edição do dono e sem afirmação marcada, avisado há 12 h ou
+  mais e nas 2 h antes da hora. Sem e-mail enviado, nada é aprovado. Do dia 25 em diante planeja o mês
+  seguinte (mesmos créditos do botão).
+- Domínio grátis do Premium (`server/domains/free-domain*.ts`, `registrar.ts`, migration 0033): 1
+  .com/.net por conta, para sempre, comprado por nós no registro da Vercel no nome do cliente e ligado
+  ao site sem DNS (`managed`). Só com Premium ativo de verdade e `DOMAIN_PURCHASE_ENABLED=true` (sem
+  isso: "coming soon"); preço ≤ `FREE_DOMAIN_MAX_CENTS`. A linha `pending` é gravada ANTES da compra;
+  erro incerto fica `pending` e avisa a equipe. Endereço e telefone vão só para o registro. Renovação
+  por nossa conta enquanto o Premium valer (o cron `cleanup-guests` desliga quando acaba).
 
 ## Princípio do produto: o cliente fala pouco, nós entregamos muito
 

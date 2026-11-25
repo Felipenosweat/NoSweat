@@ -28,6 +28,8 @@ export type LaunchOffer = {
   plans: OfferPlan[];
   /** Nome da oferta do momento ("Black Friday"); `null` quando não há oferta valendo. */
   name: string | null;
+  /** Créditos de bônus da oferta no primeiro pagamento. */
+  bonusCredits: number;
   /** O Stripe está ligado: "Choose" abre o pagamento direto. Senão, abre o contato. */
   checkout: boolean;
 };
@@ -130,7 +132,8 @@ export function PlansPopup({
 
           {promo && offer.name && (
             <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-[15px] text-emerald-900">
-              <strong className="font-semibold">{offer.name}.</strong> Launch pricing for our first customers.
+              <strong className="font-semibold">{offer.name}.</strong> Get {offer.bonusCredits} bonus AI
+              credits with your first payment. Your price never goes up while you stay subscribed.
             </p>
           )}
 

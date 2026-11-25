@@ -1,7 +1,7 @@
 import { ConnectDomainRequest, DomainResponse } from "@nosweat/schema";
 import { customDomainBlocked } from "@/server/billing";
 import {
-  addDomain,
+  connectDomainToSite,
   detectDnsProvider,
   isReservedDomain,
   getDomainState,
@@ -9,6 +9,7 @@ import {
   removeDomain,
   VercelDomainError,
 } from "@/server/domains";
+import { isOwnFreeDomain } from "@/server/domains/free-domain-access";
 import { isDomainVerified, verificationRecord } from "@/server/domains/verify";
 import {
   errorResponse,
@@ -59,9 +60,14 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
     const other = await store.getByDomain(domain);
     if (other && other.id !== site.id) return domainTaken(domain);
 
-    // Prova de dono (registro TXT). Até lá nada é salvo nem registrado na Vercel.
+    // Prova de dono (registro TXT). Até lá nada é salvo nem registrado na Vercel. O domínio grátis
+    // do Premium foi comprado por nós no nome da conta: não precisa de prova.
     const ownerId = site.ownerId ?? user.id;
-    if (site.customDomain !== domain && !(await isDomainVerified(ownerId, domain))) {
+    if (
+      site.customDomain !== domain &&
+      !(await isOwnFreeDomain(site.ownerId, domain)) &&
+      !(await isDomainVerified(ownerId, domain))
+    ) {
       return jsonResponse(DomainResponse, {
         siteId: site.id,
         domain,
@@ -71,20 +77,10 @@ export async function PUT(request: Request, { params }: Context): Promise<Respon
       });
     }
 
-    const vercel = getVercelConfig();
-    const previous = site.customDomain;
     try {
-      // Liga o novo primeiro; só depois solta o anterior (se algo falhar, o site segue no ar).
-      if (vercel) await addDomain(vercel, domain);
-      const updated = await store.updateMeta(site.id, { customDomain: domain });
+      // Liga o novo primeiro; só depois solta o anterior (ver server/domains/connect.ts).
+      const updated = await connectDomainToSite(site, domain);
       if (!updated) return notFound();
-      // O domínio novo (talvez com "não encontrado" no cache) e o anterior mudam de site.
-      revalidatePublicSite(updated, { customDomain: previous });
-      if (vercel && previous && previous !== domain) {
-        await removeDomain(vercel, previous).catch((error: unknown) => {
-          console.error("[domains] could not release previous domain", previous, error);
-        });
-      }
       return jsonResponse(DomainResponse, await getDomainState(updated));
     } catch (error) {
       if (error instanceof DomainTakenError) return domainTaken(domain);

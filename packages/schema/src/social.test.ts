@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  ApproveAllDraftsRequest,
   ApproveSocialPostsRequest,
+  UpdateSocialSettingsRequest,
   CreateSocialPostRequest,
   PlanMonthRequest,
   SocialAccount,
@@ -66,5 +68,11 @@ describe("social schema", () => {
       ApproveSocialPostsRequest.safeParse({ ids: Array.from({ length: 61 }, (_, i) => `p${i}`) })
         .success,
     ).toBe(false);
+  });
+
+  it("approves all drafts of one month and toggles Autopilot", () => {
+    expect(ApproveAllDraftsRequest.safeParse({ month: "2026-12" }).success).toBe(true);
+    expect(ApproveAllDraftsRequest.safeParse({ month: "2026-13" }).success).toBe(false);
+    expect(UpdateSocialSettingsRequest.parse({ autopilot: true })).toEqual({ autopilot: true });
   });
 });

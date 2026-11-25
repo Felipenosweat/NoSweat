@@ -34,6 +34,8 @@ export function ExampleSiteEmpty() {
             width={1600}
             height={1000}
             sizes="(min-width: 1024px) 640px, 100vw"
+            // No computador é a maior coisa da primeira tela (LCP): carrega já, sem esperar rolar.
+            loading="eager"
             className="block h-auto w-full"
           />
           <span className="absolute top-3 left-3">

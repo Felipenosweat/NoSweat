@@ -23,7 +23,7 @@ export function Hero() {
           style={{ animationDelay: "calc(var(--lp-intro) + 300ms)" }}
         >
           Websites for local businesses, built from a few answers.
-          <br className="hidden sm:block" /> Free to make. Pay only when it goes live.
+          <br className="hidden sm:block" /> Free to start. Pick a plan when you build.
         </p>
         <HeroStepper />
       </section>

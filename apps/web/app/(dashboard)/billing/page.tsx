@@ -32,7 +32,7 @@ import {
   monthlyAllowance,
   TOPUP_PACKS,
 } from "@/server/credits";
-import { currentOffer, promoActive, promoPercentOff } from "@/server/billing/plans";
+import { annualSavingsCents, offerAt, promoActive, promoPercentOff } from "@/server/billing/plans";
 import { nextPlanId, upgradeGains } from "@/server/billing/upgrade";
 import { getOwnedSite } from "@/server/sites";
 import { getSocialState } from "@/server/social/api";
@@ -183,6 +183,10 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
             percentOff: promoPercentOff(plan),
           }
         : null,
+    annualCompare:
+      annualSavingsCents(plan) > 0
+        ? { monthlyForYear: usd(plan.monthlyCents * 12), savings: usd(annualSavingsCents(plan)) }
+        : null,
   }));
 
   // Créditos da IA da conta (a vista, no "ver como"). Comprar é manual por enquanto.
@@ -299,7 +303,8 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
             contact={contact}
             ended={ended}
             chosen={chosenPlan}
-            offerName={promoActive() ? currentOffer() : null}
+            offerName={promoActive() ? offerAt().name : null}
+            offerBonus={promoActive() ? offerAt().bonusCredits : 0}
           />
         </div>
       )}

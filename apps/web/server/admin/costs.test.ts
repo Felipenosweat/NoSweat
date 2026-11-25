@@ -15,6 +15,7 @@ describe("AI cost estimate", () => {
       ai_edit: 0.06,
       social_plan: 0.03,
       social_caption: 0.002,
+      assistant_chat: 0.03,
     });
     expect([...AI_USAGE_KINDS].sort()).toEqual(Object.keys(AI_COST_PER_USE_USD).sort());
   });

@@ -11,12 +11,12 @@ import { errorResponse } from "../http";
 import { getSiteStore } from "../store";
 import { revalidateOwnerSites } from "../store/revalidate";
 import { getGrantStore, isGrantActive } from "./grants";
-import { PLANS, priceCents, setupCentsFor } from "./plans";
+import { PLANS, priceCents, setupCentsFor, type PlanFeature } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
 import { getStripeConfig, StripeError, stripeRequest, type StripeConfig } from "./stripe";
 
 export { extendExpiry, getGrantStore, isGrantActive, type AccessGrant } from "./grants";
-export { PLANS } from "./plans";
+export { PLANS, type PlanFeature } from "./plans";
 export { getStripeConfig, StripeError, verifyWebhookSignature } from "./stripe";
 
 // Cobrança com Stripe Checkout + webhook, ou acesso liberado à mão pelo admin (Pix/WhatsApp,
@@ -266,6 +266,20 @@ export async function ownerHasSocialAccess(ownerId: string): Promise<boolean> {
   return plan !== null && PLANS[plan].socialPostsPerMonth > 0;
 }
 
+/**
+ * `true` se o plano ativo do dono tem o recurso (`PlanFeature`, em plans.ts). Com a cobrança
+ * desligada (dev) ou para admins, tudo liberado. Exceção: `freeDomain` custa dinheiro de verdade,
+ * então NUNCA libera sem um plano Premium ativo de verdade (nem com a cobrança desligada); para
+ * admins também libera (testes da equipe), mas a compra ainda exige DOMAIN_PURCHASE_ENABLED.
+ * Falha no banco: o erro sobe (quem chama decide se libera ou bloqueia).
+ */
+export async function ownerHasFeature(ownerId: string, feature: PlanFeature): Promise<boolean> {
+  if (await isAdmin(ownerId)) return true;
+  if (feature !== "freeDomain" && !billingEnforced()) return true;
+  const plan = await activePlan(ownerId);
+  return plan !== null && PLANS[plan].features[feature];
+}
+
 type StripeCustomer = { id: string; deleted?: boolean };
 type StripeSession = { id: string; url: string | null };
 
@@ -470,6 +484,12 @@ async function syncSubscription(config: StripeConfig, sub: StripeSubscription): 
   await store.upsert(record);
   // Plano começou, mudou ou acabou: os sites no ar da conta aparecem, mudam ou somem já.
   revalidateOwnerSites(userId);
+  // Primeiro pagamento: bônus de créditos da oferta do momento (uma vez por conta; nunca falha).
+  // Import dinâmico: server/credits importa este arquivo.
+  if (isActiveStatus(sub.status)) {
+    const { grantOfferBonus } = await import("../credits/offer-bonus");
+    await grantOfferBonus(userId);
+  }
   // Troca de plano concluída: a assinatura antiga para de cobrar.
   if (other?.stripeSubscriptionId && isActiveStatus(other.status) && isActiveStatus(sub.status)) {
     await cancelReplaced(config, other.stripeSubscriptionId);

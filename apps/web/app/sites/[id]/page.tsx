@@ -24,15 +24,19 @@ import {
 import { GlassBadge, Notice } from "@/components/glass";
 import { LocalTime } from "@/components/LocalTime";
 import { SiteThumb } from "@/components/SiteThumb";
+import { assistantOverview } from "@/server/assistant/service";
 import { getCurrentUser } from "@/server/auth/session";
 import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
+import { parseFreeDomainQuery } from "@/server/domains/free-domain";
+import { freeDomainStatus } from "@/server/domains/free-domain-access";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { dayKey, getVisitStore } from "@/server/visits/store";
+import { AssistantPanel } from "./AssistantPanel";
 import { PublishButton } from "./PublishButton";
 import { SiteActionsMenu } from "./SiteActionsMenu";
-import { DomainSection, VersionsSection } from "./SiteSections";
+import { DomainSection, VersionsSection, type FreeDomainProps } from "./SiteSections";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
@@ -121,6 +125,11 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const versions = (await getSiteStore().listVersions(site.id)).slice(0, 10);
   // Resultado dos últimos 30 dias (visitas contadas pelo VisitBeacon do site publicado).
   const results = await recentResults(site.id);
+  // Atendente de IA (Premium). Erro no banco = o painel some, a página segue.
+  const assistant = await assistantOverview(site).catch((error: unknown) => {
+    console.error("[assistant] could not read the settings", error);
+    return null;
+  });
   const recentVisits = results.visits;
   const recentRequests = leads.filter((lead) => lead.createdAt >= results.sinceIso).length;
   const pendingChanges = hasUnpublishedChanges(site);
@@ -150,6 +159,28 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const publishState = !isPublished ? "draft" : pendingChanges ? "outdated" : "current";
   const { business } = site.spec;
   const where = [business.city, business.state].filter(Boolean).join(", ");
+  // Domínio grátis do Premium: só para a própria conta (fica no nome dela). Erro no banco = sem
+  // cartão (a página segue).
+  const freeStatus =
+    site.ownerId === user.id
+      ? await freeDomainStatus(user.id).catch((error: unknown) => {
+          console.error("[free-domain] could not load the status", error);
+          return null;
+        })
+      : null;
+  const suggested = parseFreeDomainQuery(business.name);
+  const freeDomain: FreeDomainProps | null = freeStatus
+    ? {
+        status: freeStatus,
+        suggestedQuery: suggested.ok ? suggested.domain : "",
+        defaults: {
+          email: user.email ?? "",
+          phone: business.phone ?? "",
+          city: business.city ?? "",
+          state: business.state ?? "",
+        },
+      }
+    : null;
 
   return (
     <AccountShellForCurrentViewer>
@@ -397,8 +428,17 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
               )}
             </section>
 
+            {assistant && (
+              <AssistantPanel siteId={site.id} initial={assistant} isPublished={isPublished} />
+            )}
+
             {/* Domínio e versões ficam recolhidos (uma linha cada); #domain e #versions abrem. */}
-            <DomainSection siteId={site.id} initial={domain} isPublished={isPublished} />
+            <DomainSection
+              siteId={site.id}
+              initial={domain}
+              isPublished={isPublished}
+              freeDomain={freeDomain}
+            />
 
             <VersionsSection>
               <VersionHistory

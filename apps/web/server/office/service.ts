@@ -47,6 +47,7 @@ import {
 } from "../clients/service";
 import { getClientStore } from "../clients/store";
 import type { ClientRecord } from "../clients/types";
+import { scheduleAutoReviewRequest } from "../review-requests/service";
 import { isValidTimeZone, zonedTimeToUtc } from "../social/service";
 import { getSiteStore } from "../store";
 import { getOfficeStore, type OfficeStore } from "./store";
@@ -648,6 +649,11 @@ export async function updateJob(
       updated.endAt
     ) {
       await moveBookingForJob(ownerId, id, updated.startAt, updated.endAt);
+    }
+    // Virou "done": pedido de avaliação no Google automático (Pro+), depois da resposta. Todas as
+    // regras (plano, chave do dono, um por job, 30 dias por cliente) ficam em review-requests.
+    if (updated.status === "done" && current.status !== "done") {
+      scheduleAutoReviewRequest(ownerId, id);
     }
   }
   return updated ? jobView(ownerId, updated) : null;
