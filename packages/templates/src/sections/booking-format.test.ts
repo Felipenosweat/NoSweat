@@ -5,6 +5,7 @@ import {
   dateKeyInZone,
   dayLabel,
   dayLabelLong,
+  dayParts,
   formatDateTime,
   formatDuration,
   formatNextOpening,
@@ -140,5 +141,12 @@ describe("response guards", () => {
     expect(isPublicBookingInfo({ error: { code: "not_found" } })).toBe(false);
     expect(isAvailabilityResponse({ days: [], timeZone: NY, nextAvailableAt: null })).toBe(true);
     expect(isAvailabilityResponse({})).toBe(false);
+  });
+});
+
+describe("day parts", () => {
+  it("splits the weekday and the day number for the date strip", () => {
+    expect(dayParts("2026-11-25")).toEqual({ weekday: "Wed", day: "25" });
+    expect(dayParts("2026-12-01")).toEqual({ weekday: "Tue", day: "1" });
   });
 });
