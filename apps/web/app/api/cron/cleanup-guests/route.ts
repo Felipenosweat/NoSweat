@@ -1,5 +1,6 @@
 import { sendAccessReminders, type ReminderSummary } from "@/server/billing/reminders";
 import { isCronAuthorized } from "@/server/cron";
+import { syncFreeDomainAutoRenew } from "@/server/domains/free-domain-access";
 import { errorResponse, handle } from "@/server/http";
 import { reportError } from "@/server/notify/alert";
 import { getSiteStore } from "@/server/store";
@@ -19,7 +20,8 @@ function reminderFailures(reminders: ReminderSummary | { error: string }): strin
 
 /**
  * GET /api/cron/cleanup-guests: a faxina diária. Apaga sites criados sem conta e abandonados
- * (mais de 30 dias) e manda os lembretes de vencimento do acesso manual (server/billing/reminders.ts).
+ * (mais de 30 dias), manda os lembretes de vencimento do acesso manual (server/billing/reminders.ts)
+ * e acerta a renovação automática dos domínios grátis do Premium (server/domains/free-domain-access.ts).
  * Roda todo dia pelo Cron da Vercel (vercel.json), que manda `Authorization: Bearer CRON_SECRET`.
  * Sem a variável CRON_SECRET configurada, a rota recusa tudo.
  */
@@ -36,8 +38,25 @@ export async function GET(request: Request): Promise<Response> {
       console.error("[cron] access reminders failed", error);
       reminders = { error: "Access reminders failed. See the server log." };
     }
-    const failures = reminderFailures(reminders);
+    // Domínio grátis do Premium: renovação automática só enquanto o plano valer (desligado sem
+    // DOMAIN_PURCHASE_ENABLED=true). Falha aqui também não desfaz o resto.
+    let freeDomains: Awaited<ReturnType<typeof syncFreeDomainAutoRenew>> | { error: string };
+    try {
+      freeDomains = await syncFreeDomainAutoRenew();
+    } catch (error) {
+      console.error("[cron] free domain auto-renew sync failed", error);
+      freeDomains = { error: "Free domain auto-renew sync failed. See the server log." };
+    }
+    const failures = [
+      reminderFailures(reminders),
+      freeDomains && "error" in freeDomains ? freeDomains.error : null,
+      freeDomains && "failed" in freeDomains && freeDomains.failed > 0
+        ? `${freeDomains.failed} free domain auto-renew change(s) failed.`
+        : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
     if (failures) await reportError({ route: ROUTE, message: failures });
-    return Response.json({ deleted, reminders });
+    return Response.json({ deleted, reminders, freeDomains });
   }, ROUTE);
 }

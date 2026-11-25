@@ -1,6 +1,6 @@
 "use client";
 
-import type { DomainResponse } from "@nosweat/schema";
+import type { DomainResponse, FreeDomainStatusResponse } from "@nosweat/schema";
 import { useEffect, useState, type FocusEvent, type ReactNode } from "react";
 import { ClockIcon, LinkIcon } from "@/app/(dashboard)/NavIcons";
 import {
@@ -13,6 +13,7 @@ import {
   secondaryButton,
 } from "@/components/DashboardUi";
 import { DomainPanel, rememberedDomain } from "./DomainPanel";
+import { FreeDomainCard } from "./FreeDomainCard";
 
 // Seções recolhidas da página do site (/sites/[id]): o dono vê uma linha só e abre quando
 // precisar. O hash da URL (#domain, #versions) abre a seção certa: o checklist do painel, o
@@ -46,20 +47,32 @@ function useOpenOnHash(
   }, [hash, setOpen, pendingDomainOf]);
 }
 
+/** Domínio grátis do Premium (FreeDomainCard). `null` = não mostra (ex.: admin no site de outro). */
+export type FreeDomainProps = {
+  status: FreeDomainStatusResponse;
+  suggestedQuery: string;
+  defaults: { email: string; phone: string; city: string; state: string };
+};
+
 /**
  * "Use your own domain": uma linha com "Connect" que abre o DomainPanel. Já começa aberta com
  * domínio salvo, com #domain na URL ou com um domínio esperando a prova de dono (TXT).
+ * Premium: o cartão do domínio grátis aparece mesmo com a seção fechada (é um presente).
  */
 export function DomainSection({
   siteId,
-  initial,
+  initial: initialDomain,
   isPublished,
+  freeDomain = null,
 }: {
   siteId: string;
   initial: DomainResponse;
   isPublished: boolean;
+  freeDomain?: FreeDomainProps | null;
 }) {
-  const [open, setOpen] = useState(Boolean(initial.domain));
+  // O domínio grátis comprado aqui troca o estado sem recarregar a página.
+  const [initial, setInitial] = useState(initialDomain);
+  const [open, setOpen] = useState(Boolean(initialDomain.domain));
   useOpenOnHash("#domain", setOpen, siteId);
 
   function expand() {
@@ -101,6 +114,19 @@ export function DomainSection({
           </button>
         )}
       </div>
+      {freeDomain && (open || freeDomain.status.state !== "locked") && (
+        <FreeDomainCard
+          siteId={siteId}
+          status={freeDomain.status}
+          siteHasDomain={Boolean(initial.domain) && initial.status !== "unverified"}
+          suggestedQuery={freeDomain.suggestedQuery}
+          defaults={freeDomain.defaults}
+          onConnected={(domain) => {
+            setInitial(domain);
+            setOpen(true);
+          }}
+        />
+      )}
       {open && (
         <>
           {!initial.domain && (
@@ -109,7 +135,13 @@ export function DomainSection({
               (GoDaddy, Namecheap, Hostinger&hellip;) and come back.
             </p>
           )}
-          <DomainPanel siteId={siteId} initial={initial} isPublished={isPublished} />
+          {/* Domínio novo (ex.: o grátis acabou de ser comprado): o painel recomeça com ele. */}
+          <DomainPanel
+            key={initial.domain ?? "none"}
+            siteId={siteId}
+            initial={initial}
+            isPublished={isPublished}
+          />
         </>
       )}
     </section>

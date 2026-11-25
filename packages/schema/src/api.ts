@@ -298,8 +298,152 @@ export const DomainResponse = z.object({
   records: z.array(DnsRecord),
   /** Empresa onde o cliente mexe no DNS, se deu para descobrir (`null` = não sabemos). */
   dnsProvider: DnsProvider.nullable().optional(),
+  /**
+   * Domínio grátis do Premium, comprado por nós na Vercel: o DNS já é nosso, o cliente não cria
+   * nenhum registro (`records` vem vazio).
+   */
+  managed: z.boolean().optional(),
 });
 export type DomainResponse = z.infer<typeof DomainResponse>;
+
+// ---------- /api/sites/[id]/free-domain (domínio grátis do Premium) ----------
+
+/** Só estas terminações saem de graça. */
+export const FREE_DOMAIN_TLDS = ["com", "net"] as const;
+export type FreeDomainTld = (typeof FREE_DOMAIN_TLDS)[number];
+
+/**
+ * O que a pessoa digita na busca ("Joe's Plumbing", "joesplumbing", "joesplumbing.net"). O back
+ * normaliza (server/domains/free-domain.ts): sem terminação = .com.
+ */
+export const FreeDomainSearchRequest = z.object({
+  query: z
+    .string()
+    .trim()
+    .min(1, "Type the domain you want, like joesplumbing.com.")
+    .max(80, "That name is too long. Try something shorter."),
+});
+export type FreeDomainSearchRequest = z.infer<typeof FreeDomainSearchRequest>;
+
+/**
+ * Um domínio conferido no registro:
+ * - available: ninguém registrou;
+ * - free: disponível, .com/.net e preço até o teto (FREE_DOMAIN_MAX_CENTS);
+ * - reason: por que não sai de graça ("taken", "premium" = preço especial, `null` = sai).
+ */
+export const FreeDomainOption = z.object({
+  domain: z.string(),
+  available: z.boolean(),
+  free: z.boolean(),
+  /** Preço do 1º ano no registro, em centavos de dólar (`null` = indisponível). */
+  priceCents: z.number().int().nonnegative().nullable(),
+  reason: z.enum(["taken", "premium"]).nullable(),
+});
+export type FreeDomainOption = z.infer<typeof FreeDomainOption>;
+
+export const FreeDomainSearchResponse = z.object({
+  /** O domínio pedido (já normalizado). */
+  result: FreeDomainOption,
+  /** Alternativas disponíveis e grátis (só quando o pedido não sai de graça). */
+  suggestions: z.array(FreeDomainOption),
+});
+export type FreeDomainSearchResponse = z.infer<typeof FreeDomainSearchResponse>;
+
+const nonEmpty = (label: string, max: number) =>
+  z.string().trim().min(1, `Please enter your ${label}.`).max(max, `Your ${label} is too long.`);
+
+/**
+ * Telefone dos EUA no formato que o registro exige (E.164 com ponto: "+1.5551234567"). Aceita o
+ * que a pessoa digita: "(555) 123-4567", "555.123.4567", "+1 555 123 4567".
+ */
+export const RegistrantPhone = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/\D/g, ""))
+  .transform((digits) =>
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits,
+  )
+  .pipe(z.string().regex(/^[2-9]\d{9}$/, "Please enter a 10-digit US phone number."))
+  .transform((digits) => `+1.${digits}`);
+
+/**
+ * Dono do domínio (o domínio fica no nome dele, não no da No Sweat). Vai direto para o registro
+ * na compra; a No Sweat NÃO guarda endereço nem telefone.
+ */
+export const FreeDomainRegistrant = z.object({
+  firstName: nonEmpty("first name", 60),
+  lastName: nonEmpty("last name", 60),
+  email: z.string().trim().pipe(z.email("Please enter a valid email.")),
+  phone: RegistrantPhone,
+  address1: nonEmpty("street address", 100),
+  address2: z.string().trim().max(100, "Address line 2 is too long.").optional(),
+  city: nonEmpty("city", 60),
+  state: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/, "Please choose your state."),
+  zip: z
+    .string()
+    .trim()
+    .regex(/^\d{5}(-\d{4})?$/, "Please enter a 5-digit ZIP code."),
+  /** Só EUA por enquanto. */
+  country: z.literal("US").default("US"),
+});
+export type FreeDomainRegistrant = z.infer<typeof FreeDomainRegistrant>;
+
+export const FreeDomainClaimRequest = z.object({
+  domain: z.string().trim().min(1).max(80),
+  registrant: FreeDomainRegistrant,
+});
+export type FreeDomainClaimRequest = z.infer<typeof FreeDomainClaimRequest>;
+
+/**
+ * pending: reservado, compra em andamento (ou esperando a equipe conferir);
+ * purchased: comprado e no nome do cliente; failed: o registro recusou (dá para tentar uma vez).
+ */
+export const FreeDomainClaimStatus = z.enum(["pending", "purchased", "failed"]);
+export type FreeDomainClaimStatus = z.infer<typeof FreeDomainClaimStatus>;
+
+/**
+ * O que o cartão "Claim your free domain" mostra:
+ * - locked: o plano não é Premium (dica com link para os planos);
+ * - awaiting_payment: Premium, mas o primeiro pagamento ainda não entrou (teste/incompleto);
+ * - coming_soon: Premium, mas a compra ainda está desligada (DOMAIN_PURCHASE_ENABLED);
+ * - available: pode buscar e pedir;
+ * - claimed: já pediu (ver `claim`). Um domínio grátis por conta, para sempre.
+ */
+export const FreeDomainState = z.enum([
+  "locked",
+  "awaiting_payment",
+  "coming_soon",
+  "available",
+  "claimed",
+]);
+export type FreeDomainState = z.infer<typeof FreeDomainState>;
+
+export const FreeDomainClaimInfo = z.object({
+  domain: z.string(),
+  status: FreeDomainClaimStatus,
+  siteId: z.string().nullable(),
+  purchasedAt: z.string().nullable(),
+  /** Pode tentar de novo (só depois de uma recusa do registro, uma vez). */
+  canRetry: z.boolean(),
+});
+export type FreeDomainClaimInfo = z.infer<typeof FreeDomainClaimInfo>;
+
+export const FreeDomainStatusResponse = z.object({
+  state: FreeDomainState,
+  claim: FreeDomainClaimInfo.nullable(),
+});
+export type FreeDomainStatusResponse = z.infer<typeof FreeDomainStatusResponse>;
+
+/** POST /api/sites/[id]/free-domain/claim → o pedido e o estado do domínio do site. */
+export const FreeDomainClaimResponse = z.object({
+  status: FreeDomainStatusResponse,
+  domain: DomainResponse,
+});
+export type FreeDomainClaimResponse = z.infer<typeof FreeDomainClaimResponse>;
 
 // ---------- POST /api/sites/[id]/leads (público) e GET (dono) ----------
 

@@ -39,6 +39,27 @@ const STATUS: Record<
   },
 };
 
+/**
+ * Domínio grátis do Premium (comprado por nós na Vercel): o DNS já é nosso, então nada de
+ * registros nem passo a passo; só "estamos ligando" até ficar ativo.
+ */
+const MANAGED_HELP: Partial<
+  Record<NonNullable<DomainState["status"]>, { label: string; help: string }>
+> = {
+  pending: {
+    label: "Setting up",
+    help: "We registered this domain in your name and we're connecting it to your website. This usually takes a few minutes, sometimes up to an hour. Nothing to set up on your side. Your free address keeps working in the meantime.",
+  },
+  manual: {
+    label: "Being set up",
+    help: "We registered this domain in your name. Our team is finishing the connection. Your free address keeps working in the meantime.",
+  },
+  active: {
+    label: "Connected",
+    help: "Your free domain is live with a free secure certificate (HTTPS). It's registered in your name.",
+  },
+};
+
 /** Enquanto espera o DNS, confere sozinho a cada 30 s, por no máximo 10 minutos. */
 const POLL_EVERY_MS = 30_000;
 const POLL_FOR_MS = 10 * 60_000;
@@ -251,12 +272,15 @@ export function DomainPanel({
     );
   }
 
-  const status = state.status ? STATUS[state.status] : null;
+  const managed = state.managed === true;
+  const baseStatus = state.status ? STATUS[state.status] : null;
+  const managedStatus = managed && state.status ? MANAGED_HELP[state.status] : undefined;
+  const status = baseStatus && managedStatus ? { ...baseStatus, ...managedStatus } : baseStatus;
   const currentDomain = state.domain;
   const guideId: DnsGuideId | null =
     guidePick?.domain === currentDomain ? guidePick.id : (state.dnsProvider ?? null);
   // Com o passo a passo aberto, os registros (com "Copy") aparecem só nele, sem a tabela.
-  const showTable = state.status !== "active" && guideId === null;
+  const showTable = !managed && state.status !== "active" && guideId === null;
   const recordsWarning =
     state.status === "unverified"
       ? "Adding a TXT record doesn’t change your website or email. It can take a few minutes to show up."
@@ -320,10 +344,10 @@ export function DomainPanel({
           </p>
         </div>
       )}
-      {state.status !== "active" && !showTable && (
+      {!managed && state.status !== "active" && !showTable && (
         <p className="text-[13px] leading-normal text-(--glass-fg-muted)">{recordsWarning}</p>
       )}
-      {state.status !== "active" && (
+      {!managed && state.status !== "active" && (
         <DnsGuidePanel
           domain={currentDomain}
           records={state.records}
@@ -353,7 +377,10 @@ export function DomainPanel({
           <p className="font-medium text-ink">
             Your site will stop showing at <span className="font-semibold">{state.domain}</span>.
           </p>
-          <p className="mt-1 text-slate-600">Your free address keeps working.</p>
+          <p className="mt-1 text-slate-600">
+            Your free address keeps working.
+            {managed && " The domain stays registered in your name, and you can connect it again."}
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"

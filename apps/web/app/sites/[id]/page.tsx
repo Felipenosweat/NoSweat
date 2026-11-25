@@ -27,12 +27,14 @@ import { SiteThumb } from "@/components/SiteThumb";
 import { getCurrentUser } from "@/server/auth/session";
 import { ownerHasCustomDomainAccess, ownerHasLiveAccess, publishBlocked } from "@/server/billing";
 import { getDomainState, makeSlug } from "@/server/domains";
+import { parseFreeDomainQuery } from "@/server/domains/free-domain";
+import { freeDomainStatus } from "@/server/domains/free-domain-access";
 import { freeUrl, getOwnedSite, hasUnpublishedChanges, liveSpec } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
 import { dayKey, getVisitStore } from "@/server/visits/store";
 import { PublishButton } from "./PublishButton";
 import { SiteActionsMenu } from "./SiteActionsMenu";
-import { DomainSection, VersionsSection } from "./SiteSections";
+import { DomainSection, VersionsSection, type FreeDomainProps } from "./SiteSections";
 import { VersionHistory } from "./VersionHistory";
 
 export const metadata: Metadata = { title: "Manage site" };
@@ -150,6 +152,28 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
   const publishState = !isPublished ? "draft" : pendingChanges ? "outdated" : "current";
   const { business } = site.spec;
   const where = [business.city, business.state].filter(Boolean).join(", ");
+  // Domínio grátis do Premium: só para a própria conta (fica no nome dela). Erro no banco = sem
+  // cartão (a página segue).
+  const freeStatus =
+    site.ownerId === user.id
+      ? await freeDomainStatus(user.id).catch((error: unknown) => {
+          console.error("[free-domain] could not load the status", error);
+          return null;
+        })
+      : null;
+  const suggested = parseFreeDomainQuery(business.name);
+  const freeDomain: FreeDomainProps | null = freeStatus
+    ? {
+        status: freeStatus,
+        suggestedQuery: suggested.ok ? suggested.domain : "",
+        defaults: {
+          email: user.email ?? "",
+          phone: business.phone ?? "",
+          city: business.city ?? "",
+          state: business.state ?? "",
+        },
+      }
+    : null;
 
   return (
     <AccountShellForCurrentViewer>
@@ -398,7 +422,12 @@ export default async function ManageSitePage({ params }: ManageSitePageProps) {
             </section>
 
             {/* Domínio e versões ficam recolhidos (uma linha cada); #domain e #versions abrem. */}
-            <DomainSection siteId={site.id} initial={domain} isPublished={isPublished} />
+            <DomainSection
+              siteId={site.id}
+              initial={domain}
+              isPublished={isPublished}
+              freeDomain={freeDomain}
+            />
 
             <VersionsSection>
               <VersionHistory
