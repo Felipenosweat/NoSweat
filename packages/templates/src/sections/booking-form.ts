@@ -156,6 +156,20 @@ export function validateDetails(details: BookingDetails): DetailErrors {
   return errors;
 }
 
+/** Só os erros que já podem aparecer: campo visitado (blur) ou envio já tentado. */
+export function visibleErrors(
+  errors: DetailErrors,
+  blurred: Partial<Record<keyof DetailErrors, boolean>>,
+  attempted: boolean,
+): DetailErrors {
+  const shown: DetailErrors = {};
+  for (const key of ["firstName", "lastName", "phone", "email"] as const) {
+    const message = errors[key];
+    if (message && (attempted || blurred[key])) shown[key] = message;
+  }
+  return shown;
+}
+
 /** O botão só liga com o aceite da privacidade (e do cancelamento, se o dono escreveu a política). */
 export function consentsGiven(details: BookingDetails, hasCancellationPolicy: boolean): boolean {
   return details.acceptPrivacy && (!hasCancellationPolicy || details.acceptCancellation);

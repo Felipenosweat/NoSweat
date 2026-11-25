@@ -11,6 +11,7 @@ import {
   nationalDigits,
   PHONE_COUNTRIES,
   validateDetails,
+  visibleErrors,
   type BookingDetails,
 } from "./booking-form";
 
@@ -122,6 +123,20 @@ describe("validateDetails and consents", () => {
     expect(consentsGiven(valid, true)).toBe(false);
     expect(consentsGiven({ ...valid, acceptCancellation: true }, true)).toBe(true);
     expect(consentsGiven({ ...none, acceptCancellation: true }, true)).toBe(false);
+  });
+});
+
+describe("visibleErrors", () => {
+  it("shows an error only after the field was visited or the send was tried", () => {
+    const all = validateDetails(EMPTY_BOOKING_DETAILS);
+    expect(visibleErrors(all, {}, false)).toEqual({});
+    expect(Object.keys(visibleErrors(all, { phone: true }, false))).toEqual(["phone"]);
+    expect(Object.keys(visibleErrors(all, {}, true)).sort()).toEqual([
+      "email",
+      "firstName",
+      "lastName",
+      "phone",
+    ]);
   });
 });
 

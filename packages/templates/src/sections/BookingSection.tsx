@@ -4,7 +4,6 @@ import type {
   AvailabilityResponse,
   BookableService,
   BookingSlot,
-  CreateBookingRequest,
   PublicBooking,
   PublicBookingInfo,
 } from "@nosweat/schema";
@@ -12,6 +11,16 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { CheckIcon, ChevronDownIcon } from "../components/icons";
 import { ServiceGlyph } from "../compositions/soft/ServiceGlyph";
 import { demoAvailability, demoBookingInfo, type DemoService } from "./booking-demo";
+import { BookingDetailsFields } from "./BookingDetailsFields";
+import {
+  buildBookingBody,
+  consentsGiven,
+  EMPTY_BOOKING_DETAILS,
+  validateDetails,
+  visibleErrors,
+  type BookingDetails,
+  type DetailErrors,
+} from "./booking-form";
 import {
   addDaysToKey,
   dateKeyInZone,
@@ -244,17 +253,12 @@ export function BookingSection({
 
 type AvailabilityState = { key: string; data: AvailabilityResponse | null };
 
-type Details = { name: string; phone: string; email: string; notes: string; website: string };
-const EMPTY_DETAILS: Details = { name: "", phone: "", email: "", notes: "", website: "" };
-
 type SubmitState = { state: "idle" } | { state: "sending" } | { state: "error"; message: string };
 
 const chip =
   "ns-btn inline-flex min-h-11 items-center justify-center rounded-lg border px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary motion-reduce:transition-none";
 const chipOn = "border-ns-primary bg-ns-primary text-ns-on-primary";
 const chipOff = "border-ns-border bg-ns-background text-ns-text hover:border-ns-text/40";
-const fieldBase =
-  "mt-1.5 block w-full rounded-lg border border-ns-border bg-ns-background px-4 py-3 text-base text-ns-text placeholder:text-ns-muted/70 focus:border-ns-primary focus:ring-2 focus:ring-ns-primary/20 focus:outline-none";
 const stepLabel = "mb-3 block text-sm font-semibold text-ns-text";
 
 function BookingPanel({
@@ -283,7 +287,10 @@ function BookingPanel({
   const [availability, setAvailability] = useState<AvailabilityState | null>(null);
   // Sobe a cada "horário ocupado": força uma nova consulta da disponibilidade.
   const [refreshCount, setRefreshCount] = useState(0);
-  const [details, setDetails] = useState<Details>(EMPTY_DETAILS);
+  const [details, setDetails] = useState<BookingDetails>(EMPTY_BOOKING_DETAILS);
+  // Erro de um campo só aparece depois que a pessoa saiu dele ou tentou enviar.
+  const [blurred, setBlurred] = useState<Partial<Record<keyof DetailErrors, boolean>>>({});
+  const [attempted, setAttempted] = useState(false);
   const [submit, setSubmit] = useState<SubmitState>({ state: "idle" });
   const [notice, setNotice] = useState("");
   const [booked, setBooked] = useState<{ booking: PublicBooking; manageUrl: string } | null>(null);
@@ -370,8 +377,16 @@ function BookingPanel({
     setNotice("");
   }
 
-  function setDetail(key: keyof Details, value: string) {
-    setDetails((current) => ({ ...current, [key]: value }));
+  const hasPolicy = Boolean(info.cancellationPolicy?.trim());
+  const fieldErrors = visibleErrors(validateDetails(details), blurred, attempted);
+  const consented = consentsGiven(details, hasPolicy);
+
+  function patchDetails(patch: Partial<BookingDetails>) {
+    setDetails((current) => ({ ...current, ...patch }));
+  }
+
+  function blurField(key: keyof DetailErrors) {
+    setBlurred((current) => ({ ...current, [key]: true }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -381,16 +396,16 @@ function BookingPanel({
       setNotice("This is an example, so nothing was booked.");
       return;
     }
-    const body: CreateBookingRequest = {
-      serviceId: service.id,
-      startAt: slot.startAt,
-      staffId: slot.staffId,
-      name: details.name.trim(),
-      phone: details.phone.trim(),
-      email: details.email.trim(),
-      notes: details.notes.trim() || undefined,
-      website: details.website,
-    };
+    const body = buildBookingBody(details, { serviceId: service.id, slot }, hasPolicy);
+    if (!body) {
+      // Campo inválido: mostra os erros e leva o foco ao primeiro.
+      setAttempted(true);
+      const form = event.currentTarget;
+      requestAnimationFrame(() =>
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
+      );
+      return;
+    }
     setSubmit({ state: "sending" });
     setNotice("");
     try {
@@ -666,65 +681,18 @@ function BookingPanel({
         )}
 
         {service && slot ? (
-          <form onSubmit={handleSubmit} className="ns-s-form">
+          <form onSubmit={handleSubmit} noValidate className="ns-s-form">
             <p className="ns-s-when">
               {service.name} &middot; {formatDateTime(slot.startAt, timeZone)}
             </p>
-            <label>
-              Your name
-              <input
-                name="name"
-                required
-                maxLength={120}
-                autoComplete="name"
-                value={details.name}
-                onChange={(event) => setDetail("name", event.target.value)}
-              />
-            </label>
-            <label>
-              Phone
-              <input
-                name="phone"
-                type="tel"
-                required
-                minLength={7}
-                maxLength={40}
-                autoComplete="tel"
-                placeholder="(555) 555-0100"
-                value={details.phone}
-                onChange={(event) => setDetail("phone", event.target.value)}
-              />
-            </label>
-            <label>
-              Email <span>(optional)</span>
-              <input
-                name="email"
-                type="email"
-                maxLength={200}
-                autoComplete="email"
-                value={details.email}
-                onChange={(event) => setDetail("email", event.target.value)}
-              />
-            </label>
-            <label>
-              Note <span>(optional)</span>
-              <textarea
-                name="notes"
-                rows={3}
-                maxLength={500}
-                value={details.notes}
-                onChange={(event) => setDetail("notes", event.target.value)}
-              />
-            </label>
-            {/* Isca para robôs: invisível para pessoas, precisa ficar vazia. */}
-            <input
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              value={details.website}
-              onChange={(event) => setDetail("website", event.target.value)}
-              className="ns-s-trap"
+            <BookingDetailsFields
+              soft
+              details={details}
+              onChange={patchDetails}
+              errors={fieldErrors}
+              onBlurField={blurField}
+              cancellationPolicy={info.cancellationPolicy}
+              cancellationHours={info.cancellationHours}
             />
             {submit.state === "error" && (
               <p role="alert" className="ns-s-error">
@@ -733,7 +701,7 @@ function BookingPanel({
             )}
             <button
               type="submit"
-              disabled={submit.state === "sending"}
+              disabled={submit.state === "sending" || !consented}
               aria-busy={submit.state === "sending"}
               className="ns-s-bar"
             >
@@ -920,70 +888,22 @@ function BookingPanel({
       )}
 
       {service && slot && (
-        <form onSubmit={handleSubmit} className="relative mt-8 border-t border-ns-border pt-8">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="relative mt-8 border-t border-ns-border pt-8"
+        >
           <p className="mb-5 text-base font-semibold tabular-nums">
             {service.name} &middot; {formatDateTime(slot.startAt, timeZone)}
           </p>
           <div className="grid gap-5 @min-[40rem]:grid-cols-2">
-            <label className="block text-sm font-medium">
-              Your name
-              <input
-                name="name"
-                required
-                maxLength={120}
-                autoComplete="name"
-                value={details.name}
-                onChange={(event) => setDetail("name", event.target.value)}
-                className={fieldBase}
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              Phone
-              <input
-                name="phone"
-                type="tel"
-                required
-                minLength={7}
-                maxLength={40}
-                autoComplete="tel"
-                placeholder="(555) 555-0100"
-                value={details.phone}
-                onChange={(event) => setDetail("phone", event.target.value)}
-                className={fieldBase}
-              />
-            </label>
-            <label className="block text-sm font-medium @min-[40rem]:col-span-2">
-              Email <span className="font-normal text-ns-muted">(optional)</span>
-              <input
-                name="email"
-                type="email"
-                maxLength={200}
-                autoComplete="email"
-                value={details.email}
-                onChange={(event) => setDetail("email", event.target.value)}
-                className={fieldBase}
-              />
-            </label>
-            <label className="block text-sm font-medium @min-[40rem]:col-span-2">
-              Note <span className="font-normal text-ns-muted">(optional)</span>
-              <textarea
-                name="notes"
-                rows={3}
-                maxLength={500}
-                value={details.notes}
-                onChange={(event) => setDetail("notes", event.target.value)}
-                className={fieldBase}
-              />
-            </label>
-            {/* Isca para robôs: invisível para pessoas, precisa ficar vazia. */}
-            <input
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-              value={details.website}
-              onChange={(event) => setDetail("website", event.target.value)}
-              className="absolute -left-[9999px] size-px opacity-0"
+            <BookingDetailsFields
+              details={details}
+              onChange={patchDetails}
+              errors={fieldErrors}
+              onBlurField={blurField}
+              cancellationPolicy={info.cancellationPolicy}
+              cancellationHours={info.cancellationHours}
             />
           </div>
           {submit.state === "error" && (
@@ -993,7 +913,7 @@ function BookingPanel({
           )}
           <button
             type="submit"
-            disabled={submit.state === "sending"}
+            disabled={submit.state === "sending" || !consented}
             aria-busy={submit.state === "sending"}
             className="ns-btn mt-6 min-h-12 w-full rounded-lg bg-ns-primary px-6 py-4 text-base font-semibold text-ns-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ns-primary disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
           >

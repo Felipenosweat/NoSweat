@@ -1637,7 +1637,7 @@
   color: var(--ns-muted);
   font-weight: 400;
 }
-.ns-s-form :is(input, textarea):not(.ns-s-trap) {
+.ns-s-form :is(input, select, textarea):not(.ns-s-trap, [type="checkbox"]) {
   display: block;
   width: 100%;
   margin-top: 6px;
@@ -1648,9 +1648,79 @@
   color: var(--ns-text);
   font-size: 16px;
 }
-.ns-s-form :is(input, textarea):focus-visible {
+.ns-s-form :is(input, select, textarea):focus-visible {
   outline: 2px solid var(--ns-primary);
   outline-offset: 1px;
+}
+.ns-s-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.ns-s-phone {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+.ns-s-form .ns-s-phone :is(input, select) {
+  margin-top: 0;
+}
+.ns-s-fielderr {
+  margin-top: 6px;
+  color: var(--ns-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ns-s-consents {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ns-s-form .ns-s-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  font-weight: 400;
+}
+.ns-s-form .ns-s-check input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--ns-primary);
+}
+.ns-s-form .ns-s-check span {
+  color: var(--ns-text);
+}
+.ns-s-link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ns-s-policy {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--s-tint);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ns-s-policy-title {
+  font-weight: 600;
+}
+.ns-s-policy p + p {
+  margin-top: 4px;
+  white-space: pre-line;
+  color: var(--ns-muted);
+}
+.ns-s-policy .ns-s-policy-hours {
+  color: var(--ns-text);
+  font-weight: 500;
+  white-space: normal;
+}
+@container (min-width: 36rem) {
+  .ns-s-phone {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
 }
 .ns-s-trap {
   position: absolute;
