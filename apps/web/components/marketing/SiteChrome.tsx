@@ -18,7 +18,7 @@ const NAV = [
   { href: "/#faq", label: "FAQ" },
 ];
 
-type FooterLink = { href: string; label: string; external?: boolean };
+export type FooterLink = { href: string; label: string; external?: boolean };
 
 /** Link do WhatsApp de vendas (SALES_WHATSAPP, só dígitos como o wa.me pede) ou `null`. */
 export function salesWhatsappUrl(): string | null {
@@ -28,7 +28,7 @@ export function salesWhatsappUrl(): string | null {
 }
 
 // Rodapé em 4 colunas (brief). Termos e privacidade são rascunhos (ver as próprias páginas).
-const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
+export const FOOTER_LINKS: { title: string; links: FooterLink[]; note?: string }[] = [
   {
     title: "Product",
     links: [

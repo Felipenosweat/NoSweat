@@ -1,0 +1,102 @@
+/* Landing "On the job": fotos documentais de donos de pequenos negócios trabalhando e o momento
+   que a No Sweat cria (um pedido chegando no celular). Funnel Display nos títulos e Funnel Sans no
+   resto, as duas já declaradas em app/fonts.ts (par "gallery", sem preload). Cores: só os tokens
+   da marca (ink, brand, accent, surface) e slate. Sem JS ou com "reduzir movimento", tudo aparece
+   parado e completo. */
+
+.otj {
+  font-family: var(--ns-font-gallery-body), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "kern";
+  color: var(--color-ink);
+  background: #fff;
+}
+
+.otj-display {
+  font-family: var(--ns-font-gallery-heading), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.otj-h1 {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.02;
+  font-weight: 700;
+}
+
+.otj-h2 {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.08;
+  font-weight: 600;
+}
+
+/* Grade de 12 colunas com as margens sangrando (1fr de cada lado): até 1280 de conteúdo,
+   calha de 16 no celular e 24 a partir do tablet, margem externa mínima de 20. */
+.otj-grid {
+  display: grid;
+  column-gap: 16px;
+  grid-template-columns:
+    minmax(4px, 1fr) repeat(12, minmax(0, calc((1280px - 11 * 16px) / 12)))
+    minmax(4px, 1fr);
+}
+
+@media (min-width: 768px) {
+  .otj-grid {
+    column-gap: 24px;
+    grid-template-columns:
+      minmax(8px, 1fr) repeat(12, minmax(0, calc((1280px - 11 * 24px) / 12)))
+      minmax(8px, 1fr);
+  }
+}
+
+/* Chegada do cartão de pedido: sobe uma vez, 400ms, depois que a foto aparece. Sem a animação
+   (reduzir movimento ou navegador antigo) ele já está no lugar. */
+@media (prefers-reduced-motion: no-preference) {
+  .otj-arrive {
+    animation: otj-arrive 400ms cubic-bezier(0.2, 0.8, 0.2, 1) 500ms both;
+  }
+}
+
+@keyframes otj-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* Fileira de ramos no celular: rolagem lateral com encaixe e sem barra. */
+.otj-snap {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.otj-snap::-webkit-scrollbar {
+  display: none;
+}
+
+.otj-snap > * {
+  scroll-snap-align: start;
+}
+
+/* Dúvidas: sem o triângulo nativo; o "+" gira ao abrir. */
+.otj-faq summary {
+  list-style: none;
+}
+
+.otj-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.otj-faq .otj-plus {
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.otj-faq details[open] .otj-plus {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otj-faq .otj-plus {
+    transition: none;
+  }
+}

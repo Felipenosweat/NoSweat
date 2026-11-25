@@ -1,32 +1,31 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
-import { Examples } from "@/components/landing/Examples";
-import { Hero } from "@/components/landing/Hero";
-import { LandingMotion } from "@/components/landing/LandingMotion";
-import { Pill } from "@/components/landing/Pill";
-import { Steps } from "@/components/landing/Steps";
-import { WhatYouGet } from "@/components/landing/WhatYouGet";
-import { PricingPlans } from "@/components/marketing/PricingPlans";
-import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
-import { LANDING_FAQS } from "@/components/marketing/faqs";
+import { Closing } from "@/components/landing-on-the-job/Closing";
+import { landingFaqs, lowestMonthly } from "@/components/landing-on-the-job/content";
+import { Examples } from "@/components/landing-on-the-job/Examples";
+import { Faq } from "@/components/landing-on-the-job/Faq";
+import { Hero } from "@/components/landing-on-the-job/Hero";
+import { Office } from "@/components/landing-on-the-job/Office";
+import { Pricing } from "@/components/landing-on-the-job/Pricing";
+import { Trades } from "@/components/landing-on-the-job/Trades";
 import { JsonLd } from "@/components/marketing/JsonLd";
+import { salesWhatsappUrl } from "@/components/marketing/SiteChrome";
 import { faqPage, jsonLd, organization, product, website } from "@/lib/structured-data";
-import { checkoutReady } from "@/server/billing";
-import { currentOffer, promoActive } from "@/server/billing/plans";
 
-// Landing V13: fundo cinza-claro e cada bloco numa "bolha" branca arredondada, intercalando com
-// cartões direto no cinza (passos, preços). Topo com perguntas uma de cada vez → o que você ganha
-// (site, clientes, Instagram) → como funciona → exemplos → preço → dúvidas → fim (bolha escura).
-// Pouco texto por bloco: o cliente quer praticidade. Sem vidro/transparência. Sem fotos. Só afirmações que o produto cumpre hoje;
-// nada de números, logos, notas ou depoimentos inventados.
+// Landing "On the job": a página é sobre o dono, não sobre o software. Fotos documentais de gente
+// trabalhando (marceneiro, barbeiro, padeiro...) e, dentro desse mundo, o momento que a No Sweat
+// cria: um pedido chegando no celular. Cada seção responde uma pergunta: o que é, para quem, como
+// fica o site, o que acontece depois, quanto custa, dúvidas e o fim.
+// Só afirmações que o produto cumpre hoje; nada de números, logos, notas ou depoimentos inventados.
 
 // O título diz o que a No Sweat é (é o que o Google mostra e o que as pessoas procuram).
 const TITLE = "No Sweat: AI Website Builder for Local Businesses";
 const DESCRIPTION =
-  "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. Plans from $19/month.";
+  "Describe your business in one sentence and get a real website for your trade, a simple client list for every request, and Instagram posts you approve. " +
+  `Plans from ${lowestMonthly()}/month.`;
 
 // A imagem de compartilhamento vem de app/(landing)/opengraph-image.tsx (1200×630).
-export const viewport: Viewport = { themeColor: "#ffffff" };
+// Cor da barra do navegador: o ink do topo (faixa do cabeçalho no celular, painel no computador).
+export const viewport: Viewport = { themeColor: "#071b33" };
 
 // O nome da oferta (Black Friday, Cyber Week...) muda pela data: a página se refaz de hora em hora.
 export const revalidate = 3600;
@@ -46,120 +45,44 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
-const tag = "lp-tag";
-const h2 = "lp-h mt-6 text-[clamp(1.9rem,3.9vw,3.375rem)]";
-
-const linkDark =
-  "lp-underline rounded-sm font-medium text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
+const linkClass =
+  "rounded-sm font-semibold text-ink underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export default function LandingPage() {
   // WhatsApp de vendas (só dígitos, ex.: 15085550142). Sem a variável, nada aparece.
   const whatsapp = salesWhatsappUrl();
+  // As 6 perguntas mostradas são as mesmas do JSON-LD.
+  const faqs = landingFaqs();
   return (
     <>
-      <JsonLd data={jsonLd(organization(), website(), product(), faqPage(LANDING_FAQS, "/"))} />
+      <JsonLd data={jsonLd(organization(), website(), product(), faqPage(faqs, "/"))} />
       <Hero />
-      <WhatYouGet />
-      <Steps />
+      <Trades />
       <Examples />
-
-      {/* PREÇO — o mesmo componente da página /pricing. */}
-      <section
-        id="pricing"
-        aria-labelledby="pricing-title"
-        className="scroll-mt-14 px-5 py-20 text-center sm:px-8 lg:py-28"
-      >
-        <span className={tag}>Pricing</span>
-        <h2 id="pricing-title" className={h2}>
-          Start free.
-          <br />
-          <span className="dim">Pick a plan to build.</span>
-        </h2>
-        <p className="mx-auto mt-4 max-w-[46ch] text-[17px] leading-relaxed text-[#6e6e73]">
-          Describe your business and answer a few quick questions for free. You pick a plan when
-          you’re ready to build your website.
-        </p>
-        <div className="mx-auto mt-12 w-full max-w-[1180px] text-left">
-          <PricingPlans checkout={checkoutReady()} promo={promoActive()} offerName={currentOffer()} />
-        </div>
-      </section>
-
-      {/* DÚVIDAS — centralizadas; abrir uma fecha as outras (details com o mesmo name). */}
-      <div className="px-3 sm:px-5">
-        <section
-          id="faq"
-          aria-labelledby="faq-title"
-          className="lp-bubble scroll-mt-16 px-5 py-14 text-center sm:px-10 lg:py-20"
-        >
-          <span className={tag}>FAQ</span>
-          <h2 id="faq-title" className={h2}>
-            Questions,
-            <br />
-            <span className="dim">answered.</span>
-          </h2>
-          <div className="mx-auto mt-12 w-full max-w-[760px] text-left">
-            {LANDING_FAQS.map((faq, index) => (
-              <details
-                key={faq.question}
-                name="faq"
-                className={`border-b border-[var(--lp-hair)] ${index === 0 ? "border-t" : ""}`}
-              >
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-4 rounded-sm px-0.5 py-5 text-[17px] font-semibold tracking-[-0.01em] text-[#071b33] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
-                  {faq.question}
-                  <span aria-hidden="true" className="lp-fx" />
-                </summary>
-                <p className="max-w-[60ch] px-0.5 pb-5 text-[15px] leading-[1.65] text-pretty text-[#6e6e73]">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
-          </div>
-          <p className="mx-auto mt-8 max-w-[52ch] text-[15px] leading-relaxed text-[#6e6e73]">
+      <Office />
+      <Pricing />
+      <Faq
+        faqs={faqs}
+        contact={
+          <>
             Still wondering? Write to{" "}
-            <a href="mailto:hello@nosweatfd.com" className={linkDark}>
+            <a href="mailto:hello@nosweatfd.com" className={linkClass}>
               hello@nosweatfd.com
             </a>
             {whatsapp && (
               <>
                 {" "}
                 or{" "}
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={linkDark}>
+                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={linkClass}>
                   message us on WhatsApp
                 </a>
               </>
             )}
             . A real person writes back.
-          </p>
-        </section>
-      </div>
-
-      {/* FIM — bolha escura com um botão só, de volta às perguntas do topo. */}
-      <div className="px-3 pt-3 pb-3 sm:px-5 sm:pt-5 sm:pb-5">
-        <section
-          aria-labelledby="final-title"
-          data-hide-mobile-cta
-          className="lp-bubble lp-bubble-dark px-5 py-16 text-center sm:px-10 lg:py-24"
-        >
-          <h2 id="final-title" className="lp-h text-[clamp(1.9rem,3.9vw,3.375rem)] text-white">
-            Ready when you are.
-            <br />
-            <span className="text-white/55">It takes about a minute.</span>
-          </h2>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Pill href="#start" tone="light">
-              Start your website
-            </Pill>
-            <Link
-              href="/pricing"
-              className="lp-underline rounded-sm px-3 text-[15px] font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              See pricing
-            </Link>
-          </div>
-        </section>
-      </div>
-
-      <LandingMotion />
+          </>
+        }
+      />
+      <Closing />
     </>
   );
 }
