@@ -37,6 +37,10 @@ export const BookingSettings = z.object({
   closedDates: z.array(BookingDate).max(366),
   /** Texto curto mostrado ao cliente na hora de marcar (ex.: "Please arrive 5 minutes early."). */
   note: z.string().max(300),
+  /** Política de cancelamento escrita pelo dono (o cliente precisa concordar ao marcar). */
+  cancellationPolicy: z.string().trim().max(600).optional(),
+  /** Quantas horas antes dá para cancelar sem custo (só informativo; 0 = a qualquer hora). */
+  cancellationHours: z.number().int().min(0).max(720).optional(),
 });
 export type BookingSettings = z.infer<typeof BookingSettings>;
 
@@ -93,6 +97,9 @@ export const PublicBookingInfo = z.object({
   staff: z.array(BookingStaff),
   maxDaysAhead: z.number().int(),
   note: z.string(),
+  /** Política de cancelamento do dono (vazio/ausente = o formulário não mostra a caixa). */
+  cancellationPolicy: z.string().optional(),
+  cancellationHours: z.number().int().optional(),
 });
 export type PublicBookingInfo = z.infer<typeof PublicBookingInfo>;
 
@@ -130,8 +137,17 @@ export const CreateBookingRequest = z.object({
   /** Início escolhido (um `BookingSlot.startAt` devolvido pela disponibilidade). */
   startAt: z.iso.datetime({ offset: true }),
   staffId: z.string().min(1).nullable().optional(),
+  /** Nome completo (sempre enviado; é "nome sobrenome" quando vêm os campos separados abaixo). */
   name: z.string().trim().min(1, "Please enter your name.").max(120),
+  firstName: z.string().trim().min(1).max(60).optional(),
+  lastName: z.string().trim().min(1).max(60).optional(),
+  /** Telefone em formato internacional (ex.: "+13055550187"; o formulário monta com o código do país). */
   phone: z.string().trim().min(7, "Please enter a phone number.").max(40),
+  /** País do telefone (ISO 3166-1 alfa-2, ex.: "US"). */
+  phoneCountry: z.string().trim().length(2).optional(),
+  /** Concordou com a política de privacidade / de cancelamento (registrado com a data). */
+  acceptedPrivacy: z.literal(true).optional(),
+  acceptedCancellation: z.literal(true).optional(),
   email: z.union([z.literal(""), z.email().max(200)]).optional(),
   notes: z.string().trim().max(500).optional(),
   /** Campo-isca anti-robô (deve vir vazio). */
