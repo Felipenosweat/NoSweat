@@ -97,7 +97,7 @@ export function SoftServices({
                           <p className="ns-s-rd">{item.detail ?? item.description}</p>
                         )}
                       </div>
-                      {priced && <span className="ns-s-rp">{item.price}</span>}
+                      {priced && <span className="ns-s-rp tabular-nums">{item.price}</span>}
                       {!priced ? (
                         <a href={askHref} className="ns-s-plus ns-s-plus--ask">
                           Ask<span className="sr-only"> about {item.name}</span>
@@ -440,6 +440,7 @@ export function SoftFooter({ ctx }: { ctx: SoftCtx }) {
             ))}
           </ul>
         )}
+        <ReviewUsLink business={business} className="ns-s-review" />
         <div className="ns-s-fine">
           <span>
             &copy; {new Date().getFullYear()} {business.name}

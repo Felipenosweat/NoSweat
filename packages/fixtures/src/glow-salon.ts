@@ -5,9 +5,9 @@ export const glowSalon: SiteSpec = {
   version: 1,
   template: "beauty",
   design: {
-    composition: "editorial",
+    composition: "immersive",
     primaryAction: "book",
-    density: "airy",
+    density: "balanced",
     imageTreatment: "natural",
   },
   business: {
@@ -26,11 +26,12 @@ export const glowSalon: SiteSpec = {
     links: { booking: "https://book.glowsalon.example.com" },
   },
   theme: {
-    primary: "#8C2F4B",
-    secondary: "#C8A27A",
-    background: "#FBF7F3",
-    text: "#2B1E1A",
-    font: "editorial",
+    primary: "#181966",
+    secondary: "#D9D4FF",
+    background: "#F5F6FD",
+    text: "#17164F",
+    muted: "#666B8A",
+    font: "modern",
   },
   sections: [
     {
@@ -103,6 +104,9 @@ export const glowSalon: SiteSpec = {
         },
       ],
     },
+    // Agendamento logo depois dos serviços (frase simples, sem promessa). Nos exemplos usa horários
+    // de demonstração (bookingDemo); no site de verdade vêm das configurações do dono.
+    { type: "booking", intro: "Pick a service, a day and a time." },
     {
       type: "about",
       body: "Camila Reyes opened Glow Salon on NW 2nd Ave in 2019 and does the color. Jordan Lee does precision cuts and curly hair, and Aisha Grant does keratin, blowouts and event styling.",

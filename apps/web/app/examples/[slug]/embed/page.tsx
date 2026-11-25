@@ -23,5 +23,6 @@ export default async function ExampleEmbedPage({ params }: ExampleEmbedPageProps
   const spec = exampleSpec((await params).slug);
   if (!spec) notFound();
   // Sem contactEndpoint: o formulário de exemplo fica desligado.
-  return <SiteRenderer spec={spec} />;
+  // bookingDemo: horários de exemplo (só aqui nos exemplos; nunca em site de cliente).
+  return <SiteRenderer spec={spec} bookingDemo />;
 }

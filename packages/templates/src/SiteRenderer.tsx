@@ -47,10 +47,12 @@ export function SiteRenderer({
 }: SiteRendererProps) {
   // Agendamento desligado (sem endereço da API): a seção e o link "Book" do menu não existem. No
   // editor (`editable`) a seção fica, com o aviso de como ligar.
+  // O modo exemplo (bookingDemo) só existe na composição de beleza.
+  const demo = bookingDemo && fullSpec.template === "beauty";
   const hideBooking =
     !editable &&
     !bookingEndpoint &&
-    !bookingDemo &&
+    !demo &&
     fullSpec.sections.some((section) => section.type === "booking");
   const spec = hideBooking
     ? { ...fullSpec, sections: fullSpec.sections.filter((section) => section.type !== "booking") }
@@ -85,7 +87,7 @@ export function SiteRenderer({
           spec={spec}
           contactEndpoint={contactEndpoint}
           bookingEndpoint={bookingEndpoint}
-          bookingDemo={bookingDemo}
+          bookingDemo={demo}
           editable
           selectedSection={selectedSection}
           anchors={anchors}
@@ -95,7 +97,7 @@ export function SiteRenderer({
           spec={spec}
           contactEndpoint={contactEndpoint}
           bookingEndpoint={bookingEndpoint}
-          bookingDemo={bookingDemo}
+          bookingDemo={demo}
           anchors={anchors}
         />
       )}

@@ -466,8 +466,11 @@ describe("model sites", () => {
     const bar = (html: string) => html.slice(html.indexOf('aria-label="Quick contact"'));
     const call = bar(renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} />));
     expect(call).toContain("Call (512) 555-0142");
-    const book = bar(renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />));
-    expect(book).toContain(">Book an appointment</a>");
+    // Beleza usa a barra flutuante da composição "soft" (Home, Services, Book, Call).
+    const dock = renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />);
+    const book = dock.slice(dock.indexOf('aria-label="Quick links"'));
+    expect(book).toContain("<span>Book</span>");
+    expect(book).toContain('href="https://book.glowsalon.example.com"');
     expect(book).toContain('aria-label="Call (305) 555-0187"');
   });
 
