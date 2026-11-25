@@ -20,12 +20,15 @@ const DEFAULTS: Record<AiUsageKind, number> = {
   ai_edit: 30,
   social_plan: 3,
   social_caption: 30,
+  // Atendente do site: quem conversa é o visitante; o limite dele fica em server/assistant.
+  assistant_chat: 1000,
 };
 const ENV: Record<AiUsageKind, string> = {
   generate: "AI_DAILY_GENERATIONS",
   ai_edit: "AI_DAILY_EDITS",
   social_plan: "AI_DAILY_SOCIAL_PLANS",
   social_caption: "AI_DAILY_SOCIAL_CAPTIONS",
+  assistant_chat: "AI_DAILY_ASSISTANT_CHATS",
 };
 
 type GuestLimits = { perGuest: number; perIp: number; global: number };
@@ -37,6 +40,8 @@ const GUEST_DEFAULTS: Record<AiUsageKind, GuestLimits> = {
   // Redes sociais são só para contas: visitante sempre recebe 429.
   social_plan: { perGuest: 0, perIp: 0, global: 0 },
   social_caption: { perGuest: 0, perIp: 0, global: 0 },
+  // O atendente não passa por reserveUse (o dono paga; limites em server/assistant).
+  assistant_chat: { perGuest: 0, perIp: 0, global: 0 },
 };
 const GUEST_ENV: Record<AiUsageKind, Record<keyof GuestLimits, string>> = {
   generate: {
@@ -59,6 +64,11 @@ const GUEST_ENV: Record<AiUsageKind, Record<keyof GuestLimits, string>> = {
     perIp: "GUEST_IP_DAILY_SOCIAL_CAPTIONS",
     global: "GUEST_GLOBAL_DAILY_SOCIAL_CAPTIONS",
   },
+  assistant_chat: {
+    perGuest: "GUEST_DAILY_ASSISTANT_CHATS",
+    perIp: "GUEST_IP_DAILY_ASSISTANT_CHATS",
+    global: "GUEST_GLOBAL_DAILY_ASSISTANT_CHATS",
+  },
 };
 
 const LABELS: Record<AiUsageKind, string> = {
@@ -66,6 +76,7 @@ const LABELS: Record<AiUsageKind, string> = {
   ai_edit: "AI changes",
   social_plan: "AI month plans",
   social_caption: "AI captions",
+  assistant_chat: "AI assistant chats",
 };
 
 /** Para visitantes ("today's free websites": "free new websites" lia estranho). */

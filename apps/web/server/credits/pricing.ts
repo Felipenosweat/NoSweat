@@ -23,6 +23,9 @@ export const CREDIT_COSTS: Record<CreditAction, number> = {
   regenerate_section: 1,
   social_plan: 5,
   social_caption: 1,
+  // Atendente do site: 1 crédito do DONO por conversa, +1 a cada 10 mensagens do visitante
+  // depois das 10 primeiras (regra em server/assistant/rules.ts).
+  assistant_chat: 1,
 };
 
 /** Nome de cada ação para as telas (inglês: interface). */
@@ -32,6 +35,7 @@ export const CREDIT_ACTION_LABELS: Record<CreditAction, string> = {
   regenerate_section: "Rewrite one section with AI",
   social_plan: "AI month plan for Instagram",
   social_caption: "AI caption",
+  assistant_chat: "AI assistant chat on your website (+1 per 10 messages)",
 };
 
 /** Ordem das ações na tabela de preços de /billing. */
@@ -40,6 +44,7 @@ export const CREDIT_ACTIONS: CreditAction[] = [
   "ai_edit",
   "social_plan",
   "social_caption",
+  "assistant_chat",
 ];
 
 /** Créditos por mês de cada plano, e de quem não tem plano (para experimentar). */
