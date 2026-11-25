@@ -484,6 +484,12 @@ async function syncSubscription(config: StripeConfig, sub: StripeSubscription): 
   await store.upsert(record);
   // Plano começou, mudou ou acabou: os sites no ar da conta aparecem, mudam ou somem já.
   revalidateOwnerSites(userId);
+  // Primeiro pagamento: bônus de créditos da oferta do momento (uma vez por conta; nunca falha).
+  // Import dinâmico: server/credits importa este arquivo.
+  if (isActiveStatus(sub.status)) {
+    const { grantOfferBonus } = await import("../credits/offer-bonus");
+    await grantOfferBonus(userId);
+  }
   // Troca de plano concluída: a assinatura antiga para de cobrar.
   if (other?.stripeSubscriptionId && isActiveStatus(other.status) && isActiveStatus(sub.status)) {
     await cancelReplaced(config, other.stripeSubscriptionId);

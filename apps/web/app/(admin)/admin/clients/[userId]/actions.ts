@@ -19,6 +19,7 @@ import {
   simpleHtml,
 } from "@/server/notify/access-email";
 import { adminAdjustCredits } from "@/server/credits";
+import { grantOfferBonus } from "@/server/credits/offer-bonus";
 import { getSocialStore } from "@/server/social/store";
 
 // Ações do admin na página do cliente: liberar ou cortar o acesso pago à mão (Pix/WhatsApp),
@@ -137,6 +138,8 @@ export async function grantAccess(
       ? { paymentConfirmedAt: new Date().toISOString() }
       : {}),
   });
+  // Pagamento confirmado (Pix/WhatsApp): bônus da oferta do momento, uma vez por conta.
+  if (paymentReceived) await grantOfferBonus(userId);
   refresh(userId);
   await recordAdminAction({
     adminId: admin.id,

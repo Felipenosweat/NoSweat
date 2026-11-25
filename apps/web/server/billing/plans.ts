@@ -131,19 +131,42 @@ export function setupCentsFor(plan: Plan, interval: BillingInterval): number | n
 // Para subir os preços: igualar `monthlyCents`/`annualCents` ao normal; quem já assina mantém o
 // valor do checkout em que entrou (o Stripe guarda o preço na assinatura).
 
-/** Nomes sazonais, em ordem de data. Cada um vale até `endsOn` (1º dia SEM ele, em UTC). */
-export const OFFERS: readonly { name: string; endsOn: string }[] = [
-  { name: "Black Friday", endsOn: "2026-11-29" },
-  { name: "Cyber Week", endsOn: "2026-12-07" },
-  { name: "Holiday Special", endsOn: "2026-12-20" },
-  { name: "Christmas Offer", endsOn: "2026-12-27" },
-  { name: "New Year’s Offer", endsOn: "2027-01-06" },
+/**
+ * Ofertas sazonais, em ordem de data. Cada uma vale até `endsOn` (1º dia SEM ela, em UTC) e tem um
+ * bônus DE VERDADE: créditos de IA extras dados uma vez por conta no primeiro pagamento
+ * (`grantOfferBonus`, server/credits/offer-bonus.ts). Nada de preço "normal" inventado: o fundador
+ * decidiu (25/nov/2026) que Pro e Premium não sobem tão cedo, então eles não têm preço riscado.
+ */
+export const OFFERS: readonly { name: string; endsOn: string; bonusCredits: number }[] = [
+  { name: "Black Friday", endsOn: "2026-11-29", bonusCredits: 100 },
+  { name: "Cyber Week", endsOn: "2026-12-07", bonusCredits: 100 },
+  { name: "Holiday Special", endsOn: "2026-12-20", bonusCredits: 100 },
+  { name: "Christmas Offer", endsOn: "2026-12-27", bonusCredits: 100 },
+  { name: "New Year’s Offer", endsOn: "2027-01-06", bonusCredits: 100 },
 ];
+
+/** Bônus depois da última data do calendário ("Launch price"). */
+export const LAUNCH_BONUS_CREDITS = 100;
 
 /** Nome da oferta em `now`; passada a última data do calendário, "Launch price". */
 export function currentOffer(now: Date = new Date()): string {
+  return offerAt(now).name;
+}
+
+/** Oferta valendo em `now` (nome e bônus de créditos). */
+export function offerAt(now: Date = new Date()): { name: string; bonusCredits: number } {
   const found = OFFERS.find((offer) => now.getTime() < Date.parse(`${offer.endsOn}T00:00:00Z`));
-  return found ? found.name : "Launch price";
+  return found
+    ? { name: found.name, bonusCredits: found.bonusCredits }
+    : { name: "Launch price", bonusCredits: LAUNCH_BONUS_CREDITS };
+}
+
+/**
+ * Economia real do plano anual em relação a pagar 12 meses no mensal (em centavos). É uma
+ * comparação verdadeira: os dois preços são cobrados hoje.
+ */
+export function annualSavingsCents(plan: Plan): number {
+  return Math.max(0, plan.monthlyCents * 12 - plan.annualCents);
 }
 
 /** Há oferta de lançamento valendo? (algum plano custa menos que o preço normal) */
