@@ -231,6 +231,19 @@ export const ReviewLinkResponse = z.object({
 });
 export type ReviewLinkResponse = z.infer<typeof ReviewLinkResponse>;
 
+// ---------- PUT /api/reviews/auto ----------
+
+/** Pedido de avaliação automático quando um job vira "done" (Pro e Premium). */
+export const UpdateAutoReviewRequest = z.object({ enabled: z.boolean() });
+export type UpdateAutoReviewRequest = z.infer<typeof UpdateAutoReviewRequest>;
+
+export const AutoReviewResponse = z.object({
+  enabled: z.boolean(),
+  /** Pedidos automáticos enviados neste mês (UTC). */
+  sentThisMonth: z.number().int().min(0),
+});
+export type AutoReviewResponse = z.infer<typeof AutoReviewResponse>;
+
 // ---------- PUT/GET/DELETE /api/sites/[id]/domain ----------
 
 /**
