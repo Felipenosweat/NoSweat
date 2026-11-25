@@ -28,6 +28,7 @@ import {
   type AvailabilityInput,
   type BusyInterval,
 } from "./availability";
+import { consentFor, customerNameOf, formatPhoneDisplay, policyOf } from "./consent";
 import { getBookingStore } from "./store";
 import { addDaysTo, dateKeyOf, isKnownTimeZone, isoInZone, minutesOf, startOfDayMs } from "./time";
 import type { BookingRecord } from "./types";
@@ -199,6 +200,15 @@ export async function getPublicBookingInfo(siteId: string): Promise<PublicBookin
     staff: ctx.team.map((member) => ({ id: member.id, name: member.name })),
     maxDaysAhead: ctx.settings.maxDaysAhead,
     note: ctx.settings.note,
+    // Política do dono (formulário v2): o site mostra o texto e pede o aceite.
+    ...(policyOf(ctx.settings)
+      ? {
+          cancellationPolicy: policyOf(ctx.settings),
+          ...(ctx.settings.cancellationHours
+            ? { cancellationHours: ctx.settings.cancellationHours }
+            : {}),
+        }
+      : {}),
   };
 }
 
@@ -352,6 +362,9 @@ function toPublicBooking(
     businessAddress: business.address,
     timeZone: business.timeZone,
     canCancel: record.status === "confirmed" && startMs > now.getTime(),
+    ...(record.cancellationPolicySnapshot
+      ? { cancellationPolicy: record.cancellationPolicySnapshot }
+      : {}),
   };
 }
 
@@ -370,6 +383,8 @@ export async function createBooking(
   if (!ctx) return null;
   const { item, view } = serviceOf(ctx, input.serviceId);
   checkStaff(ctx, input.staffId);
+  // Formato novo exige o aceite (422); o antigo (só `name`) segue sem registrar aceite.
+  const consent = consentFor(input, ctx.settings, now);
 
   const startMs = Date.parse(input.startAt);
   const availability = await availabilityInput(ctx, view.durationMinutes, input.staffId, now);
@@ -377,12 +392,14 @@ export async function createBooking(
   if (!slot) throw new OfficeError(409, "slot_taken", SLOT_TAKEN);
 
   const customer = {
-    name: input.name.trim(),
+    name: customerNameOf(input),
+    // Na marcação fica o E.164; no CRM e nos avisos, o formato legível (o casamento é só por dígitos).
     phone: input.phone.trim(),
     email: input.email?.trim() ? input.email.trim() : null,
     notes: input.notes?.trim() ?? "",
   };
-  const client = await findOrCreateClient(ctx, customer);
+  const shownPhone = formatPhoneDisplay(customer.phone);
+  const client = await findOrCreateClient(ctx, { ...customer, phone: shownPhone });
 
   const result = await getBookingStore().bookSlot(
     {
@@ -406,6 +423,10 @@ export async function createBooking(
 
   let record = result.booking;
   try {
+    if (consent) {
+      // Prova do aceite (data + texto que o cliente viu). Se não gravar, a marcação é desfeita.
+      record = (await getBookingStore().saveConsent(ctx.ownerId, record.id, consent)) ?? record;
+    }
     const job = await createJob(ctx.ownerId, {
       clientId: client.id,
       title: `${view.name}: ${customer.name}`,
@@ -436,7 +457,10 @@ export async function createBooking(
       staffName,
       startAt: record.startAt,
       timeZone: ctx.business.timeZone,
-      customer,
+      customer: { ...customer, phone: shownPhone },
+      ...(consent?.cancellationPolicySnapshot
+        ? { cancellationPolicy: consent.cancellationPolicySnapshot }
+        : {}),
       token: record.token,
     },
   };
