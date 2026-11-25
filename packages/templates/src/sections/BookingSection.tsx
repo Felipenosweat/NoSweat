@@ -292,10 +292,11 @@ function BookingPanel({
   const dayCount = Math.min(MAX_STRIP_DAYS, Math.max(1, info.maxDaysAhead));
   const timeZone = info.timeZone;
 
-  // Um serviço só já vem escolhido.
+  // Um serviço só já vem escolhido. No visual do app de salão (soft) o primeiro já vem escolhido
+  // também: dia e horários aparecem logo, como na tela de reserva do app, e dá para trocar.
   const service: BookableService | null =
     info.services.find((item) => item.id === serviceChoice) ??
-    (info.services.length === 1 ? (info.services[0] ?? null) : null);
+    (info.services.length === 1 || soft ? (info.services[0] ?? null) : null);
   const serviceId = service?.id ?? null;
   const availabilityKey = serviceId ? `${serviceId}|${staffId ?? ""}|${refreshCount}` : null;
 
