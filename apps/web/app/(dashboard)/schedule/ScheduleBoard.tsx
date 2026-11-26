@@ -35,6 +35,9 @@ import { ChevronLeftIcon, ChevronRightIcon, DayIcon, TeamDot, WeekIcon, assignee
 const NewJobSheet = dynamic(() => import("./JobForm").then((m) => m.NewJobSheet), {
   ssr: false,
 });
+const WalkInSheet = dynamic(() => import("./WalkInSheet").then((m) => m.WalkInSheet), {
+  ssr: false,
+});
 
 // Agenda (/schedule): barra (hoje, anterior/próximo, visão, filtro de equipe), bandeja dos
 // serviços sem data e a semana/dia/lista. Os dados vêm da página (server component); aqui só a
@@ -87,6 +90,8 @@ export function ScheduleBoard({
     sheet ?? { date: null, time: null },
   );
 
+  const [walkInOpen, setWalkInOpen] = useState(false);
+
   const teamMap = useMemo(() => new Map(team.map((member) => [member.id, member])), [team]);
   const activeTeam = useMemo(() => team.filter((member) => member.active), [team]);
 
@@ -125,6 +130,7 @@ export function ScheduleBoard({
 
   function onCreated(job: Job) {
     setSheet(null);
+    setWalkInOpen(false);
     // Serviço fora do período mostrado: vai até o dia dele.
     const day = job.startAt ? dateKeyOf(new Date(job.startAt), timeZone) : null;
     if (day && !days.includes(day)) {
@@ -208,14 +214,19 @@ export function ScheduleBoard({
         description="Every job on one calendar. Tap an open time to book it."
         actions={
           readOnly ? undefined : (
-            <GlassButton
-              variant="primary"
-              icon={<PlusIcon />}
-              onClick={() => openSheet({ date: newJobDate, time: null })}
-              data-tour="schedule-new"
-            >
-              New job
-            </GlassButton>
+            <div className="flex flex-wrap items-center gap-2">
+              <GlassButton variant="secondary" onClick={() => setWalkInOpen(true)}>
+                Walk-in
+              </GlassButton>
+              <GlassButton
+                variant="primary"
+                icon={<PlusIcon />}
+                onClick={() => openSheet({ date: newJobDate, time: null })}
+                data-tour="schedule-new"
+              >
+                New job
+              </GlassButton>
+            </div>
           )
         }
       />
@@ -333,6 +344,18 @@ export function ScheduleBoard({
           </p>
         )}
       </section>
+
+      {!readOnly && (
+        <WalkInSheet
+          open={walkInOpen}
+          onClose={() => setWalkInOpen(false)}
+          onCreated={onCreated}
+          team={activeTeam}
+          timeZone={timeZone}
+          today={today}
+          nowMinutes={nowMinutes}
+        />
+      )}
 
       {!readOnly && (
         <NewJobSheet

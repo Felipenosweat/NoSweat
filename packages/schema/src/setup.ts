@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BookingDate, DurationMinutes, TimeRange } from "./booking";
+import { Job } from "./office";
 
 // Assistente de configuração do dono (/sites/[id]/setup): UMA chamada grava horários, serviços
 // com duração e preço, equipe e as regras de cancelamento. Só acrescenta tipos novos.
@@ -84,3 +85,20 @@ export const SiteSetupResponse = z.object({
   notes: z.array(z.string()),
 });
 export type SiteSetupResponse = z.infer<typeof SiteSetupResponse>;
+
+// ---------- walk-in (cliente que chegou sem marcar: bloqueia o horário na agenda) ----------
+
+export const WalkInRequest = z.object({
+  /** Sem nome, o serviço fica no cliente genérico "Walk-in". */
+  name: z.string().trim().max(120).optional(),
+  /** Serviço agendável da tabela de preços (dá o título do serviço). */
+  serviceId: z.string().min(1).optional(),
+  startAt: z.iso.datetime({ offset: true }),
+  durationMinutes: DurationMinutes,
+  /** Quem atende (membro da equipe); sem pessoa, o horário some para todos. */
+  assigneeId: z.string().min(1).optional(),
+});
+export type WalkInRequest = z.infer<typeof WalkInRequest>;
+
+export const WalkInResponse = z.object({ job: Job });
+export type WalkInResponse = z.infer<typeof WalkInResponse>;
