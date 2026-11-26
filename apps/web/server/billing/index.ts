@@ -11,7 +11,7 @@ import { errorResponse } from "../http";
 import { getSiteStore } from "../store";
 import { revalidateOwnerSites } from "../store/revalidate";
 import { getGrantStore, isGrantActive } from "./grants";
-import { PLANS, priceCents, setupCentsFor, type PlanFeature } from "./plans";
+import { PLANS, priceCents, setupCentsFor, type Plan, type PlanFeature } from "./plans";
 import { getBillingStore, type SubscriptionRecord } from "./store";
 import { getStripeConfig, StripeError, stripeRequest, type StripeConfig } from "./stripe";
 
@@ -328,6 +328,14 @@ async function ensureCustomer(
   return customer.id;
 }
 
+/** Aviso de renovação automática mostrado ao lado do botão de pagar do Stripe Checkout. */
+export function checkoutRenewalMessage(plan: Plan, interval: BillingInterval): string {
+  const cents = priceCents(plan, interval);
+  const amount = `$${cents % 100 === 0 ? cents / 100 : (cents / 100).toFixed(2)}`;
+  const every = interval === "annual" ? "year" : "month";
+  return `Your plan renews automatically every ${every} for ${amount} until you cancel. Cancel anytime from Billing in your account.`;
+}
+
 /** Compra recusada antes de abrir o Stripe (ex.: a conta já tem este mesmo plano). */
 export class CheckoutRefused extends Error {}
 
@@ -383,6 +391,8 @@ export async function createCheckoutUrl(
     metadata: meta,
     subscription_data: { metadata: meta },
     allow_promotion_codes: true,
+    // Renovação automática dita junto do botão de pagar (leis dos EUA), com o valor e o período.
+    custom_text: { submit: { message: checkoutRenewalMessage(plan, input.interval) } },
     // {CHECKOUT_SESSION_ID}: o Stripe troca pelo id da sessão; a página /billing usa para
     // confirmar o pagamento na hora, sem esperar o webhook.
     success_url: `${origin}/billing?status=success&session_id={CHECKOUT_SESSION_ID}${back}`,
