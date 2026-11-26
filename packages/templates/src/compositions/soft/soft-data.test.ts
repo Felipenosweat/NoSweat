@@ -46,7 +46,9 @@ describe("photo quality", () => {
     height,
   });
   it("drops small photos and keeps the ones without sizes", () => {
-    expect(usableHero(image(1000, 800))).toBe(false);
+    expect(usableHero(image(900, 700))).toBe(false);
+    // Foto de banco que a plataforma busca de verdade (Unsplash regular: 1080 x 720).
+    expect(usableHero(image(1080, 720))).toBe(true);
     expect(usableHero(image(2400, 1600))).toBe(true);
     expect(usableHero(image())).toBe(true);
     expect(usableThumb(image(500, 400))).toBe(false);

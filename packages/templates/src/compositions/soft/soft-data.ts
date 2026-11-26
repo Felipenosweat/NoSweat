@@ -79,11 +79,15 @@ function longEdge(image: SiteImage): number | undefined {
   return image.width && image.height ? Math.max(image.width, image.height) : undefined;
 }
 
-/** Foto boa para o topo: lado maior >= 1200 px (sem medidas, vale). */
+/**
+ * Foto boa para o topo: lado maior >= 1000 px (sem medidas, vale). As fotos de banco que a
+ * plataforma busca (Unsplash `regular`, Pexels) vêm com 1080 px: um piso maior que isso tira o
+ * topo de TODO site gerado (aconteceu com 1200 em nov/2026). Não suba sem mudar server/images.
+ */
 export function usableHero(image: SiteImage | undefined): image is SiteImage {
   if (!image) return false;
   const edge = longEdge(image);
-  return edge === undefined || edge >= 1200;
+  return edge === undefined || edge >= 1000;
 }
 
 /** Foto boa para galeria, "quem somos" e miniaturas: lado maior >= 600 px (sem medidas, vale). */
