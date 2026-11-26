@@ -70,7 +70,8 @@ describe("SiteSetupRequest", () => {
   });
 
   it("allows working alone (no team) and a missing policy", () => {
-    const { cancellationPolicy: _policy, cancellationHours: _hours, ...settings } = valid.settings;
+    // Sem política: as duas chaves ficam de fora (são opcionais).
+    const settings = { ...valid.settings, cancellationPolicy: undefined, cancellationHours: undefined };
     expect(SiteSetupRequest.safeParse({ ...valid, team: [], settings }).success).toBe(true);
   });
 });
