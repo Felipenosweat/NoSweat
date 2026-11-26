@@ -330,10 +330,12 @@ export async function applySetup(
       const updated = await getSiteStore().update(site.id, plan.spec, "edit");
       if (!updated) throw new OfficeError(404, "not_found", "Site not found.");
     }
-    // Com CEP e sem endereço no escritório, guarda "Cidade, UF 12345" (nunca troca um endereço).
+    // Com CEP, guarda "Cidade, UF 12345" quando o escritório não tem endereço de verdade. O padrão
+    // da primeira vez é só "Cidade, UF" tirado do site (sem número): isso pode ser completado; um
+    // endereço com número (rua ou CEP) nunca é trocado.
     if (!request.zip) return;
     const office = await getOfficeSettings(ownerId);
-    if (office.address?.trim()) return;
+    if (/\d/.test(office.address ?? "")) return;
     const place = [request.city, [request.state, request.zip].filter(Boolean).join(" ")]
       .filter(Boolean)
       .join(", ");
