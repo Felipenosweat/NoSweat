@@ -480,6 +480,8 @@ async function syncSubscription(config: StripeConfig, sub: StripeSubscription): 
     status: sub.status,
     currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
     cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
+    // O aviso de renovação já enviado continua valendo (se o período mudar, a data não bate).
+    renewalNoticeFor: existing?.renewalNoticeFor ?? null,
   };
   await store.upsert(record);
   // Plano começou, mudou ou acabou: os sites no ar da conta aparecem, mudam ou somem já.

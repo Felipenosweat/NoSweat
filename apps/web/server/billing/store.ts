@@ -14,6 +14,8 @@ export type SubscriptionRecord = {
   status: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  /** Fim do período cujo aviso de renovação anual já saiu (migration 0040); `null` = nenhum. */
+  renewalNoticeFor?: string | null;
 };
 
 export interface BillingStore {
@@ -23,6 +25,8 @@ export interface BillingStore {
   listAll(): Promise<SubscriptionRecord[]>;
   /** Cria ou atualiza a linha da conta (chave: userId). */
   upsert(record: SubscriptionRecord): Promise<void>;
+  /** Marca (ou desmarca, com `null`) o fim de período já avisado, sem mexer no resto da linha. */
+  setRenewalNotice(userId: string, periodEnd: string | null): Promise<void>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -37,6 +41,7 @@ const Row = z.object({
   status: z.string().nullable(),
   current_period_end: z.string().nullable(),
   cancel_at_period_end: z.boolean(),
+  renewal_notice_for: z.string().nullable().optional(),
 });
 
 function toRecord(row: z.infer<typeof Row>): SubscriptionRecord {
@@ -49,6 +54,7 @@ function toRecord(row: z.infer<typeof Row>): SubscriptionRecord {
     status: row.status,
     currentPeriodEnd: row.current_period_end,
     cancelAtPeriodEnd: row.cancel_at_period_end,
+    renewalNoticeFor: row.renewal_notice_for ?? null,
   };
 }
 
@@ -111,8 +117,17 @@ export class SupabaseBillingStore implements BillingStore {
         status: record.status,
         current_period_end: record.currentPeriodEnd,
         cancel_at_period_end: record.cancelAtPeriodEnd,
+        renewal_notice_for: record.renewalNoticeFor ?? null,
         updated_at: new Date().toISOString(),
       }),
+    });
+  }
+
+  async setRenewalNotice(userId: string, periodEnd: string | null): Promise<void> {
+    if (!UUID.test(userId)) throw new Error(`Invalid user id: ${userId}`);
+    await this.call(`?user_id=eq.${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ renewal_notice_for: periodEnd }),
     });
   }
 }
@@ -141,6 +156,11 @@ export class MemoryBillingStore implements BillingStore {
 
   async upsert(record: SubscriptionRecord): Promise<void> {
     this.rows.set(record.userId, { ...record });
+  }
+
+  async setRenewalNotice(userId: string, periodEnd: string | null): Promise<void> {
+    const row = this.rows.get(userId);
+    if (row) this.rows.set(userId, { ...row, renewalNoticeFor: periodEnd });
   }
 }
 
