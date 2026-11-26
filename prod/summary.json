@@ -1,0 +1,1967 @@
+[
+  {
+    "name": "landing",
+    "url": "https://www.nosweatfd.com/",
+    "formFactor": "mobile",
+    "score": 94,
+    "lcpMs": 2648,
+    "fcpMs": 1373,
+    "tbtMs": 108,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 448,
+    "jsKb": 165,
+    "lcpElement": "<h1 id=\"hero-title\" class=\"lp-h lp-display lp-rise-solid text-[clamp(2.9rem,6.6vw,5.75rem)] leading-[…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Freal%2Fsite-2.webp&w=750&q=75",
+        "kb": 34
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/fb67aadf79525b65-s.3hi1whebnbqg-.woff2",
+        "kb": 21
+      },
+      {
+        "url": "https://www.nosweatfd.com/",
+        "kb": 20
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 623
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2025
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/",
+        "scriptingMs": 12,
+        "totalMs": 868
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 10,
+        "totalMs": 350
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 237,
+        "totalMs": 345
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "scriptingMs": 162,
+        "totalMs": 163
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 62,
+        "totalMs": 82
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "startMs": 2423,
+        "ms": 166
+      },
+      {
+        "url": "https://www.nosweatfd.com/",
+        "startMs": 1110,
+        "ms": 128
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 929,
+        "ms": 82
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 1011,
+        "ms": 72
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 646
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 498
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 319
+      },
+      {
+        "group": "Rendering",
+        "ms": 301
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 64
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 54
+      }
+    ]
+  },
+  {
+    "name": "landing",
+    "url": "https://www.nosweatfd.com/",
+    "formFactor": "desktop",
+    "score": 72,
+    "lcpMs": 2644,
+    "fcpMs": 1720,
+    "tbtMs": 84,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 497,
+    "jsKb": 165,
+    "lcpElement": "<h1 id=\"hero-title\" class=\"lp-h lp-display lp-rise-solid text-[clamp(2.9rem,6.6vw,5.75rem)] leading-[…\">",
+    "opportunities": [],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Freal%2Fsite-2.webp&w=1200&q=75",
+        "kb": 59
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Freal%2Fclients-2.webp&w=1200&q=75",
+        "kb": 28
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/image?url=%2Flanding%2Freal%2Fsocial-2.webp&w=1200&q=75",
+        "kb": 23
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 619
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2025
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/",
+        "scriptingMs": 10,
+        "totalMs": 692
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 243,
+        "totalMs": 371
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 9,
+        "totalMs": 297
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "scriptingMs": 129,
+        "totalMs": 129
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 59,
+        "totalMs": 85
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "startMs": 2419,
+        "ms": 133
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 919,
+        "ms": 91
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 2552,
+        "ms": 51
+      },
+      {
+        "url": "https://www.nosweatfd.com/",
+        "startMs": 1069,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 595
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 459
+      },
+      {
+        "group": "Rendering",
+        "ms": 258
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 221
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 58
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 34
+      }
+    ]
+  },
+  {
+    "name": "pricing",
+    "url": "https://www.nosweatfd.com/pricing",
+    "formFactor": "mobile",
+    "score": 98,
+    "lcpMs": 2260,
+    "fcpMs": 1060,
+    "tbtMs": 69,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 364,
+    "jsKb": 170,
+    "lcpElement": "<p class=\"max-w-[52ch] text-lg leading-relaxed text-pretty text-slate-600 lg:col-spa…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/nosweat-mark-128.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "kb": 13
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 610
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1650
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 517,
+        "totalMs": 642
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "scriptingMs": 4,
+        "totalMs": 180
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 8,
+        "totalMs": 161
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 55,
+        "totalMs": 80
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 2272,
+        "ms": 125
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "startMs": 760,
+        "ms": 68
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 1960,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 616
+      },
+      {
+        "group": "Other",
+        "ms": 298
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 116
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 58
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 36
+      },
+      {
+        "group": "Rendering",
+        "ms": 16
+      }
+    ]
+  },
+  {
+    "name": "pricing",
+    "url": "https://www.nosweatfd.com/pricing",
+    "formFactor": "desktop",
+    "score": 85,
+    "lcpMs": 2262,
+    "fcpMs": 1058,
+    "tbtMs": 95,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 364,
+    "jsKb": 170,
+    "lcpElement": "<h1 id=\"pricing-title\" class=\"mt-4 max-w-[16ch] font-display text-[2.5rem] leading-[1.05] font-bold trac…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/brand/nosweat-mark-128.png",
+        "kb": 16
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "kb": 13
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 608
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1654
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 247,
+        "totalMs": 278
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 8,
+        "totalMs": 258
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "scriptingMs": 4,
+        "totalMs": 171
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 54,
+        "totalMs": 83
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 2276,
+        "ms": 154
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 758,
+        "ms": 81
+      },
+      {
+        "url": "https://www.nosweatfd.com/pricing",
+        "startMs": 839,
+        "ms": 62
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 331
+      },
+      {
+        "group": "Other",
+        "ms": 289
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 112
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 76
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 43
+      },
+      {
+        "group": "Rendering",
+        "ms": 13
+      }
+    ]
+  },
+  {
+    "name": "create",
+    "url": "https://www.nosweatfd.com/create",
+    "formFactor": "mobile",
+    "score": 94,
+    "lcpMs": 2560,
+    "fcpMs": 1060,
+    "tbtMs": 182,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 449,
+    "jsKb": 259,
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3xugzahkf92_m.js",
+        "kb": 32
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/43kfn4dqmkxrt.js",
+        "kb": 20
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3ll08n4rgxs_1.js",
+        "kb": 17
+      }
+    ],
+    "lcpPhases": [],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 627,
+        "totalMs": 720
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 9,
+        "totalMs": 241
+      },
+      {
+        "url": "https://www.nosweatfd.com/create",
+        "scriptingMs": 5,
+        "totalMs": 154
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/43kfn4dqmkxrt.js",
+        "scriptingMs": 138,
+        "totalMs": 143
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 63,
+        "totalMs": 95
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/43kfn4dqmkxrt.js",
+        "startMs": 2860,
+        "ms": 143
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 2274,
+        "ms": 139
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 881
+      },
+      {
+        "group": "Other",
+        "ms": 344
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 98
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 81
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 47
+      },
+      {
+        "group": "Garbage Collection",
+        "ms": 37
+      },
+      {
+        "group": "Rendering",
+        "ms": 6
+      }
+    ]
+  },
+  {
+    "name": "create",
+    "url": "https://www.nosweatfd.com/create",
+    "formFactor": "desktop",
+    "score": 79,
+    "lcpMs": 2559,
+    "fcpMs": 1059,
+    "tbtMs": 177,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 448,
+    "jsKb": 259,
+    "lcpElement": "<div pseudo=\"-webkit-input-placeholder\" id=\"placeholder\" style=\"display: block !important;\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3xugzahkf92_m.js",
+        "kb": 32
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/43kfn4dqmkxrt.js",
+        "kb": 20
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3ll08n4rgxs_1.js",
+        "kb": 17
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 609
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1950
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 363,
+        "totalMs": 394
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 9,
+        "totalMs": 169
+      },
+      {
+        "url": "https://www.nosweatfd.com/create",
+        "scriptingMs": 4,
+        "totalMs": 139
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 68,
+        "totalMs": 95
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 2275,
+        "ms": 150
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 1959,
+        "ms": 127
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 471
+      },
+      {
+        "group": "Other",
+        "ms": 201
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 96
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 91
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 34
+      },
+      {
+        "group": "Rendering",
+        "ms": 6
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "formFactor": "mobile",
+    "score": 96,
+    "lcpMs": 2638,
+    "fcpMs": 1361,
+    "tbtMs": 57,
+    "cls": 0.004,
+    "ttfbMs": 3,
+    "totalKb": 503,
+    "jsKb": 217,
+    "lcpElement": "<p class=\"absolute bottom-8 left-5 opacity-70 @min-[40rem]:left-8 @5xl:left-16 text-…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/8056169c9d560660-s.2fl0vhx7oyatw.woff2",
+        "kb": 41
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1584774354932-62ceb99e6053?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8cGx1bWJpbmclMjBjb3BwZXIlMjBwaXBlc3xlbnwxfDB8fHwxNzkyOTYyNDkxfDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 39
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706622710966-331f0d5127e5?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTN8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 31
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3-j70fpq87oio.js",
+        "kb": 28
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 611
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2027
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+        "scriptingMs": 5,
+        "totalMs": 474
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 287,
+        "totalMs": 453
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3-j70fpq87oio.js",
+        "scriptingMs": 112,
+        "totalMs": 293
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 175
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 26,
+        "totalMs": 52
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3611,
+        "ms": 152
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+        "startMs": 977,
+        "ms": 106
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3311,
+        "ms": 61
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 484
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 472
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 351
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 86
+      },
+      {
+        "group": "Rendering",
+        "ms": 84
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 67
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+    "formFactor": "desktop",
+    "score": 76,
+    "lcpMs": 3160,
+    "fcpMs": 1360,
+    "tbtMs": 69,
+    "cls": 0.024,
+    "ttfbMs": 3,
+    "totalKb": 536,
+    "jsKb": 217,
+    "lcpElement": "<span class=\"block\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1578697413954-043f88933241?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTR8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=1600&q=80&fit=max&auto=format",
+        "kb": 42
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/8056169c9d560660-s.2fl0vhx7oyatw.woff2",
+        "kb": 41
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1584774354932-62ceb99e6053?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8cGx1bWJpbmclMjBjb3BwZXIlMjBwaXBlc3xlbnwxfDB8fHwxNzkyOTYyNDkxfDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 39
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706622710966-331f0d5127e5?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTN8fHBsdW1iaW5nJTIwY29wcGVyJTIwcGlwZXN8ZW58MXwwfHx8MTc5Mjk2MjQ5MXww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 31
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 610
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2550
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+        "scriptingMs": 6,
+        "totalMs": 499
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 283,
+        "totalMs": 460
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 245
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3iwawbqdzwo4r.js",
+        "scriptingMs": 47,
+        "totalMs": 180
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3-j70fpq87oio.js",
+        "scriptingMs": 78,
+        "totalMs": 145
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3760,
+        "ms": 142
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/joes-plumbing",
+        "startMs": 1025,
+        "ms": 121
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3460,
+        "ms": 96
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 910,
+        "ms": 58
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 587
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 483
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 385
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 80
+      },
+      {
+        "group": "Rendering",
+        "ms": 75
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 49
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "https://www.nosweatfd.com/examples/glow-salon",
+    "formFactor": "mobile",
+    "score": 91,
+    "lcpMs": 3537,
+    "fcpMs": 1212,
+    "tbtMs": 42,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 456,
+    "jsKb": 170,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600948836587-02c1842c9140?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8N3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 23
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626379501846-0df4067b8bb9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 17
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 612
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 880
+      },
+      {
+        "phase": "Load Time",
+        "ms": 1940
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 105
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 296,
+        "totalMs": 331
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/glow-salon",
+        "scriptingMs": 7,
+        "totalMs": 315
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 225
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3762,
+        "ms": 134
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/glow-salon",
+        "startMs": 1014,
+        "ms": 87
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 912,
+        "ms": 62
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 372
+      },
+      {
+        "group": "Other",
+        "ms": 276
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 190
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 69
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 45
+      },
+      {
+        "group": "Rendering",
+        "ms": 41
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "https://www.nosweatfd.com/examples/glow-salon",
+    "formFactor": "desktop",
+    "score": 77,
+    "lcpMs": 3609,
+    "fcpMs": 1208,
+    "tbtMs": 88,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 503,
+    "jsKb": 171,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 300
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=1080&q=80&fit=max&auto=format",
+        "kb": 63
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626379501846-0df4067b8bb9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 26
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600948836587-02c1842c9140?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8N3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 23
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 608
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 423
+      },
+      {
+        "phase": "Load Time",
+        "ms": 92
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2486
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 413,
+        "totalMs": 451
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/glow-salon",
+        "scriptingMs": 7,
+        "totalMs": 294
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 258
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 3908,
+        "ms": 226
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 908,
+        "ms": 89
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/glow-salon",
+        "startMs": 1062,
+        "ms": 86
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 474
+      },
+      {
+        "group": "Other",
+        "ms": 302
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 174
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 85
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 66
+      },
+      {
+        "group": "Rendering",
+        "ms": 22
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "formFactor": "mobile",
+    "score": 91,
+    "lcpMs": 3459,
+    "fcpMs": 1359,
+    "tbtMs": 53,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 727,
+    "jsKb": 217,
+    "lcpElement": "<p>",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1591266123515-46149ea0b0a9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Nnx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 113
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 81
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706267701248-fbbeeb1f8c7c?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 80
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/edb99fec956915f8-s.0glcd8n2pdab0.woff2",
+        "kb": 36
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 609
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2850
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+        "scriptingMs": 6,
+        "totalMs": 601
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 156,
+        "totalMs": 341
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3-j70fpq87oio.js",
+        "scriptingMs": 110,
+        "totalMs": 307
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 255
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "scriptingMs": 122,
+        "totalMs": 123
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+        "startMs": 1025,
+        "ms": 131
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/2b49x0jl5ex6-.js",
+        "startMs": 4359,
+        "ms": 126
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 4531,
+        "ms": 79
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 909,
+        "ms": 71
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 608
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 465
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 463
+      },
+      {
+        "group": "Rendering",
+        "ms": 99
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 87
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 53
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+    "formFactor": "desktop",
+    "score": 63,
+    "lcpMs": 5575,
+    "fcpMs": 1513,
+    "tbtMs": 167,
+    "cls": 0.084,
+    "ttfbMs": 5,
+    "totalKb": 1056,
+    "jsKb": 217,
+    "lcpElement": "<span class=\"block\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 450
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1591266123515-46149ea0b0a9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Nnx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=1600&q=80&fit=max&auto=format",
+        "kb": 443
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1599974579688-8dbdd335c77f?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 81
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1706267701248-fbbeeb1f8c7c?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8bWV4aWNhbiUyMGZvb2QlMjB0YWNvcyUyMHRvcnRpbGxhc3xlbnwxfDB8fHwxNzkyOTYyNDk1fDA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 80
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/edb99fec956915f8-s.0glcd8n2pdab0.woff2",
+        "kb": 36
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 613
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 4962
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+        "scriptingMs": 6,
+        "totalMs": 515
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 322,
+        "totalMs": 491
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3-j70fpq87oio.js",
+        "scriptingMs": 77,
+        "totalMs": 238
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 205
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3iwawbqdzwo4r.js",
+        "scriptingMs": 57,
+        "totalMs": 79
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 4813,
+        "ms": 194
+      },
+      {
+        "url": "https://www.nosweatfd.com/examples/rosas-kitchen",
+        "startMs": 973,
+        "ms": 112
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "startMs": 4213,
+        "ms": 73
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 529
+      },
+      {
+        "group": "Other",
+        "ms": 500
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 401
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 100
+      },
+      {
+        "group": "Rendering",
+        "ms": 76
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      }
+    ]
+  },
+  {
+    "name": "customer-site",
+    "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+    "formFactor": "mobile",
+    "score": 96,
+    "lcpMs": 2484,
+    "fcpMs": 1359,
+    "tbtMs": 39,
+    "cls": 0,
+    "ttfbMs": 3,
+    "totalKb": 348,
+    "jsKb": 169,
+    "lcpElement": "<h1>",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/4cf231d25563e07b-s.3uuun_-7zsf1g.woff2",
+        "kb": 30
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0wc7yqk3i8rwa.js",
+        "kb": 15
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d902bc2bfdd0a4cb-s.2rlzm4mj5kw8e.woff2",
+        "kb": 15
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 609
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1875
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+        "scriptingMs": 4,
+        "totalMs": 262
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 4,
+        "totalMs": 260
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 134,
+        "totalMs": 170
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3nrqnyqp0mxeg.js",
+        "scriptingMs": 121,
+        "totalMs": 126
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/3nrqnyqp0mxeg.js",
+        "startMs": 2559,
+        "ms": 128
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 761,
+        "ms": 103
+      },
+      {
+        "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+        "startMs": 864,
+        "ms": 83
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 302
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 278
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 184
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 82
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      },
+      {
+        "group": "Rendering",
+        "ms": 17
+      }
+    ]
+  },
+  {
+    "name": "customer-site",
+    "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+    "formFactor": "desktop",
+    "score": 83,
+    "lcpMs": 2494,
+    "fcpMs": 1210,
+    "tbtMs": 59,
+    "cls": 0.019,
+    "ttfbMs": 3,
+    "totalKb": 348,
+    "jsKb": 169,
+    "lcpElement": "<h1>",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "kb": 73
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/07c7676b89ed2778-s.p.45535valc9rzk.woff2",
+        "kb": 48
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "kb": 45
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/42_irwpk8nd3r.css",
+        "kb": 43
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/4cf231d25563e07b-s.3uuun_-7zsf1g.woff2",
+        "kb": 29
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d8aeca813a9ab546-s.p.08ssgmy_tb90r.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0wc7yqk3i8rwa.js",
+        "kb": 15
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/media/d902bc2bfdd0a4cb-s.2rlzm4mj5kw8e.woff2",
+        "kb": 15
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 610
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1884
+      }
+    ],
+    "bootup": [
+      {
+        "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+        "scriptingMs": 4,
+        "totalMs": 252
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "scriptingMs": 151,
+        "totalMs": 170
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 4,
+        "totalMs": 160
+      },
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/1bemuc8x2nb-8.js",
+        "scriptingMs": 112,
+        "totalMs": 136
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "https://www.nosweatfd.com/_next/static/immutable/chunks/0s8zxifbv-asb.js",
+        "startMs": 2560,
+        "ms": 167
+      },
+      {
+        "url": "https://www.nosweatfd.com/s/miami-hair-salon-a7589a",
+        "startMs": 771,
+        "ms": 67
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 281
+      },
+      {
+        "group": "Other",
+        "ms": 204
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 167
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 67
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      },
+      {
+        "group": "Rendering",
+        "ms": 21
+      }
+    ]
+  }
+]

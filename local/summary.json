@@ -1,0 +1,3418 @@
+[
+  {
+    "name": "landing",
+    "url": "http://localhost:3000/",
+    "formFactor": "mobile",
+    "score": 88,
+    "lcpMs": 3668,
+    "fcpMs": 1678,
+    "tbtMs": 91,
+    "cls": 0,
+    "ttfbMs": 12,
+    "totalKb": 459,
+    "jsKb": 165,
+    "lcpElement": "<h1 id=\"hero-title\" class=\"lp-h lp-display lp-rise-solid text-[clamp(2.9rem,6.6vw,5.75rem)] leading-[…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/image?url=%2Flanding%2Freal%2Fsite-2.webp&w=750&q=75",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/",
+        "kb": 23
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/fb67aadf79525b65-s.2fxd9z3s4zhc1.woff2",
+        "kb": 21
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 464
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3204
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/",
+        "scriptingMs": 37,
+        "totalMs": 925
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 487,
+        "totalMs": 674
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 9,
+        "totalMs": 218
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 88,
+        "totalMs": 116
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4119,
+        "ms": 231
+      },
+      {
+        "url": "http://localhost:3000/",
+        "startMs": 836,
+        "ms": 85
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 632
+      },
+      {
+        "group": "Other",
+        "ms": 624
+      },
+      {
+        "group": "Rendering",
+        "ms": 333
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 275
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 93
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 74
+      }
+    ]
+  },
+  {
+    "name": "landing",
+    "url": "http://localhost:3000/",
+    "formFactor": "desktop",
+    "score": 67,
+    "lcpMs": 3615,
+    "fcpMs": 1668,
+    "tbtMs": 115,
+    "cls": 0,
+    "ttfbMs": 10,
+    "totalKb": 509,
+    "jsKb": 165,
+    "lcpElement": "<h1 id=\"hero-title\" class=\"lp-h lp-display lp-rise-solid text-[clamp(2.9rem,6.6vw,5.75rem)] leading-[…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/image?url=%2Flanding%2Freal%2Fsite-2.webp&w=1200&q=75",
+        "kb": 59
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/image?url=%2Flanding%2Freal%2Fclients-2.webp&w=1200&q=75",
+        "kb": 28
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/",
+        "kb": 23
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 459
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3156
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/",
+        "scriptingMs": 30,
+        "totalMs": 952
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 548,
+        "totalMs": 688
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 12,
+        "totalMs": 280
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 119,
+        "totalMs": 160
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4395,
+        "ms": 279
+      },
+      {
+        "url": "http://localhost:3000/",
+        "startMs": 872,
+        "ms": 64
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 727
+      },
+      {
+        "group": "Other",
+        "ms": 688
+      },
+      {
+        "group": "Rendering",
+        "ms": 345
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 264
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 80
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 68
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "http://localhost:3000/examples/joes-plumbing",
+    "formFactor": "mobile",
+    "score": 88,
+    "lcpMs": 3827,
+    "fcpMs": 1364,
+    "tbtMs": 71,
+    "cls": 0,
+    "ttfbMs": 39,
+    "totalKb": 466,
+    "jsKb": 174,
+    "lcpElement": "<p class=\"ns-v-sub\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 210
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 460
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/photos/plumber.webp",
+        "kb": 86
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/8056169c9d560660-s.41rroleoq1br7.woff2",
+        "kb": 41
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3370
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 266,
+        "totalMs": 299
+      },
+      {
+        "url": "http://localhost:3000/examples/joes-plumbing",
+        "scriptingMs": 4,
+        "totalMs": 257
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 246
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3929,
+        "ms": 191
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 609,
+        "ms": 88
+      },
+      {
+        "url": "http://localhost:3000/examples/joes-plumbing",
+        "startMs": 698,
+        "ms": 85
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 322
+      },
+      {
+        "group": "Other",
+        "ms": 275
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 181
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 89
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      },
+      {
+        "group": "Rendering",
+        "ms": 20
+      }
+    ]
+  },
+  {
+    "name": "example-plumbing",
+    "url": "http://localhost:3000/examples/joes-plumbing",
+    "formFactor": "desktop",
+    "score": 75,
+    "lcpMs": 3817,
+    "fcpMs": 1358,
+    "tbtMs": 73,
+    "cls": 0,
+    "ttfbMs": 5,
+    "totalKb": 466,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"/photos/plumber.webp\" sizes=\"(min-width: 1024px) 45vw, 100vw\" alt=\"A plumber fixing pipes under a sink\" width=\"2400\" height=\"1800\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:65% 50%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 210
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 450
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/photos/plumber.webp",
+        "kb": 86
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/8056169c9d560660-s.41rroleoq1br7.woff2",
+        "kb": 41
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 454
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 545
+      },
+      {
+        "phase": "Load Time",
+        "ms": 326
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2491
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 280,
+        "totalMs": 310
+      },
+      {
+        "url": "http://localhost:3000/examples/joes-plumbing",
+        "scriptingMs": 7,
+        "totalMs": 283
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 280
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3917,
+        "ms": 196
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 604,
+        "ms": 112
+      },
+      {
+        "url": "http://localhost:3000/examples/joes-plumbing",
+        "startMs": 726,
+        "ms": 90
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 329
+      },
+      {
+        "group": "Other",
+        "ms": 309
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 195
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 75
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 45
+      },
+      {
+        "group": "Rendering",
+        "ms": 29
+      },
+      {
+        "group": "Garbage Collection",
+        "ms": 2
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "http://localhost:3000/examples/rosas-kitchen",
+    "formFactor": "mobile",
+    "score": 87,
+    "lcpMs": 4070,
+    "fcpMs": 1517,
+    "tbtMs": 49,
+    "cls": 0.026,
+    "ttfbMs": 12,
+    "totalKb": 530,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"/photos/cook.webp\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"A cook plating food under copper lamps\" width=\"1169\" height=\"1800\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 160
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 440
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/photos/cook.webp",
+        "kb": 121
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/edb99fec956915f8-s.32sris142tqlb.woff2",
+        "kb": 36
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/b8dfa3d21eb22018-s.3lxpqujs87tck.woff2",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 456
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 254
+      },
+      {
+        "phase": "Load Time",
+        "ms": 451
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2910
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/examples/rosas-kitchen",
+        "scriptingMs": 4,
+        "totalMs": 308
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 243,
+        "totalMs": 264
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 159
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4223,
+        "ms": 147
+      },
+      {
+        "url": "http://localhost:3000/examples/rosas-kitchen",
+        "startMs": 649,
+        "ms": 90
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 295
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 229
+      },
+      {
+        "group": "Other",
+        "ms": 194
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 68
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 65
+      },
+      {
+        "group": "Rendering",
+        "ms": 21
+      }
+    ]
+  },
+  {
+    "name": "example-restaurant",
+    "url": "http://localhost:3000/examples/rosas-kitchen",
+    "formFactor": "desktop",
+    "score": 73,
+    "lcpMs": 4062,
+    "fcpMs": 1517,
+    "tbtMs": 49,
+    "cls": 0.013,
+    "ttfbMs": 5,
+    "totalKb": 530,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"/photos/cook.webp\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"A cook plating food under copper lamps\" width=\"1169\" height=\"1800\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 490
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/photos/cook.webp",
+        "kb": 121
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/edb99fec956915f8-s.32sris142tqlb.woff2",
+        "kb": 36
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/b8dfa3d21eb22018-s.3lxpqujs87tck.woff2",
+        "kb": 34
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 456
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 31
+      },
+      {
+        "phase": "Load Time",
+        "ms": 358
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3218
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/examples/rosas-kitchen",
+        "scriptingMs": 4,
+        "totalMs": 264
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 120,
+        "totalMs": 160
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 156
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 136,
+        "totalMs": 137
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "scriptingMs": 0,
+        "totalMs": 54
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 4222,
+        "ms": 140
+      },
+      {
+        "url": "http://localhost:3000/examples/rosas-kitchen",
+        "startMs": 663,
+        "ms": 79
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "startMs": 2411,
+        "ms": 54
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 300
+      },
+      {
+        "group": "Other",
+        "ms": 203
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 182
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 76
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 69
+      },
+      {
+        "group": "Rendering",
+        "ms": 19
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "http://localhost:3000/examples/glow-salon",
+    "formFactor": "mobile",
+    "score": 95,
+    "lcpMs": 2815,
+    "fcpMs": 1364,
+    "tbtMs": 47,
+    "cls": 0,
+    "ttfbMs": 10,
+    "totalKb": 455,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 44
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600948836587-02c1842c9140?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8N3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 23
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 434
+      },
+      {
+        "phase": "Load Time",
+        "ms": 721
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1202
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 305,
+        "totalMs": 329
+      },
+      {
+        "url": "http://localhost:3000/examples/glow-salon",
+        "scriptingMs": 12,
+        "totalMs": 317
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 272
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3479,
+        "ms": 143
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 758,
+        "ms": 96
+      },
+      {
+        "url": "http://localhost:3000/examples/glow-salon",
+        "startMs": 920,
+        "ms": 95
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 365
+      },
+      {
+        "group": "Other",
+        "ms": 331
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 168
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 88
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 71
+      },
+      {
+        "group": "Rendering",
+        "ms": 27
+      },
+      {
+        "group": "Garbage Collection",
+        "ms": 6
+      }
+    ]
+  },
+  {
+    "name": "example-salon",
+    "url": "http://localhost:3000/examples/glow-salon",
+    "formFactor": "desktop",
+    "score": 76,
+    "lcpMs": 3346,
+    "fcpMs": 1363,
+    "tbtMs": 64,
+    "cls": 0,
+    "ttfbMs": 7,
+    "totalKb": 512,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 58vw, 100vw\" alt=\"Bright hair salon with a row of black styling chairs, mirrors and tall win…\" width=\"2400\" height=\"1600\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 55%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 180
+      },
+      {
+        "id": "uses-responsive-images",
+        "savingsMs": 170
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626383137804-ff908d2753a2?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8M3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=1080&q=80&fit=max&auto=format",
+        "kb": 63
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1626379501846-0df4067b8bb9?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mnx8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 26
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1600948836587-02c1842c9140?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8N3x8aGFpciUyMHNhbG9uJTIwaW50ZXJpb3IlMjBtaW5pbWFsfGVufDF8MHx8fDE3OTI5NjI0ODh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 23
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 456
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 39
+      },
+      {
+        "phase": "Load Time",
+        "ms": 143
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2707
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 348,
+        "totalMs": 387
+      },
+      {
+        "url": "http://localhost:3000/examples/glow-salon",
+        "scriptingMs": 9,
+        "totalMs": 323
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 176
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3475,
+        "ms": 177
+      },
+      {
+        "url": "http://localhost:3000/examples/glow-salon",
+        "startMs": 816,
+        "ms": 87
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 397
+      },
+      {
+        "group": "Other",
+        "ms": 227
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 204
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 88
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      },
+      {
+        "group": "Rendering",
+        "ms": 23
+      }
+    ]
+  },
+  {
+    "name": "example-professional",
+    "url": "http://localhost:3000/examples/hale-ortiz",
+    "formFactor": "mobile",
+    "score": 91,
+    "lcpMs": 3411,
+    "fcpMs": 1515,
+    "tbtMs": 55,
+    "cls": 0.024,
+    "ttfbMs": 9,
+    "totalKb": 392,
+    "jsKb": 174,
+    "lcpElement": "<p class=\"ns-v-sub\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 450
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/660acf689794c992-s.2_mbdogr7ni8i.woff2",
+        "kb": 37
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/13b33f934275930a-s.0c0g8ifvh7k7-.woff2",
+        "kb": 18
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2954
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 226,
+        "totalMs": 254
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 6,
+        "totalMs": 242
+      },
+      {
+        "url": "http://localhost:3000/examples/hale-ortiz",
+        "scriptingMs": 4,
+        "totalMs": 235
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3622,
+        "ms": 160
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 609,
+        "ms": 77
+      },
+      {
+        "url": "http://localhost:3000/examples/hale-ortiz",
+        "startMs": 687,
+        "ms": 69
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 279
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 277
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 164
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 78
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 56
+      },
+      {
+        "group": "Rendering",
+        "ms": 18
+      }
+    ]
+  },
+  {
+    "name": "example-professional",
+    "url": "http://localhost:3000/examples/hale-ortiz",
+    "formFactor": "desktop",
+    "score": 75,
+    "lcpMs": 3460,
+    "fcpMs": 1513,
+    "tbtMs": 44,
+    "cls": 0.024,
+    "ttfbMs": 4,
+    "totalKb": 392,
+    "jsKb": 174,
+    "lcpElement": "<h1>",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 430
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/660acf689794c992-s.2_mbdogr7ni8i.woff2",
+        "kb": 37
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/13b33f934275930a-s.0c0g8ifvh7k7-.woff2",
+        "kb": 18
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 456
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3003
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/examples/hale-ortiz",
+        "scriptingMs": 4,
+        "totalMs": 283
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 173
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 115,
+        "totalMs": 155
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 130,
+        "totalMs": 131
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "scriptingMs": 0,
+        "totalMs": 52
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 3619,
+        "ms": 134
+      },
+      {
+        "url": "http://localhost:3000/examples/hale-ortiz",
+        "startMs": 618,
+        "ms": 77
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "startMs": 2413,
+        "ms": 52
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 294
+      },
+      {
+        "group": "Other",
+        "ms": 208
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 201
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 74
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 71
+      },
+      {
+        "group": "Rendering",
+        "ms": 27
+      }
+    ]
+  },
+  {
+    "name": "example-portfolio",
+    "url": "http://localhost:3000/examples/vega-photo",
+    "formFactor": "mobile",
+    "score": 86,
+    "lcpMs": 3946,
+    "fcpMs": 1519,
+    "tbtMs": 73,
+    "cls": 0.056,
+    "ttfbMs": 8,
+    "totalKb": 663,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1671399503489-4c4917f58960?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1671399503489-4c4917f58960?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw\" alt=\"Bride and groom exchanging vows with an officiant in a golden grass field\" width=\"1600\" height=\"1067\" loading=\"eager\" fetchpriority=\"high\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:50% 45%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "https://images.unsplash.com/photo-1671399503489-4c4917f58960?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8d2VkZGluZyUyMG1vdW50YWlucyUyMGNvdXBsZSUyMGdvbGRlbiUyMGhvdXJ8ZW58MXwwfHx8MTc5Mjk2MjQ5OHww&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 84
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1744891471728-5f0c9476424e?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mjd8fHdlZGRpbmclMjBtb3VudGFpbnMlMjBjb3VwbGUlMjBnb2xkZW4lMjBob3VyfGVufDF8MHx8fDE3OTI5NjI0OTh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 64
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1663457100958-9cfc189d74a7?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTJ8fHdlZGRpbmclMjBtb3VudGFpbnMlMjBjb3VwbGUlMjBnb2xkZW4lMjBob3VyfGVufDF8MHx8fDE3OTI5NjI0OTh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 54
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1544142294-04f61a76633e?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTd8fHdlZGRpbmclMjBtb3VudGFpbnMlMjBjb3VwbGUlMjBnb2xkZW4lMjBob3VyfGVufDF8MHx8fDE3OTI5NjI0OTh8MA&ixlib=rb-4.1.0&w=768&q=80&fit=max&auto=format",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 460
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 3410
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 76
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/examples/vega-photo",
+        "scriptingMs": 6,
+        "totalMs": 296
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 241
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 107,
+        "totalMs": 138
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 119,
+        "totalMs": 120
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 3779,
+        "ms": 123
+      },
+      {
+        "url": "http://localhost:3000/examples/vega-photo",
+        "startMs": 825,
+        "ms": 81
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 760,
+        "ms": 64
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 290
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 272
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 196
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 66
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 55
+      },
+      {
+        "group": "Rendering",
+        "ms": 26
+      }
+    ]
+  },
+  {
+    "name": "example-portfolio",
+    "url": "http://localhost:3000/examples/vega-photo",
+    "formFactor": "desktop",
+    "score": 74,
+    "lcpMs": 3616,
+    "fcpMs": 1512,
+    "tbtMs": 50,
+    "cls": 0.001,
+    "ttfbMs": 8,
+    "totalKb": 511,
+    "jsKb": 174,
+    "lcpElement": "<img src=\"https://images.unsplash.com/photo-1494698154676-0820d731c243?ixid=M3wxMTEz…\" srcset=\"https://images.unsplash.com/photo-1494698154676-0820d731c243?ixid=M3wxMTEz…\" sizes=\"(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw\" alt=\"Couple silhouetted on a rocky ridge against a bright evening sky\" width=\"1600\" height=\"1067\" loading=\"lazy\" decoding=\"async\" class=\"ns-s-img\" style=\"object-position:70% 50%\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1671399503489-4c4917f58960?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8OXx8d2VkZGluZyUyMG1vdW50YWlucyUyMGNvdXBsZSUyMGdvbGRlbiUyMGhvdXJ8ZW58MXwwfHx8MTc5Mjk2MjQ5OHww&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 40
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1744891471728-5f0c9476424e?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8Mjd8fHdlZGRpbmclMjBtb3VudGFpbnMlMjBjb3VwbGUlMjBnb2xkZW4lMjBob3VyfGVufDF8MHx8fDE3OTI5NjI0OTh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 29
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1544142294-04f61a76633e?ixid=M3wxMTEzMjkxfDB8MXxzZWFyY2h8MTd8fHdlZGRpbmclMjBtb3VudGFpbnMlMjBjb3VwbGUlMjBnb2xkZW4lMjBob3VyfGVufDF8MHx8fDE3OTI5NjI0OTh8MA&ixlib=rb-4.1.0&w=480&q=80&fit=max&auto=format",
+        "kb": 25
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 456
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 1915
+      },
+      {
+        "phase": "Load Time",
+        "ms": 118
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 1126
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/examples/vega-photo",
+        "scriptingMs": 13,
+        "totalMs": 320
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 7,
+        "totalMs": 282
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 245,
+        "totalMs": 270
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3768,
+        "ms": 150
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 756,
+        "ms": 90
+      },
+      {
+        "url": "http://localhost:3000/examples/vega-photo",
+        "startMs": 914,
+        "ms": 79
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 846,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Other",
+        "ms": 333
+      },
+      {
+        "group": "Script Evaluation",
+        "ms": 314
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 192
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 68
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 62
+      },
+      {
+        "group": "Rendering",
+        "ms": 24
+      }
+    ]
+  },
+  {
+    "name": "dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "formFactor": "mobile",
+    "score": 89,
+    "lcpMs": 3639,
+    "fcpMs": 1365,
+    "tbtMs": 106,
+    "cls": 0,
+    "ttfbMs": 158,
+    "totalKb": 521,
+    "jsKb": 273,
+    "lcpElement": "<p class=\"mt-3 max-w-[44ch] text-base leading-[1.6] text-(--glass-fg-muted)\">",
+    "opportunities": [
+      {
+        "id": "server-response-time",
+        "savingsMs": 158
+      },
+      {
+        "id": "unused-javascript",
+        "savingsMs": 430
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 170
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      },
+      {
+        "url": "http://localhost:3000/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-d.webp&w=750&q=75",
+        "kb": 17
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 458
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3181
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 468,
+        "totalMs": 606
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 22,
+        "totalMs": 325
+      },
+      {
+        "url": "http://localhost:3000/dashboard",
+        "scriptingMs": 9,
+        "totalMs": 318
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 161,
+        "totalMs": 213
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4230,
+        "ms": 166
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4396,
+        "ms": 140
+      },
+      {
+        "url": "http://localhost:3000/dashboard",
+        "startMs": 824,
+        "ms": 124
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 758,
+        "ms": 65
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4567,
+        "ms": 56
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 702
+      },
+      {
+        "group": "Other",
+        "ms": 448
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 248
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 123
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 58
+      },
+      {
+        "group": "Rendering",
+        "ms": 23
+      }
+    ]
+  },
+  {
+    "name": "dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "formFactor": "desktop",
+    "score": 59,
+    "lcpMs": 4971,
+    "fcpMs": 1369,
+    "tbtMs": 266,
+    "cls": 0,
+    "ttfbMs": 20,
+    "totalKb": 551,
+    "jsKb": 287,
+    "lcpElement": "<img alt=\"Home page of Still Water Spa, an example site made with No Sweat.\" loading=\"eager\" width=\"1600\" height=\"1000\" decoding=\"async\" data-nimg=\"1\" class=\"block h-auto w-full\" style=\"color:transparent\" sizes=\"(min-width: 1024px) 640px, 100vw\" srcset=\"/_next/image?url=%2Flanding%2Fsignature%2Fstill-water-spa-d.webp&amp;w=640&amp;q=7…\" src=\"http://localhost:3000/_next/image?url=%2Flanding%2Fsignature%2Fstill-water…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 280
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 110
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36js-2ekf1bjn.js",
+        "kb": 18
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 460
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 4512
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 488,
+        "totalMs": 654
+      },
+      {
+        "url": "http://localhost:3000/dashboard",
+        "scriptingMs": 15,
+        "totalMs": 370
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 32,
+        "totalMs": 345
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 226,
+        "totalMs": 315
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "scriptingMs": 0,
+        "totalMs": 78
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4240,
+        "ms": 168
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4098,
+        "ms": 142
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "startMs": 2569,
+        "ms": 78
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4477,
+        "ms": 78
+      },
+      {
+        "url": "http://localhost:3000/dashboard",
+        "startMs": 810,
+        "ms": 77
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 760,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 807
+      },
+      {
+        "group": "Other",
+        "ms": 519
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 258
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 154
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 133
+      },
+      {
+        "group": "Rendering",
+        "ms": 21
+      }
+    ]
+  },
+  {
+    "name": "schedule",
+    "url": "http://localhost:3000/schedule",
+    "formFactor": "mobile",
+    "score": 82,
+    "lcpMs": 4294,
+    "fcpMs": 1364,
+    "tbtMs": 201,
+    "cls": 0,
+    "ttfbMs": 32,
+    "totalKb": 495,
+    "jsKb": 270,
+    "lcpElement": "<p class=\"mt-2 max-w-[60ch] text-[15px] leading-[1.6] text-(--glass-fg-muted) lg:tex…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 190
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3837
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 517,
+        "totalMs": 570
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 18,
+        "totalMs": 407
+      },
+      {
+        "url": "http://localhost:3000/schedule",
+        "scriptingMs": 11,
+        "totalMs": 241
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 124,
+        "totalMs": 160
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4071,
+        "ms": 166
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3936,
+        "ms": 135
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 758,
+        "ms": 89
+      },
+      {
+        "url": "http://localhost:3000/schedule",
+        "startMs": 899,
+        "ms": 63
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 847,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 717
+      },
+      {
+        "group": "Other",
+        "ms": 462
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 138
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 101
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 49
+      },
+      {
+        "group": "Garbage Collection",
+        "ms": 42
+      },
+      {
+        "group": "Rendering",
+        "ms": 13
+      }
+    ]
+  },
+  {
+    "name": "schedule",
+    "url": "http://localhost:3000/schedule",
+    "formFactor": "desktop",
+    "score": 73,
+    "lcpMs": 3549,
+    "fcpMs": 1369,
+    "tbtMs": 144,
+    "cls": 0,
+    "ttfbMs": 18,
+    "totalKb": 536,
+    "jsKb": 284,
+    "lcpElement": "<h1 class=\"min-w-0 break-words font-display text-[2rem] leading-[1.15] font-bold trac…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 460
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3089
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 529,
+        "totalMs": 554
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 30,
+        "totalMs": 344
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 265,
+        "totalMs": 333
+      },
+      {
+        "url": "http://localhost:3000/schedule",
+        "scriptingMs": 10,
+        "totalMs": 234
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4088,
+        "ms": 159
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3948,
+        "ms": 140
+      },
+      {
+        "url": "http://localhost:3000/schedule",
+        "startMs": 809,
+        "ms": 64
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 893
+      },
+      {
+        "group": "Other",
+        "ms": 401
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 141
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 106
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 56
+      },
+      {
+        "group": "Rendering",
+        "ms": 14
+      }
+    ]
+  },
+  {
+    "name": "clients",
+    "url": "http://localhost:3000/clients",
+    "formFactor": "mobile",
+    "score": 82,
+    "lcpMs": 4242,
+    "fcpMs": 1213,
+    "tbtMs": 220,
+    "cls": 0,
+    "ttfbMs": 17,
+    "totalKb": 478,
+    "jsKb": 261,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 290
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 140
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3786
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 496,
+        "totalMs": 542
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 15,
+        "totalMs": 220
+      },
+      {
+        "url": "http://localhost:3000/clients",
+        "scriptingMs": 14,
+        "totalMs": 188
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 110,
+        "totalMs": 147
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3916,
+        "ms": 187
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3783,
+        "ms": 133
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 607,
+        "ms": 52
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 674
+      },
+      {
+        "group": "Other",
+        "ms": 291
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 112
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 96
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 52
+      },
+      {
+        "group": "Rendering",
+        "ms": 9
+      }
+    ]
+  },
+  {
+    "name": "clients",
+    "url": "http://localhost:3000/clients",
+    "formFactor": "desktop",
+    "score": 65,
+    "lcpMs": 4657,
+    "fcpMs": 1216,
+    "tbtMs": 243,
+    "cls": 0,
+    "ttfbMs": 13,
+    "totalKb": 510,
+    "jsKb": 275,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 160
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 458
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 4199
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 400,
+        "totalMs": 460
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 24,
+        "totalMs": 429
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 197,
+        "totalMs": 248
+      },
+      {
+        "url": "http://localhost:3000/clients",
+        "scriptingMs": 11,
+        "totalMs": 231
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 152,
+        "totalMs": 153
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3946,
+        "ms": 186
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 3789,
+        "ms": 157
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 608,
+        "ms": 85
+      },
+      {
+        "url": "http://localhost:3000/clients",
+        "startMs": 737,
+        "ms": 67
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 813
+      },
+      {
+        "group": "Other",
+        "ms": 476
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 156
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 125
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 53
+      },
+      {
+        "group": "Garbage Collection",
+        "ms": 31
+      },
+      {
+        "group": "Rendering",
+        "ms": 9
+      }
+    ]
+  },
+  {
+    "name": "estimates",
+    "url": "http://localhost:3000/estimates",
+    "formFactor": "mobile",
+    "score": 83,
+    "lcpMs": 4252,
+    "fcpMs": 1216,
+    "tbtMs": 199,
+    "cls": 0,
+    "ttfbMs": 14,
+    "totalKb": 482,
+    "jsKb": 258,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 280
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 130
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 458
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3794
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 396,
+        "totalMs": 443
+      },
+      {
+        "url": "http://localhost:3000/estimates",
+        "scriptingMs": 8,
+        "totalMs": 215
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 17,
+        "totalMs": 204
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 146,
+        "totalMs": 181
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 126,
+        "totalMs": 127
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3921,
+        "ms": 166
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 3790,
+        "ms": 131
+      },
+      {
+        "url": "http://localhost:3000/estimates",
+        "startMs": 655,
+        "ms": 60
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4087,
+        "ms": 52
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 716
+      },
+      {
+        "group": "Other",
+        "ms": 287
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 136
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 83
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 58
+      },
+      {
+        "group": "Rendering",
+        "ms": 9
+      }
+    ]
+  },
+  {
+    "name": "estimates",
+    "url": "http://localhost:3000/estimates",
+    "formFactor": "desktop",
+    "score": 67,
+    "lcpMs": 4799,
+    "fcpMs": 1218,
+    "tbtMs": 208,
+    "cls": 0,
+    "ttfbMs": 13,
+    "totalKb": 510,
+    "jsKb": 272,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 170
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 459
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 4341
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 359,
+        "totalMs": 428
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 38,
+        "totalMs": 349
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 201,
+        "totalMs": 266
+      },
+      {
+        "url": "http://localhost:3000/estimates",
+        "scriptingMs": 12,
+        "totalMs": 253
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "scriptingMs": 133,
+        "totalMs": 134
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3932,
+        "ms": 170
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/28nwg4t6p00eh.js",
+        "startMs": 3794,
+        "ms": 138
+      },
+      {
+        "url": "http://localhost:3000/estimates",
+        "startMs": 698,
+        "ms": 65
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 770
+      },
+      {
+        "group": "Other",
+        "ms": 452
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 171
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 95
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 58
+      },
+      {
+        "group": "Rendering",
+        "ms": 9
+      }
+    ]
+  },
+  {
+    "name": "invoices",
+    "url": "http://localhost:3000/invoices",
+    "formFactor": "mobile",
+    "score": 91,
+    "lcpMs": 3408,
+    "fcpMs": 1214,
+    "tbtMs": 103,
+    "cls": 0,
+    "ttfbMs": 12,
+    "totalKb": 482,
+    "jsKb": 258,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 310
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2951
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 443,
+        "totalMs": 467
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 18,
+        "totalMs": 224
+      },
+      {
+        "url": "http://localhost:3000/invoices",
+        "scriptingMs": 8,
+        "totalMs": 210
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 119,
+        "totalMs": 157
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3784,
+        "ms": 162
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3946,
+        "ms": 144
+      },
+      {
+        "url": "http://localhost:3000/invoices",
+        "startMs": 658,
+        "ms": 101
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 607,
+        "ms": 50
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 610
+      },
+      {
+        "group": "Other",
+        "ms": 270
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 129
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 85
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 51
+      },
+      {
+        "group": "Rendering",
+        "ms": 7
+      }
+    ]
+  },
+  {
+    "name": "invoices",
+    "url": "http://localhost:3000/invoices",
+    "formFactor": "desktop",
+    "score": 77,
+    "lcpMs": 3394,
+    "fcpMs": 1213,
+    "tbtMs": 101,
+    "cls": 0,
+    "ttfbMs": 12,
+    "totalKb": 510,
+    "jsKb": 272,
+    "lcpElement": "<p class=\"mt-1.5 max-w-[42ch] text-[15px] leading-[1.6] text-pretty text-(--glass-fg…\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 300
+      },
+      {
+        "id": "legacy-javascript",
+        "savingsMs": 150
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 457
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 2937
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 441,
+        "totalMs": 465
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 24,
+        "totalMs": 275
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 160,
+        "totalMs": 209
+      },
+      {
+        "url": "http://localhost:3000/invoices",
+        "scriptingMs": 10,
+        "totalMs": 146
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3932,
+        "ms": 153
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3783,
+        "ms": 149
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 656
+      },
+      {
+        "group": "Other",
+        "ms": 318
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 111
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 88
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 60
+      },
+      {
+        "group": "Rendering",
+        "ms": 6
+      }
+    ]
+  },
+  {
+    "name": "social",
+    "url": "http://localhost:3000/social",
+    "formFactor": "mobile",
+    "score": 81,
+    "lcpMs": 4428,
+    "fcpMs": 1367,
+    "tbtMs": 205,
+    "cls": 0,
+    "ttfbMs": 31,
+    "totalKb": 488,
+    "jsKb": 267,
+    "lcpElement": "<p class=\"mt-4 text-[15px] leading-[1.6] text-slate-600\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 170
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 459
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 3970
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 516,
+        "totalMs": 550
+      },
+      {
+        "url": "http://localhost:3000/social",
+        "scriptingMs": 22,
+        "totalMs": 358
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 14,
+        "totalMs": 268
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 144,
+        "totalMs": 183
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4076,
+        "ms": 173
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3944,
+        "ms": 132
+      },
+      {
+        "url": "http://localhost:3000/social",
+        "startMs": 859,
+        "ms": 81
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 759,
+        "ms": 51
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 738
+      },
+      {
+        "group": "Other",
+        "ms": 367
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 187
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 98
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 89
+      },
+      {
+        "group": "Rendering",
+        "ms": 17
+      }
+    ]
+  },
+  {
+    "name": "social",
+    "url": "http://localhost:3000/social",
+    "formFactor": "desktop",
+    "score": 61,
+    "lcpMs": 4653,
+    "fcpMs": 1366,
+    "tbtMs": 272,
+    "cls": 0,
+    "ttfbMs": 25,
+    "totalKb": 502,
+    "jsKb": 267,
+    "lcpElement": "<p class=\"mt-3 text-[13px] leading-5 text-(--glass-fg-muted)\">",
+    "opportunities": [
+      {
+        "id": "unused-javascript",
+        "savingsMs": 260
+      }
+    ],
+    "biggest": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "kb": 72
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2",
+        "kb": 48
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/36t4_0i33sj_e.css",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "kb": 45
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/06njx535a6by9.js",
+        "kb": 31
+      },
+      {
+        "url": "http://localhost:3000/_next/static/media/d8aeca813a9ab546-s.p.18rizl4rsrl42.woff2",
+        "kb": 27
+      },
+      {
+        "url": "http://localhost:3000/brand/apple-icon.png",
+        "kb": 16
+      },
+      {
+        "url": "http://localhost:3000/brand/nosweat-mark-128.png",
+        "kb": 16
+      }
+    ],
+    "lcpPhases": [
+      {
+        "phase": "TTFB",
+        "ms": 458
+      },
+      {
+        "phase": "Load Delay",
+        "ms": 0
+      },
+      {
+        "phase": "Load Time",
+        "ms": 0
+      },
+      {
+        "phase": "Render Delay",
+        "ms": 4195
+      }
+    ],
+    "bootup": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "scriptingMs": 588,
+        "totalMs": 638
+      },
+      {
+        "url": "http://localhost:3000/social",
+        "scriptingMs": 21,
+        "totalMs": 428
+      },
+      {
+        "url": "Unattributable",
+        "scriptingMs": 23,
+        "totalMs": 314
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/0ysdaee3zbfpf.js",
+        "scriptingMs": 186,
+        "totalMs": 242
+      }
+    ],
+    "longTasks": [
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4078,
+        "ms": 168
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 3939,
+        "ms": 139
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4324,
+        "ms": 87
+      },
+      {
+        "url": "http://localhost:3000/_next/static/chunks/3y08qupnfggrh.js",
+        "startMs": 4246,
+        "ms": 78
+      },
+      {
+        "url": "Unattributable",
+        "startMs": 758,
+        "ms": 77
+      },
+      {
+        "url": "http://localhost:3000/social",
+        "startMs": 835,
+        "ms": 73
+      }
+    ],
+    "mainThread": [
+      {
+        "group": "Script Evaluation",
+        "ms": 855
+      },
+      {
+        "group": "Other",
+        "ms": 403
+      },
+      {
+        "group": "Style & Layout",
+        "ms": 299
+      },
+      {
+        "group": "Script Parsing & Compilation",
+        "ms": 105
+      },
+      {
+        "group": "Parse HTML & CSS",
+        "ms": 64
+      },
+      {
+        "group": "Rendering",
+        "ms": 20
+      }
+    ]
+  }
+]
