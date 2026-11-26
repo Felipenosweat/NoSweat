@@ -4,6 +4,7 @@ import type { SiteSpec } from "@nosweat/schema";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore, type Ref } from "react";
+import { setupKindFor } from "@/lib/setup/wizard";
 import { publishedSlug } from "./brief";
 import styles from "./create.module.css";
 import { focusRing, primaryButton, secondaryButton } from "./ui";
@@ -231,6 +232,8 @@ type ReadyPanelProps = {
 
 export function ReadyPanel({ siteId, spec, signedIn = true, notice, headingRef }: ReadyPanelProps) {
   const slug = publishedSlug(spec.business.name, siteId);
+  // O assistente de agendamento é só para quem tem conta e para os ramos que ele atende.
+  const wizard = signedIn && setupKindFor(spec.template) !== null;
   return (
     <section aria-labelledby="ready-heading" className="mx-auto max-w-[55rem] pb-4">
       <div className="mx-auto max-w-[36rem] text-center">
@@ -250,13 +253,31 @@ export function ReadyPanel({ siteId, spec, signedIn = true, notice, headingRef }
 
       {/* Ações antes da prévia: ficam visíveis sem rolar, no celular e no computador. */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <Link href={`/sites/${siteId}/edit`} className={primaryButton}>
-          Open editor
-        </Link>
-        <Link href={`/sites/preview/${siteId}`} className={secondaryButton}>
-          See the preview
-        </Link>
+        {wizard ? (
+          <>
+            <Link href={`/sites/${siteId}/setup?from=create`} className={primaryButton}>
+              Set up online booking
+            </Link>
+            <Link href={`/sites/${siteId}/edit`} className={secondaryButton}>
+              Skip for now
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href={`/sites/${siteId}/edit`} className={primaryButton}>
+              Open editor
+            </Link>
+            <Link href={`/sites/preview/${siteId}`} className={secondaryButton}>
+              See the preview
+            </Link>
+          </>
+        )}
       </div>
+      {wizard && (
+        <p className="mx-auto mt-3 max-w-[36rem] text-center text-[13px] leading-[1.55] text-pretty text-slate-600">
+          Two minutes: your hours, services and prices, so customers can book online.
+        </p>
+      )}
       {notice && (
         <p
           role="status"
