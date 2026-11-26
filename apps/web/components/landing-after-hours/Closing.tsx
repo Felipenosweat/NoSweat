@@ -3,8 +3,9 @@ import { CLOSING_TITLE, HERO, priceLine } from "./content";
 import { PHOTOS } from "./photos";
 import { UnsplashImage } from "./UnsplashImage";
 
-// 7. Fim: de manhã. O balcão de café na luz da manhã, de ponta a ponta (90% da altura da tela no
-// computador). A foto é clara, então o texto nunca fica em branco sobre ela: título em ink num
+// 7. Fim: de manhã. O café grande na luz do dia, de ponta a ponta (90% da altura da tela no
+// computador). As janelas altas da esquerda são quase brancas, então o texto nunca fica em branco
+// sobre a foto: título em ink num
 // painel branco, embaixo à esquerda (raio de 2px), com o botão azul (ação em fundo claro).
 // Celular e tablet: a foto numa faixa e o painel encavalado na borda de baixo.
 // `data-hide-mobile-cta`: a barra fixa do celular some aqui (o botão já está na tela).

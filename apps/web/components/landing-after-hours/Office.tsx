@@ -4,8 +4,8 @@ import { PHOTOS } from "./photos";
 import { UnsplashImage } from "./UnsplashImage";
 
 // 4. "Dá para cuidar disso pelo celular? É de verdade?" No branco, a captura real da tela Clients,
-// grande, numa moldura de linha fina; ao lado (5 colunas, só no computador), a cadeira de barbeiro
-// sob a luz quente, a manhã seguinte na loja. A legenda avisa que os clientes são inventados.
+// grande, numa moldura de linha fina; ao lado (5 colunas, só no computador), a vitrine
+// da barbearia de dia, com a bicicleta, num recorte quadrado. A legenda avisa que os clientes são inventados.
 
 export function Office() {
   return (
@@ -23,7 +23,7 @@ export function Office() {
         </p>
       </div>
 
-      <div className="relative col-[2/7] mt-20 hidden aspect-[4/5] overflow-hidden rounded-[2px] bg-slate-800 lg:block">
+      <div className="relative col-[2/7] mt-20 hidden aspect-square overflow-hidden rounded-[2px] bg-slate-800 lg:block">
         <UnsplashImage photo={PHOTOS.office} sizes="34vw" />
       </div>
 

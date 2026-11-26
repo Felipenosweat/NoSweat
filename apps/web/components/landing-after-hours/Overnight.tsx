@@ -12,8 +12,8 @@ import { RequestCard } from "./RequestCard";
 import { UnsplashImage } from "./UnsplashImage";
 
 // 3. "O que acontece depois que alguém me encontra?"
-// A floricultura à noite, de ponta a ponta, com o neon OPEN aceso à direita. À esquerda, sobre o
-// véu ink, o título e "a lista da madrugada": três pedidos de exemplo com a hora em que chegaram,
+// O pavilhão ao anoitecer, de ponta a ponta, com as paredes de vidro acesas à direita. À esquerda,
+// sobre o véu ink (o morro escuro e o caminho), o título e "a lista da madrugada": três pedidos de exemplo com a hora em que chegaram,
 // de ramos diferentes, entrando um por um. Embaixo, no ink, as ferramentas do painel que existem hoje (OFFICE_TOOLS, cada uma com a
 // rota conferida no teste). Celular: a foto vira uma faixa no alto e os cartões ficam no ink.
 

@@ -6,11 +6,11 @@ import { PHOTOS } from "./photos";
 import { UnsplashImage } from "./UnsplashImage";
 
 // 1. "O que é isto, e por que me importa?"
-// A placa "We're open" acesa atrás do vidro. Computador: a foto ocupa a tela a partir de 24% da
-// largura (passa por baixo do cabeçalho transparente), com a placa à direita do centro; o título
-// leve fica embaixo à esquerda, sobre o ink e o caixilho escuro, com um véu ink só ali.
-// Celular e tablet: a foto no alto (3:4 no celular, 5:4 no tablet), a placa inteira no quadro, e o
-// texto embaixo, começando sobre o caixilho escuro e seguindo no ink.
+// O neon "open" num fundo quase preto. Computador: a foto começa a 24% da largura (passa por baixo
+// do cabeçalho transparente) e termina acima do site de exemplo, fundindo no ink; o anel fica
+// inteiro, à direita do centro, e o título leve fica à esquerda, sobre o escuro.
+// Celular e tablet: a foto no alto (quadrada no celular, 16:10 no tablet), o anel inteiro no
+// quadro, e o texto logo abaixo, no ink.
 // Na borda de baixo, um site de exemplo de verdade sobe da foto (a captura do computador e,
 // encavalada à direita, a do celular) e continua na seção seguinte; a legenda avisa que o negócio
 // é inventado.
@@ -25,17 +25,17 @@ export function Hero() {
         aria-labelledby="hero-title"
         className="ah-grid relative isolate overflow-hidden bg-ink text-white lg:min-h-svh"
       >
-        <div className="relative col-[1/-1] row-start-1 aspect-[3/4] overflow-hidden md:aspect-[5/4] lg:absolute lg:inset-y-0 lg:right-0 lg:left-[24%] lg:aspect-auto">
+        <div className="relative col-[1/-1] row-start-1 aspect-square overflow-hidden md:aspect-[16/10] lg:absolute lg:top-0 lg:right-0 lg:bottom-[clamp(8rem,18vh,11rem)] lg:left-[24%] lg:aspect-auto">
           <UnsplashImage photo={PHOTOS.hero} priority sizes="(min-width: 1024px) 76vw, 100vw" />
           {/* Véu funcional: em cima, para o cabeçalho; embaixo (e, no computador, à esquerda),
               onde o texto encosta na foto. */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-[linear-gradient(180deg,rgb(7_27_51/.6)_0%,rgb(7_27_51/0)_20%,rgb(7_27_51/0)_62%,rgb(7_27_51/.7)_82%,rgb(7_27_51/1)_100%)] lg:bg-[linear-gradient(90deg,rgb(7_27_51/1)_0%,rgb(7_27_51/.55)_14%,rgb(7_27_51/0)_32%),linear-gradient(180deg,rgb(7_27_51/.45)_0%,rgb(7_27_51/0)_14%,rgb(7_27_51/0)_64%,rgb(7_27_51/.55)_100%)]"
+            className="absolute inset-0 bg-[linear-gradient(180deg,rgb(7_27_51/.6)_0%,rgb(7_27_51/0)_20%,rgb(7_27_51/0)_62%,rgb(7_27_51/.7)_82%,rgb(7_27_51/1)_100%)] lg:bg-[linear-gradient(90deg,rgb(7_27_51/1)_0%,rgb(7_27_51/.55)_14%,rgb(7_27_51/0)_32%),linear-gradient(180deg,rgb(7_27_51/.45)_0%,rgb(7_27_51/0)_14%,rgb(7_27_51/0)_70%,rgb(7_27_51/1)_100%)]"
           />
         </div>
 
-        <div className="relative col-[2/14] row-start-2 -mt-[clamp(5rem,26vw,9rem)] pb-[clamp(8.5rem,26vw,12rem)] md:col-[2/12] md:-mt-[clamp(8rem,20vw,12rem)] md:pb-[clamp(12rem,26vw,16rem)] lg:col-[2/7] lg:row-start-1 lg:mt-0 lg:flex lg:min-h-svh lg:flex-col lg:justify-end lg:pt-32 lg:pb-[clamp(10rem,22vh,13rem)]">
+        <div className="relative col-[2/14] row-start-2 -mt-8 pb-[clamp(8.5rem,26vw,12rem)] md:col-[2/12] md:-mt-6 md:pb-[clamp(12rem,26vw,16rem)] lg:col-[2/7] lg:row-start-1 lg:mt-0 lg:flex lg:min-h-svh lg:flex-col lg:justify-end lg:pt-32 lg:pb-[clamp(10rem,22vh,13rem)]">
           <h1 id="hero-title" className="ah-display ah-h1 max-w-[13ch] text-white">
             {HERO.title}
           </h1>

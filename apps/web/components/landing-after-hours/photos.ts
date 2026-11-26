@@ -1,7 +1,6 @@
 // Fotos da landing "After hours" (Unsplash, hotlink em images.unsplash.com como pedem as regras do
-// Unsplash): lojas à noite e de manhã, nenhuma pessoa posando (só uma barista de perfil, ao fundo,
-// no café do fim). São ilustrativas: o texto
-// alternativo descreve a cena e NUNCA diz que o lugar é cliente da No Sweat. Todas aparecem com
+// Unsplash): lojas à noite e de manhã, nenhuma pessoa posando (no café do fim há gente sentada,
+// de costas). São ilustrativas: o texto alternativo descreve a cena e NUNCA diz que o lugar é cliente da No Sweat. Todas aparecem com
 // crédito no rodapé (PhotoCredits em Footer.tsx).
 // `focus` = object-position por faixa de largura. Trocar uma foto só muda este arquivo.
 
@@ -26,56 +25,58 @@ export type LandingPhoto = {
 };
 
 export const PHOTOS: Record<PhotoKey, LandingPhoto> = {
-  // Placa "We're open" acesa atrás do vidro, entre plantas (5:4). A placa ocupa 28%–72% da
-  // largura e 35%–66% da altura: no celular a caixa é 3:4 (a placa cabe inteira) e no computador
-  // a foto fica à direita, com a placa à direita do centro.
+  // Neon "open" branco dentro de um anel laranja, num fundo quase preto (3:2). O anel ocupa
+  // 26%–78% da largura e 12%–88% da altura. Celular: caixa quadrada centrada no anel. Computador:
+  // a foto fica à direita e acima do site de exemplo, com o anel à direita do centro.
   hero: {
-    id: "N3SsG7xR-Dg",
-    src: "https://images.unsplash.com/photo-1603912699214-92627f304eb6",
-    width: 3800,
-    height: 3040,
-    alt: "A lit ‘We’re open’ sign in a shop window, surrounded by plants.",
-    focus: { base: "50% 40%", md: "50% 50%", lg: "50% 50%" },
-    photographer: "Clay Banks",
-    profile: "https://unsplash.com/@claybanks",
-    page: "https://unsplash.com/photos/white-and-black-love-is-love-print-glass-N3SsG7xR-Dg",
-  },
-  // Floricultura em Nova York à noite, neon OPEN vermelho na porta (3:2).
-  overnight: {
-    id: "Cx4JPE-ZZQ4",
-    src: "https://images.unsplash.com/photo-1575081838238-d06e716afa28",
-    width: 7360,
-    height: 4912,
-    alt: "A flower shop at night with its open sign lit.",
-    focus: { base: "56% 45%", md: "56% 50%", lg: "50% 50%" },
-    photographer: "Alex Simpson",
-    profile: "https://unsplash.com/@m_simpsan",
-    page: "https://unsplash.com/photos/closed-flower-shop-Cx4JPE-ZZQ4",
-  },
-  // Prateleiras brancas de florista com cestos de flores (3:2), recorte 4:5 ao lado da tela real.
-  office: {
-    id: "TtKZyFJ7XC0",
-    src: "https://images.unsplash.com/photo-1567696153410-7ae55f32e4dc",
+    id: "FQgI8AD-BSg",
+    src: "https://images.unsplash.com/photo-1472898965229-f9b06b9c9bbe",
     width: 5184,
     height: 3456,
-    alt: "Woven baskets of fresh flowers on white shelves.",
-    focus: { base: "30% 50%" },
-    photographer: "Carrie Beth Williams",
-    profile: "https://unsplash.com/@caribou15",
-    page: "https://unsplash.com/photos/flowers-on-baskets-TtKZyFJ7XC0",
+    alt: "A neon open sign glowing in a dark shop window.",
+    focus: { base: "52% 50%", md: "52% 50%", lg: "30% 50%" },
+    photographer: "Finn Hackshaw",
+    profile: "https://unsplash.com/@finnhackshaw",
+    page: "https://unsplash.com/photos/white-and-orange-open-led-signage-turned-on-FQgI8AD-BSg",
   },
-  // Balcão de café na luz da manhã, lâmpadas pendentes (16:9). Foto CLARA: o título fica em ink
-  // num painel branco, nunca em branco sobre a foto.
+  // Pavilhão ao anoitecer, paredes de vidro acesas à direita e embaixo, caminho iluminado e céu
+  // vazio no alto à esquerda (4:3). Os cartões ficam na coluna da esquerda, longe das janelas.
+  overnight: {
+    id: "WvHrrR1C5Po",
+    src: "https://images.unsplash.com/photo-1606402179428-a57976d71fa4",
+    width: 4000,
+    height: 3000,
+    alt: "A building at dusk with its windows lit and a lit path leading to it.",
+    focus: { base: "70% 55%", md: "60% 55%", lg: "50% 58%" },
+    photographer: "zero take",
+    profile: "https://unsplash.com/@zerotake",
+    page: "https://unsplash.com/photos/brown-wooden-building-near-trees-during-night-time-WvHrrR1C5Po",
+  },
+  // Vitrine de barbearia de dia, com BARBER no vidro, a bicicleta vermelha e o banco (3:2). Recorte
+  // quadrado puxado para a esquerda: a bicicleta inteira e as letras no quadro.
+  office: {
+    id: "cg599DTeS8w",
+    src: "https://images.unsplash.com/photo-1516470930795-6ba2564824aa",
+    width: 4240,
+    height: 2832,
+    alt: "A barbershop window in daylight with a bicycle parked by the bench.",
+    focus: { base: "5% 50%" },
+    photographer: "Guus Baggermans",
+    profile: "https://unsplash.com/@guusbaggermans",
+    page: "https://unsplash.com/photos/red-city-bike-leaning-on-bench-cg599DTeS8w",
+  },
+  // Café grande na luz do dia, janelas altas (muito claras, à esquerda) e o balcão de doces aceso
+  // (3:2). As janelas são a parte mais clara: o título fica em ink no painel branco.
   closing: {
-    id: "Kwdp-0pok-I",
-    src: "https://images.unsplash.com/photo-1453614512568-c4024d13c247",
-    width: 3456,
-    height: 1944,
-    alt: "A café counter in morning light with pendant bulbs.",
-    focus: { base: "62% 40%", md: "60% 45%", lg: "50% 45%" },
-    photographer: "Nafinia Putra",
-    profile: "https://unsplash.com/@nputra",
-    page: "https://unsplash.com/photos/black-kitchen-appliance-on-kitchen-island-with-pendant-lights-Kwdp-0pok-I",
+    id: "pNIgH0y3upM",
+    src: "https://images.unsplash.com/photo-1542181961-9590d0c79dab",
+    width: 6000,
+    height: 4000,
+    alt: "A busy café in morning light with tall windows and a pastry counter.",
+    focus: { base: "66% 60%", md: "60% 55%", lg: "50% 55%" },
+    photographer: "RR Abrot",
+    profile: "https://unsplash.com/@rr_abrot",
+    page: "https://unsplash.com/photos/people-sitting-inside-establishment-pNIgH0y3upM",
   },
 };
 
