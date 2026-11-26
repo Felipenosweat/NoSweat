@@ -255,6 +255,33 @@ Como as peças se ligam:
   isso: "coming soon"); preço ≤ `FREE_DOMAIN_MAX_CENTS`. A linha `pending` é gravada ANTES da compra;
   erro incerto fica `pending` e avisa a equipe. Endereço e telefone vão só para o registro. Renovação
   por nossa conta enquanto o Premium valer (o cron `cleanup-guests` desliga quando acaba).
+- Visual dos sites ("soft", `packages/templates/src/compositions/soft/`, decisão do fundador, nov/2026): os
+  5 modelos (`SOFT_TEMPLATES` em `SiteRenderer.tsx`; a prop `signature` volta ao layout antigo
+  `Signature`, só chave de recuo) usam o visual macio de app: cartões de 24 px, pílulas com disco de
+  seta, azulejos de ícone, sombra azulada da cor da marca, foto do topo que se dissolve na página, serviços
+  em linhas com ação na linha, barra flutuante no celular (dock), conteúdo sempre visível (nada de reveal com
+  opacity 0, sem JS novo). Referência: `docs/design/studies/founder-salon-app-reference.md`. Variantes
+  (`data-variant`): `beauty` (roxo índigo, reserva com dia e horário na página), `trade` (primeira tela vende a
+  ligação, cor de ação só para ligar, cartão de fatos, cidades como etiquetas), `food` (foto de comida, cardápio
+  em cartões, "Order" só com `links.order`), `pro` (sóbrio, serviços numerados, dock de 2 itens), `work`
+  (galeria logo depois do topo, pacotes com "Inquire"). Sem estrelas, notas, "popular" nem promoções que o dono
+  não escreveu (regra 8).
+- Reserva e formulário v2 (`sections/BookingSection.tsx`, `BookingDetailsFields.tsx`, `booking-form.ts`, migration
+  0038): nome e sobrenome, telefone com país (EUA +1, E.164), e-mail obrigatório, aceite da privacidade e da
+  política de cancelamento (`BookingSettings.cancellationPolicy`); `POST .../book` com `firstName` exige os
+  aceites (422), o formato antigo (só `name`) continua valendo. A marcação guarda data do aceite e o texto
+  da política (`cancellation_policy_snapshot`); horários mostram ET/CT/MT/PT (`lib/us-zone.ts`, igual em
+  `booking-format.ts`).
+- Assistente de agendamento do dono (`/sites/[id]/setup`, `lib/setup/`, `server/booking/setup.ts`,
+  `POST /api/sites/[id]/setup`): beauty/professional (horários com almoço, serviços com duração e preço, equipe
+  com bio, folgas com feriados dos EUA, fuso dos EUA, política de cancelamento) e home-services (dias e
+  janelas de chegada = um intervalo por dia + `slotStepMinutes` e duração do tamanho da janela). Idempotente
+  (casa por nome), grava o rascunho versionado e nunca publica; o `/create` leva a ele depois de gerar o site.
+- Walk-in (`POST /api/office/walk-in`, botão na agenda): cria um job normal, então o horário some do
+  agendamento online na hora (`server/booking/availability.ts` já descontava jobs).
+- Americano em tudo (decisão do fundador): telefone `(305) 555-0187`, endereço "Rua, Cidade, UF ZIP"
+  (`business.zip` opcional), preço em `$`, hora "10 AM – 7 PM", milhas, inglês americano, `inputmode`/`autocomplete`
+  e campos com 16 px (iOS não dá zoom).
 
 ## Princípio do produto: o cliente fala pouco, nós entregamos muito
 
