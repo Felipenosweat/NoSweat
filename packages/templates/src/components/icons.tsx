@@ -242,3 +242,110 @@ export function PlusIcon(props: IconProps) {
     </Icon>
   );
 }
+
+// Ícones de linha dos ramos de serviços para casa, restaurante e contato (composição "soft").
+export function HeaterIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="6" y="3" width="12" height="18" rx="3" />
+      <path d="M9 21v1M15 21v1M12 15.5a2 2 0 0 0 2-2c0-1.5-2-2.5-2-4.5-1 1-2 2.5-2 4.5a2 2 0 0 0 2 2z" />
+    </Icon>
+  );
+}
+
+export function PipeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 8h8a3 3 0 0 1 3 3v5M3 12h4M17 16h-6M14 16v5M10 16v5M17 3v5" />
+      <path d="M15 3h4M15 8h4" />
+    </Icon>
+  );
+}
+
+export function BroomIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M19 3l-6.5 7.5M9.5 10.5l4 4M8 12c-2.5.5-4.5 3-5 9 6 0 8.5-2 9-4.5" />
+      <path d="M6 17c.5-1.2 1.4-2.2 2.5-3" />
+    </Icon>
+  );
+}
+
+export function LeafIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 4C10 4 4 9 4 15a5 5 0 0 0 5 5c6 0 11-6 11-16z" />
+      <path d="M4 21c2-6 6-10 11-12" />
+    </Icon>
+  );
+}
+
+export function BoltIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z" />
+    </Icon>
+  );
+}
+
+export function RollerIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="14" height="6" rx="2" />
+      <path d="M17 6h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-7v3" />
+      <rect x="10" y="15" width="4" height="6" rx="1" />
+    </Icon>
+  );
+}
+
+export function TruckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2 6h11v10H2zM13 9h4l4 4v3h-8" />
+      <circle cx="7" cy="17.5" r="1.8" />
+      <circle cx="17" cy="17.5" r="1.8" />
+    </Icon>
+  );
+}
+
+export function UtensilsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M6 3v7a2 2 0 0 0 2 2v9M10 3v7a2 2 0 0 1-2 2M8 3v5M17 21V3c-2.5 1.5-3.5 4-3.5 7 0 2 1 3 3.5 3" />
+    </Icon>
+  );
+}
+
+export function CupIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9zM17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+      <path d="M8 3v3M12 3v3" />
+    </Icon>
+  );
+}
+
+export function FlameIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.2 1 2 2 2.5C11 8.5 11 5.5 12 3z" />
+    </Icon>
+  );
+}
+
+export function CakeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h16v-7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7zM4 15.5c2 1.5 3.5 1.5 4 0 .5 1.5 3 1.5 4 0 1 1.5 3.5 1.5 4 0 .5 1.5 2 1.5 4 0" />
+      <path d="M12 11V7M12 4.5v.5" />
+    </Icon>
+  );
+}
+
+export function MessageIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M21 12a8 8 0 0 1-11.7 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+    </Icon>
+  );
+}

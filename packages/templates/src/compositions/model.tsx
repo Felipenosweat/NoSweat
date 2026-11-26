@@ -155,11 +155,19 @@ export function areaServed(business: Business): string | undefined {
   return business.serviceArea?.trim() || location(business);
 }
 
-/** Endereço completo numa linha ("2112 Logan Ave, San Diego, CA"), se houver rua. */
+/** "Cidade, UF 12345": cidade e estado, com o CEP quando o dono informou. */
+export function locationWithZip(business: Business): string | undefined {
+  const place = location(business);
+  const zip = business.zip?.trim();
+  if (!zip) return place;
+  return place ? `${place} ${zip}` : zip;
+}
+
+/** Endereço completo numa linha ("2112 Logan Ave, San Diego, CA 92113"), se houver rua. */
 export function fullAddress(business: Business): string | undefined {
   const street = business.address?.trim();
   if (!street) return undefined;
-  return [street, location(business)].filter(Boolean).join(", ");
+  return [street, locationWithZip(business)].filter(Boolean).join(", ");
 }
 
 /** Busca do Google Maps (sem chave de API): abre a rota no app de mapas do celular. */

@@ -1,15 +1,23 @@
 import type { SectionOf } from "@nosweat/schema";
 import type { ReactNode } from "react";
-import { CalendarIcon, MapPinIcon, PhoneIcon, PlusIcon, ImageIcon } from "../../components/icons";
+import {
+  CalendarIcon,
+  ImageIcon,
+  MapPinIcon,
+  MessageIcon,
+  PhoneIcon,
+  PlusIcon,
+} from "../../components/icons";
 import { Photo, PhotoCredits, specImages } from "../../components/photo";
 import { VISITOR_PRIVACY_URL } from "../../sections/ContactForm";
-import { externalProps, isOwnerPhoto, location } from "../model";
+import { externalProps, isOwnerPhoto, locationWithZip } from "../model";
 import { ReviewUsLink } from "../ReviewLink";
 import { ContactFormBlock, hoursSummary, socialLinks } from "../shared";
 import { BookLink } from "./BookLink";
 import type { SoftCtx } from "./context";
 import { ServiceGlyph } from "./ServiceGlyph";
 import { galleryShapes, groupServices, initials, usableThumb } from "./soft-data";
+import { smsHref } from "./variant-data";
 
 /** Faixa da página: espaço vertical e largura máxima. */
 export function Band({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -358,6 +366,14 @@ export function SoftContact({
                   Call {business.phone}
                 </a>
               )}
+              {ctx.variant === "trade" && phoneHref && business.phone && (
+                <a href={smsHref(business.phone)} className="ns-s-act">
+                  <span className="ns-s-tl-sm" aria-hidden="true">
+                    <MessageIcon />
+                  </span>
+                  Text us
+                </a>
+              )}
               {directionsHref && (
                 <a href={directionsHref} {...externalProps(directionsHref)} className="ns-s-act">
                   <span className="ns-s-tl-sm" aria-hidden="true">
@@ -365,7 +381,7 @@ export function SoftContact({
                   </span>
                   <span>
                     Directions
-                    <small>{[address, location(business)].filter(Boolean).join(", ")}</small>
+                    <small>{[address, locationWithZip(business)].filter(Boolean).join(", ")}</small>
                     <span className="sr-only"> (opens Google Maps)</span>
                   </span>
                 </a>
@@ -413,7 +429,7 @@ export function SoftContact({
 export function SoftFooter({ ctx }: { ctx: SoftCtx }) {
   const { model, spec } = ctx;
   const { business, phoneHref } = model;
-  const city = location(business);
+  const city = locationWithZip(business);
   const hours = hoursSummary(business.hours);
   const socials = socialLinks(business);
   return (

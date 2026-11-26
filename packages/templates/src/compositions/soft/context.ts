@@ -1,11 +1,14 @@
 import type { SiteSpec } from "@nosweat/schema";
 import type { BookingDemo } from "../../sections/BookingSection";
 import type { SiteModel } from "../model";
+import type { SoftVariant } from "./variant-data";
 
 /** O que todas as peças da composição "soft" precisam saber do site. */
 export type SoftCtx = {
   model: SiteModel;
   spec: SiteSpec;
+  /** Qual dos cinco jeitos da composição: beleza (a base) ou um dos quatro ramos. */
+  variant: SoftVariant;
   /** Existe uma seção de agendamento ligada (a API está no ar ou o modo exemplo). */
   hasBooking: boolean;
   bookingEndpoint?: string;
