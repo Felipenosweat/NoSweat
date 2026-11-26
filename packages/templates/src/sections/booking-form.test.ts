@@ -173,3 +173,31 @@ describe("cancellationHoursText", () => {
     expect(cancellationHoursText(undefined)).toBeNull();
   });
 });
+
+describe("text reminders consent (optional)", () => {
+  it("starts unchecked", () => {
+    expect(EMPTY_BOOKING_DETAILS.acceptSms).toBe(false);
+  });
+
+  it("never gates the button: the box is optional", () => {
+    expect(consentsGiven(valid, false)).toBe(true);
+    expect(consentsGiven({ ...valid, acceptSms: false }, true)).toBe(false);
+    expect(consentsGiven({ ...valid, acceptSms: true }, false)).toBe(true);
+  });
+
+  it("books without the box, with or without the owner's text reminders on", () => {
+    for (const smsReminders of [false, true]) {
+      const body = buildBookingBody(valid, PICK, false, smsReminders);
+      expect(body).not.toBeNull();
+      expect(body).not.toHaveProperty("acceptedSms");
+    }
+  });
+
+  it("sends acceptedSms only when the box was checked AND the owner uses text reminders", () => {
+    const checked = { ...valid, acceptSms: true };
+    expect(buildBookingBody(checked, PICK, false, true)).toMatchObject({ acceptedSms: true });
+    expect(buildBookingBody(checked, PICK, false, false)).not.toHaveProperty("acceptedSms");
+    // O formato antigo da chamada (3 argumentos) segue valendo.
+    expect(buildBookingBody(checked, PICK, false)).not.toHaveProperty("acceptedSms");
+  });
+});

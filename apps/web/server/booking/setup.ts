@@ -256,6 +256,8 @@ export function planSetup(input: {
     // Texto vazio apaga a política antiga (ausente não mudaria nada).
     cancellationPolicy: policy,
     cancellationHours: policy ? (settings.cancellationHours ?? 0) : 0,
+    // Ausente = não muda (quem chama sem o campo não liga nem desliga os lembretes).
+    ...(settings.smsReminders !== undefined ? { smsReminders: settings.smsReminders } : {}),
   };
 
   const withSite = withContact(

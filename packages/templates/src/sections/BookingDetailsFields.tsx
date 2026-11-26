@@ -1,5 +1,6 @@
 "use client";
 
+import { smsConsentIntro } from "@nosweat/schema";
 import { useId, type ReactNode } from "react";
 import {
   cancellationHoursText,
@@ -26,6 +27,10 @@ export type BookingDetailsFieldsProps = {
   /** Política de cancelamento do dono; vazia = sem texto e sem a segunda caixa. */
   cancellationPolicy?: string;
   cancellationHours?: number;
+  /** O dono usa lembretes por texto: mostra a caixa OPCIONAL (nunca marcada, nunca obrigatória). */
+  smsReminders?: boolean;
+  /** Nome da empresa no aviso de consentimento ("text messages from {Business}"). */
+  businessName?: string;
 };
 
 const fieldBase =
@@ -84,6 +89,8 @@ export function BookingDetailsFields({
   onBlurField,
   cancellationPolicy,
   cancellationHours,
+  smsReminders = false,
+  businessName = "",
 }: BookingDetailsFieldsProps) {
   const base = useId().replace(/:/g, "");
   const ids = {
@@ -96,6 +103,7 @@ export function BookingDetailsFields({
     privacy: `${base}-privacy`,
     cancel: `${base}-cancel`,
     policy: `${base}-policy`,
+    sms: `${base}-sms`,
   };
   const country = findCountry(details.phoneCountry);
   const policy = cancellationPolicy?.trim() || "";
@@ -305,6 +313,38 @@ export function BookingDetailsFields({
               <span>I agree to the cancellation policy</span>
             </label>
           </>
+        )}
+
+        {smsReminders && (
+          // Consentimento para lembretes por texto: opcional, desmarcado e fora do "obrigatório".
+          <label
+            htmlFor={ids.sms}
+            className={
+              soft ? "ns-s-check ns-s-check--sms" : "flex min-h-11 items-start gap-3 text-sm"
+            }
+          >
+            <input
+              id={ids.sms}
+              name="acceptedSms"
+              type="checkbox"
+              checked={details.acceptSms}
+              onChange={(event) => onChange({ acceptSms: event.target.checked })}
+              className={soft ? undefined : "mt-0.5 size-6 shrink-0 accent-[var(--ns-primary)]"}
+            />
+            <span>
+              {`${smsConsentIntro(businessName)} See our `}
+              <a
+                href={VISITOR_PRIVACY_URL}
+                target="_blank"
+                rel="noopener"
+                className={soft ? "ns-s-link" : linkClass}
+              >
+                Privacy Policy
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+              .
+            </span>
+          </label>
         )}
       </div>
     </>

@@ -150,6 +150,8 @@ export type WizardState = {
   state: string;
   zip: string;
   payments: WizardPayments;
+  /** Lembretes por texto: o formulário ganha a caixa opcional de consentimento. */
+  smsReminders: boolean;
   policyPreset: PolicyPreset;
   cancellationPolicy: string;
   cancellationHours: number;
@@ -448,6 +450,7 @@ export function buildSetupRequest(state: WizardState): BuildResult {
       cancellationPolicy:
         state.policyPreset === "none" ? undefined : state.cancellationPolicy.trim() || undefined,
       cancellationHours: state.policyPreset === "none" ? undefined : state.cancellationHours,
+      smsReminders: state.smsReminders,
     },
     services: state.services.map((service) => ({
       name: service.name.trim(),
@@ -631,6 +634,7 @@ export function initialState(input: InitialInput): WizardState {
     state: spec.business.state ?? "",
     zip: "",
     payments: paymentsFromSpec(spec),
+    smsReminders: settings.smsReminders === true,
     policyPreset: preset,
     cancellationPolicy: text || first?.text || "",
     cancellationHours: settings.cancellationHours ?? first?.hours ?? 24,

@@ -40,6 +40,8 @@ export const SetupSettings = z.object({
   note: z.string().trim().max(300),
   cancellationPolicy: z.string().trim().max(600).optional(),
   cancellationHours: z.number().int().min(0).max(720).optional(),
+  /** Lembretes por texto (consentimento no formulário). Ausente = não muda. */
+  smsReminders: z.boolean().optional(),
 });
 export type SetupSettings = z.infer<typeof SetupSettings>;
 

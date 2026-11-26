@@ -30,7 +30,13 @@ import {
   type AvailabilityInput,
   type BusyInterval,
 } from "./availability";
-import { consentFor, customerNameOf, formatPhoneDisplay, policyOf } from "./consent";
+import {
+  consentFor,
+  customerNameOf,
+  formatPhoneDisplay,
+  policyOf,
+  smsConsentFor,
+} from "./consent";
 import { getBookingStore } from "./store";
 import { addDaysTo, dateKeyOf, isKnownTimeZone, isoInZone, minutesOf, startOfDayMs } from "./time";
 import type { BookingRecord } from "./types";
@@ -212,6 +218,8 @@ export async function getPublicBookingInfo(siteId: string): Promise<PublicBookin
     staff: ctx.team.map((member) => ({ id: member.id, name: member.name })),
     maxDaysAhead: ctx.settings.maxDaysAhead,
     note: ctx.settings.note,
+    // Lembretes por texto: o formulário só mostra a caixa de consentimento quando o dono ligou.
+    ...(ctx.settings.smsReminders === true ? { smsReminders: true } : {}),
     // Política do dono (formulário v2): o site mostra o texto e pede o aceite.
     ...(policyOf(ctx.settings)
       ? {
@@ -398,6 +406,8 @@ export async function createBooking(
   checkStaff(ctx, input.staffId);
   // Formato novo exige o aceite (422); o antigo (só `name`) segue sem registrar aceite.
   const consent = consentFor(input, ctx.settings, now);
+  // Caixa opcional de lembretes por texto (o texto guardado é montado aqui, com o nome da empresa).
+  const smsConsent = smsConsentFor(input, ctx.settings, ctx.business.name, now);
 
   const startMs = Date.parse(input.startAt);
   const availability = await availabilityInput(ctx, view.durationMinutes, input.staffId, now);
@@ -439,6 +449,11 @@ export async function createBooking(
     if (consent) {
       // Prova do aceite (data + texto que o cliente viu). Se não gravar, a marcação é desfeita.
       record = (await getBookingStore().saveConsent(ctx.ownerId, record.id, consent)) ?? record;
+    }
+    if (smsConsent) {
+      // Mesmo que o cliente já tenha respondido STOP antes (sms_opt_out), o consentimento fica
+      // registrado: o bloqueio dos lembretes é feito na lista do dono, não aqui.
+      record = (await getBookingStore().saveSmsConsent(ctx.ownerId, record.id, smsConsent)) ?? record;
     }
     const job = await createJob(ctx.ownerId, {
       clientId: client.id,

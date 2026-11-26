@@ -1151,6 +1151,23 @@ export function RulesStep({ state, update }: StepProps) {
         )}
       </Group>
 
+      <Group
+        title="Text reminders (you send them from your phone)"
+        hint="Customers see an optional box to agree to text reminders. No Sweat does not send texts for you: your Schedule page lists tomorrow’s customers who agreed, with a message ready to send from your own phone. If someone replies STOP, you must stop texting them (mark them on that list)."
+      >
+        <label className="flex min-h-11 cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={state.smsReminders}
+            onChange={(event) => update({ smsReminders: event.target.checked })}
+            className="size-6 shrink-0 accent-brand"
+          />
+          <span className="text-[15px] font-semibold text-ink">
+            Ask customers if they want text reminders
+          </span>
+        </label>
+      </Group>
+
       <Group title="Booking rules">
         <div className="grid gap-5 sm:grid-cols-3">
           <NumberSelect
@@ -1333,6 +1350,9 @@ export function ReviewStep({
             <li>
               {state.policyPreset === "none" ? "No cancellation policy" : state.cancellationPolicy}
             </li>
+            {state.smsReminders && (
+              <li className="text-slate-600">Customers can opt in to text reminders</li>
+            )}
             <li className="text-slate-600">
               {state.minNoticeHours === 0
                 ? "Customers can book right up to the start time"

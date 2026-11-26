@@ -1,6 +1,10 @@
-import type { BookingSettings, CreateBookingRequest } from "@nosweat/schema";
+import {
+  smsConsentText,
+  type BookingSettings,
+  type CreateBookingRequest,
+} from "@nosweat/schema";
 import { OfficeError } from "../office/types";
-import type { BookingConsent } from "./types";
+import type { BookingConsent, SmsConsent } from "./types";
 
 // Aceite do formulário v2: quem manda o formato novo (`firstName`) precisa aceitar a privacidade
 // (e a política de cancelamento, se o dono escreveu uma). O formato antigo (só `name`) segue
@@ -58,6 +62,22 @@ export function consentFor(
     cancellationAcceptedAt: snapshot ? at : null,
     cancellationPolicySnapshot: snapshot,
   };
+}
+
+/**
+ * Consentimento para lembretes por texto: só com a caixa marcada (`acceptedSms`) E o dono com
+ * `smsReminders` ligado. O texto guardado é montado AQUI, com o nome da empresa, nunca o que o
+ * navegador mandar. Vale também para o formato antigo do pedido. Sem a caixa, `null` (a marcação
+ * funciona do mesmo jeito: o consentimento nunca é condição).
+ */
+export function smsConsentFor(
+  input: Pick<CreateBookingRequest, "acceptedSms">,
+  settings: Pick<BookingSettings, "smsReminders">,
+  businessName: string,
+  now: Date,
+): SmsConsent | null {
+  if (input.acceptedSms !== true || settings.smsReminders !== true) return null;
+  return { smsConsentAt: now.toISOString(), smsConsentText: smsConsentText(businessName) };
 }
 
 /** Nome completo do cliente: "First Last" no formato novo, `name` no antigo. */

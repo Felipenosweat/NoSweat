@@ -1,4 +1,4 @@
-import type { CreateBookingRequest } from "@nosweat/schema";
+import { smsConsentText, type CreateBookingRequest } from "@nosweat/schema";
 import { describe, expect, it } from "vitest";
 import { OfficeError } from "../office/types";
 import {
@@ -7,6 +7,7 @@ import {
   customerNameOf,
   formatPhoneDisplay,
   policyOf,
+  smsConsentFor,
 } from "./consent";
 
 const NOW = new Date("2026-12-01T17:00:00Z");
@@ -108,5 +109,36 @@ describe("customerNameOf", () => {
     expect(customerNameOf(newShape)).toBe("Ana Lima");
     expect(customerNameOf({ ...newShape, lastName: undefined })).toBe("Ana");
     expect(customerNameOf(oldShape)).toBe("Ana Lima");
+  });
+});
+
+describe("smsConsentFor", () => {
+  const on = { smsReminders: true };
+
+  it("records nothing without the box, or when the owner has text reminders off", () => {
+    expect(smsConsentFor({}, on, "Glow Salon", NOW)).toBeNull();
+    expect(smsConsentFor({ acceptedSms: true }, {}, "Glow Salon", NOW)).toBeNull();
+    const off = { smsReminders: false };
+    expect(smsConsentFor({ acceptedSms: true }, off, "Glow Salon", NOW)).toBeNull();
+  });
+
+  it("builds the exact disclosure on the server, with the business name and the time", () => {
+    const consent = smsConsentFor({ acceptedSms: true }, on, " Glow Salon ", NOW);
+    expect(consent).toEqual({
+      smsConsentAt: NOW.toISOString(),
+      smsConsentText: smsConsentText("Glow Salon"),
+    });
+    expect(consent?.smsConsentText).toContain("text messages from Glow Salon");
+    expect(consent?.smsConsentText).toContain("Reply STOP to opt out or HELP for help.");
+    expect(consent?.smsConsentText.endsWith("See our Privacy Policy.")).toBe(true);
+  });
+
+  it("does not depend on the old or new request shape", () => {
+    expect(smsConsentFor({ ...oldShape, acceptedSms: true }, on, "Glow", NOW)).not.toBeNull();
+    expect(smsConsentFor({ ...newShape, acceptedSms: true }, on, "Glow", NOW)).not.toBeNull();
+    // E o aceite normal continua como antes.
+    expect(consentFor({ ...newShape, acceptedSms: true }, {}, NOW)).toMatchObject({
+      privacyAcceptedAt: NOW.toISOString(),
+    });
   });
 });

@@ -1693,6 +1693,10 @@
 .ns-s-form .ns-s-check span {
   color: var(--ns-text);
 }
+.ns-s-form .ns-s-check--sms span {
+  font-size: 14px;
+  line-height: 1.5;
+}
 .ns-s-link {
   text-decoration: underline;
   text-underline-offset: 2px;
