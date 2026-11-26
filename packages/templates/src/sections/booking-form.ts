@@ -213,6 +213,22 @@ export function buildBookingBody(
   };
 }
 
+/**
+ * Aviso de consentimento dos lembretes por texto (TCPA/CTIA), sem o final "See our Privacy Policy."
+ * (no formulário "Privacy Policy" é um link). O servidor guarda o texto montado por
+ * `smsConsentText` de @nosweat/schema: esta cópia existe só para não levar o Zod ao navegador dos
+ * sites, e um teste confere que as duas são idênticas.
+ */
+export function smsConsentIntro(businessName: string): string {
+  const business = businessName.trim() || "this business";
+  return (
+    "Text me reminders about my appointment. By checking this box, you agree to receive text " +
+    `messages from ${business} at the phone number above about your appointment. Message ` +
+    "frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for " +
+    "help. Consent is not a condition of booking."
+  );
+}
+
 /** "Cancel free up to 24 hours before" (só informativo; 0 ou ausente = sem frase). */
 export function cancellationHoursText(hours: number | undefined): string | null {
   if (!hours || hours <= 0) return null;

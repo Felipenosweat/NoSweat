@@ -1,3 +1,4 @@
+import { smsConsentIntro as schemaIntro } from "@nosweat/schema";
 import { describe, expect, it } from "vitest";
 import {
   buildBookingBody,
@@ -10,6 +11,7 @@ import {
   formatNationalInput,
   nationalDigits,
   PHONE_COUNTRIES,
+  smsConsentIntro,
   validateDetails,
   visibleErrors,
   type BookingDetails,
@@ -199,5 +201,13 @@ describe("text reminders consent (optional)", () => {
     expect(buildBookingBody(checked, PICK, false, false)).not.toHaveProperty("acceptedSms");
     // O formato antigo da chamada (3 argumentos) segue valendo.
     expect(buildBookingBody(checked, PICK, false)).not.toHaveProperty("acceptedSms");
+  });
+});
+
+describe("smsConsentIntro", () => {
+  it("is word for word the text the server stores (schema)", () => {
+    for (const name of ["Glow Salon", " Fade & Co ", "", "   "]) {
+      expect(smsConsentIntro(name)).toBe(schemaIntro(name));
+    }
   });
 });

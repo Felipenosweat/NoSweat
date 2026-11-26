@@ -1,6 +1,5 @@
 "use client";
 
-import { smsConsentIntro } from "@nosweat/schema";
 import { useId, type ReactNode } from "react";
 import {
   cancellationHoursText,
@@ -8,6 +7,7 @@ import {
   findCountry,
   formatNationalInput,
   PHONE_COUNTRIES,
+  smsConsentIntro,
   type BookingDetails,
   type DetailErrors,
 } from "./booking-form";
