@@ -300,6 +300,11 @@ export const SiteSpec = z.object({
     email: z.email().optional(),
     city: z.string().optional(),
     state: z.string().length(2).optional(),
+    /** CEP de 5 dígitos (ou ZIP+4) do endereço, ex.: "78701". Opcional. */
+    zip: z
+      .string()
+      .regex(/^\d{5}(-\d{4})?$/)
+      .optional(),
     /** Área atendida, ex.: "Austin and nearby cities". */
     serviceArea: z.string().max(120).optional(),
     /** Horário de funcionamento, ex.: { days: "Mon–Fri", time: "8 AM – 6 PM" }. */

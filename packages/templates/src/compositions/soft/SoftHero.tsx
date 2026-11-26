@@ -8,6 +8,7 @@ import { NextOpening } from "./NextOpening";
 import { ServiceGlyph } from "./ServiceGlyph";
 import { SoftMenu } from "./SoftMenu";
 import { featuredServices, shortName, usableHero, usableThumb } from "./soft-data";
+import type { Cta } from "./variant-data";
 
 function servicesOf(ctx: SoftCtx): SectionOf<"services">["items"] {
   const section = ctx.spec.sections.find(
@@ -41,9 +42,16 @@ function MainAction({ ctx, className }: { ctx: SoftCtx; className: string }) {
 }
 
 /** Cabeçalho: pílula com o nome, e no celular os botões redondos de ligar e do menu. */
-export function SoftHeader({ ctx }: { ctx: SoftCtx }) {
+export function SoftHeader({ ctx, cta }: { ctx: SoftCtx; cta?: Cta }) {
   const { model } = ctx;
   const { business, links, phoneHref } = model;
+  // Beleza: o botão do topo é o do agendamento; os outros ramos mandam a ação principal deles.
+  const action: Cta = cta ?? {
+    label: model.ctaLabel,
+    href: ctx.hasBooking ? "#book" : model.ctaHref,
+    external: !ctx.hasBooking && model.ctaExternal,
+    kind: "link",
+  };
   return (
     <header className="ns-s-header">
       <a href="#top" className="ns-s-pill">
@@ -72,16 +80,16 @@ export function SoftHeader({ ctx }: { ctx: SoftCtx }) {
         )}
         <SoftMenu
           links={links}
-          ctaHref={ctx.hasBooking ? "#book" : model.ctaHref}
-          ctaLabel={model.ctaLabel}
-          ctaExternal={!ctx.hasBooking && model.ctaExternal}
+          ctaHref={action.href}
+          ctaLabel={action.label}
+          ctaExternal={action.external}
         />
         <a
-          href={ctx.hasBooking ? "#book" : model.ctaHref}
-          {...(ctx.hasBooking ? {} : externalProps(model.ctaHref))}
+          href={action.href}
+          {...externalProps(action.href)}
           className="ns-s-btn ns-s-btn--sm ns-s-hcta"
         >
-          {model.ctaLabel}
+          {action.label}
         </a>
       </div>
     </header>

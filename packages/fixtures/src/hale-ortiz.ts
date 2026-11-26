@@ -19,14 +19,15 @@ export const haleOrtiz: SiteSpec = {
     address: "1550 Wynkoop St, Suite 300",
     city: "Denver",
     state: "CO",
+    zip: "80202",
     hours: [{ days: "Mon–Fri", time: "9 AM – 5 PM" }],
     links: { booking: "https://haleortiz.example.com/book" },
   },
   theme: {
-    primary: "#1E3A5F",
-    secondary: "#B08D57",
-    background: "#FAFAF7",
-    text: "#14181F",
+    primary: "#1B2A41",
+    secondary: "#9A7B4F",
+    background: "#FBF9F5",
+    text: "#161B26",
     font: "refined",
   },
   sections: [
@@ -40,6 +41,7 @@ export const haleOrtiz: SiteSpec = {
     },
     {
       type: "services",
+      title: "Ways we can help",
       items: [
         {
           name: "Monthly bookkeeping",

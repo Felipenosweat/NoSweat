@@ -1,10 +1,22 @@
-import type { SiteSpec } from "@nosweat/schema";
+import type { SiteSpec, TemplateId } from "@nosweat/schema";
 import { GlassDefs } from "./components/GlassDefs";
 import { NoSweatBadge } from "./components/NoSweatBadge";
 import { COMPOSITIONS, compositionOf } from "./compositions";
 import { SoftComposition } from "./compositions/soft/SoftComposition";
 import { siteStyle } from "./compositions/model";
 import { luminance, themeToCssVars } from "./theme";
+
+/**
+ * Ramos que usam a composição "soft" (visual de app, `compositions/soft`). Tirar um ramo daqui
+ * devolve ele ao molde Signature (plano B, sem mexer em mais nada).
+ */
+export const SOFT_TEMPLATES: ReadonlySet<TemplateId> = new Set<TemplateId>([
+  "beauty",
+  "home-services",
+  "restaurant",
+  "professional",
+  "portfolio",
+]);
 
 export type SiteRendererProps = {
   spec: SiteSpec;
@@ -23,6 +35,11 @@ export type SiteRendererProps = {
   selectedSection?: number | null;
   /** `false` para miniaturas dentro de outra página: sem ids de seção (ver TemplateProps). */
   anchors?: boolean;
+  /**
+   * Plano B e testes: desenha pelo molde Signature (composições antigas) mesmo nos ramos de
+   * SOFT_TEMPLATES. O app não usa; serve para o molde antigo continuar coberto por testes.
+   */
+  signature?: boolean;
 };
 
 /**
@@ -44,6 +61,7 @@ export function SiteRenderer({
   editable = false,
   selectedSection = null,
   anchors = true,
+  signature = false,
 }: SiteRendererProps) {
   // Agendamento desligado (sem endereço da API): a seção e o link "Book" do menu não existem. No
   // editor (`editable`) a seção fica, com o aviso de como ligar.
@@ -60,8 +78,9 @@ export function SiteRenderer({
   // A composição (arquitetura da página) vem do plano de design; o ramo (`template`) só muda o
   // vocabulário das seções. Sem plano, "service-led" (o layout de sempre).
   const composition = compositionOf(spec);
-  // Beleza tem composição própria (visual de app de salão), qualquer que seja `design.composition`.
-  const soft = spec.template === "beauty";
+  // Os ramos em SOFT_TEMPLATES têm composição própria (visual de app), qualquer que seja
+  // `design.composition`.
+  const soft = !signature && SOFT_TEMPLATES.has(spec.template);
   const Template = soft ? SoftComposition : COMPOSITIONS[composition];
   const style = siteStyle(spec);
   return (
