@@ -3,7 +3,7 @@ import {
   PaymentSettings,
   SiteSetupRequest,
   type BookingSettings,
-  type PaymentMethod,
+  type AcceptedPaymentMethod,
   type PriceItem,
   type SetupKind,
   type SiteSpec,
@@ -124,8 +124,8 @@ export type WizardPerson = { key: string; name: string; role: string; bio: strin
 
 /** "How customers pay": formas escolhidas, o identificador de cada uma e um aviso. */
 export type WizardPayments = {
-  methods: PaymentMethod[];
-  handles: Partial<Record<PaymentMethod, string>>;
+  methods: AcceptedPaymentMethod[];
+  handles: Partial<Record<AcceptedPaymentMethod, string>>;
   note: string;
 };
 
@@ -354,7 +354,7 @@ function teamProblem(state: WizardState): string | null {
 }
 
 /** O identificador como o cliente do dono vai ver: "glow" vira "@glow" no Venmo, e assim por diante. */
-export function normalizeHandle(method: PaymentMethod, raw: string): string {
+export function normalizeHandle(method: AcceptedPaymentMethod, raw: string): string {
   const value = raw.trim().replace(/\s+/g, method === "zelle" ? " " : "");
   if (!value) return "";
   switch (method) {
@@ -372,10 +372,10 @@ export function normalizeHandle(method: PaymentMethod, raw: string): string {
 
 /** O que o dono escolheu em "How customers pay", no formato do schema (`methods: []` se nada). */
 export function buildPayments(state: WizardState): {
-  methods: { method: PaymentMethod; handle?: string }[];
+  methods: { method: AcceptedPaymentMethod; handle?: string }[];
   note?: string;
 } {
-  const handleMethods: readonly PaymentMethod[] = PAYMENT_HANDLE_METHODS;
+  const handleMethods: readonly AcceptedPaymentMethod[] = PAYMENT_HANDLE_METHODS;
   const methods = state.payments.methods.map((method) => {
     const handle = handleMethods.includes(method)
       ? normalizeHandle(method, state.payments.handles[method] ?? "")

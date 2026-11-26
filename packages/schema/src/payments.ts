@@ -14,14 +14,14 @@ export const PAYMENT_METHODS = [
   "cash_app",
   "paypal",
 ] as const;
-export const PaymentMethod = z.enum(PAYMENT_METHODS);
-export type PaymentMethod = z.infer<typeof PaymentMethod>;
+export const AcceptedPaymentMethod = z.enum(PAYMENT_METHODS);
+export type AcceptedPaymentMethod = z.infer<typeof AcceptedPaymentMethod>;
 
 /** Formas que aceitam um identificador público (as outras não têm campo). */
 export const PAYMENT_HANDLE_METHODS = ["zelle", "venmo", "cash_app", "paypal"] as const;
 
 /** Nome mostrado nos pills do site (inglês dos EUA). */
-export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
+export const PAYMENT_LABELS: Record<AcceptedPaymentMethod, string> = {
   cash: "Cash",
   card: "Credit & debit cards",
   check: "Check",
@@ -32,7 +32,7 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
 };
 
 /** Como a forma entra numa frase ("We accept cash, checks and Zelle"). */
-const PAYMENT_PHRASES: Record<PaymentMethod, string> = {
+const PAYMENT_PHRASES: Record<AcceptedPaymentMethod, string> = {
   cash: "cash",
   card: "credit & debit cards",
   check: "checks",
@@ -66,7 +66,7 @@ export function looksLikeAccountNumber(value: string): boolean {
 }
 
 /** O identificador tem o formato certo para a forma de pagamento? (Solto, de propósito.) */
-export function isPaymentHandleValid(method: PaymentMethod, handle: string): boolean {
+export function isPaymentHandleValid(method: AcceptedPaymentMethod, handle: string): boolean {
   const value = handle.trim();
   if (!value || looksLikeAccountNumber(value)) return false;
   switch (method) {
@@ -84,7 +84,7 @@ export function isPaymentHandleValid(method: PaymentMethod, handle: string): boo
 }
 
 /** Mensagem (para pessoas) quando o identificador não vale. */
-export function paymentHandleMessage(method: PaymentMethod): string {
+export function paymentHandleMessage(method: AcceptedPaymentMethod): string {
   switch (method) {
     case "zelle":
       return "Use the phone number or e-mail you receive Zelle with.";
@@ -101,7 +101,7 @@ export function paymentHandleMessage(method: PaymentMethod): string {
 
 export const PaymentEntry = z
   .object({
-    method: PaymentMethod,
+    method: AcceptedPaymentMethod,
     /** Identificador público (Zelle: telefone/e-mail; Venmo: @usuario; Cash App: $cashtag; PayPal: link paypal.me). */
     handle: z.string().trim().max(80).optional(),
   })
@@ -131,7 +131,7 @@ export const PaymentSettings = z
       .optional(),
   })
   .superRefine((payments, ctx) => {
-    const seen = new Set<PaymentMethod>();
+    const seen = new Set<AcceptedPaymentMethod>();
     payments.methods.forEach((entry, index) => {
       if (seen.has(entry.method)) {
         ctx.addIssue({

@@ -4,7 +4,7 @@ import {
   PAYMENT_HANDLE_HINTS,
   PAYMENT_LABELS,
   PAYMENT_METHODS,
-  type PaymentMethod,
+  type AcceptedPaymentMethod,
 } from "@nosweat/schema";
 import { useId, useState, type ReactNode } from "react";
 import { PlusIcon, TrashIcon } from "@/app/(dashboard)/office/_ui/ui";
@@ -956,7 +956,7 @@ export function AreaStep({ state, update }: StepProps) {
 // ---------- passo: como os clientes pagam ----------
 
 /** Formas que pedem um identificador público, com o rótulo do campo. */
-const HANDLE_LABELS: Partial<Record<PaymentMethod, string>> = {
+const HANDLE_LABELS: Partial<Record<AcceptedPaymentMethod, string>> = {
   zelle: "Zelle phone number or e-mail",
   venmo: "Venmo username",
   cash_app: "Cash App $cashtag",
@@ -966,7 +966,7 @@ const HANDLE_LABELS: Partial<Record<PaymentMethod, string>> = {
 export function PaymentsStep({ state, update }: StepProps) {
   const id = useId();
   const { payments } = state;
-  const toggle = (method: PaymentMethod) => {
+  const toggle = (method: AcceptedPaymentMethod) => {
     const on = new Set(payments.methods);
     if (on.has(method)) on.delete(method);
     else on.add(method);
