@@ -29,10 +29,10 @@ describe.each(VARIANTS)("booking details fields (%s variant)", (_name, soft) => 
     for (const label of ["First name", "Last name", "Phone", "Email"]) {
       expect(html).toContain(`>${label}</label>`);
     }
-    expect(html).toContain('autocomplete="given-name"');
-    expect(html).toContain('autocomplete="family-name"');
-    expect(html).toContain('autocomplete="tel-national"');
-    expect(html).toContain('autocomplete="email"');
+    expect(html).toContain('autoComplete="given-name"');
+    expect(html).toContain('autoComplete="family-name"');
+    expect(html).toContain('autoComplete="tel-national"');
+    expect(html).toContain('autoComplete="email"');
     expect(html).toContain('type="tel"');
     expect(html).toContain('type="email"');
     // E-mail agora é obrigatório (não aparece mais como opcional); a nota continua opcional.
