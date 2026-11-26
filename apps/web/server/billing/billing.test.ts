@@ -408,6 +408,9 @@ describe("createCheckoutUrl", () => {
     expect(monthly).toContain("line_items[0][price_data][unit_amount]=1900");
     expect(monthly).not.toContain("line_items[1]");
     expect(monthly).toContain("mode=subscription");
+    expect(monthly).toContain(
+      "custom_text[submit][message]=Your plan renews automatically every month for $19 until you cancel.",
+    );
     expect((await getBillingStore().get(user.id))?.stripeCustomerId).toBe("cus_new");
 
     calls.length = 0;
@@ -422,6 +425,9 @@ describe("createCheckoutUrl", () => {
     );
     expect(annual).toContain("line_items[0][price_data][unit_amount]=19000");
     expect(annual).not.toContain("line_items[1]");
+    expect(annual).toContain(
+      "custom_text[submit][message]=Your plan renews automatically every year for $190 until you cancel. Cancel anytime from Billing in your account.",
+    );
     // O cliente do Stripe é reaproveitado.
     expect(calls.some((c) => c.url.endsWith("/customers"))).toBe(false);
   });

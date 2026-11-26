@@ -223,7 +223,11 @@ export function PlansPopup({
           <p className="mt-4 text-[13px] leading-relaxed text-slate-500">
             {signedIn && !offer.checkout
               ? "Tap a plan and we finish the payment with you in a message. As soon as it’s confirmed, your plan turns on and we build your website. "
-              : "Prices in US dollars, billed monthly (yearly saves 2 months). Cancel anytime. "}
+              : `Prices in US dollars (yearly saves 2 months). ${
+                  offer.checkout
+                    ? "Plans renew automatically each month or year until you cancel. Cancel anytime in Billing."
+                    : "Cancel anytime."
+                } `}
             Your answers are saved.
           </p>
           <button

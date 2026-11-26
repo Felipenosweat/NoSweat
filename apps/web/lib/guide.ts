@@ -188,7 +188,7 @@ export const GUIDE_FAQ: readonly GuideFaq[] = [
     id: "cancel",
     question: "How do I cancel?",
     answer:
-      "If you pay by card, open Billing and tap “Manage billing” to change plans or cancel. Your plan stays on until the end of the period you already paid for. If our team set up your plan with you, it simply ends on its end date. Message us with Help if you have questions.",
+      "If you pay by card, open Billing and tap “Manage or cancel your plan” to change plans or cancel. Your plan stays on until the end of the period you already paid for. If our team set up your plan with you, it simply ends on its end date. Message us with Help if you have questions.",
   },
 ];
 
