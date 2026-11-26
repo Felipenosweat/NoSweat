@@ -96,3 +96,33 @@ que estão literalmente no pedido). Código junta tudo, `SiteSpec.parse`, checag
 (recusa `$`, "years", "licensed", "insured", "guarantee", "same-day", "24/7", "#1"... que não estejam
 no pedido). Modelo barato (Haiku), com volta para o caminho atual (Sonnet) se falhar. Estimativa:
 ~US$0,06 → ~US$0,005 por site.
+
+## Visual "soft" nos quatro ramos (casa, restaurante, profissional, portfólio)
+
+Os cinco ramos usam a composição `soft` (`packages/templates/src/compositions/soft`), a que o dono
+aprovou na beleza: cartões de 24 px, azulejos com ícone, botões em pílula com disco de seta, chips,
+sombras suaves da cor principal, tudo visível de início (sem revelar ao rolar, sem paralaxe, sem
+cortina). A beleza é a base; os outros quatro são variantes (`data-variant` no `.ns-soft`:
+`trade`, `food`, `pro`, `work`) que mudam a prioridade da primeira tela, a densidade, a foto, a
+paleta e a fonte. Plano B: `SOFT_TEMPLATES` em `SiteRenderer.tsx` (tirar um ramo da lista devolve
+ele ao molde Signature, que segue no repositório e nos testes via a prop `signature`).
+
+| Ramo                 | Primeira tela                                                                                                                                                                                                                                                                                      | Serviços                                                                                                                                                              | Barra do celular                                     | Paleta e fonte                                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Casa (`trade`)       | Título com o ofício e a cidade, pílula "Call (xxx) xxx-xxxx" na cor de ação, "Get an estimate", "Schedule a visit" só com agendamento ligado; abaixo, cartão de fatos (Hours, Serving, Phone + "Text us"). Foto do dono num cartão ao lado (computador), sem foto o cartão some. Cabeçalho sólido. | Linhas com ícone do ofício (chave, ralo, aquecedor, cano, vassoura, folha...) e pílula "Estimate" (ou "Book" com agendamento). Cidades atendidas como nuvem de chips. | Call (principal) / Estimate / Area                   | Azul-aço + UM laranja só no botão de ligar (`--v-action`, vem da cor secundária se ela contrasta), página branco-fria, fonte `bold` |
+| Restaurante (`food`) | Foto de comida que some no fundo (celular), título, ação principal (só links do dono: pedido, reserva; senão Call), "View the menu". Faixa de fatos: horário como escrito, Find us + Directions, Order/Reserve/Call. Sem tira de datas.                                                            | Um cartão por grupo; linha com foto do dono ou azulejo (talher, xícara, chama, bolo), descrição, preço à direita e pílula "Order" SÓ com `links.order`.               | Menu / Order ou Reserve (principal) / Call / Find us | Tomate ou oliva sobre creme, títulos `fresh` (Fraunces), nunca itálico                                                              |
+| Profissional (`pro`) | Tipográfica: título, "Book a consultation" (link do dono ou #contact), telefone, fatos (horário, endereço). Retrato só se o dono tem foto dele. Sombras chapadas.                                                                                                                                  | "Ways we can help": linhas com azulejos numerados 01, 02... e pílula discreta; FAQ com a primeira aberta.                                                             | 2 abas: Book (principal) / Call                      | Azul-tinta + latão sobre branco quente, títulos `refined` (DM Serif Display), corpo DM Sans                                         |
+| Portfólio (`work`)   | Topo mínimo (nome, uma linha, "Check your date" + telefone); a galeria sobe para logo depois do topo (fora do editor).                                                                                                                                                                             | Pacotes: linhas com preço e "Inquire".                                                                                                                                | 2 abas: Inquire (principal) / Call                   | Quase monocromático (branco e tinta) + UM acento no botão, fonte `gallery`                                                          |
+
+Galeria do portfólio (`WorkGallery`): grade que sempre fecha (2 colunas no celular, 6 no
+computador, ver `workShapes`), quadros grandes, legenda "casal · lugar · ano" só se existir, sem
+quadro vazio. Fotos pequenas demais (lado maior < 600 px na galeria, < 1200 px no topo) são
+descartadas; o topo cai para um painel de cor quando não há foto boa. Chips de "highlights" só
+aparecem se o dono os escreveu (regra 8).
+
+Desempenho e convenções dos EUA: nenhum JavaScript novo (só `<details>`, âncoras e a barra que já
+existia); `width`/`height` em toda foto, só a do topo é `eager`; desfoque só nas pílulas pequenas do
+cabeçalho; telefone `(305) 555-0187` com `tel:` e "Text us" (`sms:`) nos serviços para casa;
+endereço "Rua, Cidade, UF 12345" (campo opcional `business.zip`, novo); preços em US$; horários em
+12 h. Os sites-modelo usam fotos locais que combinam com o ofício (`plumber.webp`, `crew.webp`,
+`cook.webp`) e o portfólio usa as fotos verificadas de `unsplash-photos.ts`.

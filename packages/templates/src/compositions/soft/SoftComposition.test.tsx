@@ -32,10 +32,22 @@ describe("soft composition (beauty)", () => {
     expect(html).toContain('class="ns-soft"');
   });
 
-  it("leaves the other templates alone", () => {
-    const html = render(fixtures["joes-plumbing"]);
-    expect(html).not.toContain("ns-soft");
-    expect(html).not.toContain('data-composition="soft"');
+  it("gives every template its own soft variant, and keeps Signature as the fallback", () => {
+    const variants = {
+      "joes-plumbing": "trade",
+      "glow-salon": "beauty",
+      "rosas-kitchen": "food",
+      "hale-ortiz": "pro",
+      "vega-photo": "work",
+    } as const;
+    for (const [slug, variant] of Object.entries(variants)) {
+      const html = render(fixtures[slug as keyof typeof variants]);
+      expect(html).toContain('data-composition="soft"');
+      expect(html).toContain(`data-variant="${variant}"`);
+    }
+    const old = renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} signature />);
+    expect(old).not.toContain("ns-soft");
+    expect(old).not.toContain('data-composition="soft"');
   });
 
   it("renders hero, tiles, services, about, faq, contact, footer and the dock", () => {

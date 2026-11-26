@@ -45,7 +45,8 @@ describe("heroTone", () => {
   });
 });
 
-// Beleza usa a composição "soft" (cabeçalho e rodapé próprios, testados em soft/SoftComposition.test.tsx).
+// Todos os ramos usam a composição "soft" (cabeçalho e rodapé próprios, testados em soft/*.test.tsx).
+// Estes testes cobrem o molde Signature, o plano B (`signature`), que segue no repositório.
 const signatureFixtures = Object.entries(fixtures).filter(([, spec]) => spec.template !== "beauty");
 
 describe("tone marks in the rendered site", () => {
@@ -54,7 +55,7 @@ describe("tone marks in the rendered site", () => {
     html.match(/<header[^>]*data-tone="(light|dark)"[^>]*class="ns-nav /)?.[1];
 
   it.each(signatureFixtures)("marks the menu and the footer of %s", (_slug, spec) => {
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
     const tones = tonesOf(spec.theme);
     expect(navTone(html)).toMatch(/^(light|dark)$/);
     expect(html).toMatch(new RegExp(`<footer[^>]*data-tone="${tones.band}"`));
@@ -66,7 +67,7 @@ describe("tone marks in the rendered site", () => {
         ...fixtures["joes-plumbing"],
         design: { ...fixtures["joes-plumbing"].design, composition },
       };
-      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
       const hasImage = spec.sections.some((section) => section.type === "hero" && section.image);
       const expected = heroTone(composition, hasImage, tonesOf(spec.theme));
       expect(navTone(html)).toBe(expected);
@@ -78,7 +79,7 @@ describe("site header", () => {
   const header = (html: string) => html.slice(html.indexOf("<header"), html.indexOf("</header>"));
 
   it.each(signatureFixtures)("is an attached bar with a call button in %s", (_slug, spec) => {
-    const html = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
+    const html = header(renderToStaticMarkup(<SiteRenderer spec={spec} signature />));
     // Barra presa e de ponta a ponta: nada de cápsula de vidro flutuando.
     expect(html).toMatch(/class="ns-nav fixed inset-x-0 top-0 /);
     expect(html).toContain("ns-navbar");
@@ -91,9 +92,19 @@ describe("site header", () => {
 
   it("is solid from the start in the editor, where nothing tracks the scroll", () => {
     const spec = fixtures["joes-plumbing"];
-    const live = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
-    const editing = header(renderToStaticMarkup(<SiteRenderer spec={spec} editable />));
+    const live = header(renderToStaticMarkup(<SiteRenderer spec={spec} signature />));
+    const editing = header(renderToStaticMarkup(<SiteRenderer spec={spec} editable signature />));
     expect(live).toContain('data-top=""');
     expect(editing).not.toContain("data-top");
+  });
+
+  it("soft: the header of every other template is a solid bar with a main action", () => {
+    for (const [, spec] of signatureFixtures) {
+      const html = header(renderToStaticMarkup(<SiteRenderer spec={spec} />));
+      expect(html).toContain('class="ns-s-header"');
+      expect(html).not.toContain("ns-glass");
+      expect(html).toContain("ns-s-hcta");
+      if (spec.business.phone) expect(html).toContain(`aria-label="Call ${spec.business.phone}"`);
+    }
   });
 });

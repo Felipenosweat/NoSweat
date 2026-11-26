@@ -55,12 +55,20 @@ describe("contact form notices", () => {
 describe("site chrome", () => {
   it.each(Composition.options)("%s: rodapé com Privacy, <main id> e área segura do iPhone", (c) => {
     const spec = withComposition(fixtures["joes-plumbing"], c);
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    // Molde Signature (plano B): a barra de ligar respeita a área segura do iPhone.
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
     expect(html).toContain(`href="${VISITOR_PRIVACY_URL}"`);
     expect(html).toContain('<main id="main"');
     expect(html).toContain("env(safe-area-inset-bottom)");
-    const thumb = renderToStaticMarkup(<SiteRenderer spec={spec} anchors={false} />);
+    const thumb = renderToStaticMarkup(<SiteRenderer spec={spec} anchors={false} signature />);
     expect(thumb).not.toContain('id="main"');
+    // Soft (padrão): mesmo rodapé com Privacy e o mesmo <main id>; a área segura fica no CSS.
+    const soft = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(soft).toContain(`href="${VISITOR_PRIVACY_URL}"`);
+    expect(soft).toContain('<main id="main"');
+    expect(renderToStaticMarkup(<SiteRenderer spec={spec} anchors={false} />)).not.toContain(
+      'id="main"',
+    );
   });
 
   it("não mostra pessoa sem nome no quem somos", () => {
