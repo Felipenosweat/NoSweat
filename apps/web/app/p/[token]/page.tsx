@@ -91,7 +91,7 @@ export default async function ProspectPreviewPage({ params }: PreviewPageProps) 
       </div>
       <PreviewBarOffset targetId="ns-preview-bar" />
       {/* O menu fixo do site desce para baixo da faixa. */}
-      <style>{`.ns-nav{top:var(--ns-preview-bar,0px)}`}</style>
+      <style>{`.ns-nav,.ns-s-header{top:var(--ns-preview-bar,0px)}`}</style>
       <SiteRenderer spec={preview.site.spec} />
     </>
   );
