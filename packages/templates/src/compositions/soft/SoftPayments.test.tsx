@@ -33,7 +33,7 @@ describe("soft composition: how customers pay", () => {
     const html = render(fixtures["joes-plumbing"]);
     expect(html).toContain("<h3>Payment</h3>");
     expect(html).toContain("<li>Check</li>");
-    expect(html).toContain("<li>Zelle · (512) 555-0187</li>");
+    expect(html).toContain("<li>Zelle · (512) 555-0142</li>");
   });
 
   it("renders nothing when the owner chose nothing", () => {
