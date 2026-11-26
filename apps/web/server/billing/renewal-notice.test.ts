@@ -95,7 +95,10 @@ describe("fetchRenewalAmount", () => {
       return Response.json(body);
     }) as unknown as typeof fetch;
   }
-  const item = { quantity: 1, price: { unit_amount: 1900, currency: "usd", recurring: { interval: "year" } } };
+  const item = {
+    quantity: 1,
+    price: { unit_amount: 1900, currency: "usd", recurring: { interval: "year" } },
+  };
 
   it("reads the real price from the subscription item, not from the plan list", async () => {
     const result = await fetchRenewalAmount(
@@ -132,7 +135,10 @@ describe("fetchRenewalAmount", () => {
       await fetchRenewalAmount(
         config,
         "sub_1",
-        stripe({ status: "active", items: { data: [{ price: { unit_amount: null, recurring: { interval: "year" } } }] } }),
+        stripe({
+          status: "active",
+          items: { data: [{ price: { unit_amount: null, recurring: { interval: "year" } } }] },
+        }),
       ),
     ).toBeNull();
     expect(
@@ -196,7 +202,9 @@ describe("sendRenewalNotices", () => {
   });
 
   it("skips test accounts and subscriptions that are not renewing", async () => {
-    const test = deps({ getAccount: async () => ({ email: "t@nosweatfd.com", testAccount: true }) });
+    const test = deps({
+      getAccount: async () => ({ email: "t@nosweatfd.com", testAccount: true }),
+    });
     await test.store.upsert(sub(6));
     expect(await sendRenewalNotices(NOW, test.value)).toMatchObject({ skipped: 1, sent: 0 });
 
@@ -207,7 +215,9 @@ describe("sendRenewalNotices", () => {
   });
 
   it("clears the mark when the e-mail fails so tomorrow's run tries again", async () => {
-    const { store, value } = deps({ send: vi.fn<RenewalNoticeDeps["send"]>(async () => "failed") });
+    const { store, value } = deps({
+      send: vi.fn<RenewalNoticeDeps["send"]>(async () => "failed"),
+    });
     await store.upsert(sub(6));
     expect(await sendRenewalNotices(NOW, value)).toMatchObject({ sent: 0, failed: 1 });
     expect((await store.get(USER))?.renewalNoticeFor).toBeNull();
