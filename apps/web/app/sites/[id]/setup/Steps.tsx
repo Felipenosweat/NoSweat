@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  PAYMENT_HANDLE_HINTS,
+  PAYMENT_LABELS,
+  PAYMENT_METHODS,
+  type PaymentMethod,
+} from "@nosweat/schema";
 import { useId, useState, type ReactNode } from "react";
 import { PlusIcon, TrashIcon } from "@/app/(dashboard)/office/_ui/ui";
 import {
@@ -947,6 +953,113 @@ export function AreaStep({ state, update }: StepProps) {
   );
 }
 
+// ---------- passo: como os clientes pagam ----------
+
+/** Formas que pedem um identificador público, com o rótulo do campo. */
+const HANDLE_LABELS: Partial<Record<PaymentMethod, string>> = {
+  zelle: "Zelle phone number or e-mail",
+  venmo: "Venmo username",
+  cash_app: "Cash App $cashtag",
+  paypal: "PayPal.me link",
+};
+
+export function PaymentsStep({ state, update }: StepProps) {
+  const id = useId();
+  const { payments } = state;
+  const toggle = (method: PaymentMethod) => {
+    const on = new Set(payments.methods);
+    if (on.has(method)) on.delete(method);
+    else on.add(method);
+    // Sempre na ordem de PAYMENT_METHODS (a mesma dos pills do site).
+    update({ payments: { ...payments, methods: PAYMENT_METHODS.filter((m) => on.has(m)) } });
+  };
+  const withHandle = PAYMENT_METHODS.filter(
+    (method) => payments.methods.includes(method) && HANDLE_LABELS[method],
+  );
+  return (
+    <div className="grid gap-8">
+      <Group
+        title="How do customers pay you?"
+        hint="Pick everything you accept. We only show this on your website and in booking e-mails: customers pay you directly, not through No Sweat."
+      >
+        <ul className="flex flex-wrap gap-2" aria-label="Payment methods">
+          {PAYMENT_METHODS.map((method) => (
+            <li key={method}>
+              <button
+                type="button"
+                aria-pressed={payments.methods.includes(method)}
+                onClick={() => toggle(method)}
+                className={chip(payments.methods.includes(method))}
+              >
+                {PAYMENT_LABELS[method]}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {payments.methods.length === 0 && (
+          <p className={hintClass}>
+            Nothing selected: your website will not show a Payment section. You can skip this step.
+          </p>
+        )}
+      </Group>
+
+      {withHandle.length > 0 && (
+        <Group
+          title="Where should customers send it?"
+          hint="Usernames, phone numbers and e-mails you type here are shown publicly on your website. Never enter a card or bank account number."
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            {withHandle.map((method) => (
+              <div key={method}>
+                <label htmlFor={`${id}-${method}`} className={labelClass}>
+                  {HANDLE_LABELS[method]} (optional)
+                </label>
+                <input
+                  id={`${id}-${method}`}
+                  type="text"
+                  value={payments.handles[method] ?? ""}
+                  onChange={(event) =>
+                    update({
+                      payments: {
+                        ...payments,
+                        handles: { ...payments.handles, [method]: event.target.value },
+                      },
+                    })
+                  }
+                  inputMode={method === "zelle" ? "email" : "text"}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={80}
+                  placeholder={PAYMENT_HANDLE_HINTS[method as keyof typeof PAYMENT_HANDLE_HINTS]}
+                  className={cx(field, "mt-1.5")}
+                />
+              </div>
+            ))}
+          </div>
+        </Group>
+      )}
+
+      {payments.methods.length > 0 && (
+        <div>
+          <label htmlFor={`${id}-note`} className={labelClass}>
+            Note about payment (optional)
+          </label>
+          <textarea
+            id={`${id}-note`}
+            value={payments.note}
+            onChange={(event) => update({ payments: { ...payments, note: event.target.value } })}
+            rows={2}
+            maxLength={160}
+            placeholder="Payment is due when the work is finished."
+            className={cx(area, "mt-1.5")}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---------- passo: regras ----------
 
 const NOTICES = [0, 1, 2, 4, 12, 24, 48] as const;
@@ -1098,7 +1211,7 @@ export function ReviewStep({
   goTo,
 }: {
   state: WizardState;
-  goTo: (step: "hours" | "days" | "services" | "team" | "area" | "rules") => void;
+  goTo: (step: "hours" | "days" | "services" | "team" | "area" | "payments" | "rules") => void;
 }) {
   const home = state.kind === "home";
   const hoursStep = home ? "days" : "hours";
@@ -1200,6 +1313,19 @@ export function ReviewStep({
               {state.phone ? ` · ${state.phone}` : ""}
             </p>,
           )}
+        {row(
+          "Payment",
+          "payments",
+          state.payments.methods.length === 0 ? (
+            <p>Not shown on your website</p>
+          ) : (
+            <p>
+              {state.payments.methods
+                .map((method) => PAYMENT_LABELS[method])
+                .join(", ")}
+            </p>
+          ),
+        )}
         {row(
           "Rules",
           "rules",

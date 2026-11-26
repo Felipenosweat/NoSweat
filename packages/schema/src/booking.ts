@@ -175,6 +175,8 @@ export const PublicBooking = z.object({
   canCancel: z.boolean(),
   /** Política de cancelamento que o cliente viu e aceitou ao marcar (vazio = não havia). */
   cancellationPolicy: z.string().optional(),
+  /** "We accept cash, Zelle (...)": só o que o dono escolheu em "How customers pay" (ausente = nada). */
+  paymentInstructions: z.string().optional(),
 });
 export type PublicBooking = z.infer<typeof PublicBooking>;
 

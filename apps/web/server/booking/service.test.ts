@@ -716,3 +716,43 @@ describe("createBooking: formulário v2 (nome, telefone E.164 e aceite)", () => 
     expect(created?.booking.cancellationPolicy).toBeUndefined();
   });
 });
+
+describe("how to pay on the booking", () => {
+  it("shows the owner's payment methods on the booking and in the e-mail notice", async () => {
+    const data = await setup();
+    const created = await createBooking(data.siteId, request(data), NOW);
+    const sentence = created?.booking.paymentInstructions ?? "";
+    expect(sentence).toBe(
+      "We accept cash, credit & debit cards, Zelle ((305) 555-0187), Venmo (@glowsalon-demo) and Cash App ($glowsalondemo). Tips are always appreciated, never expected.",
+    );
+    expect(created?.notice.paymentInstructions).toBe(sentence);
+    const token = created?.booking.token ?? "";
+    expect((await getBookingByToken(token, NOW))?.paymentInstructions).toBe(sentence);
+  });
+
+  it("omits it when the published site has no payments", async () => {
+    const store = getSiteStore();
+    const spec = {
+      ...fixtures["glow-salon"],
+      business: { ...fixtures["glow-salon"].business, payments: undefined },
+    };
+    const site = await store.create(spec, OWNER);
+    await store.updateMeta(site.id, {
+      status: "published",
+      slug: `glow-${site.id.slice(0, 6)}`,
+      publishedSpec: site.spec,
+      publishedAt: NOW.toISOString(),
+    });
+    await updateSettings(OWNER, { timeZone: "America/New_York" });
+    const item = await createPriceItem(OWNER, {
+      name: "Haircut",
+      unitPriceCents: 4500,
+      bookable: true,
+      durationMinutes: 45,
+    });
+    await updateBookingSettings(OWNER, { enabled: true, minNoticeHours: 0 });
+    const created = await createBooking(site.id, request({ siteId: site.id, serviceId: item.id }), NOW);
+    expect(created?.booking.paymentInstructions).toBeUndefined();
+    expect(created?.notice.paymentInstructions).toBeUndefined();
+  });
+});

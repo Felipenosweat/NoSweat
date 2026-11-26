@@ -192,3 +192,27 @@ describe("sendBookingNotifications", () => {
     });
   });
 });
+
+describe("how to pay in the customer e-mail", () => {
+  it("adds one line from what the owner chose, escaped in the HTML", () => {
+    const email = buildCustomerBookingEmail({
+      ...input,
+      paymentInstructions: "We accept cash and Zelle ((512) 555-0142). Tip <b>welcome</b>.",
+    });
+    expect(email.text).toContain(
+      "How to pay: We accept cash and Zelle ((512) 555-0142). Tip <b>welcome</b>.",
+    );
+    expect(email.html).toContain("<strong>How to pay</strong>");
+    expect(email.html).toContain("Tip &lt;b&gt;welcome&lt;/b&gt;.");
+    expect(email.html).not.toContain("<b>welcome</b>");
+  });
+
+  it("says nothing about payment when the owner chose nothing", () => {
+    for (const paymentInstructions of [undefined, "", "   "]) {
+      const email = buildCustomerBookingEmail({ ...input, paymentInstructions });
+      expect(email.text).not.toMatch(/how to pay/i);
+      expect(email.html).not.toMatch(/how to pay/i);
+    }
+    expect(buildOwnerBookingEmail(input).text).not.toMatch(/how to pay/i);
+  });
+});

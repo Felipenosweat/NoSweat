@@ -1,12 +1,14 @@
 import {
   DEFAULT_BOOKING_SETTINGS,
   isCalendarDate,
+  paymentSentence,
   type AvailabilityQuery,
   type AvailabilityResponse,
   type BookableService,
   type BookingSettings,
   type CreateBookingRequest,
   type PublicBooking,
+  type PaymentSettings,
   type PublicBookingInfo,
   type UpdateBookingSettingsRequest,
 } from "@nosweat/schema";
@@ -100,6 +102,8 @@ type Business = {
   email: string | null;
   address: string | null;
   timeZone: string;
+  /** Frase "We accept ..." das formas de pagamento do dono (vazia = não informou). */
+  payments: string;
 };
 
 type PublicContext = {
@@ -127,7 +131,13 @@ function toBookable(item: PriceItemRecord): BookableService | null {
 /** Dados da empresa: o que o dono preencheu no escritório, completado pelo que está no site. */
 async function businessFor(
   ownerId: string,
-  site: { name: string; phone?: string; email?: string; address: string | null },
+  site: {
+    name: string;
+    phone?: string;
+    email?: string;
+    address: string | null;
+    payments?: PaymentSettings;
+  },
 ): Promise<Business> {
   const office = await getOfficeSettings(ownerId);
   return {
@@ -136,6 +146,7 @@ async function businessFor(
     email: office.email?.trim() || site.email?.trim() || null,
     address: office.address?.trim() || site.address,
     timeZone: isKnownTimeZone(office.timeZone) ? office.timeZone : DEFAULT_TIME_ZONE,
+    payments: paymentSentence(site.payments),
   };
 }
 
@@ -165,6 +176,7 @@ async function publicContext(siteId: string): Promise<PublicContext | null> {
       phone: site.liveSpec.business.phone,
       email: site.liveSpec.business.email,
       address: siteAddress(site.liveSpec.business),
+      payments: site.liveSpec.business.payments,
     }),
   ]);
   const services = items.flatMap((item) => {
@@ -365,6 +377,7 @@ function toPublicBooking(
     ...(record.cancellationPolicySnapshot
       ? { cancellationPolicy: record.cancellationPolicySnapshot }
       : {}),
+    ...(business.payments ? { paymentInstructions: business.payments } : {}),
   };
 }
 
@@ -461,6 +474,7 @@ export async function createBooking(
       ...(consent?.cancellationPolicySnapshot
         ? { cancellationPolicy: consent.cancellationPolicySnapshot }
         : {}),
+      ...(ctx.business.payments ? { paymentInstructions: ctx.business.payments } : {}),
       token: record.token,
     },
   };
@@ -480,6 +494,7 @@ async function viewOf(record: BookingRecord, now: Date): Promise<PublicBooking> 
     phone: spec?.business.phone,
     email: spec?.business.email,
     address: spec ? siteAddress(spec.business) : null,
+    payments: spec?.business.payments,
   });
   const staffName = team.find((member) => member.id === record.staffId)?.name ?? null;
   return toPublicBooking(record, business, staffName, now);

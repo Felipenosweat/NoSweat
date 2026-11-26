@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import {
   isCalendarDate,
+  paymentSentence,
   type SetupPart,
   type SiteSetupRequest,
   type SiteSetupResponse,
@@ -19,6 +20,7 @@ import {
   updateTeamMember,
 } from "../office/service";
 import { OfficeError } from "../office/types";
+import { withPayments } from "../payments";
 import { getSiteStore, type SiteRecord } from "../store";
 import { updateBookingSettings } from "./service";
 import { isKnownTimeZone, minutesOf } from "./time";
@@ -256,11 +258,29 @@ export function planSetup(input: {
     cancellationHours: policy ? (settings.cancellationHours ?? 0) : 0,
   };
 
-  const spec = withContact(
+  const withSite = withContact(
     withPeople(withServices(input.spec, request, notes), request, notes),
     request,
   );
+  // Formas de pagamento: ausente não mexe; lista vazia tira.
+  const spec = request.payments ? withPayments(withSite, request.payments) : withSite;
   return { settings: patch, priceOps, teamOps, spec, notes };
+}
+
+/**
+ * Faturas e orçamentos mostram "How to pay" a partir das instruções do escritório: se estão
+ * VAZIAS, entra uma frase curta com as formas que o dono acabou de escolher. Nunca troca um texto
+ * que o dono já escreveu.
+ */
+async function prefillPaymentInstructions(
+  ownerId: string,
+  request: SiteSetupRequest,
+): Promise<void> {
+  const sentence = paymentSentence(request.payments);
+  if (!sentence) return;
+  const office = await getOfficeSettings(ownerId);
+  if (office.paymentInstructions.trim()) return;
+  await updateOfficeSettings(ownerId, { paymentInstructions: sentence });
 }
 
 /** Uma parte falhou no meio do caminho: `saved` são as que já estão gravadas. */
@@ -330,6 +350,7 @@ export async function applySetup(
       const updated = await getSiteStore().update(site.id, plan.spec, "edit");
       if (!updated) throw new OfficeError(404, "not_found", "Site not found.");
     }
+    await prefillPaymentInstructions(ownerId, request);
     // Com CEP, guarda "Cidade, UF 12345" quando o escritório não tem endereço de verdade. O padrão
     // da primeira vez é só "Cidade, UF" tirado do site (sem número): isso pode ser completado; um
     // endereço com número (rua ou CEP) nunca é trocado.
