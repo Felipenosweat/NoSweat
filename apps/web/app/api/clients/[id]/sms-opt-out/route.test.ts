@@ -79,7 +79,7 @@ describe("POST /api/clients/[id]/sms-opt-out", () => {
     const stored = await getClientStore().getClient(OWNER.id, client.id);
     expect(stored?.smsOptOut).toBe(true);
     const history = await getClientStore().listActivities(OWNER.id, client.id);
-    expect(history.filter((a) => /replied STOP/.test(a.body))).toHaveLength(1);
+    expect(history.filter((a) => /Replied STOP/.test(a.body))).toHaveLength(1);
 
     // Marcar de novo não repete a nota nem muda a data.
     const again = ClientResponse.parse(
@@ -88,7 +88,7 @@ describe("POST /api/clients/[id]/sms-opt-out", () => {
     expect(again.client.smsOptOutAt).toBe(body.client.smsOptOutAt);
     expect(
       (await getClientStore().listActivities(OWNER.id, client.id)).filter((a) =>
-        /replied STOP/.test(a.body),
+        /Replied STOP/.test(a.body),
       ),
     ).toHaveLength(1);
   });
