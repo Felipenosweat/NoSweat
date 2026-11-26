@@ -354,3 +354,35 @@ describe("applySetup: how customers pay", () => {
     expect(await listPriceItems(OWNER)).toHaveLength(0);
   });
 });
+
+describe("applySetup: text reminders", () => {
+  const withSms = (smsReminders?: boolean) => {
+    const base = request();
+    return request({ settings: { ...base.settings, smsReminders } });
+  };
+
+  it("turns the setting on and off with the wizard", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, withSms(true));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(true);
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await applySetup(OWNER, current, withSms(false));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(false);
+  });
+
+  it("leaves the setting alone when the request does not mention it", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, withSms(true));
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await applySetup(OWNER, current, withSms(undefined));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(true);
+  });
+
+  it("is off by default", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request());
+    expect((await getBookingSettings(OWNER)).smsReminders).toBeUndefined();
+  });
+});

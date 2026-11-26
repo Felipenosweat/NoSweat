@@ -460,3 +460,35 @@ describe("how customers pay", () => {
     expect(stepProblem(base, "payments")).toBeNull();
   });
 });
+
+describe("text reminders in the wizard", () => {
+  it("starts off, and from what the owner saved", () => {
+    expect(shopState().smsReminders).toBe(false);
+    const saved = initialState({
+      kind: "shop",
+      spec: fixtures["glow-salon"],
+      settings: { ...DEFAULT_BOOKING_SETTINGS, smsReminders: true },
+      settingsSaved: true,
+      priceItems: [],
+    });
+    expect(saved.smsReminders).toBe(true);
+  });
+
+  it("sends the choice with the settings (both kinds)", () => {
+    for (const on of [true, false]) {
+      const result = buildSetupRequest(shopState({ smsReminders: on }));
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.request.settings.smsReminders).toBe(on);
+    }
+    const home = initialState({
+      kind: "home",
+      spec: fixtures["joes-plumbing"],
+      settings: DEFAULT_BOOKING_SETTINGS,
+      settingsSaved: false,
+      priceItems: [],
+    });
+    const result = buildSetupRequest({ ...home, smsReminders: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.request.settings.smsReminders).toBe(true);
+  });
+});
