@@ -64,7 +64,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
   {
     id: "schedule",
     title: "Schedule",
-    body: "Schedule is your jobs calendar. Book a job for a client, pick a time and assign someone from your team.",
+    body: "Schedule is your jobs calendar. Book a job for a client, pick a time and assign someone from your team. Customers book from the times you set in the online booking setup, and a walk-in blocks its time right away.",
     cta: { label: "Open Schedule", href: "/schedule" },
     steps: [
       "Tap an open time or “New job”.",

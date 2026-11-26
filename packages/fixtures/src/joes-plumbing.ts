@@ -25,10 +25,12 @@ export const joesPlumbing: SiteSpec = {
     highlights: ["Licensed & insured", "Free estimates", "Flat price before work starts"],
   },
   theme: {
-    primary: "#C2410C",
-    secondary: "#1E3A5F",
-    background: "#FBFAF8",
-    text: "#16202E",
+    // Aço azul-marinho + UM laranja de alta visibilidade (só no botão de ligar) em página branco-fria.
+    primary: "#17324D",
+    secondary: "#C2410C",
+    background: "#F4F7FA",
+    text: "#101A26",
+    muted: "#4A5A6D",
     font: "bold",
   },
   sections: [
@@ -40,14 +42,14 @@ export const joesPlumbing: SiteSpec = {
       ctaLabel: "Request an estimate",
       imageQuery: "plumber tools water heater",
       image: {
-        url: "/photos/example-plumbing.webp",
-        alt: "A plumber tightening a fitting on a water heater",
+        url: "/photos/plumber.webp",
+        alt: "A plumber fixing pipes under a sink",
         source: "unsplash",
         kind: "scene",
-        credit: { name: "Marian Florinel Condruz", url: "https://unsplash.com/photos/C-oYJoIfgCs" },
+        credit: { name: "Timur Shakerzianov", url: "https://unsplash.com/photos/c314Gh8dXAo" },
         width: 2400,
-        height: 2160,
-        focus: "50% 40%",
+        height: 1800,
+        focus: "65% 50%",
       },
     },
     {

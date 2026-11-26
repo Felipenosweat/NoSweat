@@ -1,3 +1,4 @@
+import { zoneAbbr } from "@/lib/us-zone";
 import { replyFromAddress } from "./client-reply-email";
 import {
   DEFAULT_LEADS_FROM,
@@ -26,6 +27,8 @@ export type BookingEmailInput = {
   /** Fuso da empresa (IANA): a hora dos e-mails é a dela. */
   timeZone: string;
   customer: { name: string; phone: string; email: string | null; notes: string };
+  /** Política de cancelamento que o cliente aceitou (o texto exato que ele viu); vazio = não havia. */
+  cancellationPolicy?: string;
   /** Link público do cliente: `${appOrigin}/booking/<token>`. */
   token: string;
   /** Origem do app (ex.: https://nosweatfd.com). */
@@ -50,7 +53,7 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-/** "Tue Dec 3, 3:30 PM" no fuso da empresa (montado à mão: o espaço antes de AM/PM é um espaço comum). */
+/** "Tue Dec 3, 3:30 PM ET" no fuso da empresa (montado à mão: o espaço antes de AM/PM é um espaço comum). */
 export function formatWhen(startAt: string, timeZone: string): string {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -63,7 +66,8 @@ export function formatWhen(startAt: string, timeZone: string): string {
   }).formatToParts(new Date(startAt));
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? "";
-  return `${get("weekday")} ${get("month")} ${get("day")}, ${get("hour")}:${get("minute")} ${get("dayPeriod")}`;
+  const time = `${get("hour")}:${get("minute")} ${get("dayPeriod")}`;
+  return `${get("weekday")} ${get("month")} ${get("day")}, ${time} ${zoneAbbr(startAt, timeZone)}`;
 }
 
 const origin = (input: BookingEmailInput) => input.appOrigin.replace(/\/+$/, "");
@@ -134,18 +138,21 @@ export function buildCustomerBookingEmail(input: BookingEmailInput): {
   ];
   const subject = `Booking confirmed: ${oneLine(input.serviceName)} · ${when}`;
   const call = input.businessPhone ? `Questions? Call ${input.businessPhone}.` : "";
+  const policy = input.cancellationPolicy?.trim() ?? "";
   const text = [
     `Hi ${customerFirstName(input.customer.name)}, your appointment with ${input.businessName} is booked.`,
     "",
     ...rows.map(([label, value]) => `${label}: ${value}`),
     "",
     `Need to cancel? Use this link: ${link}`,
+    ...(policy ? ["", "Cancellation policy you agreed to:", policy] : []),
     ...(call ? ["", call] : []),
   ].join("\n");
   const html = `<div style="${WRAP}">
 <p>Hi ${escapeHtml(customerFirstName(input.customer.name))}, your appointment with <strong>${escapeHtml(input.businessName)}</strong> is booked.</p>
 ${table(rows)}
 <p><a href="${escapeHtml(link)}">See or cancel your appointment</a></p>
+${policy ? `<p><strong>Cancellation policy you agreed to</strong><br>${escapeHtml(policy).replaceAll("\n", "<br>")}</p>` : ""}
 ${call ? `<p>${escapeHtml(call)}</p>` : ""}
 </div>`;
   return { subject, text, html };

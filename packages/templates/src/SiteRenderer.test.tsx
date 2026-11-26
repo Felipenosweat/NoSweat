@@ -242,7 +242,8 @@ describe("photos", () => {
         caption: `Job ${n} · Round Rock · 2025`,
       }));
       const spec = { ...withGallery(images), design: { composition } };
-      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      // Molde Signature (plano B): a galeria é uma fileira que corre de lado.
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
       expect(html).toContain('data-gallery="rail"');
       expect(html).toContain("Job 2 · Round Rock · 2025");
       // Fotos do dono ficam fora dos filtros de preto e branco/véu de cor.
@@ -250,12 +251,23 @@ describe("photos", () => {
     },
   );
 
+  it("soft: shows the gallery grid with the owner's captions and no empty tile", () => {
+    const images = [1, 2, 3].map((n) => ({
+      ...owner(n),
+      caption: `Job ${n} · Round Rock · 2025`,
+    }));
+    const html = renderToStaticMarkup(<SiteRenderer spec={withGallery(images)} />);
+    expect(html).toContain('data-composition="soft"');
+    expect(html).toContain("Job 2 · Round Rock · 2025");
+    expect(html.match(/<li class="ns-s-tile"/g)).toHaveLength(3);
+  });
+
   it("numbers the photos of a contact sheet", () => {
     const spec = {
       ...withGallery([owner(1), owner(2)]),
       design: { composition: "editorial" as const },
     };
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
     expect(html).toMatch(/>01<\/span>/);
     expect(html).toMatch(/>02<\/span>/);
   });
@@ -308,7 +320,8 @@ describe("compositions", () => {
 
   it("keeps the old layout for sites without a design plan", () => {
     const old: SiteSpec = { ...plumbing, design: undefined };
-    const html = renderToStaticMarkup(<SiteRenderer spec={old} />);
+    // A composição antiga (Signature) só existe atrás da prop `signature` (chave de recuo).
+    const html = renderToStaticMarkup(<SiteRenderer spec={old} signature />);
     expect(html).toContain('data-composition="service-led"');
   });
 
@@ -316,7 +329,7 @@ describe("compositions", () => {
     "%s renders every section, one h1 and a working call link",
     (composition) => {
       const spec = { ...plumbing, design: { composition } };
-      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
       expect(html).toContain(`data-composition="${composition}"`);
       expect(html.match(/<h1/g)).toHaveLength(1);
       expect(html).toContain('href="tel:5125550142"');
@@ -329,6 +342,30 @@ describe("compositions", () => {
     },
   );
 
+  it("soft: renders every section, one h1 and a working call link", () => {
+    const html = renderToStaticMarkup(<SiteRenderer spec={plumbing} />);
+    expect(html).toContain('data-composition="soft"');
+    expect(html.match(/<h1/g)).toHaveLength(1);
+    expect(html).toContain('href="tel:5125550142"');
+    for (const id of ["services", "about", "faq", "contact"]) expect(html).toContain(`id="${id}"`);
+    const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("soft: works without a photo, phone or contact section", () => {
+    const spec = {
+      ...plumbing,
+      business: { name: "Quiet Studio" },
+      sections: plumbing.sections
+        .filter((s) => s.type !== "contact")
+        .map((s) => (s.type === "hero" ? { ...s, image: undefined } : s)),
+    };
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    expect(html).toContain("Quiet Studio");
+    expect(html).not.toContain("tel:");
+    expect(html).not.toContain("<img");
+  });
+
   it.each(Composition.options)(
     "%s works without a photo, phone or contact section",
     (composition) => {
@@ -340,7 +377,7 @@ describe("compositions", () => {
           .filter((s) => s.type !== "contact")
           .map((s) => (s.type === "hero" ? { ...s, image: undefined } : s)),
       };
-      const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
       expect(html).toContain("Quiet Studio");
       expect(html).not.toContain("tel:");
       expect(html).not.toContain("<img");
@@ -356,7 +393,7 @@ describe("compositions", () => {
         imageTreatment: "monochrome" as const,
       },
     };
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
+    const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature />);
     expect(html).toContain('data-density="airy"');
     expect(html).toContain('data-image="monochrome"');
     expect(html).toContain("ns-photo");
@@ -366,11 +403,13 @@ describe("compositions", () => {
     const callFirst = renderToStaticMarkup(
       <SiteRenderer
         spec={{ ...plumbing, design: { composition: "editorial", primaryAction: "call" } }}
+        signature
       />,
     );
     const ctaFirst = renderToStaticMarkup(
       <SiteRenderer
         spec={{ ...plumbing, design: { composition: "editorial", primaryAction: "quote" } }}
+        signature
       />,
     );
     const hero = (html: string) =>
@@ -383,9 +422,16 @@ describe("compositions", () => {
 describe("miniaturas dentro de outra página", () => {
   it.each(Composition.options)("%s sem âncoras não cria ids de seção", (composition) => {
     const spec = { ...fixtures["joes-plumbing"], design: { composition } };
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} anchors={false} />);
-    for (const id of ["top", "services", "faq", "contact", "reviews", "work"]) {
-      expect(html).not.toContain(`id="${id}"`);
+    // Nos dois moldes: o soft (padrão) e o Signature (plano B).
+    for (const signature of [false, true]) {
+      const html = renderToStaticMarkup(
+        <SiteRenderer spec={spec} anchors={false} signature={signature} />,
+      );
+      for (const id of ["top", "services", "faq", "contact", "reviews", "work", "area"]) {
+        expect(html).not.toContain(`id="${id}"`);
+      }
+      // Sem âncoras também não há barra flutuante.
+      expect(html).not.toContain('aria-label="Quick links"');
     }
   });
 });
@@ -393,11 +439,13 @@ describe("miniaturas dentro de outra página", () => {
 describe("model sites", () => {
   it.each(Composition.options)("%s renders the about section with its people", (composition) => {
     const spec: SiteSpec = { ...fixtures["joes-plumbing"], design: { composition } };
-    const html = renderToStaticMarkup(<SiteRenderer spec={spec} />);
-    expect(html).toContain('id="about"');
-    expect(html).toContain('href="#about"');
-    expect(html).toContain(">About us</h2>");
-    expect(html).toContain("Maria Ramirez");
+    for (const signature of [false, true]) {
+      const html = renderToStaticMarkup(<SiteRenderer spec={spec} signature={signature} />);
+      expect(html).toContain('id="about"');
+      expect(html).toContain('href="#about"');
+      expect(html).toContain(">About us</h2>");
+      expect(html).toContain("Maria Ramirez");
+    }
   });
 
   it("never shows a stock photo as the team in the about section", () => {
@@ -464,8 +512,16 @@ describe("model sites", () => {
 
   it("puts the call on the wide mobile button only when calling is the main action", () => {
     const bar = (html: string) => html.slice(html.indexOf('aria-label="Quick contact"'));
-    const call = bar(renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} />));
+    // Molde Signature (plano B): a barra larga de ligar.
+    const call = bar(
+      renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} signature />),
+    );
     expect(call).toContain("Call (512) 555-0142");
+    // Soft: a barra flutuante tem "Call" como ação principal (a pílula mais larga).
+    const soft = renderToStaticMarkup(<SiteRenderer spec={fixtures["joes-plumbing"]} />);
+    const trades = soft.slice(soft.indexOf('aria-label="Quick links"'));
+    expect(trades).toContain('aria-label="Call (512) 555-0142"');
+    expect(trades).toMatch(/class="ns-s-dock-item is-primary"[^>]*>/);
     // Beleza usa a barra flutuante da composição "soft" (Home, Services, Book, Call).
     const dock = renderToStaticMarkup(<SiteRenderer spec={fixtures["glow-salon"]} />);
     const book = dock.slice(dock.indexOf('aria-label="Quick links"'));

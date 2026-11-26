@@ -18,6 +18,7 @@ export const rosasKitchen: SiteSpec = {
     address: "2196 Logan Ave",
     city: "San Diego",
     state: "CA",
+    zip: "92113",
     serviceArea: "Barrio Logan, San Diego",
     hours: [
       { days: "Tue–Sat", time: "11 AM – 9 PM" },
@@ -26,8 +27,8 @@ export const rosasKitchen: SiteSpec = {
   },
   theme: {
     primary: "#B23A1E",
-    secondary: "#2F5D3A",
-    background: "#FFF8EE",
+    secondary: "#4D5A2A",
+    background: "#FDF6EA",
     text: "#2A211C",
     font: "fresh",
   },

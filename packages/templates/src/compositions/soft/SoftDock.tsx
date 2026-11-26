@@ -1,11 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarIcon, HomeIcon, ListIcon, PhoneIcon } from "../../components/icons";
+import {
+  CalendarIcon,
+  HomeIcon,
+  ListIcon,
+  MapPinIcon,
+  MessageIcon,
+  PhoneIcon,
+  UtensilsIcon,
+} from "../../components/icons";
 import { BookLink } from "./BookLink";
 
+/** Abas da barra: as da beleza e as dos outros ramos (casa, restaurante, profissional, portfólio). */
+export type DockKey =
+  | "home"
+  | "services"
+  | "book"
+  | "call"
+  | "menu"
+  | "order"
+  | "estimate"
+  | "area"
+  | "find"
+  | "inquire";
+
 export type DockSlot = {
-  key: "home" | "services" | "book" | "call";
+  key: DockKey;
   href: string;
   label: string;
   /** Nome acessível, quando o rótulo curto não basta (ex.: "Call (305) 555-0187"). */
@@ -15,16 +36,29 @@ export type DockSlot = {
   bookLink?: boolean;
   /** Para onde ir se o seletor de agendamento não existir mais. */
   fallbackHref?: string;
+  /** A ação principal da barra (a pílula mais larga, na cor de ação do site). */
+  primary?: boolean;
 };
 
-const ICONS = { home: HomeIcon, services: ListIcon, book: CalendarIcon, call: PhoneIcon } as const;
+const ICONS: Record<DockKey, typeof HomeIcon> = {
+  home: HomeIcon,
+  services: ListIcon,
+  book: CalendarIcon,
+  call: PhoneIcon,
+  menu: ListIcon,
+  order: UtensilsIcon,
+  estimate: MessageIcon,
+  area: MapPinIcon,
+  find: MapPinIcon,
+  inquire: MessageIcon,
+};
 
 /**
  * Barra flutuante do celular (some a partir de 768 px). A aba da seção que está na tela vira a
  * pílula cheia; no topo, "Home". Funciona sem JavaScript (a pílula de "Home" fica de início).
  */
 export function SoftDock({ slots }: { slots: DockSlot[] }) {
-  const [active, setActive] = useState<DockSlot["key"]>("home");
+  const [active, setActive] = useState<DockKey>("home");
 
   useEffect(() => {
     const targets = slots.flatMap((slot) =>
@@ -36,7 +70,7 @@ export function SoftDock({ slots }: { slots: DockSlot[] }) {
     const update = () => {
       frame = 0;
       const line = window.innerHeight * 0.4;
-      let current: DockSlot["key"] = "home";
+      let current: DockKey = "home";
       for (const target of targets) {
         const top = document.getElementById(target.id)?.getBoundingClientRect().top;
         if (top !== undefined && top <= line) current = target.key;
@@ -55,11 +89,12 @@ export function SoftDock({ slots }: { slots: DockSlot[] }) {
   }, [slots]);
 
   return (
-    <nav aria-label="Quick links" className="ns-s-dock">
+    <nav aria-label="Quick links" className="ns-s-dock" data-count={slots.length}>
       {slots.map((slot) => {
         const Icon = ICONS[slot.key];
         const on = active === slot.key;
-        const className = `ns-s-dock-item${on ? " is-on" : ""}`;
+        const state = slot.primary ? " is-primary" : on ? " is-on" : "";
+        const className = `ns-s-dock-item${state}`;
         const content = (
           <>
             <Icon />

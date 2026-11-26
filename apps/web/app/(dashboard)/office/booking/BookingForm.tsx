@@ -51,6 +51,8 @@ export type BookingSite = {
   slug: string | null;
   /** O rascunho do site já tem a seção "Booking". */
   hasSection: boolean;
+  /** Assistente de configuração do site (`null` = o ramo não tem). */
+  setupHref: string | null;
 };
 
 type Load =
@@ -296,6 +298,16 @@ function BookingEditor({
               disabled={pending || readOnly}
             />
           </div>
+          {sites.find((site) => site.setupHref) && !readOnly && (
+            <p className="mt-4 text-[15px]">
+              <Link
+                href={sites.find((site) => site.setupHref)?.setupHref ?? "#"}
+                className={`inline-flex min-h-11 items-center rounded-lg font-semibold text-brand underline-offset-4 hover:underline ${focusRing}`}
+              >
+                Run the setup wizard again
+              </Link>
+            </p>
+          )}
           {values.enabled && bookableCount === 0 && (
             <Notice tone="warning" size="sm" className="mt-4">
               No services are bookable yet. In the{" "}
@@ -533,6 +545,46 @@ function BookingEditor({
             className={`${fieldClass} resize-y py-2.5 leading-[1.55]`}
           />
           <p className={hintClass}>Shown above the times when someone books. Optional.</p>
+        </GlassCard>
+
+        <GlassCard as="section" aria-labelledby={`${ids}-policy-title`}>
+          <CardHeading id={`${ids}-policy-title`}>Cancellation policy</CardHeading>
+          <label htmlFor={`${ids}-policy`} className="sr-only">
+            Cancellation policy
+          </label>
+          <textarea
+            id={`${ids}-policy`}
+            value={values.cancellationPolicy ?? ""}
+            onChange={(event) => change({ cancellationPolicy: event.target.value })}
+            rows={3}
+            maxLength={600}
+            placeholder="Free cancellation up to 24 hours before your appointment."
+            className={`${fieldClass.replace("sm:text-[15px]", "")} resize-y py-2.5 leading-[1.55]`}
+          />
+          <p className={hintClass}>
+            Customers must agree to it when they book. Leave it empty for no policy.
+          </p>
+          <div className="mt-4 max-w-xs">
+            <label htmlFor={`${ids}-policy-hours`} className={labelClass}>
+              Cancel for free up to (hours before)
+            </label>
+            <input
+              id={`${ids}-policy-hours`}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={String(values.cancellationHours ?? 0)}
+              onChange={(event) =>
+                change({
+                  cancellationHours: Math.min(
+                    720,
+                    Number(event.target.value.replace(/\D/g, "").slice(0, 3)),
+                  ),
+                })
+              }
+              className={`${fieldClass.replace("sm:text-[15px]", "")} mt-1.5 h-11 w-28 tabular-nums`}
+            />
+            <p className={hintClass}>0 means customers can cancel any time.</p>
+          </div>
         </GlassCard>
       </fieldset>
 

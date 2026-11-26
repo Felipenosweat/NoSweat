@@ -422,3 +422,96 @@ describe("/api/office/booking-settings", () => {
     expect(settings.enabled).toBe(false);
   });
 });
+
+describe("booking form v2: consent and cancellation policy", () => {
+  const POLICY = "Please give 24 hours notice. Late cancellations are charged 50%.";
+  // Formato novo: nome separado, telefone E.164 (10 dígitos depois do +1), país e aceites.
+  const v2 = (over: Record<string, unknown> = {}) => ({
+    name: "Ana Lima",
+    firstName: "Ana",
+    lastName: "Lima",
+    phone: `+1${nextPhone()}`,
+    phoneCountry: "US",
+    acceptedPrivacy: true,
+    ...over,
+  });
+  const info = async (siteId: string) =>
+    PublicBookingInfo.parse(
+      await (await infoRoute(new Request(`${BASE}/${siteId}`), siteCtx(siteId))).json(),
+    );
+
+  it("publishes the owner's cancellation policy and hours, and omits them when empty", async () => {
+    const data = await setup();
+    expect((await info(data.siteId)).cancellationPolicy).toBeUndefined();
+
+    await updateBookingSettings(OWNER, {
+      cancellationPolicy: `  ${POLICY} `,
+      cancellationHours: 24,
+    });
+    expect(await info(data.siteId)).toMatchObject({
+      cancellationPolicy: POLICY,
+      cancellationHours: 24,
+    });
+  });
+
+  it("answers 422 when the new form does not agree to the privacy policy", async () => {
+    const data = await setup();
+    const startAt = await firstSlot(data);
+    const res = await bookRoute(
+      bookRequest(data, startAt, v2({ acceptedPrivacy: undefined })),
+      siteCtx(data.siteId),
+    );
+    expect(res.status).toBe(422);
+    expect(await errorCode(res)).toBe("invalid_request");
+    // Nada foi marcado: o mesmo horário ainda aceita a marcação com o aceite.
+    const ok = await bookRoute(bookRequest(data, startAt, v2()), siteCtx(data.siteId));
+    expect(ok.status).toBe(201);
+  });
+
+  it("needs the cancellation consent only when the owner wrote a policy", async () => {
+    const data = await setup();
+    const startAt = await firstSlot(data);
+    await updateBookingSettings(OWNER, { cancellationPolicy: POLICY });
+    const refused = await bookRoute(bookRequest(data, startAt, v2()), siteCtx(data.siteId));
+    expect(refused.status).toBe(422);
+    const accepted = await bookRoute(
+      bookRequest(data, startAt, v2({ acceptedCancellation: true })),
+      siteCtx(data.siteId),
+    );
+    expect(accepted.status).toBe(201);
+  });
+
+  it("saves the policy that was agreed, and the link keeps showing it", async () => {
+    const data = await setup();
+    const startAt = await firstSlot(data);
+    await updateBookingSettings(OWNER, { cancellationPolicy: POLICY, cancellationHours: 24 });
+    const res = await bookRoute(
+      bookRequest(data, startAt, v2({ acceptedCancellation: true })),
+      siteCtx(data.siteId),
+    );
+    expect(res.status).toBe(201);
+    const { booking } = PublicBookingResponse.parse(await res.json());
+    expect(booking.customerName).toBe("Ana Lima");
+    expect(booking.cancellationPolicy).toBe(`${POLICY}\nCancel free up to 24 hours before.`);
+
+    // O dono muda a política depois: quem marcou continua vendo a que aceitou.
+    await updateBookingSettings(OWNER, { cancellationPolicy: "No refunds.", cancellationHours: 0 });
+    const seen = await tokenRoute(
+      new Request(`${BASE}/token/${booking.token}`),
+      tokenCtx(booking.token),
+    );
+    expect(PublicBookingResponse.parse(await seen.json()).booking.cancellationPolicy).toContain(
+      "24 hours",
+    );
+  });
+
+  it("keeps the old shape (only name) working, with no consent recorded", async () => {
+    const data = await setup();
+    const startAt = await firstSlot(data);
+    await updateBookingSettings(OWNER, { cancellationPolicy: POLICY });
+    const res = await bookRoute(bookRequest(data, startAt), siteCtx(data.siteId));
+    expect(res.status).toBe(201);
+    const { booking } = PublicBookingResponse.parse(await res.json());
+    expect(booking.cancellationPolicy).toBeUndefined();
+  });
+});

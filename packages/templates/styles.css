@@ -1637,7 +1637,7 @@
   color: var(--ns-muted);
   font-weight: 400;
 }
-.ns-s-form :is(input, textarea):not(.ns-s-trap) {
+.ns-s-form :is(input, select, textarea):not(.ns-s-trap, [type="checkbox"]) {
   display: block;
   width: 100%;
   margin-top: 6px;
@@ -1648,9 +1648,79 @@
   color: var(--ns-text);
   font-size: 16px;
 }
-.ns-s-form :is(input, textarea):focus-visible {
+.ns-s-form :is(input, select, textarea):focus-visible {
   outline: 2px solid var(--ns-primary);
   outline-offset: 1px;
+}
+.ns-s-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.ns-s-phone {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+}
+.ns-s-form .ns-s-phone :is(input, select) {
+  margin-top: 0;
+}
+.ns-s-fielderr {
+  margin-top: 6px;
+  color: var(--ns-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ns-s-consents {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ns-s-form .ns-s-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  font-weight: 400;
+}
+.ns-s-form .ns-s-check input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--ns-primary);
+}
+.ns-s-form .ns-s-check span {
+  color: var(--ns-text);
+}
+.ns-s-link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ns-s-policy {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--s-tint);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ns-s-policy-title {
+  font-weight: 600;
+}
+.ns-s-policy p + p {
+  margin-top: 4px;
+  white-space: pre-line;
+  color: var(--ns-muted);
+}
+.ns-s-policy .ns-s-policy-hours {
+  color: var(--ns-text);
+  font-weight: 500;
+  white-space: normal;
+}
+@container (min-width: 36rem) {
+  .ns-s-phone {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
 }
 .ns-s-trap {
   position: absolute;
@@ -2284,6 +2354,11 @@
     grid-template-columns: minmax(0, 52rem);
     justify-content: center;
   }
+  /* Ramos sem reserva ao lado: a lista usa a largura da página, alinhada com as outras seções. */
+  .ns-soft:not([data-variant="beauty"]) .ns-s-cols:not(:has(.ns-s-bookwrap)):not([data-solo]) {
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+  }
   .ns-s-cols[data-solo] {
     grid-template-columns: minmax(0, 40rem);
     justify-content: center;
@@ -2354,5 +2429,426 @@
   }
   .ns-s-footer .ns-s-wrap {
     padding: 0 40px;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Variantes da composição "soft" (serviços para casa, restaurante, profissional e portfólio).
+   O `data-variant` fica no .ns-soft; a beleza (a base) não muda. A cor do botão de ação vem de
+   --v-action / --v-on-action (definidas no .ns-soft por SoftComposition). Sem animação ao rolar,
+   sem desfoque em áreas grandes (só nas pílulas pequenas), nada escondido de início. */
+.ns-soft[data-variant]:not([data-variant="beauty"]) {
+  --s-shadow:
+    0 1px 2px color-mix(in srgb, var(--ns-text) 6%, transparent),
+    0 6px 16px -12px color-mix(in srgb, var(--ns-primary) 24%, transparent);
+  --s-shadow-btn: 0 8px 18px -12px color-mix(in srgb, var(--v-action) 55%, transparent);
+}
+/* Profissional: sombras mais chapadas, sem brilho; portfólio: quase sem sombra. */
+.ns-soft[data-variant="pro"] {
+  --s-shadow: 0 1px 2px color-mix(in srgb, var(--ns-text) 8%, transparent);
+}
+.ns-soft[data-variant="work"] {
+  --s-shadow: 0 0 0 transparent;
+}
+/* Restaurante: sombras quentes, como na beleza. */
+.ns-soft[data-variant="food"] {
+  --s-shadow:
+    0 1px 2px color-mix(in srgb, var(--ns-text) 6%, transparent),
+    0 10px 26px -16px color-mix(in srgb, var(--ns-primary) 30%, transparent);
+}
+
+/* Botão de ação na cor de ação do site */
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-btn {
+  background: var(--v-action);
+  color: var(--v-on-action);
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-btn i {
+  background: var(--v-on-action);
+  color: var(--v-action);
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-btn:focus-visible {
+  outline-color: var(--ns-text);
+}
+
+/* Cabeçalho: sólido, sem desfoque; só as pílulas pequenas do celular */
+.ns-soft:is([data-variant="trade"], [data-variant="pro"], [data-variant="work"]) .ns-s-header {
+  position: sticky;
+  top: 0;
+  background: var(--ns-background);
+  border-bottom: 1px solid var(--s-line);
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) :is(.ns-s-pill, .ns-s-circ) {
+  background: var(--s-card);
+  backdrop-filter: none;
+}
+.ns-soft:is([data-variant="trade"], [data-variant="pro"], [data-variant="work"])
+  :is(.ns-s-pill, .ns-s-circ) {
+  background: var(--s-tint);
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-pill {
+  font-weight: 700;
+}
+
+/* Espaço entre seções: cerca de 44 px no celular */
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-sec {
+  margin-top: 44px;
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-sec--first {
+  margin-top: 28px;
+}
+.ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-footer {
+  margin-top: 52px;
+}
+
+/* Topo de texto (casa, profissional, portfólio) */
+.ns-v-hero {
+  display: grid;
+  gap: 24px;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 28px 20px 0;
+}
+.ns-v-copy {
+  min-width: 0;
+}
+.ns-v-copy h1 {
+  color: var(--ns-primary);
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.ns-v-sub {
+  max-width: 46ch;
+  margin-top: 12px;
+  color: var(--ns-muted);
+  font-size: 17px;
+}
+.ns-v-cta {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+.ns-v-quiet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 1px solid var(--s-line);
+  border-radius: 999px;
+  background: var(--s-card);
+  color: var(--ns-primary);
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.ns-v-photo {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--s-tint);
+  box-shadow: var(--s-shadow);
+}
+.ns-v-photo[data-shape="portrait"] {
+  width: min(100%, 22rem);
+  aspect-ratio: 4 / 5;
+}
+/* Portfólio e profissional: título com peso de capa, sem exagero */
+.ns-soft[data-variant="pro"] .ns-v-copy h1,
+.ns-soft[data-variant="pro"] .ns-s-sh h2 {
+  font-weight: 400;
+  letter-spacing: -0.005em;
+}
+.ns-soft[data-variant="work"] .ns-v-copy h1 {
+  color: var(--ns-text);
+  font-weight: 700;
+}
+
+/* Cartão de fatos */
+.ns-v-facts {
+  display: grid;
+  margin-top: 24px;
+  padding: 4px 16px;
+}
+.ns-s-wrap > .ns-v-facts {
+  margin-top: 0;
+}
+.ns-v-fact {
+  padding: 12px 0;
+  border-top: 1px solid var(--s-line);
+}
+.ns-v-fact:first-child {
+  border-top: 0;
+}
+.ns-v-fact dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ns-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.ns-v-fact dt span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: var(--s-tint);
+  color: var(--ns-primary);
+  font-size: 15px;
+}
+.ns-v-fact dd {
+  margin-top: 4px;
+  padding-left: 36px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.ns-v-fact dd li span {
+  font-weight: 600;
+}
+/* O horário não quebra no meio ("7 AM – 6 PM" fica junto). */
+.ns-v-fact dd li span.ns-v-time {
+  font-weight: inherit;
+  white-space: nowrap;
+}
+.ns-v-fact dd a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-right: 18px;
+  color: var(--ns-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.ns-v-fact dd a.ns-v-tel {
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Linhas de serviço dos ramos: azulejo, texto, preço e pílula */
+.ns-v-lists {
+  display: grid;
+  gap: 12px;
+}
+.ns-v-row .ns-s-rd {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.ns-v-tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: var(--s-tint-strong);
+  color: var(--ns-primary);
+  font-size: 22px;
+}
+.ns-soft[data-variant="food"] .ns-v-tile {
+  background: color-mix(in srgb, var(--ns-primary) 11%, var(--ns-background));
+}
+.ns-soft[data-variant="pro"] .ns-v-tile {
+  background: color-mix(in srgb, var(--ns-secondary) 20%, var(--ns-background));
+  color: var(--ns-text);
+}
+.ns-v-tile--num {
+  font-size: 16px;
+  font-weight: 700;
+}
+.ns-v-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--s-tint-strong);
+  color: var(--ns-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+/* Área de toque de 44 px sem aumentar a pílula */
+.ns-v-pill::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+
+/* Áreas atendidas */
+.ns-v-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ns-v-chips li {
+  padding: 10px 16px;
+  border: 1px solid var(--s-line);
+  border-radius: 999px;
+  background: var(--s-card);
+  font-size: 15px;
+  font-weight: 600;
+}
+.ns-v-chips--hl {
+  margin-top: 16px;
+}
+.ns-v-chips--hl li {
+  padding: 6px 14px;
+  font-size: 14px;
+}
+.ns-v-note {
+  margin-top: 12px;
+  color: var(--ns-muted);
+  font-size: 15px;
+}
+
+/* Galeria do portfólio: o trabalho em quadros grandes, legenda embaixo */
+.ns-v-work {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ns-v-wk {
+  min-width: 0;
+}
+.ns-v-wk[data-m="full"] {
+  grid-column: 1 / -1;
+}
+.ns-v-wkf {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--s-tint);
+}
+.ns-v-wk[data-m="full"] .ns-v-wkf {
+  aspect-ratio: 4 / 3;
+}
+.ns-v-wkc {
+  margin-top: 8px;
+  color: var(--ns-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Barra flutuante dos ramos: a ação principal na cor de ação */
+.ns-s-dock-item.is-primary {
+  flex: 1.6;
+  background: var(--v-action);
+  color: var(--v-on-action);
+}
+.ns-s-dock[data-count="2"] {
+  max-width: 360px;
+  margin-inline: auto;
+}
+@container (max-width: 47.999rem) {
+  .ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-footer {
+    padding-bottom: 104px;
+  }
+}
+
+@media (hover: hover) {
+  .ns-v-pill:hover,
+  .ns-v-quiet:hover {
+    filter: brightness(0.97);
+  }
+}
+
+/* Computador */
+@container (min-width: 64rem) {
+  .ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-sec {
+    margin-top: 88px;
+  }
+  .ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-sec--first {
+    margin-top: 48px;
+  }
+  .ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-header {
+    background: var(--ns-background);
+    backdrop-filter: none;
+  }
+  .ns-soft[data-variant]:not([data-variant="beauty"]) .ns-s-pill {
+    background: transparent;
+    padding-left: 0;
+  }
+  .ns-v-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 56px 40px 0;
+  }
+  .ns-v-hero[data-photo="yes"] {
+    grid-template-columns: 6fr 5fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .ns-v-hero[data-photo="no"] .ns-v-copy {
+    max-width: 46rem;
+  }
+  .ns-v-copy h1 {
+    font-size: 46px;
+  }
+  .ns-v-photo[data-shape="portrait"] {
+    justify-self: end;
+  }
+  .ns-v-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+  .ns-v-cta .ns-s-btn {
+    width: auto;
+    padding: 0 76px 0 32px;
+    justify-content: flex-start;
+  }
+  .ns-v-facts[data-count="2"],
+  .ns-v-facts[data-count="3"] {
+    padding: 14px 8px;
+  }
+  .ns-v-facts[data-count="2"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .ns-v-facts[data-count="3"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ns-v-facts[data-count="2"] .ns-v-fact,
+  .ns-v-facts[data-count="3"] .ns-v-fact {
+    padding: 4px 16px;
+    border-top: 0;
+    border-left: 1px solid var(--s-line);
+  }
+  .ns-v-facts .ns-v-fact:first-child {
+    border-left: 0;
+  }
+  .ns-s-wrap > .ns-v-facts[data-count="3"] {
+    max-width: 56rem;
+  }
+  .ns-v-work {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+  }
+  .ns-v-wk[data-d="2"] {
+    grid-column: span 2;
+  }
+  .ns-v-wk[data-d="3"] {
+    grid-column: span 3;
+  }
+  .ns-v-wk[data-d="6"] {
+    grid-column: span 6;
+  }
+  .ns-v-wk[data-d="2"] .ns-v-wkf {
+    aspect-ratio: 1 / 1;
+  }
+  .ns-v-wk[data-d="3"] .ns-v-wkf {
+    aspect-ratio: 4 / 3;
+  }
+  .ns-v-wk[data-d="6"] .ns-v-wkf {
+    aspect-ratio: 16 / 9;
   }
 }

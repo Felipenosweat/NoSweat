@@ -14,10 +14,12 @@ const spec: SiteSpec = {
   ],
 };
 
+// Estes testes cobrem o bloco no molde Signature (`signature`); no soft ele é testado em
+// compositions/soft/SoftComposition.test.tsx.
 describe("booking section", () => {
   it("renders the heading, the intro and a call fallback when an endpoint exists", () => {
     const html = renderToStaticMarkup(
-      <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" />,
+      <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" signature />,
     );
     expect(html).toContain('id="book"');
     // O título passa pelo <Accent> (uma palavra em itálico): confere o texto sem as tags.
@@ -31,7 +33,7 @@ describe("booking section", () => {
     // Sem isso a coluna da marcação crescia até a largura da fileira de dias e dos horários
     // (~1290 px) e cortava os horários no celular.
     const html = renderToStaticMarkup(
-      <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" />,
+      <SiteRenderer spec={spec} bookingEndpoint="/api/public/booking/site-1" signature />,
     );
     const section = html.slice(html.indexOf('id="book"'));
     expect(section).toMatch(/class="grid grid-cols-1 gap-(8|10)/);

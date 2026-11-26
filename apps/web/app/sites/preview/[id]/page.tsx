@@ -81,7 +81,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
         </div>
       </div>
       <PreviewBarOffset targetId="ns-preview-bar" />
-      <style>{`.ns-nav{top:var(--ns-preview-bar,0px)}`}</style>
+      <style>{`.ns-nav,.ns-s-header{top:var(--ns-preview-bar,0px)}`}</style>
       <SiteRenderer
         spec={site.spec}
         bookingEndpoint={await liveBookingEndpoint(site.id, site.spec)}
