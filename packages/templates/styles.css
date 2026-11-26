@@ -2354,6 +2354,11 @@
     grid-template-columns: minmax(0, 52rem);
     justify-content: center;
   }
+  /* Ramos sem reserva ao lado: a lista usa a largura da página, alinhada com as outras seções. */
+  .ns-soft:not([data-variant="beauty"]) .ns-s-cols:not(:has(.ns-s-bookwrap)):not([data-solo]) {
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: stretch;
+  }
   .ns-s-cols[data-solo] {
     grid-template-columns: minmax(0, 40rem);
     justify-content: center;
@@ -2604,6 +2609,11 @@
 }
 .ns-v-fact dd li span {
   font-weight: 600;
+}
+/* O horário não quebra no meio ("7 AM – 6 PM" fica junto). */
+.ns-v-fact dd li span.ns-v-time {
+  font-weight: inherit;
+  white-space: nowrap;
 }
 .ns-v-fact dd a {
   display: inline-flex;

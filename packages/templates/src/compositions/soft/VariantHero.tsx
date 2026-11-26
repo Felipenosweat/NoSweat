@@ -74,7 +74,7 @@ export function FactCard({ ctx }: { ctx: SoftCtx }) {
         <ul>
           {hours.map((row, index) => (
             <li key={`${row.days}-${index}`}>
-              <span>{row.days}</span> {row.time}
+              <span>{row.days}</span> <span className="ns-v-time">{row.time}</span>
             </li>
           ))}
         </ul>
