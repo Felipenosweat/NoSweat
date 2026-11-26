@@ -26,13 +26,16 @@ export function priceLine(): string {
 }
 
 export const HERO = {
-  title: "Your shop closes at six. Your website doesn’t.",
-  lead: "Describe your business in a few sentences. No Sweat builds the whole website, and the requests and bookings it takes overnight are in your inbox by morning.",
+  /** Linha pequena acima do título (o "depois de fechar"). */
+  kicker: "Your shop closes at six. Your website doesn’t.",
+  title: "Tell us about your business. We’ll build the whole website.",
+  // E-mail dos pedidos: só com o envio configurado (Resend); marcações: só com o agendamento ligado.
+  lead: "Your phone number, services, hours and photos, on a site made for your trade. Requests and bookings it takes overnight are in your inbox by morning.",
   cta: "Start my website",
 };
 
 /** Site de exemplo que sobe da foto do topo (negócio inventado, avisado na legenda). */
-export const HERO_PROOF_SLUG = "smoke-and-rail-bbq";
+export const HERO_PROOF_SLUG = "brick-oven-pizza";
 
 // ---------- Exemplos ----------
 
@@ -40,12 +43,18 @@ export const EXAMPLES_TITLE = "Every site is designed for its business.";
 export const EXAMPLES_BODY =
   "No Sweat picks the layout, the type and the photos for each trade, so a bakery doesn’t come out looking like an electrician.";
 
-/** Os quatro exemplos da galeria, na ordem (o primeiro é o grande). */
+/** Aviso único, logo abaixo do texto de abertura da galeria. */
+export const EXAMPLES_NOTE = "All businesses shown are made up.";
+
+/**
+ * Os quatro exemplos da galeria, um por composição diferente (spec.design.composition: o teste
+ * confere que não se repetem). O site do topo (HERO_PROOF_SLUG) é a quinta composição.
+ */
 export const EXAMPLE_SLUGS = [
   "sunrise-bakery",
-  "fade-and-co-barbers",
   "north-loop-coffee",
-  "bright-spark-electric",
+  "greenline-landscaping",
+  "fade-and-co-barbers",
 ] as const;
 
 export type ExampleSite = {
@@ -53,7 +62,9 @@ export type ExampleSite = {
   name: string;
   trade: string;
   city: string;
-  /** "<Nome> · <Ramo>, <Cidade> · Made-up business" */
+  /** Composição do site (spec.design.composition). */
+  composition: string;
+  /** "<Nome> · <Ramo>" (a cidade vai numa segunda linha). */
   label: string;
 };
 
@@ -69,7 +80,8 @@ export function exampleSite(slug: string): ExampleSite {
     name,
     trade,
     city: place,
-    label: `${name} · ${trade}, ${place} · Made-up business`,
+    composition: entry.spec.design?.composition ?? "service-led",
+    label: `${name} · ${trade}`,
   };
 }
 
@@ -152,7 +164,7 @@ export const OFFICE_TOOLS: { term: string; detail: string; route: string }[] = [
 
 export const OFFICE_TITLE = "In the morning, it’s all on one screen.";
 export const OFFICE_BODY =
-  "Each request becomes a client card with the name, phone and message. Reply from the same screen, on your phone or at your desk.";
+  "Each request becomes a row in your client list, with the name, phone and email. Reply, set a follow-up and mark the job won from the same screen, on your phone or at your desk.";
 export const OFFICE_CAPTION = "Real No Sweat screen. The customers are made up.";
 
 // ---------- Preço ----------

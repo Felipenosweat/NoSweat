@@ -25,27 +25,39 @@ function focusStyle(photo: LandingPhoto): CSSProperties {
 const coverClass =
   "object-cover object-[var(--fp)] md:object-[var(--fp-md)] lg:object-[var(--fp-lg)]";
 
+/**
+ * Original que o otimizador do Next busca no Unsplash: 2400px já basta para a maior largura da
+ * landing e baixa bem menos que o arquivo cheio da câmera.
+ */
+const optimizerSource = (src: string) => `${src}?w=2400&q=80&fm=jpg&fit=max`;
+
 export function UnsplashImage({
   photo,
   sizes,
   priority = false,
+  optimized = false,
   className = "",
 }: {
   photo: LandingPhoto;
   /** Obrigatório: cada uso diz quanto da tela a foto ocupa. */
   sizes: string;
   priority?: boolean;
+  /**
+   * Passa pelo otimizador do próprio Next (/_next/image, AVIF/WebP, qualidade 60) em vez de ir
+   * direto ao Unsplash. Só a foto do topo (LCP): fica no nosso domínio, sem conexão nova.
+   */
+  optimized?: boolean;
   className?: string;
 }) {
   return (
     <Image
-      loader={unsplashLoader}
-      src={photo.src}
+      loader={optimized ? undefined : unsplashLoader}
+      src={optimized ? optimizerSource(photo.src) : photo.src}
       alt={photo.alt}
       fill
       sizes={sizes}
       priority={priority}
-      quality={75}
+      quality={optimized ? 60 : 75}
       style={focusStyle(photo)}
       className={`${coverClass} ${className}`}
     />

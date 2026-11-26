@@ -5,7 +5,7 @@
 // `focus` = object-position por faixa de largura. Trocar uma foto só muda este arquivo.
 
 /** Um papel por foto: trocar uma foto só muda este arquivo. */
-export type PhotoKey = "hero" | "overnight" | "office" | "closing";
+export type PhotoKey = "hero" | "overnight" | "closing";
 
 export type LandingPhoto = {
   /** id da foto no Unsplash. */
@@ -51,19 +51,6 @@ export const PHOTOS: Record<PhotoKey, LandingPhoto> = {
     photographer: "zero take",
     profile: "https://unsplash.com/@zerotake",
     page: "https://unsplash.com/photos/brown-wooden-building-near-trees-during-night-time-WvHrrR1C5Po",
-  },
-  // Vitrine de barbearia de dia, com BARBER no vidro, a bicicleta vermelha e o banco (3:2). Recorte
-  // quadrado puxado para a esquerda: a bicicleta inteira e as letras no quadro.
-  office: {
-    id: "cg599DTeS8w",
-    src: "https://images.unsplash.com/photo-1516470930795-6ba2564824aa",
-    width: 4240,
-    height: 2832,
-    alt: "A barbershop window in daylight with a bicycle parked by the bench.",
-    focus: { base: "5% 50%" },
-    photographer: "Guus Baggermans",
-    profile: "https://unsplash.com/@guusbaggermans",
-    page: "https://unsplash.com/photos/red-city-bike-leaning-on-bench-cg599DTeS8w",
   },
   // Café grande na luz do dia, janelas altas (muito claras, à esquerda) e o balcão de doces aceso
   // (3:2). As janelas são a parte mais clara: o título fica em ink no painel branco.

@@ -8,6 +8,7 @@ import { PLANS } from "@/server/billing/plans";
 import { MONTHLY_CREDITS } from "@/server/credits/pricing";
 import {
   EXAMPLE_SLUGS,
+  EXAMPLES_NOTE,
   exampleSites,
   HERO,
   heroProof,
@@ -89,10 +90,17 @@ describe("examples", () => {
       expect(site.name).toBe(entry?.spec.business.name);
       expect(site.trade).toBe(entry?.spec.business.category);
       expect(site.city).toBe(entry?.spec.business.city);
-      expect(site.label.endsWith("· Made-up business")).toBe(true);
+      expect(site.label).toBe(`${site.name} · ${site.trade}`);
+      expect(site.composition).toBe(entry?.spec.design?.composition ?? "service-led");
       expect(existsSync(join(WEB, "public/landing/signature", `${site.slug}-d.webp`))).toBe(true);
       expect(existsSync(join(WEB, "public/landing/signature", `${site.slug}-m.webp`))).toBe(true);
     }
+  });
+
+  it("the gallery shows four different compositions, and the hero site a fifth", () => {
+    const compositions = [...exampleSites(), heroProof()].map((site) => site.composition);
+    expect(new Set(compositions).size).toBe(5);
+    expect(EXAMPLES_NOTE).toBe("All businesses shown are made up.");
   });
 
   it("the site rising from the hero photo says it is made up", () => {
@@ -108,7 +116,8 @@ describe("after hours", () => {
     // Pedidos do formulário e marcações viram e-mail ao dono (server/notify).
     expect(existsSync(join(WEB, "server/notify/lead-email.ts"))).toBe(true);
     expect(existsSync(join(WEB, "server/notify/booking-email.ts"))).toBe(true);
-    expect(HERO.lead).toMatch(/requests and bookings/);
+    expect(HERO.lead).toMatch(/Requests and bookings/);
+    expect(HERO.kicker).toBe("Your shop closes at six. Your website doesn’t.");
   });
 
   it("the overnight list is three labeled examples through the night", () => {
@@ -132,7 +141,7 @@ describe("after hours", () => {
 
 describe("photos", () => {
   it("has one photo per role", () => {
-    expect(Object.keys(PHOTOS).sort()).toEqual(["closing", "hero", "office", "overnight"]);
+    expect(Object.keys(PHOTOS).sort()).toEqual(["closing", "hero", "overnight"]);
   });
 
   it("every photo has an Unsplash source, alt text and photographer credit", () => {
