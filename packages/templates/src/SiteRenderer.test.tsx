@@ -320,7 +320,8 @@ describe("compositions", () => {
 
   it("keeps the old layout for sites without a design plan", () => {
     const old: SiteSpec = { ...plumbing, design: undefined };
-    const html = renderToStaticMarkup(<SiteRenderer spec={old} />);
+    // A composição antiga (Signature) só existe atrás da prop `signature` (chave de recuo).
+    const html = renderToStaticMarkup(<SiteRenderer spec={old} signature />);
     expect(html).toContain('data-composition="service-led"');
   });
 

@@ -179,7 +179,8 @@ describe("soft variant: professional", () => {
   it("opens the first question and keeps the credentials inside the owner's own text", () => {
     const html = render(hale);
     expect(html).toContain('<details class="ns-s-qa" open="">');
-    expect(html.match(/<details/g)).toHaveLength(3);
+    // Só as perguntas (o menu do celular também é um <details>).
+    expect(html.match(/<details class="ns-s-qa"/g)).toHaveLength(3);
     expect(html).toContain("CPA, licensed in Colorado");
   });
 
