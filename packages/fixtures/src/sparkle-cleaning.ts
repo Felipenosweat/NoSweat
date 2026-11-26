@@ -24,11 +24,12 @@ export const sparkleCleaning: SiteSpec = {
     ],
   },
   theme: {
-    primary: "#0F766E",
-    secondary: "#F59E0B",
-    background: "#FFFFFF",
+    primary: "#0F5E5A",
+    secondary: "#B45309",
+    background: "#F3F9F8",
     text: "#0F172A",
-    font: "fresh",
+    muted: "#4B5F66",
+    font: "modern",
   },
   sections: [
     {
@@ -39,17 +40,14 @@ export const sparkleCleaning: SiteSpec = {
       ctaLabel: "Get a cleaning quote",
       imageQuery: "cleaning crew bright kitchen",
       image: {
-        url: "/photos/cleaner.webp",
-        alt: "A person organizing a kitchen cabinet",
-        source: "unsplash",
+        url: "/photos/crew.webp",
+        alt: "A cleaning crew mopping and wiping a bright kitchen",
+        source: "pexels",
         kind: "scene",
-        credit: {
-          name: "American Cleaning Institute",
-          url: "https://unsplash.com/photos/j4rDt1pF6ug",
-        },
+        credit: { name: "Tima Miroshnichenko", url: "https://www.pexels.com/photo/6197108/" },
         width: 2400,
-        height: 1601,
-        focus: "60% 40%",
+        height: 1600,
+        focus: "50% 45%",
       },
     },
     {

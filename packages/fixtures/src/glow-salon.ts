@@ -20,6 +20,7 @@ export const glowSalon: SiteSpec = {
     address: "2520 NW 2nd Ave",
     city: "Miami",
     state: "FL",
+    zip: "33127",
     serviceArea: "Wynwood, Miami",
     hours: [
       { days: "Tue–Sat", time: "10 AM – 7 PM" },

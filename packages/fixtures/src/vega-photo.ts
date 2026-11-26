@@ -1,29 +1,27 @@
 import type { SiteImage, SiteSpec } from "@nosweat/schema";
+import { MODEL_UNSPLASH_PHOTOS } from "./unsplash-photos";
 
 // Modelo de portfólio (ver docs/design/model-sites.md). Fatos: briefs.ts.
-// As fotos fazem o papel das fotos da dona (kind "owner") num negócio fictício; vêm da Unsplash,
-// com crédito visível, e só aparecem no /examples.
-// TODO(verificar): este ambiente não acessa a Unsplash. Conferir cada foto (existe, mostra um
-// casamento) e trocar o crédito genérico pelo nome e pela página do fotógrafo antes de mostrar.
+// As fotos fazem o papel das fotos da dona (kind "owner") num negócio fictício. Vêm do conjunto
+// verificado em unsplash-photos.ts (existem, mostram casamentos, com o crédito de cada fotógrafo) e
+// só aparecem no /examples. Os nomes dos casais e os lugares das legendas são fictícios.
 
-/** Crédito provisório (ver TODO acima): nunca atribuir a foto a um nome não conferido. */
-const PENDING_CREDIT = {
-  name: "Unsplash contributor",
-  url: "https://unsplash.com/s/photos/wedding",
-};
+const verified = MODEL_UNSPLASH_PHOTOS["vega-photo"];
+if (!verified) throw new Error("vega-photo: fotos verificadas não encontradas");
 
-/** Foto vertical (4:5) cortada pela própria Unsplash, com o tamanho conhecido. */
-function work(id: string, alt: string, caption: string): SiteImage {
-  return {
-    url: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&h=1500&q=80`,
-    alt,
-    source: "unsplash",
-    kind: "owner",
-    credit: PENDING_CREDIT,
-    width: 1200,
-    height: 1500,
-    caption,
-  };
+const CAPTIONS = [
+  "Ana & Luis · Biltmore Estate · 2025",
+  "Grace & Owen · Blue Ridge Parkway · 2025",
+  "Hannah & Theo · Weaverville · 2024",
+  "Maya & Jordan · Black Mountain · 2024",
+  "Lucía & Dan · Biltmore Estate · 2023",
+];
+
+/** Foto do conjunto verificado, com a legenda "casal · lugar · ano". */
+function work(index: number): SiteImage {
+  const image = verified?.gallery[index];
+  if (!image) throw new Error(`vega-photo: falta a foto ${index}`);
+  return { ...image, caption: CAPTIONS[index] };
 }
 
 export const vegaPhoto: SiteSpec = {
@@ -58,61 +56,12 @@ export const vegaPhoto: SiteSpec = {
       subtitle:
         "I photograph weddings and elopements as they happen, without posing anyone. I take about 20 weddings a year, so I answer every email myself.",
       ctaLabel: "Check your date",
-      image: {
-        url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2400&h=1350&q=80",
-        alt: "A couple holding each other on their wedding day",
-        source: "unsplash",
-        kind: "owner",
-        credit: PENDING_CREDIT,
-        width: 2400,
-        height: 1350,
-      },
+      image: verified.hero,
     },
     {
       type: "gallery",
       title: "Recent weddings",
-      images: [
-        work(
-          "1511285560929-80b456fea0bc",
-          "A bride and groom outdoors",
-          "Ana & Luis · Biltmore Estate · 2025",
-        ),
-        work(
-          "1465495976277-4387d4b0b4c6",
-          "A couple walking together after the ceremony",
-          "Grace & Owen · Blue Ridge Parkway · 2025",
-        ),
-        work(
-          "1606800052052-a08af7148866",
-          "Wedding details before the ceremony",
-          "Priya & Sam · Downtown Asheville · 2024",
-        ),
-        work(
-          "1522673607200-164d1b6ce486",
-          "A couple sharing a quiet moment",
-          "Hannah & Theo · A backyard in Weaverville · 2024",
-        ),
-        work(
-          "1583939003579-730e3918a45a",
-          "A bride getting ready",
-          "Lucía & Dan · Biltmore Estate · 2024",
-        ),
-        work(
-          "1537633552985-df8429e8048b",
-          "Newlyweds outside after the ceremony",
-          "Maya & Jordan · Black Mountain · 2024",
-        ),
-        work(
-          "1591604466107-ec97de577aff",
-          "A couple during their first dance",
-          "Elena & Chris · River Arts District · 2023",
-        ),
-        work(
-          "1525258946800-98cfd641d0de",
-          "Guests celebrating at a wedding",
-          "Rosa & Ben · Blue Ridge Parkway · 2023",
-        ),
-      ],
+      images: [work(0), work(1), work(2), work(3), work(4)],
     },
     {
       type: "services",
