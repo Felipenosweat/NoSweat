@@ -41,6 +41,11 @@ export const BookingSettings = z.object({
   cancellationPolicy: z.string().trim().max(600).optional(),
   /** Quantas horas antes dá para cancelar sem custo (só informativo; 0 = a qualquer hora). */
   cancellationHours: z.number().int().min(0).max(720).optional(),
+  /**
+   * Lembretes por texto: o formulário ganha uma caixa OPCIONAL de consentimento (padrão desligado).
+   * Os textos saem do celular do dono (não há envio automático).
+   */
+  smsReminders: z.boolean().optional(),
 });
 export type BookingSettings = z.infer<typeof BookingSettings>;
 
@@ -100,6 +105,8 @@ export const PublicBookingInfo = z.object({
   /** Política de cancelamento do dono (vazio/ausente = o formulário não mostra a caixa). */
   cancellationPolicy: z.string().optional(),
   cancellationHours: z.number().int().optional(),
+  /** O dono usa lembretes por texto: o formulário mostra a caixa de consentimento (opcional). */
+  smsReminders: z.boolean().optional(),
 });
 export type PublicBookingInfo = z.infer<typeof PublicBookingInfo>;
 
@@ -148,12 +155,41 @@ export const CreateBookingRequest = z.object({
   /** Concordou com a política de privacidade / de cancelamento (registrado com a data). */
   acceptedPrivacy: z.literal(true).optional(),
   acceptedCancellation: z.literal(true).optional(),
+  /**
+   * Marcou a caixa OPCIONAL de lembretes por texto. Só vale se o dono ligou `smsReminders`; o
+   * servidor guarda a data e o texto do aviso (montado por ele, nunca o que o navegador mandar).
+   */
+  acceptedSms: z.literal(true).optional(),
   email: z.union([z.literal(""), z.email().max(200)]).optional(),
   notes: z.string().trim().max(500).optional(),
   /** Campo-isca anti-robô (deve vir vazio). */
   website: z.string().max(0).optional(),
 });
 export type CreateBookingRequest = z.infer<typeof CreateBookingRequest>;
+
+/**
+ * Aviso de consentimento dos lembretes por texto (TCPA/CTIA), na ordem em que o cliente lê. A
+ * caixa NUNCA vem marcada nem é obrigatória. O texto não promete envio automático: vale para as
+ * mensagens que a empresa mandar. O formulário e o servidor (que guarda o texto exato com a
+ * marcação) montam o aviso pela mesma função.
+ */
+export function smsConsentIntro(businessName: string): string {
+  const business = businessName.trim() || "this business";
+  return (
+    "Text me reminders about my appointment. By checking this box, you agree to receive text " +
+    `messages from ${business} at the phone number above about your appointment. Message ` +
+    "frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for " +
+    "help. Consent is not a condition of booking."
+  );
+}
+
+/** Final do aviso: no formulário "Privacy Policy" é um link. */
+export const SMS_CONSENT_PRIVACY = "See our Privacy Policy.";
+
+/** O aviso inteiro, como fica guardado com a marcação. */
+export function smsConsentText(businessName: string): string {
+  return `${smsConsentIntro(businessName)} ${SMS_CONSENT_PRIVACY}`;
+}
 
 export const BookingStatus = z.enum(["confirmed", "canceled"]);
 export type BookingStatus = z.infer<typeof BookingStatus>;
@@ -175,6 +211,8 @@ export const PublicBooking = z.object({
   canCancel: z.boolean(),
   /** Política de cancelamento que o cliente viu e aceitou ao marcar (vazio = não havia). */
   cancellationPolicy: z.string().optional(),
+  /** "We accept cash, Zelle (...)": só o que o dono escolheu em "How customers pay" (ausente = nada). */
+  paymentInstructions: z.string().optional(),
 });
 export type PublicBooking = z.infer<typeof PublicBooking>;
 

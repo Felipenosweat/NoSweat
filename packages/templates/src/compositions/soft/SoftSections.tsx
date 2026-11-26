@@ -1,4 +1,4 @@
-import type { SectionOf } from "@nosweat/schema";
+import { paymentPills, type PaymentSettings, type SectionOf } from "@nosweat/schema";
 import type { ReactNode } from "react";
 import {
   CalendarIcon,
@@ -315,6 +315,24 @@ export function SoftFaq({ ctx, data, id }: { ctx: SoftCtx; data: SectionOf<"faq"
   );
 }
 
+/** "Payment": o que o dono aceita (só informativo; nada quando ele não escolheu). */
+export function SoftPayments({ payments }: { payments: PaymentSettings | undefined }) {
+  const pills = paymentPills(payments);
+  if (pills.length === 0) return null;
+  const note = payments?.note?.trim();
+  return (
+    <div className="ns-s-card ns-s-pay">
+      <h3>Payment</h3>
+      <ul className="ns-s-paylist">
+        {pills.map((pill) => (
+          <li key={pill}>{pill}</li>
+        ))}
+      </ul>
+      {note && <p className="ns-s-paynote">{note}</p>}
+    </div>
+  );
+}
+
 /** Contato: ações em pílula (agendar, ligar, rota), horário e o formulário. */
 export function SoftContact({
   ctx,
@@ -405,6 +423,7 @@ export function SoftContact({
                 </dl>
               </div>
             )}
+            <SoftPayments payments={business.payments} />
             <ReviewUsLink business={business} className="ns-s-review" />
           </div>
           {data.showForm && (
@@ -432,6 +451,7 @@ export function SoftFooter({ ctx }: { ctx: SoftCtx }) {
   const city = locationWithZip(business);
   const hours = hoursSummary(business.hours);
   const socials = socialLinks(business);
+  const payPills = paymentPills(business.payments);
   return (
     <footer className="ns-s-footer">
       <div className="ns-s-wrap">
@@ -455,6 +475,9 @@ export function SoftFooter({ ctx }: { ctx: SoftCtx }) {
               </li>
             ))}
           </ul>
+        )}
+        {!ctx.hasContact && payPills.length > 0 && (
+          <p className="ns-s-payline">{`Payment: ${payPills.join(" · ")}`}</p>
         )}
         <ReviewUsLink business={business} className="ns-s-review" />
         <div className="ns-s-fine">

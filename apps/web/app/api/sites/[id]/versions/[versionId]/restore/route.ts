@@ -1,6 +1,7 @@
 import { UpdateSiteResponse } from "@nosweat/schema";
 import { handle, jsonResponse, notFound, unauthorized } from "@/server/http";
 import { savesExceeded } from "@/server/quota";
+import { keepPayments } from "@/server/payments";
 import { keepReviewUrl } from "@/server/reviews";
 import { requireSiteAccess } from "@/server/sites";
 import { getSiteStore } from "@/server/store";
@@ -27,7 +28,11 @@ export async function POST(_request: Request, { params }: Context): Promise<Resp
     const version = await store.getVersion(site.id, versionId);
     if (!version) return notFound("Version");
 
-    const restored = await store.update(site.id, keepReviewUrl(version.spec, site.spec), "restore");
+    const restored = await store.update(
+      site.id,
+      keepPayments(keepReviewUrl(version.spec, site.spec), site.spec),
+      "restore",
+    );
     if (!restored) return notFound();
     return jsonResponse(UpdateSiteResponse, { siteId: restored.id, spec: restored.spec });
   }, "/api/sites/[id]/versions/[versionId]/restore");

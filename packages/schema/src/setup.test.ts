@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SiteSetupRequest, SiteSetupResponse } from "./index";
+import { SetupSettings, SiteSetupRequest, SiteSetupResponse } from "./index";
 
 const weekly = [
   [],
@@ -81,5 +81,14 @@ describe("SiteSetupResponse", () => {
     const ok = { siteId: "s1", saved: ["services", "hours"], services: 1, people: 0, notes: [] };
     expect(SiteSetupResponse.safeParse(ok).success).toBe(true);
     expect(SiteSetupResponse.safeParse({ ...ok, saved: ["nope"] }).success).toBe(false);
+  });
+});
+
+describe("text reminders contract", () => {
+  it("is optional everywhere and boolean when present", () => {
+    const settings = { ...valid.settings };
+    expect(SetupSettings.safeParse(settings).success).toBe(true);
+    expect(SetupSettings.safeParse({ ...settings, smsReminders: true }).success).toBe(true);
+    expect(SetupSettings.safeParse({ ...settings, smsReminders: "yes" }).success).toBe(false);
   });
 });

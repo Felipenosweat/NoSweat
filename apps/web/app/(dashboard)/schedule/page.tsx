@@ -14,7 +14,9 @@ import {
   type RawSearchParams,
   type ScheduleParams,
 } from "./params";
+import { loadSmsReminders, type SmsRemindersData } from "./load-reminders";
 import { ScheduleBoard } from "./ScheduleBoard";
+import { SmsReminders } from "./SmsReminders";
 import { safeTimeZone, zonedParts, zonedToUtc } from "./time";
 
 export const metadata: Metadata = { title: "Schedule", robots: { index: false } };
@@ -109,6 +111,16 @@ async function loadSchedule(ownerId: string, params: ScheduleParams) {
   };
 }
 
+/** O cartão "Text reminders" (só com lembretes por texto ligados). Erro = sem cartão, agenda normal. */
+async function remindersFor(ownerId: string): Promise<SmsRemindersData | null> {
+  try {
+    return await loadSmsReminders(ownerId);
+  } catch (error) {
+    console.error("[schedule] could not load the text reminders", error);
+    return null;
+  }
+}
+
 export default async function SchedulePage({ searchParams }: SchedulePageProps) {
   // Sempre na hora do request (dados do dono).
   await connection();
@@ -117,10 +129,11 @@ export default async function SchedulePage({ searchParams }: SchedulePageProps) 
   if (!viewer) redirect("/login?next=/schedule");
   const readOnly = viewer.viewingAs !== null;
   const params = parseScheduleParams(await searchParams);
-  const [data, newJobClient] = await Promise.all([
+  const [data, newJobClient, reminders] = await Promise.all([
     loadSchedule(viewer.ownerId, params),
     // Só quando a folha abre (no "ver como" ela nunca abre).
     preselectedClient(viewer.ownerId, params.openNew && !readOnly ? params.clientId : null),
+    remindersFor(viewer.ownerId),
   ]);
 
   if (data.jobs === null) {
@@ -138,23 +151,33 @@ export default async function SchedulePage({ searchParams }: SchedulePageProps) 
   }
 
   return (
-    <ScheduleBoard
-      // Nova chave a cada período/filtro: a folha e a bandeja recomeçam fechadas.
-      key={`${params.view ?? "auto"}|${data.date}|${params.team ?? ""}`}
-      view={params.view}
-      date={data.date}
-      rangeStart={data.rangeStart}
-      today={data.today}
-      nowMinutes={data.nowMinutes}
-      timeZone={data.timeZone}
-      team={data.team}
-      teamFilter={params.team}
-      jobs={data.jobs}
-      unscheduled={data.unscheduled}
-      toInvoice={data.toInvoice}
-      readOnly={readOnly}
-      openNew={params.openNew}
-      newJobClient={newJobClient}
-    />
+    <>
+      <ScheduleBoard
+        // Nova chave a cada período/filtro: a folha e a bandeja recomeçam fechadas.
+        key={`${params.view ?? "auto"}|${data.date}|${params.team ?? ""}`}
+        view={params.view}
+        date={data.date}
+        rangeStart={data.rangeStart}
+        today={data.today}
+        nowMinutes={data.nowMinutes}
+        timeZone={data.timeZone}
+        team={data.team}
+        teamFilter={params.team}
+        jobs={data.jobs}
+        unscheduled={data.unscheduled}
+        toInvoice={data.toInvoice}
+        readOnly={readOnly}
+        openNew={params.openNew}
+        newJobClient={newJobClient}
+      />
+      {reminders && (
+        <SmsReminders
+          rows={reminders.rows}
+          timeZone={reminders.timeZone}
+          nowMs={reminders.nowMs}
+          readOnly={readOnly}
+        />
+      )}
+    </>
   );
 }

@@ -44,6 +44,7 @@ import {
   MoneyIcon,
   NoteIcon,
   PhoneIcon,
+  SmsOptOutBadge,
   StageBadge,
   StageIcon,
   TagList,
@@ -564,6 +565,11 @@ export default async function ClientPage({ params }: ClientPageProps) {
               {client.source === "website" ? "Came from your website" : "Added by you"} · since{" "}
               {since}
             </p>
+            {client.smsOptOut && (
+              <p className="mt-3">
+                <SmsOptOutBadge client={client} size="md" />
+              </p>
+            )}
             <TagList tags={client.tags} className="mt-3" />
             {!readOnly && (
               // Cliente novo: o primeiro passo é responder (confirmar o serviço pedido pelo site).

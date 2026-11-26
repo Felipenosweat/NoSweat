@@ -23,6 +23,15 @@ export const joesPlumbing: SiteSpec = {
       { days: "Emergencies", time: "24/7" },
     ],
     highlights: ["Licensed & insured", "Free estimates", "Flat price before work starts"],
+    payments: {
+      methods: [
+        { method: "cash" },
+        { method: "check" },
+        { method: "card" },
+        { method: "zelle", handle: "(512) 555-0142" },
+      ],
+      note: "Payment is due when the work is finished.",
+    },
   },
   theme: {
     // Aço azul-marinho + UM laranja de alta visibilidade (só no botão de ligar) em página branco-fria.

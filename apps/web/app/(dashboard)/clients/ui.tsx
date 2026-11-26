@@ -88,6 +88,22 @@ export function TagList({ tags, className }: { tags: readonly string[]; classNam
   );
 }
 
+/** Selo "No texts": o cliente respondeu STOP e não recebe lembretes por texto. */
+export function SmsOptOutBadge({
+  client,
+  size = "sm",
+}: {
+  client: { smsOptOut?: boolean };
+  size?: "sm" | "md";
+}) {
+  if (!client.smsOptOut) return null;
+  return (
+    <GlassBadge tone="danger" size={size}>
+      No texts (replied STOP)
+    </GlassBadge>
+  );
+}
+
 const AVATAR_SIZES = {
   sm: "size-9 text-[13px]",
   md: "size-11 text-sm",

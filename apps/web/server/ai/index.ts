@@ -1,6 +1,7 @@
 import { AiEditResult, SiteSpec } from "@nosweat/schema";
 import { applyDesignPlan, planDesign, type PlanOptions } from "../design";
 import { sanitizeAiImages } from "../images/sanitize";
+import { keepPayments } from "../payments";
 import { keepReviewUrl } from "../reviews";
 import { AnthropicGenerator } from "./anthropic";
 import { MockGenerator } from "./mock";
@@ -90,7 +91,9 @@ export async function generateSiteSpec(
   });
   const raw: unknown = await generator.generateSite(brief, plan);
   // O link de avaliações do Google só vem do dono (página /reviews): a IA nunca põe um.
-  const spec = SiteSpec.parse(keepReviewUrl(sanitizeAiImages(SiteSpec.parse(raw)), null));
+  const spec = SiteSpec.parse(
+    keepPayments(keepReviewUrl(sanitizeAiImages(SiteSpec.parse(raw)), null), null),
+  );
   return SiteSpec.parse({ ...spec, design: applyDesignPlan(spec.design, plan) });
 }
 
@@ -109,7 +112,7 @@ export async function editSiteSpec(
   const changed = stableJson(result.spec) !== stableJson(SiteSpec.parse(spec));
   // Fotos e galerias voltam como estavam (regras em server/images/sanitize.ts). O link de
   // avaliações do Google também: só o dono muda (página /reviews).
-  const edited = keepReviewUrl(sanitizeAiImages(result.spec, spec), spec);
+  const edited = keepPayments(keepReviewUrl(sanitizeAiImages(result.spec, spec), spec), spec);
   return { ...AiEditResult.parse({ ...result, spec: edited }), changed };
 }
 

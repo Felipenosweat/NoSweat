@@ -49,6 +49,8 @@ export type ClientPatch = Partial<
     | "totalJobsCents"
     | "jobsCount"
     | "tags"
+    | "smsOptOut"
+    | "smsOptOutAt"
   >
 >;
 

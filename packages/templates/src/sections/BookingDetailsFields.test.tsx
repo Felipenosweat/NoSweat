@@ -120,3 +120,53 @@ describe("booking details fields (variant classes)", () => {
     expect(plain).toContain("rounded-lg border border-ns-border");
   });
 });
+
+describe.each(VARIANTS)("booking details fields: text reminders (%s variant)", (_name, soft) => {
+  const sms = (extra: Partial<BookingDetailsFieldsProps> = {}) =>
+    render({ soft, smsReminders: true, businessName: "Glow Salon", ...extra });
+  const smsInput = (html: string) =>
+    html.match(/<input[^>]*name="acceptedSms"[^>]*>/)?.[0] ?? "";
+
+  it("shows the box only when the owner turned text reminders on", () => {
+    for (const html of [render({ soft }), render({ soft, smsReminders: false })]) {
+      expect(html).not.toContain("acceptedSms");
+      expect(html).not.toContain("Text me reminders");
+    }
+    expect(sms()).toContain('name="acceptedSms"');
+  });
+
+  it("is optional and starts unchecked", () => {
+    const tag = smsInput(sms());
+    expect(tag).toContain('type="checkbox"');
+    expect(tag).not.toMatch(/required|aria-required|checked/);
+    // Só a caixa da privacidade é obrigatória.
+    expect(sms().match(/aria-required="true"/g)).toHaveLength(5);
+    expect(smsInput(sms({ details: { ...EMPTY_BOOKING_DETAILS, acceptSms: true } }))).toContain(
+      'checked=""',
+    );
+  });
+
+  it("shows the whole disclosure with the business name", () => {
+    const text = sms().replace(/<!-- -->/g, "");
+    for (const part of [
+      "Text me reminders about my appointment.",
+      "By checking this box, you agree to receive text messages from Glow Salon at the phone number above about your appointment.",
+      "Message frequency varies.",
+      "Message and data rates may apply.",
+      "Reply STOP to opt out or HELP for help.",
+      "Consent is not a condition of booking.",
+      "See our <a",
+    ]) {
+      expect(text).toContain(part);
+    }
+  });
+
+  it("does not promise automatic texts", () => {
+    expect(sms()).not.toMatch(/automatic|we will text|we'll text/i);
+  });
+
+  it("links the same Privacy Policy as the privacy box", () => {
+    const html = sms();
+    expect(html.split(`href="${VISITOR_PRIVACY_URL}"`)).toHaveLength(3);
+  });
+});

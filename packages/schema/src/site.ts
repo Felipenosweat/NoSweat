@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PaymentSettings } from "./payments";
 
 // ATENÇÃO: este arquivo é o contrato entre front, back e IA.
 // Não renomeie nem remova campos sem combinar com o time. Adicionar campo opcional é ok.
@@ -340,6 +341,8 @@ export const SiteSpec = z.object({
      * Vira o botão "Review us on Google" do site. Só o dono muda (a IA nunca põe nem tira).
      */
     googleReviewUrl: GoogleReviewUrl.optional(),
+    /** Como os clientes pagam (informativo; só o que o dono escolheu em "How customers pay"). */
+    payments: PaymentSettings.optional(),
   }),
   theme: Theme,
   sections: z.array(Section).min(2).max(10),

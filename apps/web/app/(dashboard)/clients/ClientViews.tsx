@@ -6,7 +6,7 @@ import { GlassCard, cx, focusRing } from "@/components/glass";
 import { CLIENT_STAGES, STAGE_LABELS, formatCents } from "@/lib/clients";
 import { ClientMenu, type ClientMenuClient } from "./ClientMenu";
 import { ReplyButton, type ReplyClient, type ReplyCompany } from "./ReplyButton";
-import { Avatar, FollowUpBadge, StageBadge, TagList } from "./ui";
+import { Avatar, FollowUpBadge, SmsOptOutBadge, StageBadge, TagList } from "./ui";
 
 // Lista e quadro (Kanban por etapa) dos clientes. Server components; o menu "⋯" de cada cliente
 // é o único pedaço de cliente (mudar de etapa, apagar).
@@ -80,9 +80,10 @@ function ClientRow({
           <span className="block truncate text-[13px] leading-5 text-slate-600">
             {contactLine(client)}
           </span>
-          {(followUp || tags.length > 0) && (
+          {(followUp || tags.length > 0 || client.smsOptOut) && (
             <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
               {followUp && <FollowUpBadge date={followUp} today={today} size="sm" />}
+              <SmsOptOutBadge client={client} />
               <TagList tags={tags} />
             </span>
           )}

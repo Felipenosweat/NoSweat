@@ -106,7 +106,8 @@ export function ContactChannels({ contact, text }: { contact: SalesContact; text
 const dateFormat = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" });
 
 /**
- * Planos com mensal/anual e botão de assinar (Stripe Checkout), ou "Manage billing".
+ * Planos com mensal/anual e botão de assinar (Stripe Checkout), ou "Manage or cancel your plan"
+ * (portal do Stripe: cancelar, trocar de plano, atualizar o cartão).
  * Sem Stripe, os botões abrem o WhatsApp/e-mail da No Sweat e o admin libera o acesso à mão.
  * Quem tem plano manual também vê a grade, para trocar de plano (sempre pelo contato, nunca pelo
  * Stripe, para não pagar duas vezes).
@@ -227,7 +228,7 @@ export function BillingPlans({
             disabled={pending !== null}
             className={`${secondaryButton} mt-4`}
           >
-            {pending === "/api/billing/portal" ? "Opening…" : "Manage billing"}
+            {pending === "/api/billing/portal" ? "Opening…" : "Manage or cancel your plan"}
           </button>
           <p className="mt-4 text-[13px] text-(--glass-fg-muted)">
             To change plans, pick a new one below. It starts today, with no setup fee, and the
@@ -385,7 +386,7 @@ export function BillingPlans({
       )}
       <p className="mt-6 text-[13px] text-(--glass-fg-muted)">
         {checkout && !manualActive
-          ? "Payments are handled by Stripe. You can change plans or cancel anytime from this page."
+          ? "Plans renew automatically each month or year until you cancel. Cancel anytime in Billing. Payments are handled by Stripe."
           : `Pick a plan and we'll finish with you ${contact.whatsapp ? "on WhatsApp" : "by email"}. As soon as your payment is confirmed, your plan turns on and you can publish in one click.`}
       </p>
       {(!checkout || manualActive) && (

@@ -27,6 +27,16 @@ export const glowSalon: SiteSpec = {
       { days: "Sun", time: "11 AM – 5 PM" },
     ],
     links: { booking: "https://book.glowsalon.example.com" },
+    payments: {
+      methods: [
+        { method: "cash" },
+        { method: "card" },
+        { method: "zelle", handle: "(305) 555-0187" },
+        { method: "venmo", handle: "@glowsalon-demo" },
+        { method: "cash_app", handle: "$glowsalondemo" },
+      ],
+      note: "Tips are always appreciated, never expected.",
+    },
   },
   theme: {
     primary: "#181966",

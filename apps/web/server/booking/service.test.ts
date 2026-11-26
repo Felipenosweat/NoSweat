@@ -1,8 +1,8 @@
 import { fixtures } from "@nosweat/fixtures";
-import type { CreateBookingRequest } from "@nosweat/schema";
+import { smsConsentText, type CreateBookingRequest } from "@nosweat/schema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEV_USER } from "../auth/session";
-import { createClient, listClients } from "../clients/service";
+import { createClient, listClients, setSmsOptOut } from "../clients/service";
 import { getClientStore, resetMemoryClientStore } from "../clients/store";
 import {
   createJob,
@@ -714,5 +714,128 @@ describe("createBooking: formulário v2 (nome, telefone E.164 e aceite)", () => 
     expect(record?.privacyAcceptedAt ?? null).toBeNull();
     expect(record?.cancellationPolicySnapshot ?? null).toBeNull();
     expect(created?.booking.cancellationPolicy).toBeUndefined();
+  });
+});
+
+describe("how to pay on the booking", () => {
+  it("shows the owner's payment methods on the booking and in the e-mail notice", async () => {
+    const data = await setup();
+    const created = await createBooking(data.siteId, request(data), NOW);
+    const sentence = created?.booking.paymentInstructions ?? "";
+    expect(sentence).toBe(
+      "We accept cash, credit & debit cards, Zelle ((305) 555-0187), Venmo (@glowsalon-demo) and Cash App ($glowsalondemo). Tips are always appreciated, never expected.",
+    );
+    expect(created?.notice.paymentInstructions).toBe(sentence);
+    const token = created?.booking.token ?? "";
+    expect((await getBookingByToken(token, NOW))?.paymentInstructions).toBe(sentence);
+  });
+
+  it("omits it when the published site has no payments", async () => {
+    const store = getSiteStore();
+    const spec = {
+      ...fixtures["glow-salon"],
+      business: { ...fixtures["glow-salon"].business, payments: undefined },
+    };
+    const site = await store.create(spec, OWNER);
+    await store.updateMeta(site.id, {
+      status: "published",
+      slug: `glow-${site.id.slice(0, 6)}`,
+      publishedSpec: site.spec,
+      publishedAt: NOW.toISOString(),
+    });
+    await updateSettings(OWNER, { timeZone: "America/New_York" });
+    const item = await createPriceItem(OWNER, {
+      name: "Haircut",
+      unitPriceCents: 4500,
+      bookable: true,
+      durationMinutes: 45,
+    });
+    await updateBookingSettings(OWNER, { enabled: true, minNoticeHours: 0 });
+    const created = await createBooking(site.id, request({ siteId: site.id, serviceId: item.id }), NOW);
+    expect(created?.booking.paymentInstructions).toBeUndefined();
+    expect(created?.notice.paymentInstructions).toBeUndefined();
+  });
+});
+
+describe("text reminders consent", () => {
+  const WED_11 = "2026-12-02T11:00:00-05:00";
+  const withSms = (setupData: Setup, over: Partial<CreateBookingRequest> = {}) =>
+    request(setupData, { acceptedSms: true, ...over });
+
+  it("tells the site to show the box only when the owner turned it on", async () => {
+    const data = await setup();
+    expect((await getPublicBookingInfo(data.siteId))?.smsReminders).toBeUndefined();
+    await updateBookingSettings(OWNER, { smsReminders: true });
+    expect((await getPublicBookingInfo(data.siteId))?.smsReminders).toBe(true);
+    await updateBookingSettings(OWNER, { smsReminders: false });
+    expect((await getPublicBookingInfo(data.siteId))?.smsReminders).toBeUndefined();
+  });
+
+  it("stores the time and the exact disclosure the server built, never the browser's text", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, { smsReminders: true });
+    const forged = { ...withSms(data), smsConsentText: "forged", smsConsentAt: "2000-01-01" };
+    const created = await createBooking(data.siteId, forged as CreateBookingRequest, NOW);
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record?.smsConsentAt).toBe(NOW.toISOString());
+    expect(record?.smsConsentText).toBe(smsConsentText(created?.notice.businessName ?? ""));
+    expect(record?.smsConsentText).toContain(created?.notice.businessName);
+    expect(record?.smsConsentText).not.toContain("forged");
+  });
+
+  it("books normally without the box, and records nothing", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, { smsReminders: true });
+    const created = await createBooking(data.siteId, request(data), NOW);
+    expect(created?.booking.status).toBe("confirmed");
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record?.smsConsentAt ?? null).toBeNull();
+    expect(record?.smsConsentText ?? null).toBeNull();
+  });
+
+  it("ignores the box when the owner has text reminders off (old shape too)", async () => {
+    const data = await setup();
+    const created = await createBooking(data.siteId, withSms(data), NOW);
+    expect(created?.booking.status).toBe("confirmed");
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record?.smsConsentAt ?? null).toBeNull();
+  });
+
+  it("records consent next to the v2 consent and leaves the other fields as they were", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, { smsReminders: true });
+    const created = await createBooking(
+      data.siteId,
+      withSms(data, {
+        firstName: "Ana",
+        lastName: "Lima",
+        phone: "+13055550187",
+        acceptedPrivacy: true,
+      }),
+      NOW,
+    );
+    const record = await getBookingStore().getByToken(created?.booking.token ?? "");
+    expect(record).toMatchObject({
+      privacyAcceptedAt: NOW.toISOString(),
+      smsConsentAt: NOW.toISOString(),
+    });
+    expect(record?.jobId).toBeTruthy();
+  });
+
+  it("still records the consent when the same phone already replied STOP", async () => {
+    const data = await setup();
+    await updateBookingSettings(OWNER, { smsReminders: true });
+    const first = await createBooking(data.siteId, request(data), NOW);
+    const clientId = (await getBookingStore().getByToken(first?.booking.token ?? ""))?.clientId;
+    expect(clientId).toBeTruthy();
+    await setSmsOptOut(OWNER, clientId ?? "", true, NOW);
+
+    const second = await createBooking(data.siteId, withSms(data, { startAt: WED_11 }), NOW);
+    const record = await getBookingStore().getByToken(second?.booking.token ?? "");
+    // Mesmo cliente (mesmo telefone): o consentimento fica registrado e o bloqueio continua.
+    expect(record?.clientId).toBe(clientId);
+    expect(record?.smsConsentAt).toBe(NOW.toISOString());
+    const client = await getClientStore().getClient(OWNER, clientId ?? "");
+    expect(client?.smsOptOut).toBe(true);
   });
 });

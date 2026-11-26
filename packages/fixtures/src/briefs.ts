@@ -15,6 +15,7 @@ export const exampleBriefs: Record<FixtureSlug, string> = {
     "Emergency repairs, water heaters (tank and tankless, usually same day), drain cleaning with camera inspection from $149, slab leak detection, whole-home PEX repiping and fixture installs. The service call is $89 and we waive it if we do the work.",
     "We cover Austin, Round Rock, Cedar Park, Pflugerville, Georgetown and Buda.",
     'Two customers said we could quote them: Laura P. in Round Rock, "Our water heater died on a Sunday. Maria had someone at the house by noon and the price was exactly what she said on the phone." And Dev S. in Cedar Park, "They ran a camera down the drain and showed me the root. No upsell, they just fixed it."',
+    "We take cash, checks, credit and debit cards, and Zelle to (512) 555-0142. Payment is due when the work is finished.",
     "Phone (512) 555-0142, service@joesplumbing.example.com.",
   ].join("\n"),
   "sparkle-cleaning": [
@@ -28,6 +29,7 @@ export const exampleBriefs: Record<FixtureSlug, string> = {
     "Prices: precision cut and blowout from $85 (60 min), blowout $55 (45 min), balayage from $220 (about 3 hours), single-process color from $110 (90 min), keratin smoothing from $250 (lasts up to 12 weeks), scalp treatment $45 (30 min). Bridal and event hair and makeup by request.",
     "Open Tue–Sat 10 AM – 7 PM, Sun 11 AM – 5 PM. Appointments recommended, walk-ins when we have openings, 24 hours notice to cancel. Online booking at book.glowsalon.example.com.",
     'From clients: "Camila asked more questions than any colorist I have had, and my balayage grew out beautifully." (Natalie R.) and "Jordan finally gave my curls a shape that works on day three." (Marcus T.)',
+    "You can pay with cash, cards, Zelle to (305) 555-0187, Venmo @glowsalon-demo or Cash App $glowsalondemo. Tips are always appreciated, never expected.",
     "(305) 555-0187, hello@glowsalon.example.com.",
     "Style: elegant",
   ].join("\n"),

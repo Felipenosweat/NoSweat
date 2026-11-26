@@ -1,8 +1,8 @@
 import { fixtures } from "@nosweat/fixtures";
-import type { SiteSetupRequest } from "@nosweat/schema";
+import { SiteSetupRequest } from "@nosweat/schema";
 import { beforeEach, describe, expect, it } from "vitest";
 import { DEV_USER } from "../auth/session";
-import { getSettings, listPriceItems, listTeam } from "../office/service";
+import { getSettings, listPriceItems, listTeam, updateSettings } from "../office/service";
 import { resetMemoryOfficeStore } from "../office/store";
 import { OfficeError } from "../office/types";
 import { getSiteStore } from "../store";
@@ -265,5 +265,124 @@ describe("applySetup US details", () => {
     const stored = await getSiteStore().get(site.id);
     expect(stored?.spec.business).toMatchObject({ city: "Austin", state: "TX" });
     expect((await getSettings(OWNER)).address).toBe("Austin, TX 78701");
+  });
+});
+
+describe("applySetup: how customers pay", () => {
+  const payments = {
+    methods: [
+      { method: "cash" as const },
+      { method: "venmo" as const, handle: "@glowsalon-demo" },
+    ],
+    note: "Tips welcome.",
+  };
+
+  // O salão de exemplo sem as formas de pagamento que a fixture já traz.
+  const noPaymentsSite = () =>
+    getSiteStore().create(
+      {
+        ...fixtures["glow-salon"],
+        business: { ...fixtures["glow-salon"].business, payments: undefined },
+      },
+      OWNER,
+    );
+
+  it("writes the payments on the DRAFT only, with a version, and never publishes", async () => {
+    const glow = await noPaymentsSite();
+    expect(glow.spec.business.payments).toBeUndefined();
+    const before = (await getSiteStore().listVersions(glow.id)).length;
+    await applySetup(OWNER, glow, request({ payments }));
+    const stored = await getSiteStore().get(glow.id);
+    expect(stored?.spec.business.payments).toEqual(payments);
+    expect(stored?.publishedSpec).toBeNull();
+    expect((await getSiteStore().listVersions(glow.id)).length).toBeGreaterThan(before);
+  });
+
+  it("is idempotent and lets the owner clear it", async () => {
+    const glow = await noPaymentsSite();
+    await applySetup(OWNER, glow, request({ payments }));
+    const first = await getSiteStore().get(glow.id);
+    if (!first) throw new Error("site vanished");
+    const versions = (await getSiteStore().listVersions(glow.id)).length;
+    await applySetup(OWNER, first, request({ payments }));
+    expect(await getSiteStore().listVersions(glow.id)).toHaveLength(versions);
+
+    const second = await getSiteStore().get(glow.id);
+    if (!second) throw new Error("site vanished");
+    await applySetup(OWNER, second, request({ payments: { methods: [] } }));
+    expect((await getSiteStore().get(glow.id))?.spec.business.payments).toBeUndefined();
+  });
+
+  it("leaves the payments alone when the request has none", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request());
+    expect((await getSiteStore().get(site.id))?.spec.business.payments).toEqual(
+      fixtures["glow-salon"].business.payments,
+    );
+  });
+
+  it("fills the office payment instructions only when they are empty", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request({ payments }));
+    expect((await getSettings(OWNER)).paymentInstructions).toBe(
+      "We accept cash and Venmo (@glowsalon-demo). Tips welcome.",
+    );
+
+    // O dono muda o texto à mão: o assistente nunca o troca.
+    await updateSettings(OWNER, { paymentInstructions: "Pay at the front desk." });
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await applySetup(
+      OWNER,
+      current,
+      request({ payments: { methods: [{ method: "zelle", handle: "(305) 555-0187" }] } }),
+    );
+    expect((await getSettings(OWNER)).paymentInstructions).toBe("Pay at the front desk.");
+  });
+
+  it("does not touch the instructions when no method is chosen", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request({ payments: { methods: [] } }));
+    expect((await getSettings(OWNER)).paymentInstructions).toBe("");
+  });
+
+  it("rejects a card number before saving anything", async () => {
+    const parsed = SiteSetupRequest.safeParse(
+      request({ payments: { methods: [{ method: "zelle", handle: "4242424242424242" }] } }),
+    );
+    expect(parsed.success).toBe(false);
+    expect(await listPriceItems(OWNER)).toHaveLength(0);
+  });
+});
+
+describe("applySetup: text reminders", () => {
+  const withSms = (smsReminders?: boolean) => {
+    const base = request();
+    return request({ settings: { ...base.settings, smsReminders } });
+  };
+
+  it("turns the setting on and off with the wizard", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, withSms(true));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(true);
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await applySetup(OWNER, current, withSms(false));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(false);
+  });
+
+  it("leaves the setting alone when the request does not mention it", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, withSms(true));
+    const current = await getSiteStore().get(site.id);
+    if (!current) throw new Error("site vanished");
+    await applySetup(OWNER, current, withSms(undefined));
+    expect((await getBookingSettings(OWNER)).smsReminders).toBe(true);
+  });
+
+  it("is off by default", async () => {
+    const site = await newSite();
+    await applySetup(OWNER, site, request());
+    expect((await getBookingSettings(OWNER)).smsReminders).toBeUndefined();
   });
 });
