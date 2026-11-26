@@ -121,6 +121,8 @@ export type BookingDetails = {
   website: string;
   acceptPrivacy: boolean;
   acceptCancellation: boolean;
+  /** Caixa OPCIONAL de lembretes por texto (nunca vem marcada; só aparece com `smsReminders`). */
+  acceptSms: boolean;
 };
 
 export const EMPTY_BOOKING_DETAILS: BookingDetails = {
@@ -133,6 +135,7 @@ export const EMPTY_BOOKING_DETAILS: BookingDetails = {
   website: "",
   acceptPrivacy: false,
   acceptCancellation: false,
+  acceptSms: false,
 };
 
 export type DetailErrors = Partial<Record<"firstName" | "lastName" | "phone" | "email", string>>;
@@ -175,11 +178,15 @@ export function consentsGiven(details: BookingDetails, hasCancellationPolicy: bo
   return details.acceptPrivacy && (!hasCancellationPolicy || details.acceptCancellation);
 }
 
-/** Corpo do `POST .../book`; `null` se algum campo ainda está inválido. */
+/**
+ * Corpo do `POST .../book`; `null` se algum campo ainda está inválido. `smsReminders` = o dono
+ * usa lembretes por texto (a caixa existe): só então a marcação opcional vira `acceptedSms`.
+ */
 export function buildBookingBody(
   details: BookingDetails,
   pick: { serviceId: string; slot: BookingSlot },
   hasCancellationPolicy: boolean,
+  smsReminders = false,
 ): CreateBookingRequest | null {
   if (Object.keys(validateDetails(details)).length > 0) return null;
   if (!consentsGiven(details, hasCancellationPolicy)) return null;
@@ -202,7 +209,24 @@ export function buildBookingBody(
     website: details.website,
     acceptedPrivacy: true,
     ...(hasCancellationPolicy ? { acceptedCancellation: true as const } : {}),
+    ...(smsReminders && details.acceptSms ? { acceptedSms: true as const } : {}),
   };
+}
+
+/**
+ * Aviso de consentimento dos lembretes por texto (TCPA/CTIA), sem o final "See our Privacy Policy."
+ * (no formulário "Privacy Policy" é um link). O servidor guarda o texto montado por
+ * `smsConsentText` de @nosweat/schema: esta cópia existe só para não levar o Zod ao navegador dos
+ * sites, e um teste confere que as duas são idênticas.
+ */
+export function smsConsentIntro(businessName: string): string {
+  const business = businessName.trim() || "this business";
+  return (
+    "Text me reminders about my appointment. By checking this box, you agree to receive text " +
+    `messages from ${business} at the phone number above about your appointment. Message ` +
+    "frequency varies. Message and data rates may apply. Reply STOP to opt out or HELP for " +
+    "help. Consent is not a condition of booking."
+  );
 }
 
 /** "Cancel free up to 24 hours before" (só informativo; 0 ou ausente = sem frase). */

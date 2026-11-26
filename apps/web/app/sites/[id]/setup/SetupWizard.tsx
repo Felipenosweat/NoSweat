@@ -21,6 +21,7 @@ import {
   AreaStep,
   DaysStep,
   HoursStep,
+  PaymentsStep,
   ReviewStep,
   RulesStep,
   ServicesStep,
@@ -37,6 +38,7 @@ const STEP_TITLES: Record<StepId, string> = {
   services: "Services",
   team: "Team",
   area: "Where you work",
+  payments: "Payment",
   rules: "Rules",
   review: "Review",
 };
@@ -280,6 +282,7 @@ function Wizard({
         {step === "services" && <ServicesStep state={state} update={update} />}
         {step === "team" && <TeamStep state={state} update={update} />}
         {step === "area" && <AreaStep state={state} update={update} />}
+        {step === "payments" && <PaymentsStep state={state} update={update} />}
         {step === "rules" && <RulesStep state={state} update={update} />}
         {step === "review" && <ReviewStep state={state} goTo={goTo} />}
       </GlassCard>

@@ -36,6 +36,9 @@ export const BookingRecord = z.object({
   cancellationAcceptedAt: z.string().nullish(),
   /** O texto da política que o cliente viu e aceitou (a do dono pode mudar depois). */
   cancellationPolicySnapshot: z.string().nullish(),
+  // Consentimento para lembretes por texto (migration 0039): data e o aviso exato que o cliente viu.
+  smsConsentAt: z.string().nullish(),
+  smsConsentText: z.string().nullish(),
 });
 export type BookingRecord = z.infer<typeof BookingRecord>;
 
@@ -53,6 +56,8 @@ export type NewBooking = Omit<
   | "privacyAcceptedAt"
   | "cancellationAcceptedAt"
   | "cancellationPolicySnapshot"
+  | "smsConsentAt"
+  | "smsConsentText"
 >;
 
 /** Nomes separados e aceite do formulário v2, gravados logo depois de `bookSlot`. */
@@ -64,6 +69,9 @@ export type BookingConsent = {
   cancellationAcceptedAt: string | null;
   cancellationPolicySnapshot: string | null;
 };
+
+/** Consentimento (opcional) de lembretes por texto, gravado logo depois de `bookSlot`. */
+export type SmsConsent = { smsConsentAt: string; smsConsentText: string };
 
 export type BookSlotResult =
   | { ok: true; booking: BookingRecord }

@@ -2,6 +2,7 @@ import { DEFAULT_BOOKING_SETTINGS, type PriceItem } from "@nosweat/schema";
 import { fixtures } from "@nosweat/fixtures";
 import { describe, expect, it } from "vitest";
 import {
+  buildPayments,
   buildSetupRequest,
   clockLabel,
   formatDuration,
@@ -9,6 +10,7 @@ import {
   initialState,
   listWindows,
   nameKey,
+  normalizeHandle,
   parseDurationText,
   parsePriceText,
   rangesForDay,
@@ -327,8 +329,8 @@ describe("setupDone", () => {
 describe("stepProblem", () => {
   it("checks one step at a time", () => {
     const state = shopState();
-    expect(STEPS.shop).toEqual(["hours", "services", "team", "rules", "review"]);
-    expect(STEPS.home).toEqual(["days", "services", "area", "rules", "review"]);
+    expect(STEPS.shop).toEqual(["hours", "services", "team", "payments", "rules", "review"]);
+    expect(STEPS.home).toEqual(["days", "services", "area", "payments", "rules", "review"]);
     expect(stepProblem(state, "review")).toBeNull();
     expect(stepProblem({ ...state, services: [service({ name: "" })] }, "hours")).toBeNull();
     expect(stepProblem({ ...state, services: [] }, "services")).toMatch(/at least one service/);
@@ -380,5 +382,113 @@ describe("US details", () => {
     expect(result.request).toMatchObject({ city: "Austin", state: "TX", zip: "78701" });
     expect(result.request.timeZone).toBeTruthy();
     expect(buildSetupRequest({ ...state, zip: "787" }).ok).toBe(false);
+  });
+});
+
+describe("how customers pay", () => {
+  it("starts from what the site already says, and from nothing otherwise", () => {
+    const glow = shopState();
+    expect(glow.payments.methods).toEqual(["cash", "card", "zelle", "venmo", "cash_app"]);
+    expect(glow.payments.handles.venmo).toBe("@glowsalon-demo");
+    expect(glow.payments.note).toBe("Tips are always appreciated, never expected.");
+    const bare = initialState({
+      kind: "shop",
+      spec: fixtures["hale-ortiz"],
+      settings: DEFAULT_BOOKING_SETTINGS,
+      settingsSaved: false,
+      priceItems: [],
+    });
+    expect(bare.payments).toEqual({ methods: [], handles: {}, note: "" });
+  });
+
+  it("is a step of both wizards", () => {
+    expect(STEPS.shop).toContain("payments");
+    expect(STEPS.home).toContain("payments");
+  });
+
+  it("adds the @, $ and https:// people leave out", () => {
+    expect(normalizeHandle("venmo", " glowsalon ")).toBe("@glowsalon");
+    expect(normalizeHandle("venmo", "@glowsalon")).toBe("@glowsalon");
+    expect(normalizeHandle("cash_app", "glowsalon")).toBe("$glowsalon");
+    expect(normalizeHandle("paypal", "paypal.me/glowsalon")).toBe("https://paypal.me/glowsalon");
+    expect(normalizeHandle("paypal", "https://paypal.me/glowsalon")).toBe(
+      "https://paypal.me/glowsalon",
+    );
+    expect(normalizeHandle("zelle", "  (305)  555-0187 ")).toBe("(305) 555-0187");
+    expect(normalizeHandle("venmo", "   ")).toBe("");
+  });
+
+  it("builds the payments of the request, with handles only where they belong", () => {
+    const state = shopState({
+      payments: {
+        methods: ["cash", "venmo", "zelle"],
+        // O identificador de "cash" não vale (a forma não tem campo) e o de "check" não foi escolhido.
+        handles: { cash: "ignored", venmo: "glow", check: "x" },
+        note: " Tips welcome. ",
+      },
+    });
+    expect(buildPayments(state)).toEqual({
+      methods: [{ method: "cash" }, { method: "venmo", handle: "@glow" }, { method: "zelle" }],
+      note: "Tips welcome.",
+    });
+    const result = buildSetupRequest(state);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.request.payments?.methods).toHaveLength(3);
+  });
+
+  it("sends an empty list when nothing is chosen (so the owner can clear it)", () => {
+    const state = shopState({ payments: { methods: [], handles: {}, note: "ignored" } });
+    expect(buildPayments(state)).toEqual({ methods: [] });
+    const result = buildSetupRequest(state);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.request.payments).toEqual({ methods: [] });
+  });
+
+  it("stops the step on a bad handle or a card number", () => {
+    const base = shopState();
+    const bad = {
+      ...base,
+      payments: { methods: ["zelle" as const], handles: { zelle: "hello" }, note: "" },
+    };
+    expect(stepProblem(bad, "payments")).toMatch(/Zelle/);
+    const card = {
+      ...base,
+      payments: { methods: ["cash" as const], handles: {}, note: "Card 4242 4242 4242 4242" },
+    };
+    expect(stepProblem(card, "payments")).toMatch(/card or bank/);
+    expect(buildSetupRequest(card).ok).toBe(false);
+    expect(stepProblem(base, "payments")).toBeNull();
+  });
+});
+
+describe("text reminders in the wizard", () => {
+  it("starts off, and from what the owner saved", () => {
+    expect(shopState().smsReminders).toBe(false);
+    const saved = initialState({
+      kind: "shop",
+      spec: fixtures["glow-salon"],
+      settings: { ...DEFAULT_BOOKING_SETTINGS, smsReminders: true },
+      settingsSaved: true,
+      priceItems: [],
+    });
+    expect(saved.smsReminders).toBe(true);
+  });
+
+  it("sends the choice with the settings (both kinds)", () => {
+    for (const on of [true, false]) {
+      const result = buildSetupRequest(shopState({ smsReminders: on }));
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.request.settings.smsReminders).toBe(on);
+    }
+    const home = initialState({
+      kind: "home",
+      spec: fixtures["joes-plumbing"],
+      settings: DEFAULT_BOOKING_SETTINGS,
+      settingsSaved: false,
+      priceItems: [],
+    });
+    const result = buildSetupRequest({ ...home, smsReminders: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.request.settings.smsReminders).toBe(true);
   });
 });

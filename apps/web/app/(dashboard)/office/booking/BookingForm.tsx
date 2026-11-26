@@ -586,6 +586,34 @@ function BookingEditor({
             <p className={hintClass}>0 means customers can cancel any time.</p>
           </div>
         </GlassCard>
+
+        <GlassCard as="section" aria-labelledby={`${ids}-sms-title`}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2
+                id={`${ids}-sms-title`}
+                className="font-display text-[17px] leading-6 font-semibold tracking-[-0.01em] text-ink"
+              >
+                Text reminders (you send them from your phone)
+              </h2>
+              <p className="mt-1 text-[15px] leading-6 text-slate-600">
+                Customers see an optional box to agree to text reminders when they book. No Sweat
+                does not send texts for you: your Schedule page lists tomorrow&rsquo;s customers who
+                agreed, with a message ready to send from your own phone.
+              </p>
+              <p className="mt-2 text-[15px] leading-6 text-slate-600">
+                If someone replies STOP, you must stop texting them. Mark them on that list so they
+                never show up again.
+              </p>
+            </div>
+            <Switch
+              checked={values.smsReminders === true}
+              onChange={(next) => change({ smsReminders: next })}
+              labelledBy={`${ids}-sms-title`}
+              disabled={pending || readOnly}
+            />
+          </div>
+        </GlassCard>
       </fieldset>
 
       <GlassCard as="section" aria-labelledby={`${ids}-link`} className="mt-4">

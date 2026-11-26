@@ -396,7 +396,12 @@ function BookingPanel({
       setNotice("This is an example, so nothing was booked.");
       return;
     }
-    const body = buildBookingBody(details, { serviceId: service.id, slot }, hasPolicy);
+    const body = buildBookingBody(
+      details,
+      { serviceId: service.id, slot },
+      hasPolicy,
+      Boolean(info.smsReminders),
+    );
     if (!body) {
       // Campo inválido: mostra os erros e leva o foco ao primeiro.
       setAttempted(true);
@@ -692,6 +697,8 @@ function BookingPanel({
               onBlurField={blurField}
               cancellationPolicy={info.cancellationPolicy}
               cancellationHours={info.cancellationHours}
+              smsReminders={info.smsReminders}
+              businessName={info.businessName}
             />
             {submit.state === "error" && (
               <p role="alert" className="ns-s-error">
@@ -902,6 +909,8 @@ function BookingPanel({
               onBlurField={blurField}
               cancellationPolicy={info.cancellationPolicy}
               cancellationHours={info.cancellationHours}
+              smsReminders={info.smsReminders}
+              businessName={info.businessName}
             />
           </div>
           {submit.state === "error" && (

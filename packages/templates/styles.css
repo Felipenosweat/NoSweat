@@ -1693,6 +1693,10 @@
 .ns-s-form .ns-s-check span {
   color: var(--ns-text);
 }
+.ns-s-form .ns-s-check--sms span {
+  font-size: 14px;
+  line-height: 1.5;
+}
 .ns-s-link {
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -2032,6 +2036,35 @@
 }
 .ns-s-review {
   justify-self: start;
+}
+/* Como pagar (só informativo) */
+.ns-s-pay h3 {
+  padding: 16px 20px 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.ns-s-paylist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 20px 16px;
+}
+.ns-s-paylist li {
+  padding: 8px 14px;
+  border: 1px solid var(--s-line);
+  border-radius: 999px;
+  background: var(--s-tint);
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.ns-s-paynote {
+  padding: 0 20px 16px;
+  color: var(--ns-muted);
+  font-size: 14.5px;
+}
+.ns-s-payline {
+  overflow-wrap: anywhere;
 }
 .ns-s-formcard {
   padding: 20px;

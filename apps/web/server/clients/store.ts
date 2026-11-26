@@ -91,6 +91,9 @@ const ClientRow = z.object({
   updated_at: z.string(),
   // Coluna da migration 0021 (antes dela, a linha vem sem o campo).
   tags: z.array(z.string()).nullish(),
+  // Colunas da migration 0039 (antes dela, a linha vem sem os campos).
+  sms_opt_out: z.boolean().nullish(),
+  sms_opt_out_at: z.string().nullish(),
 });
 
 function toClient(row: z.infer<typeof ClientRow>): ClientRecord {
@@ -112,6 +115,8 @@ function toClient(row: z.infer<typeof ClientRow>): ClientRecord {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     tags: row.tags ?? [],
+    smsOptOut: row.sms_opt_out ?? false,
+    smsOptOutAt: row.sms_opt_out_at ?? null,
   };
 }
 
@@ -160,6 +165,8 @@ const CLIENT_COLUMNS: Record<keyof ClientPatch, string> = {
   totalJobsCents: "total_jobs_cents",
   jobsCount: "jobs_count",
   tags: "tags",
+  smsOptOut: "sms_opt_out",
+  smsOptOutAt: "sms_opt_out_at",
 };
 
 function patchToRow(patch: ClientPatch): Record<string, unknown> {

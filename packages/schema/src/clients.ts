@@ -56,6 +56,9 @@ export const Client = z.object({
   updatedAt: z.string(),
   /** Etiquetas do dono (migration 0021). Campo novo: respostas antigas sem ele viram []. */
   tags: z.array(z.string()).default([]),
+  /** Respondeu STOP aos textos (migration 0039): nenhum lembrete por texto para este cliente. */
+  smsOptOut: z.boolean().optional(),
+  smsOptOutAt: z.string().nullable().optional(),
 });
 export type Client = z.infer<typeof Client>;
 
@@ -121,6 +124,10 @@ export type CreateClientRequest = z.infer<typeof CreateClientRequest>;
 
 export const ClientResponse = z.object({ client: Client });
 export type ClientResponse = z.infer<typeof ClientResponse>;
+
+/** `POST /api/clients/[id]/sms-opt-out`: o cliente respondeu STOP (`true`) ou voltou atrás (`false`). */
+export const ClientSmsOptOutRequest = z.object({ optedOut: z.boolean() });
+export type ClientSmsOptOutRequest = z.infer<typeof ClientSmsOptOutRequest>;
 
 // ---------- GET /api/clients/[id] ----------
 

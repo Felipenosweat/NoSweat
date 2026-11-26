@@ -46,6 +46,8 @@ export function toPublicClient(record: ClientRecord): Client {
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     tags: record.tags ?? [],
+    // Só quando respondeu STOP (o selo da ficha); sem isso o campo nem aparece.
+    ...(record.smsOptOut ? { smsOptOut: true, smsOptOutAt: record.smsOptOutAt ?? null } : {}),
   };
 }
 
@@ -479,6 +481,43 @@ export async function updateClient(
     if (activity) patch.lastActivityAt = laterOf(current.lastActivityAt, activity.occurredAt);
   }
 
+  const updated = await store.updateClient(ownerId, current.id, patch);
+  return updated ? toPublicClient(updated) : null;
+}
+
+/**
+ * O cliente respondeu STOP aos textos (`optedOut: true`) ou o dono desfez (`false`). Fica marcado
+ * no cliente (com a data) e entra uma nota no histórico. Marcar de novo não repete a nota.
+ * `null` = cliente de outro dono ou que não existe.
+ */
+export async function setSmsOptOut(
+  ownerId: string,
+  id: string,
+  optedOut: boolean,
+  now: Date = new Date(),
+): Promise<Client | null> {
+  const store = getClientStore();
+  const current = await store.getClient(ownerId, id);
+  if (!current) return null;
+  if ((current.smsOptOut ?? false) === optedOut) return toPublicClient(current);
+
+  const patch: ClientPatch = {
+    smsOptOut: optedOut,
+    smsOptOutAt: optedOut ? now.toISOString() : null,
+  };
+  const activity = await store.insertActivity({
+    ownerId,
+    clientId: current.id,
+    kind: "note",
+    body: optedOut
+      ? "Replied STOP: no more text reminders."
+      : "Text reminders allowed again by the business owner.",
+    amountCents: null,
+    leadId: null,
+    siteId: null,
+    occurredAt: now.toISOString(),
+  });
+  if (activity) patch.lastActivityAt = laterOf(current.lastActivityAt, activity.occurredAt);
   const updated = await store.updateClient(ownerId, current.id, patch);
   return updated ? toPublicClient(updated) : null;
 }

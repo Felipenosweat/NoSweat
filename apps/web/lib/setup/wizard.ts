@@ -1,6 +1,9 @@
 import {
+  PAYMENT_HANDLE_METHODS,
+  PaymentSettings,
   SiteSetupRequest,
   type BookingSettings,
+  type PaymentMethod,
   type PriceItem,
   type SetupKind,
   type SiteSpec,
@@ -119,6 +122,13 @@ export type WizardService = {
 
 export type WizardPerson = { key: string; name: string; role: string; bio: string };
 
+/** "How customers pay": formas escolhidas, o identificador de cada uma e um aviso. */
+export type WizardPayments = {
+  methods: PaymentMethod[];
+  handles: Partial<Record<PaymentMethod, string>>;
+  note: string;
+};
+
 export type PolicyPreset = "24h" | "48h" | "custom" | "none";
 
 export type WizardState = {
@@ -139,6 +149,9 @@ export type WizardState = {
   /** Sigla de 2 letras ("" = não informado). */
   state: string;
   zip: string;
+  payments: WizardPayments;
+  /** Lembretes por texto: o formulário ganha a caixa opcional de consentimento. */
+  smsReminders: boolean;
   policyPreset: PolicyPreset;
   cancellationPolicy: string;
   cancellationHours: number;
@@ -271,11 +284,19 @@ export function rangesForWindows(day: DayHours, windows: ArrivalWindows): TimeRa
 export type BuildResult = { ok: true; request: SiteSetupRequest } | { ok: false; error: string };
 
 /** Passos do assistente, na ordem de cada ramo. */
-export type StepId = "hours" | "days" | "services" | "team" | "area" | "rules" | "review";
+export type StepId =
+  | "hours"
+  | "days"
+  | "services"
+  | "team"
+  | "area"
+  | "payments"
+  | "rules"
+  | "review";
 
 export const STEPS: Record<SetupKind, readonly StepId[]> = {
-  shop: ["hours", "services", "team", "rules", "review"],
-  home: ["days", "services", "area", "rules", "review"],
+  shop: ["hours", "services", "team", "payments", "rules", "review"],
+  home: ["days", "services", "area", "payments", "rules", "review"],
 };
 
 function hoursProblem(state: WizardState): string | null {
@@ -332,6 +353,44 @@ function teamProblem(state: WizardState): string | null {
   return null;
 }
 
+/** O identificador como o cliente do dono vai ver: "glow" vira "@glow" no Venmo, e assim por diante. */
+export function normalizeHandle(method: PaymentMethod, raw: string): string {
+  const value = raw.trim().replace(/\s+/g, method === "zelle" ? " " : "");
+  if (!value) return "";
+  switch (method) {
+    case "venmo":
+      return value.startsWith("@") ? value : `@${value}`;
+    case "cash_app":
+      return value.startsWith("$") ? value : `$${value}`;
+    case "paypal":
+      if (/^https:\/\//i.test(value)) return value;
+      return `https://${value.replace(/^http:\/\//i, "")}`;
+    default:
+      return value;
+  }
+}
+
+/** O que o dono escolheu em "How customers pay", no formato do schema (`methods: []` se nada). */
+export function buildPayments(state: WizardState): {
+  methods: { method: PaymentMethod; handle?: string }[];
+  note?: string;
+} {
+  const handleMethods: readonly PaymentMethod[] = PAYMENT_HANDLE_METHODS;
+  const methods = state.payments.methods.map((method) => {
+    const handle = handleMethods.includes(method)
+      ? normalizeHandle(method, state.payments.handles[method] ?? "")
+      : "";
+    return handle ? { method, handle } : { method };
+  });
+  const note = state.payments.note.trim();
+  return methods.length > 0 && note ? { methods, note } : { methods };
+}
+
+function paymentsProblem(state: WizardState): string | null {
+  const parsed = PaymentSettings.safeParse(buildPayments(state));
+  return parsed.success ? null : (parsed.error.issues[0]?.message ?? "Please check your payments.");
+}
+
 function rulesProblem(state: WizardState): string | null {
   if (state.policyPreset !== "none" && !state.cancellationPolicy.trim()) {
     return "Write your cancellation policy, or choose “No policy”.";
@@ -349,6 +408,8 @@ export function stepProblem(state: WizardState, step: StepId): string | null {
       return servicesProblem(state);
     case "team":
       return teamProblem(state);
+    case "payments":
+      return paymentsProblem(state);
     case "rules":
       return rulesProblem(state);
     default:
@@ -389,6 +450,7 @@ export function buildSetupRequest(state: WizardState): BuildResult {
       cancellationPolicy:
         state.policyPreset === "none" ? undefined : state.cancellationPolicy.trim() || undefined,
       cancellationHours: state.policyPreset === "none" ? undefined : state.cancellationHours,
+      smsReminders: state.smsReminders,
     },
     services: state.services.map((service) => ({
       name: service.name.trim(),
@@ -411,6 +473,7 @@ export function buildSetupRequest(state: WizardState): BuildResult {
     city: home ? state.city.trim() || undefined : undefined,
     state: home ? state.state || undefined : undefined,
     zip: home ? state.zip || undefined : undefined,
+    payments: buildPayments(state),
   };
   const parsed = SiteSetupRequest.safeParse(candidate);
   if (!parsed.success) {
@@ -454,6 +517,20 @@ function windowsFromSettings(settings: BookingSettings, saved: boolean): Arrival
   const range = settings.weekly.find((ranges) => ranges.length > 0)?.[0];
   if (!range || settings.slotStepMinutes < 30) return { ...fallback };
   return { start: range.start, end: range.end, length: settings.slotStepMinutes };
+}
+
+/** O que o site já diz sobre pagamento vira as escolhas iniciais (nada é inventado). */
+function paymentsFromSpec(spec: SiteSpec): WizardPayments {
+  const saved = spec.business.payments;
+  const handles: WizardPayments["handles"] = {};
+  for (const entry of saved?.methods ?? []) {
+    if (entry.handle) handles[entry.method] = entry.handle;
+  }
+  return {
+    methods: (saved?.methods ?? []).map((entry) => entry.method),
+    handles,
+    note: saved?.note ?? "",
+  };
 }
 
 export type InitialInput = {
@@ -556,6 +633,8 @@ export function initialState(input: InitialInput): WizardState {
     city: spec.business.city ?? "",
     state: spec.business.state ?? "",
     zip: "",
+    payments: paymentsFromSpec(spec),
+    smsReminders: settings.smsReminders === true,
     policyPreset: preset,
     cancellationPolicy: text || first?.text || "",
     cancellationHours: settings.cancellationHours ?? first?.hours ?? 24,

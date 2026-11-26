@@ -8,6 +8,7 @@ import {
   type BookingConsent,
   type BookSlotResult,
   type NewBooking,
+  type SmsConsent,
 } from "./types";
 
 // Persistência do agendamento (tabelas da migration 0027). Supabase em produção, memória no
@@ -37,6 +38,8 @@ export interface BookingStore {
    * do banco não muda); só é chamado quando o pedido traz o formato novo.
    */
   saveConsent(ownerId: string, id: string, consent: BookingConsent): Promise<BookingRecord | null>;
+  /** Grava o consentimento (opcional) de lembretes por texto: data e o aviso que o cliente viu. */
+  saveSmsConsent(ownerId: string, id: string, consent: SmsConsent): Promise<BookingRecord | null>;
   /** Liga a marcação ao serviço (job) criado na agenda. */
   attachJob(ownerId: string, id: string, jobId: string): Promise<BookingRecord | null>;
   /** Confirmada → cancelada. `null` se não existe ou já estava cancelada. */
@@ -202,6 +205,14 @@ export class SupabaseBookingStore implements BookingStore {
     });
   }
 
+  async saveSmsConsent(ownerId: string, id: string, consent: SmsConsent) {
+    if (!isUuid(ownerId) || !isUuid(id)) return null;
+    return this.patchBookings(`/bookings?id=eq.${id}&owner_id=eq.${ownerId}`, {
+      sms_consent_at: consent.smsConsentAt,
+      sms_consent_text: consent.smsConsentText,
+    });
+  }
+
   async attachJob(ownerId: string, id: string, jobId: string) {
     if (!isUuid(ownerId) || !isUuid(id) || !isUuid(jobId)) return null;
     return this.patchBookings(`/bookings?id=eq.${id}&owner_id=eq.${ownerId}`, { job_id: jobId });
@@ -320,6 +331,14 @@ export class MemoryBookingStore implements BookingStore {
   }
 
   async saveConsent(ownerId: string, id: string, consent: BookingConsent) {
+    const current = this.state.bookings.get(id);
+    if (!current || current.ownerId !== ownerId) return null;
+    const updated = { ...current, ...consent };
+    this.state.bookings.set(id, updated);
+    return clone(updated);
+  }
+
+  async saveSmsConsent(ownerId: string, id: string, consent: SmsConsent) {
     const current = this.state.bookings.get(id);
     if (!current || current.ownerId !== ownerId) return null;
     const updated = { ...current, ...consent };

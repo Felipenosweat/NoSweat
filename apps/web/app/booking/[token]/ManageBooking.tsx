@@ -174,6 +174,19 @@ export function ManageBooking({ token }: { token: string }) {
         )}
       </dl>
 
+      {booking.paymentInstructions && !canceled && (
+        // Só o que o dono escolheu em "How customers pay" (informativo).
+        <section
+          aria-labelledby="pay-title"
+          className="mt-6 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200"
+        >
+          <h2 id="pay-title" className="text-sm font-semibold text-ink">
+            How to pay
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-slate-600">{booking.paymentInstructions}</p>
+        </section>
+      )}
+
       {booking.cancellationPolicy && (
         // O texto que o cliente aceitou ao marcar (guardado com a marcação).
         <section

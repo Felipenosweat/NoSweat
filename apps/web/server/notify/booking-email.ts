@@ -29,6 +29,8 @@ export type BookingEmailInput = {
   customer: { name: string; phone: string; email: string | null; notes: string };
   /** Política de cancelamento que o cliente aceitou (o texto exato que ele viu); vazio = não havia. */
   cancellationPolicy?: string;
+  /** "We accept cash, Zelle (...)": só o que o dono escolheu; vazio = o e-mail não fala de pagamento. */
+  paymentInstructions?: string;
   /** Link público do cliente: `${appOrigin}/booking/<token>`. */
   token: string;
   /** Origem do app (ex.: https://nosweatfd.com). */
@@ -139,12 +141,14 @@ export function buildCustomerBookingEmail(input: BookingEmailInput): {
   const subject = `Booking confirmed: ${oneLine(input.serviceName)} · ${when}`;
   const call = input.businessPhone ? `Questions? Call ${input.businessPhone}.` : "";
   const policy = input.cancellationPolicy?.trim() ?? "";
+  const pay = input.paymentInstructions?.trim() ?? "";
   const text = [
     `Hi ${customerFirstName(input.customer.name)}, your appointment with ${input.businessName} is booked.`,
     "",
     ...rows.map(([label, value]) => `${label}: ${value}`),
     "",
     `Need to cancel? Use this link: ${link}`,
+    ...(pay ? ["", `How to pay: ${pay}`] : []),
     ...(policy ? ["", "Cancellation policy you agreed to:", policy] : []),
     ...(call ? ["", call] : []),
   ].join("\n");
@@ -152,6 +156,7 @@ export function buildCustomerBookingEmail(input: BookingEmailInput): {
 <p>Hi ${escapeHtml(customerFirstName(input.customer.name))}, your appointment with <strong>${escapeHtml(input.businessName)}</strong> is booked.</p>
 ${table(rows)}
 <p><a href="${escapeHtml(link)}">See or cancel your appointment</a></p>
+${pay ? `<p><strong>How to pay</strong><br>${escapeHtml(pay)}</p>` : ""}
 ${policy ? `<p><strong>Cancellation policy you agreed to</strong><br>${escapeHtml(policy).replaceAll("\n", "<br>")}</p>` : ""}
 ${call ? `<p>${escapeHtml(call)}</p>` : ""}
 </div>`;
